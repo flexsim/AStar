@@ -92,6 +92,12 @@
     <ClInclude Include="flexsimcontent\stdafx.h">
       <Filter>Header Files\FlexsimContent</Filter>
     </ClInclude>
+    <ClInclude Include="AStarNavigator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="macros.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AStar.cpp">
@@ -99,6 +105,9 @@
     </ClCompile>
     <ClCompile Include="flexsimcontent\dllmain.cpp">
       <Filter>Header Files\FlexsimContent</Filter>
+    </ClCompile>
+    <ClCompile Include="AStarNavigator.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

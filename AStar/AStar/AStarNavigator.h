@@ -2,15 +2,18 @@
 #include "FlexsimDefs.h"
 #include "allobjects.h"
 #include "hashtable.h"
+#include "basicutils.h"
+#include "Barrier.h"
 #include <vector>
-#include <hash_map>
+#include <unordered_map>
+#include <queue>
 
 struct AStarNode
 {
-	bool right:1;
-	bool left:1;
-	bool up:1;
-	bool down:1;
+	bool canGoRight:1;
+	bool canGoLeft:1;
+	bool canGoUp:1;
+	bool canGoDown:1;
 	bool noExtraData:1;
 	bool notInTotalSet:1;
 	bool open:1;
@@ -70,7 +73,8 @@ public:
 	double nodeWidth;
 	
 	TreeNode* savedEdgeTableExtraData;
-	TreeNode* openSetHeap;
+	TreeNode* barriers;
+	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
 
 	AStarNavigator();
 	~AStarNavigator();
@@ -81,24 +85,25 @@ public:
 	virtual double OnDraw(TreeNode* view);
 	virtual double OnDrag(TreeNode* view);
 	double AStarNavigator::OnDestroy(TreeNode* view);
-	virtual double navigateto(TreeNode* traveler, TreeNode* destination, double endspeed);
-	virtual double navigatetoloc(TreeNode* traveler, double x, double y, double endspeed, int driveshort = 1);
+	virtual double navigateTo(TreeNode* traveler, TreeNode* destination, double endspeed);
+	virtual double navigateToLoc(TreeNode* traveler, double x, double y, double endspeed, int driveshort = 1);
 	void buildEdgeTable();
-	virtual double predrawfunction();
-	virtual double aborttravel(TreeNode* traveler, TreeNode* newts);
+	virtual double preDrawFunction();
+	virtual double abortTravel(TreeNode* traveler, TreeNode* newts);
+	virtual double saveState();
+	virtual double loadState();
 
 	virtual void bindVariables(void);
 	
 	AStarNode* edgeTable;
 
 	// temporary variables that are used as part of the search
-	//AStarNode * n;
+	AStarNode * n;
 	AStarSearchEntry shortest;
 	int expandableUp;
 	int expandableDown;
 	int expandableRight;
 	int expandableLeft;
-	std::vector<AStarSearchEntry> totalSet;
 	int travelFromPrevious;
 	double col0x;
 	double row0y;
@@ -107,23 +112,30 @@ public:
 	double preferredPathWeightCache;
 	int shortestIndex;
 
-	
-
 	inline void expandOpenSet(int r, int c ,float multiplier, int travelVal);
 	int edgeTableXSize;
-	int edgetTableYSize;
+	int edgeTableYSize;
 	int xOffset;
 	int yOffset;
 	int maxTraveled;
 
-	
-	//hash_map<int> entryhash;
-	//chashtableintkeysize<AStarNodeExtraData> edgetableextradata;
-
-	virtual double savestate();
-	virtual double loadstate();
-
 	static TreeNode* gASN;
 	static AStarNavigator* globalAStarNavigator();
+
+	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
+	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from rowCol to index in TotalSet
+	std::unordered_map<unsigned int, AStarNodeExtraData> edgeTableExtraData; // A mapping from rowCol to a ExtraData object
+
+	struct HeapEntry {
+		HeapEntry(float f, unsigned int totalSetIndex) : f(f), totalSetIndex(totalSetIndex) {}
+		float f;
+		unsigned int totalSetIndex;
+	};
+	class HeapEntryCompare {
+		bool operator()(HeapEntry& left, HeapEntry& right) {return left.f < right.f;}
+	};
+
+	// A heap of the open set; each value is tied to and index into the open set.
+	std::priority_queue<HeapEntry, std::vector<HeapEntry>, HeapEntryCompare> openSetHeap;
 };
 
