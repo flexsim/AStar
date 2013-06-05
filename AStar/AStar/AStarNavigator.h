@@ -72,9 +72,8 @@ public:
 	double drawMode;
 	double nodeWidth;
 	
-	TreeNode* savedEdgeTableExtraData;
 	TreeNode* barriers;
-	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
+	//NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
 
 	AStarNavigator();
 	~AStarNavigator();
@@ -90,8 +89,6 @@ public:
 	void buildEdgeTable();
 	virtual double preDrawFunction();
 	virtual double abortTravel(TreeNode* traveler, TreeNode* newts);
-	virtual double saveState();
-	virtual double loadState();
 
 	virtual void bindVariables(void);
 	
@@ -124,7 +121,7 @@ public:
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
 	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from rowCol to index in TotalSet
-	std::unordered_map<unsigned int, AStarNodeExtraData> edgeTableExtraData; // A mapping from rowCol to a ExtraData object
+	std::unordered_map<unsigned int, AStarNodeExtraData> edgeTableExtraData; // A mapping from rowCol to an ExtraData object
 
 	struct HeapEntry {
 		HeapEntry(float f, unsigned int totalSetIndex) : f(f), totalSetIndex(totalSetIndex) {}
@@ -132,6 +129,7 @@ public:
 		unsigned int totalSetIndex;
 	};
 	class HeapEntryCompare {
+	public:
 		bool operator()(HeapEntry& left, HeapEntry& right) {return left.f < right.f;}
 	};
 

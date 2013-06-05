@@ -13,10 +13,7 @@ class Barrier :
 {
 protected:
 	double x0, y0, x1, y1;
-	static Mesh triangleMesh;
-	static Mesh quadMesh;
-	static Mesh triangleStripMesh;
-	static Mesh quadStripMesh;
+	//static Mesh triangleMesh;
 
 public:
 	Barrier();

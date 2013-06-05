@@ -173,6 +173,7 @@
   <ItemGroup>
     <ClInclude Include="AStar.h" />
     <ClInclude Include="AStarNavigator.h" />
+    <ClInclude Include="Barrier.h" />
     <ClInclude Include="flexsimcontent\all.h" />
     <ClInclude Include="flexsimcontent\allobjects.h" />
     <ClInclude Include="flexsimcontent\array.h" />
@@ -202,6 +203,7 @@
   <ItemGroup>
     <ClCompile Include="AStar.cpp" />
     <ClCompile Include="AStarNavigator.cpp" />
+    <ClCompile Include="Barrier.cpp" />
     <ClCompile Include="flexsimcontent\dllmain.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
