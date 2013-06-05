@@ -1,7 +1,9 @@
+#include "AStarNavigator.h"
 #include "AStar.h"
 
 visible ObjectDataType* createodtderivative(char* classname)
 {
+	if(strcmp(classname, "AStarNavigator")==0) return new AStarNavigator;
 	return NULL;
 }
 
