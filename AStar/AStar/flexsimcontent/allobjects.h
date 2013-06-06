@@ -2686,7 +2686,7 @@ FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, cha
 
 FS_CONTENT_DLL_FUNC virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onDestroy(double xloc, double yloc, double zloc);
+FS_CONTENT_DLL_FUNC virtual double onDestroy(treenode view);
 
 FS_CONTENT_DLL_FUNC virtual double onDraw(treenode view);
 
@@ -3836,7 +3836,7 @@ FS_CONTENT_DLL_FUNC double onDraw(treenode view);
 
 FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onDestroy(double xloc, double yloc, double zloc);
+FS_CONTENT_DLL_FUNC double onDestroy(treenode view);
 
 FS_CONTENT_DLL_FUNC double onPreDraw(treenode view);
 
@@ -5980,7 +5980,7 @@ FS_CONTENT_DLL_FUNC double setViewModeByIndex(int index);
 
 FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
 
-FS_CONTENT_DLL_FUNC double onDestroy(double locx, double locy, double locz);
+FS_CONTENT_DLL_FUNC double onDestroy(treenode view);
 
 FS_CONTENT_DLL_FUNC virtual double onReceiveTraveler(treenode reqnode, int port, int beginning, int lastport);
 
