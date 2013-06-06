@@ -9,6 +9,8 @@ AStarNavigator::AStarNavigator()
 	yOffset = 0;
 	edgeTableXSize = 0;
 	edgeTableYSize = 0;
+
+	switch_showobject(holder, 1);
 }
 
 AStarNavigator::~AStarNavigator()

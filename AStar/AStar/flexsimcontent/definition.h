@@ -42,7 +42,6 @@ int bindflexsimfunctions()
 // Make DECLARATIONTYPE FLEXSIM_BINDING_PHASE and include flexsimfuncs.h, which sets the function pointers to GetProcAddress(...)
 #pragma push_macro("DECLARATIONTYPE")
 #define DECLARATIONTYPE FLEXSIM_BINDING_PHASE
-#define COMPILING_MODULE_DLL
 #include "FlexsimFuncs.h"
 #pragma pop_macro("DECLARATIONTYPE")
 

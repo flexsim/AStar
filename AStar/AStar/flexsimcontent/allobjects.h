@@ -571,21 +571,6 @@
 #define PORT_EXTRAVAR13  15
 #define PORT_EXTRAVAR14  16
 #define PORT_EXTRAVAR15  17
-#define PORT_CONNECTEDTO  PORT_EXTRAVAR1
-#define PORT_DISTANCE  PORT_EXTRAVAR2
-#define PORT_SPLINEHERE  PORT_EXTRAVAR3
-#define PORT_FILLEDLENGTH  PORT_EXTRAVAR4
-#define PORT_ACTIVE  PORT_EXTRAVAR5
-#define PORT_INOPEN  PORT_EXTRAVAR6
-#define PORT_LASTEXITTIME  PORT_EXTRAVAR7
-#define PORT_LASTEXITSIZE  PORT_EXTRAVAR8
-#define PORT_LASTENTRYPORT  PORT_EXTRAVAR9
-#define PORT_SPACING  PORT_EXTRAVAR10
-#define PORT_SPLINECOUPLING  PORT_EXTRAVAR11
-#define PORT_SPEED  PORT_EXTRAVAR12
-#define PORT_USERDISTANCE  PORT_EXTRAVAR13
-#define PORT_SPLINEENDROT  PORT_EXTRAVAR14
-#define PORT_BLOCKEDLENGTH  PORT_EXTRAVAR15
 
 // Constants group: VISUALOBJECT
 #define VISUALOBJECT_PLANE  1
@@ -1088,52 +1073,45 @@
 #define GL_ENABLE_BIT                     0x00002000
 #define GL_ALL_ATTRIB_BITS                0x000fffff
 
+/* Mesh Class */
+#define MESH_POSITION               0x0
+#define MESH_TEX_COORD1             0x0010000
+#define MESH_TEX_COORD2             0x0020000
+#define MESH_TEX_COORD3             0x0040000
+#define MESH_NORMAL                 0x0080000
+#define MESH_AMBIENT                0x0100000
+#define MESH_DIFFUSE                0x0200000
+#define MESH_DIFFUSE4               0x0400000
+#define MESH_AMBIENT_AND_DIFFUSE    0x0800000
+#define MESH_AMBIENT_AND_DIFFUSE4   0x1000000
+#define MESH_SPECULAR               0x2000000
+#define MESH_SHININESS              0x4000000
+#define MESH_EMISSIVE               0x8000000
 
-#define MESH_NEW 1
-#define MESH_DEL 2
-#define MESH_DRAW 3
-#define MESH_SET 4
-#define MESH_GET 5
-#define MESH_PROP_VERT 100
-#define MESH_PROP_TEXC 101
-#define MESH_PROP_DCOL 102
-#define MESH_PROP_NORM 103
-#define MESH_PROP_POINT 104
-#define MESH_PROP_POINT_AUTONORMAL 105
-#define MESH_PROP_VERT_AUTONORMAL 106
-#define MESH_PROP_ALL_AUTONORMAL 107
+#define MESH_STATIC_DRAW 			0x1
+#define MESH_DYNAMIC_DRAW 			0x2
+#define MESH_INDEXED 				0x4
 
-#define MESH_USE_TEXC 120
-#define MESH_USE_DCOL 121
-#define MESH_USE_NORM 122
+#define MESH_PER_VERTEX_ATTRIBS 1
+#define MESH_PER_MESH_ATTRIBS 2
+#define MESH_FLAGS 3
+#define MESH_NR_VERTS 4
+#define MESH_GET_INDEX 5
 
-#define MESH_MODE_COLOUR 130
-#define MESH_MODE_TEXTYPE 131
-#define MESH_MODE_TEXTURE 132
-#define MESH_MODE_CULLFACE 133
-#define MESH_MODE_LIGHTING 134
-#define MESH_MODE_TEXTUREROTATE 135
-#define MESH_MODE_TEXTURESCALE 136
-#define MESH_MODE_TEXTURETRANSLATE 137
-#define MESH_MODE_TEXTURECLAMP 138
-
-#define MESH_TEXMODE_ENVMAP 140
-#define MESH_TEXMODE_PROJECT 141
-#define MESH_TEXMODE_COORDS 142
-
-#define MESH_SET_FLAG_NORMAL 150
-#define MESH_SET_FLAG_COLOR 151
-#define MESH_SET_FLAG_TEXCOORD 152
+#define MESH_COLOR_RED 0
+#define MESH_COLOR_GREEN 1
+#define MESH_COLOR_BLUE 2
+#define MESH_COLOR_ALPHA 3
+#define MESH_POS_X 0
+#define MESH_POS_Y 1
+#define MESH_POS_Z 2
+#define MESH_TEX_S 0
+#define MESH_TEX_T 1
+#define MESH_TEX_R 2
+#define MESH_TEX_Q 3
+#define MESH_SHININESS 0
 
 
-#define MESH_FLAG_NORMAL          0x00000001
-#define MESH_FLAG_COLOR            0x00000002
-#define MESH_FLAG_TEXCOORD          0x00000004
-
-#define MESH_MODE_FILL 160
-#define MESH_FILL_POINTS 1
-#define MESH_FILL_LINES 2
-#define MESH_FILL_SOLID 3
 
 // this should be the same as -FLT_MAX
 #define DISPATCHER_ABORT_QUEUE_STRATEGY -340282346600000000000000000000000000000.0
@@ -1792,52 +1770,61 @@ class NetworkNavigator;
 
 class FlowItem;
 
+class SplineEndPoint;
+
 
 ///////////////////////////////////////////////////////
 // Travel Requests
 ///////////////////////////////////////////////////////
-class TravelRequest
+class TravelRequest : public SimpleDataType
 {
   public:
-  treenode traveler;
-  treenode statictravelmembernode; // the rank of the coupling node in the Navigator's travelers variable.
-  double begintime; // the begin time of the travel request.
-  double totaldist;// the total distance to travel.
-  double endspeed;
+	virtual const char* getClassFactory() {return "TravelRequest";}
+	virtual void bind();
+	treenode traveler;
+	treenode staticTravelMemberNode; // the rank of the coupling node in the Navigator's travelers variable.
+	double beginTime; // the begin time of the travel request.
+	double totalDist;// the total distance to travel.
+	double endSpeed;
 };
 
 class NavigatorRequest : public TravelRequest
 {
-  public:
-  double rotationtime; // the time it will take to rotate around
-  int initry;
-  int initrz;
-  int rotatey;
-  int rotatez;
+public:
+	virtual const char* getClassFactory() {return "TravelRequest";}
+	virtual void bind();
+	double rotationTime; // the time it will take to rotate around
+	int initRY;
+	int initRZ;
+	int rotateY;
+	int rotateZ;
 };
 
 class NetworkRequest : public TravelRequest
 {
-  public:
-  treenode destination; // the requested destination
-  int destcol; // the column of the destination node.
-  int origincol; // the column of the original origin node.
-  int initrz; // start z rotation
-  unsigned short outport; // the current output port of the network node
-  #define NETREQSTATE_TRAVEL 1
-  #define NETREQSTATE_WAIT 2
-  unsigned char state;
-  double nodebegintime; // the time that the traveller entered into the current node.
-  treenode curnetnode; // the current network node that is managing the object
-  unsigned short currtcontrolrank; // the rank of the traffic control that I'm attempting to enter
-  int flipped;
-  float lastupdateddistalongedge;
-  float disttravelled;
-  float edgeaccdist;
-  float edgedecdist;
-  float edgeendspeed;
-  double nextnodearrivaltime;
-  float edgemaxv;
+public:
+	virtual const char* getClassFactory() {return "TravelRequest";}
+	virtual void bind();
+	treenode destination; // the requested destination
+	int destCol; // the column of the destination node.
+	int originCol; // the column of the original origin node.
+	int initRZ; // start z rotation
+	unsigned short outPort; // the current output port of the network node
+	#define NETREQSTATE_TRAVEL 1
+	#define NETREQSTATE_WAIT 2
+	unsigned char state;
+	double nodeBeginTime; // the time that the traveller entered into the current node.
+	treenode curNetNode; // the current network node that is managing the object
+	unsigned short curTControlRank; // the rank of the traffic control that I'm attempting to enter
+	int flipped;
+	float lastUpdatedDistAlongEdge;
+	float distTraveled;
+	float edgeAccDist;
+	float edgeDecDist;
+	float edgeEndSpeed;
+	double nextNodeArrivalTime;
+	float edgeMaxV;
+	treenode kinematics;
 };
 
 class TrafficControlRequest
@@ -1943,26 +1930,6 @@ typedef treenode treenode;
 extern treenode* nexttreeunderstack;
 extern int nexttreeunderstacktop;
 extern int nexttreeunderstacksize;
-
-struct edgedrawcache
-{
-	int clean;
-	int nrofpoints;
-	int maxnrofpoints;
-	float pointer1loc[3];
-	float pointer1rot[3];
-	float pointer2loc[3];
-	float pointer2rot[3];
-
-	float pathpoints[1][3];
-};
-struct splinepointloccache
-{
-	int nrofpoints;
-	double splinepointlocs[1][3];
-	int checkstillvalid(treenode firstsplinepoint);
-};
-
 
 struct delayedmessagedata
 {
@@ -2115,6 +2082,8 @@ public:
 	Vec3Generic operator * (Number mult) const {return Vec3(x * mult, y * mult, z * mult);}
 	Vec3Generic& operator += (Vec3Generic& other) {x += other.x; y += other.y; z += other.z; return *this;}
 	Vec3Generic& operator -= (Vec3Generic& other) {x -= other.x; y -= other.y; z -= other.z; return *this;}
+	bool operator == (Vec3Generic& other) {return x == other.x && y == other.y && z == other.z;}
+	bool operator != (Vec3Generic& other) {return x != other.x || y != other.y || z != other.z;}
 
 	template <class OtherNumber>
 	Vec3Generic& operator = (Vec3Generic<OtherNumber>& other) {x = other.x; y = other.y; z = other.z; return *this;}
@@ -2133,14 +2102,25 @@ public:
 		y /= length;
 		z /= length;
 	}
+	#define VEC_ROTATE_A_B(degs, a, b) \
+		Number rads = degreestoradians(degrees); \
+		Number cosRads = cos(rads); \
+		Number sinRads = sin(rads); \
+		Vec3 temp = *this; \
+		a = cosRads * temp.a - sinRads * temp.b; \
+		b = sinRads * temp.a + cosRads * temp.b;
+		
 	void rotateXY(Number degrees) 
 	{
-		Number rads = degreestoradians(degrees);
-		Number cosRads = cos(rads);
-		Number sinRads = sin(rads);
-		Vec3 temp = *this;
-		x = cosRads * temp.x - sinRads * temp.y;
-		y = sinRads * temp.x + cosRads * temp.y;
+		VEC_ROTATE_A_B(degrees, x, y)
+	}
+	void rotateYZ(Number degrees) 
+	{
+		VEC_ROTATE_A_B(degrees, y, z)
+	}
+	void rotateZX(Number degrees) 
+	{
+		VEC_ROTATE_A_B(degrees, z, x)
 	}
 	static Vec3Generic fromRotAndDist(Number degs, Number length, Number zComp = 0) 
 	{
@@ -2176,6 +2156,8 @@ public:
 	Vec2Generic operator * (Number mult) const {return Vec2(x * mult, y * mult);}
 	Vec2Generic& operator += (Vec2Generic& other) {x += other.x; y += other.y; return *this;}
 	Vec2Generic& operator -= (Vec2Generic& other) {x -= other.x; y -= other.y; return *this;}
+	bool operator == (Vec2Generic& other) {return x == other.x && y == other.y;}
+	bool operator != (Vec2Generic& other) {return x != other.x || y != other.y;}
 	
 	template <class OtherNumber>
 	Vec2Generic& operator = (Vec2Generic<OtherNumber>& other) {x = other.x; y = other.y; return *this;}
@@ -2215,6 +2197,56 @@ typedef Vec3Generic<double> Vec3;
 typedef Vec3Generic<float> Vec3f;
 typedef Vec2Generic<double> Vec2;
 typedef Vec2Generic<float> Vec2f;
+
+class NetNodeEdge: public CouplingDataType
+{
+public:
+	NetNodeEdge() : isInputOpen(false), distance(0.0), filledLength(0.0), lastExitTime(0.0), lastExitSize(0.0), 
+					lastEntryPort(0), spacing(0.0), isSplineOwner(false), maxSpeed(0.0), userDistance(0.0), splineEndRot(0.0), blockedLength(0.0),
+					activeTravelersNode(0), entryRequestsNode(0), spline(0), arrowMeshIndex(0)
+		{}
+	NetworkNode* netNode;
+	double isOpen;
+	treenode insideCoupling;
+
+	// connectionType: one of: EDGE_NOCONNECTION EDGE_PASSING EDGE_NONPASSING
+	double connectionType;
+	bool isInputOpen;
+	double distance;
+	double filledLength;
+	treenode activeTravelersNode;
+	NodeListArray<NetworkRequest>::SdtSubNodeType activeTravelers;
+	treenode entryRequestsNode;
+	NodeListArray<>::NodePtrType entryRequests;
+	double lastExitTime;
+	double lastExitSize;
+	int lastEntryPort;
+	double spacing;
+	bool isSplineOwner;
+	treenode spline;
+	double maxSpeed;
+	double userDistance;
+	double splineEndRot;
+	double blockedLength;
+	int arrowMeshIndex;
+	int splinePointIndex;
+	static const int arrowNrVerts = 8;
+	
+	NetNodeEdge* getEdgePartner();
+	NetworkNode* getNetNodePartner();
+	TreeNode* getSplineHead() {return first(isSplineOwner ? spline : getEdgePartner()->spline);}
+	TreeNode* getNearSplinePoint() {return isSplineOwner ? first(spline) : last(getEdgePartner()->spline);}
+	TreeNode* getFarSplinePoint() {return isSplineOwner ? last(spline) : first(getEdgePartner()->spline);}
+	virtual const char* getClassFactory() {return "NetNodeEdge";}
+	virtual void bind();
+	void init(char connectionType, bool isSplineOwner);
+	void reset(treenode returnTravelersTo);
+	// buildMesh: adds the edge's vertices to the mesh. Here I pass a void* instead of a vector<Vec3f> because I don't want allobjects.h to 
+	// include <vector> (modules must include allobjects.h, so I don't want to force <vector> upon them)
+	void buildMeshEdges(void* verts, void* colors, bool includeSplineLines);
+	void buildMeshPoints(void* verts, void* colors);
+	void buildMeshQuads(void* verts, void* colors);
+};
 
 ;
 
@@ -2911,38 +2943,6 @@ treenode curTransporter;
 
 int pullItemCalled;
 
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
-// SplineEndPoint
-
-class SplineEndPoint  : public ObjectDataType 
-{
-public:
-
-TreeNode * node_v_binder;
-#define v_binder node_v_binder->safedatafloat()[0]
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
-// SplinePoint
-
-class SplinePoint  : public ObjectDataType 
-{
-public:
-
-TreeNode * node_v_clicked;
-#define v_clicked node_v_clicked->safedatafloat()[0]
 
 // System
 
@@ -5960,11 +5960,17 @@ TreeNode * node_v_notifyofblockedlength;
 
 // c++ member functions
 
+FS_CONTENT_DLL_FUNC  NetworkNode();
+
 FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
 
 FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+
+FS_CONTENT_DLL_FUNC double onDrag(treenode view);
+
+FS_CONTENT_DLL_FUNC double onPreDraw(treenode view);
 
 FS_CONTENT_DLL_FUNC double onDrawPlanar(treenode view);
 
@@ -5972,11 +5978,9 @@ FS_CONTENT_DLL_FUNC double onReset();
 
 FS_CONTENT_DLL_FUNC double onKeyedClick(treenode view, int code, char key);
 
+FS_CONTENT_DLL_FUNC treenode onMenuPopup(treenode view, treenode theMenu);
+
 FS_CONTENT_DLL_FUNC double setViewMode(int viewMode);
-
-FS_CONTENT_DLL_FUNC double getViewModeIndex();
-
-FS_CONTENT_DLL_FUNC double setViewModeByIndex(int index);
 
 FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
 
@@ -6010,9 +6014,9 @@ FS_CONTENT_DLL_FUNC virtual double getBurden(int outport);
 
 FS_CONTENT_DLL_FUNC virtual double getEdgeSpeedLimit(int outport);
 
-FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toObj, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC virtual double destroySplineConnection(double outport);
+FS_CONTENT_DLL_FUNC virtual NetNodeEdge* addEdge(NetworkNode* otherNode, int toType, int backType, bool curved);
 
 FS_CONTENT_DLL_FUNC double resetVariables();
 
@@ -6023,8 +6027,6 @@ FS_CONTENT_DLL_FUNC virtual double abortTravel(treenode reqnode);
 FS_CONTENT_DLL_FUNC virtual double deleteInRequest(treenode reqnode, int searchallports DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double updateLocations();
-
-FS_CONTENT_DLL_FUNC virtual double cacheEdge(int port);
 
 FS_CONTENT_DLL_FUNC double invalidateSpline(int port);
 
@@ -6048,10 +6050,47 @@ FS_CONTENT_DLL_FUNC virtual double rotateAroundAxis(double angle, double x, doub
 
 FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(int axis, double x, double y);
 
+FS_CONTENT_DLL_FUNC double buildStaticMeshes();
+
+FS_CONTENT_DLL_FUNC double buildMesh();
+
+FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC virtual void setEdgeType(treenode edge, int type);
+
+FS_CONTENT_DLL_FUNC virtual void setEdgeGeomType(treenode edgeNode, bool straight);
+
+FS_CONTENT_DLL_FUNC double addSplineAtts(treenode obj);
+
+
+// c++ attributes
+
+static Mesh pointMesh;
+
+static Mesh selectionMesh;
+
+static Mesh utilityMesh;
+
+static bool staticMeshesBuilt;
+
+bool isMeshDirty;
+
+int meshEdgePointSplit;
+
+int meshPointQuadSplit;
+
+int meshEnd;
+
+Mesh mesh;
+
+int meshCheckSum;
+
+NodeListArray<NetNodeEdge>::CouplingSdtSubNodeType edges;
+
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+FS_CONTENT_DLL_FUNC virtual void bindVariablesDefault();
 
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
