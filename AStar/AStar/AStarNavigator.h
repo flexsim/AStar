@@ -120,7 +120,7 @@ public:
 	static AStarNavigator* globalAStarNavigator();
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
-	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from rowCol to index in TotalSet
+	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from rowCol to index in totalSet
 	std::unordered_map<unsigned int, AStarNodeExtraData> edgeTableExtraData; // A mapping from rowCol to an ExtraData object
 
 	struct HeapEntry {
@@ -133,7 +133,7 @@ public:
 		bool operator()(HeapEntry& left, HeapEntry& right) {return left.f < right.f;}
 	};
 
-	// A heap of the open set; each value is tied to and index into the open set.
+	// A heap of the open set; each value is tied to an index into the open set.
 	std::priority_queue<HeapEntry, std::vector<HeapEntry>, HeapEntryCompare> openSetHeap;
 };
 
