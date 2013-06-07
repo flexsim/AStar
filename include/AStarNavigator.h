@@ -79,16 +79,16 @@ public:
 	AStarNavigator();
 	~AStarNavigator();
 	
-	virtual double OnReset();
-	virtual double OnRunWarm();
-	double OnTimerEvent(TreeNode* involved, int code, char *datastr);
-	virtual double OnDraw(TreeNode* view);
-	virtual double OnDrag(TreeNode* view);
-	double AStarNavigator::OnDestroy(TreeNode* view);
+	virtual double onReset();
+	virtual double onRunWarm();
+	double onTimerEvent(TreeNode* involved, int code, char *datastr);
+	virtual double onDraw(TreeNode* view);
+	virtual double onDrag(TreeNode* view);
+	double AStarNavigator::onDestroy(TreeNode* view);
 	virtual double navigateTo(TreeNode* traveler, TreeNode* destination, double endspeed);
 	virtual double navigateToLoc(TreeNode* traveler, double x, double y, double endspeed, int driveshort = 1);
 	void buildEdgeTable();
-	virtual double preDrawFunction();
+	virtual double updateLocations();
 	virtual double abortTravel(TreeNode* traveler, TreeNode* newts);
 
 	virtual void bindVariables(void);

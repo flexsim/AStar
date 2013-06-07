@@ -31,7 +31,7 @@ void AStarNavigator::bindVariables(void)
 	//barrierList.init(barriers);
 }
 
-double AStarNavigator::OnReset()
+double AStarNavigator::onReset()
 {
 	while (content(node_v_travelmembers) > 0)
 		transfernode(last(node_v_activetravelmembers), node_v_travelmembers);
@@ -48,7 +48,7 @@ double AStarNavigator::OnReset()
 	return 0;
 }
 
-double AStarNavigator::OnRunWarm()
+double AStarNavigator::onRunWarm()
 {
 	for (auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
 		AStarNodeExtraData & extra = iter->second;
@@ -65,7 +65,7 @@ double AStarNavigator::OnRunWarm()
 	return 0;
 }
 
-double AStarNavigator::OnDraw(TreeNode* view)
+double AStarNavigator::onDraw(TreeNode* view)
 {
 	// Based on the drawMode, this function
 	// draws the grid, barriers, and traffic
@@ -419,7 +419,7 @@ double AStarNavigator::OnDraw(TreeNode* view)
 	return 0;
 }
 
-double AStarNavigator::OnDrag(TreeNode* view)
+double AStarNavigator::onDrag(TreeNode* view)
 {
 	int pickType = getpickingdrawfocus(view, PICK_TYPE, 0);
 	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
@@ -442,12 +442,15 @@ double AStarNavigator::OnDrag(TreeNode* view)
 		inc(rank(secondary, BARRIER_X2), dx);
 		inc(rank(secondary, BARRIER_Y2), dy);
 		break;
-
+	default:
+		inc(spatialx(holder), dx);
+		inc(spatialy(holder), dy);
+		break;
 	}
 	return 1;
 }
 
-double AStarNavigator::OnDestroy(TreeNode* view)
+double AStarNavigator::onDestroy(TreeNode* view)
 {
 	if(objectexists(view))
 	{
@@ -825,7 +828,7 @@ double AStarNavigator::abortTravel(TreeNode* traveler, TreeNode* newTS)
 	return 0;
 }
 
-double AStarNavigator::OnTimerEvent(TreeNode* involved, int code, char* datastr)
+double AStarNavigator::onTimerEvent(TreeNode* involved, int code, char* datastr)
 {
 	switch(code) {
 	case EVENT_A_STAR_END_TRAVEL:
@@ -851,7 +854,7 @@ double AStarNavigator::OnTimerEvent(TreeNode* involved, int code, char* datastr)
 	return 0;
 }
 
-double AStarNavigator::preDrawFunction()
+double AStarNavigator::updateLocations()
 {
 	TreeNode* members = node_v_activetravelmembers;
 	for(int i = 1; i <= content(members); i++)
