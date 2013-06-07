@@ -23,10 +23,3 @@ visible void dllcleanup()
 {
 
 }
-
-visible void AStarNavigator_setEditMode(int mode)
-{
-	if (mode < 0)
-		mode = 0;
-	AStarNavigator::editMode = mode;
-}

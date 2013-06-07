@@ -1114,3 +1114,11 @@ AStarNavigator* AStarNavigator::globalAStarNavigator()
 	}
 	return &o(AStarNavigator, gASN);
 }
+
+visible void AStarNavigator_setEditMode(FLEXSIMINTERFACE)
+{
+	int mode = parval(1);
+	if (mode < 0)
+		mode = 0;
+	AStarNavigator::editMode = mode;
+}
