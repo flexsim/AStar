@@ -72,6 +72,7 @@ public:
 	double preferredPathWeight;
 	double drawMode;
 	double nodeWidth;
+	double surroundDepth;
 	
 	TreeNode* barriers;
 	//NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;

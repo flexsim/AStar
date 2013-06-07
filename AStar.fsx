@@ -28,6 +28,8 @@
        <node f="42-0"><name>variables</name>
         <node f="40-0"><name></name></node>
         <node f="42-0" dt="1"><name>nodeWidth</name><data>000000003ff00000</data></node>
+        <node f="42-0" dt="1"><name>surroundDepth</name><data>0000000040000000</data></node>
+        <node f="42-0" dt="1"><name>drawMode</name><data>00000000401c0000</data></node>
        </node>
        <node f="42-0"><name>behaviour</name>
         <node f="40-0"><name></name></node>

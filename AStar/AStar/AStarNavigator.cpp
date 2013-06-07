@@ -26,6 +26,7 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(preferredPathWeight);
 	bindVariable(drawMode);
 	bindVariable(nodeWidth);
+	bindVariable(surroundDepth);
 	bindVariable(barriers);
 	//barrierList.init(barriers);
 }
@@ -92,7 +93,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 	if(!pickingmode && (drawmode & ASTAR_DRAW_MODE_GRID))
 	{
-		glColor3f(0.8,0.8,0);
+		glColor3f(0.8f,0.8f,0.0f);
 		glBegin(GL_LINES);
 		for(int i = 0; i < edgeTableYSize; i++)
 		{
@@ -107,28 +108,28 @@ double AStarNavigator::onDraw(TreeNode* view)
 					e = &edgeTableExtraData[e->colRow];
 				double x = (xOffset + j + 0.5) * nodeWidth;
 				double y = (yOffset + i + 0.5) * nodeWidth;
-				glColor3f(0.8,0.8,0);
+				glColor3f(0.8f,0.8f,0.0f);
 				if(n->canGoUp) 	{
 					if(e && e->bonusUp) 
 						glColor3ub(0, e->bonusUp, 0);
 					glVertex3d(x,y,0.1);
 					glVertex3d(x,y+0.25*nodeWidth,0.1);
 				}
-				glColor3f(0.8,0.8,0);
+				glColor3f(0.8f,0.8f,0.0f);
 				if(n->canGoDown) {
 					if(e && e->bonusDown) 
 						glColor3ub(0, e->bonusDown, 0);
 					glVertex3d(x,y,0.1);
 					glVertex3d(x,y-0.25*nodeWidth,0.1);
 				}
-				glColor3f(0.8,0.8,0);
+				glColor3f(0.8f,0.8f,0.0f);
 				if(n->canGoRight) {
 					if(e && e->bonusRight) 
 						glColor3ub(0, e->bonusRight, 0);
 					glVertex3d(x,y,0.1);
 					glVertex3d(x+0.25*nodeWidth,y,0.1);
 				}
-				glColor3f(0.8,0.8,0);
+				glColor3f(0.8f,0.8f,0.0f);
 				if(n->canGoLeft) {
 					if(e && e->bonusLeft) 
 						glColor3ub(0, e->bonusLeft, 0);
@@ -249,7 +250,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 		for(int i = 1; i <= content(barriers); i++)
 		{
 			TreeNode* barrier = rank(barriers, i);
-			int barriertype = get(rank(barrier, BARRIER_TYPE));
+			int barriertype = (int)get(rank(barrier, BARRIER_TYPE));
 
 			double x1 = get(rank(barrier, BARRIER_X1));
 			double y1 = get(rank(barrier, BARRIER_Y1));
@@ -303,7 +304,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 						case BARRIER_TYPE_ONE_WAY_DIVIDER:
 							if(dist > 2*nodeWidth)
 							{
-								int nrarrows = dist / (2*nodeWidth) - 1;
+								int nrarrows = (int)(dist / (2*nodeWidth) - 1);
 								double tempx = 0.5*(dist - (nrarrows*2*nodeWidth));
 								double startx = tempx;
 								glColor3d(0.1,0.1,0.1);
@@ -347,7 +348,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 						case BARRIER_TYPE_PREFERRED_PATH:
 							if(dist > 2*nodeWidth)
 							{
-								int nrarrows = dist / (2*nodeWidth) - 1;
+								int nrarrows = (int)(dist / (2*nodeWidth) - 1);
 								double tempx = 0.5*(dist - (nrarrows*2*nodeWidth));
 								double startx = tempx;
 								double colors[2][3] = {0.1,0.1,0.1, 0.2, 0.8, 0.2};
@@ -420,7 +421,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 double AStarNavigator::onDrag(TreeNode* view)
 {
-	int pickType = getpickingdrawfocus(view, PICK_TYPE, 0);
+	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
 	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
 	double dx = draginfo(DRAG_INFO_DX);
 	double dy = draginfo(DRAG_INFO_DY);
@@ -453,7 +454,7 @@ double AStarNavigator::onDestroy(TreeNode* view)
 {
 	if(objectexists(view))
 	{
-		int picktype = getpickingdrawfocus(view, PICK_TYPE,0);
+		int picktype = (int)getpickingdrawfocus(view, PICK_TYPE,0);
 		TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT,0));
 		TreeNode* barrier = NULL;
 		switch(picktype) {
@@ -472,7 +473,9 @@ double AStarNavigator::onDestroy(TreeNode* view)
 			barrier = up(secondary);
 			destroyobject(barrier);
 			break;
-		
+		default:
+			destroyobject(holder);
+			break;
 		}
 		return 1;
 	}
@@ -533,18 +536,18 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 	row0y = (yOffset + 0.5) * nodeWidth;
 
 	// figure out the column and row that the traveler is starting from
-	int colstart = round((xStart - col0x) / nodeWidth);	
+	int colstart = (int)round((xStart - col0x) / nodeWidth);	
 	colstart = max(0, colstart); 
 	colstart = min(edgeTableXSize - 1, colstart);
-	int rowstart = round((yStart - row0y) / nodeWidth);	
+	int rowstart = (int)round((yStart - row0y) / nodeWidth);	
 	rowstart = max(0, rowstart); 
 	rowstart = min(edgeTableYSize - 1, rowstart);
 
 	// figure out the column and row that the traveler is going to
-	int coldest = round((x - col0x) / nodeWidth);	
+	int coldest = (int)round((x - col0x) / nodeWidth);	
 	coldest = max(0, coldest); 
 	coldest = min(edgeTableXSize - 1, coldest);
-	int rowdest = round((y - row0y) / nodeWidth);	
+	int rowdest = (int)round((y - row0y) / nodeWidth);	
 	rowdest = max(0, rowdest); 
 	rowdest = min(edgeTableYSize - 1, rowdest);
 
@@ -588,7 +591,7 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 	int size;
 	while ((size = openSetHeap.size()) > 0) {
 		int shortesti = -1;
-		float shortestdist = 100000000000000;
+		float shortestdist = 100000000000000.0f;
 		HeapEntry he(0.0f, 0); AStarSearchEntry * entry = NULL;
 		// here I pop off an entry from the heap.
 		// the trick is that some entries may have changed their g value
@@ -716,7 +719,7 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 	laste.colRow = backwardsList[nrNodes - 1];
 	double endtime = time();
 	if(driveShort) 
-		driveShort = round(0.4*xsize(traveler) / nodeWidth);
+		driveShort = (int)round(0.4*xsize(traveler) / nodeWidth);
 	for(int i = nrNodes - 2; i >= driveShort; i--) {
 		e.colRow = backwardsList[i];
 		endtime = addkinematic(kinematics, (e.col - laste.col)*nodeWidth, (e.row - laste.row)*nodeWidth, 0, 
@@ -875,9 +878,16 @@ void AStarNavigator::buildEdgeTable()
 	double min[2] = {100000000.0,1000000000.0};
 	double max[2] = {-100000000.0,-1000000000.0};
 
+	if (content(barriers) == 0) {
+		if (edgeTable)
+			delete [] edgeTable;
+		edgeTable = 0;
+		return;
+	}
+
 	for (int i = 1; i <= content(barriers); i++) {
 		TreeNode* barrier = rank(barriers, i);
-		int barriertype = get(rank(barrier, BARRIER_TYPE));
+		int barriertype = (int)get(rank(barrier, BARRIER_TYPE));
 		switch(barriertype)
 		{
 		case BARRIER_TYPE_SOLID: {
@@ -894,6 +904,7 @@ void AStarNavigator::buildEdgeTable()
 			if(x2 > max[0]) max[0] = x2;
 			if(y2 < min[1]) min[1] = y2;
 			if(y2 > max[1]) max[1] = y2;
+
 			break;
 		}
 
@@ -915,11 +926,14 @@ void AStarNavigator::buildEdgeTable()
 		}
 	}
 
-	xOffset = min[0] / nodeWidth - 2;
-	yOffset = min[1] / nodeWidth - 2;
+#define toOuterInt(val) ((int)(val > 0 ? ceil(val) : floor(val)))
+#define toInnerInt(val) ((int)(val < 0 ? ceil(val) : floor(val)))
 
-	edgeTableXSize = (max[0] - min[0]) / nodeWidth + 4;
-	edgeTableYSize = (max[1] - min[1]) / nodeWidth + 4;
+	xOffset = (int)(floor(min[0] / nodeWidth) - surroundDepth);
+	yOffset = (int)(floor(min[1] / nodeWidth) - surroundDepth);
+
+	edgeTableXSize = (int)(ceil((max[0] - min[0]) / nodeWidth) + surroundDepth * 2 + 1);
+	edgeTableYSize = (int)(ceil((max[1] - min[1]) / nodeWidth) + surroundDepth * 2 + 1);
 
 	double col0xloc = (xOffset + 0.5) * nodeWidth;
 	double row0yloc = (yOffset + 0.5) * nodeWidth;
@@ -934,7 +948,7 @@ void AStarNavigator::buildEdgeTable()
 	for(int i = 1; i <= content(barriers); i++)
 	{
 		TreeNode* barrier = rank(barriers, i);
-		int barriertype = get(rank(barrier, BARRIER_TYPE));
+		int barriertype = (int)get(rank(barrier, BARRIER_TYPE));
 		switch(barriertype)
 		{
 			case BARRIER_TYPE_SOLID:
@@ -948,10 +962,10 @@ void AStarNavigator::buildEdgeTable()
 				double ymin = min(y1, y2);
 				double ymax = max(y1, y2);
 
-				int colleft = round((xmin - col0xloc) / nodeWidth);
-				int rowbottom = round((ymin - row0yloc) / nodeWidth);
-				int colright = round((xmax - col0xloc) / nodeWidth);
-				int rowtop = round((ymax - row0yloc) / nodeWidth);
+				int colleft = (int)round((xmin - col0xloc) / nodeWidth);
+				int rowbottom = (int)round((ymin - row0yloc) / nodeWidth);
+				int colright = (int)round((xmax - col0xloc) / nodeWidth);
+				int rowtop = (int)round((ymax - row0yloc) / nodeWidth);
 				for(int row = rowbottom; row <= rowtop; row++)
 				{
 					AStarNode * left = &(DeRefEdgeTable(row, colleft-1));
@@ -967,6 +981,17 @@ void AStarNavigator::buildEdgeTable()
 					AStarNode * bottom = &(DeRefEdgeTable(rowbottom-1, col));
 					bottom->canGoUp = 0;
 				}
+
+				for (int row = rowbottom; row <= rowtop; row++) {
+					for (int col = colleft; col <= colright; col++) {
+						AStarNode* theNode = &(DeRefEdgeTable(row, col));
+						theNode->canGoUp = 0;
+						theNode->canGoDown = 0;
+						theNode->canGoLeft = 0;
+						theNode->canGoRight = 0;
+					}
+				}
+
 				break;
 			}
 
@@ -978,8 +1003,8 @@ void AStarNavigator::buildEdgeTable()
 				double y = get(rank(barrier, BARRIER_Y1));
 				// here I assume the row/column number represents the slot above / right of the
 				// corner I am working on for dividers, but the tile itself for preferred paths
-				int col = round((x - col0xloc) / nodeWidth);
-				int row = round((y - row0yloc) / nodeWidth);
+				int col = (int)round((x - col0xloc) / nodeWidth);
+				int row = (int)round((y - row0yloc) / nodeWidth);
 				if(barriertype != BARRIER_TYPE_PREFERRED_PATH) {
 					if(x > col0xloc + col * nodeWidth) col++;
 					if(y > row0yloc + row * nodeWidth) row++;
@@ -993,8 +1018,8 @@ void AStarNavigator::buildEdgeTable()
 					nextx = get(rank(barrier, temprank));
 					nexty = get(rank(barrier, temprank + 1));
 					// calculate the column and row numbers for that point (again, above/right of the current corner)
-					nextcol = round((nextx - col0xloc) / nodeWidth);
-					nextrow = round((nexty - row0yloc) / nodeWidth);
+					nextcol = (int)round((nextx - col0xloc) / nodeWidth);
+					nextrow = (int)round((nexty - row0yloc) / nodeWidth);
 					if(barriertype != BARRIER_TYPE_PREFERRED_PATH) {
 						if(nextx > col0xloc + nextcol * nodeWidth) nextcol++;
 						if(nexty > row0yloc + nextrow * nodeWidth) nextrow++;
@@ -1008,14 +1033,14 @@ void AStarNavigator::buildEdgeTable()
 						continue;
 
 					// calculate the weight values for preferred paths.
-					int horizontalweight = 127 * dx / (fabs(dx) + fabs(dy));
-					int verticalweight = 127 * dy / (fabs(dx) + fabs(dy));
+					int horizontalweight = (int)(127 * dx / (fabs(dx) + fabs(dy)));
+					int verticalweight = (int)(127 * dy / (fabs(dx) + fabs(dy)));
 
 					// figure out the unit increment (either -1 or 1) for traversing from the
 					// current point to the next point
-					int colinc = sign(dx);
+					int colinc = (int)sign(dx);
 					if(colinc == 0) colinc = 1;
-					int rowinc = sign(dy);
+					int rowinc = (int)sign(dy);
 					if(rowinc == 0) rowinc = 1;
 
 					// prevent divide by zero errors
@@ -1119,7 +1144,7 @@ AStarNavigator* AStarNavigator::globalAStarNavigator()
 
 visible void AStarNavigator_setEditMode(FLEXSIMINTERFACE)
 {
-	int mode = parval(1);
+	int mode = (int)parval(1);
 	if (mode < 0)
 		mode = 0;
 	AStarNavigator::editMode = mode;
