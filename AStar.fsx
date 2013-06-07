@@ -155,12 +155,10 @@
          <node f="40-0"><name></name></node>
          <node f="42-0"><name>Spatial</name></node>
         </node>
-        <node f="42-0" dt="1"><name>mouseDownScreenX</name><data>0000000000000000</data></node>
-        <node f="42-0" dt="1"><name>mouseDownScreenY</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>mouseDownX</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>mouseDownY</name><data>0000000000000000</data></node>
-        <node f="42-0" dt="1"><name>mouseDownModelX</name><data>00000000c0280000</data></node>
-        <node f="42-0" dt="1"><name>mouseDownModelY</name><data>00000000403c0000</data></node>
+        <node f="42-0" dt="1"><name>mouseDownModelX</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>mouseDownModelY</name><data>0000000000000000</data></node>
         <node f="42-0" dt="3"><name>draggingObj</name><data><coupling>null</coupling></data></node>
         <node f="42-0" dt="1"><name>creating</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>mode</name><data>0000000000000000</data></node>
@@ -188,8 +186,13 @@ if (!objectexists(activeNavigator)) {
 	}
 }
 
-if (!objectexists(activeNavigator))
+if (!objectexists(activeNavigator)) {
+	msg("A* Navigator Error", "No active A* Navigator found in model.", 1);
+	modeleditmode(0);
+	#define WM_LBUTTONUP 0x0202
+	postwindowmessage(windowfromnode(activedocumentnode()), WM_LBUTTONUP, 0, 0);
 	return 0;
+}
 
 int istravelmode = (
 	mode==EDITMODE_DIVIDER
@@ -275,29 +278,7 @@ if(clicktype == LEFT_RELEASE) {
 		else setvarnum(c, "creating", 0);
 	}
 }
-
-if(clicktype == RIGHT_RELEASE) {
-	int mousedownx = getvarnum(c, "mouseDownX");
-	int mousedowny = getvarnum(c, "mouseDownY");
-	int mx = cursorinfo(i,1,1,1);
-	int my = cursorinfo(i,1,2,1);
-
-	if(fabs(mx - mousedownx) &lt;= 2 &amp;&amp; fabs(my - mousedowny) &lt;= 2) {
-		if(istravelmode &amp;&amp; getvarnum(c, "creating")) {
-			setvarnum(c, "creating", 0);
-			treenode sel = tonode(getvarnum(c, "currBarrierNode"));
-			destroyobject(next(sel));
-			treenode barrier = up(sel);
-			destroyobject(sel);
-			if(content(barrier) &lt; BARRIER_CONTENT)
-				destroyobject(barrier);
-			nodepoint(currBarrierNode, 0);
-			setselectedobject(c,NULL);
-		} else if(mode != 0 &amp;&amp; !objectexists(selobj))
-			applicationcommand("gotostandardmode");
-		else trackpopup(node("&gt;popupmenu",c));
-	}
-}</data></node>
+</data></node>
         <node f="42-4" dt="2"><name>OnMouseMove</name><data>if (getvarnum(c, "creating")) {
 	double modelx = cursorinfo(i, 2, 1, 1);
 	double modely = cursorinfo(i, 2, 2, 1);
@@ -316,20 +297,28 @@ nodepoint(viewfocus(c), iconGrid);
 nodepoint(objectfocus(c), selectedobject(iconGrid));
 </data></node>
         <node f="42-4" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
-/*setvarnum(c, "state", CONV_MODE_STATE_NONE);*/
-setvarnum(c, "mouseDownScreenX", 0);
-setvarnum(c, "mouseDownScreenY", 0);
+treenode currBarrierNode = getvarnode(c, "currBarrierNode");
+
+if(getvarnum(c, "creating")) {
+	setvarnum(c, "creating", 0);
+	treenode sel = tonode(getvarnum(c, "currBarrierNode"));
+	destroyobject(next(sel));
+	treenode barrier = up(sel);
+	destroyobject(sel);
+	if(content(barrier) &lt; BARRIER_CONTENT)
+		destroyobject(barrier);
+	setselectedobject(c,NULL);
+}
+
+setvarnum(c, "mouseDownModelX", 0);
+setvarnum(c, "mouseDownModelY", 0);
 setvarnum(c, "mouseDownX", 0);
 setvarnum(c, "mouseDownY", 0);
 setvarnum(c, "mode", 0);
 nodepoint(getvarnode(c, "draggingObj"), 0);
-
-/*treenode iconGrid = node("VIEW:/active&gt;Tools/Library/1+/~/GroupIconGrid");
-if (objectexists(iconGrid) &amp;&amp; objectexists(selectedobject(iconGrid))
-		&amp;&amp; getname(selectedobject(iconGrid)) == "Straight Conveyor") {
-	setselectedobject(iconGrid, 0);
-	repaintview(iconGrid);
-}*/</data></node>
+function_s(c, "setEditMode", 0);
+nodepoint(currBarrierNode, 0);
+</data></node>
         <node f="42-10000" dt="2"><name>setEditMode</name><data>dll:"module:AStar" func:"AStarNavigator_setEditMode"</data></node>
        </node>
       </data></node>

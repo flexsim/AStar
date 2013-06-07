@@ -12,6 +12,9 @@
     <Filter Include="Header Files\FlexsimContent">
       <UniqueIdentifier>{b58f86ef-9c6f-41fd-8940-d96a69286225}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{d0fbe62b-7bff-437e-8e73-32e65ef8677e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -101,6 +104,9 @@
     <ClInclude Include="..\..\include\Barrier.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AStar.cpp">
@@ -115,5 +121,22 @@
     <ClCompile Include="Barrier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AStar.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\cursors\solidbarriertool.cur">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\..\cursors\preferredpathtool.cur">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\..\cursors\onewaydividertool.cur">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\..\cursors\dividertool.cur">
+      <Filter>Resources</Filter>
+    </None>
   </ItemGroup>
 </Project>

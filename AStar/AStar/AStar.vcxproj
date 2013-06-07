@@ -198,6 +198,7 @@
     <ClInclude Include="flexsimcontent\stdafx.h" />
     <ClInclude Include="flexsimcontent\treenode.h" />
     <ClInclude Include="flexsimcontent\UserFuncs.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -205,6 +206,15 @@
     <ClCompile Include="AStarNavigator.cpp" />
     <ClCompile Include="Barrier.cpp" />
     <ClCompile Include="flexsimcontent\dllmain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AStar.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\cursors\dividertool.cur" />
+    <None Include="..\..\cursors\onewaydividertool.cur" />
+    <None Include="..\..\cursors\preferredpathtool.cur" />
+    <None Include="..\..\cursors\solidbarriertool.cur" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
