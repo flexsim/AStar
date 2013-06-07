@@ -171,9 +171,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\AStarNavigator.h" />
+    <ClInclude Include="..\..\include\Barrier.h" />
+    <ClInclude Include="..\..\include\macros.h" />
     <ClInclude Include="AStar.h" />
-    <ClInclude Include="AStarNavigator.h" />
-    <ClInclude Include="Barrier.h" />
     <ClInclude Include="flexsimcontent\all.h" />
     <ClInclude Include="flexsimcontent\allobjects.h" />
     <ClInclude Include="flexsimcontent\array.h" />
@@ -197,7 +198,6 @@
     <ClInclude Include="flexsimcontent\stdafx.h" />
     <ClInclude Include="flexsimcontent\treenode.h" />
     <ClInclude Include="flexsimcontent\UserFuncs.h" />
-    <ClInclude Include="macros.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>

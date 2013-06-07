@@ -68,6 +68,7 @@ class AStarNavigator :
 	public Navigator
 {
 public:
+	static unsigned int editMode;
 	double preferredPathWeight;
 	double drawMode;
 	double nodeWidth;

@@ -1,6 +1,8 @@
 #include "AStarNavigator.h"
 #include "macros.h"
 
+unsigned int AStarNavigator::editMode = 0;
+
 AStarNavigator::AStarNavigator()
 	// TODO: Initialize entryhash, edgetableextradata
 {
@@ -70,7 +72,7 @@ double AStarNavigator::OnDraw(TreeNode* view)
 
 	// This will one day use the Mesh class
 	int pickingmode = getpickingmode(view);
-	int editmode = modeleditmode(-1);
+	int editmode = editMode;
 	int istravelmode = (
 		editmode == EDITMODE_PREFERRED_PATH
 		|| editmode == EDITMODE_DIVIDER

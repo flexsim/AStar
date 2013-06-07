@@ -92,13 +92,13 @@
     <ClInclude Include="flexsimcontent\stdafx.h">
       <Filter>Header Files\FlexsimContent</Filter>
     </ClInclude>
-    <ClInclude Include="AStarNavigator.h">
+    <ClInclude Include="..\..\include\macros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="macros.h">
+    <ClInclude Include="..\..\include\AStarNavigator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Barrier.h">
+    <ClInclude Include="..\..\include\Barrier.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
