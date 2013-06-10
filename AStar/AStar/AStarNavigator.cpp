@@ -33,15 +33,16 @@ void AStarNavigator::bindVariables(void)
 
 double AStarNavigator::onReset()
 {
-	while (content(node_v_travelmembers) > 0)
+	while (content(node_v_activetravelmembers) > 0)
 		transfernode(last(node_v_activetravelmembers), node_v_travelmembers);
 
+	/*
 	for (int i = 1; i <= content(node_v_travelmembers); i++) {
 		TreeNode* coupling = rank(node_v_travelmembers, i);
 		while (content(coupling) < 1)
 			nodeinsertinto(coupling);
 		//TODO: figure out resetidlist
-	}
+	}*/
 
 	buildEdgeTable();
 	maxTraveled = 0;
@@ -450,6 +451,31 @@ double AStarNavigator::onDrag(TreeNode* view)
 	return 1;
 }
 
+double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType)
+{
+	if (!objectexists(connectTo))
+		return 0;
+
+	if (!isclasstype(connectTo, CLASSTYPE_TASKEXECUTER))
+		return 0;
+
+	TreeNode* navigatorNode = o(TaskExecuter, connectTo).node_v_navigator;
+	TreeNode* theNavigator = tonode(get(first(navigatorNode)));
+	if (theNavigator == holder)
+		return 0;
+
+	TreeNode* travelMembers = node_v_travelmembers;
+
+	switch(keyPressed) {
+	case 'A':
+		clearcontents(navigatorNode);
+		createcoupling(navigatorNode, travelMembers);
+		break;
+	}
+
+	return 0;
+}
+
 double AStarNavigator::onDestroy(TreeNode* view)
 {
 	if(objectexists(view))
@@ -482,7 +508,7 @@ double AStarNavigator::onDestroy(TreeNode* view)
 	return 0;
 }
 
-double AStarNavigator::navigateTo(TreeNode* traveler, TreeNode* destination, double endSpeed)
+double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destination, double endSpeed)
 {
 	double xStart = xcenter(traveler);
 	double yStart = ycenter(traveler);
@@ -516,7 +542,7 @@ double AStarNavigator::navigateTo(TreeNode* traveler, TreeNode* destination, dou
 
 double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, double endSpeed, int driveShort)
 {
-	setstate(traveler, WORKER_STATE_TRAVEL, WORKER_STATE_PROFILE);
+	setstate(traveler, STATE_TRAVEL_LOADED);
 	preferredPathWeightCache = preferredPathWeight;
 	double xStart = xcenter(traveler);
 	double yStart = ycenter(traveler);
@@ -701,11 +727,12 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 	if (!final) 
 		final = &(totalSet[closestIndex]);
 
+	unsigned int startPrevVal =  ~((unsigned int)0);
 	AStarSearchEntry* temp = final;
 	std::vector<unsigned int> backwardsList;
 	while (1) {
 		backwardsList.push_back(temp->colRow);
-		if(temp->previous != ~0)
+		if(temp->previous != startPrevVal)
 			temp = &(totalSet[temp->previous]);
 		else break;
 	}
@@ -732,6 +759,8 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 			memset(extra, 0, sizeof(AStarNodeExtraData));
 			extra->colRow = e.colRow;
 			DeRefEdgeTable(e.row, e.col).noExtraData = 0;
+		} else {
+			extra = &extraIter->second;
 		}
 		unsigned int* involvedextra;
 		if (e.row > laste.row) {
@@ -842,15 +871,7 @@ double AStarNavigator::onTimerEvent(TreeNode* involved, int code, char* datastr)
 		te->b_spatialy += 0.5*te->b_spatialsy;
 		transfernode(involved, node_v_travelmembers);
 		int tasktype = gettasktype(object, 0);
-		if(tasktype == TASKTYPE_LOAD 
-			|| tasktype == TASKTYPE_FRLOAD 
-			|| tasktype == TASKTYPE_UNLOAD 
-			|| tasktype == TASKTYPE_FRUNLOAD) {
-			TreeNode* obj = gettaskinvolved(object, 0, 1);
-				if(getitemtype(obj) == ITEM_TYPE_CASE)
-					setstate(object, WORKER_STATE_CASE_PICKING, WORKER_STATE_PROFILE);
-				else setstate(object, WORKER_STATE_PALLET_LOAD_UNLOAD, WORKER_STATE_PROFILE);
-		}
+		
 		te->onDestinationArrival(0);
 	}
 	return 0;
@@ -925,9 +946,6 @@ void AStarNavigator::buildEdgeTable()
 		}
 		}
 	}
-
-#define toOuterInt(val) ((int)(val > 0 ? ceil(val) : floor(val)))
-#define toInnerInt(val) ((int)(val < 0 ? ceil(val) : floor(val)))
 
 	xOffset = (int)(floor(min[0] / nodeWidth) - surroundDepth);
 	yOffset = (int)(floor(min[1] / nodeWidth) - surroundDepth);

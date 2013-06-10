@@ -85,8 +85,9 @@ public:
 	double onTimerEvent(TreeNode* involved, int code, char *datastr);
 	virtual double onDraw(TreeNode* view);
 	virtual double onDrag(TreeNode* view);
-	double AStarNavigator::onDestroy(TreeNode* view);
-	virtual double navigateTo(TreeNode* traveler, TreeNode* destination, double endspeed);
+	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType);
+	virtual double AStarNavigator::onDestroy(TreeNode* view);
+	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed);
 	virtual double navigateToLoc(TreeNode* traveler, double x, double y, double endspeed, int driveshort = 1);
 	void buildEdgeTable();
 	virtual double updateLocations();
@@ -132,7 +133,7 @@ public:
 	};
 	class HeapEntryCompare {
 	public:
-		bool operator()(HeapEntry& left, HeapEntry& right) {return left.f < right.f;}
+		bool operator()(HeapEntry& left, HeapEntry& right) {return left.f > right.f;}
 	};
 
 	// A heap of the open set; each value is tied to an index into the open set.
