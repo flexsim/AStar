@@ -36,14 +36,7 @@ double AStarNavigator::onReset()
 	while (content(node_v_activetravelmembers) > 0)
 		transfernode(last(node_v_activetravelmembers), node_v_travelmembers);
 
-	/*
-	for (int i = 1; i <= content(node_v_travelmembers); i++) {
-		TreeNode* coupling = rank(node_v_travelmembers, i);
-		while (content(coupling) < 1)
-			nodeinsertinto(coupling);
-		//TODO: figure out resetidlist
-	}*/
-
+	edgeTableExtraData.clear();
 	buildEdgeTable();
 	maxTraveled = 0;
 	return 0;
@@ -106,7 +99,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 				s.row = i;
 				AStarNodeExtraData* e = NULL;
 				if(!n->noExtraData)
-					e = &edgeTableExtraData[e->colRow];
+					e = &edgeTableExtraData[s.colRow];
 				double x = (xOffset + j + 0.5) * nodeWidth;
 				double y = (yOffset + i + 0.5) * nodeWidth;
 				glColor3f(0.8f,0.8f,0.0f);
@@ -1085,6 +1078,8 @@ void AStarNavigator::buildEdgeTable()
 								memset(extra, 0, sizeof(AStarNodeExtraData));
 								extra->colRow = e.colRow;
 								DeRefEdgeTable(e.row, e.col).noExtraData = 0;
+							} else {
+								extra = &(extraIter->second);
 							}
 							extra->bonusRight = (char)maxof(-128,minof(127, extra->bonusRight + horizontalweight));
 							extra->bonusLeft = (char)maxof(-128,minof(127, extra->bonusLeft - horizontalweight));
