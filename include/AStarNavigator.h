@@ -77,6 +77,8 @@ public:
 	
 	TreeNode* barriers;
 	//NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
+	TreeNode* fixedResourceBarriers;
+	NodeListArray<FixedResource>::ObjStoredAttCouplingType objectBarrierList;
 
 	AStarNavigator();
 	~AStarNavigator();

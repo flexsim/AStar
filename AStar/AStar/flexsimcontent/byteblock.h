@@ -77,7 +77,7 @@ public:
 		int load(char* source     , long unsigned int * bytepos);
   
 
-		int saveXML(MSXML2::IXMLDOMDocumentPtr doc, MSXML2::IXMLDOMElementPtr parentnode);
+		int saveXML(MSXML2::IXMLDOMDocumentPtr doc, MSXML2::IXMLDOMElementPtr parentnode, bool isNameBB = false);
 		int loadXML(MSXML2::IXMLDOMNodePtr parentnode);
   
 

@@ -152,6 +152,7 @@ public:
 
 	// The following method was added by Anthony Johnson 2-16-2006
 	virtual unsigned int getClassType(){return 0;}
+	virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype){return 0;}
 
 	TreeNode objecttree;
 

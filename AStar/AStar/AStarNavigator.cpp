@@ -30,6 +30,8 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(barriers);
 	bindVariable(deepSearch);
 	//barrierList.init(barriers);
+	bindVariable(fixedResourceBarriers);
+	objectBarrierList.init(fixedResourceBarriers);
 }
 
 double AStarNavigator::onReset()
@@ -450,21 +452,36 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 	if (!objectexists(connectTo))
 		return 0;
 
-	if (!isclasstype(connectTo, CLASSTYPE_TASKEXECUTER))
-		return 0;
+	if (isclasstype(connectTo, CLASSTYPE_TASKEXECUTER)) {
+		TreeNode* navigatorNode = o(TaskExecuter, connectTo).node_v_navigator;
+		TreeNode* theNavigator = tonode(get(first(navigatorNode)));
+		if (theNavigator == holder)
+			return 0;
 
-	TreeNode* navigatorNode = o(TaskExecuter, connectTo).node_v_navigator;
-	TreeNode* theNavigator = tonode(get(first(navigatorNode)));
-	if (theNavigator == holder)
-		return 0;
+		TreeNode* travelMembers = node_v_travelmembers;
 
-	TreeNode* travelMembers = node_v_travelmembers;
+		switch(keyPressed & 0x7f) {
+		case 'A':
+			clearcontents(navigatorNode);
+			createcoupling(navigatorNode, travelMembers);
+			break;
+		}
+	
+	} else if (isclasstype(connectTo, CLASSTYPE_FIXEDRESOURCE)) {
+		FixedResource* theFR =  &(o(FixedResource, connectTo));
+		TreeNode* storedNode = theFR->Nb_stored;
+		for (int i = 0; i < objectBarrierList.size(); i++) {
+			TreeNode* objectNode = objectBarrierList[i]->holder;
+			if (objectNode == connectTo)
+				return 0;
+		}
 
-	switch(keyPressed & 0x7f) {
-	case 'A':
-		clearcontents(navigatorNode);
-		createcoupling(navigatorNode, travelMembers);
-		break;
+
+		switch(keyPressed & 0x7f) {
+		case 'A':
+			objectBarrierList.add(theFR);
+			break;
+		}
 	}
 
 	return 0;
@@ -512,7 +529,7 @@ double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destinatio
 	double xDest = loc[0];
 	double yDest = loc[1];
 	
-	bool driveShort = isclasstype(destination, "StorageObject") && isclasstype(traveler, "TeamMember");
+	bool driveShort = isclasstype(destination, CLASSTYPE_FIXEDRESOURCE) && isclasstype(traveler, CLASSTYPE_TASKEXECUTER);
 	if (driveShort) {
 		double halfSx = 0.5 * xsize(destination);
 		if (fabs(xDest - xStart) > halfSx) {
@@ -707,9 +724,9 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 			AStarSearchEntry* nextEntry = expandOpenSet(row, col, diagDistance, travelval);\
 			if (nextEntry && deepSearch) {\
 				CHECK_EXPAND_OPEN_SET(diagNode, nextEntry, vertdirection, row < edgeTableYSize - 1 && row > 0, rowInc, 0, \
-					(travelval & (TRAVEL_UP | TRAVEL_DOWN)), diagDistance * 1.22472287);\
+					(travelval & (TRAVEL_UP | TRAVEL_DOWN)), diagDistance * 1.58113883);\
 				CHECK_EXPAND_OPEN_SET(diagNode, nextEntry, hordirection, col < edgeTableXSize - 1 && col > 0, 0, colInc, \
-					(travelval & (TRAVEL_LEFT | TRAVEL_RIGHT)), diagDistance * 1.22472287);\
+					(travelval & (TRAVEL_LEFT | TRAVEL_RIGHT)), diagDistance * 1.58113883);\
 			}\
 		}\
 
@@ -900,7 +917,7 @@ void AStarNavigator::buildEdgeTable()
 	double min[2] = {100000000.0,1000000000.0};
 	double max[2] = {-100000000.0,-1000000000.0};
 
-	if (content(barriers) == 0) {
+	if (content(barriers) == 0 && objectBarrierList.size() == 0) {
 		if (edgeTable)
 			delete [] edgeTable;
 		edgeTable = 0;
@@ -946,6 +963,32 @@ void AStarNavigator::buildEdgeTable()
 			break;
 		}
 		}
+	}
+
+	for (int i = 0; i < objectBarrierList.size(); i++) {
+		// spatialx/y are the top left corner
+		// Treat objects as a solid barrier
+		TreeNode* theObj = objectBarrierList[i]->holder;
+		double x1 = get(spatialx(theObj));
+		double y1 = get(spatialy(theObj)) - get(spatialsy(theObj));
+		double x2 = x1 + get(spatialsx(theObj));
+		double y2 = get(spatialy(theObj));
+
+		// Shrink the bounding box for objects
+		double halfNodeWidth = 0.5 * nodeWidth;
+		x1 += halfNodeWidth;
+		x2 -= halfNodeWidth;
+		y1 += halfNodeWidth;
+		y2 -= halfNodeWidth;
+		
+		if(x1 < min[0]) min[0] = x1;
+		if(x1 > max[0]) max[0] = x1;
+		if(y1 < min[1]) min[1] = y1;
+		if(y1 > max[1]) max[1] = y1;
+		if(x2 < min[0]) min[0] = x2;
+		if(x2 > max[0]) max[0] = x2;
+		if(y2 < min[1]) min[1] = y2;
+		if(y2 > max[1]) max[1] = y2;
 	}
 
 	xOffset = (int)(floor(min[0] / nodeWidth) - surroundDepth);
@@ -1143,6 +1186,56 @@ void AStarNavigator::buildEdgeTable()
 						currow = nextcurrow;
 					}
 				}
+			}
+		}
+	}
+
+	for (int i = 0; i < objectBarrierList.size(); i++) {
+		TreeNode* theObj = objectBarrierList[i]->holder;
+		double x1 = get(spatialx(theObj));
+		double y1 = get(spatialy(theObj)) - get(spatialsy(theObj));
+		double x2 = x1 + get(spatialsx(theObj));
+		double y2 = get(spatialy(theObj));
+
+		// Shrink the bounding box for objects
+		double halfNodeWidth = 0.5 * nodeWidth;
+		x1 += halfNodeWidth;
+		x2 -= halfNodeWidth;
+		y1 += halfNodeWidth;
+		y2 -= halfNodeWidth;
+
+		double xmin = min(x1, x2);
+		double xmax = max(x1, x2);
+		double ymin = min(y1, y2);
+		double ymax = max(y1, y2);
+
+		int colleft = (int)round((xmin - col0xloc) / nodeWidth);
+		int rowbottom = (int)round((ymin - row0yloc) / nodeWidth);
+		int colright = (int)round((xmax - col0xloc) / nodeWidth);
+		int rowtop = (int)round((ymax - row0yloc) / nodeWidth);
+		for(int row = rowbottom; row <= rowtop; row++)
+		{
+			AStarNode * left = &(DeRefEdgeTable(row, colleft-1));
+			left->canGoRight = 0;
+			AStarNode * right = &(DeRefEdgeTable(row, colright+1));
+			right->canGoLeft = 0;
+		}
+
+		for(int col = colleft; col <= colright; col++)
+		{
+			AStarNode * top = &(DeRefEdgeTable(rowtop+1, col));
+			top->canGoDown = 0;
+			AStarNode * bottom = &(DeRefEdgeTable(rowbottom-1, col));
+			bottom->canGoUp = 0;
+		}
+
+		for (int row = rowbottom; row <= rowtop; row++) {
+			for (int col = colleft; col <= colright; col++) {
+				AStarNode* theNode = &(DeRefEdgeTable(row, col));
+				theNode->canGoUp = 0;
+				theNode->canGoDown = 0;
+				theNode->canGoLeft = 0;
+				theNode->canGoRight = 0;
 			}
 		}
 	}

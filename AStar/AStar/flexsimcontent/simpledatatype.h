@@ -408,7 +408,12 @@ template<class ObjType>
 		static treenode Saver(treenode x, T** toVal)
 			{return nodepoint(nodeadddata(x, DATA_POINTERCOUPLING), *toVal ? (*toVal)->holder : 0);}
 		static T* Loader(treenode x)
-			{return &o(T, tonode(get(x)));}
+		{
+			treenode dereference = tonode(get(x)); 
+			if (objectexists(dereference))
+				return &o(T, dereference);
+			return 0;
+		}
 		static void Displayer(T** x)
 		{
 			if(x && (*x))
@@ -437,9 +442,12 @@ template<class ObjType>
 
 		switch (bindMode) {
 		case SDT_BIND_ON_SAVE: {
+			SetType::iterator temp = theSet.begin();
+			if (temp == theSet.end())
+				return;
 			treenode container = bindByName(prefix, 0, DATA_FLOAT);
 			clearcontents(container);
-			for (SetType::iterator temp = theSet.begin(); temp != theSet.end(); temp++)
+			for (; temp != theSet.end(); temp++)
 				Binder::Saver(nodeinsertinto(container), (SetType::value_type*)&(*(temp)));
 			break;
 		}
@@ -489,9 +497,12 @@ template<class ObjType>
 
 		switch (bindMode) {
 		case SDT_BIND_ON_SAVE: {
+			MapType::iterator temp = theMap.begin();
+			if (temp == theMap.end())
+				return;
 			treenode container = bindByName(prefix, 0, DATA_FLOAT);
 			clearcontents(container);
-			for (MapType::iterator temp = theMap.begin(); temp != theMap.end(); temp++) {
+			for (; temp != theMap.end(); temp++) {
 				ValBinder::Saver(
 					nodeinsertinto(
 						KeyBinder::Saver(nodeinsertinto(container), (MapType::key_type*)&(temp->first))), 

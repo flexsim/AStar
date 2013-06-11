@@ -429,12 +429,30 @@ public:
 	static TreeNode* NodePtrGetter(treenode x) {return tonode(get(x));}
 	static void NodePtrAdder (treenode x, TreeNode* obj) {nodepoint(x, obj);}
 
-	static TreeNode* StoredAttCouplingGetter (treenode x) {return ownerobject(tonode(get(x)));}
+	static TreeNode* StoredAttCouplingGetter (treenode x) 
+	{
+		treenode partner = x->dataascoupling ? x->dataascoupling->partner() : 0; 
+		if (partner)
+			return ownerobject(partner);
+		return 0;
+	}
 	static void StoredAttCouplingAdder (treenode x, TreeNode* obj) {nodejoin(x, nodeadddata(nodeinsertinto(assertattribute(obj, "stored", 0)), DATA_POINTERCOUPLING));}
 
-	static TreeNode* SubNodeCouplingGetter (treenode x) {return up(tonode(get(x)));}
+	static TreeNode* SubNodeCouplingGetter (treenode x)
+	{
+		treenode partner = x->datatype == DATA_POINTERCOUPLING ? x->dataascoupling->partner() : 0;  
+		if (partner)
+			return up(partner);
+		return 0;
+	}
 	static void SubNodeCouplingAdder (treenode x, TreeNode* obj) {nodejoin(x, nodeadddata(nodeinsertinto(obj), DATA_POINTERCOUPLING));}
-	static T* SdtSubNodeCouplingGetter (treenode x) {return &o(T, up(tonode(get(x))));}
+	static T* SdtSubNodeCouplingGetter (treenode x)
+	{
+		treenode partner = x->datatype == DATA_POINTERCOUPLING ? x->dataascoupling->partner() : 0;  
+		if (partner)
+			return &o(T, up(partner));
+		return 0;
+	}
 	static void SdtSubNodeCouplingAdder (treenode x, T* obj) 
 	{
 		_ASSERTE(object->holder != 0);
@@ -447,7 +465,13 @@ public:
 	static void CouplingSdtSubNodeAdder (treenode x, T* obj) {nodeaddcouplingdata(x, obj, 0);}
 	static void CouplingSdtSubNodeBindingAdder (treenode x, T* obj) {nodeaddcouplingdata(x, obj, 1);}
 
-	static T* ObjPtrGetter(treenode x) {return &o(T, tonode(get(x)));}
+	static T* ObjPtrGetter(treenode x)
+	{
+		treenode partner = x->datatype == DATA_POINTERCOUPLING ? x->dataascoupling->partner() : 0;   
+		if (partner)
+			return &o(T, partner);
+		return 0;
+	}
 	static void ObjPtrAdder (treenode x, T* obj) 
 	{
 		_ASSERTE(obj->holder != 0);
@@ -459,7 +483,13 @@ public:
 		nodejoin(x, obj->holder);
 	}
 
-	static T* ObjCouplingGetter (treenode x) {return &o(T, ownerobject(tonode(get(x))));}
+	static T* ObjCouplingGetter (treenode x)
+	{
+		treenode partner = x->datatype == DATA_POINTERCOUPLING ? x->dataascoupling->partner() : 0;  
+		if (partner)
+			return &o(T, ownerobject(partner));
+		return 0;
+	}
 	static void ObjCouplingAdder(treenode x, T* obj) 
 	{
 		_ASSERTE(obj->holder != 0);
