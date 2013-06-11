@@ -73,6 +73,7 @@ public:
 	double drawMode;
 	double nodeWidth;
 	double surroundDepth;
+	double deepSearch;
 	
 	TreeNode* barriers;
 	//NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
@@ -92,6 +93,7 @@ public:
 	void buildEdgeTable();
 	virtual double updateLocations();
 	virtual double abortTravel(TreeNode* traveler, TreeNode* newts);
+	virtual unsigned int getClassType();
 
 	virtual void bindVariables(void);
 	
@@ -112,7 +114,7 @@ public:
 	double preferredPathWeightCache;
 	int shortestIndex;
 
-	inline void expandOpenSet(int r, int c ,float multiplier, int travelVal);
+	inline AStarSearchEntry* expandOpenSet(int r, int c ,float multiplier, int travelVal);
 	int edgeTableXSize;
 	int edgeTableYSize;
 	int xOffset;
