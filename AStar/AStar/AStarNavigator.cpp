@@ -27,9 +27,11 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(drawMode);
 	bindVariable(nodeWidth);
 	bindVariable(surroundDepth);
-	bindVariable(barriers);
 	bindVariable(deepSearch);
-	//barrierList.init(barriers);
+
+	bindVariable(barriers);
+	barrierList.init(barriers);
+
 	bindVariable(fixedResourceBarriers);
 	objectBarrierList.init(fixedResourceBarriers);
 
@@ -91,28 +93,26 @@ double AStarNavigator::onDraw(TreeNode* view)
 	glScalef(1.0/b_spatialsx, 1.0/b_spatialsy, 1.0/b_spatialsz);
 	glTranslatef(-b_spatialx, -b_spatialy, -b_spatialz);
 
-	if (!pickingmode)
+	if (!pickingmode) {
 		glBindTexture(GL_TEXTURE_2D, 0);
+		if (drawmode & ASTAR_DRAW_MODE_GRID)
+			drawGrid();
 
-	if(!pickingmode && (drawmode & ASTAR_DRAW_MODE_GRID)) {
-		drawGrid();
+		if (drawmode & ASTAR_DRAW_MODE_BARRIERS)
+			boundsMesh.draw(GL_QUADS);
+
+		if (drawmode & ASTAR_DRAW_MODE_BARRIERS)
+			barrierMesh.draw(GL_TRIANGLES);
+
+		if (drawmode & ASTAR_DRAW_MODE_TRAFFIC)
+			trafficMesh.draw(GL_TRIANGLES);
+
+		return 0;
 	}
-
-	if(!pickingmode && (drawmode & ASTAR_DRAW_MODE_BOUNDS)) {
-		boundsMesh.draw(GL_QUADS);
-	}
-
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_TEXTURE_GEN_S);
-	glDisable(GL_TEXTURE_GEN_T);
-	glColor3f(1,0,0);
-
-	
 
 	#define SELECTIONMODE_MOUSEMOVE 10
 	#define SELECTIONMODE_MOUSEDOWNLEFT 11
+	/*
 	if(pickingmode != SELECTIONMODE_MOUSEDOWNLEFT && (drawmode&ASTAR_DRAW_MODE_TRAFFIC))
 	{
 		glPushMatrix();
@@ -207,21 +207,21 @@ double AStarNavigator::onDraw(TreeNode* view)
 		glEnd();
 		glPopMatrix();
 	}
+	*/
+	if(drawmode & ASTAR_DRAW_MODE_BARRIERS) {
+		for(int i = 1; i <= barrierList.size(); i++) {
+			Barrier* barrier = barrierList[i];
 
-	if(drawmode&ASTAR_DRAW_MODE_BARRIERS)
-	{
-		glColor3d(0,0,0);
-		glPointSize(8);
-		for(int i = 1; i <= content(barriers); i++)
-		{
-			TreeNode* barrier = rank(barriers, i);
-			int barriertype = (int)get(rank(barrier, BARRIER_TYPE));
+			double x1, y1, x2, y2;
+			if (!barrier->getBoundingBox(x1, y1, x2, y2))
+				continue;
 
-			double x1 = get(rank(barrier, BARRIER_X1));
-			double y1 = get(rank(barrier, BARRIER_Y1));
-			double x2 = get(rank(barrier, BARRIER_X2));
-			double y2 = get(rank(barrier, BARRIER_Y2));
+			setpickingdrawfocus(view, holder, PICK_SOLID_BARRIER, barrier->holder);
+			barrierMesh.draw(GL_TRIANGLES, barrier->meshOffset, barrier->nrVerts);
 
+		}
+	}
+			/*
 			switch(barriertype)
 			{
 				case BARRIER_TYPE_ONE_WAY_DIVIDER:
@@ -360,27 +360,9 @@ double AStarNavigator::onDraw(TreeNode* view)
 					break;
 				}
 
-				case BARRIER_TYPE_SOLID:
-				{
-					glColor3d(0.1, 0.1,0.1);
-					if(pickingmode) setpickingdrawfocus(view, holder, PICK_SOLID_BARRIER, barrier);
-					glBegin(GL_QUADS);
-					double xmin = min(x1, x2);
-					double xmax = max(x1, x2);
-					double ymin = min(y1, y2);
-					double ymax = max(y1, y2);
-					glVertex3d(xmin, ymin, 0);
-					glVertex3d(xmax, ymin, 0);
-					glVertex3d(xmax, ymax, 0);
-					glVertex3d(xmin, ymax, 0);
-					glEnd();
-					break;
-				}
-			}
-		}
-	}
+			}*/
+	
 
-	glPopAttrib();
 	return 0;
 }
 
@@ -1007,55 +989,13 @@ void AStarNavigator::buildEdgeTable()
 	edgeTable = new AStarNode[tableSize];
 	memset(edgeTable, 0xFFFFFFFF, tableSize * sizeof(AStarNode));
 
-	for(int i = 1; i <= content(barriers); i++)
-	{
-		TreeNode* barrier = rank(barriers, i);
-		int barriertype = (int)get(rank(barrier, BARRIER_TYPE));
+	for(int i = 1; i <= barrierList.size(); i++) {
+		Barrier* barrier = barrierList[i];
+		barrier->modifyTable(edgeTable, nodeWidth, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
+	}
+		/*
 		switch(barriertype)
 		{
-			case BARRIER_TYPE_SOLID:
-			{
-				double x1 = get(rank(barrier, BARRIER_X1));
-				double y1 = get(rank(barrier, BARRIER_Y1));
-				double x2 = get(rank(barrier, BARRIER_X2));
-				double y2 = get(rank(barrier, BARRIER_Y2));
-				double xmin = min(x1, x2);
-				double xmax = max(x1, x2);
-				double ymin = min(y1, y2);
-				double ymax = max(y1, y2);
-
-				int colleft = (int)round((xmin - col0xloc) / nodeWidth);
-				int rowbottom = (int)round((ymin - row0yloc) / nodeWidth);
-				int colright = (int)round((xmax - col0xloc) / nodeWidth);
-				int rowtop = (int)round((ymax - row0yloc) / nodeWidth);
-				for(int row = rowbottom; row <= rowtop; row++)
-				{
-					AStarNode * left = &(DeRefEdgeTable(row, colleft-1));
-					left->canGoRight = 0;
-					AStarNode * right = &(DeRefEdgeTable(row, colright+1));
-					right->canGoLeft = 0;
-				}
-
-				for(int col = colleft; col <= colright; col++)
-				{
-					AStarNode * top = &(DeRefEdgeTable(rowtop+1, col));
-					top->canGoDown = 0;
-					AStarNode * bottom = &(DeRefEdgeTable(rowbottom-1, col));
-					bottom->canGoUp = 0;
-				}
-
-				for (int row = rowbottom; row <= rowtop; row++) {
-					for (int col = colleft; col <= colright; col++) {
-						AStarNode* theNode = &(DeRefEdgeTable(row, col));
-						theNode->canGoUp = 0;
-						theNode->canGoDown = 0;
-						theNode->canGoLeft = 0;
-						theNode->canGoRight = 0;
-					}
-				}
-
-				break;
-			}
 
 			case BARRIER_TYPE_DIVIDER:
 			case BARRIER_TYPE_ONE_WAY_DIVIDER:
@@ -1187,8 +1127,8 @@ void AStarNavigator::buildEdgeTable()
 					}
 				}
 			}
-		}
-	}
+		}*/
+	
 
 	for (int i = 0; i < objectBarrierList.size(); i++) {
 		TreeNode* theObj = objectBarrierList[i]->holder;
@@ -1399,25 +1339,53 @@ unsigned int AStarNavigator::getClassType()
 	return CLASSTYPE_WANTCONNECTLOGIC | CLASSTYPE_FLEXSIMOBJECT | CLASSTYPE_NAVIGATOR;
 }
 
-// implement global astar navigator accessor
-TreeNode* AStarNavigator::gASN = NULL;
-AStarNavigator* AStarNavigator::globalAStarNavigator()
-{
-	if (objectexists(gASN))
-		return &o(AStarNavigator, gASN);
-
-	gASN = node("AStarNavigator", model());
-	if (!objectexists(gASN)) {
-		gASN = createinstance(node("/?AStarNavigator", library()), model());
-		setname(gASN, "AStarNavigator");
-	}
-	return &o(AStarNavigator, gASN);
-}
-
 visible void AStarNavigator_setEditMode(FLEXSIMINTERFACE)
 {
 	int mode = (int)parval(1);
 	if (mode < 0)
 		mode = 0;
 	AStarNavigator::editMode = mode;
+}
+
+visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
+{
+	TreeNode* navNode = parnode(1);
+	if (!isclasstype(navNode, "AStarNavigator"))
+		return;
+
+	AStarNavigator* a = &o(AStarNavigator, navNode);
+	Barrier* newBarrier = a->barrierList.add(new Barrier);
+	newBarrier->init(parval(2), parval(3), parval(4), parval(5));
+}
+
+visible void AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
+{
+	TreeNode* navNode = parnode(1);
+	if (!isclasstype(navNode, "AStarNavigator"))
+		return;
+
+	AStarNavigator* a = &o(AStarNavigator, navNode);
+	int index = parval(2);
+	if (index >= a->barrierList.size())
+		return;
+
+	a->barrierList.remove(parval(2));
+}
+
+visible void AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
+{
+	TreeNode* navNode = parnode(1);
+	if (!isclasstype(navNode, "AStarNavigator"))
+		return;
+
+	AStarNavigator* a = &o(AStarNavigator, navNode);
+	int index1 = parval(2);
+	int index2 = parval(3);
+
+	int maxIndex = max(index1, index2);
+	int minIndex = min(index1, index2);
+	if (maxIndex > a->barrierList.size() || minIndex < 0)
+		return;
+
+	a->barrierList.swap(index1, index2);
 }

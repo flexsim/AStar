@@ -16,9 +16,11 @@ class Barrier :
 public:
 	TreeNode* points;
 	NodeListArray<Point>::SdtSubNodeType pointList;
-	bool creating;
+	unsigned int creating;
 	unsigned int meshOffset;
 	unsigned int nrVerts;
+	unsigned int active;
+	unsigned int hover;
 
 	Barrier();
 	virtual ~Barrier();

@@ -94,7 +94,8 @@ public:
 	TreeNode* color;
 	
 	TreeNode* barriers;
-	//NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
+	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
+
 	TreeNode* fixedResourceBarriers;
 	NodeListArray<FixedResource>::ObjStoredAttCouplingType objectBarrierList;
 
@@ -150,9 +151,6 @@ public:
 	int xOffset;
 	int yOffset;
 	int maxTraveled;
-
-	static TreeNode* gASN;
-	static AStarNavigator* globalAStarNavigator();
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
 	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from rowCol to index in totalSet

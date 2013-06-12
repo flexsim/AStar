@@ -23,6 +23,8 @@ void Barrier::bind(void)
 	bindNumber(creating);
 	bindNumber(meshOffset);
 	bindNumber(nrVerts);
+	bindNumber(active);
+	bindNumber(hover);
 	bindNodePtr(points);
 	pointList.init(points);
 }
@@ -103,6 +105,15 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 	meshOffset = barrierMesh->nrVerts;
 
 	float black[3] = {0.0f, 0.0f, 0.0f};
+	if (active) {
+		black[2] += 0.5;
+	}
+
+	if (hover) {
+		black[0] += 0.2;
+		black[1] += 0.2;
+		black[2] += 0.2;
+	}
 
 	float bottomLeft[3] = {xmin, ymin, z};
 	float topLeft[3] = {xmin, ymax, z};
@@ -180,4 +191,44 @@ bool Barrier::setPointCoords(int pointIndex, double x, double y)
 	pointList[pointIndex]->x = x;
 	pointList[pointIndex]->y = y;
 	return true;
+}
+
+visible void Barrier_addPoint(FLEXSIMINTERFACE)
+{
+	TreeNode* barNode = parnode(1);
+	if (!isclasstype(barNode, "Barrier"))
+		return;
+
+	Barrier* b = &o(Barrier, barNode);
+	b->addPoint(parval(2), parval(3));
+}
+
+visible void Barrier_removePoint(FLEXSIMINTERFACE)
+{
+	TreeNode* barNode = parnode(1);
+	if (!isclasstype(barNode, "Barrier"))
+		return;
+
+	Barrier* b = &o(Barrier, barNode);
+	b->removePoint(parval(2));
+}
+
+visible void Barrier_swapPoints(FLEXSIMINTERFACE)
+{
+	TreeNode* barNode = parnode(1);
+	if (!isclasstype(barNode, "Barrier"))
+		return;
+
+	Barrier* b = &o(Barrier, barNode);
+	b->swapPoints(parval(2), parval(3));
+}
+
+visible void Barrier_setPointCoords(FLEXSIMINTERFACE)
+{
+	TreeNode* barNode = parnode(1);
+	if (!isclasstype(barNode, "Barrier"))
+		return;
+
+	Barrier* b = &o(Barrier, barNode);
+	b->setPointCoords(parval(2), parval(3), parval(4));
 }
