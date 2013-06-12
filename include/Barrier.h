@@ -1,35 +1,60 @@
 #pragma once
 #include "FlexsimDefs.h"
-#include "mesh.h"
+#include "Point.h"
+#include <vector>
 
 /* 
 This class is the base class for an AStar barrier object.
 */
 
 struct AStarNode;
+class Mesh;
 
 class Barrier :
 	public SimpleDataType
 {
-protected:
-	double x0, y0, x1, y1;
-	//static Mesh triangleMesh;
-
 public:
+	TreeNode* points;
+	NodeListArray<Point>::SdtSubNodeType pointList;
+	bool creating;
+	unsigned int meshOffset;
+	unsigned int nrVerts;
+
 	Barrier();
-	Barrier(double x0, double y0, double x1, double y1);
 	virtual ~Barrier();
 
 	virtual const char * getClassFactory(void);
 	virtual void bind(void);
 
+	// This function adds two initial points to a barrier
+	virtual void init(double x1, double y1, double x2, double y2);
+
 	// This function is used by the AStarNavigator to determine the size of the grid.
-	// It should return the bottom left (x0, y0) and top right (x1, y1) corners
-	// of the barrier's bounding box.
-	virtual void getBoundingBox(double& x0, double& y0, double& x1, double& y1);
+	// It should return the bottom left [x0, y0] and top right [x1, y1] corners
+	// of the barrier's 2D bounding box.
+	virtual bool getBoundingBox(double& x0, double& y0, double& x1, double& y1);
 
 	// This function is used by the AStarNavigator to determine the effect a barrier
-	// will have on the nodes it influences.
-	virtual void modifyTable(AStarNode* edgeTable, unsigned int sx, unsigned int sy);
+	// will have on the nodes it influences. [c0, r0] are the coords of the bottom left
+	// corner of the grid.
+	virtual void modifyTable(AStarNode* edgeTable, double nodeWidth, 
+		double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize);
+
+	// This function is called by the AStarNavigator class to add vertices to the 
+	// given mesh. This mesh draws GL_TRIANGLES at z height and has an emissive per-vertex attribute.
+	// It should also store the offset into the mesh as well as the number of vertices it stores.
+	virtual void addVertices(Mesh* barrierMesh, float z);
+
+	// These functions handle mouse events. [x, y] are model coords
+	virtual double onClick(int clickCode, double x, double y);
+	virtual double onMouseMove(double x, double y);
+
+	// These functions are for modifying barrier points. They each 
+	// check bounds before making any modifications.
+	void addPoint(double x, double y);
+	void removePoint(int pointIndex);
+	void swapPoints(int index1, int index2);
+	bool getPointCoords(int pointIndex, double& x, double& y);
+	bool setPointCoords(int pointIndex, double x, double y);
 };
 
