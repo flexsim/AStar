@@ -52,6 +52,7 @@ bool Barrier::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
 	x1 = xmax;
 	y0 = ymin;
 	y1 = ymax;
+	return true;
 }
 
 void Barrier::modifyTable(AStarNode* edgeTable, double nodeWidth, 
@@ -106,13 +107,13 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 
 	float black[3] = {0.0f, 0.0f, 0.0f};
 	if (active) {
-		black[2] += 0.5;
+		black[2] += 0.5f;
 	}
 
 	if (hover) {
-		black[0] += 0.2;
-		black[1] += 0.2;
-		black[2] += 0.2;
+		black[0] += 0.2f;
+		black[1] += 0.2f;
+		black[2] += 0.2f;
 	}
 
 	float bottomLeft[3] = {xmin, ymin, z};
@@ -210,7 +211,7 @@ visible void Barrier_removePoint(FLEXSIMINTERFACE)
 		return;
 
 	Barrier* b = &o(Barrier, barNode);
-	b->removePoint(parval(2));
+	b->removePoint((int)parval(2));
 }
 
 visible void Barrier_swapPoints(FLEXSIMINTERFACE)
@@ -220,7 +221,7 @@ visible void Barrier_swapPoints(FLEXSIMINTERFACE)
 		return;
 
 	Barrier* b = &o(Barrier, barNode);
-	b->swapPoints(parval(2), parval(3));
+	b->swapPoints((int)parval(2), (int)parval(3));
 }
 
 visible void Barrier_setPointCoords(FLEXSIMINTERFACE)
@@ -230,5 +231,5 @@ visible void Barrier_setPointCoords(FLEXSIMINTERFACE)
 		return;
 
 	Barrier* b = &o(Barrier, barNode);
-	b->setPointCoords(parval(2), parval(3), parval(4));
+	b->setPointCoords((int)parval(2), parval(3), parval(4));
 }
