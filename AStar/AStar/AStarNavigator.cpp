@@ -41,6 +41,9 @@ double AStarNavigator::onReset()
 
 	edgeTableExtraData.clear();
 	buildEdgeTable();
+	buildBoundsMesh();
+	buildBarrierMesh();
+	buildTrafficMesh();
 	maxTraveled = 0;
 	return 0;
 }
@@ -77,71 +80,28 @@ double AStarNavigator::onDraw(TreeNode* view)
 		|| editmode == EDITMODE_SOLID_BARRIER
 		);
 	int drawmode = (int)drawMode;
-	if(istravelmode) drawmode = ~0;
+	if(istravelmode) drawmode = ASTAR_DRAW_MODE_BOUNDS | ASTAR_DRAW_MODE_BARRIERS;
 	if(drawmode == 0) return 0;
-
+	
 	glScalef(1.0/b_spatialsx, 1.0/b_spatialsy, 1.0/b_spatialsz);
 	glTranslatef(-b_spatialx, -b_spatialy, -b_spatialz);
+
+	if(!pickingmode && (drawmode & ASTAR_DRAW_MODE_GRID)) {
+		drawGrid();
+	}
+
+	if(!pickingmode && (drawmode & ASTAR_DRAW_MODE_BOUNDS)) {
+		boundsMesh.draw(GL_QUADS);
+	}
+
+
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_TEXTURE_GEN_S);
 	glDisable(GL_TEXTURE_GEN_T);
 	glColor3f(1,0,0);
 
-	if(!pickingmode && (drawmode & ASTAR_DRAW_MODE_GRID))
-	{
-		glColor3f(0.8f,0.8f,0.0f);
-		glBegin(GL_LINES);
-		for(int i = 0; i < edgeTableYSize; i++)
-		{
-			for(int j = 0; j < edgeTableXSize; j++)
-			{
-				AStarNode* n = &(DeRefEdgeTable(i,j));
-				AStarSearchEntry s;
-				s.col = j;
-				s.row = i;
-				AStarNodeExtraData* e = NULL;
-				if(!n->noExtraData)
-					e = &edgeTableExtraData[s.colRow];
-				double x = (xOffset + j + 0.5) * nodeWidth;
-				double y = (yOffset + i + 0.5) * nodeWidth;
-				glColor3f(0.8f,0.8f,0.0f);
-				if(n->canGoUp) 	{
-					if(e && e->bonusUp) 
-						glColor3ub(0, e->bonusUp, 0);
-					glVertex3d(x,y,0.1);
-					glVertex3d(x,y+0.25*nodeWidth,0.1);
-				}
-				glColor3f(0.8f,0.8f,0.0f);
-				if(n->canGoDown) {
-					if(e && e->bonusDown) 
-						glColor3ub(0, e->bonusDown, 0);
-					glVertex3d(x,y,0.1);
-					glVertex3d(x,y-0.25*nodeWidth,0.1);
-				}
-				glColor3f(0.8f,0.8f,0.0f);
-				if(n->canGoRight) {
-					if(e && e->bonusRight) 
-						glColor3ub(0, e->bonusRight, 0);
-					glVertex3d(x,y,0.1);
-					glVertex3d(x+0.25*nodeWidth,y,0.1);
-				}
-				glColor3f(0.8f,0.8f,0.0f);
-				if(n->canGoLeft) {
-					if(e && e->bonusLeft) 
-						glColor3ub(0, e->bonusLeft, 0);
-					glVertex3d(x,y,0.1);
-					glVertex3d(x-0.25*nodeWidth,y,0.1);
-				}
-				if(!n->notInTotalSet) {
-					mpt("Grid error at x ");mpd(j);mpt(" y ");mpd(i);mpr();
-					glVertex3d(x,y,0.1);
-					glVertex3d(x + 0.25 * nodeWidth, y + 0.25 * nodeWidth, 0.1);
-				}
-			}
-		}
-		glEnd();
-	}
+	
 
 	#define SELECTIONMODE_MOUSEMOVE 10
 	#define SELECTIONMODE_MOUSEDOWNLEFT 11
@@ -1240,6 +1200,158 @@ void AStarNavigator::buildEdgeTable()
 		}
 	}
 }
+void AStarNavigator::buildBoundsMesh()
+{
+	boundsMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, MESH_FORCE_CLEANUP);
+	double width = edgeTableXSize * nodeWidth;
+	double height = edgeTableYSize * nodeWidth;
+
+	double midNW = 0.4 * nodeWidth;
+	double z = 0.1;
+	float bottomLeft[3] = {xOffset * nodeWidth, yOffset * nodeWidth, z};
+	float topRight[3] = {bottomLeft[0] + width, bottomLeft[1] + height, z};
+	float topLeft[3] = {bottomLeft[0], topRight[1], z};
+	float bottomRight[3] = {topRight[0], bottomLeft[1], z};
+
+	float oBottomLeft[3] = {bottomLeft[0] - nodeWidth, bottomLeft[1] - nodeWidth, z};
+	float oTopRight[3] = {topRight[0] + nodeWidth, topRight[1] + nodeWidth, z};
+	float oTopLeft[3] = {topLeft[0] - nodeWidth, topLeft[1] + nodeWidth, z};
+	float oBottomRight[3] = {bottomRight[0] + nodeWidth, bottomRight[1] - nodeWidth, z};
+
+	float mBottomLeft[3] = {bottomLeft[0] - midNW, bottomLeft[1] - midNW, z};
+	float mTopRight[3] = {topRight[0] + midNW, topRight[1] + midNW, z};
+	float mTopLeft[3] = {topLeft[0] - midNW, topLeft[1] + midNW, z};
+	float mBottomRight[3] = {bottomRight[0] + midNW, bottomRight[1] - midNW, z};
+
+	float blue[3] = {0.2, 0.2, 1.0};
+
+#define ADD_VERTEX(point, color)\
+	{\
+		int newVertex = boundsMesh.addVertex();\
+		boundsMesh.setVertexAttrib(newVertex, MESH_POSITION, point);\
+		boundsMesh.setVertexAttrib(newVertex, MESH_EMISSIVE, color);\
+	}\
+
+#define ADD_PLAIN_QUAD(p1, p2, p3, p4, color)\
+	ADD_VERTEX(p1, color);\
+	ADD_VERTEX(p2, color);\
+	ADD_VERTEX(p3, color);\
+	ADD_VERTEX(p4, color);
+
+	// left border (GL_QUADS)
+	ADD_PLAIN_QUAD(bottomLeft, topLeft, oTopLeft, oBottomLeft, blue);
+
+	// top border
+	ADD_PLAIN_QUAD(topLeft, topRight, oTopRight, oTopLeft, blue);
+
+	// right border
+	ADD_PLAIN_QUAD(topRight, bottomRight, oBottomRight, oTopRight, blue);
+
+	// bottom border
+	ADD_PLAIN_QUAD(bottomRight, bottomLeft, oBottomLeft, oBottomRight, blue);
+}
+
+void AStarNavigator::buildBarrierMesh()
+{
+	barrierMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, 0);
+}
+
+void AStarNavigator::buildTrafficMesh()
+{
+	trafficMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, 0);
+}
+
+void AStarNavigator::drawGrid()
+{
+	if (!((int)drawMode & ASTAR_DRAW_MODE_GRID))
+		return;
+	
+	double quarterNodeWidth = 0.25 * nodeWidth;
+	float gold[3] = {0.8f,0.8f,0.0f};
+	float red[3] = {1.0f, 0.0f, 0.0f};
+	// Draw the grid one row at a time, using the large dimension
+	bool drawByRow = edgeTableXSize >= edgeTableYSize;
+	int maxDim = drawByRow ? edgeTableXSize : edgeTableYSize;
+	int minDim = !drawByRow ? edgeTableXSize : edgeTableYSize;
+	for(int i = 0; i < maxDim; i++) {
+		gridMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, MESH_FORCE_CLEANUP);
+		for(int j = 0; j < minDim; j++) {
+			int row = !drawByRow ? i : j;
+			int col = drawByRow ? i : j;
+			AStarNode* n = &DeRefEdgeTable(row, col);
+			AStarSearchEntry s;
+			s.col = col;
+			s.row = row;
+			AStarNodeExtraData* e = NULL;
+			if(!n->noExtraData)
+				e = &edgeTableExtraData[s.colRow];
+			double x = (xOffset + col + 0.5) * nodeWidth;
+			double y = (yOffset + row + 0.5) * nodeWidth;
+
+#define ADD_GRID_LINE(dir, x1, y1, z1, x2, y2, z2)\
+	if (n->canGo##dir) {\
+		int newVertex1 = gridMesh.addVertex();\
+		int newVertex2 = gridMesh.addVertex();\
+		\
+		if (e && e->bonus##dir) {\
+			float green[3] = {0.0f, e->bonus##dir, 0.0f};\
+			gridMesh.setVertexAttrib(newVertex1, MESH_EMISSIVE, green);\
+			gridMesh.setVertexAttrib(newVertex2, MESH_EMISSIVE, green);\
+		} else {\
+			gridMesh.setVertexAttrib(newVertex1, MESH_EMISSIVE, gold);\
+			gridMesh.setVertexAttrib(newVertex2, MESH_EMISSIVE, gold);\
+		}\
+		\
+		float pos1[3] = {x1, y1, z1};\
+		float pos2[3] = {x2, y2, z2};\
+		gridMesh.setVertexAttrib(newVertex1, MESH_POSITION, pos1);\
+		gridMesh.setVertexAttrib(newVertex2, MESH_POSITION, pos2);\
+	}
+			if (n->canGoUp && n->canGoDown && n->canGoLeft && n->canGoRight) {
+				ADD_GRID_LINE(Up, x, y - quarterNodeWidth, 0.1, x, y + quarterNodeWidth, 0.1);
+				ADD_GRID_LINE(Right, x - quarterNodeWidth, y, 0.1, x + quarterNodeWidth, y, 0.1);
+				continue;
+			}
+
+			if (n->canGoUp && n->canGoDown) {
+				ADD_GRID_LINE(Up, x, y - quarterNodeWidth, 0.1, x, y + quarterNodeWidth, 0.1);
+				ADD_GRID_LINE(Right, x, y, 0.1, x + 0.25 * nodeWidth, y, 0.1);
+				ADD_GRID_LINE(Left, x, y, 0.1, x - 0.25 * nodeWidth, y, 0.1);
+				continue;
+			}
+
+			if (n->canGoLeft && n->canGoRight) {
+				ADD_GRID_LINE(Right, x - quarterNodeWidth, y, 0.1, x + quarterNodeWidth, y, 0.1);
+				ADD_GRID_LINE(Up, x, y, 0.1, x, y + 0.25 * nodeWidth, 0.1);
+				ADD_GRID_LINE(Down, x, y, 0.1, x, y - 0.25 * nodeWidth, 0.1);
+				continue;
+			}
+
+
+			ADD_GRID_LINE(Up, x, y, 0.1, x, y + 0.25 * nodeWidth, 0.1);
+			ADD_GRID_LINE(Down, x, y, 0.1, x, y - 0.25 * nodeWidth, 0.1);
+			ADD_GRID_LINE(Right, x, y, 0.1, x + 0.25 * nodeWidth, y, 0.1);
+			ADD_GRID_LINE(Left, x, y, 0.1, x - 0.25 * nodeWidth, y, 0.1);
+			
+			if(!n->notInTotalSet) {
+				mpt("Grid error at x ");mpd(j);mpt(" y ");mpd(i);mpr();
+				int newVertex1 = gridMesh.addVertex();
+				int newVertex2 = gridMesh.addVertex();
+
+				gridMesh.setVertexAttrib(newVertex1, MESH_EMISSIVE, red);
+				gridMesh.setVertexAttrib(newVertex2, MESH_EMISSIVE, red);
+
+				float pos1[3] = {x, y, 0.1};
+				float pos2[3] = {x + 0.25 * nodeWidth, y + 0.25 * nodeWidth, 0.1};
+				gridMesh.setVertexAttrib(newVertex1, MESH_POSITION, pos1);
+				gridMesh.setVertexAttrib(newVertex1, MESH_POSITION, pos2);
+			}
+		}
+		gridMesh.draw(GL_LINES);
+	}
+	gridMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, MESH_FORCE_CLEANUP);
+}
+
 
 unsigned int AStarNavigator::getClassType()
 {

@@ -80,6 +80,11 @@ public:
 	TreeNode* fixedResourceBarriers;
 	NodeListArray<FixedResource>::ObjStoredAttCouplingType objectBarrierList;
 
+	Mesh boundsMesh;
+	Mesh barrierMesh;
+	Mesh trafficMesh;
+	Mesh gridMesh;
+
 	AStarNavigator();
 	~AStarNavigator();
 	
@@ -93,6 +98,11 @@ public:
 	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed);
 	virtual double navigateToLoc(TreeNode* traveler, double x, double y, double endspeed, int driveshort = 1);
 	void buildEdgeTable();
+	void buildGridMesh();
+	void buildBoundsMesh();
+	void buildBarrierMesh();
+	void buildTrafficMesh();
+	void drawGrid();
 	virtual double updateLocations();
 	virtual double abortTravel(TreeNode* traveler, TreeNode* newts);
 	virtual unsigned int getClassType();
