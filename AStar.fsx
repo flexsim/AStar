@@ -158,6 +158,8 @@
          <node f="40-0"><name></name></node>
          <node f="42-0"><name>Spatial</name></node>
         </node>
+        <node f="42-0" dt="1"><name>lastMouseX</name><data>00000000c0180000</data></node>
+        <node f="42-0" dt="1"><name>lastMouseY</name><data>00000000c0180000</data></node>
         <node f="42-0" dt="1"><name>editing</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>mode</name><data>0000000000000000</data></node>
         <node f="42-0" dt="3"><name>activeNavigator</name><data><coupling>null</coupling></data></node>
@@ -193,6 +195,8 @@ if (!objectexists(activeNavigator)) {
 
 int mouseX = cursorinfo(i, 2, 1, 1);
 int mouseY = cursorinfo(i, 2, 2, 1);
+setvarnum(c, "lastMouseX", mouseX);
+setvarnum(c, "lastMouseY", mouseY);
 int clickCode = clickcode();
 
 if (!editing) {
@@ -212,8 +216,17 @@ if (editing) {
 	setvarnum(c, "editing", newEditingVal ? 1 : 0);
 }</data></node>
         <node f="42-4" dt="2"><name>OnMouseMove</name><data>if (getvarnum(c, "editing")) {
-	double dx = cursorinfo(i, 2, 1, 2);
-	double dy = cursorinfo(i, 2, 2, 2);
+	if (!objectexists(i))
+		return 0;
+	
+	double mouseX = cursorinfo(i, 2, 1, 1);
+	double mouseY = cursorinfo(i, 2, 2, 1);
+	
+	double dx = mouseX - getvarnum(c, "lastMouseX");
+	double dy = mouseY - getvarnum(c, "lastMouseY");
+	
+	setvarnum(c, "lastMouseX", mouseX);
+	setvarnum(c, "lastMouseY", mouseY);
 	
 	function_s(c, "onMouseMove", tonode(getvarnum(c, "activeNavigator")), dx, dy);
 	

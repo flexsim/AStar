@@ -369,18 +369,31 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 double AStarNavigator::onClick(TreeNode* view, int clickcode)
 {
+	modeleditmode(0);
 	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
 	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
 
 	if (objectexists(secondary)) {
 		Barrier* barrier = &o(Barrier, secondary);
+
+		if (objectexists(tonode(activeBarrier))) {
+			Barrier* b = &o(Barrier, tonode(activeBarrier));
+			if (b != barrier) {
+				b->activePointIndex = 0;
+				b->isActive = 0;
+			}
+		}
+
 		activeBarrier = barrier->holder;
 		barrier->isActive = 1;
+		buildBarrierMesh();
 		return barrier->onClick((int)clickcode, cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
 	}
 	if (objectexists(tonode(activeBarrier))) {
 		Barrier* b = &o(Barrier, tonode(activeBarrier));
 		b->activePointIndex = 0;
+		b->isActive = 0;
+		buildBarrierMesh();
 	}
 	activeBarrier = 0;
 	return FlexsimObject::onClick(view, (int)clickcode);
@@ -1219,7 +1232,7 @@ void AStarNavigator::buildBarrierMesh()
 	barrierMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, 0);
 
 	for (int i = 0; i < barrierList.size(); i++) {
-		barrierList[i]->addVertices(&barrierMesh, 0.1);
+		barrierList[i]->addVertices(&barrierMesh, 0.1f);
 	}
 }
 

@@ -109,7 +109,7 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 	float black[3] = {0.0f, 0.0f, 0.0f};
 	if (isActive) {
 		black[0] += 0.4f;
-		black[2] += 0.4f;
+		black[1] += 0.4f;
 		black[2] += 0.4f;
 	}
 	float blue[3] = {0.0f, 0.0f, 0.8f};
@@ -120,10 +120,10 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 	float bottomRight[3] = {xmax, ymin, z};
 
 	float triangleEdgeLength = sqrt(width * width + height * height) / 10.0;
-	float triangleBottomRight[3] = {xmin + triangleEdgeLength, ymin, 1.01 * z};
-	float triangleBottomTop[3] = {xmin, ymin + triangleEdgeLength, 1.01 * z};
-	float triangleTopLeft[3] = {xmax - triangleEdgeLength, ymax, 1.01 * z};
-	float triangleTopBottom[3] = {xmax, ymax - triangleEdgeLength, 1.01 * z};
+	float triangleBottomRight[3] = {xmin + triangleEdgeLength, ymin, z};
+	float triangleBottomTop[3] = {xmin, ymin + triangleEdgeLength, z};
+	float triangleTopLeft[3] = {xmax - triangleEdgeLength, ymax, z};
+	float triangleTopBottom[3] = {xmax, ymax - triangleEdgeLength, z};
 
 #define ABV(point, color) {\
 		int newVertex = barrierMesh->addVertex();\
@@ -132,22 +132,16 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 		nrVerts++;\
 	}\
 
-	ABV(bottomLeft, black);
-	ABV(bottomRight, black);
-	ABV(topLeft, black);
+#define ABT(p1, p2, p3, color) ABV(p1, color) ABV(p2, color) ABV(p3, color)
 
-	ABV(topLeft, black);
-	ABV(bottomRight, black);
-	ABV(topRight, black);
+	ABT(triangleTopBottom, topRight, triangleTopLeft, blue);
+	ABT(triangleBottomRight, triangleBottomTop, bottomLeft, blue);
+	ABT(triangleBottomTop, triangleTopLeft, topLeft, black);
+	ABT(triangleBottomRight, triangleTopLeft, triangleBottomTop, black);
+	ABT(triangleBottomRight, triangleTopBottom, triangleTopLeft, black);
+	ABT(triangleBottomRight, bottomRight, triangleTopBottom, black);
 
-	ABV(triangleBottomRight, blue);
-	ABV(triangleBottomTop, blue);
-	ABV(bottomLeft, blue);
-
-	ABV(triangleTopBottom, blue);
-	ABV(topRight, blue);
-	ABV(triangleTopLeft, blue);
-
+#undef ABT
 #undef ABV
 }
 
