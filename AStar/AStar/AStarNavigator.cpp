@@ -210,7 +210,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 	}
 	*/
 	if(drawmode & ASTAR_DRAW_MODE_BARRIERS) {
-		for(int i = 1; i <= barrierList.size(); i++) {
+		for(int i = 0; i < barrierList.size(); i++) {
 			Barrier* barrier = barrierList[i];
 
 			double x1, y1, x2, y2;
@@ -367,7 +367,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 	return 0;
 }
 
-double AStarNavigator::onClick(TreeNode* view)
+double AStarNavigator::onClick(TreeNode* view, int clickcode)
 {
 	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
 	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
@@ -376,14 +376,14 @@ double AStarNavigator::onClick(TreeNode* view)
 		Barrier* barrier = &o(Barrier, secondary);
 		activeBarrier = barrier->holder;
 		barrier->isActive = 1;
-		return barrier->onClick((int)clickcode(), cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
+		return barrier->onClick((int)clickcode, cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
 	}
 	if (objectexists(tonode(activeBarrier))) {
 		Barrier* b = &o(Barrier, tonode(activeBarrier));
 		b->activePointIndex = 0;
 	}
 	activeBarrier = 0;
-	return FlexsimObject::onClick(view, (int)clickcode());
+	return FlexsimObject::onClick(view, (int)clickcode);
 }
 
 double AStarNavigator::onDrag(TreeNode* view)
@@ -396,6 +396,7 @@ double AStarNavigator::onDrag(TreeNode* view)
 	if (objectexists(secondary)) {
 		Barrier* barrier = &o(Barrier, secondary);
 		barrier->onMouseMove(dx, dy);
+		buildBarrierMesh();
 		return 1;
 	} 
 	
@@ -970,7 +971,7 @@ void AStarNavigator::buildEdgeTable()
 	edgeTable = new AStarNode[tableSize];
 	memset(edgeTable, 0xFFFFFFFF, tableSize * sizeof(AStarNode));
 
-	for(int i = 1; i <= barrierList.size(); i++) {
+	for(int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
 		barrier->modifyTable(edgeTable, nodeWidth, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
 	}
@@ -1216,6 +1217,10 @@ void AStarNavigator::buildBoundsMesh()
 void AStarNavigator::buildBarrierMesh()
 {
 	barrierMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, 0);
+
+	for (int i = 0; i < barrierList.size(); i++) {
+		barrierList[i]->addVertices(&barrierMesh, 0.1);
+	}
 }
 
 void AStarNavigator::buildTrafficMesh()
@@ -1344,6 +1349,7 @@ visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	newBarrier->init(parval(2), parval(3), parval(4), parval(5));
 	newBarrier->mode = BARRIER_MODE_POINT_EDIT;
 	newBarrier->activePointIndex = 1;
+	newBarrier->isActive = 1;
 	a->activeBarrier = newBarrier->holder;
 }
 
@@ -1402,10 +1408,11 @@ visible void AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
 	if (objectexists(tonode(a->activeBarrier))) {
 		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
 		b->onMouseMove(parval(2), parval(3));
+		a->buildBarrierMesh();
 	}
 }
 
-visible double AStarNavigator_activeBarrierMode(FLEXSIMINTERFACE)
+visible double AStarNavigator_getActiveBarrierMode(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = parnode(1);
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))

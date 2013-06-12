@@ -26,7 +26,7 @@ void Barrier::bind(void)
 	bindNumber(activePointIndex);
 	bindNumber(mode);
 
-	bindNodePtr(points);
+	bindSubNode(points, 0);
 	pointList.init(points);
 }
 
@@ -119,11 +119,11 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 	float topRight[3] = {xmax, ymax, z};
 	float bottomRight[3] = {xmax, ymin, z};
 
-	float triangleEdgeLength = sqrt(width * width + height * height) / 20.0;
-	float triangleBottomRight[3] = {xmin + triangleEdgeLength, ymin, z};
-	float triangleBottomTop[3] = {xmin, ymin + triangleEdgeLength, z};
-	float triangleTopLeft[3] = {xmax - triangleEdgeLength, ymax, z};
-	float triangleTopBottom[3] = {xmax, ymax - triangleEdgeLength, z};
+	float triangleEdgeLength = sqrt(width * width + height * height) / 10.0;
+	float triangleBottomRight[3] = {xmin + triangleEdgeLength, ymin, 1.01 * z};
+	float triangleBottomTop[3] = {xmin, ymin + triangleEdgeLength, 1.01 * z};
+	float triangleTopLeft[3] = {xmax - triangleEdgeLength, ymax, 1.01 * z};
+	float triangleTopBottom[3] = {xmax, ymax - triangleEdgeLength, 1.01 * z};
 
 #define ABV(point, color) {\
 		int newVertex = barrierMesh->addVertex();\
@@ -154,6 +154,12 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 double Barrier::onClick(int clickCode, double x, double y)
 {
 	if (clickCode == LEFT_PRESS) {
+
+		// If already editing, don't do anything on press
+		if (mode == BARRIER_MODE_POINT_EDIT) {
+			return 0;
+		}
+
 		// if the user clicked on a blue triangle, set the mode and active point
 		Point* bottomLeftPoint = pointList[0];
 		double blx = bottomLeftPoint->x;

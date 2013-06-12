@@ -191,7 +191,6 @@ if (!objectexists(activeNavigator)) {
 	return 0;
 }
 
-// The user has just clicked on the model, new barrier to be created
 int mouseX = cursorinfo(i, 2, 1, 1);
 int mouseY = cursorinfo(i, 2, 2, 1);
 int clickCode = clickcode();
@@ -209,7 +208,7 @@ if (!editing) {
 
 if (editing) {
 	function_s(c, "onClick", activeNavigator, clickCode, mouseX, mouseY);
-	int newEditingVal = function_s(c, "getActiveBarrierMode");
+	int newEditingVal = function_s(c, "getActiveBarrierMode", activeNavigator);
 	setvarnum(c, "editing", newEditingVal ? 1 : 0);
 }</data></node>
         <node f="42-4" dt="2"><name>OnMouseMove</name><data>if (getvarnum(c, "editing")) {

@@ -113,7 +113,7 @@ public:
 	double onTimerEvent(TreeNode* involved, int code, char *datastr);
 	virtual double onDraw(TreeNode* view);
 	virtual double onDrag(TreeNode* view);
-	virtual double onClick(TreeNode* view);
+	virtual double onClick(TreeNode* view, int clickcode);
 	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType);
 	virtual double AStarNavigator::onDestroy(TreeNode* view);
 	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed);
