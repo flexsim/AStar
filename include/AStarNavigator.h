@@ -64,16 +64,34 @@ struct AStarSearchEntry{
 	bool closed;
 };
 
+struct AStarPathID {
+	union {
+		struct {
+			unsigned short startCol;
+			unsigned short startRow;
+			unsigned short endCol;
+			unsigned short endRow;
+		};
+		unsigned __int64 id;
+	};
+};
+
 class AStarNavigator :
 	public Navigator
 {
 public:
 	static unsigned int editMode;
 	double preferredPathWeight;
-	double drawMode;
 	double nodeWidth;
 	double surroundDepth;
 	double deepSearch;
+	double drawMode;
+
+	double cachePaths;
+	double pathCount;
+	double requestCount;
+	double cacheUseCount;
+	TreeNode* color;
 	
 	TreeNode* barriers;
 	//NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
@@ -139,6 +157,7 @@ public:
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
 	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from rowCol to index in totalSet
 	std::unordered_map<unsigned int, AStarNodeExtraData> edgeTableExtraData; // A mapping from rowCol to an ExtraData object
+	std::unordered_map<unsigned __int64, std::vector<unsigned int> > pathCache;
 
 	struct HeapEntry {
 		HeapEntry(float f, unsigned int totalSetIndex) : f(f), totalSetIndex(totalSetIndex) {}
