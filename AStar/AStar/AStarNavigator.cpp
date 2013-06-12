@@ -895,29 +895,21 @@ void AStarNavigator::buildEdgeTable()
 		return;
 	}
 
-	for (int i = 1; i <= content(barriers); i++) {
-		TreeNode* barrier = rank(barriers, i);
-		int barriertype = (int)get(rank(barrier, BARRIER_TYPE));
-		switch(barriertype)
-		{
-		case BARRIER_TYPE_SOLID: {
-			double x1 = get(rank(barrier, BARRIER_X1));
-			double y1 = get(rank(barrier, BARRIER_Y1));
-			double x2 = get(rank(barrier, BARRIER_X2));
-			double y2 = get(rank(barrier, BARRIER_Y2));
+	for (int i = 0; i < barrierList.size(); i++) {
+		Barrier* barrier = barrierList[i];
+		double x1, y1, x2, y2;
+		barrier->getBoundingBox(x1, y1, x2, y2);
 
-			if(x1 < min[0]) min[0] = x1;
-			if(x1 > max[0]) max[0] = x1;
-			if(y1 < min[1]) min[1] = y1;
-			if(y1 > max[1]) max[1] = y1;
-			if(x2 < min[0]) min[0] = x2;
-			if(x2 > max[0]) max[0] = x2;
-			if(y2 < min[1]) min[1] = y2;
-			if(y2 > max[1]) max[1] = y2;
-
-			break;
-		}
-
+		if(x1 < min[0]) min[0] = x1;
+		if(x1 > max[0]) max[0] = x1;
+		if(y1 < min[1]) min[1] = y1;
+		if(y1 > max[1]) max[1] = y1;
+		if(x2 < min[0]) min[0] = x2;
+		if(x2 > max[0]) max[0] = x2;
+		if(y2 < min[1]) min[1] = y2;
+		if(y2 > max[1]) max[1] = y2;
+	}
+	/*
 		case BARRIER_TYPE_DIVIDER:
 		case BARRIER_TYPE_ONE_WAY_DIVIDER:
 		case BARRIER_TYPE_PREFERRED_PATH: {
@@ -934,7 +926,7 @@ void AStarNavigator::buildEdgeTable()
 			break;
 		}
 		}
-	}
+	}*/
 
 	for (int i = 0; i < objectBarrierList.size(); i++) {
 		// spatialx/y are the top left corner
@@ -1362,11 +1354,11 @@ visible void AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
 		return;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	int index = parval(2);
+	int index = (int)parval(2);
 	if (index >= a->barrierList.size())
 		return;
 
-	a->barrierList.remove(parval(2));
+	a->barrierList.remove((int)parval(2));
 }
 
 visible void AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
@@ -1376,8 +1368,8 @@ visible void AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
 		return;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	int index1 = parval(2);
-	int index2 = parval(3);
+	int index1 = (int)parval(2);
+	int index2 = (int)parval(3);
 
 	int maxIndex = max(index1, index2);
 	int minIndex = min(index1, index2);
@@ -1396,7 +1388,7 @@ visible void AStarNavigator_onClick(FLEXSIMINTERFACE)
 	AStarNavigator* a = &o(AStarNavigator, navNode);
 	if (objectexists(tonode(a->activeBarrier))) {
 		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
-		b->onClick(parval(2), parval(3), parval(4));
+		b->onClick((int)parval(2), parval(3), parval(4));
 	}
 }
 

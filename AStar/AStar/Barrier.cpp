@@ -207,7 +207,7 @@ double Barrier::onClick(int clickCode, double x, double y)
 double Barrier::onMouseMove(double dx, double dy)
 {
 	if (mode == BARRIER_MODE_POINT_EDIT) {
-		Point* activePoint = pointList[(int)activePoint];
+		Point* activePoint = pointList[(int)activePointIndex];
 		activePoint->x += dx;
 		activePoint->y += dy;
 	}
