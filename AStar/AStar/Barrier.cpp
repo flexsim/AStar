@@ -1,9 +1,9 @@
 #include "Barrier.h"
 #include "AStarNavigator.h"
+#include "macros.h"
 
 Barrier::Barrier()
 {
-	creating = false;
 	return;
 }
 
@@ -20,11 +20,12 @@ const char * Barrier::getClassFactory(void)
 void Barrier::bind(void)
 {
 	SimpleDataType::bind();
-	bindNumber(creating);
+	
 	bindNumber(meshOffset);
 	bindNumber(nrVerts);
-	bindNumber(active);
-	bindNumber(hover);
+	bindNumber(activePointIndex);
+	bindNumber(mode);
+
 	bindNodePtr(points);
 	pointList.init(points);
 }
@@ -106,20 +107,23 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 	meshOffset = barrierMesh->nrVerts;
 
 	float black[3] = {0.0f, 0.0f, 0.0f};
-	if (active) {
-		black[2] += 0.5f;
+	if (isActive) {
+		black[0] += 0.4f;
+		black[2] += 0.4f;
+		black[2] += 0.4f;
 	}
-
-	if (hover) {
-		black[0] += 0.2f;
-		black[1] += 0.2f;
-		black[2] += 0.2f;
-	}
+	float blue[3] = {0.0f, 0.0f, 0.8f};
 
 	float bottomLeft[3] = {xmin, ymin, z};
 	float topLeft[3] = {xmin, ymax, z};
 	float topRight[3] = {xmax, ymax, z};
 	float bottomRight[3] = {xmax, ymin, z};
+
+	float triangleEdgeLength = sqrt(width * width + height * height) / 20.0;
+	float triangleBottomRight[3] = {xmin + triangleEdgeLength, ymin, z};
+	float triangleBottomTop[3] = {xmin, ymin + triangleEdgeLength, z};
+	float triangleTopLeft[3] = {xmax - triangleEdgeLength, ymax, z};
+	float triangleTopBottom[3] = {xmax, ymax - triangleEdgeLength, z};
 
 #define ABV(point, color) {\
 		int newVertex = barrierMesh->addVertex();\
@@ -131,22 +135,90 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 	ABV(bottomLeft, black);
 	ABV(bottomRight, black);
 	ABV(topLeft, black);
+
 	ABV(topLeft, black);
 	ABV(bottomRight, black);
 	ABV(topRight, black);
+
+	ABV(triangleBottomRight, blue);
+	ABV(triangleBottomTop, blue);
+	ABV(bottomLeft, blue);
+
+	ABV(triangleTopBottom, blue);
+	ABV(topRight, blue);
+	ABV(triangleTopLeft, blue);
 
 #undef ABV
 }
 
 double Barrier::onClick(int clickCode, double x, double y)
 {
+	if (clickCode == LEFT_PRESS) {
+		// if the user clicked on a blue triangle, set the mode and active point
+		Point* bottomLeftPoint = pointList[0];
+		double blx = bottomLeftPoint->x;
+		double bly = bottomLeftPoint->y;
+		
+		// Transform click to barrier coords
+		x -= blx;
+		y -= bly;
+
+		double xmin, ymin, xmax, ymax;
+		if (!getBoundingBox(xmin, ymin, xmax, ymax))
+			return 0;
+
+		double width = xmax - xmin;
+		double height = ymax - ymin;
+		float triangleEdgeLength = sqrt(width * width + height * height) / 20.0;
+
+		// If the click is in the bottom left corner
+		if (x + y <= triangleEdgeLength) {
+			activePointIndex = 0;
+			mode = BARRIER_MODE_POINT_EDIT;
+		
+		// If the click is in the top right corner
+		} else if (x + y >= width + height - triangleEdgeLength) {
+			activePointIndex = 1;
+			mode = BARRIER_MODE_POINT_EDIT;
+		
+		} else {
+			activePointIndex = 0;
+			mode = BARRIER_MODE_MOVE;
+		}
+	}
+
+	if (clickCode == LEFT_RELEASE) {
+		if (mode == BARRIER_MODE_POINT_EDIT) {
+			activePointIndex = 0;
+			mode = 0;
+		}
+	}
+
+	if (clickCode == RIGHT_RELEASE) {
+		// Right click -> abort barrier creation
+		if (mode == BARRIER_MODE_POINT_EDIT) {
+			destroyobject(holder);
+		}
+	}
 
 	return 0;
 }
 
-double Barrier::onMouseMove(double x, double y)
+double Barrier::onMouseMove(double dx, double dy)
 {
-	
+	if (mode == BARRIER_MODE_POINT_EDIT) {
+		Point* activePoint = pointList[(int)activePoint];
+		activePoint->x += dx;
+		activePoint->y += dy;
+	}
+
+	if (mode == BARRIER_MODE_MOVE) {
+		for (int i = 0; i < pointList.size(); i++) {
+			pointList[i]->x += dx;
+			pointList[i]->y += dy;
+		}
+	}
+
 	return 0;
 }
 

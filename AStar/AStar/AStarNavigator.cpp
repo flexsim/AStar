@@ -31,6 +31,7 @@ void AStarNavigator::bindVariables(void)
 
 	bindVariable(barriers);
 	barrierList.init(barriers);
+	bindVariable(activeBarrier);
 
 	bindVariable(fixedResourceBarriers);
 	objectBarrierList.init(fixedResourceBarriers);
@@ -216,7 +217,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 			if (!barrier->getBoundingBox(x1, y1, x2, y2))
 				continue;
 
-			setpickingdrawfocus(view, holder, PICK_SOLID_BARRIER, barrier->holder);
+			setpickingdrawfocus(view, holder, 0, barrier->holder);
 			barrierMesh.draw(GL_TRIANGLES, barrier->meshOffset, barrier->nrVerts);
 
 		}
@@ -366,35 +367,39 @@ double AStarNavigator::onDraw(TreeNode* view)
 	return 0;
 }
 
+double AStarNavigator::onClick(TreeNode* view)
+{
+	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
+	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
+
+	if (objectexists(secondary)) {
+		Barrier* barrier = &o(Barrier, secondary);
+		activeBarrier = barrier->holder;
+		barrier->isActive = 1;
+		return barrier->onClick((int)clickcode(), cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
+	}
+	if (objectexists(tonode(activeBarrier))) {
+		Barrier* b = &o(Barrier, tonode(activeBarrier));
+		b->activePointIndex = 0;
+	}
+	activeBarrier = 0;
+	return FlexsimObject::onClick(view, (int)clickcode());
+}
+
 double AStarNavigator::onDrag(TreeNode* view)
 {
 	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
 	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
 	double dx = draginfo(DRAG_INFO_DX);
 	double dy = draginfo(DRAG_INFO_DY);
-	switch (pickType) {
-	case PICK_DIVIDER_NODE:
-		inc(secondary, dx);
-		inc(next(secondary), dy);
-		break;
-	case PICK_DIVIDER_EDGE:
-		inc(secondary, dx);
-		inc(next(secondary), dy);
-		inc(next(next(secondary)), dx);
-		inc(next(next(next(secondary))), dy);
-		break;
-	case PICK_SOLID_BARRIER:
-		inc(rank(secondary, BARRIER_X1), dx);
-		inc(rank(secondary, BARRIER_Y1), dy);
-		inc(rank(secondary, BARRIER_X2), dx);
-		inc(rank(secondary, BARRIER_Y2), dy);
-		break;
-	default:
-		inc(spatialx(holder), dx);
-		inc(spatialy(holder), dy);
-		break;
-	}
-	return 1;
+
+	if (objectexists(secondary)) {
+		Barrier* barrier = &o(Barrier, secondary);
+		barrier->onMouseMove(dx, dy);
+		return 1;
+	} 
+	
+	return FlexsimObject::onDrag(view);
 }
 
 double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType)
@@ -439,30 +444,14 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 
 double AStarNavigator::onDestroy(TreeNode* view)
 {
-	if(objectexists(view))
-	{
+	if (objectexists(view)) {
 		int picktype = (int)getpickingdrawfocus(view, PICK_TYPE,0);
 		TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT,0));
-		TreeNode* barrier = NULL;
-		switch(picktype) {
-		case PICK_SOLID_BARRIER:
-			destroyobject(secondary);
-			break;
-		case PICK_DIVIDER_NODE:
-			barrier = up(secondary);
-			destroyobject(next(secondary));
-			destroyobject(secondary);
-			if(content(barrier) < BARRIER_CONTENT)
-				destroyobject(barrier);
-			break;
 		
-		case PICK_DIVIDER_EDGE:
-			barrier = up(secondary);
-			destroyobject(barrier);
-			break;
-		default:
+		if (objectexists(secondary)) {
+			destroyobject(secondary);
+		} else {
 			destroyobject(holder);
-			break;
 		}
 		return 1;
 	}
@@ -1350,18 +1339,26 @@ visible void AStarNavigator_setEditMode(FLEXSIMINTERFACE)
 visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = parnode(1);
-	if (!isclasstype(navNode, "AStarNavigator"))
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	Barrier* newBarrier = a->barrierList.add(new Barrier);
+	Barrier* newBarrier = NULL;
+	switch (AStarNavigator::editMode) {
+	case EDITMODE_SOLID_BARRIER: newBarrier = a->barrierList.add(new Barrier); break;
+	default: return;
+	}
+
 	newBarrier->init(parval(2), parval(3), parval(4), parval(5));
+	newBarrier->mode = BARRIER_MODE_POINT_EDIT;
+	newBarrier->activePointIndex = 1;
+	a->activeBarrier = newBarrier->holder;
 }
 
 visible void AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = parnode(1);
-	if (!isclasstype(navNode, "AStarNavigator"))
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
@@ -1375,7 +1372,7 @@ visible void AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
 visible void AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = parnode(1);
-	if (!isclasstype(navNode, "AStarNavigator"))
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
@@ -1388,4 +1385,45 @@ visible void AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
 		return;
 
 	a->barrierList.swap(index1, index2);
+}
+
+visible void AStarNavigator_onClick(FLEXSIMINTERFACE)
+{
+	TreeNode* navNode = parnode(1);
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return;
+
+	AStarNavigator* a = &o(AStarNavigator, navNode);
+	if (objectexists(tonode(a->activeBarrier))) {
+		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
+		b->onClick(parval(2), parval(3), parval(4));
+	}
+}
+
+visible void AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
+{
+	TreeNode* navNode = parnode(1);
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return;
+
+	AStarNavigator* a = &o(AStarNavigator, navNode);
+	if (objectexists(tonode(a->activeBarrier))) {
+		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
+		b->onMouseMove(parval(2), parval(3));
+	}
+}
+
+visible double AStarNavigator_activeBarrierMode(FLEXSIMINTERFACE)
+{
+	TreeNode* navNode = parnode(1);
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return 0;
+
+	AStarNavigator* a = &o(AStarNavigator, navNode);
+	if (objectexists(tonode(a->activeBarrier))) {
+		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
+		return b->mode;
+	}
+
+	return 0;
 }

@@ -16,11 +16,12 @@ class Barrier :
 public:
 	TreeNode* points;
 	NodeListArray<Point>::SdtSubNodeType pointList;
-	unsigned int creating;
 	unsigned int meshOffset;
 	unsigned int nrVerts;
-	unsigned int active;
-	unsigned int hover;
+	unsigned int isActive;
+
+	unsigned int mode;
+	unsigned int activePointIndex;
 
 	Barrier();
 	virtual ~Barrier();
@@ -49,7 +50,7 @@ public:
 
 	// These functions handle mouse events. [x, y] are model coords
 	virtual double onClick(int clickCode, double x, double y);
-	virtual double onMouseMove(double x, double y);
+	virtual double onMouseMove(double dx, double dy);
 
 	// These functions are for modifying barrier points. They each 
 	// check bounds before making any modifications.
