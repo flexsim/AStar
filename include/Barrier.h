@@ -52,7 +52,7 @@ public:
 
 	// These functions handle mouse events. [x, y] are model coords
 	virtual double onClick(int clickCode, double x, double y);
-	virtual double onMouseMove(double dx, double dy);
+	virtual double onMouseMove(double x, double y, double dx, double dy);
 
 	// These functions are for modifying barrier points. They each 
 	// check bounds before making any modifications.

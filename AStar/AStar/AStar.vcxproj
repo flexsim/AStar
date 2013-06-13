@@ -173,6 +173,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\AStarNavigator.h" />
     <ClInclude Include="..\..\include\Barrier.h" />
+    <ClInclude Include="..\..\include\Divider.h" />
     <ClInclude Include="..\..\include\macros.h" />
     <ClInclude Include="..\..\include\Point.h" />
     <ClInclude Include="AStar.h" />
@@ -206,6 +207,7 @@
     <ClCompile Include="AStar.cpp" />
     <ClCompile Include="AStarNavigator.cpp" />
     <ClCompile Include="Barrier.cpp" />
+    <ClCompile Include="Divider.cpp" />
     <ClCompile Include="flexsimcontent\dllmain.cpp" />
     <ClCompile Include="Point.cpp" />
   </ItemGroup>

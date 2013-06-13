@@ -1,4 +1,5 @@
 #include "AStarNavigator.h"
+#include "Divider.h"
 #include "macros.h"
 
 unsigned int AStarNavigator::editMode = 0;
@@ -408,7 +409,7 @@ double AStarNavigator::onDrag(TreeNode* view)
 
 	if (objectexists(secondary)) {
 		Barrier* barrier = &o(Barrier, secondary);
-		barrier->onMouseMove(dx, dy);
+		barrier->onMouseMove(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), dx, dy);
 		buildBarrierMesh();
 		return 1;
 	} 
@@ -1358,11 +1359,12 @@ visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	Barrier* newBarrier = NULL;
 	switch (AStarNavigator::editMode) {
 	case EDITMODE_SOLID_BARRIER: newBarrier = a->barrierList.add(new Barrier); break;
+	case EDITMODE_DIVIDER: newBarrier = a->barrierList.add(new Divider); break;
 	default: return;
 	}
 
 	newBarrier->init(a->nodeWidth, parval(2), parval(3), parval(4), parval(5));
-	newBarrier->mode = BARRIER_MODE_POINT_EDIT;
+	newBarrier->mode = BARRIER_MODE_DYNAMIC_CREATE;
 	newBarrier->activePointIndex = 1;
 	newBarrier->isActive = 1;
 	if (objectexists(a->activeBarrier)) {
@@ -1427,7 +1429,7 @@ visible void AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
 	AStarNavigator* a = &o(AStarNavigator, navNode);
 	if (objectexists(tonode(a->activeBarrier))) {
 		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
-		b->onMouseMove(parval(2), parval(3));
+		b->onMouseMove(parval(2), parval(3), parval(4), parval(5));
 		a->buildBarrierMesh();
 	}
 }
@@ -1445,4 +1447,25 @@ visible double AStarNavigator_getActiveBarrierMode(FLEXSIMINTERFACE)
 	}
 
 	return 0;
+}
+
+visible void AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
+{
+	TreeNode* navNode = parnode(1);
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return;
+
+	AStarNavigator* a = &o(AStarNavigator, navNode);
+	int drawMode = (int)a->drawMode;
+	if (parval(2))
+		drawMode = (int)parval(2);
+
+	if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
+		a->buildBarrierMesh();
+
+	if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
+		a->buildBoundsMesh();
+
+	if (drawMode & ASTAR_DRAW_MODE_TRAFFIC)
+		a->buildTrafficMesh();
 }

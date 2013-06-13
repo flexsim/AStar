@@ -158,8 +158,8 @@
          <node f="40-0"><name></name></node>
          <node f="42-0"><name>Spatial</name></node>
         </node>
-        <node f="42-0" dt="1"><name>lastMouseX</name><data>00000000c0180000</data></node>
-        <node f="42-0" dt="1"><name>lastMouseY</name><data>00000000c0180000</data></node>
+        <node f="42-0" dt="1"><name>lastMouseX</name><data>e8f2910240089456</data></node>
+        <node f="42-0" dt="1"><name>lastMouseY</name><data>17b359e8c0173833</data></node>
         <node f="42-0" dt="1"><name>editing</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>mode</name><data>0000000000000000</data></node>
         <node f="42-0" dt="3"><name>activeNavigator</name><data><coupling>null</coupling></data></node>
@@ -210,10 +210,12 @@ if (!editing) {
 	}
 }
 
+// If I am editing, the on click will fire because
+// the mouse is over a point object
 if (editing) {
-	function_s(c, "onClick", activeNavigator, clickCode, mouseX, mouseY);
-	int newEditingVal = function_s(c, "getActiveBarrierMode", activeNavigator);
-	setvarnum(c, "editing", newEditingVal ? 1 : 0);
+	postwindowmessage(windowfromnode(activedocumentnode()),
+		FLEXSIM_MESSAGE_USER_NODEFUNCTION,
+		node("checkStatus", eventfunctions(c)), 0);
 }</data></node>
         <node f="42-4" dt="2"><name>OnMouseMove</name><data>if (getvarnum(c, "editing")) {
 	if (!objectexists(i))
@@ -228,7 +230,8 @@ if (editing) {
 	setvarnum(c, "lastMouseX", mouseX);
 	setvarnum(c, "lastMouseY", mouseY);
 	
-	function_s(c, "onMouseMove", tonode(getvarnum(c, "activeNavigator")), dx, dy);
+	function_s(c, "onMouseMove", tonode(getvarnum(c, "activeNavigator")), 
+		mouseX, mouseY, dx, dy);
 	
 	#define WM_PAINT 0x000F
 	postwindowmessage(windowfromnode(i), WM_PAINT,0,0);
@@ -245,11 +248,18 @@ if (!objectexists(activeNavigator))
 	return 0;
 
 if (getvarnum(c, "editing")) {
-	function_s(c, "removeBarrier", content(getvarnode(activeNavigator, "barriers")) - 1);
+	function_s(c, "onMouseMove", activeNavigator, RIGHT_RELEASE, 0, 0);
 	setvarnum(c, "editing", 0);
 }
 
 setvarnum(c, "mode", 0);</data></node>
+        <node f="42-4" dt="2"><name>checkStatus</name><data>treenode activeNavigator = tonode(getvarnum(ownerobject(c), "activeNavigator"));
+if (!objectexists(activeNavigator))
+	return 0;
+	
+
+int newEditingVal = function_s(ownerobject(c), "getActiveBarrierMode", activeNavigator);
+setvarnum(ownerobject(c), "editing", newEditingVal ? 1 : 0);</data></node>
         <node f="42-10000" dt="2"><name>setEditMode</name><data>dll:"module:AStar" func:"AStarNavigator_setEditMode"</data></node>
         <node f="42-10000" dt="2"><name>addBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_addBarrier"</data></node>
         <node f="42-10000" dt="2"><name>removeBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_removeBarrier"</data></node>

@@ -157,8 +157,7 @@ double Barrier::onClick(int clickCode, double x, double y)
 {
 	if (clickCode == LEFT_PRESS) {
 
-		// If already editing, don't do anything on press
-		if (mode == BARRIER_MODE_POINT_EDIT) {
+		if (mode & BARRIER_MODE_CREATE) {
 			return 0;
 		}
 
@@ -196,7 +195,7 @@ double Barrier::onClick(int clickCode, double x, double y)
 	}
 
 	if (clickCode == LEFT_RELEASE) {
-		if (mode == BARRIER_MODE_POINT_EDIT) {
+		if (mode & BARRIER_MODE_POINT_EDIT) {
 			activePointIndex = 0;
 			mode = 0;
 		}
@@ -204,7 +203,8 @@ double Barrier::onClick(int clickCode, double x, double y)
 
 	if (clickCode == RIGHT_RELEASE) {
 		// Right click -> abort barrier creation
-		if (mode == BARRIER_MODE_POINT_EDIT) {
+		if (mode & BARRIER_MODE_CREATE) {
+			modeleditmode(0);
 			destroyobject(holder);
 		}
 	}
@@ -212,12 +212,12 @@ double Barrier::onClick(int clickCode, double x, double y)
 	return 0;
 }
 
-double Barrier::onMouseMove(double dx, double dy)
+double Barrier::onMouseMove(double x, double y, double dx, double dy)
 {
-	if (mode == BARRIER_MODE_POINT_EDIT) {
+	if (mode & BARRIER_MODE_POINT_EDIT) {
 		Point* activePoint = pointList[(int)activePointIndex];
-		activePoint->x += dx;
-		activePoint->y += dy;
+		activePoint->x = x + 0.2 * nodeWidth;
+		activePoint->y = y + 0.2 * nodeWidth;
 
 		Point* bottomLeft = pointList[0];
 		Point* topRight = pointList[1];
@@ -241,7 +241,7 @@ double Barrier::onMouseMove(double dx, double dy)
 		}
 	}
 
-	if (mode == BARRIER_MODE_MOVE) {
+	if (mode & BARRIER_MODE_MOVE) {
 		for (int i = 0; i < pointList.size(); i++) {
 			pointList[i]->x += dx;
 			pointList[i]->y += dy;
