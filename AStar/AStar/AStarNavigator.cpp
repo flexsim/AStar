@@ -369,7 +369,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 double AStarNavigator::onClick(TreeNode* view, int clickcode)
 {
-	modeleditmode(0);
 	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
 	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
 
@@ -381,9 +380,9 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 			if (b != barrier) {
 				b->activePointIndex = 0;
 				b->isActive = 0;
+				modeleditmode(0);
 			}
 		}
-
 		activeBarrier = barrier->holder;
 		barrier->isActive = 1;
 		buildBarrierMesh();
@@ -396,6 +395,7 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 		buildBarrierMesh();
 	}
 	activeBarrier = 0;
+	modeleditmode(0);
 	return FlexsimObject::onClick(view, (int)clickcode);
 }
 
@@ -464,6 +464,7 @@ double AStarNavigator::onDestroy(TreeNode* view)
 		
 		if (objectexists(secondary)) {
 			destroyobject(secondary);
+			buildBarrierMesh();
 		} else {
 			destroyobject(holder);
 		}
@@ -986,7 +987,7 @@ void AStarNavigator::buildEdgeTable()
 
 	for(int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
-		barrier->modifyTable(edgeTable, nodeWidth, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
+		barrier->modifyTable(edgeTable, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
 	}
 		/*
 		switch(barriertype)
@@ -1232,6 +1233,7 @@ void AStarNavigator::buildBarrierMesh()
 	barrierMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, 0);
 
 	for (int i = 0; i < barrierList.size(); i++) {
+		barrierList[i]->nodeWidth = nodeWidth;
 		barrierList[i]->addVertices(&barrierMesh, 0.1f);
 	}
 }
@@ -1324,7 +1326,7 @@ void AStarNavigator::drawGrid()
 				float pos1[3] = {(float)x, (float)y, 0.1f};
 				float pos2[3] = {(float)(x + 0.25 * nodeWidth), (float)(y + 0.25 * nodeWidth), 0.1f};
 				gridMesh.setVertexAttrib(newVertex1, MESH_POSITION, pos1);
-				gridMesh.setVertexAttrib(newVertex1, MESH_POSITION, pos2);
+				gridMesh.setVertexAttrib(newVertex2, MESH_POSITION, pos2);
 			}
 		}
 		gridMesh.draw(GL_LINES);
@@ -1359,10 +1361,15 @@ visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	default: return;
 	}
 
-	newBarrier->init(parval(2), parval(3), parval(4), parval(5));
+	newBarrier->init(a->nodeWidth, parval(2), parval(3), parval(4), parval(5));
 	newBarrier->mode = BARRIER_MODE_POINT_EDIT;
 	newBarrier->activePointIndex = 1;
 	newBarrier->isActive = 1;
+	if (objectexists(a->activeBarrier)) {
+		Barrier* activeBarrier = &o(Barrier, tonode(a->activeBarrier));
+		activeBarrier->isActive = 0;
+	}
+
 	a->activeBarrier = newBarrier->holder;
 }
 

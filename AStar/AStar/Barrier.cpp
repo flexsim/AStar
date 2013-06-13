@@ -23,15 +23,18 @@ void Barrier::bind(void)
 	
 	bindNumber(meshOffset);
 	bindNumber(nrVerts);
+	bindNumber(isActive);
 	bindNumber(activePointIndex);
 	bindNumber(mode);
+	bindDouble(nodeWidth, 0);
 
 	bindSubNode(points, 0);
 	pointList.init(points);
 }
 
-void Barrier::init(double x1, double y1, double x2, double y2)
+void Barrier::init(double nodeWidth, double x1, double y1, double x2, double y2)
 {
+	this->nodeWidth = nodeWidth;
 	addPoint(x1, y1);
 	addPoint(x2, y2);
 }
@@ -56,8 +59,8 @@ bool Barrier::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
 	return true;
 }
 
-void Barrier::modifyTable(AStarNode* edgeTable, double nodeWidth, 
-						  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
+void Barrier::modifyTable(AStarNode* edgeTable, double c0, double r0, 
+						  unsigned int edgeTableXSize, unsigned int edgeTableYSize)
 {
 	double xmin, ymin, xmax, ymax;
 	if (!getBoundingBox(xmin, ymin, xmax, ymax))
@@ -106,13 +109,17 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 
 	meshOffset = barrierMesh->nrVerts;
 
-	float black[3] = {0.0f, 0.0f, 0.0f};
+	float gray[3] = {0.4f, 0.4f, 0.4f};
+	float black[3] = {0.4f, 0.4f, 0.4f};
 	if (isActive) {
-		black[0] += 0.4f;
-		black[1] += 0.4f;
-		black[2] += 0.4f;
+		black[0] += 0.2f;
+		black[1] += 0.2f;
+		black[2] += 0.2f;
+		gray[0] += 0.3f;
+		gray[1] += 0.3f;
+		gray[2] += 0.3f;
 	}
-	float blue[3] = {0.0f, 0.0f, 0.8f};
+	
 
 	float bottomLeft[3] = {xmin, ymin, z};
 	float topLeft[3] = {xmin, ymax, z};
@@ -120,6 +127,7 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 	float bottomRight[3] = {xmax, ymin, z};
 
 	float triangleEdgeLength = sqrt(width * width + height * height) / 10.0;
+	triangleEdgeLength = max(0.8 * nodeWidth, triangleEdgeLength);
 	float triangleBottomRight[3] = {xmin + triangleEdgeLength, ymin, z};
 	float triangleBottomTop[3] = {xmin, ymin + triangleEdgeLength, z};
 	float triangleTopLeft[3] = {xmax - triangleEdgeLength, ymax, z};
@@ -134,8 +142,8 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 
 #define ABT(p1, p2, p3, color) ABV(p1, color) ABV(p2, color) ABV(p3, color)
 
-	ABT(triangleTopBottom, topRight, triangleTopLeft, blue);
-	ABT(triangleBottomRight, triangleBottomTop, bottomLeft, blue);
+	ABT(triangleTopBottom, topRight, triangleTopLeft, gray);
+	ABT(triangleBottomRight, triangleBottomTop, bottomLeft, gray);
 	ABT(triangleBottomTop, triangleTopLeft, topLeft, black);
 	ABT(triangleBottomRight, triangleTopLeft, triangleBottomTop, black);
 	ABT(triangleBottomRight, triangleTopBottom, triangleTopLeft, black);
@@ -154,7 +162,7 @@ double Barrier::onClick(int clickCode, double x, double y)
 			return 0;
 		}
 
-		// if the user clicked on a blue triangle, set the mode and active point
+		// if the user clicked on a triangle, set the mode and active point
 		Point* bottomLeftPoint = pointList[0];
 		double blx = bottomLeftPoint->x;
 		double bly = bottomLeftPoint->y;
@@ -169,15 +177,15 @@ double Barrier::onClick(int clickCode, double x, double y)
 
 		double width = xmax - xmin;
 		double height = ymax - ymin;
-		float triangleEdgeLength = sqrt(width * width + height * height) / 20.0;
-
+		float triangleEdgeLength = sqrt(width * width + height * height) / 10.0;
+		triangleEdgeLength = max(0.8 * nodeWidth, triangleEdgeLength);
 		// If the click is in the bottom left corner
-		if (x + y <= triangleEdgeLength) {
+		if ((x + y) <= triangleEdgeLength) {
 			activePointIndex = 0;
 			mode = BARRIER_MODE_POINT_EDIT;
 		
 		// If the click is in the top right corner
-		} else if (x + y >= width + height - triangleEdgeLength) {
+		} else if ((x + y) >= width + height - triangleEdgeLength) {
 			activePointIndex = 1;
 			mode = BARRIER_MODE_POINT_EDIT;
 		
@@ -210,6 +218,27 @@ double Barrier::onMouseMove(double dx, double dy)
 		Point* activePoint = pointList[(int)activePointIndex];
 		activePoint->x += dx;
 		activePoint->y += dy;
+
+		Point* bottomLeft = pointList[0];
+		Point* topRight = pointList[1];
+		double width = topRight->x - bottomLeft->x;
+		double height = topRight->y - bottomLeft->y;
+
+		if (width < nodeWidth) {
+			if (activePoint == bottomLeft) {
+				activePoint->x = topRight->x - nodeWidth;
+			} else {
+				activePoint->x = bottomLeft->x + nodeWidth;
+			}
+		}
+
+		if (height < nodeWidth) {
+			if (activePoint == bottomLeft) {
+				activePoint->y = topRight->y - nodeWidth;
+			} else {
+				activePoint->y = bottomLeft->y + nodeWidth;
+			}
+		}
 	}
 
 	if (mode == BARRIER_MODE_MOVE) {
