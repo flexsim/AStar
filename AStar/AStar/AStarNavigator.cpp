@@ -81,32 +81,24 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 	// This will one day use the Mesh class
 	int pickingmode = getpickingmode(view);
-	int editmode = editMode;
-	int istravelmode = (
-		editmode == EDITMODE_PREFERRED_PATH
-		|| editmode == EDITMODE_DIVIDER
-		|| editmode == EDITMODE_ONE_WAY_DIVIDER
-		|| editmode == EDITMODE_SOLID_BARRIER
-		);
-	int drawmode = (int)drawMode;
-	if(istravelmode) drawmode = ASTAR_DRAW_MODE_BOUNDS | ASTAR_DRAW_MODE_BARRIERS;
-	if(drawmode == 0) return 0;
+	int drawMode = (int)this->drawMode;
+	if(drawMode == 0) return 0;
 	
 	glScalef(1.0/b_spatialsx, 1.0/b_spatialsy, 1.0/b_spatialsz);
 	glTranslatef(-b_spatialx, -b_spatialy, -b_spatialz);
 
 	if (!pickingmode) {
 		glBindTexture(GL_TEXTURE_2D, 0);
-		if (drawmode & ASTAR_DRAW_MODE_GRID)
+		if (drawMode & ASTAR_DRAW_MODE_GRID)
 			drawGrid();
 
-		if (drawmode & ASTAR_DRAW_MODE_BARRIERS)
+		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
 			boundsMesh.draw(GL_QUADS);
 
-		if (drawmode & ASTAR_DRAW_MODE_BARRIERS)
+		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
 			barrierMesh.draw(GL_TRIANGLES);
 
-		if (drawmode & ASTAR_DRAW_MODE_TRAFFIC)
+		if (drawMode & ASTAR_DRAW_MODE_TRAFFIC)
 			trafficMesh.draw(GL_TRIANGLES);
 
 		return 0;
@@ -210,7 +202,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 		glPopMatrix();
 	}
 	*/
-	if(drawmode & ASTAR_DRAW_MODE_BARRIERS) {
+	if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
 		for(int i = 0; i < barrierList.size(); i++) {
 			Barrier* barrier = barrierList[i];
 
@@ -223,148 +215,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		}
 	}
-			/*
-			switch(barriertype)
-			{
-				case BARRIER_TYPE_ONE_WAY_DIVIDER:
-				case BARRIER_TYPE_DIVIDER:
-				case BARRIER_TYPE_PREFERRED_PATH:
-				{
-					glPushMatrix();
-					glTranslatef(x1, y1, 0);
-					double x = x1, y = y1;
-					double nextx, nexty;
-					int temprank = BARRIER_X2;
-					while(content(barrier) >= temprank)
-					{
-						nextx = get(rank(barrier, temprank));
-						nexty = get(rank(barrier, temprank+1));
-						double dx = nextx - x;
-						double dy = nexty - y;
-
-						if(pickingmode) setpickingdrawfocus(view, holder, PICK_DIVIDER_NODE, rank(barrier, temprank - 2));
-						glColor3d(0,0,0);
-						glBegin(GL_POINTS);
-							glVertex3d(0, 0, 0);
-						glEnd();
-
-						if(pickingmode) setpickingdrawfocus(view, holder, PICK_DIVIDER_EDGE, rank(barrier, temprank - 2));
-						
-						double rz = radianstodegrees(atan2(dy, dx));
-						glPushMatrix();
-						glRotated(rz, 0,0,1);
-						double dist = sqrt(dx*dx + dy*dy);
-						glBegin(GL_QUADS);
-
-						switch(barriertype)
-						{
-						case BARRIER_TYPE_DIVIDER:
-							if(dist > nodeWidth)
-							{
-								glVertex3d(0.5*nodeWidth, -0.25*nodeWidth, 0);
-								glVertex3d(dist-0.5*nodeWidth, -0.25*nodeWidth, 0);
-								glVertex3d(dist-0.5*nodeWidth, 0.25*nodeWidth, 0);
-								glVertex3d(0.5*nodeWidth, 0.25*nodeWidth, 0);
-							}
-							break;
-
-						case BARRIER_TYPE_ONE_WAY_DIVIDER:
-							if(dist > 2*nodeWidth)
-							{
-								int nrarrows = (int)(dist / (2*nodeWidth) - 1);
-								double tempx = 0.5*(dist - (nrarrows*2*nodeWidth));
-								double startx = tempx;
-								glColor3d(0.1,0.1,0.1);
-								glVertex3d(0.5*nodeWidth, -0.25*nodeWidth, 0);
-								glVertex3d(tempx, -0.25*nodeWidth, 0);
-								glVertex3d(tempx, 0.25*nodeWidth, 0);
-								glVertex3d(0.5*nodeWidth, 0.25*nodeWidth, 0);
-								
-								glVertex3d(dist - tempx, -0.25*nodeWidth, 0);
-								glVertex3d(dist - 0.5*nodeWidth, -0.25*nodeWidth, 0);
-								glVertex3d(dist - 0.5*nodeWidth, 0.25*nodeWidth, 0);
-								glVertex3d(dist - tempx, 0.25*nodeWidth, 0);
-								while(tempx < dist - 2*nodeWidth)
-								{
-									glColor3d(0.1,0.1,0.1);
-									
-									glVertex3d(tempx, -0.25*nodeWidth, 0);
-									glVertex3d(tempx + 0.5*nodeWidth, -0.25*nodeWidth, 0);
-									glVertex3d(tempx + 1*nodeWidth, 0.25*nodeWidth, 0);
-									glVertex3d(tempx, 0.25*nodeWidth, 0);
-									
-									glVertex3d(tempx + nodeWidth, 0.25*nodeWidth, 0);
-									glVertex3d(tempx + 1.5*nodeWidth, -0.25*nodeWidth, 0);
-									glVertex3d(tempx + 2*nodeWidth, -0.25*nodeWidth, 0);
-									glVertex3d(tempx + 2*nodeWidth, 0.25*nodeWidth, 0);
-
-									if(barriertype == BARRIER_TYPE_ONE_WAY_DIVIDER)
-										glColor3d(0.2,0.8,0.2);
-									else glColor3d(0.1, 0.1,0.1);
-
-									glVertex3d(tempx + 0.5*nodeWidth, -0.25*nodeWidth, 0);
-									glVertex3d(tempx + 0.5*nodeWidth, -0.25*nodeWidth, 0);
-									glVertex3d(tempx + 1.5*nodeWidth, -0.25*nodeWidth, 0);
-									glVertex3d(tempx + 1*nodeWidth, 0.25*nodeWidth, 0);
-
-									tempx += 2*nodeWidth;
-								}
-							}
-							break;
-
-						case BARRIER_TYPE_PREFERRED_PATH:
-							if(dist > 2*nodeWidth)
-							{
-								int nrarrows = (int)(dist / (2*nodeWidth) - 1);
-								double tempx = 0.5*(dist - (nrarrows*2*nodeWidth));
-								double startx = tempx;
-								double colors[2][3] = {0.1,0.1,0.1, 0.2, 0.8, 0.2};
-								int colorindex = 1;
-
-								glColor3d(0.1,0.1,0.1);
-								while(tempx < dist - 2*nodeWidth)
-								{
-									glColor3dv(colors[colorindex]);
-									double offset = nodeWidth;
-									
-									glVertex3d(tempx, -0.25*nodeWidth, 0);
-									glVertex3d(tempx + offset, -0.25*nodeWidth, 0);
-									glVertex3d(tempx + 0.5*nodeWidth + offset, 0, 0);
-									glVertex3d(tempx + 0.5*nodeWidth, 0, 0);
-									
-									glVertex3d(tempx + 0.5*nodeWidth, 0, 0);
-									glVertex3d(tempx + 0.5*nodeWidth + offset, 0, 0);
-									glVertex3d(tempx + offset, 0.25*nodeWidth, 0);
-									glVertex3d(tempx, 0.25*nodeWidth, 0);
-
-									tempx += 2*offset;
-									//colorindex = !colorindex;
-								}
-							}
-							break;
-						}
-						
-						glEnd();
-						glColor3d(0,0,0);
-						glPopMatrix();
-						glTranslatef(dx, dy, 0);
-
-						x = nextx;
-						y = nexty;
-						temprank += 2;
-					}
-
-					if(pickingmode) setpickingdrawfocus(view, holder, PICK_DIVIDER_NODE, prev(last(barrier)));
-					glBegin(GL_POINTS);
-						glVertex3d(0, 0, 0);
-					glEnd();
-					glPopMatrix();
-					break;
-				}
-
-			}*/
-	
-
 	return 0;
 }
 

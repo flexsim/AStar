@@ -1,5 +1,6 @@
 #include "Divider.h"
 #include "macros.h"
+#include "AStarNavigator.h"
 
 const char * Divider::getClassFactory(void)
 {
@@ -34,7 +35,97 @@ bool Divider::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
 void Divider::modifyTable(AStarNode* edgeTable, double c0, double r0,
 		unsigned int edgeTableXSize, unsigned int edgeTableYSize)
 {
-	
+	double x = pointList[0]->x;
+	double y = pointList[0]->y;
+
+	// here I assume the row/column number represents the slot above / right of the
+	// corner I am working on 
+	int col = (int)round((x - c0) / nodeWidth);
+	int row = (int)round((y - r0) / nodeWidth);
+	if(x > c0 + col * nodeWidth) col++;
+	if(y > r0 + row * nodeWidth) row++;
+
+	double nextX, nextY;
+	int nextCol, nextRow;
+	for (int i = 0; i < pointList.size() - 1; 
+		i++, x = nextX, y = nextY, row = nextRow, col = nextCol) {
+		
+		nextX = pointList[i + 1]->x;
+		nextY = pointList[i + 1]->y;
+
+		// calculate the column and row numbers for that point (again, above/right of the current corner)
+		nextCol = (int)round((nextX - c0) / nodeWidth);
+		nextRow = (int)round((nextY - r0) / nodeWidth);
+		if(nextX > c0 + col * nodeWidth) col++;
+		if(nextY > r0 + row * nodeWidth) row++;
+
+		// set dx and dy, the differences between the rows and columns
+		double dx = nextCol - col;
+		double dy = nextRow - row;
+		
+		if(dy == 0 && dx == 0)
+			continue;
+
+		// figure out the unit increment (either -1 or 1) for traversing from the
+		// current point to the next point
+		int colInc = (int)sign(dx);
+		if(colInc == 0) 
+			colInc = 1;
+
+		int rowInc = (int)sign(dy);
+		if(rowInc == 0) 
+			rowInc = 1;
+
+		// prevent divide by zero errors
+		if(dx == 0) dx = 0.01;
+		// get the slope of the line
+		double goalSlope = dy/dx;
+
+		int currCol = col;
+		int currRow = row;
+		// now step through the line, essentially walking along the edges of the grid tiles
+		// under the line, and set the divider by zeroing out the bits on each side of the line
+		// I'm walking on
+		while(currCol != nextCol || currRow != nextRow) {
+
+			// the way that I essentially move along the line
+			// is at each grid point, I do a test step horizontally, 
+			// and a test step vertically, and then test the new slope of the line to the 
+			// destination for each of those test steps. Whichever line's slope is closest
+			// to the actual slope represents the step I want to take.
+			int testCol = currCol + colInc;
+			int testRow = currRow + rowInc;
+			double dxTestCol = nextCol - testCol;
+			if(dxTestCol == 0) dxTestCol = 0.01;
+			double dxTestRow = nextCol - currCol;
+			if(dxTestRow == 0) dxTestRow = 0.01;
+			
+			double colIncSlope = (nextRow - currRow)/dxTestCol;
+			double rowIncSlope = (nextRow - testRow)/dxTestRow;
+			
+			int nextCurrCol, nextCurrRow;
+			if(fabs(colIncSlope - goalSlope) <= fabs(rowIncSlope - goalSlope)) {
+				// move over one column
+				nextCurrCol = testCol;
+				nextCurrRow = currRow;
+				
+				int modifyCol = min(nextCurrCol, currCol);
+				DeRefEdgeTable(currRow, modifyCol).canGoDown = 0;
+				DeRefEdgeTable(currRow-1, modifyCol).canGoUp = 0;
+				
+			} else {
+				nextCurrCol = currCol;
+				nextCurrRow = testRow;
+				
+				int modifyRow = min(nextCurrRow, currRow);
+				DeRefEdgeTable(modifyRow, currCol).canGoLeft = 0;
+				DeRefEdgeTable(modifyRow, currCol - 1).canGoRight = 0;
+			}
+			
+			currCol = nextCurrCol;
+			currRow = nextCurrRow;
+		}
+	}
 }
 
 void Divider::addVertices(Mesh* barrierMesh, float z)
@@ -45,9 +136,9 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 		black[0] += 0.2f;
 		black[1] += 0.2f;
 		black[2] += 0.2f;
-		gray[0] += 0.3f;
-		gray[1] += 0.3f;
-		gray[2] += 0.3f;
+		gray[0] -= 0.1f;
+		gray[1] -= 0.1f;
+		gray[2] -= 0.1f;
 	}
 	nrVerts = 0;
 	meshOffset = barrierMesh->nrVerts;
@@ -99,7 +190,7 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 	}
 
 	// For each pair of points, draw a rectangle in between
-	float distToRect = 0.6 * nodeWidth;
+	float distToRect = 0.4 * nodeWidth;
 	float distToCorner = sqrt(distToRect * distToRect + radius * radius);
 	dTheta = atan2(radius, distToRect);
 	for (int i = 0; i < pointList.size() - 1; i++) {
@@ -111,6 +202,8 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 		float theta = atan2(dy, dx);
 		
 		float length = sqrt(dx * dx + dy * dy) - 2 * distToRect;
+		if (length <= 0)
+			continue;
 		float height = 2 * radius;
 
 		// Use the bottomleft corner of the rectangle to get every other corner
@@ -227,8 +320,8 @@ double Divider::onMouseMove(double x, double y, double dx, double dy)
 			double prevX, prevY;
 			getPointCoords(prevIndex, prevX, prevY);
 
-			double dx = prevX - x;
-			double dy = prevY - y;
+			double dx = x - prevX;
+			double dy = y - prevY;
 			if (sqrt(dx * dx + dy * dy) < radius) {
 				double theta = atan2(dy, dx);
 				x = prevX + cos(theta) * radius;
@@ -243,8 +336,8 @@ double Divider::onMouseMove(double x, double y, double dx, double dy)
 			double nextX, nextY;
 			getPointCoords(nextIndex, nextX, nextY);
 
-			double dx = nextX - x;
-			double dy = nextY - y;
+			double dx = x - nextX;
+			double dy = y - nextY;
 			if (sqrt(dx * dx + dy * dy) < radius) {
 				double theta = atan2(dy, dx);
 				x = nextX + cos(theta) * radius;
