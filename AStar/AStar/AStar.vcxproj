@@ -175,6 +175,7 @@
     <ClInclude Include="..\..\include\Barrier.h" />
     <ClInclude Include="..\..\include\Divider.h" />
     <ClInclude Include="..\..\include\macros.h" />
+    <ClInclude Include="..\..\include\OneWayDivider.h" />
     <ClInclude Include="..\..\include\Point.h" />
     <ClInclude Include="AStar.h" />
     <ClInclude Include="flexsimcontent\all.h" />
@@ -209,6 +210,7 @@
     <ClCompile Include="Barrier.cpp" />
     <ClCompile Include="Divider.cpp" />
     <ClCompile Include="flexsimcontent\dllmain.cpp" />
+    <ClCompile Include="OneWayDivider.cpp" />
     <ClCompile Include="Point.cpp" />
   </ItemGroup>
   <ItemGroup>

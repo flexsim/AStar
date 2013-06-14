@@ -1,5 +1,6 @@
 #include "AStarNavigator.h"
 #include "Divider.h"
+#include "OneWayDivider.h"
 #include "macros.h"
 
 unsigned int AStarNavigator::editMode = 0;
@@ -1208,6 +1209,7 @@ visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	switch (AStarNavigator::editMode) {
 	case EDITMODE_SOLID_BARRIER: newBarrier = a->barrierList.add(new Barrier); break;
 	case EDITMODE_DIVIDER: newBarrier = a->barrierList.add(new Divider); break;
+	case EDITMODE_ONE_WAY_DIVIDER: newBarrier = a->barrierList.add(new OneWayDivider); break;
 	default: return;
 	}
 
