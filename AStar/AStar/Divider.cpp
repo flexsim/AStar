@@ -190,11 +190,10 @@ double Divider::onClick(int clickCode, double x, double y)
 
 	if (clickCode == RIGHT_RELEASE) {
 		// Right click -> abort barrier creation
-		if (activePointIndex > 0) {
-			pointList.remove(activePointIndex);
-		}
 		if ((mode & BARRIER_MODE_CREATE)) {
-			modeleditmode(0);
+			pointList.remove(pointList.size() - 1);
+			mode = 0;
+			activePointIndex = pointList.size();
 			if (pointList.size() < 2)
 				destroyobject(holder);
 		}

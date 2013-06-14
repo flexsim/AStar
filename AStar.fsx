@@ -286,7 +286,12 @@ setvarnum(c, "dragging", 0);
 setvarnum(c, "lastModelX", 0);
 setvarnum(c, "lastModelY", 0);
 setvarnum(c, "dragX", 0);
-setvarnum(c, "dragY", 0);</data></node>
+setvarnum(c, "dragY", 0);
+
+treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
+function_s(c, "onClick", activeNav, RIGHT_RELEASE, 0, 0);
+
+function_s(c, "rebuildMeshes", activeNav, ASTAR_DRAW_MODE_BARRIERS);</data></node>
         <node f="42-4" dt="2"><name>checkStatus</name><data>treenode activeNavigator = tonode(getvarnum(ownerobject(c), "activeNavigator"));
 if (!objectexists(activeNavigator))
 	return 0;
@@ -307,6 +312,7 @@ setvarnum(theEditMode, "editing", 1);
         <node f="42-10000" dt="2"><name>onMouseMove</name><data>dll:"module:AStar" func:"AStarNavigator_onMouseMove"</data></node>
         <node f="42-10000" dt="2"><name>onClick</name><data>dll:"module:AStar" func:"AStarNavigator_onClick"</data></node>
         <node f="42-10000" dt="2"><name>getActiveBarrierMode</name><data>dll:"module:AStar" func:"AStarNavigator_getActiveBarrierMode"</data></node>
+        <node f="42-10000" dt="2"><name>rebuildMeshes</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildMeshes"</data></node>
         <node f="42-10000" dt="2"><name>addPoint</name><data>dll:"module:AStar" func:"Barrier_addPoint"</data></node>
         <node f="42-10000" dt="2"><name>removePoint</name><data>dll:"module:AStar" func:"Barrier_removePoint"</data></node>
         <node f="42-10000" dt="2"><name>swapPoints</name><data>dll:"module:AStar" func:"Barrier_swapPoints"</data></node>
@@ -449,13 +455,13 @@ nodepoint(objectfocus(c), 0);</data></node>
       <node f="40-0"><name></name></node>
       <node f="42-0"><name>LibraryGroup</name>
        <node f="40-0"><name></name></node>
-       <node f="42-100000" dt="4"><name>Create Barrier</name><data>
+       <node f="42-0" dt="4"><name>Create Barrier</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Barrier")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
        </data></node>
-       <node f="42-0" dt="4"><name>Create Divider</name><data>
+       <node f="42-100000" dt="4"><name>Create Divider</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Divider")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
