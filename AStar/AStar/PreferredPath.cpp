@@ -1,30 +1,27 @@
-#include "OneWayDivider.h"
+#include "PreferredPath.h"
 #include "AStarNavigator.h"
 
-const char * OneWayDivider::getClassFactory(void)
+const char * PreferredPath::getClassFactory(void)
 {
-	return "AStar::OneWayDivider";
+	return "AStar::PreferredPath";
 }
 
 
-void OneWayDivider::bind(void)
+void PreferredPath::bind(void)
 {
 	Divider::bind();
 }
 
-void OneWayDivider::modifyTable(AStarNode* edgeTable, 
+void PreferredPath::modifyTable(AStarNode* edgeTable, 
 						  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
 						  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
 {
 	double x = pointList[0]->x;
 	double y = pointList[0]->y;
 
-	// here I assume the row/column number represents the slot above / right of the
-	// corner I am working on 
+	// here I assume the row/column number represents the tile of the row and column
 	int col = (int)round((x - c0) / nodeWidth);
 	int row = (int)round((y - r0) / nodeWidth);
-	if(x > c0 + col * nodeWidth) col++;
-	if(y > r0 + row * nodeWidth) row++;
 
 	double nextX, nextY;
 	int nextCol, nextRow;
@@ -34,11 +31,9 @@ void OneWayDivider::modifyTable(AStarNode* edgeTable,
 		nextX = pointList[i + 1]->x;
 		nextY = pointList[i + 1]->y;
 
-		// calculate the column and row numbers for that point (again, above/right of the current corner)
+		// calculate the column and row numbers for that point
 		nextCol = (int)round((nextX - c0) / nodeWidth);
 		nextRow = (int)round((nextY - r0) / nodeWidth);
-		if(nextX > c0 + col * nodeWidth) col++;
-		if(nextY > r0 + row * nodeWidth) row++;
 
 		// set dx and dy, the differences between the rows and columns
 		double dx = nextCol - col;
@@ -46,6 +41,10 @@ void OneWayDivider::modifyTable(AStarNode* edgeTable,
 		
 		if(dy == 0 && dx == 0)
 			continue;
+
+		// calculate the weight values for preferred paths.
+		int horizontalWeight = (int)(127 * dx / (fabs(dx) + fabs(dy)));
+		int verticalWeight = (int)(127 * dy / (fabs(dx) + fabs(dy)));
 
 		// figure out the unit increment (either -1 or 1) for traversing from the
 		// current point to the next point
@@ -69,6 +68,24 @@ void OneWayDivider::modifyTable(AStarNode* edgeTable,
 		// I'm walking on
 		while(currCol != nextCol || currRow != nextRow) {
 
+			AStarSearchEntry e;
+			e.col = currCol;
+			e.row = currRow;
+			AStarNodeExtraData * extra;
+			auto extraIter = extraData->find(e.colRow);
+			if(extraIter == extraData->end()) {
+				extra = &((*extraData)[e.colRow]);
+				memset(extra, 0, sizeof(AStarNodeExtraData));
+				extra->colRow = e.colRow;
+				DeRefEdgeTable(e.row, e.col).noExtraData = 0;
+			} else {
+				extra = &(extraIter->second);
+			}
+			extra->bonusRight = (char)maxof(-128,minof(127, extra->bonusRight + horizontalWeight));
+			extra->bonusLeft = (char)maxof(-128,minof(127, extra->bonusLeft - horizontalWeight));
+			extra->bonusUp = (char)maxof(-128,minof(127, extra->bonusUp + verticalWeight));
+			extra->bonusDown = (char)maxof(-128,minof(127, extra->bonusDown - verticalWeight));
+
 			// the way that I essentially move along the line
 			// is at each grid point, I do a test step horizontally, 
 			// and a test step vertically, and then test the new slope of the line to the 
@@ -90,22 +107,17 @@ void OneWayDivider::modifyTable(AStarNode* edgeTable,
 				nextCurrCol = testCol;
 				nextCurrRow = currRow;
 				
-
 				int modifyCol = min(nextCurrCol, currCol);
-				if(dx > 0)
-					DeRefEdgeTable(currRow, modifyCol).canGoDown = 0;
-				if(dx < 0)
-					DeRefEdgeTable(currRow-1, modifyCol).canGoUp = 0;
+				DeRefEdgeTable(currRow, modifyCol).canGoDown = 0;
+				DeRefEdgeTable(currRow-1, modifyCol).canGoUp = 0;
 				
 			} else {
 				nextCurrCol = currCol;
 				nextCurrRow = testRow;
 				
 				int modifyRow = min(nextCurrRow, currRow);
-				if(dy < 0)
-					DeRefEdgeTable(modifyRow, currCol).canGoLeft = 0;
-				if(dy > 0)
-					DeRefEdgeTable(modifyRow, currCol - 1).canGoRight = 0;
+				DeRefEdgeTable(modifyRow, currCol).canGoLeft = 0;
+				DeRefEdgeTable(modifyRow, currCol - 1).canGoRight = 0;
 			}
 			
 			currCol = nextCurrCol;
@@ -114,7 +126,7 @@ void OneWayDivider::modifyTable(AStarNode* edgeTable,
 	}
 }
 
-void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
+void PreferredPath::addVertices(Mesh* barrierMesh, float z)
 {
 	float dark[3] = {0.4f, 0.4f, 0.4f};
 	float light[3] = {0.0, 1.0f, 0.0f};
@@ -174,9 +186,9 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 		ABV(pos2, dark, highlight);
 	}
 #undef ABV
-	// Draw alternating light and dark triangles
 
-	float maxTriangleWidth = 2 * nodeWidth;
+	// Draw a series of triangles
+	float maxTriangleWidth = nodeWidth;
 	float distToRect = 0.4 * nodeWidth;
 	float distToCorner = sqrt(distToRect * distToRect + radius * radius);
 	float height = 2 * radius;
@@ -196,15 +208,13 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 		float sinTheta = sin(theta);
 		float cosTheta = cos(theta);
 		// Find how many will fit, and stretch them to fit.
-		int numLightTriangles = length / maxTriangleWidth;
-		if (numLightTriangles < 1) {
-			numLightTriangles = 1;
+		int numTriangles = length / maxTriangleWidth;
+		if (numTriangles < 1) {
+			numTriangles = 1;
 		}
-		float lightTriangleWidth = length / numLightTriangles;
-		float ltw = lightTriangleWidth;
-		float numTriangles = 2 * numLightTriangles + 1;
+		float triangleWidth = length / numTriangles;
+		float tw = triangleWidth;
 		
-
 		// Use the bottomleft corner of the rectangle to get every other corner
 		float bottomLeft[3] = {distToCorner * cos(theta - dTheta) + point->x, 
 			distToCorner * sin(theta - dTheta) + point->y, z};
@@ -212,77 +222,58 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 		float topLeft[3] = {bottomLeft[0] - height * sinTheta, 
 			bottomLeft[1] + height * cosTheta, z};
 
-		float bottomRight[3] = {bottomLeft[0] + length * cos(theta),
-			bottomLeft[1] + length * sin(theta), z};
+		float pos0[3] = {0.0f, 0.0f, z};
+		float pos1[3] = {0.0f, 0.0f, z};
+		float pos2[3] = {0.0f, 0.0f, z};
 
-		float topRight[3] = {bottomRight[0] - height * sinTheta,
-			bottomRight[1] + height * cosTheta, z};
-
-		float pos0[3] = {bottomLeft[0], bottomLeft[1], bottomLeft[2]};
-		float pos1[3] = {bottomLeft[0] + 0.5 * ltw * cos(theta), bottomLeft[1] + 0.5 * ltw * sinTheta, z};
-		float pos2[3] = {topLeft[0], topLeft[1], topLeft[2]};
-		float currentX = 0.5 * ltw;
-		// Draw the triangles in a triangle strip fashion, keeping the
-		// in common points between light and dark triangles
 		for (int j = 0; j < numTriangles; j++) {
 
+#define ROTATE_POINT(rx, ry, x, y) \
+	rx = x * cosTheta - y * sinTheta;\
+	ry = x * sinTheta + y * cosTheta;
+
 #define ABV(pos, color)  {\
-			int vertName = barrierMesh->addVertex();\
-			nrVerts++;\
-			barrierMesh->setVertexAttrib(vertName, MESH_EMISSIVE, color);\
-			barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
+	int vertName = barrierMesh->addVertex();\
+	nrVerts++;\
+	barrierMesh->setVertexAttrib(vertName, MESH_EMISSIVE, color);\
+	barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
+}
+
+#define ABT(pos1, pos2, pos3, dark, green) ABV(pos1, green) ABV(pos2, dark) ABV(pos3, dark)
+
+
+			float triangleTipX = (j + 1) * tw;
+			float triangleTipY = height / 2.0;
+			float triangleTopX = j * tw;
+			float triangleTopY = height;
+			float triangleBottomX = triangleTopX;
+			float triangleBottomY = 0;
+
+			float rtX, rtY;
+
+			ROTATE_POINT(rtX, rtY, triangleTipX, triangleTipY);
+			triangleTipX = rtX + bottomLeft[0];
+			triangleTipY = rtY + bottomLeft[1];
+
+			ROTATE_POINT(rtX, rtY, triangleTopX, triangleTopY);
+			triangleTopX = rtX + bottomLeft[0];
+			triangleTopY = rtY + bottomLeft[1];
+
+			ROTATE_POINT(rtX, rtY, triangleBottomX, triangleBottomY);
+			triangleBottomX = rtX + bottomLeft[0];
+			triangleBottomY = rtY + bottomLeft[1];
+
+			pos0[0] = triangleTipX;
+			pos0[1] = triangleTipY;
+			pos1[0] = triangleTopX;
+			pos1[1] = triangleTopY;
+			pos2[0] = triangleBottomX;
+			pos2[1] = triangleBottomY;
+
+			ABT(pos0, pos1, pos2, dark, light);
 		}
-
-#define ABT(pos1, pos2, pos3, color) ABV(pos1, color) ABV(pos2, color) ABV(pos3, color)
-			
-			currentX += 0.5 * ltw;
-			// Set the points for next round
-			if (j % 2 == 0) {
-				// Draw the dark (bottom) triangle
-				ABT(pos0, pos1, pos2, dark);
-
-				// New vertex location: find the new point in local coords,
-				// rotate it, and then set p1 to it
-				float newX = currentX;
-				float newY = height;
-				
-				float rotatedX = newX * cosTheta - newY * sinTheta;
-				float rotatedY = newX * sinTheta + newY * cosTheta;
-
-				newX = rotatedX + bottomLeft[0];
-				newY = rotatedY + bottomLeft[1];
-
-				pos0[0] = pos1[0];
-				pos0[1] = pos1[1];
-				pos1[0] = newX;
-				pos1[1] = newY;
-			} else {
-				// Draw the light (top) triangle
-				ABV(pos0, light); ABV(pos1, dark); ABV(pos2, dark);
-
-				// Calculate the dark triangle location
-				// New vertex location: find the new point in local coords,
-				// rotate it, and then set p1 to it
-				float newX = currentX;
-				float newY = 0;
-
-				if (newX > length)
-					newX = length;
-
-				float rotatedX = newX * cosTheta - newY * sinTheta;
-				float rotatedY = newX * sinTheta + newY * cosTheta;
-
-				newX = rotatedX + bottomLeft[0];
-				newY = rotatedY + bottomLeft[1];
-				
-				pos2[0] = pos1[0];
-				pos2[1] = pos1[1];
-				pos1[0] = newX;
-				pos1[1] = newY;
-			}
-		}
-#undef COPY2
+	}
 #undef ABT
 #undef ABV
-	}
+#undef ROTATE_POINT
 }

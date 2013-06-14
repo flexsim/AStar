@@ -1,7 +1,7 @@
 #pragma once
 #include "FlexsimDefs.h"
 #include "Divider.h"
-class OneWayDivider :
+class PreferredPath :
 	public Divider
 {
 public:

@@ -32,8 +32,9 @@ bool Divider::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
 
 	return true;
 }
-void Divider::modifyTable(AStarNode* edgeTable, double c0, double r0,
-		unsigned int edgeTableXSize, unsigned int edgeTableYSize)
+void Divider::modifyTable(AStarNode* edgeTable, 
+						  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
+						  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
 {
 	double x = pointList[0]->x;
 	double y = pointList[0]->y;

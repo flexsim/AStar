@@ -1,6 +1,7 @@
 #include "AStarNavigator.h"
 #include "Divider.h"
 #include "OneWayDivider.h"
+#include "PreferredPath.h"
 #include "macros.h"
 
 unsigned int AStarNavigator::editMode = 0;
@@ -837,7 +838,7 @@ void AStarNavigator::buildEdgeTable()
 
 	for(int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
-		barrier->modifyTable(edgeTable, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
+		barrier->modifyTable(edgeTable, &edgeTableExtraData, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
 	}
 		/*
 		switch(barriertype)
@@ -1210,6 +1211,7 @@ visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	case EDITMODE_SOLID_BARRIER: newBarrier = a->barrierList.add(new Barrier); break;
 	case EDITMODE_DIVIDER: newBarrier = a->barrierList.add(new Divider); break;
 	case EDITMODE_ONE_WAY_DIVIDER: newBarrier = a->barrierList.add(new OneWayDivider); break;
+	case EDITMODE_PREFERRED_PATH: newBarrier = a->barrierList.add(new PreferredPath); break;
 	default: return;
 	}
 

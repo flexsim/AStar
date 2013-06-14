@@ -1,3 +1,4 @@
+#include "PreferredPath.h"
 #include "OneWayDivider.h"
 #include "Divider.h"
 #include "Point.h"
@@ -13,6 +14,7 @@ visible ObjectDataType* createodtderivative(char* classname)
 
 visible SimpleDataType* createsdtderivative(char* classname)
 {
+	if(strcmp(classname, "PreferredPath")==0) return new PreferredPath;
 	if(strcmp(classname, "OneWayDivider")==0) return new OneWayDivider;
 	if(strcmp(classname, "Divider")==0) return new Divider;
 	if(strcmp(classname, "Point")==0) return new Point;

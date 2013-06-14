@@ -59,8 +59,9 @@ bool Barrier::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
 	return true;
 }
 
-void Barrier::modifyTable(AStarNode* edgeTable, double c0, double r0, 
-						  unsigned int edgeTableXSize, unsigned int edgeTableYSize)
+void Barrier::modifyTable(AStarNode* edgeTable, 
+						  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
+						  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
 {
 	double xmin, ymin, xmax, ymax;
 	if (!getBoundingBox(xmin, ymin, xmax, ymax))
