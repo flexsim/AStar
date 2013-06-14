@@ -381,7 +381,6 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 			if (b != barrier) {
 				b->activePointIndex = 0;
 				b->isActive = 0;
-				modeleditmode(0);
 			}
 		}
 		activeBarrier = barrier->holder;
@@ -396,7 +395,6 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 		buildBarrierMesh();
 	}
 	activeBarrier = 0;
-	modeleditmode(0);
 	return FlexsimObject::onClick(view, (int)clickcode);
 }
 

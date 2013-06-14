@@ -158,8 +158,14 @@
          <node f="40-0"><name></name></node>
          <node f="42-0"><name>Spatial</name></node>
         </node>
-        <node f="42-0" dt="1"><name>lastMouseX</name><data>e8f2910240089456</data></node>
-        <node f="42-0" dt="1"><name>lastMouseY</name><data>17b359e8c0173833</data></node>
+        <node f="42-0" dt="1"><name>lastMouseX</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>lastMouseY</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>dragX</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>dragY</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>dragging</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>lastModelX</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>lastModelY</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>creating</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>editing</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>mode</name><data>0000000000000000</data></node>
         <node f="42-0" dt="3"><name>activeNavigator</name><data><coupling>null</coupling></data></node>
@@ -169,7 +175,6 @@
         <node f="42-4" dt="2"><name>OnClick</name><data>if (!objectexists(i))
 	return 0;
 
-int editing = getvarnum(c, "editing");
 int mode = getvarnum(c, "mode");
 treenode selobj = selectedobject(i/*The view*/);
 treenode currBarrierNode = getvarnode(c, "currBarrierNode");
@@ -195,46 +200,76 @@ if (!objectexists(activeNavigator)) {
 
 int mouseX = cursorinfo(i, 2, 1, 1);
 int mouseY = cursorinfo(i, 2, 2, 1);
-setvarnum(c, "lastMouseX", mouseX);
-setvarnum(c, "lastMouseY", mouseY);
+setvarnum(c, "lastMouseX", cursorinfo(i, 1, 1, 1));
+setvarnum(c, "lastMouseY", cursorinfo(i, 1, 2, 1));
+setvarnum(c, "lastModelX", mouseX);
+setvarnum(c, "lastModelY", mouseY);
 int clickCode = clickcode();
 
-if (!editing) {
+pt("SelectedObject: "); pt(nodetomodelpath(selobj, 1)); 
+pt(" clickcode: "); pd(clickCode); pr();
+
+if (!objectexists(selobj)) {
 	if (clickCode == LEFT_RELEASE) {
-		function_s(c, "addBarrier", activeNavigator, mouseX, mouseY, mouseX, mouseY);
-		setvarnum(c, "editing", 1);
+		int dx = getvarnum(c, "dragX");
+		int dy = getvarnum(c, "dragY");
+		
+		// Allow the user to pan the view
+		if (fabs(dx) &lt; 2 &amp;&amp; fabs(dy) &lt; 2) {
+			setvarnum(c, "creating", 1);
+			setvarnum(c, "editing", 0);
+			
+			function_s(c, "addBarrier", activeNavigator, 
+				mouseX, mouseY, mouseX, mouseY);
+			setselectedobject(i, activeNavigator);	
+		}
 	}
-	
-	if (clickCode == RIGHT_RELEASE) {
-		modeleditmode(0);
-	}
+} else {
+	if (clickCode == LEFT_PRESS) {
+		postwindowmessage(windowfromnode(activedocumentnode()),
+			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
+			node("checkStatus", eventfunctions(c)), 0);	
+	}	
 }
 
-// If I am editing, the on click will fire because
-// the mouse is over a point object
-if (editing) {
-	postwindowmessage(windowfromnode(activedocumentnode()),
-		FLEXSIM_MESSAGE_USER_NODEFUNCTION,
-		node("checkStatus", eventfunctions(c)), 0);
-}</data></node>
-        <node f="42-4" dt="2"><name>OnMouseMove</name><data>if (getvarnum(c, "editing")) {
-	if (!objectexists(i))
+if (clickCode == LEFT_PRESS) {
+	setvarnum(c, "dragX", 0);
+	setvarnum(c, "dragY", 0);
+	setvarnum(c, "dragging", 1);
+}
+
+if (clickCode == LEFT_RELEASE) {
+	setvarnum(c, "dragging", 0);
+}
+</data></node>
+        <node f="42-4" dt="2"><name>OnMouseMove</name><data>if (!objectexists(i))
 		return 0;
-	
+		
+if (getvarnum(c, "creating")) {
 	double mouseX = cursorinfo(i, 2, 1, 1);
 	double mouseY = cursorinfo(i, 2, 2, 1);
+	double dx = mouseX - getvarnum(c, "lastModelX");
+	double dy = mouseY - getvarnum(c, "lastModelY");
 	
-	double dx = mouseX - getvarnum(c, "lastMouseX");
-	double dy = mouseY - getvarnum(c, "lastMouseY");
-	
-	setvarnum(c, "lastMouseX", mouseX);
-	setvarnum(c, "lastMouseY", mouseY);
+	setvarnum(c, "lastModelX", mouseX);
+	setvarnum(c, "lastModelY", mouseY);
 	
 	function_s(c, "onMouseMove", tonode(getvarnum(c, "activeNavigator")), 
 		mouseX, mouseY, dx, dy);
 	
 	#define WM_PAINT 0x000F
 	postwindowmessage(windowfromnode(i), WM_PAINT,0,0);
+
+}
+
+if (getvarnum(c, "dragging")) { 
+	double mouseX = cursorinfo(i, 1, 1, 1);
+	double mouseY = cursorinfo(i, 1, 2, 1);
+	double dx = mouseX - getvarnum(c, "lastMouseX");
+	double dy = mouseY - getvarnum(c, "lastMouseY");
+	
+	setvarnum(c, "dragX", dx);
+	setvarnum(c, "dragY", dy);
 }</data></node>
         <node f="42-4" dt="2"><name>OnEntering</name><data>treenode iconGrid = nodefromwindow(keyboardfocus());
 function_s(c, "setEditMode", getvarnum(c, "mode"));
@@ -242,24 +277,29 @@ nodepoint(viewfocus(c), iconGrid);
 nodepoint(objectfocus(c), selectedobject(iconGrid));</data></node>
         <node f="42-4" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
 
-// If I was editing, destroy the last barrier of the activeNavigator
-treenode activeNavigator = tonode(getvarnum(c, "activeNavigator"));
-if (!objectexists(activeNavigator))
-	return 0;
-
-if (getvarnum(c, "editing")) {
-	function_s(c, "onMouseMove", activeNavigator, RIGHT_RELEASE, 0, 0);
-	setvarnum(c, "editing", 0);
-}
-
-setvarnum(c, "mode", 0);</data></node>
+setvarnum(c, "editing", 0);
+setvarnum(c, "creating", 0);
+setvarnum(c, "mode", 0);
+setvarnum(c, "lastMouseX", 0);
+setvarnum(c, "lastMouseY", 0);
+setvarnum(c, "dragging", 0);
+setvarnum(c, "lastModelX", 0);
+setvarnum(c, "lastModelY", 0);
+setvarnum(c, "dragX", 0);
+setvarnum(c, "dragY", 0);</data></node>
         <node f="42-4" dt="2"><name>checkStatus</name><data>treenode activeNavigator = tonode(getvarnum(ownerobject(c), "activeNavigator"));
 if (!objectexists(activeNavigator))
 	return 0;
-	
 
-int newEditingVal = function_s(ownerobject(c), "getActiveBarrierMode", activeNavigator);
-setvarnum(ownerobject(c), "editing", newEditingVal ? 1 : 0);</data></node>
+treenode theEditMode = ownerobject(c);
+int barrierEditMode = function_s(theEditMode, "getActiveBarrierMode", activeNavigator);
+
+if (barrierEditMode &amp; BARRIER_MODE_CREATE)
+	return 0;
+	
+setvarnum(theEditMode, "creating", 0);
+setvarnum(theEditMode, "editing", 1);
+</data></node>
         <node f="42-10000" dt="2"><name>setEditMode</name><data>dll:"module:AStar" func:"AStarNavigator_setEditMode"</data></node>
         <node f="42-10000" dt="2"><name>addBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_addBarrier"</data></node>
         <node f="42-10000" dt="2"><name>removeBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_removeBarrier"</data></node>

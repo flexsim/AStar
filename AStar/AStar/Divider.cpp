@@ -147,7 +147,7 @@ double Divider::onClick(int clickCode, double x, double y)
 {
 	if (clickCode == LEFT_PRESS) {
 
-		// If already editing, don't do anything on press
+		// If creating, don't try to change the active node or the mode
 		if (mode & BARRIER_MODE_CREATE) {
 			return 0;
 		}
@@ -172,7 +172,7 @@ double Divider::onClick(int clickCode, double x, double y)
 			mode = BARRIER_MODE_POINT_EDIT;
 		
 		} else {
-			activePointIndex = -1;
+			activePointIndex = pointList.size();
 			mode = BARRIER_MODE_MOVE;
 		}
 	}
@@ -183,15 +183,16 @@ double Divider::onClick(int clickCode, double x, double y)
 			addPoint(x, y);
 			activePointIndex = pointList.size() - 1;
 		} else {
-			activePointIndex = -1;
+			activePointIndex = pointList.size();
 			mode = 0;
 		}
 	}
 
 	if (clickCode == RIGHT_RELEASE) {
 		// Right click -> abort barrier creation
-		if (activePointIndex > 0)
+		if (activePointIndex > 0) {
 			pointList.remove(activePointIndex);
+		}
 		if ((mode & BARRIER_MODE_CREATE)) {
 			modeleditmode(0);
 			if (pointList.size() < 2)
