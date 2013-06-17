@@ -219,7 +219,8 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 			bottomRight[1] + height * cosTheta, z};
 
 		float pos0[3] = {bottomLeft[0], bottomLeft[1], bottomLeft[2]};
-		float pos1[3] = {bottomLeft[0] + 0.5 * ltw * cos(theta), bottomLeft[1] + 0.5 * ltw * sinTheta, z};
+		float pos1[3] = {bottomLeft[0] + 0.5 * ltw *cosTheta - height * sinTheta, 
+			topLeft[1] + 0.5 * ltw * sinTheta, z};
 		float pos2[3] = {topLeft[0], topLeft[1], topLeft[2]};
 		float currentX = 0.5 * ltw;
 		// Draw the triangles in a triangle strip fashion, keeping the
@@ -238,13 +239,12 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 			currentX += 0.5 * ltw;
 			// Set the points for next round
 			if (j % 2 == 0) {
-				// Draw the dark (bottom) triangle
+				// Draw the dark (top) triangle
 				ABT(pos0, pos1, pos2, dark);
 
-				// New vertex location: find the new point in local coords,
-				// rotate it, and then set p1 to it
+				// Calculate the far right corner of the bottom triangle
 				float newX = currentX;
-				float newY = height;
+				float newY = 0;
 				
 				float rotatedX = newX * cosTheta - newY * sinTheta;
 				float rotatedY = newX * sinTheta + newY * cosTheta;
@@ -252,19 +252,19 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 				newX = rotatedX + bottomLeft[0];
 				newY = rotatedY + bottomLeft[1];
 
-				pos0[0] = pos1[0];
-				pos0[1] = pos1[1];
+				pos2[0] = pos1[0];
+				pos2[1] = pos1[1];
 				pos1[0] = newX;
 				pos1[1] = newY;
 			} else {
-				// Draw the light (top) triangle
+				// Draw the light (bottom) triangle
 				ABV(pos0, light); ABV(pos1, dark); ABV(pos2, dark);
 
-				// Calculate the dark triangle location
+				// Calculate the far right corner of the top triangle
 				// New vertex location: find the new point in local coords,
 				// rotate it, and then set p1 to it
 				float newX = currentX;
-				float newY = 0;
+				float newY = height;
 
 				if (newX > length)
 					newX = length;
@@ -275,8 +275,8 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 				newX = rotatedX + bottomLeft[0];
 				newY = rotatedY + bottomLeft[1];
 				
-				pos2[0] = pos1[0];
-				pos2[1] = pos1[1];
+				pos0[0] = pos1[0];
+				pos0[1] = pos1[1];
 				pos1[0] = newX;
 				pos1[1] = newY;
 			}
