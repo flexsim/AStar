@@ -154,6 +154,8 @@ public:
 	int edgeTableYSize;
 	int xOffset;
 	int yOffset;
+	float savedXOffset;
+	float savedYOffset;
 	int maxTraveled;
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes

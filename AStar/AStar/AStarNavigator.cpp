@@ -94,7 +94,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
 			drawGrid(0.1f);
 
-		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
+		if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
 			boundsMesh.draw(GL_QUADS);
 
 		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
@@ -220,6 +220,11 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		}
 	}
+
+	if (drawMode & ASTAR_DRAW_MODE_BOUNDS) {
+		setpickingdrawfocus(view, holder, PICK_TYPE_BOUNDS);
+		boundsMesh.draw(GL_QUADS);
+	}
 	return 0;
 }
 
@@ -259,6 +264,44 @@ double AStarNavigator::onDrag(TreeNode* view)
 	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
 	double dx = draginfo(DRAG_INFO_DX);
 	double dy = draginfo(DRAG_INFO_DY);
+
+	// Move all attached barriers and objects
+	if (pickType == PICK_TYPE_BOUNDS) {
+		for (int i = 0; i < barrierList.size(); i++) {
+			Barrier* barrier = barrierList[i];
+
+			for (int i = 0; i < barrier->pointList.size(); i++) {
+				Point* point = barrier->pointList[i];
+				point->x += dx;
+				point->y += dy;
+			}
+		}
+		buildBarrierMesh();
+
+		for (int i = 0; i < objectBarrierList.size(); i++) {
+			TreeNode* obj = objectBarrierList[i]->holder;
+			inc(spatialx(obj), dx);
+			inc(spatialy(obj), dy);
+		}
+
+		TreeNode* travelers = node_v_travelmembers;
+		for (int i = 1; i <= content(travelers); i++) {
+			TreeNode* traveler = ownerobject(tonode(get(rank(travelers, i))));
+			inc(spatialx(traveler), dx);
+			inc(spatialy(traveler), dy);
+		}
+
+		travelers = node_v_activetravelmembers;
+		for (int i = 1; i <= content(travelers); i++) {
+			TreeNode* traveler = ownerobject(tonode(get(rank(travelers, i))));
+			inc(spatialx(traveler), dx);
+			inc(spatialy(traveler), dy);
+		}
+		savedXOffset += dx / nodeWidth;
+		savedYOffset += dy / nodeWidth;
+		buildBoundsMesh();
+		return 1;
+	}
 
 	if (objectexists(secondary)) {
 		Barrier* barrier = &o(Barrier, secondary);
@@ -807,6 +850,8 @@ void AStarNavigator::buildEdgeTable()
 
 	xOffset = (int)(floor(min[0] / nodeWidth) - surroundDepth);
 	yOffset = (int)(floor(min[1] / nodeWidth) - surroundDepth);
+	savedXOffset = xOffset;
+	savedYOffset = yOffset;
 
 	edgeTableXSize = (int)(ceil((max[0] - min[0]) / nodeWidth) + surroundDepth * 2 + 1);
 	edgeTableYSize = (int)(ceil((max[1] - min[1]) / nodeWidth) + surroundDepth * 2 + 1);
@@ -900,7 +945,7 @@ void AStarNavigator::buildBoundsMesh()
 
 	float midBW = 0.4 * borderWidth;
 	float z = 0.1f;
-	float bottomLeft[3] = {xOffset * nodeWidth, yOffset * nodeWidth, z};
+	float bottomLeft[3] = {savedXOffset * nodeWidth, savedYOffset * nodeWidth, z};
 	float topRight[3] = {bottomLeft[0] + width, bottomLeft[1] + height, z};
 	float topLeft[3] = {bottomLeft[0], topRight[1], z};
 	float bottomRight[3] = {topRight[0], bottomLeft[1], z};
