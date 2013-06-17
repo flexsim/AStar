@@ -92,7 +92,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 	if (!pickingmode) {
 		glBindTexture(GL_TEXTURE_2D, 0);
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
-			drawGrid();
+			drawGrid(0.1f);
 
 		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
 			boundsMesh.draw(GL_QUADS);
@@ -102,6 +102,9 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		if (drawMode & ASTAR_DRAW_MODE_TRAFFIC)
 			trafficMesh.draw(GL_TRIANGLES);
+
+		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
+			drawMembers(0.1f);
 
 		return 0;
 	}
@@ -775,24 +778,6 @@ void AStarNavigator::buildEdgeTable()
 		if(y2 < min[1]) min[1] = y2;
 		if(y2 > max[1]) max[1] = y2;
 	}
-	/*
-		case BARRIER_TYPE_DIVIDER:
-		case BARRIER_TYPE_ONE_WAY_DIVIDER:
-		case BARRIER_TYPE_PREFERRED_PATH: {
-			int temprank = BARRIER_X1;
-			while(temprank <= content(barrier)) {
-				double x = get(rank(barrier, temprank));
-				double y = get(rank(barrier, temprank + 1));
-				if(x < min[0]) min[0] = x;
-				if(x > max[0]) max[0] = x;
-				if(y < min[1]) min[1] = y;
-				if(y > max[1]) max[1] = y;
-				temprank += 2;
-			}
-			break;
-		}
-		}
-	}*/
 
 	for (int i = 0; i < objectBarrierList.size(); i++) {
 		// spatialx/y are the top left corner
@@ -840,141 +825,6 @@ void AStarNavigator::buildEdgeTable()
 		Barrier* barrier = barrierList[i];
 		barrier->modifyTable(edgeTable, &edgeTableExtraData, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
 	}
-		/*
-		switch(barriertype)
-		{
-
-			case BARRIER_TYPE_DIVIDER:
-			case BARRIER_TYPE_ONE_WAY_DIVIDER:
-			case BARRIER_TYPE_PREFERRED_PATH:
-			{
-				double x = get(rank(barrier, BARRIER_X1));
-				double y = get(rank(barrier, BARRIER_Y1));
-				// here I assume the row/column number represents the slot above / right of the
-				// corner I am working on for dividers, but the tile itself for preferred paths
-				int col = (int)round((x - col0xloc) / nodeWidth);
-				int row = (int)round((y - row0yloc) / nodeWidth);
-				if(barriertype != BARRIER_TYPE_PREFERRED_PATH) {
-					if(x > col0xloc + col * nodeWidth) col++;
-					if(y > row0yloc + row * nodeWidth) row++;
-				}
-				
-				double nextx, nexty;
-				int nextcol, nextrow;
-				for(int temprank = BARRIER_X2; temprank <= content(barrier);
-					x=nextx, y=nexty, col=nextcol, row=nextrow, temprank+=2) {
-					// get the x/y location of the next barrier point
-					nextx = get(rank(barrier, temprank));
-					nexty = get(rank(barrier, temprank + 1));
-					// calculate the column and row numbers for that point (again, above/right of the current corner)
-					nextcol = (int)round((nextx - col0xloc) / nodeWidth);
-					nextrow = (int)round((nexty - row0yloc) / nodeWidth);
-					if(barriertype != BARRIER_TYPE_PREFERRED_PATH) {
-						if(nextx > col0xloc + nextcol * nodeWidth) nextcol++;
-						if(nexty > row0yloc + nextrow * nodeWidth) nextrow++;
-					}
-
-					// set dx and dy, the differences between the rows and columns
-					double dx = nextcol - col;
-					double dy = nextrow - row;
-
-					if(dy == 0 && dx == 0)
-						continue;
-
-					// calculate the weight values for preferred paths.
-					int horizontalweight = (int)(127 * dx / (fabs(dx) + fabs(dy)));
-					int verticalweight = (int)(127 * dy / (fabs(dx) + fabs(dy)));
-
-					// figure out the unit increment (either -1 or 1) for traversing from the
-					// current point to the next point
-					int colinc = (int)sign(dx);
-					if(colinc == 0) colinc = 1;
-					int rowinc = (int)sign(dy);
-					if(rowinc == 0) rowinc = 1;
-
-					// prevent divide by zero errors
-					if(dx == 0) dx = 0.01;
-					// get the slope of the line
-					double goalslope = dy/dx;
-
-					int curcol = col;
-					int currow = row;
-					// now step through the line, essentially walking along the edges of the grid tiles
-					// under the line, and set the divider by zeroing out the bits on each side of the line
-					// I'm walking on
-					while(curcol != nextcol || currow != nextrow) {
-						// If I'm traversing a preferred path, then I need to set the weighting values on 
-						// the up/down/left/right of the path
-						if(barriertype == BARRIER_TYPE_PREFERRED_PATH)	{
-							AStarSearchEntry e;
-							e.col = curcol;
-							e.row = currow;
-							AStarNodeExtraData * extra;
-							auto extraIter = edgeTableExtraData.find(e.colRow);
-							if(extraIter == edgeTableExtraData.end()) {
-								extra = &(edgeTableExtraData[e.colRow]);
-								memset(extra, 0, sizeof(AStarNodeExtraData));
-								extra->colRow = e.colRow;
-								DeRefEdgeTable(e.row, e.col).noExtraData = 0;
-							} else {
-								extra = &(extraIter->second);
-							}
-							extra->bonusRight = (char)maxof(-128,minof(127, extra->bonusRight + horizontalweight));
-							extra->bonusLeft = (char)maxof(-128,minof(127, extra->bonusLeft - horizontalweight));
-							extra->bonusUp = (char)maxof(-128,minof(127, extra->bonusUp + verticalweight));
-							extra->bonusDown = (char)maxof(-128,minof(127, extra->bonusDown - verticalweight));
-						}
-
-						// the way that I essentially move along the line
-						// is at each grid point, I do a test step horizontally, 
-						// and a test step vertically, and then test the new slope of the line to the 
-						// destination for each of those test steps. Whichever line's slope is closest
-						// to the actual slope represents the step I want to take.
-						int testcol = curcol+colinc;
-						int testrow = currow+rowinc;
-						double dxtestcol = nextcol - testcol;
-						if(dxtestcol == 0) dxtestcol = 0.01;
-						double dxtestrow = nextcol - curcol;
-						if(dxtestrow == 0) dxtestrow = 0.01;
-
-						double colincslope = (nextrow - currow)/dxtestcol;
-						double rowincslope = (nextrow - testrow)/dxtestrow;
-
-						int nextcurcol, nextcurrow;
-						if(fabs(colincslope - goalslope) <= fabs(rowincslope - goalslope))
-						{
-							// move over one column
-							nextcurcol = testcol;
-							nextcurrow = currow;
-							if(barriertype != BARRIER_TYPE_PREFERRED_PATH)
-							{
-								int modifycol = min(nextcurcol, curcol);
-								if(barriertype == BARRIER_TYPE_DIVIDER || dx > 0)
-									DeRefEdgeTable(currow, modifycol).canGoDown = 0;
-								if(barriertype == BARRIER_TYPE_DIVIDER || dx < 0)
-									DeRefEdgeTable(currow-1, modifycol).canGoUp = 0;
-							}
-						}
-						else
-						{
-							nextcurcol = curcol;
-							nextcurrow = testrow;
-							if(barriertype != BARRIER_TYPE_PREFERRED_PATH)
-							{
-								int modifyrow = min(nextcurrow, currow);
-								if(barriertype == BARRIER_TYPE_DIVIDER || dy < 0)
-									DeRefEdgeTable(modifyrow, curcol).canGoLeft = 0;
-								if(barriertype == BARRIER_TYPE_DIVIDER || dy > 0)
-									DeRefEdgeTable(modifyrow, curcol - 1).canGoRight = 0;
-							}
-						}
-
-						curcol = nextcurcol;
-						currow = nextcurrow;
-					}
-				}
-			}
-		}*/
 	
 
 	for (int i = 0; i < objectBarrierList.size(); i++) {
@@ -1029,7 +879,21 @@ void AStarNavigator::buildEdgeTable()
 }
 void AStarNavigator::buildBoundsMesh()
 {
-	boundsMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, MESH_FORCE_CLEANUP);
+	boundsMesh.init(0, MESH_POSITION, 
+		MESH_NORMAL | MESH_EMISSIVE | MESH_AMBIENT_AND_DIFFUSE, MESH_FORCE_CLEANUP);
+	float up[3] = {0.0f, 0.0f, 1.0f};
+	TreeNode* color = node_b_color;
+	float boundsColor[3] = {
+		(float)get(rank(color, 1)), 
+		(float)get(rank(color, 2)), 
+		(float)get(rank(color, 3))
+	};
+	float black[3] = {0.0f, 0.0f, 0.0f};
+
+	boundsMesh.setVertexAttrib(0, MESH_NORMAL, up);
+	boundsMesh.setVertexAttrib(0, MESH_EMISSIVE, boundsColor);
+	boundsMesh.setVertexAttrib(0, MESH_AMBIENT_AND_DIFFUSE, black);
+
 	float width = edgeTableXSize * nodeWidth;
 	float height = edgeTableYSize * nodeWidth;
 	float borderWidth = nodeWidth;
@@ -1051,38 +915,39 @@ void AStarNavigator::buildBoundsMesh()
 	float mTopLeft[3] = {topLeft[0] - midBW, topLeft[1] + midBW, z};
 	float mBottomRight[3] = {bottomRight[0] + midBW, bottomRight[1] - midBW, z};
 
-	float blue[3] = {0.16f, 0.14f, 0.56f};
-
-#define ADD_VERTEX(point, color)\
+#define ADD_VERTEX(point)\
 	{\
 		int newVertex = boundsMesh.addVertex();\
 		boundsMesh.setVertexAttrib(newVertex, MESH_POSITION, point);\
-		boundsMesh.setVertexAttrib(newVertex, MESH_EMISSIVE, color);\
 	}\
 
-#define ADD_PLAIN_QUAD(p1, p2, p3, p4, color)\
-	ADD_VERTEX(p1, color);\
-	ADD_VERTEX(p2, color);\
-	ADD_VERTEX(p3, color);\
-	ADD_VERTEX(p4, color);
+#define ADD_PLAIN_QUAD(p1, p2, p3, p4)\
+	ADD_VERTEX(p1);\
+	ADD_VERTEX(p2);\
+	ADD_VERTEX(p3);\
+	ADD_VERTEX(p4);
 
 	// left border (GL_QUADS)
-	ADD_PLAIN_QUAD(bottomLeft, topLeft, oTopLeft, oBottomLeft, blue);
+	ADD_PLAIN_QUAD(bottomLeft, topLeft, oTopLeft, oBottomLeft);
 
 	// top border
-	ADD_PLAIN_QUAD(topLeft, topRight, oTopRight, oTopLeft, blue);
+	ADD_PLAIN_QUAD(topLeft, topRight, oTopRight, oTopLeft);
 
 	// right border
-	ADD_PLAIN_QUAD(topRight, bottomRight, oBottomRight, oTopRight, blue);
+	ADD_PLAIN_QUAD(topRight, bottomRight, oBottomRight, oTopRight);
 
 	// bottom border
-	ADD_PLAIN_QUAD(bottomRight, bottomLeft, oBottomLeft, oBottomRight, blue);
+	ADD_PLAIN_QUAD(bottomRight, bottomLeft, oBottomLeft, oBottomRight);
 }
 
 void AStarNavigator::buildBarrierMesh()
 {
-	barrierMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, 0);
-
+	barrierMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 
+		MESH_NORMAL | MESH_AMBIENT_AND_DIFFUSE, 0);
+	float up[3] = {0.0f, 0.0f, 1.0f};
+	float black[3] = {0.0f, 0.0f, 0.0f};
+	barrierMesh.setVertexAttrib(0, MESH_NORMAL, up);
+	barrierMesh.setVertexAttrib(0, MESH_AMBIENT_AND_DIFFUSE, black);
 	for (int i = 0; i < barrierList.size(); i++) {
 		barrierList[i]->nodeWidth = nodeWidth;
 		barrierList[i]->addVertices(&barrierMesh, 0.1f);
@@ -1094,7 +959,145 @@ void AStarNavigator::buildTrafficMesh()
 	trafficMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, 0);
 }
 
-void AStarNavigator::drawGrid()
+void AStarNavigator::drawMembers(float z)
+{
+	memberMesh.init(0, MESH_POSITION, 
+		MESH_EMISSIVE | MESH_NORMAL | MESH_AMBIENT_AND_DIFFUSE, MESH_FORCE_CLEANUP);
+	TreeNode* colorNode = node_b_color;
+	float r = get(rank(colorNode, 1));
+	float g = get(rank(colorNode, 2));
+	float b = get(rank(colorNode, 3));
+	float color[3] = {r, g, b};
+	float up[3] = {0.0f, 0.0f, 1.0f};
+	float black[3] = {0.0f, 0.0f, 0.0f};
+
+	memberMesh.setVertexAttrib(0, MESH_NORMAL, up);
+	memberMesh.setVertexAttrib(0, MESH_EMISSIVE, color);
+	memberMesh.setVertexAttrib(0, MESH_AMBIENT_AND_DIFFUSE, black);
+
+	// Draw rectangles under every object
+	unsigned int numObjs = objectBarrierList.size();
+	for (int i = 0; i < numObjs; i++) {
+		FixedResource* theFR = objectBarrierList[i];
+		TreeNode* theNode = theFR->holder;
+
+		// The position is the top left corner
+		float x = spatialx(theNode)->dataasdouble[0];
+		float y = spatialy(theNode)->dataasdouble[0];
+		float width = spatialsx(theNode)->dataasdouble[0];
+		float height = spatialsy(theNode)->dataasdouble[0];
+		float topLeft[3] = {x, y, z};
+		float bottomLeft[3] = {x, y - height, z};
+		float topRight[3] = {x + width, y, z};
+		float bottomRight[3] = {topRight[0], bottomLeft[1], z};
+
+#define ABV(pos) {\
+	int newVertex = memberMesh.addVertex();\
+	memberMesh.setVertexAttrib(newVertex, MESH_POSITION, pos);\
+	}
+
+#define ABT(pos1, pos2, pos3) ABV(pos1) ABV(pos2) ABV(pos3)
+
+		ABT(topLeft, bottomLeft, topRight);
+		ABT(bottomRight, topRight, bottomLeft);
+
+#undef ABV
+#undef ABT
+
+	}
+
+#define ABV(pos) {\
+	int newVertex = memberMesh.addVertex();\
+	memberMesh.setVertexAttrib(newVertex, MESH_POSITION, pos);\
+	}
+
+#define ABT(pos1, pos2, pos3) ABV(pos1) ABV(pos2) ABV(pos3)
+
+	const static float TWO_PI = 2 * 3.1415926536f;
+	static int numSides = 20;
+	static float dTheta = TWO_PI / (float)numSides;
+	// Draw circles under every traveler
+	TreeNode* travelers = node_v_travelmembers;
+	unsigned int numTravelers = content(travelers);
+	for (int i = 1; i <= numTravelers; i++) {
+		TreeNode* traveler = ownerobject(tonode(get(rank(travelers, i))));
+
+		float x = spatialx(traveler)->dataasdouble[0];
+		float y = spatialy(traveler)->dataasdouble[0];
+		float width = spatialsx(traveler)->dataasdouble[0];
+		float height = spatialsy(traveler)->dataasdouble[0];
+		float radius = sqrt(width * width / 4.0 + height * height / 4.0);
+		float center[3] = {x + width / 2.0, y - height / 2.0, z};
+
+		// Triangle strip
+		for (int i = 0; i < numSides; i++) {
+			float theta = dTheta * i;
+			float nextTheta = dTheta * (i + 1);
+			float sinTheta = sin(theta);
+			float cosTheta = cos(theta);
+			float sinNextTheta = sin(nextTheta);
+			float cosNextTheta = cos(nextTheta);
+
+			float pos1[3] = {
+				radius * cosTheta + center[0], 
+				radius * sinTheta + center[1], 
+				z
+			};
+
+			float pos2[3] = {
+				radius * cosNextTheta  + center[0], 
+				radius * sinNextTheta + center[1], 
+				z
+			};
+
+			ABT(center, pos1, pos2);
+		}
+	}
+
+	travelers = node_v_activetravelmembers;
+	numTravelers = content(travelers);
+	for (int i = 1; i <= numTravelers; i++) {
+		TreeNode* traveler = ownerobject(tonode(get(rank(travelers, i))));
+
+		float x = spatialx(traveler)->dataasdouble[0];
+		float y = spatialy(traveler)->dataasdouble[0];
+		float width = spatialsx(traveler)->dataasdouble[0];
+		float height = spatialsy(traveler)->dataasdouble[0];
+		float radius = sqrt(width * width / 4.0 + height * height / 4.0);
+		float center[3] = {x + width / 2.0, y - height / 2.0, z};
+
+		// Triangle strip
+		for (int i = 0; i < numSides; i++) {
+			float theta = dTheta * i;
+			float nextTheta = dTheta * (i + 1);
+			float sinTheta = sin(theta);
+			float cosTheta = cos(theta);
+			float sinNextTheta = sin(nextTheta);
+			float cosNextTheta = cos(nextTheta);
+
+			float pos1[3] = {
+				radius * cosTheta + center[0], 
+				radius * sinTheta + center[1], 
+				z
+			};
+
+			float pos2[3] = {
+				radius * cosNextTheta  + center[0], 
+				radius * sinNextTheta + center[1], 
+				z
+			};
+
+			ABT(center, pos1, pos2);
+		}
+	}
+
+#undef ABT
+#undef ABV
+
+	memberMesh.draw(GL_TRIANGLES);
+}
+
+void AStarNavigator::drawGrid(float z)
 {
 	if (!((int)drawMode & ASTAR_DRAW_MODE_GRID))
 		return;
@@ -1141,30 +1144,30 @@ void AStarNavigator::drawGrid()
 		gridMesh.setVertexAttrib(newVertex2, MESH_POSITION, pos2);\
 	}
 			if (n->canGoUp && n->canGoDown && n->canGoLeft && n->canGoRight) {
-				ADD_GRID_LINE(Up, x, y - quarterNodeWidth, 0.1, x, y + quarterNodeWidth, 0.1);
-				ADD_GRID_LINE(Right, x - quarterNodeWidth, y, 0.1, x + quarterNodeWidth, y, 0.1);
+				ADD_GRID_LINE(Up, x, y - quarterNodeWidth, z, x, y + quarterNodeWidth, z);
+				ADD_GRID_LINE(Right, x - quarterNodeWidth, y, z, x + quarterNodeWidth, y, z);
 				continue;
 			}
 
 			if (n->canGoUp && n->canGoDown) {
-				ADD_GRID_LINE(Up, x, y - quarterNodeWidth, 0.1, x, y + quarterNodeWidth, 0.1);
-				ADD_GRID_LINE(Right, x, y, 0.1, x + 0.25 * nodeWidth, y, 0.1);
-				ADD_GRID_LINE(Left, x, y, 0.1, x - 0.25 * nodeWidth, y, 0.1);
+				ADD_GRID_LINE(Up, x, y - quarterNodeWidth, z, x, y + quarterNodeWidth, z);
+				ADD_GRID_LINE(Right, x, y, z, x + 0.25 * nodeWidth, y,z);
+				ADD_GRID_LINE(Left, x, y, z, x - 0.25 * nodeWidth, y, z);
 				continue;
 			}
 
 			if (n->canGoLeft && n->canGoRight) {
-				ADD_GRID_LINE(Right, x - quarterNodeWidth, y, 0.1, x + quarterNodeWidth, y, 0.1);
-				ADD_GRID_LINE(Up, x, y, 0.1, x, y + 0.25 * nodeWidth, 0.1);
-				ADD_GRID_LINE(Down, x, y, 0.1, x, y - 0.25 * nodeWidth, 0.1);
+				ADD_GRID_LINE(Right, x - quarterNodeWidth, y, z, x + quarterNodeWidth, y, z);
+				ADD_GRID_LINE(Up, x, y, z, x, y + 0.25 * nodeWidth, z);
+				ADD_GRID_LINE(Down, x, y, z, x, y - 0.25 * nodeWidth, z);
 				continue;
 			}
 
 
-			ADD_GRID_LINE(Up, x, y, 0.1, x, y + 0.25 * nodeWidth, 0.1);
-			ADD_GRID_LINE(Down, x, y, 0.1, x, y - 0.25 * nodeWidth, 0.1);
-			ADD_GRID_LINE(Right, x, y, 0.1, x + 0.25 * nodeWidth, y, 0.1);
-			ADD_GRID_LINE(Left, x, y, 0.1, x - 0.25 * nodeWidth, y, 0.1);
+			ADD_GRID_LINE(Up, x, y, z, x, y + 0.25 * nodeWidth, z);
+			ADD_GRID_LINE(Down, x, y, z, x, y - 0.25 * nodeWidth, z);
+			ADD_GRID_LINE(Right, x, y, z, x + 0.25 * nodeWidth, y, z);
+			ADD_GRID_LINE(Left, x, y, z, x - 0.25 * nodeWidth, y, z);
 			
 			if(!n->notInTotalSet) {
 				mpt("Grid error at x ");mpd(j);mpt(" y ");mpd(i);mpr();
@@ -1174,8 +1177,8 @@ void AStarNavigator::drawGrid()
 				gridMesh.setVertexAttrib(newVertex1, MESH_EMISSIVE, red);
 				gridMesh.setVertexAttrib(newVertex2, MESH_EMISSIVE, red);
 
-				float pos1[3] = {(float)x, (float)y, 0.1f};
-				float pos2[3] = {(float)(x + 0.25 * nodeWidth), (float)(y + 0.25 * nodeWidth), 0.1f};
+				float pos1[3] = {(float)x, (float)y, z};
+				float pos2[3] = {(float)(x + 0.25 * nodeWidth), (float)(y + 0.25 * nodeWidth), z};
 				gridMesh.setVertexAttrib(newVertex1, MESH_POSITION, pos1);
 				gridMesh.setVertexAttrib(newVertex2, MESH_POSITION, pos2);
 			}

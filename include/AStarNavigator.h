@@ -100,10 +100,11 @@ public:
 	TreeNode* fixedResourceBarriers;
 	NodeListArray<FixedResource>::ObjStoredAttCouplingType objectBarrierList;
 
-	Mesh boundsMesh;
+	Mesh boundsMesh;	
 	Mesh barrierMesh;
 	Mesh trafficMesh;
 	Mesh gridMesh;
+	Mesh memberMesh;
 
 	AStarNavigator();
 	~AStarNavigator();
@@ -123,7 +124,8 @@ public:
 	void buildBoundsMesh();
 	void buildBarrierMesh();
 	void buildTrafficMesh();
-	void drawGrid();
+	void drawMembers(float z);
+	void drawGrid(float z);
 	virtual double updateLocations();
 	virtual double abortTravel(TreeNode* traveler, TreeNode* newts);
 	virtual unsigned int getClassType();

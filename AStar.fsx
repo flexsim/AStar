@@ -48,7 +48,7 @@
          <node f="42-0" dt="1"><name>green</name><data>525252523fd25252</data></node>
          <node f="42-0" dt="1"><name>blue</name><data>3a3a3a3a3fea3a3a</data></node>
         </node>
-        <node f="42-0" dt="2"><name>shape</name><data>fs3d\Source\Source.3ds</data></node>
+        <node f="42-0" dt="2"><name>shape</name><data>modules\AStar\shapes\AStar.3ds</data></node>
         <node f="42-0" dt="1"><name>shapeindex</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\astarnavigatorsmall.png</data></node>
         <node f="42-0" dt="2"><name>imageobject</name><data>***</data></node>

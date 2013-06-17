@@ -107,17 +107,10 @@ void PreferredPath::modifyTable(AStarNode* edgeTable,
 				nextCurrCol = testCol;
 				nextCurrRow = currRow;
 				
-				int modifyCol = min(nextCurrCol, currCol);
-				DeRefEdgeTable(currRow, modifyCol).canGoDown = 0;
-				DeRefEdgeTable(currRow-1, modifyCol).canGoUp = 0;
-				
 			} else {
 				nextCurrCol = currCol;
 				nextCurrRow = testRow;
 				
-				int modifyRow = min(nextCurrRow, currRow);
-				DeRefEdgeTable(modifyRow, currCol).canGoLeft = 0;
-				DeRefEdgeTable(modifyRow, currCol - 1).canGoRight = 0;
 			}
 			
 			currCol = nextCurrCol;
@@ -208,7 +201,7 @@ void PreferredPath::addVertices(Mesh* barrierMesh, float z)
 		float sinTheta = sin(theta);
 		float cosTheta = cos(theta);
 		// Find how many will fit, and stretch them to fit.
-		int numTriangles = length / maxTriangleWidth;
+		int numTriangles = (int)(length / maxTriangleWidth);
 		if (numTriangles < 1) {
 			numTriangles = 1;
 		}

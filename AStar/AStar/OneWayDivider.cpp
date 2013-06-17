@@ -196,13 +196,13 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 		float sinTheta = sin(theta);
 		float cosTheta = cos(theta);
 		// Find how many will fit, and stretch them to fit.
-		int numLightTriangles = length / maxTriangleWidth;
+		int numLightTriangles = (int)(length / maxTriangleWidth);
 		if (numLightTriangles < 1) {
 			numLightTriangles = 1;
 		}
 		float lightTriangleWidth = length / numLightTriangles;
 		float ltw = lightTriangleWidth;
-		float numTriangles = 2 * numLightTriangles + 1;
+		int numTriangles = 2 * numLightTriangles + 1;
 		
 
 		// Use the bottomleft corner of the rectangle to get every other corner
