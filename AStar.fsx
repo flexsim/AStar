@@ -219,7 +219,7 @@ if (!objectexists(selobj)) {
 			setvarnum(c, "creating", 1);
 			setvarnum(c, "editing", 0);
 			
-			function_s(FUNCTIONS_NODE, "addBarrier", activeNavigator, 
+			function_s(ASTAR_FUNCTIONS_NODE, "addBarrier", activeNavigator, 
 				mouseX, mouseY, mouseX, mouseY);
 			treenode activeBarrier = tonode(getvarnum(activeNavigator, "activeBarrier"));
 			function_s(c, "setBarrierMode", activeBarrier, BARRIER_MODE_DYNAMIC_CREATE);
@@ -293,13 +293,13 @@ setvarnum(c, "dragY", 0);
 treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
 function_s(c, "onClick", activeNav, RIGHT_RELEASE, 0, 0);
 
-function_s(FUNCTIONS_NODE, "rebuildMeshes", activeNav, ASTAR_DRAW_MODE_BARRIERS);</data></node>
+function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", activeNav, ASTAR_DRAW_MODE_BARRIERS);</data></node>
         <node f="42-4" dt="2"><name>checkStatus</name><data>treenode activeNavigator = tonode(getvarnum(ownerobject(c), "activeNavigator"));
 if (!objectexists(activeNavigator))
 	return 0;
 
 treenode theEditMode = ownerobject(c);
-int barrierEditMode = function_s(theEditMode, "getActiveBarrierMode", activeNavigator);
+int barrierEditMode = function_s(ASTAR_FUNCTIONS_NODE, "getActiveBarrierMode", activeNavigator);
 
 if (barrierEditMode &amp; BARRIER_MODE_CREATE)
 	return 0;
@@ -311,7 +311,6 @@ setvarnum(theEditMode, "editing", 1);
         <node f="42-10000" dt="2"><name>setBarrierMode</name><data>dll:"module:AStar" func:"Barrier_setMode"</data></node>
         <node f="42-10000" dt="2"><name>onMouseMove</name><data>dll:"module:AStar" func:"AStarNavigator_onMouseMove"</data></node>
         <node f="42-10000" dt="2"><name>onClick</name><data>dll:"module:AStar" func:"AStarNavigator_onClick"</data></node>
-        <node f="42-10000" dt="2"><name>getActiveBarrierMode</name><data>dll:"module:AStar" func:"AStarNavigator_getActiveBarrierMode"</data></node>
        </node>
       </data></node>
       <node f="42-0" dt="4"><name>AStar::Barrier</name><data>
@@ -462,7 +461,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\divider.bmp</data></node>
        </data></node>
-       <node f="42-0" dt="4"><name>Create One-Way Divider</name><data>
+       <node f="42-100000" dt="4"><name>Create One-Way Divider</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::OneWayDivider")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -918,7 +917,8 @@ function_s(editor, "refreshList");
 
 //now, hide the table view and show the editor view
 windowshow(windowfromnode(node("/Edit Table", parent)), 0);
-windowshow(windowfromnode(editor), 1);</data></node>
+windowshow(windowfromnode(editor), 1);
+</data></node>
        </data>
         <node f="40-0"><name></name></node>
         <node f="42-0" dt="4"><name>editor view</name><data>
@@ -1144,14 +1144,19 @@ repaintview(TheTable);
            <node f="42-4" dt="2"><name>add</name><data>int type = parval(1);
 treenode focus = node("@&gt;objectfocus+", c);
 
-function_s(FUNCTIONS_NODE, "addBarrier", focus, 0, 0, 10, 10, type);
-function_s(node("../SelectBarrier", c), "refreshList");</data></node>
+function_s(ASTAR_FUNCTIONS_NODE, "addBarrier", focus, 0, 0, 10, 10, type);
+function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", focus);
+treenode selectBarrier = node("../SelectBarrier", c);
+function_s(selectBarrier, "refreshList");
+set(itemcurrent(selectBarrier), content(items(selectBarrier)));
+listboxrefresh(selectBarrier);
+repaintall();</data></node>
            <node f="42-0" dt="2"><name>OnPress</name><data>int filter = get(itemcurrent(node("../FilterType", c)));
 
 clearcontents(menupopup(c));
 switch (filter) {
 	case 1:  //Have them select the barrier type manually
-	treenode menuitems = node("&gt;menuitems", c);
+		treenode menuitems = node("&gt;menuitems", c);
 		for (int i = 1; i &lt;= content(menuitems); i++)
 			createcopy(rank(menuitems, i), menupopup(c), 1);
 	break;
@@ -1186,93 +1191,30 @@ switch (filter) {
           <node f="42-0" dt="1"><name>spatialy</name><data>0000000040450000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-          <node f="42-0" dt="2"><name>OnPress</name><data>//delete a section from the conveyor
+          <node f="42-0" dt="2"><name>OnPress</name><data>int index = get(itemcurrent(node("../SelectBarrier", c)));
 
-
-//================================================================================
-//get the necessary pointers and values
-treenode convSecEd		= up(c);
-treenode sections		= node("@&gt;objectfocus+&gt;variables/sections", c);
-treenode selectSection	= node("../SelectSection", c);
-treenode section;
-int selectedSection		= get(itemcurrent(selectSection));
-int numSections			= content(sections);
-
-
-//================================================================================
-//some error checking...
-//if there are no sections (something is jacked up), create a new table row and use that
-if (!numSections){
-	settablesize(sections, 1, 12, DATATYPE_NUMBER, 0);
-	section = last(sections);
-	setname(section, "section 1");
-	setname(rank(section, 1), "type");
-	setname(rank(section, 2), "length");
-	setname(rank(section, 3), "rise");
-	setname(rank(section, 4), "angle");
-	setname(rank(section, 5), "radius");
-	setname(rank(section, 6), "nroflegs");
-	setname(rank(section, 7), "seclength");
-	setname(rank(section, 8), "startlength");
-	setname(rank(section, 9), "startx");
-	setname(rank(section, 10), "starty");
-	setname(rank(section, 11), "startz");
-	setname(rank(section, 12), "startangle");
-	sets(viewfocus(convSecEd), "@&gt;objectfocus+&gt;variables/sections/1");
-	//update SelectSection's itemcurrent to the newly added newsection.
-	set(itemcurrent(selectSection), 1);
-	//refresh the section list to show this new section
-	executefsnode(node("&gt;refreshlist", convSecEd), convSecEd);
-	//update the SelectSection list
-	executefsnode(node("&gt;refreshdata", convSecEd), convSecEd);
-	//throw an error message for good measure
-	msg("ERROR", "The conveyor's section table was corrupted.\n\nA new section has been added.");
+if (index == 0)
 	return 0;
-}
-//else if there is no current selection, or the selection was out of bounds, correct the issue and throw a message
-else if (selectedSection&lt;1 || selectedSection&gt;content(items(selectSection)) || selectedSection&gt;numSections){
-	//update the list and focus on the first section
-	sets(viewfocus(up(c)), "@&gt;objectfocus+&gt;variables/sections/1");
-	set(itemcurrent(selectSection), 1);
-	executefsnode(node("&gt;refreshlist", convSecEd), convSecEd);
-	executefsnode(node("&gt;refreshdata", convSecEd), convSecEd);
-	//tell the user what happened
-	msg("ERROR", "The conveyor's section list encountered a problem.\nWe have attempted to solve the problem.\n\nPlease select the section you wish to remove and try again.");
-	return 0;
-}
-//else there is already a valid section
-else section = node(gets(viewfocus(convSecEd)), c);
+	
+treenode barriers = node("@&gt;objectfocus+&gt;variables/barriers", c);
+string name = getname(rank(items(node("../SelectBarrier", c)), index));
+treenode focus = node("@&gt;objectfocus+", c);
 
-//if somehow section is bad, throw an error
-if (!objectexists(section)){
-	msg("ERROR", concat("invalid section reference\n\n\t", getname(node("@&gt;objectfocus+", c)), "\n\nPlease contact support@flexsim.com with error code #CONV_SecRem"));
-	return 0;
+//Find the barrier's index in the object's barriers node
+for (int i = 1; i &lt;= content(barriers); i++) {
+	if (comparetext(getname(rank(barriers, i)), name)) {
+		index = i;
+		break;
+	}
 }
-
-
-//================================================================================
-//get the selected section, and if its not the last section of the conveyor,
-// delete it
-if (content(sections) &lt;= 1){
-	msg("Error", "The conveyor must have at least one section", 1);
-	return 0;
-}
-int secrank = getrank(section);
-destroyobject(section);
-
-
-//================================================================================
-//now refresh the section list.
-if (secrank==numSections){
-	sets(viewfocus(convSecEd), concat("@&gt;objectfocus+&gt;variables/sections/", numtostring(numSections-1, 0, 0)));
-	//update SelectSection's itemcurrent to the newly added newsection.
-	set(itemcurrent(selectSection), numSections-1);
-}
-//refresh the section list to show this new section
-executefsnode(node("&gt;refreshlist", convSecEd), convSecEd, 0, 0);
-//update the SelectSection list
-executefsnode(node("&gt;refreshdata", convSecEd), convSecEd, 0, 0);
-</data></node>
+index--; //Base 0
+function_s(ASTAR_FUNCTIONS_NODE, "removeBarrier", focus, index);
+//function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", focus);
+treenode selectBarrier = node("../SelectBarrier", c);
+function_s(selectBarrier, "refreshList");
+set(itemcurrent(selectBarrier), index);
+listboxrefresh(selectBarrier);
+executefsnode(OnSelect(selectBarrier), selectBarrier);</data></node>
           <node f="42-0" dt="2"><name>tooltip</name><data>Remove the selected section</data></node>
           <node f="42-0" dt="2"><name>bitmap</name><data>buttons\remove.png</data></node>
           <node f="42-0" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
@@ -1285,92 +1227,43 @@ executefsnode(node("&gt;refreshdata", convSecEd), convSecEd, 0, 0);
           <node f="42-0" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>bitmap</name><data>buttons\uparrow_blue.png</data></node>
-          <node f="42-0" dt="2"><name>OnPress</name><data>//move the selected section up in rank
+          <node f="42-0" dt="2"><name>OnPress</name><data>treenode selectBarrier = node("../SelectBarrier", c);
+int index = get(itemcurrent(selectBarrier));
 
-
-//================================================================================
-//get the necessary pointers and values
-treenode sections		= node("@&gt;objectfocus+&gt;variables/sections", c);
-treenode selectSection	= node("../SelectSection", c);
-treenode section;
-int selectedSection		= get(itemcurrent(selectSection));
-int numSections			= content(sections);
-
-
-//================================================================================
-//some error checking...
-//if there are no sections (something is jacked up), create a new table row and use that
-if (!numSections){
-	settablesize(sections, 1, 12, DATATYPE_NUMBER, 0);
-	section = last(sections);
-	setname(section, "section 1");
-	setname(rank(section, 1), "type");
-	setname(rank(section, 2), "length");
-	setname(rank(section, 3), "rise");
-	setname(rank(section, 4), "angle");
-	setname(rank(section, 5), "radius");
-	setname(rank(section, 6), "nroflegs");
-	setname(rank(section, 7), "seclength");
-	setname(rank(section, 8), "startlength");
-	setname(rank(section, 9), "startx");
-	setname(rank(section, 10), "starty");
-	setname(rank(section, 11), "startz");
-	setname(rank(section, 12), "startangle");
-	sets(viewfocus(up(c)), "@&gt;objectfocus+&gt;variables/sections/1");
-	//update SelectSection's itemcurrent to the newly added newsection.
-	set(itemcurrent(selectSection), 1);
-	//refresh the section list to show this new section
-	executefsnode(node("..&gt;refreshlist", c), up(c));
-	//update the SelectSection list
-	executefsnode(node("..&gt;refreshdata", c), up(c));
-	//throw an error message for good measure
-	msg("ERROR", "The conveyor's section table was corrupted.\n\nA new section has been added.");
+if (index &lt;= 1)
 	return 0;
+
+int index1;
+treenode barriers = node("@&gt;objectfocus+&gt;variables/barriers", c);
+string name = getname(rank(items(selectBarrier), index));
+treenode focus = node("@&gt;objectfocus+", c);
+
+//Find the barrier's index in the object's barriers node
+for (int i = 1; i &lt;= content(barriers); i++) {
+	if (comparetext(getname(rank(barriers, i)), name)) {
+		index1 = i;
+		break;
+	}
 }
-//else if there is no current selection, or the selection was out of bounds, correct the issue and throw a message
-else if (selectedSection&lt;1 || selectedSection&gt;content(items(selectSection)) || selectedSection&gt;numSections){
-	//update the list and focus on the first section
-	sets(viewfocus(up(c)), "@&gt;objectfocus+&gt;variables/sections/1");
-	set(itemcurrent(selectSection), 1);
-	executefsnode(node("..&gt;refreshlist", c), up(c));
-	executefsnode(node("..&gt;refreshdata", c), up(c));
-	//tell the user what happened
-	msg("ERROR", "The conveyor's section list encountered a problem.\nWe have attempted to solve the problem.\n\nPlease select the section you wish to move and try again.");
-	return 0;
+index1--; //Base 0
+
+//Find the object above the selected object
+int index2;
+name = getname(rank(items(selectBarrier), index -1));
+for (int i = 1; i &lt;= content(barriers); i++) {
+	if (comparetext(getname(rank(barriers, i)), name)) {
+		index2 = i;
+		break;
+	}
 }
-//else there is already a valid section
-else section = node(gets(viewfocus(up(c))), c);
+index2--; //Base 0
 
-//if somehow section is bad, throw an error
-if (!objectexists(section)){
-	msg("ERROR", concat("invalid section reference\n\n\t", getname(node("@&gt;objectfocus+", c)),
-		"\n\nPlease contact support@flexsim.com with error code #CONV_SecMovU"));
-	return 0;
-}
-
-
-//================================================================================
-//get the selected section and, if its not the only section, calculate its
-// new rank
-if (content(sections)&lt;=1) return 0;
-int sectionrank = getrank(section);
-//if we can, move the section up 1 in rank
-if (sectionrank&gt;1) sectionrank--;
-//else move the section from the top of the list to the bottom (wrap)
-else sectionrank = content(sections);
-//finally, set the new rank
-setrank(section, sectionrank);
-
-
-//================================================================================
-//update SelectSection's itemcurrent to the newly added newsection.
-sets(node("..&gt;viewfocus", c), concat("@&gt;objectfocus+&gt;variables/sections/", numtostring(sectionrank, 0, 0)));
-set(node("../SelectSection&gt;itemcurrent", c), sectionrank);
-//now refresh the section list.
-treenode convSecEd = up(c);
-executefsnode(node("&gt;refreshlist", convSecEd), convSecEd, 0, 0);
-executefsnode(node("&gt;refreshdata", convSecEd), convSecEd, 0, 0);</data></node>
-          <node f="42-0" dt="2"><name>tooltip</name><data>Move objects up in the list</data></node>
+function_s(ASTAR_FUNCTIONS_NODE, "swapBarriers", focus, index1, index2);
+function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", focus);
+set(itemcurrent(selectBarrier), index -1);
+function_s(selectBarrier, "refreshList");
+repaintall();</data></node>
+          <node f="42-0" dt="2"><name>tooltip</name><data>Move the selected barrier up in the list</data></node>
           <node f="42-0" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
          </data></node>
          <node f="42-0" dt="4"><name>Down</name><data>
@@ -1381,92 +1274,43 @@ executefsnode(node("&gt;refreshdata", convSecEd), convSecEd, 0, 0);</data></node
           <node f="42-0" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>bitmap</name><data>buttons\downarrow_blue.png</data></node>
-          <node f="42-0" dt="2"><name>OnPress</name><data>//move the selected section down in rank
+          <node f="42-0" dt="2"><name>OnPress</name><data>treenode selectBarrier = node("../SelectBarrier", c);
+int index = get(itemcurrent(selectBarrier));
 
-
-//================================================================================
-//get the necessary pointers and values
-treenode sections		= node("@&gt;objectfocus+&gt;variables/sections", c);
-treenode selectSection	= node("../SelectSection", c);
-treenode section;
-int selectedSection		= get(itemcurrent(selectSection));
-int numSections			= content(sections);
-
-
-//================================================================================
-//some error checking...
-//if there are no sections (something is jacked up), create a new table row and use that
-if (!numSections){
-	settablesize(sections, 1, 12, DATATYPE_NUMBER, 0);
-	section = last(sections);
-	setname(section, "section 1");
-	setname(rank(section, 1), "type");
-	setname(rank(section, 2), "length");
-	setname(rank(section, 3), "rise");
-	setname(rank(section, 4), "angle");
-	setname(rank(section, 5), "radius");
-	setname(rank(section, 6), "nroflegs");
-	setname(rank(section, 7), "seclength");
-	setname(rank(section, 8), "startlength");
-	setname(rank(section, 9), "startx");
-	setname(rank(section, 10), "starty");
-	setname(rank(section, 11), "startz");
-	setname(rank(section, 12), "startangle");
-	sets(viewfocus(up(c)), "@&gt;objectfocus+&gt;variables/sections/1");
-	//update SelectSection's itemcurrent to the newly added newsection.
-	set(itemcurrent(selectSection), 1);
-	//refresh the section list to show this new section
-	executefsnode(node("..&gt;refreshlist", c), up(c));
-	//update the SelectSection list
-	executefsnode(node("..&gt;refreshdata", c), up(c));
-	//throw an error message for good measure
-	msg("ERROR", "The conveyor's section table was corrupted.\n\nA new section has been added.");
+if (index == 0 || index == content(items(selectBarrier)))
 	return 0;
+
+int index1;
+treenode barriers = node("@&gt;objectfocus+&gt;variables/barriers", c);
+string name = getname(rank(items(selectBarrier), index));
+treenode focus = node("@&gt;objectfocus+", c);
+
+//Find the barrier's index in the object's barriers node
+for (int i = 1; i &lt;= content(barriers); i++) {
+	if (comparetext(getname(rank(barriers, i)), name)) {
+		index1 = i;
+		break;
+	}
 }
-//else if there is no current selection, or the selection was out of bounds, correct the issue and throw a message
-else if (selectedSection&lt;1 || selectedSection&gt;content(items(selectSection)) || selectedSection&gt;numSections){
-	//update the list and focus on the first section
-	sets(viewfocus(up(c)), "@&gt;objectfocus+&gt;variables/sections/1");
-	set(itemcurrent(selectSection), 1);
-	executefsnode(node("..&gt;refreshlist", c), up(c));
-	executefsnode(node("..&gt;refreshdata", c), up(c));
-	//tell the user what happened
-	msg("ERROR", "The conveyor's section list encountered a problem.\nWe have attempted to solve the problem.\n\nPlease select the section you wish to move and try again.");
-	return 0;
+index1--; //Base 0
+
+//Find the object above the selected object
+int index2;
+name = getname(rank(items(selectBarrier), index +1));
+for (int i = 1; i &lt;= content(barriers); i++) {
+	if (comparetext(getname(rank(barriers, i)), name)) {
+		index2 = i;
+		break;
+	}
 }
-//else there is already a valid section
-else section = node(gets(viewfocus(up(c))), c);
+index2--; //Base 0
 
-//if somehow section is bad, throw an error
-if (!objectexists(section)){
-	msg("ERROR", concat("invalid section reference\n\n\t", getname(node("@&gt;objectfocus+", c)),
-		"\n\nPlease contact support@flexsim.com with error code #CONV_SecMovU"));
-	return 0;
-}
-
-
-//================================================================================
-//get the selected section and, if its not the only section, calculate its
-// new rank
-if (content(sections)&lt;=1) return 0;
-int sectionrank = getrank(section);
-//if we can, move the section up 1 in rank
-if (sectionrank&lt;content(sections)) sectionrank++;
-//else move the section from the top of the list to the bottom (wrap)
-else sectionrank = 1;
-//finally, set the new rank
-setrank(section, sectionrank);
-
-
-//================================================================================
-//update SelectSection's itemcurrent to the newly added newsection.
-sets(node("..&gt;viewfocus", c), concat("@&gt;objectfocus+&gt;variables/sections/", numtostring(sectionrank, 0, 0)));
-set(node("../SelectSection&gt;itemcurrent", c), sectionrank);
-//now refresh the section list.
-treenode convSecEd = up(c);
-executefsnode(node("&gt;refreshlist", convSecEd), convSecEd, 0, 0);
-executefsnode(node("&gt;refreshdata", convSecEd), convSecEd, 0, 0);</data></node>
-          <node f="42-0" dt="2"><name>tooltip</name><data>Move objects down in the list</data></node>
+function_s(ASTAR_FUNCTIONS_NODE, "swapBarriers", focus, index1, index2);
+function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", focus);
+set(itemcurrent(selectBarrier), index +1);
+function_s(selectBarrier, "refreshList");
+repaintall();</data></node>
+          <node f="42-0" dt="2"><name>tooltip</name><data>Move the selected barrier down in the list</data></node>
           <node f="42-0" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
          </data></node>
          <node f="42-0" dt="4"><name>SelectBarrier</name><data>
@@ -1511,7 +1355,17 @@ switch (filter) {
 }
 
 listboxrefresh(c);
-nodepoint(node("../Attributes&gt;objectfocus", c), rank(barriers, get(itemcurrent(c))));
+
+string name = getname(rank(items(c), get(itemcurrent(c))));
+treenode barrierNode;
+for (int i = 1; i &lt;= content(barriers); i++) {
+	if (comparetext(getname(rank(barriers, i)), name)) {
+		barrierNode = rank(barriers, i);
+		break;
+	}
+}
+
+nodepoint(node("../Attributes&gt;objectfocus", c), barrierNode);
 function_s(node("../Attributes", c), "refreshData");</data></node>
            <node f="42-4" dt="2"><name>filterList</name><data>string type = parstr(1);
 
@@ -1519,16 +1373,31 @@ treenode result = node("&gt;result", c);
 treenode barriers = node("@&gt;objectfocus+&gt;variables/barriers", c);
 
 for (int i = 1; i &lt;= content(barriers); i++) {
-	function_s(FUNCTIONS_NODE, "getBarrierType", rank(barriers, i), result);
+	function_s(ASTAR_FUNCTIONS_NODE, "getBarrierType", rank(barriers, i), result);
 	if (comparetext(type, gets(result)) || stringlen(type) == 0) {
 		treenode itm = nodeadddata(nodeinsertinto(items(c)), DATATYPE_NUMBER);
 		setname(itm, getname(rank(barriers, i)));
 		set(itm, i);
 	}
 }</data></node>
-           <node f="42-0" dt="2"><name>OnSelect</name><data>treenode barriers = node("@&gt;objectfocus+&gt;variables/barriers", c);
-nodepoint(node("../Attributes&gt;objectfocus", c), rank(barriers, get(itemcurrent(c))));
-function_s(node("../Attributes", c), "refreshData");</data></node>
+           <node f="42-0" dt="2"><name>OnSelect</name><data>treenode focus = node("@&gt;objectfocus+", c);
+treenode barriers = getvarnode(focus, "barriers");
+string name = getname(rank(items(c), get(itemcurrent(c))));
+treenode barrierNode;
+
+for (int i = 1; i &lt;= content(barriers); i++) {
+	if (comparetext(getname(rank(barriers, i)), name)) {
+		barrierNode = rank(barriers, i);
+		break;
+	}
+}
+
+nodepoint(node("../Attributes&gt;objectfocus", c), barrierNode);
+function_s(node("../Attributes", c), "refreshData");
+
+function_s(ASTAR_FUNCTIONS_NODE, "setActiveBarrier", focus, barrierNode);
+function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", focus);
+repaintall();</data></node>
           </node>
           <node f="42-0" dt="1"><name>alignrightmargin</name><data>000000004072c000</data></node>
           <node f="42-0" dt="1"><name>alignbottommargin</name><data>00000000402c0000</data></node>
@@ -1543,13 +1412,46 @@ function_s(node("../Attributes", c), "refreshData");</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>000000004074c000</data></node>
           <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
           <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          <node f="42-0" dt="2"><name>result</name><data></data></node>
           <node f="42-0"><name>eventfunctions</name>
            <node f="40-0"><name></name></node>
            <node f="42-4" dt="2"><name>refreshData</name><data>treenode focus = node("&gt;objectfocus+", c);
-treenode functions = node("/modules/AStar/Functions", views());
+int enable = objectexists(focus);
 
-setviewtext(node("/editName", c), getname(focus));
-//function_s(functions, "</data></node>
+int path = 0;
+if (enable) {
+	treenode pointsEdit = node("/PointsEdit", c);
+	
+	treenode result = node("&gt;result", c);
+	function_s(ASTAR_FUNCTIONS_NODE, "getBarrierType", focus, result);
+	string type = gets(result);
+	path = comparetext(type, "AStar::PreferredPath");
+	
+	int showPoints = !comparetext(type, "AStar::Barrier");
+	windowshow(windowfromnode(pointsEdit), showPoints);
+	windowshow(windowfromnode(node("/BarrierPoints", c)), !showPoints);
+	
+	applylinks(c, 1);
+	//applylinks(pointsEdit, 1);
+	
+	setviewtext(node("/editName", c), getname(focus));
+	
+} else {
+	setviewtext(node("/editName", c), "");
+}
+
+windowgray(windowfromnode(node("/Name", c)), !enable);
+windowgray(windowfromnode(node("/editName", c)), !enable);
+windowgray(windowfromnode(node("/Path Weight", c)), !enable || !path);
+
+forobjecttreeunder(node("/editPathWeight", c))
+	windowgray(windowfromnode(a), !enable || !path);
+
+forobjecttreeunder(node("/PointsEdit", c))
+	windowgray(windowfromnode(a), !enable);
+
+forobjecttreeunder(node("/BarrierPoints", c))
+	windowgray(windowfromnode(a), !enable);</data></node>
           </node>
           <node f="42-0" dt="1"><name>alignrightposition</name><data>0000000040736000</data></node>
           <node f="42-0" dt="1"><name>alignbottommargin</name><data>0000000040240000</data></node>
@@ -1572,15 +1474,17 @@ setviewtext(node("/editName", c), getname(focus));
            <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040340000</data></node>
            <node f="42-0" dt="2"><name>tooltip</name><data>Enter the name of the barrier</data></node>
            <node f="42-0" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
-           <node f="42-0" dt="2"><name>OnKeyUp</name><data>//apply the change to the section's name
-applylinks(c);
-treenode focus = node("&gt;coldlinkname+", c);
-//refresh the section list to show this new section
-treenode selectSection = node("../../SelectSection", c);
-setname(rank(items(selectSection), get(itemcurrent(selectSection))), getviewtext(c));
-listboxrefresh(selectSection);
-</data></node>
-           <node f="42-0" dt="2"><name>coldlinkname</name><data>../../..&gt;viewfocus+</data></node>
+           <node f="42-0" dt="2"><name>OnKeyUp</name><data>applylinks(c);
+treenode selectBarrier = node("../../SelectBarrier", c);
+setname(rank(items(selectBarrier), get(itemcurrent(selectBarrier))), getviewtext(c));
+listboxrefresh(selectBarrier);</data></node>
+           <node f="42-0" dt="2"><name>coldlinkx</name><data>treenode focus = node("..&gt;objectfocus+", c);
+
+if (eventdata) {
+	setname(focus, getviewtext(c));
+} else {
+	setviewtext(c, getname(focus));
+}</data></node>
           </data></node>
           <node f="42-0" dt="4"><name>Path Weight</name><data>
            <node f="40-0"><name>object</name></node>
@@ -1598,15 +1502,17 @@ listboxrefresh(selectSection);
            <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42-0" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
-           <node f="42-0" dt="2"><name>objectfocus</name><data>..&gt;weight</data></node>
-           <node f="42-0" dt="1"><name>weight</name><data>0000000000000000</data></node>
+           <node f="42-0" dt="2"><name>objectfocus</name><data>..&gt;variables/weight</data></node>
            <node f="42-0" dt="2"><name>tooltip</name><data>Path Weight</data></node>
+           <node f="42-0" dt="2"><name>OnKillFocus</name><data>//TODO: Save path weight</data></node>
            <node f="42-0"><name>variables</name>
             <node f="40-0"><name></name></node>
             <node f="42-0" dt="2"><name>valuetype</name><data></data></node>
             <node f="42-0" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
+            <node f="42-0" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
             <node f="42-0" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
             <node f="42-0" dt="1"><name>conversion</name><data>0000000000000000</data></node>
+            <node f="42-0" dt="1"><name>weight</name><data>0000000000000000</data></node>
            </node>
           </data>
            <node f="40-0"><name></name></node></node>
@@ -1614,29 +1520,20 @@ listboxrefresh(selectSection);
            <node f="40-0"><name>object</name></node>
            <node f="42-0" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
            <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-           <node f="42-0" dt="1"><name>spatialx</name><data>00000000406ce000</data></node>
-           <node f="42-0" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
+           <node f="42-0" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+           <node f="42-0" dt="1"><name>spatialy</name><data>0000000040524000</data></node>
            <node f="42-0" dt="1"><name>spatialsx</name><data>000000004072e000</data></node>
            <node f="42-0" dt="1"><name>spatialsy</name><data>000000004074c000</data></node>
-           <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
            <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-           <node f="42-0"><name>eventfunctions</name>
-            <node f="40-0"><name></name></node>
-            <node f="42-4" dt="2"><name>refreshData</name><data>treenode focus = node("&gt;objectfocus+", c);
-treenode functions = node("/modules/AStar/Functions", views());
-
-setviewtext(node("/editName", c), getname(focus));
-//function_s(functions, "</data></node>
-           </node>
-           <node f="42-0" dt="1"><name>alignrightposition</name><data>0000000040736000</data></node>
-           <node f="42-0" dt="1"><name>alignbottommargin</name><data>0000000040240000</data></node>
+           <node f="42-0" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+           <node f="42-0" dt="1"><name>alignbottommargin</name><data>0000000000000000</data></node>
           </data>
            <node f="40-0"><name></name></node>
            <node f="42-0" dt="4"><name>Points</name><data>
             <node f="40-0"><name>object</name></node>
             <node f="42-0" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
             <node f="42-0" dt="1"><name>spatialx</name><data>0000000040310000</data></node>
-            <node f="42-0" dt="1"><name>spatialy</name><data>0000000040530000</data></node>
+            <node f="42-0" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
             <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040440000</data></node>
             <node f="42-0" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
            </data></node>
@@ -1644,7 +1541,7 @@ setviewtext(node("/editName", c), getname(focus));
             <node f="40-0"><name>object</name></node>
             <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
             <node f="42-0" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
-            <node f="42-0" dt="1"><name>spatialy</name><data>0000000040524000</data></node>
+            <node f="42-0" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
             <node f="42-0" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
             <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42-0" dt="2"><name>OnPress</name><data>//create a copy of the currently selected section and rank that new copy right after the original
@@ -1756,7 +1653,7 @@ executefsnode(node("&gt;refreshdata", convSecEd), convSecEd);</data>
             <node f="40-0"><name>object</name></node>
             <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
             <node f="42-0" dt="1"><name>spatialx</name><data>00000000405b4000</data></node>
-            <node f="42-0" dt="1"><name>spatialy</name><data>0000000040524000</data></node>
+            <node f="42-0" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
             <node f="42-0" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
             <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42-0" dt="2"><name>OnPress</name><data>//delete a section from the conveyor
@@ -1854,7 +1751,7 @@ executefsnode(node("&gt;refreshdata", convSecEd), convSecEd, 0, 0);
             <node f="40-0"><name>object</name></node>
             <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
             <node f="42-0" dt="1"><name>spatialx</name><data>0000000040614000</data></node>
-            <node f="42-0" dt="1"><name>spatialy</name><data>0000000040524000</data></node>
+            <node f="42-0" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
             <node f="42-0" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
             <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42-0" dt="2"><name>bitmap</name><data>buttons\uparrow_blue.png</data></node>
@@ -1949,8 +1846,8 @@ executefsnode(node("&gt;refreshdata", convSecEd), convSecEd, 0, 0);</data></node
            <node f="42-0" dt="4"><name>Down</name><data>
             <node f="40-0"><name>object</name></node>
             <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
-            <node f="42-0" dt="1"><name>spatialx</name><data>000000004065e000</data></node>
-            <node f="42-0" dt="1"><name>spatialy</name><data>0000000040524000</data></node>
+            <node f="42-0" dt="1"><name>spatialx</name><data>000000004064e000</data></node>
+            <node f="42-0" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
             <node f="42-0" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
             <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42-0" dt="2"><name>bitmap</name><data>buttons\downarrow_blue.png</data></node>
@@ -2044,47 +1941,36 @@ executefsnode(node("&gt;refreshdata", convSecEd), convSecEd, 0, 0);</data></node
            </data></node>
            <node f="42-0" dt="4"><name>PointsTable</name><data>
             <node f="40-0"><name>object</name></node>
-            <node f="42-0" dt="2"><name>focus</name><data>@&gt;objectfocus+&gt;variables/barriers</data></node>
             <node f="42-0" dt="2"><name>viewfocus</name><data>..&gt;table</data></node>
             <node f="42-0"><name>table</name>
-             <node f="40-0"><name></name></node>
-             <node f="42-0"><name></name>
-              <node f="40-0"><name></name></node>
-              <node f="42-0" dt="1"><name>X</name><data>000000004075e000</data></node>
-              <node f="42-0" dt="1"><name>Y</name><data>00000000406ae000</data></node>
-             </node>
-             <node f="42-0"><name></name>
-              <node f="40-0"><name></name></node>
-              <node f="42-0" dt="1"><name>X</name><data>0000000040938000</data></node>
-              <node f="42-0" dt="1"><name>Y</name><data>00000000406f0000</data></node>
-             </node>
-            </node>
+             <node f="40-0"><name></name></node></node>
             <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040140000</data></node>
             <node f="42-0" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
-            <node f="42-0" dt="1"><name>spatialy</name><data>0000000040584000</data></node>
+            <node f="42-0" dt="1"><name>spatialy</name><data>0000000040380000</data></node>
             <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040803800</data></node>
             <node f="42-0" dt="1"><name>spatialsy</name><data>000000004071b000</data></node>
             <node f="42-0" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
-            <node f="42-0" dt="2"><name>coldlinkx</name><data>/*treenode focus = node("&gt;focus+", c);
+            <node f="42-0" dt="2"><name>coldlinkx</name><data>treenode focus = node("../..&gt;objectfocus+", c);
 treenode table = node("&gt;table", c);
 
 if (!eventdata) {
-	for (int i = 1; i &lt;= content(focus); i++) {
-		treenode barrier = rank(focus, i);
-		if (get(first(barrier)) == BARRIER_TYPE_SOLID) {
-			createcopy(barrier, table, 1);
-			destroyobject(first(last(table)));
-		}
+	clearcontents(table);
+	treenode pointsNode = node("/points", focus);
+	for (int i = 1; i &lt;= content(pointsNode); i++) {
+		treenode points = rank(pointsNode, i);
+		treenode parent = nodeinsertinto(table);
+		treenode x = nodeadddata(nodeinsertinto(parent), DATATYPE_NUMBER);
+		set(x, get(node("/x", points)));
+		treenode y = nodeadddata(nodeinsertinto(parent), DATATYPE_NUMBER);
+		set(y, get(node("/y", points)));
 	}
-	if (content(focus) &gt;= 1) {
-		setname(rank(first(table), 1), "X1");
-		setname(rank(first(table), 2), "Y1");
-		setname(rank(first(table), 3), "X2");
-		setname(rank(first(table), 4), "Y2");
+	if (content(table) &gt;= 1) {
+		setname(rank(first(table), 1), "X");
+		setname(rank(first(table), 2), "Y");
 	}
 } else {
 	return 0;
-}*/</data></node>
+}</data></node>
             <node f="42-0" dt="2"><name>OnMouseWheel</name><data>treenode TheTable = ownerobject(c);
 
 double vert_nMin = scrollinfo(TheTable,0,1,1);
@@ -2123,27 +2009,89 @@ repaintview(TheTable);
            </data>
             <node f="40-0"><name></name></node></node>
           </node>
-          <node f="42-0" dt="4"><name>Position and Size</name><data>
+          <node f="42-0" dt="4"><name>BarrierPoints</name><data>
            <node f="40-0"><name>object</name></node>
-           <node f="42-0" dt="2"><name>viewfocus</name><data>MAIN:/project/model</data></node>
            <node f="42-0" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
-           <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
-           <node f="42-0" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42-0" dt="1"><name>spatialy</name><data>000000004072c000</data></node>
+           <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+           <node f="42-0" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+           <node f="42-0" dt="1"><name>spatialy</name><data>0000000040524000</data></node>
            <node f="42-0" dt="1"><name>spatialsx</name><data>00000000407ac000</data></node>
            <node f="42-0" dt="1"><name>spatialsy</name><data>000000004057c000</data></node>
-           <node f="42-0" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
-           <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
+           <node f="42-0" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+           <node f="42-0" dt="2"><name>coldlinkx</name><data>treenode focus = node("..&gt;objectfocus+", c);
+
+if (eventdata) {
+	double x1 = getvarnum(c, "posx");
+	double y1 = getvarnum(c, "posy");
+	double sizex = getvarnum(c, "sizex");
+	double sizey = getvarnum(c, "sizey");
+
+	double nodeWidth = getvarnum(ownerobject(focus), "nodeWidth");
+	if (sizex &lt; nodeWidth) {
+		sizex = nodeWidth;
+		setvarnum(c, "sizex", sizex);
+	}
+	if (sizey &lt; nodeWidth) {
+		sizey = nodeWidth;
+		setvarnum(c, "sizey", sizey);
+	}
+
+	double x2 = sizex + x1;
+	double y2 = sizey + y1;
+	
+	if (x1 != getvarnum(c, "x1") || y1 != getvarnum(c, "y1") || x2 != getvarnum(c, "x2") || y2 != getvarnum(c, "y2")) {
+		function_s(ASTAR_FUNCTIONS_NODE, "setPointCoords", focus, 0, x1, y1);
+		function_s(ASTAR_FUNCTIONS_NODE, "setPointCoords", focus, 1, x2, y2);
+		function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", ownerobject(focus));
+		repaintall();
+	}
+} else {
+	treenode points = node("/points", focus);
+	double x1 = get(node("/1/x", points));
+	double y1 = get(node("/1/y", points));
+	double x2 = get(node("/2/x", points));
+	double y2 = get(node("/2/y", points));
+	
+	setvarnum(c, "posx", x1);
+	setvarnum(c, "posy", y1);
+	setvarnum(c, "sizex", x2 - x1);
+	setvarnum(c, "sizey", y2 - y1);
+	
+	setvarnum(c, "x1", x1);
+	setvarnum(c, "y1", y1);
+	setvarnum(c, "x2", x2);
+	setvarnum(c, "y2", y2);
+}</data>
+            <node f="40-0"><name></name></node></node>
+           <node f="42-0"><name>variables</name>
+            <node f="40-0"><name></name></node>
+            <node f="42-0" dt="1"><name>posx</name><data>0000000000000000</data></node>
+            <node f="42-0" dt="1"><name>sizex</name><data>0000000000000000</data></node>
+            <node f="42-0" dt="1"><name>posy</name><data>0000000000000000</data></node>
+            <node f="42-0" dt="1"><name>sizey</name><data>0000000000000000</data></node>
+            <node f="42-0" dt="1"><name>oldposx</name><data>0000000000000000</data></node>
+            <node f="42-0" dt="1"><name>oldsizex</name><data>0000000000000000</data></node>
+            <node f="42-0" dt="1"><name>oldposy</name><data>0000000000000000</data></node>
+            <node f="42-0" dt="1"><name>oldsizey</name><data>0000000000000000</data></node>
+           </node>
           </data>
            <node f="40-0"><name></name></node>
+           <node f="42-0" dt="4"><name>Position and Size</name><data>
+            <node f="40-0"><name>object</name></node>
+            <node f="42-0" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+            <node f="42-0" dt="1"><name>spatialx</name><data>0000000040310000</data></node>
+            <node f="42-0" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
+            <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040490000</data></node>
+            <node f="42-0" dt="1"><name>spatialsy</name><data>00000000403e0000</data></node>
+           </data></node>
            <node f="42-0" dt="4"><name>Labels</name><data>
             <node f="40-0"><name>object</name></node>
             <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-            <node f="42-0" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-            <node f="42-0" dt="1"><name>spatialy</name><data>00000000402c0000</data></node>
+            <node f="42-0" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
+            <node f="42-0" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
             <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040350000</data>
              <node f="40-0"><name></name></node></node>
-            <node f="42-0" dt="1"><name>spatialsy</name><data>000000004052c000</data></node>
+            <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040518000</data></node>
             <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
            </data>
             <node f="40-0"><name></name></node>
@@ -2171,11 +2119,11 @@ repaintview(TheTable);
            <node f="42-0" dt="4"><name>X</name><data>
             <node f="40-0"><name>object</name></node>
             <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-            <node f="42-0" dt="1"><name>spatialx</name><data>00000000403e0000</data></node>
-            <node f="42-0" dt="1"><name>spatialy</name><data>00000000402c0000</data></node>
-            <node f="42-0" dt="1"><name>spatialsx</name><data>00000000405cc000</data>
+            <node f="42-0" dt="1"><name>spatialx</name><data>0000000040580000</data></node>
+            <node f="42-0" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+            <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040590000</data>
              <node f="40-0"><name></name></node></node>
-            <node f="42-0" dt="1"><name>spatialsy</name><data>000000004052c000</data></node>
+            <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040518000</data></node>
             <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
            </data>
             <node f="40-0"><name></name></node>
@@ -2199,7 +2147,7 @@ repaintview(TheTable);
              <node f="42-0" dt="1"><name>spatialsx</name><data>00000000405b8000</data></node>
              <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
              <node f="42-0" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
-             <node f="42-0" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;spatial/spatialx</data></node>
+             <node f="42-0" dt="2"><name>objectfocus</name><data>../../..&gt;variables/posx</data></node>
              <node f="42-0" dt="2"><name>tooltip</name><data>X Position
 (in $LENGTH_PLURAL$)</data></node>
              <node f="42-0" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
@@ -2208,9 +2156,9 @@ repaintview(TheTable);
               <node f="42-0" dt="2"><name>valuetype</name><data>length</data></node>
               <node f="42-0" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
               <node f="42-0" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
-              <node f="42-4" dt="2"><name>OnKillFocus</name><data>//Update quick properties
-applicationcommand("notifydoclistenersonclick", 2);</data></node>
-              <node f="42-0" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
+              <node f="42-4" dt="2"><name>OnKillFocus</name><data>applylinks(up(up(up(up(c)))));</data></node>
+              <node f="42-0" dt="1"><name>unsigned</name><data>0000000000000000</data></node>
+              <node f="42-0" dt="1"><name>eternalSpinner</name><data>0000000000000000</data></node>
              </node>
             </data>
              <node f="40-0"><name></name></node></node>
@@ -2222,7 +2170,7 @@ applicationcommand("notifydoclistenersonclick", 2);</data></node>
              <node f="42-0" dt="1"><name>spatialsx</name><data>00000000405b8000</data></node>
              <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
              <node f="42-0" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
-             <node f="42-0" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;spatial/spatialsx</data></node>
+             <node f="42-0" dt="2"><name>objectfocus</name><data>../../..&gt;variables/sizex</data></node>
              <node f="42-0" dt="2"><name>tooltip</name><data>X Size
 (in $LENGTH_PLURAL$)</data></node>
              <node f="42-0" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
@@ -2231,9 +2179,8 @@ applicationcommand("notifydoclistenersonclick", 2);</data></node>
               <node f="42-0" dt="2"><name>valuetype</name><data>length</data></node>
               <node f="42-0" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
               <node f="42-0" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
-              <node f="42-4" dt="2"><name>OnKillFocus</name><data>//Update quick properties
-applicationcommand("notifydoclistenersonclick", 2);</data></node>
-              <node f="42-0" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
+              <node f="42-4" dt="2"><name>OnKillFocus</name><data>applylinks(up(up(up(up(c)))));</data></node>
+              <node f="42-0" dt="1"><name>eternalSpinner</name><data>0000000000000000</data></node>
              </node>
             </data>
              <node f="40-0"><name></name></node></node>
@@ -2241,11 +2188,11 @@ applicationcommand("notifydoclistenersonclick", 2);</data></node>
            <node f="42-0" dt="4"><name>Y</name><data>
             <node f="40-0"><name>object</name></node>
             <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-            <node f="42-0" dt="1"><name>spatialx</name><data>000000004062c000</data></node>
-            <node f="42-0" dt="1"><name>spatialy</name><data>00000000402c0000</data></node>
-            <node f="42-0" dt="1"><name>spatialsx</name><data>00000000405cc000</data>
+            <node f="42-0" dt="1"><name>spatialx</name><data>0000000040686000</data></node>
+            <node f="42-0" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+            <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040590000</data>
              <node f="40-0"><name></name></node></node>
-            <node f="42-0" dt="1"><name>spatialsy</name><data>000000004052c000</data></node>
+            <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040518000</data></node>
             <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
            </data>
             <node f="40-0"><name></name></node>
@@ -2269,7 +2216,7 @@ applicationcommand("notifydoclistenersonclick", 2);</data></node>
              <node f="42-0" dt="1"><name>spatialsx</name><data>00000000405b8000</data></node>
              <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
              <node f="42-0" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
-             <node f="42-0" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;spatial/spatialy</data></node>
+             <node f="42-0" dt="2"><name>objectfocus</name><data>../../..&gt;variables/posy</data></node>
              <node f="42-0" dt="2"><name>tooltip</name><data>Y Position
 (in $LENGTH_PLURAL$)</data></node>
              <node f="42-0" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
@@ -2278,9 +2225,9 @@ applicationcommand("notifydoclistenersonclick", 2);</data></node>
               <node f="42-0" dt="2"><name>valuetype</name><data>length</data></node>
               <node f="42-0" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
               <node f="42-0" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
-              <node f="42-4" dt="2"><name>OnKillFocus</name><data>//Update quick properties
-applicationcommand("notifydoclistenersonclick", 2);</data></node>
-              <node f="42-0" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
+              <node f="42-4" dt="2"><name>OnKillFocus</name><data>applylinks(up(up(up(up(c)))));</data></node>
+              <node f="42-0" dt="1"><name>unsigned</name><data>0000000000000000</data></node>
+              <node f="42-0" dt="1"><name>eternalSpinner</name><data>0000000000000000</data></node>
              </node>
             </data>
              <node f="40-0"><name></name></node></node>
@@ -2292,7 +2239,7 @@ applicationcommand("notifydoclistenersonclick", 2);</data></node>
              <node f="42-0" dt="1"><name>spatialsx</name><data>00000000405b8000</data></node>
              <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
              <node f="42-0" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
-             <node f="42-0" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;spatial/spatialsy</data></node>
+             <node f="42-0" dt="2"><name>objectfocus</name><data>../../..&gt;variables/sizey</data></node>
              <node f="42-0" dt="2"><name>tooltip</name><data>Y Size
 (in $LENGTH_PLURAL$)</data></node>
              <node f="42-0" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
@@ -2301,9 +2248,8 @@ applicationcommand("notifydoclistenersonclick", 2);</data></node>
               <node f="42-0" dt="2"><name>valuetype</name><data>length</data></node>
               <node f="42-0" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
               <node f="42-0" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
-              <node f="42-4" dt="2"><name>OnKillFocus</name><data>//Update quick properties
-applicationcommand("notifydoclistenersonclick", 2);</data></node>
-              <node f="42-0" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
+              <node f="42-4" dt="2"><name>OnKillFocus</name><data>applylinks(up(up(up(up(c)))));</data></node>
+              <node f="42-0" dt="1"><name>eternalSpinner</name><data>0000000000000000</data></node>
              </node>
             </data>
              <node f="40-0"><name></name></node></node>
@@ -2426,11 +2372,13 @@ applicationcommand("notifydoclistenersonclick", 2);</data></node>
         <node f="40-0"><name></name></node>
         <node f="42-10000" dt="2"><name>addBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_addBarrier"</data></node>
         <node f="42-10000" dt="2"><name>addPoint</name><data>dll:"module:AStar" func:"Barrier_addPoint"</data></node>
+        <node f="42-10000" dt="2"><name>getActiveBarrierMode</name><data>dll:"module:AStar" func:"AStarNavigator_getActiveBarrierMode"</data></node>
         <node f="42-10000" dt="2"><name>getBarrierType</name><data>dll:"module:AStar" func:"Barrier_getBarrierType"</data></node>
         <node f="42-10000" dt="2"><name>rebuildMeshes</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildMeshes"</data></node>
         <node f="42-10000" dt="2"><name>removeBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_removeBarrier"</data></node>
         <node f="42-10000" dt="2"><name>removePoint</name><data>dll:"module:AStar" func:"Barrier_removePoint"</data></node>
-        <node f="42-10000" dt="2"><name>setActiveBarrier</name><data>dll:"module:AStar" func:"Barrier_setActiveBarrier"</data></node>
+        <node f="42-10000" dt="2"><name>setActiveBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_setActiveBarrier"</data></node>
+        <node f="42-10000" dt="2"><name>setActiveIndex</name><data>dll:"module:AStar" func:"Barrier_setActiveIndex"</data></node>
         <node f="42-10000" dt="2"><name>setPointCoords</name><data>dll:"module:AStar" func:"Barrier_setPointCoords"</data></node>
         <node f="42-10000" dt="2"><name>swapBarriers</name><data>dll:"module:AStar" func:"AStarNavigator_swapBarriers"</data></node>
         <node f="42-10000" dt="2"><name>swapPoints</name><data>dll:"module:AStar" func:"Barrier_swapPoints"</data></node>

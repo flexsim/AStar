@@ -1400,17 +1400,18 @@ visible void AStarNavigator_setActiveBarrier(FLEXSIMINTERFACE)
 	TreeNode* barrierNode = parnode(2);
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return;
-	if (!isclasstype(barrierNode, "Barrier"))
+	if (!isclasstype(ownerobject(barrierNode), "AStar::AStarNavigator"))
 		return;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
 	if (objectexists(tonode(a->activeBarrier))) {
 		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
+		b->activePointIndex = 0;
 		b->isActive = 0;
 	}
 	Barrier* b = &o(Barrier, barrierNode);
 	b->isActive = 1;
-	nodepoint(a->activeBarrier, barrierNode);
+	a->activeBarrier = b->holder;
 }
 
 visible void AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)

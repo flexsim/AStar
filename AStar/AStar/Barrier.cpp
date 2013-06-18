@@ -372,3 +372,13 @@ visible void Barrier_getBarrierType(FLEXSIMINTERFACE)
 	sets(resultNode, b->getClassFactory());
 }
 
+visible void Barrier_setActiveIndex(FLEXSIMINTERFACE)
+{
+	TreeNode* barNode = parnode(1);
+	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
+		return;
+
+	Barrier* b = &o(Barrier, barNode);
+	b->activePointIndex = parval(2);
+}
+
