@@ -19,3 +19,4 @@
 #define BARRIER_MODE_DYNAMIC_CREATE 0x3
 #define BARRIER_MODE_MOVE 0x4
 
+#define FUNCTIONS_NODE node("/modules/AStar/Functions", views())
