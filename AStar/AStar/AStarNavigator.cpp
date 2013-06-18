@@ -1205,12 +1205,15 @@ visible void AStarNavigator_setEditMode(FLEXSIMINTERFACE)
 visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = parnode(1);
+	int barrierType = parval(6);
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return;
 
+	int editMode = barrierType ? barrierType : AStarNavigator::editMode;
+
 	AStarNavigator* a = &o(AStarNavigator, navNode);
 	Barrier* newBarrier = NULL;
-	switch (AStarNavigator::editMode) {
+	switch (editMode) {
 	case EDITMODE_SOLID_BARRIER: newBarrier = a->barrierList.add(new Barrier); break;
 	case EDITMODE_DIVIDER: newBarrier = a->barrierList.add(new Divider); break;
 	case EDITMODE_ONE_WAY_DIVIDER: newBarrier = a->barrierList.add(new OneWayDivider); break;
