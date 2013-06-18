@@ -241,7 +241,7 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 		if (objectexists(tonode(activeBarrier))) {
 			Barrier* b = &o(Barrier, tonode(activeBarrier));
 			if (b != barrier) {
-				b->activePointIndex = 0;
+				b->activePointIndex = b->pointList.size();
 				b->isActive = 0;
 			}
 		}
