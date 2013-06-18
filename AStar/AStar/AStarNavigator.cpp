@@ -1301,8 +1301,12 @@ visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 		Barrier* activeBarrier = &o(Barrier, tonode(a->activeBarrier));
 		activeBarrier->isActive = 0;
 	}
-
-	a->activeBarrier = newBarrier->holder;
+	TreeNode* newNode = newBarrier->holder;
+	char buffer[512];
+	const char * name = newBarrier->getClassFactory();
+	sprintf(buffer, "%s%d", name, a->barrierList.size());
+	setname(newNode, buffer);
+	a->activeBarrier = newNode;
 }
 
 visible void AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
@@ -1379,6 +1383,25 @@ visible double AStarNavigator_getActiveBarrierMode(FLEXSIMINTERFACE)
 	return 0;
 }
 
+visible void AStarNavigator_setActiveBarrier(FLEXSIMINTERFACE)
+{
+	TreeNode* navNode = parnode(1);
+	TreeNode* barrierNode = parnode(2);
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return;
+	if (!isclasstype(barrierNode, "Barrier"))
+		return;
+
+	AStarNavigator* a = &o(AStarNavigator, navNode);
+	if (objectexists(tonode(a->activeBarrier))) {
+		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
+		b->isActive = 0;
+	}
+	Barrier* b = &o(Barrier, barrierNode);
+	b->isActive = 1;
+	nodepoint(a->activeBarrier, barrierNode);
+}
+
 visible void AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = parnode(1);
@@ -1399,3 +1422,4 @@ visible void AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
 	if (drawMode & ASTAR_DRAW_MODE_TRAFFIC)
 		a->buildTrafficMesh();
 }
+

@@ -303,7 +303,7 @@ bool Barrier::setPointCoords(int pointIndex, double x, double y)
 visible void Barrier_addPoint(FLEXSIMINTERFACE)
 {
 	TreeNode* barNode = parnode(1);
-	if (!isclasstype(barNode, "Barrier"))
+	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
 		return;
 
 	Barrier* b = &o(Barrier, barNode);
@@ -313,7 +313,7 @@ visible void Barrier_addPoint(FLEXSIMINTERFACE)
 visible void Barrier_removePoint(FLEXSIMINTERFACE)
 {
 	TreeNode* barNode = parnode(1);
-	if (!isclasstype(barNode, "Barrier"))
+	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
 		return;
 
 	Barrier* b = &o(Barrier, barNode);
@@ -323,7 +323,7 @@ visible void Barrier_removePoint(FLEXSIMINTERFACE)
 visible void Barrier_swapPoints(FLEXSIMINTERFACE)
 {
 	TreeNode* barNode = parnode(1);
-	if (!isclasstype(barNode, "Barrier"))
+	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
 		return;
 
 	Barrier* b = &o(Barrier, barNode);
@@ -333,9 +333,23 @@ visible void Barrier_swapPoints(FLEXSIMINTERFACE)
 visible void Barrier_setPointCoords(FLEXSIMINTERFACE)
 {
 	TreeNode* barNode = parnode(1);
-	if (!isclasstype(barNode, "Barrier"))
+	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
 		return;
 
 	Barrier* b = &o(Barrier, barNode);
 	b->setPointCoords((int)parval(2), parval(3), parval(4));
 }
+
+visible void Barrier_getBarrierType(FLEXSIMINTERFACE)
+{
+	TreeNode* barNode = parnode(1);
+	TreeNode* resultNode = parnode(2);
+	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
+		return;
+	if (!validlink(resultNode, ""))
+		return;
+
+	Barrier* b = &o(Barrier, barNode);
+	sets(resultNode, b->getClassFactory());
+}
+

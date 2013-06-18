@@ -206,8 +206,8 @@ setvarnum(c, "lastModelX", mouseX);
 setvarnum(c, "lastModelY", mouseY);
 int clickCode = clickcode();
 
-pt("SelectedObject: "); pt(nodetomodelpath(selobj, 1)); 
-pt(" clickcode: "); pd(clickCode); pr();
+//pt("SelectedObject: "); pt(nodetomodelpath(selobj, 1)); 
+//pt(" clickcode: "); pd(clickCode); pr();
 
 if (!objectexists(selobj)) {
 	if (clickCode == LEFT_RELEASE) {
@@ -219,7 +219,7 @@ if (!objectexists(selobj)) {
 			setvarnum(c, "creating", 1);
 			setvarnum(c, "editing", 0);
 			
-			function_s(c, "addBarrier", activeNavigator, 
+			function_s(node("/modules/AStar/Functions", views()), "addBarrier", activeNavigator, 
 				mouseX, mouseY, mouseX, mouseY);
 			setselectedobject(i, activeNavigator);	
 		}
@@ -291,7 +291,7 @@ setvarnum(c, "dragY", 0);
 treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
 function_s(c, "onClick", activeNav, RIGHT_RELEASE, 0, 0);
 
-function_s(c, "rebuildMeshes", activeNav, ASTAR_DRAW_MODE_BARRIERS);</data></node>
+function_s(node("/modules/AStar/Functions", views()), "rebuildMeshes", activeNav, ASTAR_DRAW_MODE_BARRIERS);</data></node>
         <node f="42-4" dt="2"><name>checkStatus</name><data>treenode activeNavigator = tonode(getvarnum(ownerobject(c), "activeNavigator"));
 if (!objectexists(activeNavigator))
 	return 0;
@@ -306,17 +306,9 @@ setvarnum(theEditMode, "creating", 0);
 setvarnum(theEditMode, "editing", 1);
 </data></node>
         <node f="42-10000" dt="2"><name>setEditMode</name><data>dll:"module:AStar" func:"AStarNavigator_setEditMode"</data></node>
-        <node f="42-10000" dt="2"><name>addBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_addBarrier"</data></node>
-        <node f="42-10000" dt="2"><name>removeBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_removeBarrier"</data></node>
-        <node f="42-10000" dt="2"><name>swapBarriers</name><data>dll:"module:AStar" func:"AStarNavigator_swapBarriers"</data></node>
         <node f="42-10000" dt="2"><name>onMouseMove</name><data>dll:"module:AStar" func:"AStarNavigator_onMouseMove"</data></node>
         <node f="42-10000" dt="2"><name>onClick</name><data>dll:"module:AStar" func:"AStarNavigator_onClick"</data></node>
         <node f="42-10000" dt="2"><name>getActiveBarrierMode</name><data>dll:"module:AStar" func:"AStarNavigator_getActiveBarrierMode"</data></node>
-        <node f="42-10000" dt="2"><name>rebuildMeshes</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildMeshes"</data></node>
-        <node f="42-10000" dt="2"><name>addPoint</name><data>dll:"module:AStar" func:"Barrier_addPoint"</data></node>
-        <node f="42-10000" dt="2"><name>removePoint</name><data>dll:"module:AStar" func:"Barrier_removePoint"</data></node>
-        <node f="42-10000" dt="2"><name>swapPoints</name><data>dll:"module:AStar" func:"Barrier_swapPoints"</data></node>
-        <node f="42-10000" dt="2"><name>setPointCoords</name><data>dll:"module:AStar" func:"Barrier_setPointCoords"</data></node>
        </node>
       </data></node>
       <node f="42-0" dt="4"><name>AStar::Barrier</name><data>
@@ -461,7 +453,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
        </data></node>
-       <node f="42-100000" dt="4"><name>Create Divider</name><data>
+       <node f="42-0" dt="4"><name>Create Divider</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Divider")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -473,7 +465,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\onewaydivider.bmp</data></node>
        </data></node>
-       <node f="42-0" dt="4"><name>Create Preferred Path</name><data>
+       <node f="42-100000" dt="4"><name>Create Preferred Path</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::PreferredPath")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -541,7 +533,7 @@ iterate(1, content(tabcontrol), 1){
          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040140000</data></node>
          <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040500000</data></node>
          <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040500000</data></node>
-         <node f="42-0" dt="2"><name>bitmap</name><data>bitmaps\sourcepicture.ico</data></node>
+         <node f="42-0" dt="2"><name>bitmap</name><data>modules\AStar\bitmaps\astarnavigator.png</data></node>
         </data></node>
         <node f="42-0" dt="4"><name>editname</name><data>
          <node f="40-0"><name>object</name></node>
@@ -571,7 +563,6 @@ iterate(1, content(tabcontrol), 1){
           <node f="40-0"><name></name></node>
           <node f="42-0" dt="2"><name></name><data>VIEW:/modules/AStar/Pages/AStar</data></node>
           <node f="42-0" dt="2"><name></name><data>VIEW:/modules/AStar/Pages/Barriers</data></node>
-          <node f="42-0" dt="2"><name></name><data>VIEW:/modules/AStar/Pages/Paths</data></node>
           <node f="42-0" dt="2"><name></name><data>VIEW:/modules/AStar/Pages/Triggers</data></node>
           <node f="42-0" dt="2"><name></name><data>VIEW:/pages/shared/Labels</data></node>
           <node f="42-0" dt="2"><name></name><data>VIEW:/pages/shared/General</data></node>
@@ -602,8 +593,10 @@ iterate(1, content(tabcontrol), 1){
         <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
         <node f="42-4" dt="2"><name>PageOnOpen</name><data>int drawmode = get(node("@&gt;objectfocus+&gt;variables/drawMode", c));
 
-setchecked(node("/Draw Modes/Show Grid", up(c)), drawmode &amp; ASTAR_DRAW_MODE_GRID);
 setchecked(node("/Draw Modes/Show Barriers", up(c)), drawmode &amp; ASTAR_DRAW_MODE_BARRIERS);
+setchecked(node("/Draw Modes/Show Bounds", up(c)), drawmode &amp; ASTAR_DRAW_MODE_BOUNDS);
+setchecked(node("/Draw Modes/Show Grid", up(c)), drawmode &amp; ASTAR_DRAW_MODE_GRID);
+setchecked(node("/Draw Modes/Show Members", up(c)), drawmode &amp; ASTAR_DRAW_MODE_MEMBERS);
 setchecked(node("/Draw Modes/Show Traffic", up(c)), drawmode &amp; ASTAR_DRAW_MODE_TRAFFIC);
 
 listboxrefresh(node("/Members/MemberChooser", up(c)));
@@ -611,8 +604,10 @@ listboxrefresh(node("/Members/MemberChooser", up(c)));
 nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
         <node f="42-4" dt="2"><name>PageOnApply</name><data>double drawmode = 0;
 
-drawmode += getchecked(node("/Draw Modes/Show Grid", up(c))) ? ASTAR_DRAW_MODE_GRID : 0;
 drawmode += getchecked(node("/Draw Modes/Show Barriers", up(c))) ? ASTAR_DRAW_MODE_BARRIERS : 0;
+drawmode += getchecked(node("/Draw Modes/Show Bounds", up(c))) ? ASTAR_DRAW_MODE_BOUNDS : 0;
+drawmode += getchecked(node("/Draw Modes/Show Grid", up(c))) ? ASTAR_DRAW_MODE_GRID : 0;
+drawmode += getchecked(node("/Draw Modes/Show Members", up(c))) ? ASTAR_DRAW_MODE_MEMBERS : 0;
 drawmode += getchecked(node("/Draw Modes/Show Traffic", up(c))) ? ASTAR_DRAW_MODE_TRAFFIC : 0;
 
 set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
@@ -706,12 +701,12 @@ set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
          <node f="42-0" dt="1"><name>spatialx</name><data>00000000406e0000</data></node>
          <node f="42-0" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
          <node f="42-0" dt="1"><name>spatialsx</name><data>00000000405f4000</data></node>
-         <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040590000</data></node>
+         <node f="42-0" dt="1"><name>spatialsy</name><data>000000004061c000</data></node>
          <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
          <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
         </data>
          <node f="40-0"><name></name></node>
-         <node f="42-0" dt="4"><name>Show Grid</name><data>
+         <node f="42-0" dt="4"><name>Show Barriers</name><data>
           <node f="40-0"><name>object</name></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>0000000040350000</data></node>
@@ -720,7 +715,7 @@ set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
          </data></node>
-         <node f="42-0" dt="4"><name>Show Barriers</name><data>
+         <node f="42-0" dt="4"><name>Show Bounds</name><data>
           <node f="40-0"><name>object</name></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>0000000040350000</data></node>
@@ -729,11 +724,29 @@ set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
          </data></node>
-         <node f="42-0" dt="4"><name>Show Traffic</name><data>
+         <node f="42-0" dt="4"><name>Show Grid</name><data>
           <node f="40-0"><name>object</name></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>0000000040350000</data></node>
           <node f="42-0" dt="1"><name>spatialy</name><data>00000000404f0000</data></node>
+          <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
+         </data></node>
+         <node f="42-0" dt="4"><name>Show Members</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+          <node f="42-0" dt="1"><name>spatialx</name><data>0000000040350000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>000000004054c000</data></node>
+          <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
+         </data></node>
+         <node f="42-0" dt="4"><name>Show Traffic</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+          <node f="42-0" dt="1"><name>spatialx</name><data>0000000040350000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>00000000405a0000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
@@ -745,9 +758,9 @@ set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
          <node f="42-0" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
          <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
          <node f="42-0" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-         <node f="42-0" dt="1"><name>spatialy</name><data>00000000405b8000</data></node>
+         <node f="42-0" dt="1"><name>spatialy</name><data>000000004062c000</data></node>
          <node f="42-0" dt="1"><name>spatialsx</name><data>00000000405f4000</data></node>
-         <node f="42-0" dt="1"><name>spatialsy</name><data>00000000405cc000</data></node>
+         <node f="42-0" dt="1"><name>spatialsy</name><data>00000000405d8000</data></node>
          <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
          <node f="42-0" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
          <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
@@ -759,12 +772,13 @@ set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
           <node f="42-0" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
-          <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040488000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>00000000404c8000</data></node>
           <node f="42-0"><name>items</name>
            <node f="40-0"><name></name></node>
            <node f="42-0"><name>All Members</name></node>
            <node f="42-0"><name>Active Members</name></node>
            <node f="42-0"><name>Inactive Members</name></node>
+           <node f="42-0"><name>FR Members</name></node>
           </node>
           <node f="42-0" dt="1"><name>itemcurrent</name><data>000000003ff00000</data></node>
           <node f="42-0" dt="2"><name>OnSelect</name><data>nodefunction(node("../MembersList&gt;refresh",c));</data>
@@ -776,7 +790,7 @@ set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
           <node f="40-0"><name>object</name></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040534000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040540000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>OnPress</name><data>treenode list = node("../MembersList", c);
@@ -809,13 +823,24 @@ int list = get(itemcurrent(node("../MemberChooser", parent)));
 treenode itms = items(parent);
 clearcontents(itms);
 
-if (list == 1) {
-	nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/activetravelmembers", parent));
-	nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/travelmembers", parent));
-} else if (list == 2) {
-	nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/activetravelmembers", parent));
-} else {
-	nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/travelmembers", parent));
+switch (list) {
+	case 1: //ALL
+		nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/activetravelmembers", parent));
+		nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/travelmembers", parent));
+		nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/fixedResourceBarriers", parent));
+	break;
+	
+	case 2: //ACTIVE
+		nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/activetravelmembers", parent));
+	break;
+	
+	case 3: //INACTIVE
+		nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/travelmembers", parent));
+	break;
+	
+	case 4: //FR
+		nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/fixedResourceBarriers", parent));
+	break;
 }
 
 listboxrefresh(parent);</data></node>
@@ -885,9 +910,8 @@ msg("NOTICE", concat(
 setchecked(node("/editor view", parent), 1);
 setchecked(node("/table view", parent), 0);
 
-treenode editor = node("/Editor", parent);
-executefsnode(node("&gt;refreshlist", editor), editor, 0, 0);
-executefsnode(node("&gt;refreshdata", editor), editor, 0, 0);
+treenode editor = node("/Editor/SelectBarrier", parent);
+function_s(editor, "refreshList");
 
 //now, hide the table view and show the editor view
 windowshow(windowfromnode(node("/Edit Table", parent)), 0);
@@ -1006,7 +1030,7 @@ repaintview(TheTable);</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040803800</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>000000004071b000</data></node>
           <node f="42-0" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
-          <node f="42-0" dt="2"><name>coldlinkx</name><data>treenode focus = node("&gt;focus+", c);
+          <node f="42-0" dt="2"><name>coldlinkx</name><data>/*treenode focus = node("&gt;focus+", c);
 treenode table = node("&gt;table", c);
 
 if (!eventdata) {
@@ -1025,7 +1049,7 @@ if (!eventdata) {
 	}
 } else {
 	return 0;
-}</data></node>
+}*/</data></node>
           <node f="42-0" dt="2"><name>OnMouseWheel</name><data>treenode TheTable = ownerobject(c);
 
 double vert_nMin = scrollinfo(TheTable,0,1,1);
@@ -1069,107 +1093,38 @@ repaintview(TheTable);
          <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
          <node f="42-0" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
          <node f="42-0" dt="1"><name>alignbottommargin</name><data>00000000401c0000</data></node>
-         <node f="42-0" dt="2"><name>viewfocus</name><data>@&gt;objectfocus+&gt;variables/sections/1</data></node>
-         <node f="42-4" dt="2"><name>refreshlist</name><data>//clear out the old list contents and rebuild the list from the conveyor's sections table
-treenode sections	= node("@&gt;objectfocus+&gt;variables/sections", c);
-treenode listbox	= node("/SelectSection", c);
-clearcontents(items(listbox));
-
-
-//loop through the conveyor's sections table and add a list entry for each section
-for (int i=1; i&lt;=content(sections); i++){
-	nodeinsertinto(items(listbox));
-	treenode listentry	= last(items(listbox));
-	treenode section	= rank(sections, i);
-	string str_ranknum	= numtostring(i, 0, 0);
-	string sectionname	= getname(section);
-	if (!stringlen(sectionname)){
-		sectionname = concat("section ", str_ranknum);
-		setname(section, sectionname);
-	}
-	setname(listentry, sectionname);
-	nodeadddata(listentry, DATATYPE_STRING);
-	sets(listentry, concat("@&gt;objectfocus+&gt;variables/sections/", str_ranknum));
-}
-
-
-
-//make sure that a valid choice is selected
-int selected = get(itemcurrent(listbox));
-if (selected&gt;content(items(listbox))) {
-	set(itemcurrent(listbox), content(items(listbox)));
-	sets(viewfocus(up(listbox)), concat("@&gt;objectfocus+&gt;variables/sections/", numtostring(get(itemcurrent(listbox)), 0, 0)));
-}
-	
-	
-//refresh the listbox
-listboxrefresh(listbox);</data></node>
-         <node f="42-4" dt="2"><name>refreshdata</name><data>//get references to all of the GUI widgets we need
-string sectionfocus	= gets(viewfocus(c));
-treenode section	= node(sectionfocus, c);
-treenode atts		= node("/Attributes", c);
-treenode name		= node("/editName", atts);
-treenode type		= node("/ChooseType", atts);
-
-//update the dropdown and the graying
-setviewtext(name, getname(section));
-set(itemcurrent(type), get(rank(section, 1)));
-comborefresh(type);
-executefsnode(node("&gt;OnSelect", type), type);
-
-
-//take the color nodes off of any previously selected section and color the newly
-// selected section
-executefsnode(node("&gt;clearCustomColor", c), c);
-executefsnode(node("&gt;setCustomColor", c), c);</data></node>
-         <node f="42-4" dt="2"><name>clearCustomColor</name><data>//clear any custom color nodes from the sections' type nodes
-treenode sections = node("@&gt;objectfocus+&gt;variables/sections", c);
-int numsections = content(sections);
-int clearedcolor = 0;
-
-for (int i=1; i&lt;=numsections; i++){
-	treenode typenode = rank(rank(sections, i), CONVSEC_TYPE);
-	if (content(typenode)){
-		clearcontents(typenode);
-		clearedcolor = 1;
-	}
-}
-
-if (clearedcolor) repaintall();</data></node>
-         <node f="42-4" dt="2"><name>setCustomColor</name><data>//add color nodes to the currently selected section
-
-//get the conveyor's current color attributes
-treenode conveyor = node("@&gt;objectfocus+", c);
-doublearray colors = makearray(3);
-fillarray(colors, getcolorcomponent(conveyor, 1)/255, getcolorcomponent(conveyor, 2)/255, getcolorcomponent(conveyor, 3)/255);
-double color_avg = (colors[1]+colors[2]+colors[3])*0.3333;
-int i=1;
-
-
-//if the average color is bright (over .5), darken the colors, else brighten the
-// colors
-double color_factor = 0.45;
-if (color_avg&gt;0.6) color_factor = -0.45;
-
-
-//add color attributes to the type node of the selected section
-treenode sectionType = rank(node(gets(node("&gt;viewfocus", c)), c), CONVSEC_TYPE);
-for (i=1; i&lt;=3; i++){
-	nodeinsertinto(sectionType);
-	nodeadddata(last(sectionType), DATATYPE_NUMBER);
-	set(last(sectionType), max(0, min(1, colors[i]+color_factor)));
-//	msg(numtostring(color_factor, 2, 2), concat(numtostring(colors[i]+color_factor, 2, 2), ", ", numtostring(max(0, min(1, colors[i]+color_factor)), 2, 2)));
-}
-
-//refresh the view with this new color
-repaintall();</data></node>
         </data>
          <node f="40-0"><name></name></node>
+         <node f="42-0" dt="4"><name>FilterType</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
+          <node f="42-0"><name>spatial</name>
+           <node f="40-0"><name></name></node>
+           <node f="42-0" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42-0" dt="1"><name>spatialy</name><data>0000000040320000</data></node>
+           <node f="42-0" dt="1"><name>spatialsx</name><data>00000000405d0000</data></node>
+           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          </node>
+          <node f="42-0"><name>items</name>
+           <node f="40-0"><name></name></node>
+           <node f="42-0"><name>Show All</name></node>
+           <node f="42-0"><name>Barriers</name></node>
+           <node f="42-0"><name>Dividers</name></node>
+           <node f="42-0"><name>One-Way Dividers</name></node>
+           <node f="42-0"><name>Preferred Paths</name></node>
+          </node>
+          <node f="42-0" dt="1"><name>itemcurrent</name><data>000000003ff00000</data></node>
+          <node f="42-0" dt="2"><name>OnSelect</name><data>function_s(node("../SelectBarrier", c), "refreshList");</data></node>
+          <node f="42-0" dt="2"><name>tooltip</name><data>Filter by barrier type</data></node>
+          <node f="42-0" dt="1"><name>beveltype</name><data>000000003ff00000</data></node>
+          <node f="42-0" dt="2"><name>windowtitle</name><data></data></node>
+          <node f="42-0" dt="1"><name>alignrightmargin</name><data>000000004072c000</data></node>
+         </data></node>
          <node f="42-0" dt="4"><name>Add</name><data>
           <node f="40-0"><name>object</name></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040320000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040450000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>OnPress</name><data>//create a copy of the currently selected section and rank that new copy right after the original
@@ -1281,7 +1236,7 @@ executefsnode(node("&gt;refreshdata", convSecEd), convSecEd);</data>
           <node f="40-0"><name>object</name></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>0000000040458000</data></node>
-          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040320000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040450000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>OnPress</name><data>//delete a section from the conveyor
@@ -1379,7 +1334,7 @@ executefsnode(node("&gt;refreshdata", convSecEd), convSecEd, 0, 0);
           <node f="40-0"><name>object</name></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>0000000040520000</data></node>
-          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040320000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040450000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>bitmap</name><data>buttons\uparrow_blue.png</data></node>
@@ -1475,7 +1430,7 @@ executefsnode(node("&gt;refreshdata", convSecEd), convSecEd, 0, 0);</data></node
           <node f="40-0"><name>object</name></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>0000000040594000</data></node>
-          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040320000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040450000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>bitmap</name><data>buttons\downarrow_blue.png</data></node>
@@ -1571,21 +1526,69 @@ executefsnode(node("&gt;refreshdata", convSecEd), convSecEd, 0, 0);</data></node
           <node f="40-0"><name>object</name></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405c8000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040450000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040508000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>00000000405d0000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040727000</data></node>
           <node f="42-0" dt="2"><name>tooltip</name><data>Choose a section to edit</data></node>
           <node f="42-0"><name>items</name>
            <node f="40-0"><name></name></node></node>
           <node f="42-0" dt="1"><name>itemcurrent</name><data>000000003ff00000</data></node>
-          <node f="42-0" dt="2"><name>OnSelect</name><data>//change the Editor's view focus
-sets(viewfocus(up(c)), concat("@&gt;objectfocus+&gt;variables/sections/", numtostring(get(itemcurrent(c)), 0, 0)));
-//refresh the attributes page for the newly selected section
-executefsnode(node("&gt;refreshdata", up(c)), up(c));</data></node>
+          <node f="42-0" dt="2"><name>result</name><data></data></node>
+          <node f="42-0"><name>eventfunctions</name>
+           <node f="40-0"><name></name></node>
+           <node f="42-4" dt="2"><name>refreshList</name><data>int filter = get(itemcurrent(node("../FilterType", c)));
+treenode barriers = node("@&gt;objectfocus+&gt;variables/barriers", c);
+
+clearcontents(items(c));
+
+switch (filter) {
+	case 1:  //Show All
+		function_s(c, "filterList", "");
+	break;
+	
+	case 2:  //Barriers
+		function_s(c, "filterList", "AStar::Barrier");
+	break;
+	
+	case 3:  //Divider
+		function_s(c, "filterList", "AStar::Divider");
+	break;
+	
+	case 4:  //One-Way Divider
+		function_s(c, "filterList", "AStar::OneWayDivider");
+	break;
+	
+	case 5:  //Preferred Path	
+		function_s(c, "filterList", "AStar::PreferredPath");
+	break;
+}
+
+listboxrefresh(c);
+nodepoint(node("../Attributes&gt;objectfocus", c), rank(barriers, get(itemcurrent(c))));
+function_s(node("../Attributes", c), "refreshData");</data></node>
+           <node f="42-4" dt="2"><name>filterList</name><data>string type = parstr(1);
+
+treenode result = node("&gt;result", c);
+treenode barriers = node("@&gt;objectfocus+&gt;variables/barriers", c);
+
+for (int i = 1; i &lt;= content(barriers); i++) {
+	function_s(node("/modules/AStar/Functions", views()), "getBarrierType", rank(barriers, i), result);
+	if (comparetext(type, gets(result)) || stringlen(type) == 0) {
+		treenode itm = nodeadddata(nodeinsertinto(items(c)), DATATYPE_NUMBER);
+		setname(itm, getname(rank(barriers, i)));
+		set(itm, i);
+	}
+}</data></node>
+           <node f="42-0" dt="2"><name>OnSelect</name><data>treenode barriers = node("@&gt;objectfocus+&gt;variables/barriers", c);
+nodepoint(node("../Attributes&gt;objectfocus", c), rank(barriers, get(itemcurrent(c))));
+function_s(node("../Attributes", c), "refreshData");</data></node>
+          </node>
+          <node f="42-0" dt="1"><name>alignrightmargin</name><data>000000004072c000</data></node>
           <node f="42-0" dt="1"><name>alignbottommargin</name><data>00000000402c0000</data></node>
          </data></node>
          <node f="42-0" dt="4"><name>Attributes</name><data>
           <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>00000000406ce000</data></node>
           <node f="42-0" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
@@ -1593,10 +1596,14 @@ executefsnode(node("&gt;refreshdata", up(c)), up(c));</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>000000004074c000</data></node>
           <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
           <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-          <node f="42-0" dt="2"><name>PageOnOpen</name><data>//refresh the attributes page for the selected section
-treenode Sections_tab = up(up(c));
-executefsnode(node("&gt;refreshattributes", Sections_tab), Sections_tab);
-</data></node>
+          <node f="42-0"><name>eventfunctions</name>
+           <node f="40-0"><name></name></node>
+           <node f="42-4" dt="2"><name>refreshData</name><data>treenode focus = node("&gt;objectfocus+", c);
+treenode functions = node("/modules/AStar/Functions", views());
+
+setviewtext(node("/editName", c), getname(focus));
+//function_s(functions, "</data></node>
+          </node>
           <node f="42-0" dt="1"><name>alignrightposition</name><data>0000000040736000</data></node>
           <node f="42-0" dt="1"><name>alignbottommargin</name><data>0000000040240000</data></node>
          </data>
@@ -1612,7 +1619,7 @@ executefsnode(node("&gt;refreshattributes", Sections_tab), Sections_tab);
           <node f="42-0" dt="4"><name>editName</name><data>
            <node f="40-0"><name>object</name></node>
            <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-           <node f="42-0" dt="1"><name>spatialx</name><data>0000000040490000</data></node>
+           <node f="42-0" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
            <node f="42-0" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
            <node f="42-0" dt="1"><name>spatialsx</name><data>00000000406b8000</data></node>
            <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040340000</data></node>
@@ -1628,13 +1635,40 @@ listboxrefresh(selectSection);
 </data></node>
            <node f="42-0" dt="2"><name>coldlinkname</name><data>../../..&gt;viewfocus+</data></node>
           </data></node>
+          <node f="42-0" dt="4"><name>Path Weight</name><data>
+           <node f="40-0"><name>object</name></node>
+           <node f="42-0" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+           <node f="42-0" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42-0" dt="1"><name>spatialy</name><data>0000000040458000</data></node>
+           <node f="42-0" dt="1"><name>spatialsx</name><data>00000000404e0000</data></node>
+           <node f="42-0" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+          </data></node>
+          <node f="42-0" dt="4"><name>editPathWeight</name><data>
+           <node f="40-0"><name>object</name></node>
+           <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+           <node f="42-0" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
+           <node f="42-0" dt="1"><name>spatialy</name><data>0000000040440000</data></node>
+           <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42-0" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
+           <node f="42-0" dt="2"><name>objectfocus</name><data>..&gt;weight</data></node>
+           <node f="42-0" dt="1"><name>weight</name><data>0000000000000000</data></node>
+           <node f="42-0" dt="2"><name>tooltip</name><data>Path Weight</data></node>
+           <node f="42-0"><name>variables</name>
+            <node f="40-0"><name></name></node>
+            <node f="42-0" dt="2"><name>valuetype</name><data></data></node>
+            <node f="42-0" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
+            <node f="42-0" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
+           </node>
+          </data>
+           <node f="40-0"><name></name></node></node>
           <node f="42-0" dt="4"><name>Position and Size</name><data>
            <node f="40-0"><name>object</name></node>
            <node f="42-0" dt="2"><name>viewfocus</name><data>MAIN:/project/model</data></node>
            <node f="42-0" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
            <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
            <node f="42-0" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42-0" dt="1"><name>spatialy</name><data>0000000040490000</data></node>
+           <node f="42-0" dt="1"><name>spatialy</name><data>0000000040590000</data></node>
            <node f="42-0" dt="1"><name>spatialsx</name><data>00000000407ac000</data></node>
            <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040590000</data></node>
            <node f="42-0" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
@@ -1925,6 +1959,23 @@ applicationcommand("notifydoclistenersonclick", 2);</data></node>
         </data></node>
        </node>
       </node>
+      <node f="42-0" dt="4"><name>Functions</name><data>
+       <node f="40-0"><name></name></node>
+       <node f="42-0"><name>eventfunctions</name>
+        <node f="40-0"><name></name></node>
+        <node f="42-10000" dt="2"><name>addBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_addBarrier"</data></node>
+        <node f="42-10000" dt="2"><name>addPoint</name><data>dll:"module:AStar" func:"Barrier_addPoint"</data></node>
+        <node f="42-10000" dt="2"><name>getBarrierType</name><data>dll:"module:AStar" func:"Barrier_getBarrierType"</data></node>
+        <node f="42-10000" dt="2"><name>rebuildMeshes</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildMeshes"</data></node>
+        <node f="42-10000" dt="2"><name>removeBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_removeBarrier"</data></node>
+        <node f="42-10000" dt="2"><name>removePoint</name><data>dll:"module:AStar" func:"Barrier_removePoint"</data></node>
+        <node f="42-10000" dt="2"><name>setActiveBarrier</name><data>dll:"module:AStar" func:"Barrier_setActiveBarrier"</data></node>
+        <node f="42-10000" dt="2"><name>setPointCoords</name><data>dll:"module:AStar" func:"Barrier_setPointCoords"</data></node>
+        <node f="42-10000" dt="2"><name>swapBarriers</name><data>dll:"module:AStar" func:"AStarNavigator_swapBarriers"</data></node>
+        <node f="42-10000" dt="2"><name>swapPoints</name><data>dll:"module:AStar" func:"Barrier_swapPoints"</data></node>
+       </node>
+      </data>
+       <node f="40-0"><name></name></node></node>
      </node>
     </node>
    </node>
