@@ -300,6 +300,19 @@ bool Barrier::setPointCoords(int pointIndex, double x, double y)
 	return true;
 }
 
+visible void Barrier_setMode(FLEXSIMINTERFACE)
+{
+	TreeNode* barNode = parnode(1);
+	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
+		return;
+
+	if ((int)parnode(2) == 0)
+		return;
+
+	Barrier* b = &o(Barrier, barNode);
+	b->mode = (int)parnode(2);
+}
+
 visible void Barrier_addPoint(FLEXSIMINTERFACE)
 {
 	TreeNode* barNode = parnode(1);

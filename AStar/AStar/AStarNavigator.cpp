@@ -4,6 +4,8 @@
 #include "PreferredPath.h"
 #include "macros.h"
 
+#include <sstream>
+
 unsigned int AStarNavigator::editMode = 0;
 
 AStarNavigator::AStarNavigator()
@@ -1297,7 +1299,6 @@ visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	}
 
 	newBarrier->init(a->nodeWidth, parval(2), parval(3), parval(4), parval(5));
-	newBarrier->mode = BARRIER_MODE_DYNAMIC_CREATE;
 	newBarrier->activePointIndex = 1;
 	newBarrier->isActive = 1;
 	if (objectexists(a->activeBarrier)) {
@@ -1305,10 +1306,18 @@ visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 		activeBarrier->isActive = 0;
 	}
 	TreeNode* newNode = newBarrier->holder;
-	char buffer[512];
-	const char * name = newBarrier->getClassFactory();
-	sprintf(buffer, "%s%d", name, a->barrierList.size());
-	setname(newNode, buffer);
+	std::string name = newBarrier->getClassFactory();
+	name = name.substr(strlen("AStar::"));
+	std::stringstream ss;
+	int num = content(a->barriers);
+	ss << name << num;
+	while (objectexists(node(ss.str().c_str(), a->barriers))) {
+		num++;
+		ss.str("");
+		ss << name << num;
+	}
+
+	setname(newNode, ss.str().c_str());
 	a->activeBarrier = newNode;
 }
 

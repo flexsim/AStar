@@ -221,6 +221,8 @@ if (!objectexists(selobj)) {
 			
 			function_s(FUNCTIONS_NODE, "addBarrier", activeNavigator, 
 				mouseX, mouseY, mouseX, mouseY);
+			treenode activeBarrier = tonode(getvarnum(activeNavigator, "activeBarrier"));
+			function_s(c, "setBarrierMode", activeBarrier, BARRIER_MODE_DYNAMIC_CREATE);
 			setselectedobject(i, activeNavigator);	
 		}
 	}
@@ -306,6 +308,7 @@ setvarnum(theEditMode, "creating", 0);
 setvarnum(theEditMode, "editing", 1);
 </data></node>
         <node f="42-10000" dt="2"><name>setEditMode</name><data>dll:"module:AStar" func:"AStarNavigator_setEditMode"</data></node>
+        <node f="42-10000" dt="2"><name>setBarrierMode</name><data>dll:"module:AStar" func:"Barrier_setMode"</data></node>
         <node f="42-10000" dt="2"><name>onMouseMove</name><data>dll:"module:AStar" func:"AStarNavigator_onMouseMove"</data></node>
         <node f="42-10000" dt="2"><name>onClick</name><data>dll:"module:AStar" func:"AStarNavigator_onClick"</data></node>
         <node f="42-10000" dt="2"><name>getActiveBarrierMode</name><data>dll:"module:AStar" func:"AStarNavigator_getActiveBarrierMode"</data></node>
