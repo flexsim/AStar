@@ -540,6 +540,10 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 			#define TRAVEL_DOWN 0x2
 			#define TRAVEL_RIGHT 0x4
 			#define TRAVEL_LEFT 0x8
+			#define TRAVEL_FAR_UP 0x11
+			#define TRAVEL_FAR_DOWN 0x22
+			#define TRAVEL_FAR_RIGHT 0x44
+			#define TRAVEL_FAR_LEFT 0x88
 
 			// travelFromPrevious is used to figure out the direction he's currently
 			// going because if there are multiple path solutions with the same 
@@ -550,12 +554,37 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 			// if the node I'm resolving is not the first node in the set ...
 			if (shortest.previous != ~0) {
 				AStarSearchEntry& lastEntry = totalSet[shortest.previous];
-				// then see if he's travel right or left ...
-				if(lastEntry.col < shortest.col) travelFromPrevious |= TRAVEL_RIGHT;
-				else if(lastEntry.col > shortest.col) travelFromPrevious |= TRAVEL_LEFT;
-				// and see if he's traveling up or down
-				if(lastEntry.row < shortest.row) travelFromPrevious |= TRAVEL_UP;
-				else if(lastEntry.row > shortest.row) travelFromPrevious |= TRAVEL_DOWN;
+
+				if (deepSearch) {
+					int colDiff = lastEntry.col - shortest.col;
+					if (colDiff < -1) {
+						travelFromPrevious |= TRAVEL_FAR_RIGHT;
+					} else if (colDiff < 0) {
+						travelFromPrevious |= TRAVEL_RIGHT;
+					} else if (colDiff > 1) {
+						travelFromPrevious |= TRAVEL_FAR_LEFT;
+					} else if (colDiff) {
+						travelFromPrevious |= TRAVEL_LEFT;
+					}
+
+					int rowDiff = lastEntry.row - shortest.row;
+					if (rowDiff < -1) {
+						travelFromPrevious |= TRAVEL_FAR_UP;
+					} else if (rowDiff < 0) {
+						travelFromPrevious |= TRAVEL_UP;
+					} else if (rowDiff > 1) {
+						travelFromPrevious |= TRAVEL_FAR_DOWN;
+					} else if (rowDiff) {
+						travelFromPrevious |= TRAVEL_DOWN;
+					}
+				} else {
+					// then see if he's travel right or left ...
+					if(lastEntry.col < shortest.col) travelFromPrevious |= TRAVEL_RIGHT;
+					else if(lastEntry.col > shortest.col) travelFromPrevious |= TRAVEL_LEFT;
+					// and see if he's traveling up or down
+					if(lastEntry.row < shortest.row) travelFromPrevious |= TRAVEL_UP;
+					else if(lastEntry.row > shortest.row) travelFromPrevious |= TRAVEL_DOWN;
+				}
 			}
 
 
@@ -593,10 +622,12 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 			}\
 			AStarSearchEntry* nextEntry = expandOpenSet(row, col, diagDistance, travelval);\
 			if (nextEntry && deepSearch) {\
+				unsigned int vertTravelVal = travelval | (travelval & TRAVEL_UP ? TRAVEL_FAR_UP : TRAVEL_FAR_DOWN);\
+				unsigned int hzntlTravelVal = travelval | (travelval & TRAVEL_RIGHT ? TRAVEL_FAR_RIGHT : TRAVEL_FAR_LEFT);\
 				CHECK_EXPAND_OPEN_SET(diagNode, nextEntry, vertdirection, row < edgeTableYSize - 1 && row > 0, rowInc, 0, \
-					(travelval & (TRAVEL_UP | TRAVEL_DOWN)), diagDistance * 1.58113883);\
+					vertTravelVal, diagDistance * 1.58113883);\
 				CHECK_EXPAND_OPEN_SET(diagNode, nextEntry, hordirection, col < edgeTableXSize - 1 && col > 0, 0, colInc, \
-					(travelval & (TRAVEL_LEFT | TRAVEL_RIGHT)), diagDistance * 1.58113883);\
+					hzntlTravelVal, diagDistance * 1.58113883);\
 			}\
 		}\
 
@@ -715,12 +746,11 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 	}
 	float newG = shortest.g + multiplier * nodeWidth;
 	/*  Check if the guy is changing directions. If so, I want to increase the distance so it will be a penalty to make turns*/ \
-	if(travelFromPrevious != (travelVal)) 
-	{
+	if(travelFromPrevious != travelVal) {
 		// add a small penalty if he's turning
 		newG += 0.05*nodeWidth;
 		// if it's a right angle turn or more, then add more penalty
-		if((travelFromPrevious & (travelVal)) == 0)
+		if((travelFromPrevious & travelVal) == 0)
 			newG += 0.05*nodeWidth;
 	}
 	
