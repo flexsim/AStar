@@ -24,7 +24,7 @@ const char * PreferredPath::getClassFactory(void)
 void PreferredPath::bind(void)
 {
 	Divider::bind();
-	bindDouble(pathWeight, 0);
+	bindDouble(pathWeight, 1);
 }
 
 void PreferredPath::modifyTable(AStarNode* edgeTable, 

@@ -1219,20 +1219,20 @@ void AStarNavigator::drawGrid(float z)
 		gridMesh.setVertexAttrib(newVertex1, MESH_POSITION, pos1);\
 		gridMesh.setVertexAttrib(newVertex2, MESH_POSITION, pos2);\
 	}
-			if (n->canGoUp && n->canGoDown && n->canGoLeft && n->canGoRight) {
+			if (n->canGoUp && n->canGoDown && n->canGoLeft && n->canGoRight && n->noExtraData) {
 				ADD_GRID_LINE(Up, x, y - quarterNodeWidth, z, x, y + quarterNodeWidth, z);
 				ADD_GRID_LINE(Right, x - quarterNodeWidth, y, z, x + quarterNodeWidth, y, z);
 				continue;
 			}
 
-			if (n->canGoUp && n->canGoDown) {
+			if (n->canGoUp && n->canGoDown && n->noExtraData) {
 				ADD_GRID_LINE(Up, x, y - quarterNodeWidth, z, x, y + quarterNodeWidth, z);
 				ADD_GRID_LINE(Right, x, y, z, x + 0.25 * nodeWidth, y,z);
 				ADD_GRID_LINE(Left, x, y, z, x - 0.25 * nodeWidth, y, z);
 				continue;
 			}
 
-			if (n->canGoLeft && n->canGoRight) {
+			if (n->canGoLeft && n->canGoRight && n->noExtraData) {
 				ADD_GRID_LINE(Right, x - quarterNodeWidth, y, z, x + quarterNodeWidth, y, z);
 				ADD_GRID_LINE(Up, x, y, z, x, y + 0.25 * nodeWidth, z);
 				ADD_GRID_LINE(Down, x, y, z, x, y - 0.25 * nodeWidth, z);
