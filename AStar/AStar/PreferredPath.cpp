@@ -24,7 +24,7 @@ const char * PreferredPath::getClassFactory(void)
 void PreferredPath::bind(void)
 {
 	Divider::bind();
-	bindDouble(pathWeight, 1);
+	bindDouble(pathWeight, 0);
 }
 
 void PreferredPath::modifyTable(AStarNode* edgeTable, 
@@ -284,4 +284,24 @@ void PreferredPath::addVertices(Mesh* barrierMesh, float z)
 #undef ABT
 #undef ABV
 #undef ROTATE_POINT
+}
+
+visible void PreferredPath_setWeight(FLEXSIMINTERFACE)
+{
+	TreeNode* pathNode = parnode(1);
+	if (!isclasstype(ownerobject(pathNode), "AStar::AStarNavigator"))
+		return;
+
+	PreferredPath* path = &o(PreferredPath, pathNode);
+	path->pathWeight = parval(2);
+}
+
+visible double PreferredPath_getWeight(FLEXSIMINTERFACE)
+{
+	TreeNode* pathNode = parnode(1);
+	if (!isclasstype(ownerobject(pathNode), "AStar::AStarNavigator"))
+		return 0.0;
+
+	PreferredPath* path = &o(PreferredPath, pathNode);
+	return path->pathWeight;
 }

@@ -359,6 +359,25 @@ visible void Barrier_setPointCoords(FLEXSIMINTERFACE)
 	b->setPointCoords((int)parval(2), parval(3), parval(4));
 }
 
+visible double Barrier_getPointCoord(FLEXSIMINTERFACE)
+{
+	TreeNode* barNode = parnode(1);
+	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
+		return 0;
+
+	Barrier* b = &o(Barrier, barNode);
+	double x = 0;
+	double y = 0;
+	b->getPointCoords((int)parval(2), x, y);
+	if ((int)parval(3) == POINT_X)
+		return x;
+
+	if ((int)parval(3) == POINT_Y)
+		return y;
+
+	return 0;
+}
+
 visible void Barrier_getBarrierType(FLEXSIMINTERFACE)
 {
 	TreeNode* barNode = parnode(1);

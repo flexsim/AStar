@@ -56,7 +56,6 @@ double AStarNavigator::onReset()
 	buildEdgeTable();
 	buildBoundsMesh();
 	buildBarrierMesh();
-	buildTrafficMesh();
 	maxTraveled = 0;
 	return 0;
 }
@@ -103,7 +102,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 			barrierMesh.draw(GL_TRIANGLES);
 
 		if (drawMode & ASTAR_DRAW_MODE_TRAFFIC)
-			trafficMesh.draw(GL_TRIANGLES);
+			drawTraffic(0.1f, view);
 
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
 			drawMembers(0.1f);
@@ -111,104 +110,10 @@ double AStarNavigator::onDraw(TreeNode* view)
 		return 0;
 	}
 
-	#define SELECTIONMODE_MOUSEMOVE 10
-	#define SELECTIONMODE_MOUSEDOWNLEFT 11
-	/*
-	if(pickingmode != SELECTIONMODE_MOUSEDOWNLEFT && (drawmode&ASTAR_DRAW_MODE_TRAFFIC))
-	{
-		glPushMatrix();
-		glScaled(nodeWidth, nodeWidth, 1.0);
-		glBegin(GL_TRIANGLES);
-		for(auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++)
-		{
-			AStarNodeExtraData* e = &(iter->second);
-			double x = (xOffset + e->col + 0.5);
-			double y = (yOffset + e->row + 0.5);
-				
-			if(pickingmode == SELECTIONMODE_MOUSEMOVE)
-			{
-				glEnd();
-				setpickingdrawfocus(view, holder, PICK_TYPE_HIGHLIGHT_INFO_TRAVEL_GRID, (TreeNode*)(void*)e);
-				glBegin(GL_TRIANGLES);
-				glVertex3d(x-0.5,y-0.5,0.1);
-				glVertex3d(x+0.5,y-0.5,0.1);
-				glVertex3d(x+0.5,y+0.5,0.1);
-
-				glVertex3d(x+0.5,y+0.5,0.1);
-				glVertex3d(x-0.5,y+0.5,0.1);
-				glVertex3d(x-0.5,y-0.5,0.1);
-			}
-			else
-			{
-				if(e->nrFromUp > 0) {
-					double ratio = (double)e->nrFromUp / (double)maxTraveled;
-					glColor4d(1,0,0,ratio);
-					glVertex3d(x,y+0.1,0.1);
-					glVertex3d(x+0.15,y+0.4,0.1);
-					glVertex3d(x-0.15,y+0.4,0.1);
-				}
-
-				if(e->nrFromDown > 0) {
-					double ratio = (double)e->nrFromDown / (double)maxTraveled;
-					glColor4d(1,0,0,ratio);
-					glVertex3d(x,y-0.1,0.1);
-					glVertex3d(x-0.15,y-0.4,0.1);
-					glVertex3d(x+0.15,y-0.4,0.1);
-				}
-
-				if(e->nrFromRight > 0) {
-					double ratio = (double)e->nrFromRight / (double)maxTraveled;
-					glColor4d(1,0,0,ratio);
-					glVertex3d(x+0.1,y,0.1);
-					glVertex3d(x+0.4,y-0.15,0.1);
-					glVertex3d(x+0.4,y+0.15,0.1);
-				}
-
-				if(e->nrFromLeft > 0) {
-					double ratio = (double)e->nrFromLeft / (double)maxTraveled;
-					glColor4d(1,0,0,ratio);
-					glVertex3d(x-0.1,y,0.1);
-					glVertex3d(x-0.4,y+0.15,0.1);
-					glVertex3d(x-0.4,y-0.15,0.1);
-				}
-
-				if(e->nrFromUpRight > 0) {
-					double ratio = (double)e->nrFromUpRight / (double)maxTraveled;
-					glColor4d(1,0,0,ratio);
-					glVertex3d(x+0.1,y+0.1,0.1);
-					glVertex3d(x+0.4,y+0.25,0.1);
-					glVertex3d(x+0.25,y+0.4,0.1);
-				}
-
-				if(e->nrFromDownRight > 0) {
-					double ratio = (double)e->nrFromDownRight / (double)maxTraveled;
-					glColor4d(1,0,0,ratio);
-					glVertex3d(x+0.1,y-0.1,0.1);
-					glVertex3d(x+0.25,y-0.4,0.1);
-					glVertex3d(x+0.4,y-0.25,0.1);
-				}
-
-				if(e->nrFromUpLeft > 0) {
-					double ratio = (double)e->nrFromUpLeft / (double)maxTraveled;
-					glColor4d(1,0,0,ratio);
-					glVertex3d(x-0.1,y+0.1,0.1);
-					glVertex3d(x-0.25,y+0.4,0.1);
-					glVertex3d(x-0.4,y+0.25,0.1);
-				}
-
-				if(e->nrFromDownLeft > 0) {
-					double ratio = (double)e->nrFromDownLeft / (double)maxTraveled;
-					glColor4d(1,0,0,ratio);
-					glVertex3d(x-0.1,y-0.1,0.1);
-					glVertex3d(x-0.4,y-0.25,0.1);
-					glVertex3d(x-0.25,y-0.4,0.1);
-				}
-			}
-		}
-		glEnd();
-		glPopMatrix();
+	if (drawMode && ASTAR_DRAW_MODE_TRAFFIC) {
+		drawTraffic(0.1f, view);
 	}
-	*/
+
 	if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
 		for(int i = 0; i < barrierList.size(); i++) {
 			Barrier* barrier = barrierList[i];
@@ -768,7 +673,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 			// calculate the distance heuristic h
 			double diffx = destx - (col0x + entry->col * nodeWidth);
 			double diffy = desty - (row0y + entry->row * nodeWidth);
-			entry->h = /*(1.0 - preferredPathWeightCache) * */sqrt(diffx*diffx + diffy*diffy);
+			entry->h = (1.0 - maxPathWeight) * sqrt(diffx*diffx + diffy*diffy);
 			entry->closed = 0;
 			n->notInTotalSet = false;
 		}
@@ -897,9 +802,18 @@ void AStarNavigator::buildEdgeTable()
 	edgeTable = new AStarNode[tableSize];
 	memset(edgeTable, 0xFFFFFFFF, tableSize * sizeof(AStarNode));
 
+	// The maxPathWeight ensures that the estimated distance
+	// to the goal is not overestimated.
+	maxPathWeight = 0.2;
 	for(int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
 		barrier->modifyTable(edgeTable, &edgeTableExtraData, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
+		if (comparetext(barrier->getClassFactory(), "AStar::PreferredPath")) {
+			PreferredPath* pp = (PreferredPath*)barrierList[i];
+			if (pp->pathWeight > maxPathWeight) {
+				maxPathWeight = pp->pathWeight;
+			}
+		}
 	}
 	
 
@@ -1030,9 +944,100 @@ void AStarNavigator::buildBarrierMesh()
 	}
 }
 
-void AStarNavigator::buildTrafficMesh()
+void AStarNavigator::drawTraffic(float z, TreeNode* view)
 {
-	trafficMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, 0);
+
+// These pick modes are from treewin.h
+#define SELECTIONMODE_MOUSEMOVE 10
+#define SELECTIONMODE_MOUSEDOWNLEFT 11
+
+	trafficMesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE4, MESH_NORMAL | MESH_EMISSIVE, 0);
+
+	int pickMode = getpickingmode(view);
+	if (pickMode == SELECTIONMODE_MOUSEDOWNLEFT)
+		return;
+
+	bool drawForPick = false;
+	if (pickMode == SELECTIONMODE_MOUSEMOVE) {
+		setpickingdrawfocus(view, holder, PICK_TYPE_HIGHLIGHT_INFO_TRAVEL_GRID);
+		drawForPick = true;
+	}
+
+#define ABV(offsetX, offsetY, color) {\
+	int newVertex = trafficMesh.addVertex();\
+	float pos[3] = {x + offsetX, y + offsetY, z};\
+	trafficMesh.setVertexAttrib(newVertex, MESH_POSITION, pos);\
+	trafficMesh.setVertexAttrib(newVertex, MESH_AMBIENT_AND_DIFFUSE4, color);\
+	}\
+
+
+#define ABT(ox1, oy1, ox2, oy2, ox3, oy3, alpha) \
+	red[3] = alpha;\
+	ABV(ox1, oy1, red);\
+	ABV(ox2, oy2, red);\
+	ABV(ox3, oy3, red);\
+
+	float up[3] = {0.0f, 0.0f, 1.0f};
+	float red[4] = {1.0, 0.0, 0.0, 1.0};
+	double ratio = 1.0;
+
+	trafficMesh.setVertexAttrib(0, MESH_NORMAL, up);
+	trafficMesh.setVertexAttrib(0, MESH_EMISSIVE, red);
+	for(auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
+		AStarNodeExtraData* e = &(iter->second);
+		double x = (xOffset + e->col + 0.5);
+		double y = (yOffset + e->row + 0.5);
+		
+		if (drawForPick) {
+			ABT(-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 1.0);
+			ABT(0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 1.0);
+		
+		} else {
+			if (e->nrFromUp > 0) {
+				ratio = (double)e->nrFromUp / (double)maxTraveled;
+				ABT(0.0, 0.1, 0.15, 0.4, -0.15, 0.4, ratio);
+			}
+
+			if (e->nrFromDown > 0) {
+				ratio = (double)e->nrFromDown / (double)maxTraveled;
+				ABT(0.0, -0.1, -0.15, -0.4, 0.15, -0.4, ratio);
+			}
+
+			if (e->nrFromRight) {
+				ratio = (double)e->nrFromRight / (double)maxTraveled;
+				ABT(0.1, 0.0, 0.4, -0.15, 0.4, 0.15, ratio);
+			}
+
+			if (e->nrFromLeft > 0) {
+				ratio = (double)e->nrFromLeft / (double)maxTraveled;
+				ABT(-0.1, 0.0, -0.4, 0.15, -0.4, -0.15, ratio);
+			}
+
+			if (e->nrFromUpRight > 0) {
+				ratio = (double)e->nrFromUpRight / (double)maxTraveled;
+				ABT(0.1, 0.1, 0.4, 0.25, 0.25, 0.4, ratio);
+			}
+
+			if (e->nrFromDownRight > 0) {
+				ratio = (double)e->nrFromDownRight / (double)maxTraveled;
+				ABT(0.1, -0.1, 0.25, -0.4, 0.4, -0.25, ratio);
+			}
+
+			if (e->nrFromUpLeft > 0) {
+				ratio = (double)e->nrFromUpLeft / (double)maxTraveled;
+				ABT(-0.1, 0.1, -0.25, 0.4, -0.4, 0.25, ratio);
+			}
+
+			if (e->nrFromDownLeft) {
+				ratio = (double)e->nrFromDownLeft / (double)maxTraveled;
+				ABT(-0.1, -0.1, -0.4, -0.25, -0.25, -0.4, ratio);
+			}
+		}
+	}
+
+	trafficMesh.draw(GL_TRIANGLES);
+#undef ABT
+#undef ABV
 }
 
 void AStarNavigator::drawMembers(float z)
@@ -1430,8 +1435,5 @@ visible void AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
 
 	if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
 		a->buildBoundsMesh();
-
-	if (drawMode & ASTAR_DRAW_MODE_TRAFFIC)
-		a->buildTrafficMesh();
 }
 

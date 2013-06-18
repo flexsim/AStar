@@ -30,7 +30,7 @@
         <node f="42-0" dt="1"><name>nodeWidth</name><data>000000003ff00000</data></node>
         <node f="42-0" dt="1"><name>surroundDepth</name><data>0000000040000000</data></node>
         <node f="42-0" dt="1"><name>drawMode</name><data>0000000040370000</data></node>
-        <node f="42-0" dt="1"><name>defaultPathWeight</name><data>000000003ff80000</data></node>
+        <node f="42-0" dt="1"><name>defaultPathWeight</name><data>9999999a3fd99999</data></node>
         <node f="42-0" dt="1"><name>deepSearch</name><data>000000003ff00000</data></node>
        </node>
        <node f="42-0"><name>behaviour</name>
@@ -2171,6 +2171,9 @@ applylinks(parent);</data></node>
         <node f="42-10000" dt="2"><name>setPointCoords</name><data>dll:"module:AStar" func:"Barrier_setPointCoords"</data></node>
         <node f="42-10000" dt="2"><name>swapBarriers</name><data>dll:"module:AStar" func:"AStarNavigator_swapBarriers"</data></node>
         <node f="42-10000" dt="2"><name>swapPoints</name><data>dll:"module:AStar" func:"Barrier_swapPoints"</data></node>
+        <node f="42-10000" dt="2"><name>getPointCoord</name><data>dll:"module:AStar" func:"Barrier_getPointCoord"</data></node>
+        <node f="42-10000" dt="2"><name>getPathWeight</name><data>dll:"module:AStar" func:"PreferredPath_getWeight"</data></node>
+        <node f="42-10000" dt="2"><name>setPathWeight</name><data>dll:"module:AStar" func:"PreferredPath_setWeight"</data></node>
        </node>
       </data>
        <node f="40-0"><name></name></node></node>

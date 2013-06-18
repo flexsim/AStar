@@ -123,9 +123,9 @@ public:
 	void buildGridMesh();
 	void buildBoundsMesh();
 	void buildBarrierMesh();
-	void buildTrafficMesh();
 	void drawMembers(float z);
 	void drawGrid(float z);
+	void drawTraffic(float z, TreeNode* view);
 	virtual double updateLocations();
 	virtual double abortTravel(TreeNode* traveler, TreeNode* newts);
 	virtual unsigned int getClassType();
@@ -146,7 +146,7 @@ public:
 	double row0y;
 	double destx;
 	double desty;
-	double preferredPathWeightCache;
+	double maxPathWeight;
 	int shortestIndex;
 
 	inline AStarSearchEntry* expandOpenSet(int r, int c ,float multiplier, int travelVal);
