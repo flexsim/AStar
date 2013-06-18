@@ -3,6 +3,12 @@
 #include "macros.h"
 
 Barrier::Barrier()
+	: meshOffset(0)
+	, nrVerts(0)
+	, isActive(0)
+	, activePointIndex(0)
+	, mode(0)
+	, nodeWidth(1.0)
 {
 	return;
 }

@@ -2,6 +2,12 @@
 #include "macros.h"
 #include "AStarNavigator.h"
 
+Divider::Divider()
+	: Barrier()
+{
+	return;
+}
+
 const char * Divider::getClassFactory(void)
 {
 	return "AStar::Divider";

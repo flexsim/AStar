@@ -5,6 +5,10 @@ class PreferredPath :
 	public Divider
 {
 public:
+	double pathWeight;
+
+	PreferredPath();
+	PreferredPath(double pathWeight);
 	virtual const char * getClassFactory(void);
 	virtual void bind(void);
 

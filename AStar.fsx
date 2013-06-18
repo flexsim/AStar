@@ -30,7 +30,7 @@
         <node f="42-0" dt="1"><name>nodeWidth</name><data>000000003ff00000</data></node>
         <node f="42-0" dt="1"><name>surroundDepth</name><data>0000000040000000</data></node>
         <node f="42-0" dt="1"><name>drawMode</name><data>0000000040370000</data></node>
-        <node f="42-0" dt="1"><name>preferredPathWeight</name><data>9999999a3fd99999</data></node>
+        <node f="42-0" dt="1"><name>defaultPathWeight</name><data>9999999a3fd99999</data></node>
         <node f="42-0" dt="1"><name>deepSearch</name><data>000000003ff00000</data></node>
        </node>
        <node f="42-0"><name>behaviour</name>
@@ -450,13 +450,13 @@ nodepoint(objectfocus(c), 0);</data></node>
       <node f="40-0"><name></name></node>
       <node f="42-0"><name>LibraryGroup</name>
        <node f="40-0"><name></name></node>
-       <node f="42-0" dt="4"><name>Create Barrier</name><data>
+       <node f="42-100000" dt="4"><name>Create Barrier</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Barrier")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
        </data></node>
-       <node f="42-100000" dt="4"><name>Create Divider</name><data>
+       <node f="42-0" dt="4"><name>Create Divider</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Divider")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>

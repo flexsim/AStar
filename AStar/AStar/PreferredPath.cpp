@@ -1,6 +1,20 @@
 #include "PreferredPath.h"
 #include "AStarNavigator.h"
 
+PreferredPath::PreferredPath()
+	: pathWeight(0.0)
+	, Divider()
+{
+	return;
+}
+
+PreferredPath::PreferredPath(double pathWeight)
+	: pathWeight(pathWeight)
+	, Divider()
+{
+	return;
+}
+
 const char * PreferredPath::getClassFactory(void)
 {
 	return "AStar::PreferredPath";
@@ -10,6 +24,7 @@ const char * PreferredPath::getClassFactory(void)
 void PreferredPath::bind(void)
 {
 	Divider::bind();
+	bindDouble(pathWeight, 0);
 }
 
 void PreferredPath::modifyTable(AStarNode* edgeTable, 
@@ -43,8 +58,8 @@ void PreferredPath::modifyTable(AStarNode* edgeTable,
 			continue;
 
 		// calculate the weight values for preferred paths.
-		int horizontalWeight = (int)(127 * dx / (fabs(dx) + fabs(dy)));
-		int verticalWeight = (int)(127 * dy / (fabs(dx) + fabs(dy)));
+		int horizontalWeight = (int)(pathWeight * 127 * dx / (fabs(dx) + fabs(dy)));
+		int verticalWeight = (int)(pathWeight * 127 * dy / (fabs(dx) + fabs(dy)));
 
 		// figure out the unit increment (either -1 or 1) for traversing from the
 		// current point to the next point

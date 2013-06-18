@@ -81,7 +81,7 @@ class AStarNavigator :
 {
 public:
 	static unsigned int editMode;
-	double preferredPathWeight;
+	double defaultPathWeight;
 	double nodeWidth;
 	double surroundDepth;
 	double deepSearch;

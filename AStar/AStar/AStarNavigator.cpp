@@ -28,7 +28,7 @@ AStarNavigator::~AStarNavigator()
 void AStarNavigator::bindVariables(void)
 {
 	Navigator::bindVariables();
-	bindVariable(preferredPathWeight);
+	bindVariable(defaultPathWeight);
 	bindVariable(drawMode);
 	bindVariable(nodeWidth);
 	bindVariable(surroundDepth);
@@ -407,7 +407,6 @@ double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destinatio
 double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, double endSpeed, int driveShort)
 {
 	setstate(traveler, STATE_TRAVEL_LOADED);
-	preferredPathWeightCache = preferredPathWeight;
 	double xStart = xcenter(traveler);
 	double yStart = ycenter(traveler);
 	
@@ -590,7 +589,7 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 			}
 
 
-#define CHECK_EXPAND_OPEN_SET(node, entry, direction, boundarycondition, rowInc, colInc, travelval, dist)\
+#define CHECK_EXPAND_OPEN_SET(node, entry, direction, boundarycondition, rowInc, colInc, travelval, dist, bonusMod)\
 	if(node->canGo##direction && boundarycondition){\
 			int theCol = entry->col + colInc;\
 			int theRow = entry->row + rowInc;\
@@ -599,7 +598,7 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 			if(!node->noExtraData) {\
 				auto e = edgeTableExtraData.find(entry->colRow);\
 				if (e != edgeTableExtraData.end() && e->second.bonus##direction)\
-				distance *= 1.0 - (preferredPathWeightCache * e->second.bonus##direction)/127;\
+				distance *= 1.0 - (bonusMod * e->second.bonus##direction)/127;\
 			}\
 			expandOpenSet(theRow, theCol, distance, travelval);\
 		}
@@ -617,9 +616,9 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 				auto e = edgeTableExtraData.find(entry->colRow);\
 				if (e != edgeTableExtraData.end()) {\
 					if(e->second.bonus##vertdirection)\
-						diagDistance *= 1.0 - (0.70*preferredPathWeightCache * e->second.bonus##vertdirection)/127;\
+						diagDistance *= 1.0 - (0.70710678 * e->second.bonus##vertdirection)/127;\
 					if(e->second.bonus##hordirection)\
-						diagDistance *= 1.0 - (0.70*preferredPathWeightCache * e->second.bonus##hordirection)/127;\
+						diagDistance *= 1.0 - (0.70710678 * e->second.bonus##hordirection)/127;\
 				}\
 			}\
 			AStarSearchEntry* nextEntry = expandOpenSet(row, col, diagDistance, travelval);\
@@ -627,17 +626,17 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 				unsigned int vertTravelVal = travelval | (travelval & TRAVEL_UP ? TRAVEL_FAR_UP : TRAVEL_FAR_DOWN);\
 				unsigned int hzntlTravelVal = travelval | (travelval & TRAVEL_RIGHT ? TRAVEL_FAR_RIGHT : TRAVEL_FAR_LEFT);\
 				CHECK_EXPAND_OPEN_SET(diagNode, nextEntry, vertdirection, row < edgeTableYSize - 1 && row > 0, rowInc, 0, \
-					vertTravelVal, diagDistance * 1.58113883);\
+					vertTravelVal, diagDistance * 1.58113883, 0.4472136);\
 				CHECK_EXPAND_OPEN_SET(diagNode, nextEntry, hordirection, col < edgeTableXSize - 1 && col > 0, 0, colInc, \
-					hzntlTravelVal, diagDistance * 1.58113883);\
+					hzntlTravelVal, diagDistance * 1.58113883, 0.4472136);\
 			}\
 		}\
 
 		
-		CHECK_EXPAND_OPEN_SET(n, (&shortest), Up, shortest.row < edgeTableYSize - 1, 1, 0, TRAVEL_UP, 1.0)
-		CHECK_EXPAND_OPEN_SET(n, (&shortest), Right, shortest.col < edgeTableXSize - 1, 0, 1, TRAVEL_RIGHT, 1.0)
-		CHECK_EXPAND_OPEN_SET(n, (&shortest), Down, shortest.row > 0, -1, 0, TRAVEL_DOWN, 1.0)
-		CHECK_EXPAND_OPEN_SET(n, (&shortest), Left, shortest.col > 0, 0, -1, TRAVEL_LEFT, 1.0)
+		CHECK_EXPAND_OPEN_SET(n, (&shortest), Up, shortest.row < edgeTableYSize - 1, 1, 0, TRAVEL_UP, 1.0, 1.0)
+		CHECK_EXPAND_OPEN_SET(n, (&shortest), Right, shortest.col < edgeTableXSize - 1, 0, 1, TRAVEL_RIGHT, 1.0, 1.0)
+		CHECK_EXPAND_OPEN_SET(n, (&shortest), Down, shortest.row > 0, -1, 0, TRAVEL_DOWN, 1.0, 1.0)
+		CHECK_EXPAND_OPEN_SET(n, (&shortest), Left, shortest.col > 0, 0, -1, TRAVEL_LEFT, 1.0, 1.0)
 
 		CHECK_EXPAND_OPEN_SET_DIAGONAL(n, (&shortest), Up, Right, 1, 1, TRAVEL_UP|TRAVEL_RIGHT)
 		CHECK_EXPAND_OPEN_SET_DIAGONAL(n, (&shortest), Up, Left, 1, -1, TRAVEL_UP|TRAVEL_LEFT)
@@ -769,7 +768,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 			// calculate the distance heuristic h
 			double diffx = destx - (col0x + entry->col * nodeWidth);
 			double diffy = desty - (row0y + entry->row * nodeWidth);
-			entry->h = (1.0 - preferredPathWeightCache) * sqrt(diffx*diffx + diffy*diffy);
+			entry->h = /*(1.0 - preferredPathWeightCache) * */sqrt(diffx*diffx + diffy*diffy);
 			entry->closed = 0;
 			n->notInTotalSet = false;
 		}
@@ -1282,7 +1281,7 @@ visible void AStarNavigator_setEditMode(FLEXSIMINTERFACE)
 visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = parnode(1);
-	int barrierType = parval(6);
+	int barrierType = (int)parval(6);
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return;
 
@@ -1294,7 +1293,7 @@ visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	case EDITMODE_SOLID_BARRIER: newBarrier = a->barrierList.add(new Barrier); break;
 	case EDITMODE_DIVIDER: newBarrier = a->barrierList.add(new Divider); break;
 	case EDITMODE_ONE_WAY_DIVIDER: newBarrier = a->barrierList.add(new OneWayDivider); break;
-	case EDITMODE_PREFERRED_PATH: newBarrier = a->barrierList.add(new PreferredPath); break;
+	case EDITMODE_PREFERRED_PATH: newBarrier = a->barrierList.add(new PreferredPath(a->defaultPathWeight)); break;
 	default: return;
 	}
 

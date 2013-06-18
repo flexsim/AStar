@@ -5,6 +5,8 @@ class OneWayDivider :
 	public Divider
 {
 public:
+	OneWayDivider();
+
 	virtual const char * getClassFactory(void);
 	virtual void bind(void);
 

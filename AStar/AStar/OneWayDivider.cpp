@@ -1,6 +1,12 @@
 #include "OneWayDivider.h"
 #include "AStarNavigator.h"
 
+OneWayDivider::OneWayDivider()
+	: Divider()
+{
+	return;
+}
+
 const char * OneWayDivider::getClassFactory(void)
 {
 	return "AStar::OneWayDivider";
