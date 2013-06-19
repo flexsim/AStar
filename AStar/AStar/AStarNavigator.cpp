@@ -227,32 +227,47 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 
 	if (isclasstype(connectTo, CLASSTYPE_TASKEXECUTER)) {
 		TreeNode* navigatorNode = o(TaskExecuter, connectTo).node_v_navigator;
-		TreeNode* theNavigator = tonode(get(first(navigatorNode)));
-		if (theNavigator == holder)
-			return 0;
-
-		TreeNode* travelMembers = node_v_travelmembers;
 
 		switch(keyPressed & 0x7f) {
-		case 'A':
+		case 'A': {
+			TreeNode* theNavigator = tonode(get(first(navigatorNode)));
+			if (theNavigator == holder)
+				return 0;
+			TreeNode* travelMembers = node_v_travelmembers;
 			clearcontents(navigatorNode);
 			createcoupling(navigatorNode, travelMembers);
 			break;
+				  }
+		case 'Q': {
+			clearcontents(navigatorNode);
+			TaskExecuter* te = &o(TaskExecuter, connectTo);
+			Navigator* navigator = &o(Navigator, te->findDefaultNavigator());
+			createcoupling(navigatorNode, navigator->node_v_travelmembers);
+			break;
+				  }
 		}
 	
 	} else if (isclasstype(connectTo, CLASSTYPE_FIXEDRESOURCE)) {
 		FixedResource* theFR =  &(o(FixedResource, connectTo));
-		TreeNode* storedNode = theFR->Nb_stored;
-		for (int i = 0; i < objectBarrierList.size(); i++) {
-			TreeNode* objectNode = objectBarrierList[i]->holder;
-			if (objectNode == connectTo)
-				return 0;
-		}
-
+		
 
 		switch(keyPressed & 0x7f) {
 		case 'A':
+			for (int i = 0; i < objectBarrierList.size(); i++) {
+				TreeNode* objectNode = objectBarrierList[i]->holder;
+				if (objectNode == connectTo)
+					return 0;
+			}
 			objectBarrierList.add(theFR);
+			break;
+		case 'Q':
+			for (int i = 0; i < objectBarrierList.size(); i++) {
+				TreeNode* objectNode = objectBarrierList[i]->holder;
+				if (objectNode == connectTo) {
+					objectBarrierList.remove(i);
+					return 0;
+				}
+			}
 			break;
 		}
 	}
@@ -1043,18 +1058,18 @@ void AStarNavigator::drawTraffic(float z, TreeNode* view)
 void AStarNavigator::drawMembers(float z)
 {
 	memberMesh.init(0, MESH_POSITION, 
-		MESH_EMISSIVE | MESH_NORMAL | MESH_AMBIENT_AND_DIFFUSE, MESH_FORCE_CLEANUP);
+		MESH_EMISSIVE | MESH_NORMAL | MESH_AMBIENT_AND_DIFFUSE4, MESH_FORCE_CLEANUP);
 	TreeNode* colorNode = node_b_color;
 	float r = get(rank(colorNode, 1));
 	float g = get(rank(colorNode, 2));
 	float b = get(rank(colorNode, 3));
 	float color[3] = {r, g, b};
 	float up[3] = {0.0f, 0.0f, 1.0f};
-	float black[3] = {0.0f, 0.0f, 0.0f};
+	float black[4] = {0.0f, 0.0f, 0.0f, 0.5f};
 
 	memberMesh.setVertexAttrib(0, MESH_NORMAL, up);
 	memberMesh.setVertexAttrib(0, MESH_EMISSIVE, color);
-	memberMesh.setVertexAttrib(0, MESH_AMBIENT_AND_DIFFUSE, black);
+	memberMesh.setVertexAttrib(0, MESH_AMBIENT_AND_DIFFUSE4, black);
 
 	// Draw rectangles under every object
 	unsigned int numObjs = objectBarrierList.size();
@@ -1437,3 +1452,24 @@ visible void AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
 		a->buildBoundsMesh();
 }
 
+visible void AStarNavigator_addMember(FLEXSIMINTERFACE)
+{
+	TreeNode* navNode = parnode(1);
+	TreeNode* connectTo = parnode(2);
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return;
+
+	AStarNavigator* a = &o(AStarNavigator, navNode);
+	a->dragConnection(connectTo, 'A', o(FlexsimObject, connectTo).getClassType());
+}
+
+visible void AStarNavigator_removeMember(FLEXSIMINTERFACE)
+{
+	TreeNode* navNode = parnode(1);
+	TreeNode* disconnect = parnode(2);
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return;
+
+	AStarNavigator* a = &o(AStarNavigator, navNode);
+	a->dragConnection(disconnect, 'Q', o(FlexsimObject, disconnect).getClassType());
+}
