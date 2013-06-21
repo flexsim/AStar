@@ -49,8 +49,6 @@ void Divider::modifyTable(AStarNode* edgeTable,
 	// corner I am working on 
 	int col = (int)round((x - c0) / nodeWidth);
 	int row = (int)round((y - r0) / nodeWidth);
-	if(x > c0 + col * nodeWidth) col++;
-	if(y > r0 + row * nodeWidth) row++;
 
 	double nextX, nextY;
 	int nextCol, nextRow;
@@ -63,8 +61,8 @@ void Divider::modifyTable(AStarNode* edgeTable,
 		// calculate the column and row numbers for that point (again, above/right of the current corner)
 		nextCol = (int)round((nextX - c0) / nodeWidth);
 		nextRow = (int)round((nextY - r0) / nodeWidth);
-		if(nextX > c0 + col * nodeWidth) col++;
-		if(nextY > r0 + row * nodeWidth) row++;
+		if(nextX > c0 + col * nodeWidth) nextCol++;
+		if(nextY > r0 + row * nodeWidth) nextRow++;
 
 		// set dx and dy, the differences between the rows and columns
 		double dx = nextCol - col;

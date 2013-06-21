@@ -86,6 +86,7 @@ public:
 	double surroundDepth;
 	double deepSearch;
 	double drawMode;
+	double ignoreDestBarrier;
 
 	double cachePaths;
 	double pathCount;
@@ -119,6 +120,7 @@ public:
 	virtual double AStarNavigator::onDestroy(TreeNode* view);
 	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed);
 	virtual double navigateToLoc(TreeNode* traveler, double x, double y, double endspeed, int driveshort = 1);
+	void searchBarrier(int searchDir, int rowDest, int colDest);
 	void buildEdgeTable();
 	void buildGridMesh();
 	void buildBoundsMesh();
@@ -148,6 +150,8 @@ public:
 	double desty;
 	double maxPathWeight;
 	int shortestIndex;
+	float closestSoFar;
+	int closestIndex;
 
 	inline AStarSearchEntry* expandOpenSet(int r, int c ,float multiplier, int travelVal);
 	int edgeTableXSize;
@@ -157,6 +161,7 @@ public:
 	float savedXOffset;
 	float savedYOffset;
 	int maxTraveled;
+	double penalty;
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
 	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from rowCol to index in totalSet

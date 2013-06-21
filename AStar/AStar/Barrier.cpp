@@ -398,6 +398,6 @@ visible void Barrier_setActiveIndex(FLEXSIMINTERFACE)
 		return;
 
 	Barrier* b = &o(Barrier, barNode);
-	b->activePointIndex = parval(2);
+	b->activePointIndex = (int)parval(2);
 }
 

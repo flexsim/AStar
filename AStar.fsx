@@ -32,6 +32,7 @@
         <node f="42-0" dt="1"><name>drawMode</name><data>0000000040370000</data></node>
         <node f="42-0" dt="1"><name>defaultPathWeight</name><data>9999999a3fd99999</data></node>
         <node f="42-0" dt="1"><name>deepSearch</name><data>000000003ff00000</data></node>
+        <node f="42-0" dt="1"><name>ignoreDestBarrier</name><data>000000003ff00000</data></node>
        </node>
        <node f="42-0"><name>behaviour</name>
         <node f="40-0"><name></name></node>
