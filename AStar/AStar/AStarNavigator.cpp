@@ -548,7 +548,7 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 		}\
 	}\
 }
-		
+
 #define CHECK_EXPAND_OPEN_SET_DEEP(node, dir1, dir2, dir3, condition1, condition2, condition3, rowInc, colInc, travelVal, dist) {\
 	AStarSearchEntry* e1 = NULL;\
 	if (rowInc && !colInc) {\
@@ -602,6 +602,65 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 		}\
 	}\
 }
+
+/*
+
+When all the macro expanding is over and done with, here is the psuedo-code algorithm
+that finally results for a search upwards:
+
+if deep search is on:
+	if the node above "shortest" is valid (canGo/exists):
+		add it to the open set as e1
+		if the node above e1 exists:
+			add it to the open set as e2
+			if the node right of e2 is valid:
+				add it to the open set*
+			if the node left of e2 is valid:
+				add it to the open set
+else :
+	if the node above "shortest" is valid:
+		add it to the open set
+
+After all four major directions are searched, then the diagonal
+directions are searched (psuedo-code for up right):
+
+if deep search is on:
+	if a node above or to the right of "shortest" is in the open set:
+		if the up-right node is valid:
+			add it to the open set as e1
+			check and add the node above e1 to the open set again*
+			check and add the node right of e1 to the open set again
+			if a node above or to the right of e1 is in the open set:
+				if the up-right node of e1 is valid:
+					add it to the open set
+else:
+	if a node above or to the right of "shortest" is in the open set:
+		if the up-right node is valid:
+			add it to the open set
+
+The * marks two attempts to add the same node to the open set. This is
+because each attempt comes from a different direction, ensuring that
+all paths to nodes that are sqrt(5) away are checked.
+
+The diagrams below show a complete search order for a deep search.
+The / should be read "depends on" or "is accesible from". The *
+means that the node depends on either of the two adjacent nodes
+closest to the search center.
+
+     Orthogonal Search (1st)          Diagonal Search (2nd)
++-----------------------------+  +-----------------------------+
+¦     ¦ 4/2 ¦ 2/1 ¦ 3/2 ¦     ¦	 ¦ 32* ¦30/29¦     ¦18/17¦ 20* ¦
++-----+-----+-----+-----+-----¦	 +-----+-----+-----+-----+-----¦
+¦15/14¦     ¦  1  ¦     ¦11/10¦	 ¦31/29¦ 29* ¦     ¦ 17* ¦19/17¦
++-----+-----+-----+-----+-----¦	 +-----+-----+-----+-----+-----¦
+¦14/13¦ 13  ¦  0  ¦  9  ¦10/9 ¦	 ¦     ¦     ¦     ¦     ¦     ¦
++-----+-----+-----+-----+-----¦	 +-----+-----+-----+-----+-----¦
+¦16/14¦     ¦  5  ¦     ¦12/10¦	 ¦27/25¦ 25* ¦     ¦ 21* ¦23/21¦
++-----+-----+-----+-----+-----¦	 +-----+-----+-----+-----+-----¦
+¦     ¦ 8/6 ¦ 6/5 ¦ 7/6 ¦     ¦	 ¦ 28* ¦26/25¦     ¦22/21¦ 24* ¦
++-----------------------------+	 +-----------------------------+
+
+*/
 		
 		
 		if (deepSearch) {
@@ -1094,7 +1153,7 @@ void AStarNavigator::buildEdgeTable()
 
 	penalty = 0.05;
 	if (deepSearch)
-		penalty = 0.0;
+		penalty = 0.025;
 
 	if (content(barriers) == 0 && objectBarrierList.size() == 0) {
 		if (edgeTable)
