@@ -24,9 +24,6 @@
 #define POINT_X 1
 #define POINT_Y 2
 
-#define BARRIER_SEARCH_IN 1
-#define BARRIER_SEARCH_OUT 2
-
 #define ROOT2 1.4142135623f
 #define ROOT5 2.2360679775f
 #define ROOT2_DIV2 0.70710678f

@@ -120,7 +120,7 @@ public:
 	virtual double AStarNavigator::onDestroy(TreeNode* view);
 	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed);
 	virtual double navigateToLoc(TreeNode* traveler, double x, double y, double endspeed, int driveshort = 1);
-	void searchBarrier(int searchDir, int rowDest, int colDest);
+	void searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest);
 	void buildEdgeTable();
 	void buildGridMesh();
 	void buildBoundsMesh();
@@ -152,6 +152,11 @@ public:
 	int shortestIndex;
 	float closestSoFar;
 	int closestIndex;
+	double endTime;
+	TreeNode* kinematics;
+	AStarSearchEntry barrierStart;
+	double xStart;
+	double yStart;
 
 	inline AStarSearchEntry* expandOpenSet(int r, int c ,float multiplier, int travelVal);
 	int edgeTableXSize;

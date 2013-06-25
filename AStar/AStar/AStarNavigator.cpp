@@ -302,34 +302,15 @@ double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destinatio
 	vectorproject(destination, 0.5 * xsize(destination), -0.5 * ysize(destination), 0, model(), loc);
 	double xDest = loc[0];
 	double yDest = loc[1];
-	
-	bool driveShort = isclasstype(destination, CLASSTYPE_FIXEDRESOURCE) && isclasstype(traveler, CLASSTYPE_TASKEXECUTER);
-	if (driveShort) {
-		double halfSx = 0.5 * xsize(destination);
-		if (fabs(xDest - xStart) > halfSx) {
-			if (xDest > xStart)
-				xDest -= halfSx + nodeWidth;
-			else
-				xDest += halfSx + nodeWidth;
-		}
 
-		double halfSy = 0.5 * xsize(destination);
-		if (fabs(yDest - yStart) > halfSy) {
-			if (yDest > yStart)
-				yDest -= halfSy + nodeWidth;
-			else
-				yDest += halfSy + nodeWidth;
-		}
-	}
-
-	return navigateToLoc(traveler, xDest, yDest, endSpeed, driveShort);
+	return navigateToLoc(traveler, xDest, yDest, endSpeed, 0);
 }
 
 double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, double endSpeed, int driveShort)
 {
 	setstate(traveler, STATE_TRAVEL_LOADED);
-	double xStart = xcenter(traveler);
-	double yStart = ycenter(traveler);
+	xStart = xcenter(traveler);
+	yStart = ycenter(traveler);
 	
 	destx = x;
 	desty = y;
@@ -398,26 +379,27 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 		entryHash.clear();
 		// add the first node to the "open set"
 		totalSet.push_back(AStarSearchEntry());
-		AStarSearchEntry & start = totalSet.back();
-		DeRefEdgeTable(rowstart, colstart).notInTotalSet = false;
-		start.g = 0;
-		start.h = (1.0 - maxPathWeight) * sqrt(sqr(x-xStart)+sqr(y-yStart));
-		start.f = start.h;
-		start.col = colstart;
-		start.row = rowstart;
-		start.previous = ~0;
-		start.closed = 0;
-		entryHash[start.colRow] = 0;
+		AStarSearchEntry* start = &totalSet.back();
+		start->col = colstart;
+		start->row = rowstart;
+
+		// Build a kinematic to get out of a barrier if necessary
+		
+		searchBarrier(start, te, rowdest, coldest);
+
+		start->g = 0;
+		start->h = (1.0 - maxPathWeight) * sqrt(sqr(x-xStart)+sqr(y-yStart));
+		start->previous = ~0;
+		start->closed = 0;
+		entryHash[start->colRow] = 0;
 
 		// the open set stores:
 		// 1. the index into totalset that references the AStarSearchEntry that i'm going to resolve
 		// 2. the solution f(x, y) of that AStarSearchEntry
-		openSetHeap.push(HeapEntry(start.f, 0));
+		openSetHeap.push(HeapEntry(start->f, 0));
 
 		closestSoFar = 10000000000000.0f;
 		closestIndex = 0;
-		// If my start loc is in a barrier, find my way out
-		searchBarrier(BARRIER_SEARCH_OUT, rowstart, colstart);
 
 		AStarSearchEntry * final = NULL;
 		// closestSoFar is the closest h I've found so far
@@ -530,28 +512,32 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 
 #define CHECK_EXPAND_OPEN_SET_DIAGONAL(node, entryIn, entryOut, dir1, dir2, condition1, condition2, rowInc, colInc, travelVal, dist) {\
 	AStarSearchEntry finder;\
-	finder.row = entryIn->row + rowInc;\
-	finder.col = entryIn->col;\
-	auto iter = entryHash.find(finder.colRow);\
-	if (iter != entryHash.end()) {\
-		AStarSearchEntry* vert = &totalSet[iter->second];\
-		AStarNode* vertNode = &DeRefEdgeTable(vert->row, vert->col);\
-		CHECK_EXPAND_OPEN_SET(vertNode, vert, entryOut, dir2,\
-			(condition1 && condition2), 0, colInc, (travelVal | travelVal << 4), dist, ROOT2_DIV2);\
-	} else {\
-		finder.row -= rowInc;\
-		finder.col += colInc;\
-		iter = entryHash.find(finder.colRow);\
+	if (node->canGo##dir1) {\
+		finder.row = entryIn->row + rowInc;\
+		finder.col = entryIn->col;\
+		auto iter = entryHash.find(finder.colRow);\
+		if (iter != entryHash.end()) {\
+			AStarSearchEntry* vert = &totalSet[iter->second];\
+			AStarNode* vertNode = &DeRefEdgeTable(vert->row, vert->col);\
+			CHECK_EXPAND_OPEN_SET(vertNode, vert, entryOut, dir2,\
+				(condition1 && condition2), 0, colInc, (travelVal | travelVal << 4), dist, ROOT2_DIV2);\
+		}\
+	}\
+	\
+	if (!entryOut && node->canGo##dir2) {\
+		finder.row = entryIn->row;\
+		finder.col = entryIn->col + colInc;\
+		auto iter = entryHash.find(finder.colRow);\
 		if (iter != entryHash.end()) {\
 			AStarSearchEntry* hrz = &totalSet[iter->second];\
 			AStarNode* hrzNode = &DeRefEdgeTable(hrz->row, hrz->col);\
-			CHECK_EXPAND_OPEN_SET(node, hrz, entryOut, dir1,\
+			CHECK_EXPAND_OPEN_SET(hrzNode, hrz, entryOut, dir1,\
 				(condition1 && condition2), rowInc, 0, travelVal, dist, ROOT2_DIV2);\
 		}\
 	}\
 }
 
-#define CHECK_EXPAND_OPEN_SET_DEEP(node, dir1, dir2, dir3, condition1, condition2, rowInc, colInc, travelVal, dist) {\
+#define CHECK_EXPAND_OPEN_SET_DEEP(node, dir1, dir2, condition1, condition2, rowInc, colInc, travelVal, dist) {\
 	AStarSearchEntry* e1 = NULL;\
 	CHECK_EXPAND_OPEN_SET_DIAGONAL(node, (&shortest), e1, dir1, dir2, condition1, condition2, rowInc, colInc, travelVal, dist);\
 	if (e1) {\
@@ -601,25 +587,25 @@ the outside 8 nodes.
 
 		if (deepSearch) {
 
-			CHECK_EXPAND_OPEN_SET_DEEP(n, Up, Right, Down, 
+			CHECK_EXPAND_OPEN_SET_DEEP(n, Up, Right, 
 				edgeTableYSize > shortest.row + 1,
 				edgeTableXSize > shortest.col + 1,
 				1, 1, TRAVEL_UP | TRAVEL_RIGHT, ROOT2
 			);
 
-			CHECK_EXPAND_OPEN_SET_DEEP(n, Up, Left, Down, 
+			CHECK_EXPAND_OPEN_SET_DEEP(n, Up, Left, 
 				edgeTableYSize > shortest.row + 1,
 				0 < shortest.col,
 				1, -1, TRAVEL_UP | TRAVEL_LEFT, ROOT2
 			);
 
-			CHECK_EXPAND_OPEN_SET_DEEP(n, Down, Right, Down, 
+			CHECK_EXPAND_OPEN_SET_DEEP(n, Down, Right, 
 				0 < shortest.row,
 				edgeTableXSize > shortest.col + 1,
 				-1, 1, TRAVEL_DOWN | TRAVEL_RIGHT, ROOT2
 			);
 
-			CHECK_EXPAND_OPEN_SET_DEEP(n, Down, Left, Down, 
+			CHECK_EXPAND_OPEN_SET_DEEP(n, Down, Left, 
 				0 < shortest.row,
 				0 < shortest.col,
 				-1, -1, TRAVEL_DOWN | TRAVEL_LEFT, ROOT2
@@ -660,16 +646,15 @@ the outside 8 nodes.
 
 		if (!final)  {
 			final = &(totalSet[closestIndex]);
-			if (ignoreDestBarrier) {
-				// Get as close as I can starting from the final point,
-				// and ignoring barriers and preferred paths
-				final->closed = false;
-				DeRefEdgeTable(final->row, final->col).open = true;
-				openSetHeap.push(HeapEntry(final->f, closestIndex));
-				searchBarrier(BARRIER_SEARCH_IN, rowdest, coldest);
-				
-				final = &(totalSet[closestIndex]);
-			}
+		}
+
+		// Tack on the barrierStart if necessary
+		if (barrierStart.colRow != ~0) {
+			// Add barrierStart to the totalSet
+			totalSet.push_back(barrierStart);
+
+			// set start's previous to be the barrierStart
+			start->previous = totalSet.size() - 1;
 		}
 
 		unsigned int startPrevVal =  ~((unsigned int)0);
@@ -680,6 +665,8 @@ the outside 8 nodes.
 				temp = &(totalSet[temp->previous]);
 			else break;
 		}
+
+		
 
 		if (cachePaths) {
 			pathCache[p.id] = backwardsList;
@@ -693,18 +680,19 @@ the outside 8 nodes.
 
 	int nrNodes = backwardsList.size();
 
-	treenode kinematics = te->node_v_kinematics;
+	kinematics = te->node_v_kinematics;
 	initkinematics(kinematics, xStart, yStart, 0, 0,0,0, 1, 0);
+	endTime = time();
+
 
 	AStarSearchEntry e, laste;
 	laste.colRow = backwardsList[nrNodes - 1];
-	double endtime = time();
 	if(driveShort) 
 		driveShort = (int)round(0.4*xsize(traveler) / nodeWidth);
 	for(int i = nrNodes - 2; i >= /*driveShort*/0; i--) {
 		e.colRow = backwardsList[i];
-		endtime = addkinematic(kinematics, (e.col - laste.col)*nodeWidth, (e.row - laste.row)*nodeWidth, 0, 
-			te->v_maxspeed, 0,0,0,0,endtime, KINEMATIC_TRAVEL);
+		endTime = addkinematic(kinematics, (e.col - laste.col)*nodeWidth, (e.row - laste.row)*nodeWidth, 0, 
+			te->v_maxspeed, 0,0,0,0,endTime, KINEMATIC_TRAVEL);
 		
 		AStarNodeExtraData* extra;
 		auto extraIter = edgeTableExtraData.find(e.colRow);
@@ -746,203 +734,57 @@ the outside 8 nodes.
 	}
 
 	transfernode(coupling, node_v_activetravelmembers);
-	createevent(holder, endtime - time(), EVENT_A_STAR_END_TRAVEL, "End Travel", coupling);
+	createevent(holder, endTime - time(), EVENT_A_STAR_END_TRAVEL, "End Travel", coupling);
 
 	return 0;
 }
 
-void AStarNavigator::searchBarrier(int searchDir, int rowDest, int colDest)
+void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest)
 {
-	bool condition = false;
+	AStarNode* node = &DeRefEdgeTable(entry->row, entry->col);
+	int dy = rowDest - entry->row;
+	int dx = colDest - entry->col;
 
-	while (true) {
-		HeapEntry he(0.0f, 0);
-		AStarSearchEntry* entry = NULL;
+	static const int up = 0;
+	static const int left = 1;
+	static const int down = 2;
+	static const int right = 3;
 
-		// Get the best node
-		do {
-			he = openSetHeap.top();
-			openSetHeap.pop();
-			entry = &(totalSet[he.totalSetIndex]);
-		} while (entry->closed && openSetHeap.size() > 0);
+	int startDir = up;
+	if (dx > 0 && dx * dx > dy * dy)
+		startDir = left;
+	else if (dx < 0 && dx * dx > dy * dy) 
+		startDir = right;
+	else if (dy < 0 && dy * dy > dx * dx)
+		startDir = down;
 
-		if (!entry) 
-			break;
+	int currRow = entry->row;
+	int currCol = entry->col;
+	int currDir = (startDir + 3) % 4; // start one direction back 
+	int distance = 0;
+	int counter = 4; // counter is used to find the distance
 
-		shortest = *entry;
-		n = &(DeRefEdgeTable(shortest.row, shortest.col));
-		shortestIndex = he.totalSetIndex;
-		if (shortest.h < closestSoFar) {
-			closestSoFar = shortest.h;
-			closestIndex = he.totalSetIndex;
+	while (!(node->canGoUp || node->canGoDown || node->canGoRight || node->canGoLeft)) {
+		currDir = (currDir + 1) % 4;
+		distance = (counter++) / 4;
+		switch (currDir) {
+		case 0: currRow = entry->row + distance; currCol = entry->col; break;
+		case 1: currCol = entry->col + distance; currRow = entry->row; break;
+		case 2: currRow = entry->row - distance; currCol = entry->col; break;
+		case 3: currCol = entry->col - distance; currRow = entry->row; break;
 		}
 
-		switch (searchDir) {
-		case BARRIER_SEARCH_OUT: 
-			condition = n->canGoDown || n->canGoUp || n->canGoRight || n->canGoLeft; 
-			break;
-		case BARRIER_SEARCH_IN:
-			condition = shortest.row == rowDest && shortest.col == colDest;
-			break;
-		default:
-			condition = true;
-			break;
-		}
-
-		if (condition) {
-			// If I am searching my way out of a barrier, put the heap entry back in
-			if (BARRIER_SEARCH_OUT)
-				openSetHeap.push(he);
-			break;
-		}
-
-		n->open = 0;
-		shortest.closed = 1;
-		travelFromPrevious = 0;
-		entry = &shortest;
-
-		if (shortest.previous != ~0) {
-			AStarSearchEntry& lastEntry = totalSet[shortest.previous];
-
-			if (deepSearch) {
-				int colDiff = lastEntry.col - shortest.col;
-				if (colDiff < -1) {
-					travelFromPrevious |= TRAVEL_FAR_RIGHT;
-				} else if (colDiff < 0) {
-					travelFromPrevious |= TRAVEL_RIGHT;
-				} else if (colDiff > 1) {
-					travelFromPrevious |= TRAVEL_FAR_LEFT;
-				} else if (colDiff) {
-					travelFromPrevious |= TRAVEL_LEFT;
-				}
-
-				int rowDiff = lastEntry.row - shortest.row;
-				if (rowDiff < -1) {
-					travelFromPrevious |= TRAVEL_FAR_UP;
-				} else if (rowDiff < 0) {
-					travelFromPrevious |= TRAVEL_UP;
-				} else if (rowDiff > 1) {
-					travelFromPrevious |= TRAVEL_FAR_DOWN;
-				} else if (rowDiff) {
-					travelFromPrevious |= TRAVEL_DOWN;
-				}
-			} else {
-				// then see if he's travel right or left ...
-				if(lastEntry.col < shortest.col) travelFromPrevious |= TRAVEL_RIGHT;
-				else if(lastEntry.col > shortest.col) travelFromPrevious |= TRAVEL_LEFT;
-				// and see if he's traveling up or down
-				if(lastEntry.row < shortest.row) travelFromPrevious |= TRAVEL_UP;
-				else if(lastEntry.row > shortest.row) travelFromPrevious |= TRAVEL_DOWN;
-			}
-		}
-
-		// In this case, I don't care if I can go in a given direction; I only care
-		// if I found a node that is not in a barrier.
-#define CHECK_EXPAND_OPEN_SET(boundaryCondition, rowInc, colInc, travelVal, dist)\
-	if (boundaryCondition) {\
-		int theCol = shortest.col + colInc;\
-		int theRow = shortest.row + rowInc;\
-		expandOpenSet(theRow, theCol, dist, travelVal);\
-	}\
-
-#define CHECK_EXPAND_OPEN_SET_DEEP(nearCondition, farCondition, rowInc, colInc, travelVal, dist)\
-	if (nearCondition) {\
-		int theCol = shortest.col + colInc;\
-		int theRow = shortest.row + rowInc;\
-		expandOpenSet(theRow, theCol, dist, travelVal);\
-		if (rowInc && !colInc) {\
-			expandOpenSet(theRow + rowInc, theCol, 2*dist, travelVal | (travelVal << 4));\
-			if (farCondition) {\
-				expandOpenSet(theRow + rowInc, theCol + 1, ROOT5*dist, travelVal | (travelVal << 4) | TRAVEL_RIGHT);\
-				expandOpenSet(theRow + rowInc, theCol - 1, ROOT5*dist, travelVal | (travelVal << 4) | TRAVEL_LEFT);\
-			}\
-		\
-		} else if (!rowInc && colInc) {\
-			expandOpenSet(theRow, theCol + colInc, 2*dist, travelVal | (travelVal << 4));\
-			if (farCondition) {\
-				expandOpenSet(theRow + 1, theCol + colInc, ROOT5*dist, travelVal | (travelVal << 4) | TRAVEL_UP);\
-				expandOpenSet(theRow - 1, theCol + colInc, ROOT5*dist, travelVal | (travelVal << 4) | TRAVEL_DOWN);\
-			}\
-		\
-		} else {\
-			expandOpenSet(theRow, theCol, dist, travelVal | (travelVal << 4));\
-			if (farCondition)\
-				expandOpenSet(theRow + rowInc, theCol + colInc, 2*dist, travelVal | (travelVal << 4));\
-		}\
+		node = &DeRefEdgeTable(currRow, currCol);
 	}
 
-
-
-		if (deepSearch) {
-			CHECK_EXPAND_OPEN_SET_DEEP(
-				shortest.row < edgeTableYSize,
-				shortest.row + 1 < edgeTableYSize, 
-				1, 0, TRAVEL_UP, 1.0
-			);
-			CHECK_EXPAND_OPEN_SET_DEEP(
-				shortest.col < edgeTableXSize,
-				shortest.col + 1 < edgeTableXSize, 
-				0, 1, TRAVEL_RIGHT, 1.0
-			);
-			CHECK_EXPAND_OPEN_SET_DEEP(
-				shortest.row > 0,
-				shortest.row - 1 > 0,
-				-1, 0, TRAVEL_DOWN, 1.0
-			);
-			CHECK_EXPAND_OPEN_SET_DEEP(
-				shortest.col > 0,
-				shortest.col - 1 > 0,
-				0, -1, TRAVEL_LEFT, 1.0
-			);
-
-			CHECK_EXPAND_OPEN_SET_DEEP(
-				shortest.row  < edgeTableYSize  && shortest.col < edgeTableYSize, 
-				shortest.row + 1 < edgeTableYSize  && shortest.col + 1 < edgeTableYSize, 
-				1, 1, TRAVEL_UP | TRAVEL_RIGHT, ROOT2); 
-
-			CHECK_EXPAND_OPEN_SET_DEEP(
-				shortest.row < edgeTableYSize && shortest.col > 0, 
-				shortest.row + 1 < edgeTableYSize && shortest.col - 1 > 0, 
-				1, -1, TRAVEL_UP | TRAVEL_LEFT, ROOT2); 
-
-			CHECK_EXPAND_OPEN_SET_DEEP(
-				shortest.row > 0  && shortest.col + 1 < edgeTableYSize, 
-				shortest.row - 1 > 0  && shortest.col + 1 < edgeTableYSize, 
-				-1, 1, TRAVEL_DOWN | TRAVEL_RIGHT, ROOT2
-			); 
-
-			CHECK_EXPAND_OPEN_SET_DEEP(
-				shortest.row > 0  && shortest.col > 0, 
-				shortest.row - 1 > 0  && shortest.col - 1 > 0, 
-				-1, -1, TRAVEL_DOWN | TRAVEL_LEFT, ROOT2
-			);
-
-		} else {
-			CHECK_EXPAND_OPEN_SET(shortest.row + 1 < edgeTableYSize, 1, 0, TRAVEL_UP, 1.0)
-			CHECK_EXPAND_OPEN_SET(shortest.col + 1 < edgeTableXSize, 0, 1, TRAVEL_RIGHT, 1.0)
-			CHECK_EXPAND_OPEN_SET(shortest.row > 0, -1, 0, TRAVEL_DOWN, 1.0)
-			CHECK_EXPAND_OPEN_SET(shortest.col > 0, 0, -1, TRAVEL_LEFT, 1.0)
-
-			CHECK_EXPAND_OPEN_SET(
-				shortest.row + 1 < edgeTableYSize  && shortest.col + 1 < edgeTableYSize, 
-				1, 1, TRAVEL_UP | TRAVEL_RIGHT, ROOT2); 
-
-			CHECK_EXPAND_OPEN_SET(
-				shortest.row + 1 < edgeTableYSize  && shortest.col > 0, 
-				1, -1, TRAVEL_UP | TRAVEL_LEFT, ROOT2); 
-
-			CHECK_EXPAND_OPEN_SET(
-				shortest.row > 0  && shortest.col + 1 < edgeTableYSize, 
-				-1, 1, TRAVEL_DOWN | TRAVEL_RIGHT, ROOT2); 
-
-			CHECK_EXPAND_OPEN_SET(
-				shortest.row > 0  && shortest.col > 0, 
-				-1, -1, TRAVEL_DOWN | TRAVEL_LEFT, ROOT2);
-		}
-	}
-
-#undef CHECK_EXPAND_OPEN_SET_DEEP
-#undef CHECK_EXPAND_OPEN_SET
+	barrierStart.colRow = ~0;
+	barrierStart.previous = ~0;
+	if (entry->row != currRow || entry->col != currCol) {
+		barrierStart.row = entry->row;
+		barrierStart.col = entry->col;
+	} 
+	entry->row = currRow;
+	entry->col = currCol;
 }
 
 AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, int travelVal)
@@ -1281,7 +1123,7 @@ void AStarNavigator::drawTraffic(float z, TreeNode* view)
 
 #define ABV(offsetX, offsetY, color) {\
 	int newVertex = trafficMesh.addVertex();\
-	float pos[3] = {x + offsetX, y + offsetY, z};\
+	float pos[3] = {x + (offsetX * nodeWidth), y + (offsetY * nodeWidth), z};\
 	trafficMesh.setVertexAttrib(newVertex, MESH_POSITION, pos);\
 	trafficMesh.setVertexAttrib(newVertex, MESH_AMBIENT_AND_DIFFUSE4, color);\
 	}\
@@ -1301,8 +1143,8 @@ void AStarNavigator::drawTraffic(float z, TreeNode* view)
 	trafficMesh.setVertexAttrib(0, MESH_EMISSIVE, red);
 	for(auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
 		AStarNodeExtraData* e = &(iter->second);
-		double x = (xOffset + e->col + 0.5);
-		double y = (yOffset + e->row + 0.5);
+		double x = (col0x + (e->col) * nodeWidth);
+		double y = (row0y + (e->row) * nodeWidth);
 		
 		if (drawForPick) {
 			ABT(-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 1.0);
