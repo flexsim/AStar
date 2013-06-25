@@ -535,7 +535,8 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 	auto iter = entryHash.find(finder.colRow);\
 	if (iter != entryHash.end()) {\
 		AStarSearchEntry* vert = &totalSet[iter->second];\
-		CHECK_EXPAND_OPEN_SET(node, vert, entryOut, dir2,\
+		AStarNode* vertNode = &DeRefEdgeTable(vert->row, vert->col);\
+		CHECK_EXPAND_OPEN_SET(vertNode, vert, entryOut, dir2,\
 			(condition1 && condition2), 0, colInc, (travelVal | travelVal << 4), dist, ROOT2_DIV2);\
 	} else {\
 		finder.row -= rowInc;\
@@ -543,190 +544,89 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 		iter = entryHash.find(finder.colRow);\
 		if (iter != entryHash.end()) {\
 			AStarSearchEntry* hrz = &totalSet[iter->second];\
+			AStarNode* hrzNode = &DeRefEdgeTable(hrz->row, hrz->col);\
 			CHECK_EXPAND_OPEN_SET(node, hrz, entryOut, dir1,\
 				(condition1 && condition2), rowInc, 0, travelVal, dist, ROOT2_DIV2);\
 		}\
 	}\
 }
 
-#define CHECK_EXPAND_OPEN_SET_DEEP(node, dir1, dir2, dir3, condition1, condition2, condition3, rowInc, colInc, travelVal, dist) {\
+#define CHECK_EXPAND_OPEN_SET_DEEP(node, dir1, dir2, dir3, condition1, condition2, rowInc, colInc, travelVal, dist) {\
 	AStarSearchEntry* e1 = NULL;\
-	if (rowInc && !colInc) {\
-		CHECK_EXPAND_OPEN_SET(node, (&shortest), e1, dir1, condition1, rowInc, 0, travelVal, dist, 1.0);\
-		if (e1) {\
-			AStarNode* n1 = &DeRefEdgeTable(e1->row, e1->col);\
-			AStarSearchEntry* e2 = NULL;\
-			CHECK_EXPAND_OPEN_SET(n1, e1, e2, dir1, condition1 + rowInc, rowInc, 0, (travelVal | travelVal << 4), 2 * dist, 1.0);\
-			if (e2) {\
-				AStarNode* n2 = &DeRefEdgeTable(e2->row, e2->col);\
-				AStarSearchEntry e2StackCopy = *e2;\
-				CHECK_EXPAND_OPEN_SET(n2, (&e2StackCopy), e2, dir2, (condition1 + rowInc && condition2),\
-					0, 1,  (travelVal | travelVal << 4 | TRAVEL_RIGHT), ROOT5 * dist, ROOT5_DIV5);\
-				CHECK_EXPAND_OPEN_SET(n2, (&e2StackCopy), e2, dir3, (condition1 + rowInc && condition3),\
-					0, -1,  (travelVal | travelVal << 4 | TRAVEL_LEFT), ROOT5 * dist, ROOT5_DIV5);\
-			}\
-		}\
-	} else if (!rowInc && colInc) {\
-		CHECK_EXPAND_OPEN_SET(node, (&shortest), e1, dir1, condition1, 0, colInc, travelVal, dist, 1.0);\
-		if (e1) {\
-			AStarNode* n1 = &DeRefEdgeTable(e1->row, e1->col);\
-			AStarSearchEntry* e2 = NULL;\
-			CHECK_EXPAND_OPEN_SET(n1, e1, e2, dir1, condition1 + colInc, 0, colInc, (travelVal | travelVal << 4), 2 * dist, 1.0);\
-			if (e2) {\
-				AStarNode* n2 = &DeRefEdgeTable(e2->row, e2->col);\
-				AStarSearchEntry e2StackCopy = *e2;\
-				AStarSearchEntry* e3 = NULL;\
-				CHECK_EXPAND_OPEN_SET(n2, (&e2StackCopy), e3, dir2, (condition1 + colInc && condition2),\
-					1, 0,  (travelVal | travelVal << 4 | TRAVEL_UP), ROOT5 * dist, ROOT5_DIV5);\
-				CHECK_EXPAND_OPEN_SET(n2, (&e2StackCopy), e3, dir3, (condition1 + colInc && condition3),\
-					-1, 0,  (travelVal | travelVal << 4 | TRAVEL_DOWN), ROOT5 * dist, ROOT5_DIV5);\
-			}\
-		}\
-	} else {\
-		CHECK_EXPAND_OPEN_SET_DIAGONAL(node, (&shortest), e1, dir1, dir2, condition1, condition2, rowInc, colInc, travelVal, dist);\
-		if (e1) {\
-			AStarNode* n1 = &DeRefEdgeTable(e1->row, e1->col);\
-			AStarSearchEntry e1StackCopy = *e1;\
-			CHECK_EXPAND_OPEN_SET(n1, (&e1StackCopy), e1, dir1, \
-				(condition1 + rowInc && condition2), rowInc, 0, \
-				(travelVal | ((travelVal & TRAVEL_UP) ? TRAVEL_FAR_UP : TRAVEL_FAR_DOWN)), \
-				ROOT5_DIVROOT2 * dist, ROOT5_DIV5);\
-			\
-			CHECK_EXPAND_OPEN_SET(n1, (&e1StackCopy), e1, dir2, \
-				(condition1 && condition2 + colInc), 0, colInc, \
-				(travelVal | ((travelVal & TRAVEL_RIGHT) ? TRAVEL_FAR_RIGHT : TRAVEL_FAR_LEFT)), \
-				ROOT5_DIVROOT2 * dist, ROOT5_DIV5);\
-			\
-			CHECK_EXPAND_OPEN_SET_DIAGONAL(n1, (&e1StackCopy), e1, dir1, dir2, \
-			condition1 + rowInc, condition2 + colInc, rowInc, colInc, (travelVal | travelVal << 4), 2 * dist);\
-		}\
+	CHECK_EXPAND_OPEN_SET_DIAGONAL(node, (&shortest), e1, dir1, dir2, condition1, condition2, rowInc, colInc, travelVal, dist);\
+	if (e1) {\
+		AStarNode* n1 = &DeRefEdgeTable(e1->row, e1->col);\
+		AStarSearchEntry e1StackCopy = *e1;\
+		CHECK_EXPAND_OPEN_SET(n1, (&e1StackCopy), e1, dir1, \
+			(condition1 + rowInc && condition2), rowInc, 0, \
+			(travelVal | ((travelVal & TRAVEL_UP) ? TRAVEL_FAR_UP : TRAVEL_FAR_DOWN)), \
+			ROOT5_DIVROOT2 * dist, ROOT5_DIV5);\
+		\
+		CHECK_EXPAND_OPEN_SET(n1, (&e1StackCopy), e1, dir2, \
+			(condition1 && condition2 + colInc), 0, colInc, \
+			(travelVal | ((travelVal & TRAVEL_RIGHT) ? TRAVEL_FAR_RIGHT : TRAVEL_FAR_LEFT)), \
+			ROOT5_DIVROOT2 * dist, ROOT5_DIV5);\
 	}\
 }
 
 /*
 
-When all the macro expanding is over and done with, here is the psuedo-code algorithm
-that finally results for a search upwards:
-
-if deep search is on:
-	if the node above "shortest" is valid (canGo/exists):
-		add it to the open set as e1
-		if the node above e1 exists:
-			add it to the open set as e2
-			if the node right of e2 is valid:
-				add it to the open set*
-			if the node left of e2 is valid:
-				add it to the open set
-else :
-	if the node above "shortest" is valid:
-		add it to the open set
-
-After all four major directions are searched, then the diagonal
-directions are searched (psuedo-code for up right):
-
-if deep search is on:
-	if a node above or to the right of "shortest" is in the open set:
-		if the up-right node is valid:
-			add it to the open set as e1
-			check and add the node above e1 to the open set again*
-			check and add the node right of e1 to the open set again
-			if a node above or to the right of e1 is in the open set:
-				if the up-right node of e1 is valid:
-					add it to the open set
-else:
-	if a node above or to the right of "shortest" is in the open set:
-		if the up-right node is valid:
-			add it to the open set
-
-The * marks two attempts to add the same node to the open set. This is
-because each attempt comes from a different direction, ensuring that
-all paths to nodes that are sqrt(5) away are checked.
-
-The diagrams below show a complete search order for a deep search.
+The diagram below shows a complete search order for a deep search,
+which results from the expansion of the search macros.
 The / should be read "depends on" or "is accesible from". The *
 means that the node depends on either of the two adjacent nodes
-closest to the search center.
+closest to the search center. A non-deep search would not search
+the outside 8 nodes.
 
-     Orthogonal Search (1st)          Diagonal Search (2nd)
-+-----------------------------+  +-----------------------------+
-¦     ¦ 4/2 ¦ 2/1 ¦ 3/2 ¦     ¦	 ¦ 32* ¦30/29¦     ¦18/17¦ 20* ¦
-+-----+-----+-----+-----+-----¦	 +-----+-----+-----+-----+-----¦
-¦15/14¦     ¦  1  ¦     ¦11/10¦	 ¦31/29¦ 29* ¦     ¦ 17* ¦19/17¦
-+-----+-----+-----+-----+-----¦	 +-----+-----+-----+-----+-----¦
-¦14/13¦ 13  ¦  0  ¦  9  ¦10/9 ¦	 ¦     ¦     ¦     ¦     ¦     ¦
-+-----+-----+-----+-----+-----¦	 +-----+-----+-----+-----+-----¦
-¦16/14¦     ¦  5  ¦     ¦12/10¦	 ¦27/25¦ 25* ¦     ¦ 21* ¦23/21¦
-+-----+-----+-----+-----+-----¦	 +-----+-----+-----+-----+-----¦
-¦     ¦ 8/6 ¦ 6/5 ¦ 7/6 ¦     ¦	 ¦ 28* ¦26/25¦     ¦22/21¦ 24* ¦
-+-----------------------------+	 +-----------------------------+
++-----------------------------+  
+¦     ¦ 9/8 ¦     ¦ 6/5 ¦     ¦	 
++-----+-----+-----+-----+-----¦	 
+¦10/8 ¦ 8*  ¦  1  ¦ 5*  ¦ 7/5 ¦	 
++-----+-----+-----+-----+-----¦	 
+¦     ¦  4  ¦  0  ¦  3  ¦     ¦	 
++-----+-----+-----+-----+-----¦	 
+¦13/11¦ 11* ¦  2  ¦ 14* ¦16/14¦	 
++-----+-----+-----+-----+-----¦	 
+¦     ¦12/11¦     ¦15/14¦     ¦	 
++-----------------------------+	 
 
 */
 		
-		
+		AStarSearchEntry* result = NULL;
+		CHECK_EXPAND_OPEN_SET(n, (&shortest), result, Up, shortest.row < edgeTableYSize - 1, 1, 0, TRAVEL_UP, 1.0, 1.0);
+		CHECK_EXPAND_OPEN_SET(n, (&shortest), result, Right, shortest.col < edgeTableXSize - 1, 0, 1, TRAVEL_RIGHT, 1.0, 1.0);
+		CHECK_EXPAND_OPEN_SET(n, (&shortest), result, Down, shortest.row > 0, -1, 0, TRAVEL_DOWN, 1.0, 1.0);
+		CHECK_EXPAND_OPEN_SET(n, (&shortest), result, Left, shortest.col > 0, 0, -1, TRAVEL_LEFT, 1.0, 1.0);
+
+
 		if (deepSearch) {
-			
-			CHECK_EXPAND_OPEN_SET_DEEP(n, Up, Right, Left, 
-				edgeTableYSize > shortest.row + 1,
-				edgeTableXSize > shortest.col + 2, 
-				0 < shortest.col - 1,
-				1, 0, TRAVEL_UP, 1.0
-			);
-
-			CHECK_EXPAND_OPEN_SET_DEEP(n, Down, Right, Left, 
-				0 < shortest.row,
-				edgeTableXSize > shortest.col + 2, 
-				0 < shortest.col - 1,
-				-1, 0, TRAVEL_DOWN, 1.0
-			);
-
-			CHECK_EXPAND_OPEN_SET_DEEP(n, Right, Up, Down,
-				edgeTableXSize > shortest.col + 1, 
-				edgeTableYSize > shortest.row + 2,
-				0 < shortest.row - 1,
-				0, 1, TRAVEL_RIGHT, 1.0
-			);
-
-			CHECK_EXPAND_OPEN_SET_DEEP(n, Left, Up, Down,
-				0 < shortest.col,
-				edgeTableYSize > shortest.row + 2,
-				0 < shortest.row - 1,
-				0, -1, TRAVEL_LEFT, 1.0
-			);
 
 			CHECK_EXPAND_OPEN_SET_DEEP(n, Up, Right, Down, 
 				edgeTableYSize > shortest.row + 1,
 				edgeTableXSize > shortest.col + 1,
-				true, 
 				1, 1, TRAVEL_UP | TRAVEL_RIGHT, ROOT2
 			);
 
 			CHECK_EXPAND_OPEN_SET_DEEP(n, Up, Left, Down, 
 				edgeTableYSize > shortest.row + 1,
 				0 < shortest.col,
-				true, 
 				1, -1, TRAVEL_UP | TRAVEL_LEFT, ROOT2
 			);
 
 			CHECK_EXPAND_OPEN_SET_DEEP(n, Down, Right, Down, 
 				0 < shortest.row,
 				edgeTableXSize > shortest.col + 1,
-				true, 
 				-1, 1, TRAVEL_DOWN | TRAVEL_RIGHT, ROOT2
 			);
 
 			CHECK_EXPAND_OPEN_SET_DEEP(n, Down, Left, Down, 
 				0 < shortest.row,
 				0 < shortest.col,
-				true, 
 				-1, -1, TRAVEL_DOWN | TRAVEL_LEFT, ROOT2
 			);
 
 		} else {
-			AStarSearchEntry* result = NULL;
-			CHECK_EXPAND_OPEN_SET(n, (&shortest), result, Up, shortest.row < edgeTableYSize - 1, 1, 0, TRAVEL_UP, 1.0, 1.0);
-			CHECK_EXPAND_OPEN_SET(n, (&shortest), result, Right, shortest.col < edgeTableXSize - 1, 0, 1, TRAVEL_RIGHT, 1.0, 1.0);
-			CHECK_EXPAND_OPEN_SET(n, (&shortest), result, Down, shortest.row > 0, -1, 0, TRAVEL_DOWN, 1.0, 1.0);
-			CHECK_EXPAND_OPEN_SET(n, (&shortest), result, Left, shortest.col > 0, 0, -1, TRAVEL_LEFT, 1.0, 1.0);
+			
 
 			CHECK_EXPAND_OPEN_SET_DIAGONAL(n, (&shortest), result, Up, Right, 
 				shortest.row < edgeTableYSize - 1,
@@ -1053,16 +953,16 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 	AStarNode* n = &DeRefEdgeTable(r, c);
 	// is he already in the total set
 	if (!n->notInTotalSet) {
+		// if he's in the total set and he's closed, then abort
+		if (!n->open) {
+			return NULL;
+		}
+
 		AStarSearchEntry hashEntry;
 		hashEntry.row = r;
 		hashEntry.col = c;
 		totalSetIndex = entryHash[hashEntry.colRow];
 		entry = &(totalSet[totalSetIndex]);
-
-		// if he's in the total set and he's open, then abort
-		if (n->open) {
-			return entry;
-		}	
 	}
 	float newG = shortest.g + multiplier * nodeWidth;
 	/*  Check if the guy is changing directions. If so, I want to increase the distance so it will be a penalty to make turns*/ \
@@ -1223,10 +1123,14 @@ void AStarNavigator::buildEdgeTable()
 
 	// The maxPathWeight ensures that the estimated distance
 	// to the goal is not overestimated.
-	maxPathWeight = 0.4;
+	maxPathWeight = 0.0;
 	for(int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
 		barrier->modifyTable(edgeTable, &edgeTableExtraData, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
+		if (comparetext(barrier->getClassFactory(), "AStar::PreferredPath")) {
+			PreferredPath* path = (PreferredPath*)barrier;
+			maxPathWeight = max(path->pathWeight, maxPathWeight);
+		}
 	}
 
 	for (int i = 0; i < objectBarrierList.size(); i++) {
