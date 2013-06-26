@@ -33,6 +33,7 @@
         <node f="42-0" dt="1"><name>defaultPathWeight</name><data>9999999a3fd99999</data></node>
         <node f="42-0" dt="1"><name>deepSearch</name><data>000000003ff00000</data></node>
         <node f="42-0" dt="1"><name>ignoreDestBarrier</name><data>000000003ff00000</data></node>
+        <node f="42-0" dt="1"><name>hasEdgeTable</name><data>0000000000000000</data></node>
        </node>
        <node f="42-0"><name>behaviour</name>
         <node f="40-0"><name></name></node>
@@ -51,7 +52,6 @@
         </node>
         <node f="42-0" dt="2"><name>shape</name><data>modules\AStar\shapes\AStar.3ds</data></node>
         <node f="42-0" dt="1"><name>shapeindex</name><data>0000000000000000</data></node>
-        <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\astarnavigatorsmall.png</data></node>
         <node f="42-0" dt="2"><name>imageobject</name><data>***</data></node>
         <node f="42-0" dt="1"><name>imageindexobject</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>imagebase</name><data>***</data></node>
@@ -114,6 +114,27 @@
         <node f="42-0"><name>info2</name></node>
        </node>
        <node f="42-0" dt="1"><name>ignoredraw</name><data>0000000000000000</data></node>
+      </data></node>
+      <node f="42-0" dt="4"><name>AStarNavigator</name><data>
+       <node f="40-0"><name></name></node>
+       <node f="42-0"><name>visual</name>
+        <node f="40-0"><name></name></node>
+        <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\astarnavigatorsmall.png</data></node>
+       </node>
+       <node f="42-4" dt="2"><name>dropscript</name><data>treenode ontoObject = parnode(1);
+double x = parval(2);
+double y = parval(3);
+double z = parval(4);
+treenode view = parnode(5);
+
+if (objectexists(node("AStarNavigator", model)))
+	return 0;
+
+treenode asn = createinstance(node("astar/1", library()), model());
+setname(asn, "AStarNavigator");
+set(spatialx(asn), x);
+set(spatialy(asn), y);
+set(spatialz(asn), z);</data></node>
       </data></node>
      </node>
     </node>

@@ -79,64 +79,28 @@ struct AStarPathID {
 class AStarNavigator :
 	public Navigator
 {
-public:
-	static unsigned int editMode;
-	double defaultPathWeight;
-	double nodeWidth;
-	double surroundDepth;
-	double deepSearch;
-	double drawMode;
-	double ignoreDestBarrier;
-
-	double cachePaths;
-	double pathCount;
-	double requestCount;
-	double cacheUseCount;
-	TreeNode* color;
-	
-	TreeNode* barriers;
-	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
-	NodeRef activeBarrier;
-
-	TreeNode* fixedResourceBarriers;
-	NodeListArray<FixedResource>::ObjStoredAttCouplingType objectBarrierList;
-
-	Mesh boundsMesh;	
-	Mesh barrierMesh;
-	Mesh trafficMesh;
-	Mesh gridMesh;
-	Mesh memberMesh;
-
-	AStarNavigator();
-	~AStarNavigator();
-	
-	virtual double onReset();
-	virtual double onRunWarm();
-	double onTimerEvent(TreeNode* involved, int code, char *datastr);
-	virtual double onDraw(TreeNode* view);
-	virtual double onDrag(TreeNode* view);
-	virtual double onClick(TreeNode* view, int clickcode);
-	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType);
-	virtual double AStarNavigator::onDestroy(TreeNode* view);
-	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed);
-	virtual double navigateToLoc(TreeNode* traveler, double x, double y, double endspeed, int driveshort = 1);
-	void searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest);
-	void buildEdgeTable();
-	void buildGridMesh();
-	void buildBoundsMesh();
-	void buildBarrierMesh();
-	void drawMembers(float z);
-	void drawGrid(float z);
-	void drawTraffic(float z, TreeNode* view);
-	virtual double updateLocations();
-	virtual double abortTravel(TreeNode* traveler, TreeNode* newts);
-	virtual unsigned int getClassType();
-
-	virtual void bindVariables(void);
-	
+protected:
 	AStarNode* edgeTable;
 
-	// temporary variables that are used as part of the search
+	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
+	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from colRow to index in totalSet
+	std::unordered_map<unsigned int, AStarNodeExtraData> edgeTableExtraData; // A mapping from colRow to an ExtraData object
+	std::unordered_map<unsigned __int64, std::vector<unsigned int> > pathCache;
+
+	struct HeapEntry {
+		HeapEntry(float f, unsigned int totalSetIndex) : f(f), totalSetIndex(totalSetIndex) {}
+		float f;
+		unsigned int totalSetIndex;
+	};
+	class HeapEntryCompare {
+	public:
+		bool operator()(HeapEntry& left, HeapEntry& right) {return left.f > right.f;}
+	};
+
+	// A heap of the open set; each value is tied to an index into the open set.
+	std::priority_queue<HeapEntry, std::vector<HeapEntry>, HeapEntryCompare> openSetHeap;
+
+	// Temporary variables that are used as part of the search
 	AStarNode * n;
 	AStarSearchEntry shortest;
 	int expandableUp;
@@ -158,7 +122,7 @@ public:
 	double xStart;
 	double yStart;
 
-	inline AStarSearchEntry* expandOpenSet(int r, int c ,float multiplier, int travelVal);
+	// Current edgeTable status variables
 	int edgeTableXSize;
 	int edgeTableYSize;
 	int xOffset;
@@ -168,22 +132,68 @@ public:
 	int maxTraveled;
 	double penalty;
 
-	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
-	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from rowCol to index in totalSet
-	std::unordered_map<unsigned int, AStarNodeExtraData> edgeTableExtraData; // A mapping from rowCol to an ExtraData object
-	std::unordered_map<unsigned __int64, std::vector<unsigned int> > pathCache;
+	// Drawing variables
+	Mesh boundsMesh;	
+	Mesh barrierMesh;
+	Mesh trafficMesh;
+	Mesh gridMesh;
+	Mesh memberMesh;
+	bool isDirty;
 
-	struct HeapEntry {
-		HeapEntry(float f, unsigned int totalSetIndex) : f(f), totalSetIndex(totalSetIndex) {}
-		float f;
-		unsigned int totalSetIndex;
-	};
-	class HeapEntryCompare {
-	public:
-		bool operator()(HeapEntry& left, HeapEntry& right) {return left.f > right.f;}
-	};
+	inline AStarSearchEntry* expandOpenSet(int r, int c ,float multiplier, int travelVal);
+	void searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest, bool setStartEntry = false);
+	void buildEdgeTable();
+	void buildBoundsMesh();
+	void buildBarrierMesh();
+	void drawMembers(float z);
+	void drawGrid(float z);
+	void drawTraffic(float z, TreeNode* view);
 
-	// A heap of the open set; each value is tied to an index into the open set.
-	std::priority_queue<HeapEntry, std::vector<HeapEntry>, HeapEntryCompare> openSetHeap;
+public:
+	static unsigned int editMode;
+	static AStarNavigator* globalASN;
+	double defaultPathWeight;
+	double nodeWidth;
+	double surroundDepth;
+	double deepSearch;
+	double drawMode;
+	double ignoreDestBarrier;
+
+	double cachePaths;
+	double pathCount;
+	double requestCount;
+	double cacheUseCount;
+
+	double hasEdgeTable;
+	
+	TreeNode* barriers;
+	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
+	NodeRef activeBarrier;
+	
+	TreeNode* fixedResourceBarriers;
+	NodeListArray<FixedResource>::ObjStoredAttCouplingType objectBarrierList;
+
+	AStarNavigator();
+	~AStarNavigator();
+	
+	virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+	virtual double onReset();
+	virtual double onRunWarm();
+	virtual double onTimerEvent(TreeNode* involved, int code, char *datastr);
+	virtual double onDraw(TreeNode* view);
+	virtual double onDrag(TreeNode* view);
+	virtual double onClick(TreeNode* view, int clickcode);
+	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType);
+	virtual double onDestroy(TreeNode* view);
+	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed);
+	virtual double navigateToLoc(TreeNode* traveler, double x, double y, double endspeed, int driveshort = 1);
+	
+	virtual double updateLocations();
+	virtual double abortTravel(TreeNode* traveler, TreeNode* newts);
+	virtual unsigned int getClassType();
+
+	virtual void bindVariables(void);
+
+	void setDirty();
 };
 

@@ -9,14 +9,14 @@
 unsigned int AStarNavigator::editMode = 0;
 
 AStarNavigator::AStarNavigator()
-	// TODO: Initialize entryhash, edgetableextradata
+	: edgeTable(NULL)
+	, xOffset(0)
+	, yOffset(0)
+	, edgeTableXSize(0)
+	, edgeTableYSize(0)
+	, isDirty(true)
 {
-	edgeTable = NULL;
-	xOffset = 0;
-	yOffset = 0;
-	edgeTableXSize = 0;
-	edgeTableYSize = 0;
-
+	return;
 }
 
 AStarNavigator::~AStarNavigator()
@@ -48,6 +48,16 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(cacheUseCount);
 }
 
+double AStarNavigator::onCreate(double dropx, double dropy, double dropz, int iscopy)
+{
+	if (objectexists(node("AStarNavigator", model())))
+		destroyobject(holder);
+	else
+		setname(holder, "AStarNavigator");
+
+	return 0;
+}
+
 double AStarNavigator::onReset()
 {
 	while (content(node_v_activetravelmembers) > 0)
@@ -55,8 +65,7 @@ double AStarNavigator::onReset()
 
 	edgeTableExtraData.clear();
 	buildEdgeTable();
-	buildBoundsMesh();
-	buildBarrierMesh();
+	setDirty();
 	maxTraveled = 0;
 	return 0;
 }
@@ -83,7 +92,19 @@ double AStarNavigator::onDraw(TreeNode* view)
 	// Based on the drawMode, this function
 	// draws the grid, barriers, and traffic
 
-	// This will one day use the Mesh class
+	if (isDirty) {
+		if (!edgeTable && hasEdgeTable)
+			buildEdgeTable();
+
+		if (drawMode && ASTAR_DRAW_MODE_BARRIERS)
+			buildBarrierMesh();
+
+		if (drawMode && ASTAR_DRAW_MODE_BOUNDS && edgeTable)
+			buildBoundsMesh();
+
+		isDirty = false;
+	}
+
 	int pickingmode = getpickingmode(view);
 	int drawMode = (int)this->drawMode;
 	if(drawMode == 0) return 0;
@@ -153,14 +174,14 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 		}
 		activeBarrier = barrier->holder;
 		barrier->isActive = 1;
-		buildBarrierMesh();
+		setDirty();
 		return barrier->onClick((int)clickcode, cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
 	}
 	if (objectexists(tonode(activeBarrier))) {
 		Barrier* b = &o(Barrier, tonode(activeBarrier));
 		b->activePointIndex = 0;
 		b->isActive = 0;
-		buildBarrierMesh();
+		setDirty();
 	}
 	activeBarrier = 0;
 	return FlexsimObject::onClick(view, (int)clickcode);
@@ -184,7 +205,6 @@ double AStarNavigator::onDrag(TreeNode* view)
 				point->y += dy;
 			}
 		}
-		buildBarrierMesh();
 
 		for (int i = 0; i < objectBarrierList.size(); i++) {
 			TreeNode* obj = objectBarrierList[i]->holder;
@@ -207,14 +227,14 @@ double AStarNavigator::onDrag(TreeNode* view)
 		}
 		savedXOffset += dx / nodeWidth;
 		savedYOffset += dy / nodeWidth;
-		buildBoundsMesh();
+		setDirty();
 		return 1;
 	}
 
 	if (objectexists(secondary)) {
 		Barrier* barrier = &o(Barrier, secondary);
 		barrier->onMouseMove(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), dx, dy);
-		buildBarrierMesh();
+		setDirty();
 		return 1;
 	} 
 	
@@ -284,7 +304,7 @@ double AStarNavigator::onDestroy(TreeNode* view)
 		
 		if (objectexists(secondary)) {
 			destroyobject(secondary);
-			buildBarrierMesh();
+			setDirty();
 		} else {
 			destroyobject(holder);
 		}
@@ -383,9 +403,21 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 		start->col = colstart;
 		start->row = rowstart;
 
-		// Build a kinematic to get out of a barrier if necessary
-		
-		searchBarrier(start, te, rowdest, coldest);
+		// Set the desination outside a barrier if necessary
+		if (ignoreDestBarrier) {
+			AStarSearchEntry validDest;
+			validDest.row = rowdest;
+			validDest.col = coldest;
+
+			searchBarrier(&validDest, te, rowstart, colstart);
+			coldest = validDest.col;
+			rowdest = validDest.row;
+			x = col0x + coldest * nodeWidth;
+			y = row0y + rowdest * nodeWidth;
+		}
+
+		// Get out of a barrier if necessary
+		searchBarrier(start, te, rowdest, coldest, true);
 
 		start->g = 0;
 		start->h = (1.0 - maxPathWeight) * sqrt(sqr(x-xStart)+sqr(y-yStart));
@@ -739,7 +771,7 @@ the outside 8 nodes.
 	return 0;
 }
 
-void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest)
+void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest, bool setStartEntry)
 {
 	AStarNode* node = &DeRefEdgeTable(entry->row, entry->col);
 	int dy = rowDest - entry->row;
@@ -777,12 +809,14 @@ void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* travel
 		node = &DeRefEdgeTable(currRow, currCol);
 	}
 
-	barrierStart.colRow = ~0;
-	barrierStart.previous = ~0;
-	if (entry->row != currRow || entry->col != currCol) {
-		barrierStart.row = entry->row;
-		barrierStart.col = entry->col;
-	} 
+	if (setStartEntry) {
+		barrierStart.colRow = ~0;
+		barrierStart.previous = ~0;
+		if (entry->row != currRow || entry->col != currCol) {
+			barrierStart.row = entry->row;
+			barrierStart.col = entry->col;
+		} 
+	}
 	entry->row = currRow;
 	entry->col = currCol;
 }
@@ -901,6 +935,7 @@ void AStarNavigator::buildEdgeTable()
 		if (edgeTable)
 			delete [] edgeTable;
 		edgeTable = 0;
+		hasEdgeTable = 0;
 		return;
 	}
 
@@ -1024,6 +1059,8 @@ void AStarNavigator::buildEdgeTable()
 			}
 		}
 	}
+
+	hasEdgeTable = 1;
 }
 void AStarNavigator::buildBoundsMesh()
 {
@@ -1427,6 +1464,11 @@ void AStarNavigator::drawGrid(float z)
 	gridMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, MESH_FORCE_CLEANUP);
 }
 
+void AStarNavigator::setDirty()
+{
+	isDirty = true;
+}
+
 
 unsigned int AStarNavigator::getClassType()
 {
@@ -1481,6 +1523,7 @@ visible void AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 
 	setname(newNode, ss.str().c_str());
 	a->activeBarrier = newNode;
+	a->setDirty();
 }
 
 visible void AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
@@ -1495,6 +1538,7 @@ visible void AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
 		return;
 
 	a->barrierList.remove((int)parval(2));
+	a->setDirty();
 }
 
 visible void AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
@@ -1538,7 +1582,7 @@ visible void AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
 	if (objectexists(tonode(a->activeBarrier))) {
 		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
 		b->onMouseMove(parval(2), parval(3), parval(4), parval(5));
-		a->buildBarrierMesh();
+		a->setDirty();
 	}
 }
 
@@ -1588,11 +1632,7 @@ visible void AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
 	if (parval(2))
 		drawMode = (int)parval(2);
 
-	if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
-		a->buildBarrierMesh();
-
-	if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
-		a->buildBoundsMesh();
+	a->setDirty();
 }
 
 visible void AStarNavigator_addMember(FLEXSIMINTERFACE)
