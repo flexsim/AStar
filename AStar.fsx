@@ -471,7 +471,7 @@ nodepoint(objectfocus(c), 0);</data></node>
       <node f="40-0"><name></name></node>
       <node f="42-0"><name>LibraryGroup</name>
        <node f="40-0"><name></name></node>
-       <node f="42-100000" dt="4"><name>Create Barrier</name><data>
+       <node f="42-0" dt="4"><name>Create Barrier</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Barrier")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -489,7 +489,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\onewaydivider.bmp</data></node>
        </data></node>
-       <node f="42-0" dt="4"><name>Create Preferred Path</name><data>
+       <node f="42-100000" dt="4"><name>Create Preferred Path</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::PreferredPath")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -623,6 +623,11 @@ setchecked(node("/Draw Modes/Show Grid", up(c)), drawmode &amp; ASTAR_DRAW_MODE_
 setchecked(node("/Draw Modes/Show Members", up(c)), drawmode &amp; ASTAR_DRAW_MODE_MEMBERS);
 setchecked(node("/Draw Modes/Show Traffic", up(c)), drawmode &amp; ASTAR_DRAW_MODE_TRAFFIC);
 
+int gray = !get(node("@&gt;objectfocus+&gt;variables/cachePaths", c));
+
+forobjectsbehind (node("/Preferred Paths/Cache Paths", up(c)))
+	windowgray(windowfromnode(a), gray);
+
 listboxrefresh(node("/Members/MemberChooser", up(c)));
 
 nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
@@ -735,16 +740,137 @@ set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
          <node f="42-0" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/deepSearch</data></node>
          <node f="42-0" dt="2"><name>tooltip</name><data>Toggle deep search</data></node>
         </data></node>
-        <node f="42-0" dt="4"><name>Cache Paths</name><data>
+        <node f="42-0" dt="4"><name>Preferred Paths</name><data>
          <node f="40-0"><name>object</name></node>
-         <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-         <node f="42-0" dt="1"><name>spatialx</name><data>00000000405e0000</data></node>
-         <node f="42-0" dt="1"><name>spatialy</name><data>00000000405e0000</data></node>
-         <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
-         <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-         <node f="42-0" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/cachePaths</data></node>
-         <node f="42-0" dt="2"><name>tooltip</name><data>Toggle cache paths</data></node>
-        </data></node>
+         <node f="42-0" dt="2"><name>viewfocus</name><data>MAIN:/project/model</data></node>
+         <node f="42-0" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
+         <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
+         <node f="42-0" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
+         <node f="42-0" dt="1"><name>spatialy</name><data>0000000040618000</data></node>
+         <node f="42-0" dt="1"><name>spatialsx</name><data>00000000406b8000</data></node>
+         <node f="42-0" dt="1"><name>spatialsy</name><data>000000004062c000</data></node>
+         <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+         <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
+        </data>
+         <node f="40-0"><name></name></node>
+         <node f="42-0" dt="4"><name>Cache Paths</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+          <node f="42-0" dt="1"><name>spatialx</name><data>0000000040310000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>00000000402c0000</data></node>
+          <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42-0" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/cachePaths</data></node>
+          <node f="42-0" dt="2"><name>OnPress</name><data>int gray = !getchecked(c);
+
+forobjectsbehind (c)
+	windowgray(windowfromnode(a), gray);</data></node>
+          <node f="42-0" dt="2"><name>tooltip</name><data>Toggle cache paths</data></node>
+         </data></node>
+         <node f="42-0" dt="4"><name>Paths Cached</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+          <node f="42-0" dt="1"><name>spatialx</name><data>00000000403e0000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040440000</data></node>
+          <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+         </data></node>
+         <node f="42-0" dt="4"><name>pathCount</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+          <node f="42-0" dt="1"><name>spatialx</name><data>0000000040604000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040428000</data></node>
+          <node f="42-0" dt="1"><name>spatialsx</name><data>00000000406b8000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42-0" dt="2"><name>tooltip</name><data>The total number of paths that have been cached.</data></node>
+          <node f="42-0" dt="1"><name>alignrightmargin</name><data>00000000402c0000</data></node>
+          <node f="42-0" dt="2"><name>hotlink</name><data>@&gt;objectfocus+&gt;variables/pathCount</data></node>
+          <node f="42-0"><name>style</name>
+           <node f="40-0"><name></name></node>
+           <node f="42-0"><name>ES_READONLY</name></node>
+          </node>
+         </data></node>
+         <node f="42-0" dt="4"><name>Path Requests</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+          <node f="42-0" dt="1"><name>spatialx</name><data>00000000403e0000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040504000</data></node>
+          <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+         </data></node>
+         <node f="42-0" dt="4"><name>requestCount</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+          <node f="42-0" dt="1"><name>spatialx</name><data>0000000040604000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>00000000404f0000</data></node>
+          <node f="42-0" dt="1"><name>spatialsx</name><data>00000000406b8000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42-0" dt="2"><name>tooltip</name><data>The total number of travel requests made.</data></node>
+          <node f="42-0" dt="1"><name>alignrightmargin</name><data>00000000402c0000</data></node>
+          <node f="42-0" dt="2"><name>hotlink</name><data>@&gt;objectfocus+&gt;variables/requestCount</data></node>
+          <node f="42-0"><name>style</name>
+           <node f="40-0"><name></name></node>
+           <node f="42-0"><name>ES_READONLY</name></node>
+          </node>
+         </data></node>
+         <node f="42-0" dt="4"><name>Cached Paths Used</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+          <node f="42-0" dt="1"><name>spatialx</name><data>00000000403e0000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040568000</data></node>
+          <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+         </data></node>
+         <node f="42-0" dt="4"><name>useCount</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+          <node f="42-0" dt="1"><name>spatialx</name><data>0000000040604000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>000000004055c000</data></node>
+          <node f="42-0" dt="1"><name>spatialsx</name><data>00000000406b8000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42-0" dt="2"><name>tooltip</name><data>Total number of travel requests that have utilized a cached path.</data></node>
+          <node f="42-0" dt="1"><name>alignrightmargin</name><data>00000000402c0000</data></node>
+          <node f="42-0" dt="2"><name>hotlink</name><data>@&gt;objectfocus+&gt;variables/cacheUseCount</data></node>
+          <node f="42-0"><name>style</name>
+           <node f="40-0"><name></name></node>
+           <node f="42-0"><name>ES_READONLY</name></node>
+          </node>
+         </data></node>
+         <node f="42-0" dt="4"><name>Utilization</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+          <node f="42-0" dt="1"><name>spatialx</name><data>00000000403e0000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>00000000405cc000</data></node>
+          <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+         </data></node>
+         <node f="42-0" dt="4"><name>utilization</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+          <node f="42-0" dt="1"><name>spatialx</name><data>0000000040604000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>00000000405c0000</data></node>
+          <node f="42-0" dt="1"><name>spatialsx</name><data>00000000406b8000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42-0" dt="2"><name>tooltip</name><data>Percentage of travel requests that utilized a cached path.</data></node>
+          <node f="42-0" dt="1"><name>alignrightmargin</name><data>00000000402c0000</data></node>
+          <node f="42-0" dt="2"><name>hotlinkx</name><data>if (!eventdata) {
+	treenode objfocus = node("@&gt;objectfocus+", c);
+
+	double useCount = getvarnum(objfocus, "cacheUseCount");
+	double requestCount = getvarnum(objfocus, "requestCount");
+	if (requestCount == 0) {
+		setviewtext(c, "0 %");
+	} else {
+		double utilization = useCount / requestCount * 100;
+		setviewtext(c, concat(numtostring(utilization), " %"));
+	}
+}</data></node>
+          <node f="42-0"><name>style</name>
+           <node f="40-0"><name></name></node>
+           <node f="42-0"><name>ES_READONLY</name></node>
+          </node>
+         </data></node>
+        </node>
         <node f="42-0" dt="4"><name>Draw Modes</name><data>
          <node f="40-0"><name>object</name></node>
          <node f="42-0" dt="2"><name>viewfocus</name><data>MAIN:/project/model</data></node>
@@ -810,7 +936,7 @@ set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
          <node f="42-0" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
          <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
          <node f="42-0" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-         <node f="42-0" dt="1"><name>spatialy</name><data>000000004062c000</data></node>
+         <node f="42-0" dt="1"><name>spatialy</name><data>000000004072c000</data></node>
          <node f="42-0" dt="1"><name>spatialsx</name><data>00000000405f4000</data></node>
          <node f="42-0" dt="1"><name>spatialsy</name><data>00000000405d4000</data></node>
          <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
@@ -1055,6 +1181,7 @@ windowshow(windowfromnode(node("../Edit Table", c)), 0);
 windowshow(windowfromnode(editor), 1);</data></node>
          <node f="42-0" dt="1"><name>itemcurrent</name><data>000000003ff00000</data></node>
          <node f="42-0" dt="2"><name>windowtitle</name><data>Editor View</data></node>
+         <node f="42-0" dt="1"><name>hidden</name><data>000000003ff00000</data></node>
         </data></node>
         <node f="42-0" dt="4"><name>table view</name><data>
          <node f="40-0"><name>object</name></node>
@@ -1071,6 +1198,7 @@ windowshow(windowfromnode(node("../Editor", c)), 0);
 windowshow(windowfromnode(node("../Edit Table", c)), 1);</data></node>
          <node f="42-0" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
          <node f="42-0" dt="2"><name>windowtitle</name><data>Table View</data></node>
+         <node f="42-0" dt="1"><name>hidden</name><data>000000003ff00000</data></node>
         </data></node>
         <node f="42-0" dt="4"><name>Edit Table</name><data>
          <node f="40-0"><name>object</name></node>
@@ -1243,7 +1371,7 @@ repaintview(TheTable);
          <node f="40-0"><name>object</name></node>
          <node f="42-0" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
          <node f="42-0" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-         <node f="42-0" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
+         <node f="42-0" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
          <node f="42-0" dt="1"><name>spatialsx</name><data>000000004080f800</data></node>
          <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040764000</data></node>
          <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
@@ -1638,12 +1766,17 @@ treenode selectBarrier = node("../../SelectBarrier", c);
 setname(rank(items(selectBarrier), get(itemcurrent(selectBarrier))), getviewtext(c));
 listboxrefresh(selectBarrier);</data></node>
            <node f="42-0" dt="2"><name>coldlinkx</name><data>treenode focus = node("..&gt;objectfocus+", c);
-
-if (eventdata) {
-	setname(focus, getviewtext(c));
-} else {
-	setviewtext(c, getname(focus));
+if (objectexists(focus)) {
+	if (eventdata) {
+		setname(focus, getviewtext(c));
+	} else {
+		setviewtext(c, getname(focus));
+	}
 }</data></node>
+           <node f="42-0" dt="2"><name>style</name><data></data>
+            <node f="40-0"><name></name></node>
+            <node f="42-0"><name>ES_READONLY</name></node>
+           </node>
           </data></node>
           <node f="42-0" dt="4"><name>Path Weight</name><data>
            <node f="40-0"><name>object</name></node>
@@ -2206,26 +2339,6 @@ applylinks(parent);</data></node>
           </node>
          </node>
         </node>
-       </node>
-       <node f="42-0" dt="4"><name>Paths</name><data>
-        <node f="40-0"><name>object</name></node>
-        <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-        <node f="42-0" dt="1"><name>spatialx</name><data>0000000040180000</data></node>
-        <node f="42-0" dt="1"><name>spatialy</name><data>0000000040380000</data></node>
-        <node f="42-0" dt="1"><name>spatialsx</name><data>00000000407c2000</data></node>
-        <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040794000</data></node>
-        <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-        <node f="42-4" dt="2"><name>PageOnOpen</name><data></data></node>
-       </data>
-        <node f="40-0"><name></name></node>
-        <node f="42-0" dt="4"><name>Preffered Paths</name><data>
-         <node f="40-0"><name>object</name></node>
-         <node f="42-0" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-         <node f="42-0" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-         <node f="42-0" dt="1"><name>spatialy</name><data>0000000040310000</data></node>
-         <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
-         <node f="42-0" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-        </data></node>
        </node>
        <node f="42-0" dt="4"><name>Triggers</name><data>
         <node f="40-0"><name>object</name></node>
