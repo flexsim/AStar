@@ -37,7 +37,30 @@
        </node>
        <node f="42-0"><name>behaviour</name>
         <node f="40-0"><name></name></node>
-        <node f="42-0"><name>eventfunctions</name></node>
+        <node f="42-0"><name>eventfunctions</name>
+         <node f="40-0"><name></name></node>
+         <node f="42-10000" dt="2"><name>addBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_addBarrier"</data></node>
+         <node f="42-10000" dt="2"><name>addMember</name><data>dll:"module:AStar" func:"AStarNavigator_addMember"</data></node>
+         <node f="42-10000" dt="2"><name>addPoint</name><data>dll:"module:AStar" func:"Barrier_addPoint"</data></node>
+         <node f="42-10000" dt="2"><name>getActiveBarrierMode</name><data>dll:"module:AStar" func:"AStarNavigator_getActiveBarrierMode"</data></node>
+         <node f="42-10000" dt="2"><name>getBarrierType</name><data>dll:"module:AStar" func:"Barrier_getBarrierType"</data></node>
+         <node f="42-10000" dt="2"><name>getPathWeight</name><data>dll:"module:AStar" func:"PreferredPath_getWeight"</data></node>
+         <node f="42-10000" dt="2"><name>getPointCoord</name><data>dll:"module:AStar" func:"Barrier_getPointCoord"</data></node>
+         <node f="42-10000" dt="2"><name>rebuildMeshes</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildMeshes"</data></node>
+         <node f="42-10000" dt="2"><name>removeBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_removeBarrier"</data></node>
+         <node f="42-10000" dt="2"><name>removeMember</name><data>dll:"module:AStar" func:"AStarNavigator_removeMember"</data></node>
+         <node f="42-10000" dt="2"><name>removePoint</name><data>dll:"module:AStar" func:"Barrier_removePoint"</data></node>
+         <node f="42-10000" dt="2"><name>setActiveBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_setActiveBarrier"</data></node>
+         <node f="42-10000" dt="2"><name>setActiveIndex</name><data>dll:"module:AStar" func:"Barrier_setActiveIndex"</data></node>
+         <node f="42-10000" dt="2"><name>setPathWeight</name><data>dll:"module:AStar" func:"PreferredPath_setWeight"</data></node>
+         <node f="42-10000" dt="2"><name>setPointCoords</name><data>dll:"module:AStar" func:"Barrier_setPointCoords"</data></node>
+         <node f="42-10000" dt="2"><name>swapBarriers</name><data>dll:"module:AStar" func:"AStarNavigator_swapBarriers"</data></node>
+         <node f="42-10000" dt="2"><name>swapPoints</name><data>dll:"module:AStar" func:"Barrier_swapPoints"</data></node>
+         <node f="42-10000" dt="2"><name>setEditMode</name><data>dll:"module:AStar" func:"AStarNavigator_setEditMode"</data></node>
+         <node f="42-10000" dt="2"><name>setBarrierMode</name><data>dll:"module:AStar" func:"Barrier_setMode"</data></node>
+         <node f="42-10000" dt="2"><name>onMouseMove</name><data>dll:"module:AStar" func:"AStarNavigator_onMouseMove"</data></node>
+         <node f="42-10000" dt="2"><name>onClick</name><data>dll:"module:AStar" func:"AStarNavigator_onClick"</data></node>
+        </node>
         <node f="42-0"><name>cppfunctions</name>
          <node f="40-0"><name></name></node></node>
         <node f="42-0"><name>cppvariables</name></node>
@@ -194,7 +217,9 @@ set(spatialz(asn), z);</data></node>
        </node>
        <node f="42-0"><name>eventfunctions</name>
         <node f="40-0"><name></name></node>
-        <node f="42-4" dt="2"><name>OnClick</name><data>if (!objectexists(i))
+        <node f="42-4" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
+
+if (!objectexists(i))
 	return 0;
 
 int mode = getvarnum(c, "mode");
@@ -241,10 +266,9 @@ if (!objectexists(selobj)) {
 			setvarnum(c, "creating", 1);
 			setvarnum(c, "editing", 0);
 			
-			function_s(ASTAR_FUNCTIONS_NODE, "addBarrier", activeNavigator, 
-				mouseX, mouseY, mouseX, mouseY);
+			function_s(activeNavigator, "addBarrier", mouseX, mouseY, mouseX, mouseY);
 			treenode activeBarrier = tonode(getvarnum(activeNavigator, "activeBarrier"));
-			function_s(c, "setBarrierMode", activeBarrier, BARRIER_MODE_DYNAMIC_CREATE);
+			function_s(activeNavigator, "setBarrierMode", activeBarrier, BARRIER_MODE_DYNAMIC_CREATE);
 			setselectedobject(i, activeNavigator);	
 		}
 	}
@@ -278,7 +302,7 @@ if (getvarnum(c, "creating")) {
 	setvarnum(c, "lastModelX", mouseX);
 	setvarnum(c, "lastModelY", mouseY);
 	
-	function_s(c, "onMouseMove", tonode(getvarnum(c, "activeNavigator")), 
+	function_s(tonode(getvarnum(c, "activeNavigator")), "onMouseMove", 
 		mouseX, mouseY, dx, dy);
 	
 	#define WM_PAINT 0x000F
@@ -296,7 +320,11 @@ if (getvarnum(c, "dragging")) {
 	setvarnum(c, "dragY", dy);
 }</data></node>
         <node f="42-4" dt="2"><name>OnEntering</name><data>treenode iconGrid = nodefromwindow(keyboardfocus());
-function_s(c, "setEditMode", getvarnum(c, "mode"));
+treenode activeNavigator = tonode(getvarnum(c, "activeNavigator"));
+if (!objectexists(activeNavigator))
+	return 0;
+
+function_s(activeNavigator, "setEditMode", getvarnum(c, "mode"));
 nodepoint(viewfocus(c), iconGrid);
 nodepoint(objectfocus(c), selectedobject(iconGrid));</data></node>
         <node f="42-4" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
@@ -313,15 +341,18 @@ setvarnum(c, "dragX", 0);
 setvarnum(c, "dragY", 0);
 
 treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
-function_s(c, "onClick", activeNav, RIGHT_RELEASE, 0, 0);
+if (!objectexists(activeNav))
+	return 0;
+function_s(activeNav, "onClick", RIGHT_RELEASE, 0, 0);
+function_s(activeNav, "rebuildMeshes");</data></node>
+        <node f="42-4" dt="2"><name>checkStatus</name><data>#define BARRIER_MODE_CREATE 0x2
 
-function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", activeNav, ASTAR_DRAW_MODE_BARRIERS);</data></node>
-        <node f="42-4" dt="2"><name>checkStatus</name><data>treenode activeNavigator = tonode(getvarnum(ownerobject(c), "activeNavigator"));
+treenode activeNavigator = tonode(getvarnum(ownerobject(c), "activeNavigator"));
 if (!objectexists(activeNavigator))
 	return 0;
 
 treenode theEditMode = ownerobject(c);
-int barrierEditMode = function_s(ASTAR_FUNCTIONS_NODE, "getActiveBarrierMode", activeNavigator);
+int barrierEditMode = function_s(activeNavigator, "getActiveBarrierMode");
 
 if (barrierEditMode &amp; BARRIER_MODE_CREATE)
 	return 0;
@@ -329,10 +360,6 @@ if (barrierEditMode &amp; BARRIER_MODE_CREATE)
 setvarnum(theEditMode, "creating", 0);
 setvarnum(theEditMode, "editing", 1);
 </data></node>
-        <node f="42-10000" dt="2"><name>setEditMode</name><data>dll:"module:AStar" func:"AStarNavigator_setEditMode"</data></node>
-        <node f="42-10000" dt="2"><name>setBarrierMode</name><data>dll:"module:AStar" func:"Barrier_setMode"</data></node>
-        <node f="42-10000" dt="2"><name>onMouseMove</name><data>dll:"module:AStar" func:"AStarNavigator_onMouseMove"</data></node>
-        <node f="42-10000" dt="2"><name>onClick</name><data>dll:"module:AStar" func:"AStarNavigator_onClick"</data></node>
        </node>
       </data></node>
       <node f="42-0" dt="4"><name>AStar::Barrier</name><data>
@@ -483,13 +510,13 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\divider.bmp</data></node>
        </data></node>
-       <node f="42-0" dt="4"><name>Create One-Way Divider</name><data>
+       <node f="42-100000" dt="4"><name>Create One-Way Divider</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::OneWayDivider")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\onewaydivider.bmp</data></node>
        </data></node>
-       <node f="42-100000" dt="4"><name>Create Preferred Path</name><data>
+       <node f="42-0" dt="4"><name>Create Preferred Path</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::PreferredPath")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -615,7 +642,13 @@ iterate(1, content(tabcontrol), 1){
         <node f="42-0" dt="1"><name>spatialsx</name><data>00000000407c2000</data></node>
         <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040794000</data></node>
         <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-        <node f="42-4" dt="2"><name>PageOnOpen</name><data>int drawmode = get(node("@&gt;objectfocus+&gt;variables/drawMode", c));
+        <node f="42-4" dt="2"><name>PageOnOpen</name><data>#define ASTAR_DRAW_MODE_BOUNDS 0x1
+#define ASTAR_DRAW_MODE_BARRIERS 0x2
+#define ASTAR_DRAW_MODE_TRAFFIC 0x4
+#define ASTAR_DRAW_MODE_GRID 0x8
+#define ASTAR_DRAW_MODE_MEMBERS 0x10
+
+int drawmode = get(node("@&gt;objectfocus+&gt;variables/drawMode", c));
 
 setchecked(node("/Draw Modes/Show Barriers", up(c)), drawmode &amp; ASTAR_DRAW_MODE_BARRIERS);
 setchecked(node("/Draw Modes/Show Bounds", up(c)), drawmode &amp; ASTAR_DRAW_MODE_BOUNDS);
@@ -631,7 +664,13 @@ forobjectsbehind (node("/Preferred Paths/Cache Paths", up(c)))
 listboxrefresh(node("/Members/MemberChooser", up(c)));
 
 nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
-        <node f="42-4" dt="2"><name>PageOnApply</name><data>double drawmode = 0;
+        <node f="42-4" dt="2"><name>PageOnApply</name><data>#define ASTAR_DRAW_MODE_BOUNDS 0x1
+#define ASTAR_DRAW_MODE_BARRIERS 0x2
+#define ASTAR_DRAW_MODE_TRAFFIC 0x4
+#define ASTAR_DRAW_MODE_GRID 0x8
+#define ASTAR_DRAW_MODE_MEMBERS 0x10
+
+double drawmode = 0;
 
 drawmode += getchecked(node("/Draw Modes/Show Barriers", up(c))) ? ASTAR_DRAW_MODE_BARRIERS : 0;
 drawmode += getchecked(node("/Draw Modes/Show Bounds", up(c))) ? ASTAR_DRAW_MODE_BOUNDS : 0;
@@ -1022,7 +1061,7 @@ treenode focus = node("@&gt;objectfocus+", c);
 for (int i = 1; i &lt;= content(selected); i++) {
 	treenode obj = tonode(get(rank(selected, i)));
 	
-	function_s(ASTAR_FUNCTIONS_NODE, "addMember", focus, obj);
+	function_s(focus, "addMember", obj);
 }
 
 nodefunction(node("../../MembersList&gt;refresh",c));
@@ -1070,7 +1109,8 @@ switch (list) {
 }
 
 if (objectexists(object)) {
-	function_s(ASTAR_FUNCTIONS_NODE, "removeMember", node("@&gt;objectfocus+", c), object);
+	treenode navigator = node("@&gt;objectfocus+", c);
+	function_s(navigator, "removeMember", object);
 	nodefunction(node("../MembersList&gt;refresh",c));
 	repaintall();
 }
@@ -1425,8 +1465,8 @@ repaintview(TheTable);
            <node f="42-4" dt="2"><name>add</name><data>int type = parval(1);
 treenode focus = node("@&gt;objectfocus+", c);
 
-function_s(ASTAR_FUNCTIONS_NODE, "addBarrier", focus, 0, 0, 10, 10, type);
-function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", focus, ASTAR_DRAW_MODE_BARRIERS);
+function_s(focus, "addBarrier", 0, 0, 10, 10, type);
+function_s(focus, "rebuildMeshes");
 treenode selectBarrier = node("../SelectBarrier", c);
 function_s(selectBarrier, "refreshList");
 set(itemcurrent(selectBarrier), content(items(selectBarrier)));
@@ -1489,8 +1529,7 @@ for (int i = 1; i &lt;= content(barriers); i++) {
 	}
 }
 index--; //Base 0
-function_s(ASTAR_FUNCTIONS_NODE, "removeBarrier", focus, index);
-//function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", focus, ASTAR_DRAW_MODE_BARRIERS);
+function_s(focus, "removeBarrier", index);
 treenode selectBarrier = node("../SelectBarrier", c);
 function_s(selectBarrier, "refreshList");
 set(itemcurrent(selectBarrier), index);
@@ -1539,8 +1578,8 @@ for (int i = 1; i &lt;= content(barriers); i++) {
 }
 index2--; //Base 0
 
-function_s(ASTAR_FUNCTIONS_NODE, "swapBarriers", focus, index1, index2);
-function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", focus, ASTAR_DRAW_MODE_BARRIERS);
+function_s(focus, "swapBarriers", index1, index2);
+function_s(focus, "rebuildMeshes");
 set(itemcurrent(selectBarrier), index -1);
 function_s(selectBarrier, "refreshList");
 repaintall();</data></node>
@@ -1586,8 +1625,8 @@ for (int i = 1; i &lt;= content(barriers); i++) {
 }
 index2--; //Base 0
 
-function_s(ASTAR_FUNCTIONS_NODE, "swapBarriers", focus, index1, index2);
-function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", focus, ASTAR_DRAW_MODE_BARRIERS);
+function_s(focus, "swapBarriers", index1, index2);
+function_s(focus, "rebuildMeshes");
 set(itemcurrent(selectBarrier), index +1);
 function_s(selectBarrier, "refreshList");
 repaintall();</data></node>
@@ -1654,7 +1693,7 @@ treenode result = node("&gt;result", c);
 treenode barriers = node("@&gt;objectfocus+&gt;variables/barriers", c);
 
 for (int i = 1; i &lt;= content(barriers); i++) {
-	function_s(ASTAR_FUNCTIONS_NODE, "getBarrierType", rank(barriers, i), result);
+	function_s(ownerobject(barriers), "getBarrierType", rank(barriers, i), result);
 	if (comparetext(type, gets(result)) || stringlen(type) == 0) {
 		treenode itm = nodeadddata(nodeinsertinto(items(c)), DATATYPE_NUMBER);
 		setname(itm, getname(rank(barriers, i)));
@@ -1676,8 +1715,8 @@ for (int i = 1; i &lt;= content(barriers); i++) {
 nodepoint(node("../Attributes&gt;objectfocus", c), barrierNode);
 function_s(node("../Attributes", c), "refreshData");
 
-function_s(ASTAR_FUNCTIONS_NODE, "setActiveBarrier", focus, barrierNode);
-function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", focus, ASTAR_DRAW_MODE_BARRIERS);
+function_s(focus, "setActiveBarrier", barrierNode);
+function_s(focus, "rebuildMeshes");
 repaintall();</data></node>
           </node>
           <node f="42-0" dt="1"><name>alignrightmargin</name><data>000000004072c000</data></node>
@@ -1704,12 +1743,12 @@ if (enable) {
 	treenode pointsEdit = node("/PointsEdit", c);
 	
 	treenode result = node("&gt;result", c);
-	function_s(ASTAR_FUNCTIONS_NODE, "getBarrierType", focus, result);
+	function_s(ownerobject(focus), "getBarrierType", focus, result);
 	string type = gets(result);
 	
 	path = comparetext(type, "AStar::PreferredPath");
 	if (path) {
-		double pathWeight = function_s(ASTAR_FUNCTIONS_NODE, "getPathWeight", focus);
+		double pathWeight = function_s(ownerobject(focus), "getPathWeight", focus);
 		setvarnum(node("/editPathWeight", c), "weight", pathWeight);
 	} else {
 		setvarnum(node("/editPathWeight", c), "weight", 0);
@@ -1807,7 +1846,7 @@ if (objectexists(focus)) {
             <node f="42-0" dt="1"><name>weight</name><data>0000000000000000</data></node>
             <node f="42-4" dt="2"><name>OnKillFocus</name><data>treenode focus = node("../../..&gt;objectfocus+", c);
 
- function_s(ASTAR_FUNCTIONS_NODE, "setPathWeight", focus, getvarnum(up(up(c)), "weight"));</data></node>
+ function_s(ownerobject(focus), "setPathWeight", focus, getvarnum(up(up(c)), "weight"));</data></node>
            </node>
           </data>
            <node f="40-0"><name></name></node></node>
@@ -1844,11 +1883,11 @@ treenode pointsNode = node("/points", barrier);
 double x = get(node("/x", last(pointsNode)));
 double y = get(node("/y", last(pointsNode)));
 
-function_s(ASTAR_FUNCTIONS_NODE, "addPoint", barrier, x +2, y +2);
+function_s(ownerobject(barrier), "addPoint", barrier, x +2, y +2);
 applylinks(table, 1);
 refreshview(table);
-function_s(ASTAR_FUNCTIONS_NODE, "setActiveIndex", barrier, content(pointsNode) -1);
-function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", ownerobject(barrier), ASTAR_DRAW_MODE_BARRIERS);
+function_s(ownerobject(barrier), "setActiveIndex", barrier, content(pointsNode) -1);
+function_s(ownerobject(barrier), "rebuildMeshes");
 repaintall();
 </data>
              <node f="40-0"><name></name></node></node>
@@ -1880,11 +1919,11 @@ if (content(selected) == 0) // and individual cell is selected (I want the row)
 	selected = up(selected);
 
 int index = getrank(selected);
-function_s(ASTAR_FUNCTIONS_NODE, "removePoint", barrier, index-1);
+function_s(ownerobject(barrier), "removePoint", barrier, index-1);
 applylinks(table, 1);
 refreshview(table);
-function_s(ASTAR_FUNCTIONS_NODE, "setActiveIndex", barrier, index -2);
-function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", ownerobject(barrier), ASTAR_DRAW_MODE_BARRIERS);
+function_s(ownerobject(barrier), "setActiveIndex", barrier, index -2);
+function_s(ownerobject(barrier), "rebuildMeshes");
 repaintall();
 </data></node>
             <node f="42-0" dt="2"><name>tooltip</name><data>Remove the selected point</data></node>
@@ -1915,11 +1954,11 @@ int index = getrank(selected);
 if (index &lt;= 1)
 	return 0;
 
-function_s(ASTAR_FUNCTIONS_NODE, "swapPoints", barrier, index -1, index -2);
+function_s(ownerobject(barrier), "swapPoints", barrier, index -1, index -2);
 applylinks(table, 1);
 refreshview(table);
-function_s(ASTAR_FUNCTIONS_NODE, "setActiveIndex", barrier, index -2);
-function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", ownerobject(barrier), ASTAR_DRAW_MODE_BARRIERS);
+function_s(ownerobject(barrier), "setActiveIndex", barrier, index -2);
+function_s(ownerobject(barrier), "rebuildMeshes");
 repaintall();
 </data></node>
             <node f="42-0" dt="2"><name>tooltip</name><data>Move the selected point up in the list</data></node>
@@ -1948,11 +1987,11 @@ int index = getrank(selected);
 if (index == 0 || index &gt;= content(node("&gt;viewfocus+", table)))
 	return 0;
 
-function_s(ASTAR_FUNCTIONS_NODE, "swapPoints", barrier, index -1, index);
+function_s(ownerobject(barrier), "swapPoints", barrier, index -1, index);
 applylinks(table, 1);
 refreshview(table);
-function_s(ASTAR_FUNCTIONS_NODE, "setActiveIndex", barrier, index);
-function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", ownerobject(barrier), ASTAR_DRAW_MODE_BARRIERS);
+function_s(ownerobject(barrier), "setActiveIndex", barrier, index);
+function_s(ownerobject(barrier), "rebuildMeshes");
 repaintall();
 </data></node>
             <node f="42-0" dt="2"><name>tooltip</name><data>Move the selected point down in the list</data></node>
@@ -1969,8 +2008,12 @@ repaintall();
             <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040803800</data></node>
             <node f="42-0" dt="1"><name>spatialsy</name><data>000000004071b000</data></node>
             <node f="42-0" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
-            <node f="42-0" dt="2"><name>hotlinkx</name><data>treenode focus = node("../..&gt;objectfocus+", c);
+            <node f="42-0" dt="2"><name>hotlinkx</name><data>#define POINT_X 1
+#define POINT_Y 2
+
+treenode focus = node("../..&gt;objectfocus+", c);
 treenode table = node("&gt;table", c);
+treenode astarNavigator = ownerobject(focus);
 
 if (!objectexists(focus))
 	return 0;
@@ -1978,8 +2021,8 @@ if (!objectexists(focus))
 if (!eventdata) {
 	clearcontents(table);
 	for (int i = 0; i &lt; content(node("/points", focus)); i++) {
-		double x = function_s(ASTAR_FUNCTIONS_NODE, "getPointCoord", focus, i, POINT_X);
-		double y = function_s(ASTAR_FUNCTIONS_NODE, "getPointCoord", focus, i, POINT_Y);
+		double x = function_s(astarNavigator, "getPointCoord", focus, i, POINT_X);
+		double y = function_s(astarNavigator, "getPointCoord", focus, i, POINT_Y);
 		
 		treenode parent = nodeinsertinto(table);
 		treenode xNode = nodeadddata(nodeinsertinto(parent), DATATYPE_NUMBER);
@@ -1994,8 +2037,8 @@ if (!eventdata) {
 } else {
 	int rebuildMeshes = 0;
 	for (int i = 0; i &lt; content(node("/points", focus)); i++) {
-		double x = function_s(ASTAR_FUNCTIONS_NODE, "getPointCoord", focus, i, POINT_X);
-		double y = function_s(ASTAR_FUNCTIONS_NODE, "getPointCoord", focus, i, POINT_Y);
+		double x = function_s(astarNavigator, "getPointCoord", focus, i, POINT_X);
+		double y = function_s(astarNavigator, "getPointCoord", focus, i, POINT_Y);
 		
 		treenode newpoints = rank(table, i+1);
 		double newx = get(first(newpoints));
@@ -2003,12 +2046,12 @@ if (!eventdata) {
 		
 		if (x != newx || y != newy) {
 			rebuildMeshes = 1;
-			function_s(ASTAR_FUNCTIONS_NODE, "setPointCoords", focus, i, newx, newy);
+			function_s(astarNavigator, "setPointCoords", focus, i, newx, newy);
 		}
 	}
 	
 	if (rebuildMeshes) {
-		function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", ownerobject(focus), ASTAR_DRAW_MODE_BARRIERS);
+		function_s(astarNavigator, "rebuildMeshes");
 		repaintall();
 	}	
 }</data></node>
@@ -2034,8 +2077,8 @@ if (lastkeydown() == VK_RETURN) {
 			return 0;
 		set(itemcurrent(c), index);
 		
-		function_s(ASTAR_FUNCTIONS_NODE, "setActiveIndex", barrier, index -1);
-		function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", ownerobject(barrier), ASTAR_DRAW_MODE_BARRIERS);
+		function_s(ownerobject(barrier), "setActiveIndex", barrier, index -1);
+		function_s(ownerobject(barrier), "rebuildMeshes");
 		repaintall();
 	}
 }
@@ -2087,7 +2130,11 @@ repaintview(TheTable);
            <node f="42-0" dt="1"><name>spatialsx</name><data>00000000407ac000</data></node>
            <node f="42-0" dt="1"><name>spatialsy</name><data>000000004057c000</data></node>
            <node f="42-0" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
-           <node f="42-0" dt="2"><name>hotlinkx</name><data>treenode focus = node("..&gt;objectfocus+", c);
+           <node f="42-0" dt="2"><name>hotlinkx</name><data>#define POINT_X 1
+#define POINT_Y 2
+
+treenode focus = node("..&gt;objectfocus+", c);
+treenode astarNavigator = ownerobject(focus);
 
 if (eventdata) {
 	double x1 = getvarnum(c, "posx");
@@ -2109,16 +2156,16 @@ if (eventdata) {
 	double y2 = sizey + y1;
 	
 	if (x1 != getvarnum(c, "x1") || y1 != getvarnum(c, "y1") || x2 != getvarnum(c, "x2") || y2 != getvarnum(c, "y2")) {
-		function_s(ASTAR_FUNCTIONS_NODE, "setPointCoords", focus, 0, x1, y1);
-		function_s(ASTAR_FUNCTIONS_NODE, "setPointCoords", focus, 1, x2, y2);
-		function_s(ASTAR_FUNCTIONS_NODE, "rebuildMeshes", ownerobject(focus), ASTAR_DRAW_MODE_BARRIERS);
+		function_s(astarNavigator, "setPointCoords", focus, 0, x1, y1);
+		function_s(astarNavigator, "setPointCoords", focus, 1, x2, y2);
+		function_s(astarNavigator, "rebuildMeshes");
 		repaintall();
 	}
 } else {
-	double x1 = function_s(ASTAR_FUNCTIONS_NODE, "getPointCoord", focus, 0, POINT_X);
-	double y1 = function_s(ASTAR_FUNCTIONS_NODE, "getPointCoord", focus, 0, POINT_Y);
-	double x2 = function_s(ASTAR_FUNCTIONS_NODE, "getPointCoord", focus, 1, POINT_X);
-	double y2 = function_s(ASTAR_FUNCTIONS_NODE, "getPointCoord", focus, 1, POINT_Y);
+	double x1 = function_s(astarNavigator, "getPointCoord", focus, 0, POINT_X);
+	double y1 = function_s(astarNavigator, "getPointCoord", focus, 0, POINT_Y);
+	double x2 = function_s(astarNavigator, "getPointCoord", focus, 1, POINT_X);
+	double y2 = function_s(astarNavigator, "getPointCoord", focus, 1, POINT_Y);
 	
 	setvarnum(c, "posx", x1);
 	setvarnum(c, "posy", y1);
@@ -2428,30 +2475,6 @@ applylinks(parent);</data></node>
         </data></node>
        </node>
       </node>
-      <node f="42-0" dt="4"><name>Functions</name><data>
-       <node f="40-0"><name></name></node>
-       <node f="42-0"><name>eventfunctions</name>
-        <node f="40-0"><name></name></node>
-        <node f="42-10000" dt="2"><name>addBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_addBarrier"</data></node>
-        <node f="42-10000" dt="2"><name>addMember</name><data>dll:"module:AStar" func:"AStarNavigator_addMember"</data></node>
-        <node f="42-10000" dt="2"><name>addPoint</name><data>dll:"module:AStar" func:"Barrier_addPoint"</data></node>
-        <node f="42-10000" dt="2"><name>getActiveBarrierMode</name><data>dll:"module:AStar" func:"AStarNavigator_getActiveBarrierMode"</data></node>
-        <node f="42-10000" dt="2"><name>getBarrierType</name><data>dll:"module:AStar" func:"Barrier_getBarrierType"</data></node>
-        <node f="42-10000" dt="2"><name>getPathWeight</name><data>dll:"module:AStar" func:"PreferredPath_getWeight"</data></node>
-        <node f="42-10000" dt="2"><name>getPointCoord</name><data>dll:"module:AStar" func:"Barrier_getPointCoord"</data></node>
-        <node f="42-10000" dt="2"><name>rebuildMeshes</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildMeshes"</data></node>
-        <node f="42-10000" dt="2"><name>removeBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_removeBarrier"</data></node>
-        <node f="42-10000" dt="2"><name>removeMember</name><data>dll:"module:AStar" func:"AStarNavigator_removeMember"</data></node>
-        <node f="42-10000" dt="2"><name>removePoint</name><data>dll:"module:AStar" func:"Barrier_removePoint"</data></node>
-        <node f="42-10000" dt="2"><name>setActiveBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_setActiveBarrier"</data></node>
-        <node f="42-10000" dt="2"><name>setActiveIndex</name><data>dll:"module:AStar" func:"Barrier_setActiveIndex"</data></node>
-        <node f="42-10000" dt="2"><name>setPathWeight</name><data>dll:"module:AStar" func:"PreferredPath_setWeight"</data></node>
-        <node f="42-10000" dt="2"><name>setPointCoords</name><data>dll:"module:AStar" func:"Barrier_setPointCoords"</data></node>
-        <node f="42-10000" dt="2"><name>swapBarriers</name><data>dll:"module:AStar" func:"AStarNavigator_swapBarriers"</data></node>
-        <node f="42-10000" dt="2"><name>swapPoints</name><data>dll:"module:AStar" func:"Barrier_swapPoints"</data></node>
-       </node>
-      </data>
-       <node f="40-0"><name></name></node></node>
      </node>
     </node>
    </node>
@@ -2465,7 +2488,10 @@ applylinks(parent);</data></node>
     <node f="42-0" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42-0"><name>data</name>
      <node f="40-0"><name></name></node>
-     <node f="42-0" dt="2"><name>AStar</name><data>#include "modules/AStar/include/macros.h"</data></node>
+     <node f="42-0" dt="2"><name>AStar</name><data>#define EDITMODE_PREFERRED_PATH 35
+#define EDITMODE_DIVIDER 36
+#define EDITMODE_ONE_WAY_DIVIDER 37
+#define EDITMODE_SOLID_BARRIER 38</data></node>
     </node>
    </node>
   </node>

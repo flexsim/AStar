@@ -133,8 +133,10 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 	float topRight[3] = {xmax, ymax, z};
 	float bottomRight[3] = {xmax, ymin, z};
 
-	float triangleEdgeLength = sqrt(width * width + height * height) / 10.0;
+	triangleEdgeLength = sqrt(width * width + height * height) / 10.0;
 	triangleEdgeLength = max(0.8 * nodeWidth, triangleEdgeLength);
+	if (triangleEdgeLength > min(width, height))
+		triangleEdgeLength = min(width, height);
 	float triangleBottomRight[3] = {xmin + triangleEdgeLength, ymin, z};
 	float triangleBottomTop[3] = {xmin, ymin + triangleEdgeLength, z};
 	float triangleTopLeft[3] = {xmax - triangleEdgeLength, ymax, z};
@@ -184,8 +186,7 @@ double Barrier::onClick(int clickCode, double x, double y)
 
 		double width = xmax - xmin;
 		double height = ymax - ymin;
-		float triangleEdgeLength = sqrt(width * width + height * height) / 10.0;
-		triangleEdgeLength = max(0.8 * nodeWidth, triangleEdgeLength);
+
 		// If the click is in the bottom left corner
 		if ((x + y) <= triangleEdgeLength) {
 			activePointIndex = 0;
@@ -216,7 +217,7 @@ double Barrier::onClick(int clickCode, double x, double y)
 		}
 	}
 
-	return 0;
+	return 1;
 }
 
 double Barrier::onMouseMove(double x, double y, double dx, double dy)
@@ -259,7 +260,7 @@ double Barrier::onMouseMove(double x, double y, double dx, double dy)
 		}
 	}
 
-	return 0;
+	return 1;
 }
 
 void Barrier::addPoint(double x, double y)
@@ -306,98 +307,155 @@ bool Barrier::setPointCoords(int pointIndex, double x, double y)
 	return true;
 }
 
-visible void Barrier_setMode(FLEXSIMINTERFACE)
+visible double Barrier_setMode(FLEXSIMINTERFACE)
 {
+	TreeNode* navNode = c;
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return 0;
+
 	TreeNode* barNode = parnode(1);
-	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
-		return;
 
 	if ((int)parnode(2) == 0)
-		return;
+		return 0;
 
-	Barrier* b = &o(Barrier, barNode);
-	b->mode = (int)parnode(2);
+	try {
+		Barrier* b = &o(Barrier, barNode);
+		b->mode = (int)parnode(2);
+	} catch (...) {
+		return 0;
+	}
+	return 1;
 }
 
-visible void Barrier_addPoint(FLEXSIMINTERFACE)
+visible double Barrier_addPoint(FLEXSIMINTERFACE)
 {
-	TreeNode* barNode = parnode(1);
-	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
-		return;
+	TreeNode* navNode = c;
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return 0;
 
-	Barrier* b = &o(Barrier, barNode);
-	b->addPoint(parval(2), parval(3));
+	TreeNode* barNode = parnode(1);
+
+	try {
+		Barrier* b = &o(Barrier, barNode);
+		b->addPoint(parval(2), parval(3));
+	} catch (...) {
+		return 0;
+	}
+	return 1;
 }
 
-visible void Barrier_removePoint(FLEXSIMINTERFACE)
+visible double Barrier_removePoint(FLEXSIMINTERFACE)
 {
-	TreeNode* barNode = parnode(1);
-	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
-		return;
+	TreeNode* navNode = c;
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return 0;
 
-	Barrier* b = &o(Barrier, barNode);
-	b->removePoint((int)parval(2));
+	TreeNode* barNode = parnode(1);
+
+	try {
+		Barrier* b = &o(Barrier, barNode);
+		b->removePoint((int)parval(2));
+	} catch (...) {
+		return 0;
+	}
+	return 1;
 }
 
-visible void Barrier_swapPoints(FLEXSIMINTERFACE)
+visible double Barrier_swapPoints(FLEXSIMINTERFACE)
 {
-	TreeNode* barNode = parnode(1);
-	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
-		return;
+	TreeNode* navNode = c;
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return 0;
 
-	Barrier* b = &o(Barrier, barNode);
-	b->swapPoints((int)parval(2), (int)parval(3));
+	TreeNode* barNode = parnode(1);
+
+	try {
+		Barrier* b = &o(Barrier, barNode);
+		b->swapPoints((int)parval(2), (int)parval(3));
+	} catch (...) {
+		return 0;
+	}
+	return 1;
 }
 
-visible void Barrier_setPointCoords(FLEXSIMINTERFACE)
+visible double Barrier_setPointCoords(FLEXSIMINTERFACE)
 {
-	TreeNode* barNode = parnode(1);
-	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
-		return;
+	TreeNode* navNode = c;
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return 0;
 
-	Barrier* b = &o(Barrier, barNode);
-	b->setPointCoords((int)parval(2), parval(3), parval(4));
+	TreeNode* barNode = parnode(1);
+
+	try {
+		Barrier* b = &o(Barrier, barNode);
+		b->setPointCoords((int)parval(2), parval(3), parval(4));
+	} catch (...) {
+		return 0;
+	}
+	return 1;
 }
 
 visible double Barrier_getPointCoord(FLEXSIMINTERFACE)
 {
-	TreeNode* barNode = parnode(1);
-	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
+	TreeNode* navNode = c;
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
-	Barrier* b = &o(Barrier, barNode);
+	TreeNode* barNode = parnode(1);
 	double x = 0;
 	double y = 0;
-	b->getPointCoords((int)parval(2), x, y);
+
+	try {
+		Barrier* b = &o(Barrier, barNode);
+		b->getPointCoords((int)parval(2), x, y);
+	} catch (...) {
+		return 0;
+	}
+
 	if ((int)parval(3) == POINT_X)
 		return x;
 
 	if ((int)parval(3) == POINT_Y)
 		return y;
 
-	return 0;
+	return 1;
 }
 
-visible void Barrier_getBarrierType(FLEXSIMINTERFACE)
+visible double Barrier_getBarrierType(FLEXSIMINTERFACE)
 {
+	TreeNode* navNode = c;
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return 0;
+
 	TreeNode* barNode = parnode(1);
 	TreeNode* resultNode = parnode(2);
-	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
-		return;
-	if (!validlink(resultNode, ""))
-		return;
 
-	Barrier* b = &o(Barrier, barNode);
-	sets(resultNode, b->getClassFactory());
+	if (!validlink(resultNode, ""))
+		return 0;
+
+	try {
+		Barrier* b = &o(Barrier, barNode);
+		sets(resultNode, b->getClassFactory());
+	} catch (...) {
+		return 0;
+	}
+	return 1;
 }
 
-visible void Barrier_setActiveIndex(FLEXSIMINTERFACE)
+visible double Barrier_setActiveIndex(FLEXSIMINTERFACE)
 {
-	TreeNode* barNode = parnode(1);
-	if (!isclasstype(ownerobject(barNode), "AStar::AStarNavigator"))
-		return;
+	TreeNode* navNode = c;
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return 0;
 
-	Barrier* b = &o(Barrier, barNode);
-	b->activePointIndex = (int)parval(2);
+	TreeNode* barNode = parnode(1);
+
+	try {
+		Barrier* b = &o(Barrier, barNode);
+		b->activePointIndex = (int)parval(2);
+	} catch (...) {
+		return 0;
+	}
+	return 1;
 }
 

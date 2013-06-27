@@ -15,6 +15,9 @@ class Mesh;
 class Barrier :
 	public SimpleDataType
 {
+private:
+	float triangleEdgeLength;
+
 public:
 	TreeNode* points;
 	NodeListArray<Point>::SdtSubNodeType pointList;

@@ -19,8 +19,6 @@
 #define BARRIER_MODE_DYNAMIC_CREATE 0x3
 #define BARRIER_MODE_MOVE 0x4
 
-#define ASTAR_FUNCTIONS_NODE node("/modules/AStar/Functions", views())
-
 #define POINT_X 1
 #define POINT_Y 2
 
