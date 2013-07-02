@@ -143,7 +143,8 @@ THE SOFTWARE.
 	typedef double       (*_bernoullialias)(double prob, double a, double b, int stream); // not in LK
 	typedef double       (*_betaalias)( double a,      double b,     double shape1,    double shape2 , int stream);
 	typedef void         (*_bindobjectclassvariable)(treenode object, treenode* binder, char* variablename, char* classname);
-	typedef int          (*_bindtexture)(int textureid);
+	typedef int          (*_bindtexture_alias1)(int textureid);
+	typedef int          (*_bindtexture_alias2)(int textureid, int texUnit);
 	typedef double       (*_binomialalias)( int    t,      double p, int stream);
 	typedef int          (*_bitwiseand)(int, int);
 	typedef int          (*_bitwisenot)(int);
@@ -1143,6 +1144,7 @@ THE SOFTWARE.
 		typedef int&     (*_sdtgetcurvaluetype)();
 		typedef void     (*_sdtsetvalue)(SimpleDataType* sdt, char* valName, double toVal);
 		typedef double   (*_sdtgetvalue)(SimpleDataType* sdt, char* valName);
+		typedef char*    (*_couplingtostring)(CouplingDataType* sdt, int verbose);
 		typedef void     (*_flexsimeventbind)(FlexSimEvent* e);
 		typedef void     (*_flexsimeventexecute)(FlexSimEvent* e);
 		typedef void     (*_flexsimeventgetdescription)(FlexSimEvent* e, char* toStr, size_t maxSize);
@@ -1224,7 +1226,8 @@ DECLARE_FLEXSIM_FUNCTION_1(beginignoreundo)
 DECLARE_FLEXSIM_FUNCTION_2(bernoullialias, "bernoulli")
 DECLARE_FLEXSIM_FUNCTION_2(betaalias, "beta")
 DECLARE_FLEXSIM_FUNCTION_1(bindobjectclassvariable)
-DECLARE_FLEXSIM_FUNCTION_1(bindtexture)
+DECLARE_FLEXSIM_FUNCTION_2(bindtexture_alias1, "bindtexture")
+DECLARE_FLEXSIM_FUNCTION_2(bindtexture_alias2, "?bindtexture@@YAHHH@Z")
 DECLARE_FLEXSIM_FUNCTION_2(binomialalias, "binomial")
 DECLARE_FLEXSIM_FUNCTION_1(bitwiseand)
 DECLARE_FLEXSIM_FUNCTION_1(bitwisenot)
@@ -2078,6 +2081,7 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtsetvalue)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtisdisplayverbose)
 	DECLARE_FLEXSIM_FUNCTION_1(sdttostring)
+	DECLARE_FLEXSIM_FUNCTION_1(couplingtostring)
 	DECLARE_FLEXSIM_FUNCTION_3(createeventalias2, "?createevent@@YAPAVTreeNode@@PAVFlexSimEvent@@@Z", "?createevent@@YAPEAVTreeNode@@PEAVFlexSimEvent@@@Z")
 	DECLARE_FLEXSIM_FUNCTION_1(byteblock_write1)
 	DECLARE_FLEXSIM_FUNCTION_1(byteblock_write2)

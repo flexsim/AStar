@@ -101,7 +101,8 @@ n21,n22,n23,n24,n25,n26,n27,n28,n29,n30
 #define GlobalFunctionEnd(functionname) } catch(...) {reportobjectfunctionexception(functionname, NULL, NULL, NULL); throw;} 
 
 #define iterate(a,b,c) for(int count=a;c>0?count<=b:count>=b;count+=c)
-#define forobjecttreeunder(topnode) for(treenode a = first(topnode); validlink(a,""); nextforobjecttreeunder(&a, topnode))
+#define forobjecttreeunder(topnode)\
+for(treenode a = first(topnode); validlink(a,""); nextforobjecttreeunder(&a, topnode))
 #define forobjectlayerunder(node)\
 for (treenode a = first(node);objectexists(a);a=next(a))
 #define forobjectsbefore(node)\

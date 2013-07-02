@@ -23,6 +23,7 @@
 class SimpleDataType
 {
 	friend class TreeNode;
+	friend class CouplingDataType;
 private:
 
 	static int bindMode;

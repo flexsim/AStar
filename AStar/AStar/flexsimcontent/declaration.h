@@ -651,6 +651,9 @@ inline treenode assertlabel(treenode object,char *name, int datatype = 0){return
 inline treenode assertsubnode(treenode node,char *name, int datatype = 0){return assertsubnodealias(node, name, datatype);}
 inline double exportdataset(treenode p1, char * table, int format, char* wrOption = "w"){return exportdatasetalias(p1, table, format, wrOption);}
 inline int aggregateundorecords(TreeNode* view, char* description, int id1, int id2, int id3 = 0, int id4 = 0, int id5 = 0, int id6 = 0, int id7 = 0, int id8 = 0);
+inline int bindtexture(int textureid) {return bindtexture_alias1(textureid);}
+inline int bindtexture(int textureid, int texunit) {return bindtexture_alias2(textureid, texunit);}
+
 
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 	inline treenode createevent(FlexSimEvent* e){return createeventalias2(e);}

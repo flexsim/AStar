@@ -24,7 +24,8 @@ public:
 	CouplingDataType(TreeNode* x) : localPartner(x), thePartner(&localPartner), partnerserialnumber(0)
 	{}
 	~CouplingDataType(){}
-	NodeRef& partner(){return *thePartner;}  
+	NodeRef& partner(){return *thePartner;}
+	virtual char* toString(int verbose);
 
 	size_t partnerserialnumber;
 

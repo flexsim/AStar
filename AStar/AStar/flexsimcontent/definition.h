@@ -166,6 +166,11 @@ int& SimpleDataType::getCurValueType()
 double SimpleDataType::getValue(char* name){return sdtgetvalue(this, name);}
 void SimpleDataType::setValue(char* name, double value){sdtsetvalue(this, name, value);}
 
+char* CouplingDataType::toString(int verbose)
+{
+	return couplingtostring(this, verbose);
+}
+
 int TreeNode::cleanup()
 {
 	llcleanup(this);
