@@ -691,6 +691,14 @@
 #define ADV_FUNC_KEYEDCLICK  4
 #define ADV_FUNC_ONPREEMPT  5
 
+// kinematic flags
+#define KINEMATIC_MANAGE_ROTATIONS 0x1
+#define KINEMATIC_DO_NOT_PRUNE 0x2
+#define KINEMATIC_NO_UPDATE 0x4
+#define KINEMATIC_RELATIVE_LOCS 0x8
+#define KINEMATIC_RESET_BUFFER 0x10
+#define KINEMATIC_MANAGE_ROT_OVERRIDE 0x20
+
 // Constants group: KINEMATIC
 #define KINEMATIC_X  0
 #define KINEMATIC_Y  1
@@ -1791,7 +1799,7 @@ class TravelRequest : public SimpleDataType
 class NavigatorRequest : public TravelRequest
 {
 public:
-	virtual const char* getClassFactory() {return "TravelRequest";}
+	virtual const char* getClassFactory() {return "NavigatorRequest";}
 	virtual void bind();
 	double rotationTime; // the time it will take to rotate around
 	int initRY;
@@ -1803,7 +1811,7 @@ public:
 class NetworkRequest : public TravelRequest
 {
 public:
-	virtual const char* getClassFactory() {return "TravelRequest";}
+	virtual const char* getClassFactory() {return "NetworkRequest";}
 	virtual void bind();
 	treenode destination; // the requested destination
 	int destCol; // the column of the destination node.
@@ -2093,6 +2101,8 @@ public:
 	Number getDistanceTo(Vec3Generic& other) const {return Vec3(x - other.x, y - other.y, z - other.z).getLength();}
 	Number getDotProduct(Vec3Generic& other) const {return x * other.x + y * other.y + z * other.z;}
 	Number getXYAngle() {return radianstodegrees(atan2(y, x));}
+	Number getYZAngle() {return radianstodegrees(atan2(z, y));}
+	Number getZXAngle() {return radianstodegrees(atan2(x, z));}
 	template <class OtherNumber>
 	void copyTo(OtherNumber* dest) {dest[0] = (OtherNumber)x; dest[1] = (OtherNumber)y; dest[2] = (OtherNumber)z;}
 	void normalize() 
@@ -2232,21 +2242,33 @@ public:
 	int splinePointIndex;
 	static const int arrowNrVerts = 8;
 	
-	NetNodeEdge* getEdgePartner();
-	NetworkNode* getNetNodePartner();
-	TreeNode* getSplineHead() {return first(isSplineOwner ? spline : getEdgePartner()->spline);}
-	TreeNode* getNearSplinePoint() {return isSplineOwner ? first(spline) : last(getEdgePartner()->spline);}
-	TreeNode* getFarSplinePoint() {return isSplineOwner ? last(spline) : first(getEdgePartner()->spline);}
-	virtual const char* getClassFactory() {return "NetNodeEdge";}
-	virtual void bind();
-	void init(char connectionType, bool isSplineOwner);
-	void reset(treenode returnTravelersTo);
+	FS_CONTENT_DLL_FUNC NetNodeEdge* getEdgePartner();
+	FS_CONTENT_DLL_FUNC NetworkNode* getNetNodePartner();
+	FS_CONTENT_DLL_FUNC TreeNode* getSplineHead() {return first(isSplineOwner ? spline : getEdgePartner()->spline);}
+	FS_CONTENT_DLL_FUNC TreeNode* getNearSplinePoint() {return isSplineOwner ? first(spline) : last(getEdgePartner()->spline);}
+	FS_CONTENT_DLL_FUNC TreeNode* getFarSplinePoint() {return isSplineOwner ? last(spline) : first(getEdgePartner()->spline);}
+	FS_CONTENT_DLL_FUNC virtual const char* getClassFactory() {return "NetNodeEdge";}
+	FS_CONTENT_DLL_FUNC virtual void bind();
+	FS_CONTENT_DLL_FUNC void init(char connectionType, bool isSplineOwner);
+	FS_CONTENT_DLL_FUNC virtual void reset(treenode returnTravelersTo);
 	// buildMesh: adds the edge's vertices to the mesh. Here I pass a void* instead of a vector<Vec3f> because I don't want allobjects.h to 
 	// include <vector> (modules must include allobjects.h, so I don't want to force <vector> upon them)
-	void buildMeshEdges(void* verts, void* colors, bool includeSplineLines);
-	void buildMeshPoints(void* verts, void* colors);
-	void buildMeshQuads(void* verts, void* colors);
+	FS_CONTENT_DLL_FUNC void buildMeshEdges(void* verts, void* colors, bool includeSplineLines);
+	FS_CONTENT_DLL_FUNC void buildMeshPoints(void* verts, void* colors);
+	FS_CONTENT_DLL_FUNC void buildMeshQuads(void* verts, void* colors);
 };
+
+class NetworkTravelMember : public CouplingDataType
+{
+	public:
+	FS_CONTENT_DLL_FUNC virtual const char* getClassFactory() {return "NetworkTravelMember";}
+	FS_CONTENT_DLL_FUNC void bind();
+	ObjRef<NetworkNode> resetNode;
+	treenode currentNodeRefNode;
+	NodeRef currentNodeRef;
+	NodeRef reqNode;
+	int blockingState;
+}
 
 ;
 
@@ -2994,6 +3016,10 @@ FS_CONTENT_DLL_FUNC static float saveTravelRequestState(treenode reqnode);
 
 FS_CONTENT_DLL_FUNC static float loadTravelRequestState(treenode reqnode);
 
+FS_CONTENT_DLL_FUNC virtual treenode addMember(TaskExecuter* te);
+
+FS_CONTENT_DLL_FUNC virtual treenode addCopiedMember(TaskExecuter* te, TaskExecuter* original);
+
 
 // System
 
@@ -3118,6 +3144,14 @@ TreeNode * node_v_repeattime;
 #define v_repeattime node_v_repeattime->safedatafloat()[0]
 TreeNode * node_v_rows;
 #define v_rows node_v_rows->safedatafloat()[0]
+TreeNode * node_v_modelstarttime;
+#define v_modelstarttime node_v_modelstarttime->safedatafloat()[0]
+TreeNode * node_v_defaultstartday;
+#define v_defaultstartday node_v_defaultstartday->safedatafloat()[0]
+TreeNode * node_v_defaultstarthour;
+#define v_defaultstarthour node_v_defaultstarthour->safedatafloat()[0]
+TreeNode * node_v_defaultstartampm;
+#define v_defaultstartampm node_v_defaultstartampm->safedatafloat()[0]
 TreeNode * node_v_downtrigger;
 TreeNode * node_v_uptrigger;
 TreeNode * node_v_downfunction;
@@ -3181,9 +3215,15 @@ FS_CONTENT_DLL_FUNC double resetVariables();
 
 FS_CONTENT_DLL_FUNC double generateDistanceTable();
 
-FS_CONTENT_DLL_FUNC double addMember(TaskExecuter* taskexecuter, NetworkNode* networknode);
+FS_CONTENT_DLL_FUNC virtual treenode addMember(TaskExecuter* te);
+
+FS_CONTENT_DLL_FUNC virtual NetworkTravelMember* addMember(TaskExecuter* taskexecuter, NetworkNode* networknode);
+
+FS_CONTENT_DLL_FUNC virtual treenode addCopiedMember(TaskExecuter* te, TaskExecuter* original);
 
 FS_CONTENT_DLL_FUNC int getNextOutPort(NetworkRequest* netreq);
+
+FS_CONTENT_DLL_FUNC int getNextOutPort(NetworkNode* from, NetworkNode* to);
 
 FS_CONTENT_DLL_FUNC double getDistRemaining(NetworkNode * netnode, int destcol);
 
@@ -3198,6 +3238,8 @@ FS_CONTENT_DLL_FUNC double reassignNetNode(treenode membernode, NetworkNode* ton
 FS_CONTENT_DLL_FUNC double queryDistance(TaskExecuter* te, FlexsimObject* destobj);
 
 FS_CONTENT_DLL_FUNC double queryDistanceEx(TaskExecuter* te, FlexsimObject* destobj, NetworkNode* originnetnode, NetworkNode** bestorigin DEFAULTNULL, NetworkNode** bestdestnode DEFAULTNULL, int * bestoriginrow DEFAULTNULL, int * bestdestcol DEFAULTNULL, double* bestdist DEFAULTNULL);
+
+FS_CONTENT_DLL_FUNC double queryDistance(NetworkNode* from, NetworkNode* to);
 
 FS_CONTENT_DLL_FUNC double getTravelerInfo(TaskExecuter* te, FlexsimObject * destobj, int info);
 
@@ -3927,6 +3969,10 @@ FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDat
 
 FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
 
+FS_CONTENT_DLL_FUNC virtual treenode addCopiedMember(treenode newObj, treenode original, treenode memberCoupling);
+
+FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+
 
 // System
 
@@ -4047,6 +4093,12 @@ FS_CONTENT_DLL_FUNC treenode refreshUtilizedStates();
 FS_CONTENT_DLL_FUNC treenode onChangeObjectSet();
 
 FS_CONTENT_DLL_FUNC int countNrInGroup(treenode objnode);
+
+FS_CONTENT_DLL_FUNC treenode getMember(int nr);
+
+FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
+
+FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
 
 
 // System
@@ -4177,6 +4229,12 @@ FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
 FS_CONTENT_DLL_FUNC treenode onChangeObjectSet();
 
 FS_CONTENT_DLL_FUNC int countNrInGroup(treenode objnode);
+
+FS_CONTENT_DLL_FUNC treenode getMember(int nr);
+
+FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
+
+FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
 
 
 // System
@@ -5455,7 +5513,7 @@ FS_CONTENT_DLL_FUNC double cleanupAbortedTS(treenode ts);
 
 FS_CONTENT_DLL_FUNC virtual double beginTask(treenode task);
 
-FS_CONTENT_DLL_FUNC double beginLoadUnloadTask(treenode task, int isLoad, int eventCode, char* eventName, int logId);
+FS_CONTENT_DLL_FUNC virtual double beginLoadUnloadTask(treenode task, int isLoad, int eventCode, char* eventName, int logId);
 
 FS_CONTENT_DLL_FUNC virtual double finishTask(treenode task);
 
@@ -5489,7 +5547,7 @@ FS_CONTENT_DLL_FUNC virtual double updateLocations();
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC double reassignNetNode(NetworkNode* netnode);
+FS_CONTENT_DLL_FUNC virtual double reassignNetNode(NetworkNode* netnode);
 
 FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
 
@@ -5529,6 +5587,8 @@ FS_CONTENT_DLL_FUNC virtual double onResourceAvailable(int port);
 double offsetloc[3] ;
 
 treenode activetask;
+
+IndexedMesh spheresMesh;
 
 
 // System
@@ -6018,6 +6078,8 @@ FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toObj, char character
 
 FS_CONTENT_DLL_FUNC virtual NetNodeEdge* addEdge(NetworkNode* otherNode, int toType, int backType, bool curved);
 
+FS_CONTENT_DLL_FUNC virtual NetNodeEdge* createNewEdge();
+
 FS_CONTENT_DLL_FUNC double resetVariables();
 
 FS_CONTENT_DLL_FUNC double toggleShowMode(int newmode);
@@ -6031,6 +6093,8 @@ FS_CONTENT_DLL_FUNC virtual double updateLocations();
 FS_CONTENT_DLL_FUNC double invalidateSpline(int port);
 
 FS_CONTENT_DLL_FUNC NetworkNavigator* checkNetwork(int changename DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC virtual char* getNavigatorName();
 
 FS_CONTENT_DLL_FUNC unsigned int getClassType();
 
@@ -6827,6 +6891,8 @@ FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char charac
 FS_CONTENT_DLL_FUNC double copyProductId(treenode upstreamobj,double amount);
 
 FS_CONTENT_DLL_FUNC double connectToTicker();
+
+FS_CONTENT_DLL_FUNC double connectToTicker(treenode ticker);
 
 FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
 
