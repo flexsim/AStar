@@ -8,9 +8,8 @@
 #define allobjects_h
 
 
-#include "all.h"
-
 #ifdef COMPILING_FLEXSIM_CONTENT
+#include "all.h"
 #define FS_CONTENT_DLL_FUNC __declspec(dllexport)
 #else
 #define FS_CONTENT_DLL_FUNC __declspec(dllimport)
