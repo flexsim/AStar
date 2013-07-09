@@ -1170,6 +1170,11 @@ THE SOFTWARE.
 		typedef void (*_indexedmesh_draw)(IndexedMesh* m, int drawMode, int count, int start);
 		typedef void (*_indexedmesh_cleanupindexbuffer)(IndexedMesh* m, bool isDestructor);
 		
+		typedef void (*_sql_buildquery)(TreeNode* queryNode, char* query, int (*colNrCallback)(char* name));
+		typedef void (*_sql_doquery)(TreeNode* queryNode, int nrRows, double (*evalCallBack)(int rowNr, int colNr, int* retType));
+		typedef unsigned int (*_sql_getmatchcount)();
+		typedef unsigned int (*_sql_getmatch)(int index);
+		
 	#else
 		typedef double (*_transportincompletealias)(treenode object, treenode item, int portnumber, treenode transporter);
 		typedef double (*_transportoutcompletealias)(treenode object, treenode item, int portnumber, treenode transporter);
@@ -2101,6 +2106,10 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_addindex)
 	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_draw)
 	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_cleanupindexbuffer)
+	DECLARE_FLEXSIM_FUNCTION_1(sql_buildquery)
+	DECLARE_FLEXSIM_FUNCTION_1(sql_doquery)
+	DECLARE_FLEXSIM_FUNCTION_1(sql_getmatchcount)
+	DECLARE_FLEXSIM_FUNCTION_1(sql_getmatch)
 	
 /*** FUNCTIONS ONLY REQUIRED FOR DLL PROJECT***/
 #else
