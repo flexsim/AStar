@@ -136,7 +136,6 @@ DECLARE_ATTRIBUTE(1,OnActivateNotify,"Node function executed on changing the act
 DECLARE_ATTRIBUTE(1,OnFocus,"Node function executed on focus lost")
 DECLARE_ATTRIBUTE(1,OnKillFocus,"Node function executed on focus lost")
 DECLARE_ATTRIBUTE(1,OnSize,"Node function executed on window size")
-DECLARE_ATTRIBUTE(0,OnUndo,"Attribute fired on content-defined undo action")
 DECLARE_ATTRIBUTE(0,OnMenuPopup,"Attribute fired on menu popup")
 
 

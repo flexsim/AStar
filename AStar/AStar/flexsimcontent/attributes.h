@@ -53,6 +53,7 @@ DECLARE_ATTRIBUTE(0,OnListen,"Function node executed on any event happening: aft
 DECLARE_ATTRIBUTE(0,OnPreListen,"Function node executed on any event happening: before dispatch, when event is still in list")
 DECLARE_ATTRIBUTE(0,OnStateChange,"Function node executed when object state changes")
 DECLARE_ATTRIBUTE(1,OnDrag,"Node function executed on object drag out from an icongrid, or when moving/resizing")
+DECLARE_ATTRIBUTE(0,OnUndo,"Attribute fired on content-defined undo action")
 
 // object stats
 DECLARE_ATTRIBUTE(0,state_current,"Current state index")

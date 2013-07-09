@@ -148,8 +148,9 @@ for(treenode a = NULL, nextforobjectselectionset(&a, node); objectexists(a); nex
 
 #define SM_STATECHANGE 24
 #define SM_DRAG 25
+#define SM_UNDO 26
 
-#define SM_MAX_MESSAGES 26// If you add more messages, make sure you change this to the max message plus 1
+#define SM_MAX_MESSAGES 27 // If you add more messages, make sure you change this to the max message plus 1
 
 #define DATA_FLOAT 1
 #define DATA_BYTEBLOCK 2
