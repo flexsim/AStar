@@ -956,6 +956,7 @@ THE SOFTWARE.
 	typedef int          (*_setstatealias1)(treenode , int);
 	typedef int          (*_setstatealias2)(treenode , int, int);
 	typedef int          (*_setstatealias3)(treenode , int, const char*);
+	typedef int          (*_setstatealias4)(treenode , int, treenode);
 	typedef double       (*_settable)(treenode node, unsigned int xsize, unsigned int ysize, double datatype, double overwrite);
 	typedef double       (*_settablenumalias)(char * table, int row, int col, double value);
 	typedef double       (*_settablesizealias)(char* globaltablename,int nrows,int ncols, int type, int overwrite);
@@ -1846,6 +1847,7 @@ DECLARE_FLEXSIM_FUNCTION_1(setstate_s)
 DECLARE_FLEXSIM_FUNCTION_2(setstatealias1, "setstate")
 DECLARE_FLEXSIM_FUNCTION_3(setstatealias2, "?setstate@@YAHPAVTreeNode@@HH@Z","?setstate@@YAHPEAVTreeNode@@H0@Z")
 DECLARE_FLEXSIM_FUNCTION_3(setstatealias3, "?setstate@@YAHPAVTreeNode@@HPBD@Z","?setstate@@YAHPEAVTreeNode@@HPEBD@Z")
+DECLARE_FLEXSIM_FUNCTION_3(setstatealias4, "?setstate@@YAHPAVTreeNode@@H0@Z","?setstate@@YAHPEAVTreeNode@@H0@Z")
 DECLARE_FLEXSIM_FUNCTION_2(settablenumalias, "settablenum");
 DECLARE_FLEXSIM_FUNCTION_2(settablesizealias, "settablesize");
 DECLARE_FLEXSIM_FUNCTION_1(setticker)

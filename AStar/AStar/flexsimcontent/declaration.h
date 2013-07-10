@@ -615,6 +615,7 @@ inline int isclasstype(treenode obj, char* classtype){return isclasstypealias2(o
 inline int setstate(treenode obj, int statenr){return setstatealias1(obj, statenr);}
 inline int setstate(treenode obj, int statenr, int profilenr){return setstatealias2(obj, statenr, profilenr);}
 inline int setstate(treenode obj, int statenr, const char* profilename){return setstatealias3(obj, statenr, profilename);}
+inline int setstate(treenode obj, int statenr, treenode profile){return setstatealias4(obj, statenr, profile);}
 
 inline int clearbundle(treenode x, int resetflags = 0){return clearbundlealias(x, resetflags);}
 inline int addbundlefield(treenode x, char* fieldname, int type, int maxstrsize = 0){return addbundlefieldalias(x, fieldname, type, maxstrsize);}

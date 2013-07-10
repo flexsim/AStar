@@ -106,6 +106,8 @@
 #define b_OnStateChange Nb_OnStateChange->safedatafloat()[0]
 #define node_b_OnDrag Nb_OnDrag
 #define b_OnDrag Nb_OnDrag->safedatafloat()[0]
+#define node_b_OnUndo Nb_OnUndo
+#define b_OnUndo Nb_OnUndo->safedatafloat()[0]
 #define node_b_state_current Nb_state_current
 #define b_state_current Nb_state_current->safedatafloat()[0]
 #define node_b_state_since Nb_state_since

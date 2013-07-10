@@ -56,8 +56,13 @@ int bindflexsimfunctions()
 			versionerror = 1;
 		if (odtgetallocsize() != sizeof(ObjectDataType)) 
 			versionerror = 1;
-		if (versionerror)
-			MessageBox(NULL, "Flexsim's content dll was built against the wrong version of the Flexsim engine.\r\nThe dll was loaded unsuccessfully.", "Versioning Error", MB_OK|MB_TOPMOST);
+		#if defined COMPILING_FLEXSIM_CONTENT
+			if (versionerror)
+				MessageBox(NULL, "Flexsim's content dll was built against the wrong version of the Flexsim engine.\r\nThe dll was loaded unsuccessfully.", "Versioning Error", MB_OK|MB_TOPMOST);
+		#else
+			if (versionerror)
+				MessageBox(NULL, "A module dll was built against the wrong version of the Flexsim content.\r\nThe dll was loaded unsuccessfully.", "Versioning Error", MB_OK|MB_TOPMOST);
+		#endif
 
 		return nrUnboundFunctions == 0 && !versionerror;
 	#else
