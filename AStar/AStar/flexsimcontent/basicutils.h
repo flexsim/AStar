@@ -417,6 +417,7 @@ public:
 	}
 	void clear(){clearcontents(parent);}
 	void swap(int index1, int index2){swapnoderanks(parent, index2 + 1, index1 + 1);}
+	void setRank(int fromIndex, int toIndex){setrank(rank(parent, fromIndex + 1), toIndex + 1);}
 	int find(T* x)
 	{
 		int tmpSize = size();
