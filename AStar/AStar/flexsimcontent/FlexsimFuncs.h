@@ -1172,7 +1172,7 @@ THE SOFTWARE.
 		typedef void (*_indexedmesh_cleanupindexbuffer)(IndexedMesh* m, bool isDestructor);
 		
 		typedef void (*_sql_buildquery)(TreeNode* queryNode, char* query, int (*colNrCallback)(char* name));
-		typedef void (*_sql_doquery)(TreeNode* queryNode, int nrRows, double (*evalCallBack)(int rowNr, int colNr, int* retType));
+		typedef int (*_sql_doquery)(TreeNode* queryNode, int nrRows, double (*evalCallBack)(int rowNr, int colNr, int* retType));
 		typedef unsigned int (*_sql_getmatchcount)();
 		typedef unsigned int (*_sql_getmatch)(int index);
 		
