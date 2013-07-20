@@ -655,6 +655,8 @@ inline int aggregateundorecords(TreeNode* view, char* description, int id1, int 
 inline int bindtexture(int textureid) {return bindtexture_alias1(textureid);}
 inline int bindtexture(int textureid, int texunit) {return bindtexture_alias2(textureid, texunit);}
 
+inline double texshadow(int cmd, float FACEa, float FACEb, float FACEc, float FACEd, float FACEe, float FACEf, int copytex)
+{return texshadowalias(cmd, FACEa, FACEb, FACEc, FACEd, FACEe, FACEf, copytex);}
 
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 	inline treenode createevent(FlexSimEvent* e){return createeventalias2(e);}

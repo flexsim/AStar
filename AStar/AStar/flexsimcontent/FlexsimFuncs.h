@@ -364,6 +364,8 @@ THE SOFTWARE.
 	typedef double       (*_endwaittask)(treenode dispatcher);
 	typedef double       (*_eq)(double n1, double n2);
 	typedef double       (*_erlangalias)( double locate, double scale, double shape, int stream); // same as gamma
+		typedef double       (*_texshadowalias)( int cmd, float FACEa, float FACEb, float FACEc, float FACEd, float FACEe, float FACEf, int copytex); 
+
 	typedef double       (*_eventget)(int index, int thing);
 	typedef double       (*_eventmovedown)(int index);
 	typedef double       (*_eventmoveup)(int index);
@@ -1409,6 +1411,9 @@ DECLARE_FLEXSIM_FUNCTION_1(endignoreundo)
 DECLARE_FLEXSIM_FUNCTION_1(endoffile)
 DECLARE_FLEXSIM_FUNCTION_1(endreplication)
 DECLARE_FLEXSIM_FUNCTION_2(erlangalias, "erlang")
+
+	DECLARE_FLEXSIM_FUNCTION_2(texshadowalias, "texshadow") 
+
 DECLARE_FLEXSIM_FUNCTION_1(eventget)
 DECLARE_FLEXSIM_FUNCTION_1(eventmovedown)
 DECLARE_FLEXSIM_FUNCTION_1(eventmoveup)
