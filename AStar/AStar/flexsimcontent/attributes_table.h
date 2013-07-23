@@ -193,6 +193,15 @@ DECLARE_ATTRIBUTE(1,treeiconsilentobject,"")
 
 DECLARE_ATTRIBUTE(1,viewfont,"Specify view's font")
 
+DECLARE_ATTRIBUTE(0,treeicontitle,"displayed name in tree, no editing")
+DECLARE_ATTRIBUTE(0,treeiconindex,"displayed icon in tree, index based")
+DECLARE_ATTRIBUTE(0,treeiconhide,"hide icon in tree")
+
+DECLARE_ATTRIBUTE(0,description,"Full description")
+DECLARE_ATTRIBUTE(0,picture,"Iconic bitmap")
+DECLARE_ATTRIBUTE(0,title,"Descriptive title")
+
+DECLARE_ATTRIBUTE(0,packedmedia,"contains used media files")
 
 // COPYRIGHT © 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
 

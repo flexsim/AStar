@@ -36,18 +36,12 @@
 #define b_connectionsout Nb_connectionsout->safedatafloat()[0]
 #define node_b_connectionscenter Nb_connectionscenter
 #define b_connectionscenter Nb_connectionscenter->safedatafloat()[0]
-#define node_b_events Nb_events
-#define b_events Nb_events->safedatafloat()[0]
-#define node_b_instances Nb_instances
-#define b_instances Nb_instances->safedatafloat()[0]
 #define node_b_itemtype Nb_itemtype
 #define b_itemtype Nb_itemtype->safedatafloat()[0]
 #define node_b_labels Nb_labels
 #define b_labels Nb_labels->safedatafloat()[0]
 #define node_b_variables Nb_variables
 #define b_variables Nb_variables->safedatafloat()[0]
-#define node_b_tables Nb_tables
-#define b_tables Nb_tables->safedatafloat()[0]
 #define node_b_listeners Nb_listeners
 #define b_listeners Nb_listeners->safedatafloat()[0]
 #define node_b_OnReset Nb_OnReset
@@ -84,8 +78,6 @@
 #define b_OnDestroy Nb_OnDestroy->safedatafloat()[0]
 #define node_b_OnLoad Nb_OnLoad
 #define b_OnLoad Nb_OnLoad->safedatafloat()[0]
-#define node_b_OnCollision Nb_OnCollision
-#define b_OnCollision Nb_OnCollision->safedatafloat()[0]
 #define node_b_OnClick Nb_OnClick
 #define b_OnClick Nb_OnClick->safedatafloat()[0]
 #define node_b_OnRunStart Nb_OnRunStart
@@ -94,10 +86,6 @@
 #define b_OnRunWarm Nb_OnRunWarm->safedatafloat()[0]
 #define node_b_OnRunEnd Nb_OnRunEnd
 #define b_OnRunEnd Nb_OnRunEnd->safedatafloat()[0]
-#define node_b_OnInterrupted Nb_OnInterrupted
-#define b_OnInterrupted Nb_OnInterrupted->safedatafloat()[0]
-#define node_b_OnCaptured Nb_OnCaptured
-#define b_OnCaptured Nb_OnCaptured->safedatafloat()[0]
 #define node_b_OnListen Nb_OnListen
 #define b_OnListen Nb_OnListen->safedatafloat()[0]
 #define node_b_OnPreListen Nb_OnPreListen
@@ -116,12 +104,6 @@
 #define b_state_profile Nb_state_profile->safedatafloat()[0]
 #define node_b_state_profiles Nb_state_profiles
 #define b_state_profiles Nb_state_profiles->safedatafloat()[0]
-#define node_b_state_percent Nb_state_percent
-#define b_state_percent Nb_state_percent->safedatafloat()[0]
-#define node_b_state_graph Nb_state_graph
-#define b_state_graph Nb_state_graph->safedatafloat()[0]
-#define node_b_state_histo Nb_state_histo
-#define b_state_histo Nb_state_histo->safedatafloat()[0]
 #define node_b_stats_content Nb_stats_content
 #define b_stats_content Nb_stats_content->safedatafloat()[0]
 #define node_b_stats_staytime Nb_stats_staytime
@@ -140,8 +122,6 @@
 #define b_stats_contentgraph Nb_stats_contentgraph->safedatafloat()[0]
 #define node_b_stats_contentgraphmaxpoints Nb_stats_contentgraphmaxpoints
 #define b_stats_contentgraphmaxpoints Nb_stats_contentgraphmaxpoints->safedatafloat()[0]
-#define node_b_stats_contenthisto Nb_stats_contenthisto
-#define b_stats_contenthisto Nb_stats_contenthisto->safedatafloat()[0]
 #define node_b_stats_staytimemin Nb_stats_staytimemin
 #define b_stats_staytimemin Nb_stats_staytimemin->safedatafloat()[0]
 #define node_b_stats_staytimemax Nb_stats_staytimemax
@@ -160,14 +140,6 @@
 #define b_stats_staytimehisto Nb_stats_staytimehisto->safedatafloat()[0]
 #define node_b_stats_throughput Nb_stats_throughput
 #define b_stats_throughput Nb_stats_throughput->safedatafloat()[0]
-#define node_b_stats_throughputgraph Nb_stats_throughputgraph
-#define b_stats_throughputgraph Nb_stats_throughputgraph->safedatafloat()[0]
-#define node_b_stats_throughputgraphmaxpoints Nb_stats_throughputgraphmaxpoints
-#define b_stats_throughputgraphmaxpoints Nb_stats_throughputgraphmaxpoints->safedatafloat()[0]
-#define node_b_stats_throughputhisto Nb_stats_throughputhisto
-#define b_stats_throughputhisto Nb_stats_throughputhisto->safedatafloat()[0]
-#define node_b_stats_customgraphs Nb_stats_customgraphs
-#define b_stats_customgraphs Nb_stats_customgraphs->safedatafloat()[0]
 #define node_b_stats_lastmovetime Nb_stats_lastmovetime
 #define b_stats_lastmovetime Nb_stats_lastmovetime->safedatafloat()[0]
 #define node_b_stats_creationtime Nb_stats_creationtime
@@ -212,42 +184,12 @@
 #define b_offsetsy Nb_offsetsy->safedatafloat()[0]
 #define node_b_offsetsz Nb_offsetsz
 #define b_offsetsz Nb_offsetsz->safedatafloat()[0]
-#define node_b_nochildscale Nb_nochildscale
-#define b_nochildscale Nb_nochildscale->safedatafloat()[0]
-#define node_b_nochildrotate Nb_nochildrotate
-#define b_nochildrotate Nb_nochildrotate->safedatafloat()[0]
 #define node_b_color Nb_color
 #define b_color Nb_color->safedatafloat()[0]
-#define node_b_description Nb_description
-#define b_description Nb_description->safedatafloat()[0]
-#define node_b_picture Nb_picture
-#define b_picture Nb_picture->safedatafloat()[0]
-#define node_b_title Nb_title
-#define b_title Nb_title->safedatafloat()[0]
 #define node_b_centroid Nb_centroid
 #define b_centroid Nb_centroid->safedatafloat()[0]
-#define node_b_ignoredraw Nb_ignoredraw
-#define b_ignoredraw Nb_ignoredraw->safedatafloat()[0]
-#define node_b_ignorezbuffer Nb_ignorezbuffer
-#define b_ignorezbuffer Nb_ignorezbuffer->safedatafloat()[0]
-#define node_b_luminous Nb_luminous
-#define b_luminous Nb_luminous->safedatafloat()[0]
-#define node_b_reflective Nb_reflective
-#define b_reflective Nb_reflective->safedatafloat()[0]
-#define node_b_billboard Nb_billboard
-#define b_billboard Nb_billboard->safedatafloat()[0]
-#define node_b_noondraw Nb_noondraw
-#define b_noondraw Nb_noondraw->safedatafloat()[0]
-#define node_b_nopredraw Nb_nopredraw
-#define b_nopredraw Nb_nopredraw->safedatafloat()[0]
-#define node_b_shapetype Nb_shapetype
-#define b_shapetype Nb_shapetype->safedatafloat()[0]
-#define node_b_distcutoff Nb_distcutoff
-#define b_distcutoff Nb_distcutoff->safedatafloat()[0]
-#define node_b_assertshape Nb_assertshape
-#define b_assertshape Nb_assertshape->safedatafloat()[0]
-#define node_b_asserttexture Nb_asserttexture
-#define b_asserttexture Nb_asserttexture->safedatafloat()[0]
+#define node_b_drawflags Nb_drawflags
+#define b_drawflags Nb_drawflags->safedatafloat()[0]
 #define node_b_imageobject Nb_imageobject
 #define b_imageobject Nb_imageobject->safedatafloat()[0]
 #define node_b_imageindexobject Nb_imageindexobject
@@ -266,60 +208,16 @@
 #define b_sound Nb_sound->safedatafloat()[0]
 #define node_b_soundindex Nb_soundindex
 #define b_soundindex Nb_soundindex->safedatafloat()[0]
-#define node_b_textureaxis_s Nb_textureaxis_s
-#define b_textureaxis_s Nb_textureaxis_s->safedatafloat()[0]
-#define node_b_textureaxis_t Nb_textureaxis_t
-#define b_textureaxis_t Nb_textureaxis_t->safedatafloat()[0]
-#define node_b_packedmedia Nb_packedmedia
-#define b_packedmedia Nb_packedmedia->safedatafloat()[0]
 #define node_b_guifocus Nb_guifocus
 #define b_guifocus Nb_guifocus->safedatafloat()[0]
 #define node_b_guifocusclass Nb_guifocusclass
 #define b_guifocusclass Nb_guifocusclass->safedatafloat()[0]
-#define node_b_travelstarttime Nb_travelstarttime
-#define b_travelstarttime Nb_travelstarttime->safedatafloat()[0]
-#define node_b_traveldirection Nb_traveldirection
-#define b_traveldirection Nb_traveldirection->safedatafloat()[0]
-#define node_b_travelendtime Nb_travelendtime
-#define b_travelendtime Nb_travelendtime->safedatafloat()[0]
-#define node_b_traveltimealpha Nb_traveltimealpha
-#define b_traveltimealpha Nb_traveltimealpha->safedatafloat()[0]
-#define node_b_traveltimebeta Nb_traveltimebeta
-#define b_traveltimebeta Nb_traveltimebeta->safedatafloat()[0]
-#define node_b_travelvpeak Nb_travelvpeak
-#define b_travelvpeak Nb_travelvpeak->safedatafloat()[0]
-#define node_b_traveldistance Nb_traveldistance
-#define b_traveldistance Nb_traveldistance->safedatafloat()[0]
-#define node_b_travelstartx Nb_travelstartx
-#define b_travelstartx Nb_travelstartx->safedatafloat()[0]
-#define node_b_travelstarty Nb_travelstarty
-#define b_travelstarty Nb_travelstarty->safedatafloat()[0]
-#define node_b_travelstartz Nb_travelstartz
-#define b_travelstartz Nb_travelstartz->safedatafloat()[0]
-#define node_b_travelendx Nb_travelendx
-#define b_travelendx Nb_travelendx->safedatafloat()[0]
-#define node_b_travelendy Nb_travelendy
-#define b_travelendy Nb_travelendy->safedatafloat()[0]
-#define node_b_travelendz Nb_travelendz
-#define b_travelendz Nb_travelendz->safedatafloat()[0]
-#define node_b_travelvmax Nb_travelvmax
-#define b_travelvmax Nb_travelvmax->safedatafloat()[0]
-#define node_b_travelacc Nb_travelacc
-#define b_travelacc Nb_travelacc->safedatafloat()[0]
-#define node_b_traveldec Nb_traveldec
-#define b_traveldec Nb_traveldec->safedatafloat()[0]
 #define node_b_stored Nb_stored
 #define b_stored Nb_stored->safedatafloat()[0]
 #define node_b_objectinfo Nb_objectinfo
 #define b_objectinfo Nb_objectinfo->safedatafloat()[0]
 #define node_b_frame Nb_frame
 #define b_frame Nb_frame->safedatafloat()[0]
-#define node_b_treeicontitle Nb_treeicontitle
-#define b_treeicontitle Nb_treeicontitle->safedatafloat()[0]
-#define node_b_treeiconindex Nb_treeiconindex
-#define b_treeiconindex Nb_treeiconindex->safedatafloat()[0]
-#define node_b_treeiconhide Nb_treeiconhide
-#define b_treeiconhide Nb_treeiconhide->safedatafloat()[0]
 #define node_b_uniqueid Nb_uniqueid
 #define b_uniqueid Nb_uniqueid->safedatafloat()[0]
 #define node_b_animationinfo Nb_animationinfo
@@ -1740,6 +1638,16 @@
 #define STAT_STD_DEV 6
 #define STAT_SUM 7
 
+#define DRAW_FLAG_BILLBOARD_MASK 0x3
+#define DRAW_FLAG_ONE_SIDED 0x4
+#define DRAW_FLAG_TWO_SIDED 0x8
+#define DRAW_FLAG_NO_DEPTH_TEST 0x10
+#define DRAW_FLAG_REFLECTIVE 0x20
+#define DRAW_FLAG_LUMINOUS 0x40
+#define DRAW_FLAG_SCALE_CHILDREN 0x80
+#define DRAW_FLAG_IGNORE_PICKING 0x100
+#define DRAW_FLAG_NO_ON_DRAW 0x200
+#define DRAW_FLAG_NO_ON_PRE_DRAW 0x400
 
 
 
@@ -2524,10 +2432,6 @@ visible treenode nndisttable();
 visible treenode nnmembers();
 
 visible treenode nnnextnodetable();
-
-visible double ntravelto(treenode travelernode, treenode spline,double destxloc,double destyloc,double destzloc,double vmax,double acc,double dec, double vstart DEFAULTZERO, double vend DEFAULTZERO);
-
-visible double ntraveltoupdate(treenode travelernode, treenode spline DEFAULTNULL);
 
 double opennodeedge(treenode curnode, char* edgename);
 
