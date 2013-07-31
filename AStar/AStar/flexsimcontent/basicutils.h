@@ -35,6 +35,8 @@ public:
 	inline FlexSimValue(const char* x) : asDouble((double)ptrtodouble((char*)x)) {}
 };
 
+
+
 template<class RefType>
 class SafeRef {
 protected:
@@ -60,9 +62,11 @@ public:
 		init(x);
 		return *this;
 	}
-	bool operator !(){return get() == 0;}
-	bool operator ==(RefType* other){return get() == other;}
-	bool operator !=(RefType* other){return get() != other;}
+	// when VS supports it, this should be explicit operator bool() {} (it's a C++0x standard but not supported as of VS2012)
+	operator bool() {return get() != 0;}
+	bool operator !() {return get() == 0;}
+	bool operator ==(RefType* other) {return get() == other;}
+	bool operator !=(RefType* other) {return get() != other;}
 	inline operator RefType*()
 	{
 		try {
@@ -94,12 +98,14 @@ public:
 		init(x);
 		return *this;
 	}
+	// when VS supports it, this should be explicit operator bool() {} (it's a C++0x standard but not supported as of VS2012)
+	operator bool() {return get() != 0;}
 	const bool operator !() const {return get() == 0;}
-	bool operator !(){return get() == 0;}
+	bool operator !() {return get() == 0;}
 	const bool operator ==(ObjType* other) const {return get() == other;}
-	bool operator ==(ObjType* other){return get() == other;}
+	bool operator ==(ObjType* other) {return get() == other;}
 	const bool operator !=(ObjType* other) const {return get() != other;}
-	bool operator !=(ObjType* other){return get() != other;}
+	bool operator !=(ObjType* other) {return get() != other;}
 	const ObjType* operator->() const {return get();};
 	ObjType* operator->() {return get();};
 	inline operator ObjType*()

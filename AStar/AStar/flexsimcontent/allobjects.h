@@ -76,8 +76,8 @@
 #define b_OnCreate Nb_OnCreate->safedatafloat()[0]
 #define node_b_OnDestroy Nb_OnDestroy
 #define b_OnDestroy Nb_OnDestroy->safedatafloat()[0]
-#define node_b_OnLoad Nb_OnLoad
-#define b_OnLoad Nb_OnLoad->safedatafloat()[0]
+#define node_b_OnUndo Nb_OnUndo
+#define b_OnUndo Nb_OnUndo->safedatafloat()[0]
 #define node_b_OnClick Nb_OnClick
 #define b_OnClick Nb_OnClick->safedatafloat()[0]
 #define node_b_OnRunStart Nb_OnRunStart
@@ -94,8 +94,6 @@
 #define b_OnStateChange Nb_OnStateChange->safedatafloat()[0]
 #define node_b_OnDrag Nb_OnDrag
 #define b_OnDrag Nb_OnDrag->safedatafloat()[0]
-#define node_b_OnUndo Nb_OnUndo
-#define b_OnUndo Nb_OnUndo->safedatafloat()[0]
 #define node_b_state_current Nb_state_current
 #define b_state_current Nb_state_current->safedatafloat()[0]
 #define node_b_state_since Nb_state_since
@@ -1674,7 +1672,7 @@ typedef treenode treenode;
 #define DEFAULTONE = 1
 #define DEFAULTPARAM(val) = val
 
-class FlexsimObject;
+class FlexSimObject;
 
 class Dispatcher;
 
@@ -2606,9 +2604,56 @@ __declspec(dllexport) double updatereport(treenode thereport);
 double updateconveyorsectioninfo(treenode conveyor);
 
 
-// FlexsimObject
+// FlexSimEventHandler
 
-class FlexsimObject  : public ObjectDataType 
+class FlexSimEventHandler  : public ObjectDataType 
+{
+public:
+
+
+// c++ member functions
+
+FS_CONTENT_DLL_FUNC virtual double onReceive(treenode item, int port);
+
+FS_CONTENT_DLL_FUNC virtual double onSend(treenode item, int port);
+
+FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+
+FS_CONTENT_DLL_FUNC virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC virtual double onDestroy(treenode view);
+
+FS_CONTENT_DLL_FUNC virtual double onDraw(treenode view);
+
+FS_CONTENT_DLL_FUNC virtual double onDrawPlanar(treenode view);
+
+FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
+
+FS_CONTENT_DLL_FUNC virtual double onOutOpen(int port);
+
+FS_CONTENT_DLL_FUNC virtual double onInOpen(int port);
+
+FS_CONTENT_DLL_FUNC virtual double onClick(treenode view, int code);
+
+FS_CONTENT_DLL_FUNC virtual double onMessage(treenode fromobject, double par1, double par2, double par3);
+
+FS_CONTENT_DLL_FUNC virtual double onReset();
+
+FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
+
+FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+
+
+// System
+
+FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// FlexSimObject
+
+class FlexSimObject : public FlexSimEventHandler 
 {
 public:
 
@@ -2638,29 +2683,13 @@ TreeNode * node_v_doanimations;
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC  FlexsimObject();
-
-FS_CONTENT_DLL_FUNC virtual double onReceive(treenode item, int port);
-
-FS_CONTENT_DLL_FUNC virtual double onSend(treenode item, int port);
-
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
-
-FS_CONTENT_DLL_FUNC virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+FS_CONTENT_DLL_FUNC  FlexSimObject();
 
 FS_CONTENT_DLL_FUNC virtual double onDestroy(treenode view);
 
 FS_CONTENT_DLL_FUNC virtual double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onDrawPlanar(treenode view);
-
 FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
-
-FS_CONTENT_DLL_FUNC virtual double onOutOpen(int port);
-
-FS_CONTENT_DLL_FUNC virtual double onInOpen(int port);
-
-FS_CONTENT_DLL_FUNC virtual double onClick(treenode view, int code);
 
 FS_CONTENT_DLL_FUNC virtual double onKeyedClick(treenode view, int code, char key);
 
@@ -2739,7 +2768,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 
 // FixedResource
 
-class FixedResource : public FlexsimObject 
+class FixedResource : public FlexSimObject 
 {
 public:
 
@@ -2883,7 +2912,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 
 // Navigator
 
-class Navigator : public FlexsimObject 
+class Navigator : public FlexSimObject 
 {
 public:
 
@@ -2906,7 +2935,7 @@ FS_CONTENT_DLL_FUNC virtual double navigateToLoc(treenode traveler, double* dest
 
 FS_CONTENT_DLL_FUNC double resetVariables();
 
-FS_CONTENT_DLL_FUNC treenode createTravelMemberNode(TaskExecuter* involvedtaskexecuter, FlexsimObject* destination, double totaldistance, double extravars);
+FS_CONTENT_DLL_FUNC treenode createTravelMemberNode(TaskExecuter* involvedtaskexecuter, FlexSimObject* destination, double totaldistance, double extravars);
 
 FS_CONTENT_DLL_FUNC virtual double abortTravel(treenode traveler, treenode newts);
 
@@ -2914,7 +2943,7 @@ FS_CONTENT_DLL_FUNC virtual double updateLocations();
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double queryDistance(TaskExecuter* taskexecuter, FlexsimObject* destination);
+FS_CONTENT_DLL_FUNC virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
 
 FS_CONTENT_DLL_FUNC double saveState();
 
@@ -3072,22 +3101,6 @@ FS_CONTENT_DLL_FUNC virtual void bindVariables();
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
-// Initialize
-
-class Initialize  : public ObjectDataType 
-{
-public:
-
-TreeNode * node_v_instanceload;
-TreeNode * node_v_instancereset;
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
 // NetworkNavigator
 
 class NetworkNavigator : public Navigator 
@@ -3143,13 +3156,13 @@ FS_CONTENT_DLL_FUNC virtual double updateLocations();
 
 FS_CONTENT_DLL_FUNC double reassignNetNode(treenode membernode, NetworkNode* tonetnode, int onreset DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double queryDistance(TaskExecuter* te, FlexsimObject* destobj);
+FS_CONTENT_DLL_FUNC double queryDistance(TaskExecuter* te, FlexSimObject* destobj);
 
-FS_CONTENT_DLL_FUNC double queryDistanceEx(TaskExecuter* te, FlexsimObject* destobj, NetworkNode* originnetnode, NetworkNode** bestorigin DEFAULTNULL, NetworkNode** bestdestnode DEFAULTNULL, int * bestoriginrow DEFAULTNULL, int * bestdestcol DEFAULTNULL, double* bestdist DEFAULTNULL);
+FS_CONTENT_DLL_FUNC double queryDistanceEx(TaskExecuter* te, FlexSimObject* destobj, NetworkNode* originnetnode, NetworkNode** bestorigin DEFAULTNULL, NetworkNode** bestdestnode DEFAULTNULL, int * bestoriginrow DEFAULTNULL, int * bestdestcol DEFAULTNULL, double* bestdist DEFAULTNULL);
 
 FS_CONTENT_DLL_FUNC double queryDistance(NetworkNode* from, NetworkNode* to);
 
-FS_CONTENT_DLL_FUNC double getTravelerInfo(TaskExecuter* te, FlexsimObject * destobj, int info);
+FS_CONTENT_DLL_FUNC double getTravelerInfo(TaskExecuter* te, FlexSimObject * destobj, int info);
 
 FS_CONTENT_DLL_FUNC virtual double updateVersion(char* newversion, char* oldversion);
 
@@ -3638,7 +3651,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 
 // Recorder
 
-class Recorder : public FlexsimObject 
+class Recorder : public FlexSimObject 
 {
 public:
 
@@ -3744,7 +3757,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 
 // VisualTool
 
-class VisualTool : public FlexsimObject 
+class VisualTool : public FlexSimObject 
 {
 public:
 
@@ -5246,7 +5259,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 
 // Dispatcher
 
-class Dispatcher : public FlexsimObject 
+class Dispatcher : public FlexSimObject 
 {
 public:
 
@@ -5465,7 +5478,7 @@ FS_CONTENT_DLL_FUNC double saveState();
 
 FS_CONTENT_DLL_FUNC double loadState();
 
-FS_CONTENT_DLL_FUNC double queryDistance(FlexsimObject* destination);
+FS_CONTENT_DLL_FUNC double queryDistance(FlexSimObject* destination);
 
 FS_CONTENT_DLL_FUNC double resumeLoad(treenode fromstation);
 
@@ -5883,7 +5896,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 
 // NetworkNode
 
-class NetworkNode : public FlexsimObject 
+class NetworkNode : public FlexSimObject 
 {
 public:
 
@@ -6069,7 +6082,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 
 // TrafficControl
 
-class TrafficControl : public FlexsimObject 
+class TrafficControl : public FlexSimObject 
 {
 public:
 
@@ -6158,7 +6171,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 
 // FluidTicker
 
-class FluidTicker : public FlexsimObject 
+class FluidTicker : public FlexSimObject 
 {
 public:
 
@@ -6213,7 +6226,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 
 // FluidObject
 
-class FluidObject : public FlexsimObject 
+class FluidObject : public FlexSimObject 
 {
 public:
 
@@ -7199,7 +7212,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 
 // ScoreCard
 
-class ScoreCard : public FlexsimObject 
+class ScoreCard : public FlexSimObject 
 {
 public:
 

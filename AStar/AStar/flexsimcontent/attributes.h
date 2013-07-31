@@ -36,7 +36,7 @@ DECLARE_ATTRIBUTE(0,OnExiting,"Function node executed on leaving an object")
 DECLARE_ATTRIBUTE(0,OnCompile,"Function node executed on compilation complete")
 DECLARE_ATTRIBUTE(0,OnCreate,"Function node executed on creation")
 DECLARE_ATTRIBUTE(0,OnDestroy,"Function node executed on destruction")
-DECLARE_ATTRIBUTE(0,OnLoad,"Function node executed on project load")
+DECLARE_ATTRIBUTE(0,OnUndo,"Attribute fired on content-defined undo action")
 DECLARE_ATTRIBUTE(0,OnClick,"Function node executed on getting a mouse button event")
 DECLARE_ATTRIBUTE(0,OnRunStart,"Function node executed on replication start")
 DECLARE_ATTRIBUTE(0,OnRunWarm,"Function node executed on replication warm up")
@@ -45,7 +45,6 @@ DECLARE_ATTRIBUTE(0,OnListen,"Function node executed on any event happening: aft
 DECLARE_ATTRIBUTE(0,OnPreListen,"Function node executed on any event happening: before dispatch, when event is still in list")
 DECLARE_ATTRIBUTE(0,OnStateChange,"Function node executed when object state changes")
 DECLARE_ATTRIBUTE(1,OnDrag,"Node function executed on object drag out from an icongrid, or when moving/resizing")
-DECLARE_ATTRIBUTE(0,OnUndo,"Attribute fired on content-defined undo action")
 
 // object stats
 DECLARE_ATTRIBUTE(0,state_current,"Current state index")

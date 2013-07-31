@@ -135,7 +135,7 @@ for(treenode a = NULL, nextforobjectselectionset(&a, node); objectexists(a); nex
 #define SM_COMPILE 11
 #define SM_CREATE 12
 #define SM_DESTROY 13
-#define SM_LOAD 14
+#define SM_UNDO 14
 #define SM_CLICK 15
 #define SM_RUNSTART 16
 #define SM_RUNWARM 17
@@ -148,7 +148,6 @@ for(treenode a = NULL, nextforobjectselectionset(&a, node); objectexists(a); nex
 
 #define SM_STATECHANGE 24
 #define SM_DRAG 25
-#define SM_UNDO 26
 
 #define SM_MAX_MESSAGES 27 // If you add more messages, make sure you change this to the max message plus 1
 

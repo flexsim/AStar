@@ -25,10 +25,19 @@ public:
 	{
 		block = getStaticBlock();
 	}
+	// copy constructor
 	ByteBlock(ByteBlock& other) : parity((unsigned short)(size_t)this), blocksize(0), block(0)
 	{
 		write(other.block, other.blocksize, 0);
 	}
+	#if _MSC_VER >= 1600
+	// move constructor (only available with C++0x, i.e. VS 2010 +
+	ByteBlock(ByteBlock&& other) : parity((unsigned short)(size_t)this), blocksize(other.blocksize), block(other.block)
+	{
+		other.block = 0;
+		other.blocksize = 0;
+	}
+	#endif
 	~ByteBlock()
 	{
 		parity = 0;

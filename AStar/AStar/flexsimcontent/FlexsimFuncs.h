@@ -579,7 +579,7 @@ THE SOFTWARE.
 	typedef double       (*_in)(double val);
 	typedef double       (*_inc)(treenode attnode, double value);
 	typedef double       (*_initialisehistogram)(treenode hist, double resolution);
-	typedef void         (*_initkinematicsalias)(treenode infonode, double x, double y, double z, double rx, double ry, double, int _managerotation, int _relativelocs);
+	typedef void         (*_initkinematicsalias)(treenode infonode, double x, double y, double z, double rx, double ry, double rz, int flags, int unused);
 	typedef treenode     (*_inobject)(treenode, int);
 	typedef double       (*_inputopen)(treenode obj);
 	typedef int          (*_insertallocatetask)(treenode tasksequence, treenode dispatcher, double priority, double preempt, int noblock);
@@ -1173,6 +1173,7 @@ THE SOFTWARE.
 		
 		typedef void (*_sql_buildquery)(TreeNode* queryNode, char* query, int (*colNrCallback)(char* name));
 		typedef int (*_sql_doquery)(TreeNode* queryNode, int nrRows, double (*evalCallBack)(int rowNr, int colNr, int* retType));
+		typedef int (*_sql_continuequery)(TreeNode* queryNode, int nrRows, double (*evalCallBack)(int rowNr, int colNr, int* retType));
 		typedef unsigned int (*_sql_getmatchcount)();
 		typedef unsigned int (*_sql_getmatch)(int index);
 		
@@ -2111,6 +2112,7 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_cleanupindexbuffer)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_buildquery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_doquery)
+	DECLARE_FLEXSIM_FUNCTION_1(sql_continuequery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_getmatchcount)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_getmatch)
 	

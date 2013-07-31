@@ -101,26 +101,27 @@ public:
   double range_pers;
   double range_pers_type;
   double range_ortho;
-
-
 };
 
+#ifdef FLEXSIM_ENGINE_COMPILE
+	class basetable
+	{
+	public:
+	  basetable(){};
 
-class basetable
-{
-public:
-  basetable(){};
 
-
-#define H_LOC_ODT_VARIABLE_TABLE(v,ODTMEMBERPREFIX)  \
-  TreeNode * NTable##ODTMEMBERPREFIX##v; 
+	#define H_LOC_ODT_VARIABLE_TABLE(v,ODTMEMBERPREFIX)  \
+	  TreeNode * NTable##ODTMEMBERPREFIX##v; 
   
-  //              ATT ADDPOINT 7
+	  //              ATT ADDPOINT 7
   
-#define DECLARE_ATTRIBUTE(ATTRIBUTE_DEFAULT,ATTRIBUTE_NAME,ATTRIBUTE_COMMENTS) H_LOC_ODT_VARIABLE_TABLE(ATTRIBUTE_NAME,b_)
-#include "attributes_table.h"
-#undef DECLARE_ATTRIBUTE
-};
+	#define DECLARE_ATTRIBUTE(ATTRIBUTE_DEFAULT,ATTRIBUTE_NAME,ATTRIBUTE_COMMENTS) H_LOC_ODT_VARIABLE_TABLE(ATTRIBUTE_NAME,b_)
+	#include "attributes_table.h"
+	#undef DECLARE_ATTRIBUTE
+	};
+#else
+	class basetable;
+#endif
 
   
 //extern odtfptr_ setmemberptr[140];
