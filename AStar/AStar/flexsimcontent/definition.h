@@ -115,6 +115,11 @@ void SimpleDataType::bindDoubleByName(const char* name, double& val, int asSubNo
 	sdtbinddoublebyname(this, name, val, asSubNode);
 }
 
+void SimpleDataType::bindByteBlockByName(const char* name, ByteBlock& val, int asSubNode)
+{
+	sdtbindbyteblockbyname(this, name, val, asSubNode);
+}
+
 void SimpleDataType::bindNodeRefByName(const char* name, NodeRef& val, int asSubNode)
 {
 	sdtbindnoderefbyname(this, name, val, asSubNode);

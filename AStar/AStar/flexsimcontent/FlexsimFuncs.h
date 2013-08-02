@@ -1133,6 +1133,7 @@ THE SOFTWARE.
 		typedef void     (*_sdtbindobjptrbyname)(SimpleDataType* sdt, const char* name, SimpleDataType*& val);
 		typedef void     (*_sdtbindsubnodebyname)(SimpleDataType* sdt, const char* name, treenode& val, int datatype);
 		typedef void     (*_sdtbinddoublebyname)(SimpleDataType* sdt, const char* name, double& val, int asSubNode);
+		typedef void     (*_sdtbindbyteblockbyname)(SimpleDataType* sdt, const char* name, ByteBlock& val, int asSubNode);
 		typedef void     (*_sdtbindnoderefbyname)(SimpleDataType* sdt, const char* name, NodeRef& val, int asSubNode);
 		typedef void     (*_sdtbind)(SimpleDataType* sdt, int bindMode);
 		typedef treenode (*_sdtgetbindtree)(SimpleDataType* sdt);
@@ -2078,6 +2079,7 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbind)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindbyname)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbinddoublebyname)
+	DECLARE_FLEXSIM_FUNCTION_1(sdtbindbyteblockbyname)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindnodeptrbyname)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindnoderefbyname)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindobjptrbyname)
