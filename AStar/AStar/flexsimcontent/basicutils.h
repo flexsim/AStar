@@ -471,6 +471,7 @@ public:
 	static void SdtSubNodeBindingAdder (treenode x, T* obj) {nodeaddsimpledata(x, obj, 1);}
 	static void CouplingSdtSubNodeAdder (treenode x, T* obj) {nodeaddcouplingdata(x, obj, 0);}
 	static void CouplingSdtSubNodeBindingAdder (treenode x, T* obj) {nodeaddcouplingdata(x, obj, 1);}
+	static void ObjSubNodeAdder (treenode x, T* obj) {transfernode(obj->holder, up(x)); destroyobject(x);}
 
 	static T* ObjPtrGetter(treenode x)
 	{
@@ -595,6 +596,16 @@ myNetNodes[arrayIndex] will then retrieve the MySdt* stored directly in the give
 **********************************************************************/
 	typedef NodeListArray<T, CouplingSdtSubNodeAdder, SdtSubNodeGetter> CouplingSdtSubNodeType;
 	typedef NodeListArray<T, CouplingSdtSubNodeBindingAdder, SdtSubNodeGetter> CouplingSdtSubNodeBindingType;
+
+/*********************************************************************
+NodeListArray<TheClass>::ObjSubNodeType
+This one represents a straight list of sdt's.
+
+NodeListArray<MyObj>::ObjSubNodeType myObjs;
+myObjs[arrayIndex] will then retrieve the MyObj* stored directly in the given sub-node.
+to add, you do myObjs.add(&o(MyObj, createinstance(theClass, model())));
+**********************************************************************/
+typedef NodeListArray<T, ObjSubNodeAdder, SdtSubNodeGetter> ObjSubNodeType;
 
 /*********************************************************************
 NodeListArray::NodePtrType:

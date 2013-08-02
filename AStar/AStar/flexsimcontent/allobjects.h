@@ -1648,6 +1648,18 @@
 #define DRAW_FLAG_NO_ON_PRE_DRAW 0x400
 
 
+#define CONV_MODE_STATE_NONE 0
+#define CONV_MODE_STATE_CLICKED 1
+#define CONV_MODE_STATE_DRAGGING 2
+#define CONV_MODE_STATE_CLICK_DOWN_2 3
+
+
+#define AGV_MODE_STATE_NONE 0
+#define AGV_MODE_STATE_CLICKED 1
+#define AGV_MODE_STATE_DRAGGING 2
+#define AGV_MODE_STATE_CLICK_DOWN_2 3
+
+
 
 // Global Variables
 
@@ -2642,6 +2654,8 @@ FS_CONTENT_DLL_FUNC virtual double onReset();
 FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
 
 FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+
+FS_CONTENT_DLL_FUNC virtual double onUndo(bool isUndo, treenode undoRecord);
 
 
 // System
