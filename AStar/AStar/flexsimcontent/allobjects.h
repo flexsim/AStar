@@ -543,6 +543,7 @@
 #define CLASSTYPE_FLUIDOBJECT2  0x8000
 #define CLASSTYPE_LINECONTROLLER  0x10000
 #define CLASSTYPE_SYSTEMCONTROLLER  0x20000
+#define CLASSTYPE_FLEXSIMEVENTHANDLER 0x40000
 #define CLASSTYPE_OWNERDRAWN		0x80000000
 
 // Constants group: RECORDER_DATA
@@ -2646,6 +2647,32 @@ FS_CONTENT_DLL_FUNC virtual double onRunWarm();
 
 FS_CONTENT_DLL_FUNC virtual double onUndo(bool isUndo, treenode undoRecord);
 
+FS_CONTENT_DLL_FUNC double stopObject(int stopstate, int id, double priority DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate);
+
+FS_CONTENT_DLL_FUNC double resumeObject(int id);
+
+FS_CONTENT_DLL_FUNC virtual double resumeObject();
+
+FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+
+FS_CONTENT_DLL_FUNC virtual double getPickOffset(treenode involvedobj, treenode toobject, double* returnarray);
+
+FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
+
+FS_CONTENT_DLL_FUNC virtual double updateLocations();
+
+FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+
+FS_CONTENT_DLL_FUNC virtual double rotateAroundAxis(double angle, double x, double y);
+
+FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(int axis, double x, double y);
+
+FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode fromObj);
+
+FS_CONTENT_DLL_FUNC static double toggleCppVarsOnCreate(treenode theobject);
+
 
 // System
 
@@ -2700,10 +2727,6 @@ FS_CONTENT_DLL_FUNC virtual double onMessage(treenode fromobject, double par1, d
 
 FS_CONTENT_DLL_FUNC virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
-
-FS_CONTENT_DLL_FUNC virtual double onRunWarm();
-
 FS_CONTENT_DLL_FUNC double stopObject(int stopstate, int id, double priority DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate);
@@ -2742,13 +2765,7 @@ FS_CONTENT_DLL_FUNC static double catchError(string stra, string strb);
 
 FS_CONTENT_DLL_FUNC double moveToResetPosition();
 
-FS_CONTENT_DLL_FUNC virtual double rotateAroundAxis(double angle, double x, double y);
-
-FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(int axis, double x, double y);
-
 FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
-
-FS_CONTENT_DLL_FUNC static double toggleCppVarsOnCreate(treenode theobject);
 
 FS_CONTENT_DLL_FUNC double getUpdatedTimeInState(int statenr);
 
