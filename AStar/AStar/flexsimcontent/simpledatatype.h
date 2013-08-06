@@ -172,7 +172,7 @@ template<class ObjType>
 
 	
 	void bindByteBlockByName(const char* name, ByteBlock& val, int asSubNode);
-	#define bindByteBlock(name, asSubNode) bindDoubleByName(#name, name, asSubNode)
+	#define bindByteBlock(name, asSubNode) bindByteBlockByName(#name, name, asSubNode)
 
 	template<class Type, class SizeType>
 	void bindLocalArrayByName(char* name, Type* val, SizeType nrElements)

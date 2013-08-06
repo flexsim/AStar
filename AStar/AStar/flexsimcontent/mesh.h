@@ -156,7 +156,7 @@ public:
 class IndexedMesh : public Mesh
 {
 public:
-	IndexedMesh() : Mesh(MESH_INDEXED), nrIndices(0), maxIndexBufferSize(0), indexBuffer(0), indexVBO(0){}
+	IndexedMesh() : Mesh(MESH_INDEXED), nrIndices(0), maxIndexBufferSize(0), indexBuffer(0), indexVBO(0), storageType(0), elementSize(sizeof(unsigned int)){}
 	~IndexedMesh()  {cleanupIndexBuffer(true);}
 	virtual const char* getClassFactory() {return "IndexedMesh";}
 	virtual void bind();
@@ -173,8 +173,10 @@ public:
 protected:
 	unsigned int nrIndices;
 	unsigned int maxIndexBufferSize;
-	unsigned int* indexBuffer;
+	unsigned int * indexBuffer;
 	unsigned int indexVBO;
+	unsigned int elementSize;
+	unsigned int storageType;
 	void defineVBO();
 	void prepareDraw();
 	// defineGLObjects(): defines the vertex array object. Call this one, and it will call defineVBO
