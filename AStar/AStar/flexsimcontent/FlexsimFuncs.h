@@ -202,8 +202,8 @@ THE SOFTWARE.
 	typedef double       (*_codetotemplatetext)(treenode view, treenode destnode);
 	typedef char*        (*_codetotemplatetext_cstr)(treenode thecode);
 	typedef double       (*_coloraqua)(treenode involved);
-	typedef double       (*_colorarray)(treenode involved, double val);
-	typedef void         (*_colorarrayv)(int val, double * destcolor);
+	typedef double       (*_colorarrayalias1)(treenode involved, double val);
+	typedef void         (*_colorarrayalias2)(int val, double * destcolor);
 	typedef double       (*_colorblack)(treenode involved);
 	typedef double       (*_colorblue)(treenode involved);
 	typedef double       (*_colorbrown)(treenode involved);
@@ -1177,6 +1177,13 @@ THE SOFTWARE.
 		typedef int (*_sql_continuequery)(TreeNode* queryNode, int nrRows, double (*evalCallBack)(int rowNr, int colNr, int* retType));
 		typedef unsigned int (*_sql_getmatchcount)();
 		typedef unsigned int (*_sql_getmatch)(int index);
+
+		typedef int (*_query)(char* query, TreeNode* queryNode);
+		typedef void (*_dumpquery)(TreeNode* dumpNode, bool asTable);
+		typedef int (*_getquerymatchcount)();
+		typedef double (*_getqueryvaluealias1)(int row, char* colName);
+		typedef double (*_getqueryvaluealias2)(int row, int col);
+		typedef double (*_getquerycolcount)();
 		
 	#else
 		typedef double (*_transportincompletealias)(treenode object, treenode item, int portnumber, treenode transporter);
@@ -1286,8 +1293,8 @@ DECLARE_FLEXSIM_FUNCTION_1(cmdsavetree)
 DECLARE_FLEXSIM_FUNCTION_1(codetotemplate)
 DECLARE_FLEXSIM_FUNCTION_1(codetotemplatetext_cstr)
 DECLARE_FLEXSIM_FUNCTION_1(coloraqua)
-DECLARE_FLEXSIM_FUNCTION_1(colorarray)
-DECLARE_FLEXSIM_FUNCTION_3(colorarrayv, "?colorarray@@YAXHPAN@Z","?colorarray@@YAXHPEAN@Z")
+DECLARE_FLEXSIM_FUNCTION_2(colorarrayalias1, "colorarray")
+DECLARE_FLEXSIM_FUNCTION_3(colorarrayalias2, "?colorarray@@YAXHPAN@Z","?colorarray@@YAXHPEAN@Z")
 DECLARE_FLEXSIM_FUNCTION_1(colorblack)
 DECLARE_FLEXSIM_FUNCTION_1(colorblue)
 DECLARE_FLEXSIM_FUNCTION_1(colorbrown)
@@ -1400,6 +1407,7 @@ DECLARE_FLEXSIM_FUNCTION_1(dropnodeto)
 DECLARE_FLEXSIM_FUNCTION_1(dropx)
 DECLARE_FLEXSIM_FUNCTION_1(dropy)
 DECLARE_FLEXSIM_FUNCTION_1(dropz)
+DECLARE_FLEXSIM_FUNCTION_1(dumpquery)
 DECLARE_FLEXSIM_FUNCTION_2(duniformalias, "duniform")
 DECLARE_FLEXSIM_FUNCTION_1(dynamicsplineall)
 DECLARE_FLEXSIM_FUNCTION_1(edscode)
@@ -2117,6 +2125,11 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_continuequery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_getmatchcount)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_getmatch)
+	DECLARE_FLEXSIM_FUNCTION_1(getquerycolcount)
+	DECLARE_FLEXSIM_FUNCTION_1(getquerymatchcount)
+	DECLARE_FLEXSIM_FUNCTION_2(getqueryvaluealias1, "getqueryvalue")
+	DECLARE_FLEXSIM_FUNCTION_3(getqueryvaluealias2,  "?getqueryvalue@@YA?AUSqlValue@@HPAD@Z", "?getqueryvalue@@YA?AUSqlValue@@HPEAD@Z")
+	DECLARE_FLEXSIM_FUNCTION_1(query)
 	
 /*** FUNCTIONS ONLY REQUIRED FOR DLL PROJECT***/
 #else

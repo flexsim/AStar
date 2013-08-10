@@ -1,6 +1,7 @@
 #pragma once
 #include "basicclasses.h"
 #include "basicmacros.h"
+#include <string.h>
 
 class FlexSimValue
 {
@@ -35,7 +36,97 @@ public:
 	inline FlexSimValue(const char* x) : asDouble((double)ptrtodouble((char*)x)) {}
 };
 
+#define COMPARE_NUMBER(op, numberType) \
+	bool operator op (numberType& theNum)\
+	{\
+		if (type == Number) return numVal op theNum;\
+		return false;\
+	}\
 
+#define COMPARE_NUMBER_TYPES(op)\
+	COMPARE_NUMBER(op, float)\
+	COMPARE_NUMBER(op, double)\
+	COMPARE_NUMBER(op, char)\
+	COMPARE_NUMBER(op, short)\
+	COMPARE_NUMBER(op, int)\
+	COMPARE_NUMBER(op, __int64)\
+	COMPARE_NUMBER(op, unsigned char)\
+	COMPARE_NUMBER(op, unsigned short)\
+	COMPARE_NUMBER(op, unsigned int)\
+	COMPARE_NUMBER(op, unsigned __int64)
+
+struct SqlValue
+{
+	enum ValueType
+	{
+		Number = 1,
+		String = 2
+	} type;
+	union {
+		double numVal;
+		char* strVal;
+	};
+	SqlValue(char* strVal) : type(String), strVal(strVal) {}
+	SqlValue(double numVal) : type(Number), numVal(numVal) {}
+	SqlValue(int numVal) : type(Number), numVal(numVal) {}
+	operator bool() {return type == Number && numVal != 0;}
+	operator double() {if (type == Number) return numVal; return 0;}
+	bool operator < (SqlValue& other) 
+	{
+		if (type != other.type) return false; 
+		if (type == Number) return numVal < other.numVal; 
+		else return strcmp(strVal, other.strVal) < 0;
+	}
+	bool operator <= (SqlValue& other) 
+	{
+		if (type != other.type) return false; 
+		if (type == Number) return numVal <= other.numVal; 
+		else return strcmp(strVal, other.strVal) <= 0;
+	}
+	bool operator > (SqlValue& other) 
+	{
+		if (type != other.type) return false; 
+		if (type == Number) return numVal > other.numVal; 
+		else return strcmp(strVal, other.strVal) < 0;
+	}
+	bool operator >= (SqlValue& other) 
+	{
+		if (type != other.type) return false; 
+		if (type == Number) return numVal >= other.numVal; 
+		else return strcmp(strVal, other.strVal) >= 0;
+	}
+	bool operator == (SqlValue& other) 
+	{
+		if (type != other.type) return false; 
+		if (type == Number) return numVal == other.numVal; 
+		else return strcmp(strVal, other.strVal) == 0;
+	}
+	bool operator != (SqlValue& other) 
+	{
+		if (type != other.type) return false; 
+		if (type == Number) return numVal != other.numVal; 
+		else return strcmp(strVal, other.strVal) != 0;
+	}
+	COMPARE_NUMBER_TYPES(<);
+	COMPARE_NUMBER_TYPES(>);
+	COMPARE_NUMBER_TYPES(<=);
+	COMPARE_NUMBER_TYPES(>=);
+};
+
+#undef COMPARE_NUMBER_TYPES
+#undef COMPARE_NUMBER
+
+class SqlDelegate
+{
+public:
+	virtual int getColNr(char* name) = 0;
+	virtual char* getColName(int index) {return "";}
+	virtual struct SqlValue getValue(int table, int row, int col) {return 0;}
+
+	virtual int getTableNum(char* tableName) {return 0;}
+	virtual int getNumCols(int table) {return 0;}
+	virtual int getNumRows(int table) {return 0;}
+};
 
 template<class RefType>
 class SafeRef {
@@ -281,7 +372,7 @@ FlexSimValue cpp_findmax(int nr, Value test, ReturnFunc returnFunc, ValidityFunc
 template<class ValueFunc, class ReturnFunc>
 double cpp_findmax(int nr, ValueFunc test, ReturnFunc returnFunc)
 {
-	return cpp_findmaxmin(nr, test, returnFunc, [&](int count) -> bool {return true}, false, true);
+	return cpp_findmaxmin(nr, test, returnFunc, [&](int count) -> bool {return true;}, false, true);
 }
 
 template<class ValueFunc>
@@ -306,7 +397,7 @@ FlexSimValue cpp_findmin(int nr, ValueFunc test, ReturnFunc returnFunc, Validity
 template<class ValueFunc, class ReturnFunc>
 double cpp_findmin(int nr, ValueFunc test, ReturnFunc returnFunc)
 {
-	return cpp_findmaxmin(nr, test, returnFunc, [&](int count) -> bool {return true}, false, false);
+	return cpp_findmaxmin(nr, test, returnFunc, [&](int count) -> bool {return true;}, false, false);
 }
 
 template<class Test>
@@ -377,6 +468,38 @@ void cpp_repeat(int nr, Do doIt)
 
 #endif
 
+/// <summary> The NodeListArray class is 
+/// meant to allow you, in c++, to treat a list of nodes with coupling data just
+/// like a regular 0-based c++ array. So, instead of every time you have to do 
+/// something like NetworkNode* nn = &o(NetworkNode, ownerobject(tonode(get(rank(node_v_myNetNodes, i)))));
+/// you can just add the correct NodeListArray to your class, and do myNetNodes[i],
+/// and bam, it handles all the rest.</summary>
+/// 
+/// <remarks> There are different ways that a list of coupling nodes may be set up, so
+/// there are also several different types I've defined to represent these different
+/// types of node list arrays. For example, you may have a list of just one-way 
+/// pointers directly to the objects themselves. Or you may have a list of coupling nodes
+/// where the other side of the coupling is created in the "stored" attribute
+/// of the associated object, and so on. 
+/// 
+/// So, below are the basic defined ones that you can use out of the box. See the documeation of 
+/// each on for more information
+/// NodeListArray<YourClass>::ObjPtrType
+/// NodeListArray<YourClass>::CouplingSdtPtrType
+/// NodeListArray<YourClass>::ObjStoredAttCouplingType
+/// NodeListArray<YourClass, YourAdder>::ObjCouplingType
+/// NodeListArray<YourClass>::SdtSubNodeType
+/// NodeListArray<YourClass>::SdtSubNodeBindingType
+/// NodeListArray<YourClass>::CouplingSdtSubNodeType
+/// NodeListArray<YourClass>::CouplingSdtSubNodeBindingType
+/// NodeListArray<>::NodePtrType
+/// NodeListArray<>::StoredAttCouplingType
+/// NodeListArray<>::SubNodeCouplingType
+/// NodeListArray<YourClass>::SdtSubNodeCouplingType
+/// 
+/// 
+/// Also, usually you are going to initialize a NodeListArray in your bind()
+/// or bindVariables() method, depending on if you're an odt or an sdt. </remarks>
 template<class T = TreeNode, void (*Adder)(treenode x, T* obj) = 0, T* (*Getter)(treenode x) = 0>
 class NodeListArray
 {
@@ -462,7 +585,7 @@ public:
 	}
 	static void SdtSubNodeCouplingAdder (treenode x, T* obj) 
 	{
-		_ASSERTE(object->holder != 0);
+		_ASSERTE(obj->holder != 0);
 		nodejoin(x, nodeadddata(nodeinsertinto(obj->holder), DATA_POINTERCOUPLING));
 	}
 
@@ -507,24 +630,6 @@ public:
 
 /*********************************************************************
 OK, Here are the list of classes that this header file sets up for you.
-First off, I should explain the NodeListArray. The NodeListArray class is 
-meant to allow you, in c++, to treat a list of nodes with coupling data just
-like a regular 0-based c++ array. So, instead of every time you have to do 
-something like NetworkNode* nn = &o(NetworkNode, ownerobject(tonode(get(rank(node_v_myNetNodes, i)))));
-you can just add the correct NodeListArray to your class, and do myNetNodes[i],
-and bam, it handles all the rest.
-
-Now, there are different ways that a list of coupling nodes may be set up, so
-there are also several different types I've defined to represent these different
-types of node list arrays. For example, you may have a list of just one-way 
-pointers directly to the objects themselves. Or you may have a list of coupling nodes
-where the other side of the coupling is created in the "stored" attribute
-of the associated object, and so on. 
-
-So, below are the basic defined ones that you can use out of the box
-
-Also, usually you are going to initialize a NodeListArray in your bind()
-or bindVariables() method, depending on if you're an odt or an sdt.
 **********************************************************************/
 
 /*********************************************************************
@@ -599,7 +704,7 @@ myNetNodes[arrayIndex] will then retrieve the MySdt* stored directly in the give
 
 /*********************************************************************
 NodeListArray<TheClass>::ObjSubNodeType
-This one represents a straight list of sdt's.
+This one represents a straight list of odt's.
 
 NodeListArray<MyObj>::ObjSubNodeType myObjs;
 myObjs[arrayIndex] will then retrieve the MyObj* stored directly in the given sub-node.
@@ -637,20 +742,13 @@ contains the coupling sub-node.
 	typedef NodeListArray<TreeNode, SubNodeCouplingAdder, SubNodeCouplingGetter> SubNodeCouplingType;
 
 /*********************************************************************
-NodeListArray::SdtSubNodeCouplingType:
+NodeListArray<MyObj>::SdtSubNodeCouplingType:
 This one represents a list of two-way couplings to objects. This will store the other side of the 
 coupling as a sub-node of the object referenced, and when dereferenced it will return the object 
 whose holder node contains the coupling sub-node. It's just like SubNodeCouplingType, except it returns
-and object reference instead of a node reference.
+an object reference instead of a node reference.
 **********************************************************************/
 	typedef NodeListArray<T, SdtSubNodeCouplingAdder, SdtSubNodeCouplingGetter> SdtSubNodeCouplingType;
 };
-
-
-
-
-
-
-
 
 

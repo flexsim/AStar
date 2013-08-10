@@ -655,6 +655,10 @@ inline int aggregateundorecords(TreeNode* view, char* description, int id1, int 
 inline int bindtexture(int textureid) {return bindtexture_alias1(textureid);}
 inline int bindtexture(int textureid, int texunit) {return bindtexture_alias2(textureid, texunit);}
 
+
+inline double colorarray(treenode involved, double val){return colorarrayalias1(involved, val);}
+inline void  colorarray(int val, double * destcolor){colorarrayalias2(val, destcolor);}
+
 inline double texshadow(int cmd, float FACEa, float FACEb, float FACEc, float FACEd, float FACEe, float FACEf, int copytex)
 {return texshadowalias(cmd, FACEa, FACEb, FACEc, FACEd, FACEe, FACEf, copytex);}
 
