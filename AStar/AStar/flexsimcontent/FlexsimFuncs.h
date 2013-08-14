@@ -1172,18 +1172,16 @@ THE SOFTWARE.
 		typedef void (*_indexedmesh_draw)(IndexedMesh* m, int drawMode, int count, int start);
 		typedef void (*_indexedmesh_cleanupindexbuffer)(IndexedMesh* m, bool isDestructor);
 		
-		typedef void (*_sql_buildquery)(TreeNode* queryNode, char* query, int (*colNrCallback)(char* name));
-		typedef int (*_sql_doquery)(TreeNode* queryNode, int nrRows, double (*evalCallBack)(int rowNr, int colNr, int* retType));
-		typedef int (*_sql_continuequery)(TreeNode* queryNode, int nrRows, double (*evalCallBack)(int rowNr, int colNr, int* retType));
-		typedef unsigned int (*_sql_getmatchcount)();
-		typedef unsigned int (*_sql_getmatch)(int index);
+		typedef void (*_sql_buildquery)(TreeNode* queryNode, char* query);
+		typedef int (*_sql_doquery)(TreeNode* queryNode, bool continueQuery);
+		typedef int (*_sql_continuequery)(TreeNode* queryNode);
 
-		typedef int (*_query)(char* query, TreeNode* queryNode);
-		typedef void (*_dumpquery)(TreeNode* dumpNode, bool asTable);
-		typedef int (*_getquerymatchcount)();
-		typedef double (*_getqueryvaluealias1)(int row, char* colName);
-		typedef double (*_getqueryvaluealias2)(int row, int col);
-		typedef double (*_getquerycolcount)();
+		typedef int (*_query)(CallPoint* callpoint);
+		typedef void (*_dumpquery)(TreeNode* queryNode, TreeNode* dumpNode, bool asTable);
+		typedef int (*_getquerymatchcount)(TreeNode* queryNode);
+		typedef double (*_getqueryvaluealias1)(TreeNode* queryNode, int row, char* colName);
+		typedef double (*_getqueryvaluealias2)(TreeNode* queryNode, int row, int col);
+		typedef double (*_getquerycolcount)(TreeNode* queryNode);
 		
 	#else
 		typedef double (*_transportincompletealias)(treenode object, treenode item, int portnumber, treenode transporter);
@@ -2123,12 +2121,10 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_buildquery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_doquery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_continuequery)
-	DECLARE_FLEXSIM_FUNCTION_1(sql_getmatchcount)
-	DECLARE_FLEXSIM_FUNCTION_1(sql_getmatch)
 	DECLARE_FLEXSIM_FUNCTION_1(getquerycolcount)
 	DECLARE_FLEXSIM_FUNCTION_1(getquerymatchcount)
 	DECLARE_FLEXSIM_FUNCTION_2(getqueryvaluealias1, "getqueryvalue")
-	DECLARE_FLEXSIM_FUNCTION_3(getqueryvaluealias2,  "?getqueryvalue@@YA?AUSqlValue@@HPAD@Z", "?getqueryvalue@@YA?AUSqlValue@@HPEAD@Z")
+	DECLARE_FLEXSIM_FUNCTION_3(getqueryvaluealias2,  "?getqueryvalue@@YA?AUSqlValue@@PAVTreeNode@@HPAD@Z", "?getqueryvalue@@YA?AUSqlValue@@PEAVTreeNode@@HPEAD@Z")
 	DECLARE_FLEXSIM_FUNCTION_1(query)
 	
 /*** FUNCTIONS ONLY REQUIRED FOR DLL PROJECT***/

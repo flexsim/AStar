@@ -1649,6 +1649,12 @@
 #define DRAW_FLAG_NO_ON_PRE_DRAW 0x400
 #define DRAW_FLAG_SKIP_ALL_DRAW 0x800
 
+// drawimage
+#define NO_SCALE 0
+#define SCALE_DOWN 1
+#define SCALE_UP_DOWN 2
+#define SCALE_INDEPENDENT 3
+
 
 
 // Global Variables

@@ -2,6 +2,7 @@
 #include "basicclasses.h"
 #include "basicmacros.h"
 #include <string.h>
+#include "simpledatatype.h"
 
 class FlexSimValue
 {
@@ -60,7 +61,8 @@ struct SqlValue
 	enum ValueType
 	{
 		Number = 1,
-		String = 2
+		String = 2,
+		Null = 3
 	} type;
 	union {
 		double numVal;
@@ -69,63 +71,80 @@ struct SqlValue
 	SqlValue(char* strVal) : type(String), strVal(strVal) {}
 	SqlValue(double numVal) : type(Number), numVal(numVal) {}
 	SqlValue(int numVal) : type(Number), numVal(numVal) {}
+	SqlValue(ValueType type, double numVal) : type(type), numVal(numVal) {}
 	operator bool() {return type == Number && numVal != 0;}
 	operator double() {if (type == Number) return numVal; return 0;}
 	bool operator < (SqlValue& other) 
 	{
 		if (type != other.type) return false; 
 		if (type == Number) return numVal < other.numVal; 
-		else return strcmp(strVal, other.strVal) < 0;
+		if (type == Null) return false;
+		return strcmp(strVal, other.strVal) < 0;
 	}
 	bool operator <= (SqlValue& other) 
 	{
 		if (type != other.type) return false; 
 		if (type == Number) return numVal <= other.numVal; 
-		else return strcmp(strVal, other.strVal) <= 0;
+		if (type == Null) return false;
+		return strcmp(strVal, other.strVal) <= 0;
 	}
 	bool operator > (SqlValue& other) 
 	{
 		if (type != other.type) return false; 
 		if (type == Number) return numVal > other.numVal; 
-		else return strcmp(strVal, other.strVal) < 0;
+		if (type == Null) return false;
+		return strcmp(strVal, other.strVal) < 0;
 	}
 	bool operator >= (SqlValue& other) 
 	{
 		if (type != other.type) return false; 
 		if (type == Number) return numVal >= other.numVal; 
-		else return strcmp(strVal, other.strVal) >= 0;
+		if (type == Null) return false;
+		return strcmp(strVal, other.strVal) >= 0;
 	}
 	bool operator == (SqlValue& other) 
 	{
 		if (type != other.type) return false; 
 		if (type == Number) return numVal == other.numVal; 
-		else return strcmp(strVal, other.strVal) == 0;
+		if (type == Null) return false;
+		return strcmp(strVal, other.strVal) == 0;
 	}
 	bool operator != (SqlValue& other) 
 	{
 		if (type != other.type) return false; 
 		if (type == Number) return numVal != other.numVal; 
-		else return strcmp(strVal, other.strVal) != 0;
+		if (type == Null) return false;
+		return strcmp(strVal, other.strVal) != 0;
 	}
 	COMPARE_NUMBER_TYPES(<);
 	COMPARE_NUMBER_TYPES(>);
 	COMPARE_NUMBER_TYPES(<=);
 	COMPARE_NUMBER_TYPES(>=);
+	COMPARE_NUMBER_TYPES(==);
 };
 
 #undef COMPARE_NUMBER_TYPES
 #undef COMPARE_NUMBER
 
-class SqlDelegate
+#define SQL_COL_NOT_FOUND INT_MAX
+#define SQL_COL_AMBIGUOUS INT_MAX - 1
+#define SQL_TABLE_NOT_FOUND INT_MAX - 2
+#define SQL_TABLE_AMBIGUOUS INT_MAX - 3
+#define SQL_GET_ALL_TABLES "#GET_ALL_TABLES#"
+#define SQL_TABLE_END -4
+#define SQL_TABLE_GET_ALL_COLUMNS "#GET_ALL_COLUMNS#"
+#define SQL_COLUMN_END -5
+static const SqlValue SQL_NULL(SqlValue::Null, 0);
+
+class SqlDelegate : public SimpleDataType
 {
 public:
-	virtual int getColNr(char* name) = 0;
-	virtual char* getColName(int index) {return "";}
-	virtual struct SqlValue getValue(int table, int row, int col) {return 0;}
+	virtual int getColId(int tableId, char* name) = 0;
+	virtual char* getColName(int tableId, int colId) {return "";}
+	virtual struct SqlValue getValue(int tableId, int row, int colId) {return SQL_NULL;}
 
-	virtual int getTableNum(char* tableName) {return 0;}
-	virtual int getNumCols(int table) {return 0;}
-	virtual int getNumRows(int table) {return 0;}
+	virtual int getTableId(char* tableName) {return 0;}
+	virtual int getRowCount(int tableId) {return 0;}
 };
 
 template<class RefType>
