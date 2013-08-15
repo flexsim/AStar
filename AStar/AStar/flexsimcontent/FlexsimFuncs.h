@@ -421,7 +421,18 @@ THE SOFTWARE.
 	typedef double       (*_fastspline)(treenode spline, double p);
 	typedef double       (*_fastsplineall)(treenode start, double res);
 	typedef double       (*_fastsplineupdate)(treenode spline, double res);
+	typedef void         (*_fglColorAlias)(float r, float g, float b, float a);
 	typedef int          (*_fgldebuglevel)(int level);
+	typedef void         (*_fglDisable)(GLenum x);
+	typedef void         (*_fglEnable)(GLenum x);
+	typedef void         (*_fglLoadIdentity)();
+	typedef void         (*_fglMatrixMode)(GLenum mode);
+	typedef void         (*_fglNormal)(float x, float y, float z);
+	typedef void         (*_fglPopMatrix)();
+	typedef void         (*_fglPushMatrix)();
+	typedef void         (*_fglRotate)(float angle, float x, float y, float z);
+	typedef void         (*_fglScale)(float x, float y, float z);
+	typedef void         (*_fglTranslate)(float x, float y, float z);
 	typedef char*        (*_filebrowse_importedfunction)(char* ext, char* desc, char* path);
 	typedef double       (*_fileclose)();
 	typedef int          (*_fileexistsalias)(char *);
@@ -1468,7 +1479,18 @@ DECLARE_FLEXSIM_FUNCTION_1(familymemberqty)
 DECLARE_FLEXSIM_FUNCTION_1(fastspline)
 DECLARE_FLEXSIM_FUNCTION_1(fastsplineall)
 DECLARE_FLEXSIM_FUNCTION_1(fastsplineupdate)
+DECLARE_FLEXSIM_FUNCTION_2(fglColorAlias, "fglColor")
 DECLARE_FLEXSIM_FUNCTION_1(fgldebuglevel)
+DECLARE_FLEXSIM_FUNCTION_1(fglDisable)
+DECLARE_FLEXSIM_FUNCTION_1(fglEnable)
+DECLARE_FLEXSIM_FUNCTION_1(fglLoadIdentity)
+DECLARE_FLEXSIM_FUNCTION_1(fglMatrixMode)
+DECLARE_FLEXSIM_FUNCTION_1(fglNormal)
+DECLARE_FLEXSIM_FUNCTION_1(fglPopMatrix)
+DECLARE_FLEXSIM_FUNCTION_1(fglPushMatrix)
+DECLARE_FLEXSIM_FUNCTION_1(fglRotate)
+DECLARE_FLEXSIM_FUNCTION_1(fglScale)
+DECLARE_FLEXSIM_FUNCTION_1(fglTranslate)
 DECLARE_FLEXSIM_FUNCTION_2(filebrowse_importedfunction, "filebrowse")
 DECLARE_FLEXSIM_FUNCTION_1(fileclose)
 DECLARE_FLEXSIM_FUNCTION_2(fileexistsalias, "fileexists")

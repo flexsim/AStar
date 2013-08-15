@@ -1,6 +1,7 @@
 #pragma once
 #include "basicclasses.h"
 #include "basicmacros.h"
+#include "basicutils.h"
 
 // if i'm compiling the engine then I don't yet have access
 // to some of the commands I need, so include the right files
@@ -579,4 +580,25 @@ template<class ObjType>
 	#define bindNumberToNode(name, x) bindNumberToNodeByName(#name, name, x)
 };
 
+
+#define SQL_COL_NOT_FOUND INT_MAX
+#define SQL_COL_AMBIGUOUS INT_MAX - 1
+#define SQL_TABLE_NOT_FOUND INT_MAX - 2
+#define SQL_TABLE_AMBIGUOUS INT_MAX - 3
+#define SQL_GET_ALL_TABLES "#GET_ALL_TABLES#"
+#define SQL_TABLE_END -4
+#define SQL_TABLE_GET_ALL_COLUMNS "#GET_ALL_COLUMNS#"
+#define SQL_COLUMN_END -5
+#define SQL_NULL SqlValue(SqlValue::Null, 0);
+
+class SqlDelegate : public SimpleDataType
+{
+public:
+	virtual int getColId(int tableId, char* name) = 0;
+	virtual char* getColName(int tableId, int colId) {return "";}
+	virtual struct SqlValue getValue(int tableId, int row, int colId) {return SQL_NULL;}
+
+	virtual int getTableId(char* tableName) {return 0;}
+	virtual int getRowCount(int tableId) {return 0;}
+};
 
