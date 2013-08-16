@@ -463,6 +463,68 @@ void cpp_repeat(int nr, Do doIt)
 
 #define repeat(nr, doIt) cpp_repeat(nr, [&](int count) -> {doIt;});
 
+#ifndef FLEXSIM_ENGINE_COMPILE
+#define query(queryStr, ...) \
+	PP_IIF(PP_EQUAL(0, VA_NARGS(__VAR_ARGS__)), \
+		cpp_query(queryStr), \
+	PP_IIF(PP_EQUAL(1, VA_NARGS(__VAR_ARGS__)), \
+		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));}),\
+	PP_IIF(PP_EQUAL(2, VA_NARGS(__VAR_ARGS__)), \
+		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));}),\
+	PP_IIF(PP_EQUAL(3, VA_NARGS(__VAR_ARGS__)), \
+		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));}),\
+	PP_IIF(PP_EQUAL(4, VA_NARGS(__VAR_ARGS__)), \
+		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_4(__VA_ARGS__));}),\
+	PP_IIF(PP_EQUAL(5, VA_NARGS(__VAR_ARGS__)), \
+		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_4(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_5(__VA_ARGS__));}),\
+	PP_IIF(PP_EQUAL(6, VA_NARGS(__VAR_ARGS__)), \
+		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_4(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_5(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_6(__VA_ARGS__));}),\
+	PP_IIF(PP_EQUAL(7, VA_NARGS(__VAR_ARGS__)), \
+		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_4(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_5(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_6(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_7(__VA_ARGS__));}),\
+	PP_IIF(PP_EQUAL(8, VA_NARGS(__VAR_ARGS__)), \
+		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_4(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_5(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_6(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_7(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_8(__VA_ARGS__));}),\
+\
+		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_4(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_5(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_6(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_7(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_8(__VA_ARGS__));},\
+		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_9(__VA_ARGS__));})\
+	)))))))))
+
+#endif
+
 #endif
 
 /// <summary> The NodeListArray class is 

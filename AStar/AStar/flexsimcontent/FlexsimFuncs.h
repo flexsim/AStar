@@ -28,6 +28,9 @@ THE SOFTWARE.
 	#define FLEXSIM_FUNCS
 #endif
 
+#include <functional>
+#include <string>
+
 #if DECLARATIONTYPE == FLEXSIM_DECLARATION_PHASE
 
 	#define DECLARE_FLEXSIM_FUNCTION_1(name) extern _##name name;
@@ -242,6 +245,9 @@ THE SOFTWARE.
 	typedef int          (*_cppgettoken)(treenode thetext, int index, ByteBlock * resultblock);
 	typedef int          (*_cppsettitletoken)(treenode thetext, int index, ByteBlock * resultblock, char * newtext);
 	typedef int          (*_cppsettoken)(treenode thetext, int index, ByteBlock * resultblock, char * newtext);
+	typedef std::function<double (CallPoint*)> queryCallback;
+	typedef int          (*_cpp_queryalias)(const char* queryStr, queryCallback& p1,  queryCallback& p2, queryCallback& p3,  queryCallback& p4,
+									queryCallback& p5,  queryCallback& p6, queryCallback& p7,  queryCallback& p8, queryCallback& p9);
 	typedef treenode     (*_createcoordinatedtasksequence)(treenode dispatcher);
 	typedef treenode     (*_createcopyalias)(treenode classobject, treenode instancecontainer, int samename, int inobject, int cached, int replace);
 	typedef treenode     (*_createcoupling)(treenode container1, treenode container2);
@@ -688,9 +694,10 @@ THE SOFTWARE.
 	typedef double       (*_menucheck)(HMENU m, double x, double y);
 	typedef double       (*_menugray)(HMENU m, double x, double y);
 	typedef double       (*_menumain)();
-	typedef void 		 (*_mesh)(treenode meshnode, unsigned int perVertexAttribs, unsigned int perMeshAttribs, unsigned int flags);
+	typedef void 		 (*_mesh)(treenode meshnode, unsigned int perVertexAttribs, unsigned int flags);
 	typedef int  		 (*_meshaddvertex)(treenode meshnode);
 	typedef void 		 (*_meshsetvertexattrib)(treenode meshnode, unsigned int vertIndex, unsigned int attribId, double p1, double p2, double p3, double p4);
+	typedef void 		 (*_meshsetattrib)(treenode meshnode, unsigned int attribId, double p1, double p2, double p3, double p4);
 	typedef void		 (*_meshdraw)(treenode meshnode, int drawMode, int offset, int count, int stride);
 	typedef int			 (*_meshaddindex)(treenode meshnode, unsigned int index);
 	typedef double		 (*_meshinfo)(treenode meshnode, int type, unsigned int index, unsigned int param);
@@ -1170,10 +1177,11 @@ THE SOFTWARE.
 		typedef char* (*_byteblock_getbuffer)(ByteBlock* x);
 
 		typedef  void (*_mesh_bind)(Mesh* m);
-		typedef  void (*_mesh_init)(Mesh* m, unsigned int nrVerts, unsigned int perVertFlags, unsigned int staticFlags, unsigned int generalFlags);
+		typedef  void (*_mesh_init)(Mesh* m, unsigned int nrVerts, unsigned int perVertFlags, unsigned int generalFlags);
 		typedef  void (*_mesh_cleanup)(Mesh* m, bool isDestructor);
 		typedef  void (*_mesh_definevertexattribs)(Mesh* m, unsigned int attribId, float* verts);
 		typedef  void (*_mesh_setvertexattrib)(Mesh* m, int vertIndex, unsigned int attribId, float* vert);
+		typedef  void (*_mesh_setmeshattrib)(Mesh* m, unsigned int attribId, float* vert);
 		typedef  int (*_mesh_addvertex)(Mesh* m);
 		typedef  void (*_mesh_draw)(Mesh* m, int drawMode, int vertOffset, int vertCount, int vertStride);
 
@@ -2039,6 +2047,7 @@ DECLARE_FLEXSIM_FUNCTION_1(cppgettitletoken)
 DECLARE_FLEXSIM_FUNCTION_1(cppgettoken)
 DECLARE_FLEXSIM_FUNCTION_1(cppsettitletoken)
 DECLARE_FLEXSIM_FUNCTION_1(cppsettoken)
+DECLARE_FLEXSIM_FUNCTION_2(cpp_queryalias, "cpp_query")
 DECLARE_FLEXSIM_FUNCTION_1(dbwritechanges)
 DECLARE_FLEXSIM_FUNCTION_1(divide)
 DECLARE_FLEXSIM_FUNCTION_1(drawrect)
@@ -2133,6 +2142,7 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(mesh_cleanup)
 	DECLARE_FLEXSIM_FUNCTION_1(mesh_definevertexattribs)
 	DECLARE_FLEXSIM_FUNCTION_1(mesh_setvertexattrib)
+	DECLARE_FLEXSIM_FUNCTION_1(mesh_setmeshattrib)
 	DECLARE_FLEXSIM_FUNCTION_1(mesh_addvertex)
 	DECLARE_FLEXSIM_FUNCTION_1(mesh_draw)
 	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_bind)

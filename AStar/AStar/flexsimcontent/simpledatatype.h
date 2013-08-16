@@ -586,15 +586,15 @@ template<class ObjType>
 #define SQL_TABLE_NOT_FOUND INT_MAX - 2
 #define SQL_TABLE_AMBIGUOUS INT_MAX - 3
 #define SQL_GET_ALL_TABLES "#GET_ALL_TABLES#"
-#define SQL_TABLE_END -4
+#define SQL_TABLE_END INT_MAX - 4
 #define SQL_TABLE_GET_ALL_COLUMNS "#GET_ALL_COLUMNS#"
-#define SQL_COLUMN_END -5
+#define SQL_COLUMN_END INT_MAX - 5
 #define SQL_NULL SqlValue(SqlValue::Null, 0);
 
 class SqlDelegate : public SimpleDataType
 {
 public:
-	virtual int getColId(int tableId, char* name) = 0;
+	virtual int getColId(int tableId, char* colName) = 0;
 	virtual char* getColName(int tableId, int colId) {return "";}
 	virtual struct SqlValue getValue(int tableId, int row, int colId) {return SQL_NULL;}
 

@@ -240,8 +240,8 @@ void FlexSimEvent::getDescription(char* toStr, size_t maxSize)
 	flexsimeventgetdescription(this, toStr, maxSize);
 }
 
-void Mesh::init(unsigned int _nrVerts, unsigned int _perVertFlags, unsigned int _staticFlags, unsigned int _generalFlags)
-	{ mesh_init(this, _nrVerts, _perVertFlags, _staticFlags, _generalFlags); }
+void Mesh::init(unsigned int _nrVerts, unsigned int _perVertFlags, unsigned int _generalFlags)
+	{ mesh_init(this, _nrVerts, _perVertFlags, _generalFlags); }
 void Mesh::bind()
 	{ mesh_bind(this); }
 void Mesh::cleanup(bool isDestructor)
@@ -250,6 +250,8 @@ void Mesh::defineVertexAttribs(unsigned int  attribId, float* verts)
 	{ mesh_definevertexattribs(this, attribId, verts); }
 void Mesh::setVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* vert)
 	{ mesh_setvertexattrib(this, vertIndex, attribId, vert); }
+void Mesh::setMeshAttrib(unsigned int attribId, float* vert)
+	{ mesh_setmeshattrib(this, attribId, vert); }
 int Mesh::addVertex()
 	{ return mesh_addvertex(this); }
 void Mesh::draw(int drawMode, int vertOffset, int vertCount, int vertStride)

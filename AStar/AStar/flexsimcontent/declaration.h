@@ -662,6 +662,16 @@ inline void  colorarray(int val, double * destcolor){colorarrayalias2(val, destc
 inline double texshadow(int cmd, float FACEa, float FACEb, float FACEc, float FACEd, float FACEe, float FACEf, int copytex)
 {return texshadowalias(cmd, FACEa, FACEb, FACEc, FACEd, FACEe, FACEf, copytex);}
 inline void fglColor(float r, float g, float b, float a = 1.0f) {fglColorAlias(r, g, b, a);}
+inline int cpp_query(const char* queryStr, queryCallback& p1 = queryCallback(0),  queryCallback& p2 = queryCallback(0), queryCallback& p3 = queryCallback(0),  queryCallback& p4 = queryCallback(0),
+									queryCallback& p5 = queryCallback(0),  queryCallback& p6 = queryCallback(0), queryCallback& p7 = queryCallback(0),  queryCallback& p8 = queryCallback(0), queryCallback& p9 = queryCallback(0))
+{
+		return cpp_queryalias(queryStr, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+}
+inline int cpp_query(std::string queryStr, queryCallback& p1 = queryCallback(0),  queryCallback& p2 = queryCallback(0), queryCallback& p3 = queryCallback(0),  queryCallback& p4 = queryCallback(0),
+									queryCallback& p5 = queryCallback(0),  queryCallback& p6 = queryCallback(0), queryCallback& p7 = queryCallback(0),  queryCallback& p8 = queryCallback(0), queryCallback& p9 = queryCallback(0))
+{
+	return cpp_queryalias(queryStr.c_str(), p1, p2, p3, p4, p5, p6, p7, p8, p9);
+}
 
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 	inline treenode createevent(FlexSimEvent* e){return createeventalias2(e);}

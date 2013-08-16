@@ -3,29 +3,64 @@
 #include "basicclasses.h"
 #include "simpledatatype.h"
 
+/// <summary>	A class encapsulating data and functionality for drawing geometry in OpenGL.</summary>
+/// <remarks>	The mesh class, and its accompanying mesh api in flexscript, replace the old immediate-mode
+/// 			OpenGL rendering using glBegin() and glEnd(). To use the mesh class you initialize the mesh
+/// 			with Mesh::init() (or the mesh() command in flexscript), defining what data you are
+/// 			going to provide with each vertex, such as normals, texture coordinates, etc. Then you fill 
+/// 			the mesh with vertex data, either by adding vertices one at a time with 
+/// 			Mesh::addVertex() and Mesh::setVertexAttrib() (using the meshaddvertex() and meshsetvertexattrib()
+/// 			commands in flexscript), or by copying a full set of vertex data in
+/// 			with Mesh::defineVertexAttribs() </remarks>
 class Mesh : public SimpleDataType
 {
 public:
-	Mesh(int flags) : nrVerts(0), vertByteStride(0), flags(flags), perMeshAttribs(0), perVertexAttribs(0), 
-			vertBuffer(0), vbo(0), vao(0), maxBufferSize(0), isDirty(true) 
-	{
-		// initialize the per mesh color attribs' alpha to 1
-		perMeshAmbient[3] = perMeshDiffuse[3] = perMeshSpecular[3] = perMeshEmissive[3] = 255;
-	}
-	Mesh() : nrVerts(0), vertByteStride(0), flags(0), perMeshAttribs(0), perVertexAttribs(0), 
+	Mesh() : numVerts(0), vertByteStride(0), flags(0), perMeshAttribs(0), perVertexAttribs(0), 
 			vertBuffer(0), vbo(0), vao(0), maxBufferSize(0), isDirty(true)
 	{
+		holder = 0;
 		// initialize the per mesh color attribs' alpha to 1
-		perMeshAmbient[3] = perMeshDiffuse[3] = perMeshSpecular[3] = perMeshEmissive[3] = 255;
+		perMeshAmbient[3] = perMeshDiffuse[3] = perMeshSpecular[3] = perMeshEmissive[3] = 1.0f;
 	}
 	~Mesh() {cleanup(true);}
 
+protected:
+	Mesh(int flags) : numVerts(0), vertByteStride(0), flags(flags), perMeshAttribs(0), perVertexAttribs(0), 
+			vertBuffer(0), vbo(0), vao(0), maxBufferSize(0), isDirty(true) 
+	{
+		holder = 0;
+		// initialize the per mesh color attribs' alpha to 1
+		perMeshAmbient[3] = perMeshDiffuse[3] = perMeshSpecular[3] = perMeshEmissive[3] = 1.0f;
+	}
+	typedef void (*CopyCallback)(void* copyPoint, float* inVerts, int componentsPerVertex, int numVerts, int vertByteStride);
+	static void copyFloatAttribs(void* copyPoint, float* inVerts, int componentsPerVertex, int numVerts, int vertByteStride);
+	static void copyColorAttribs(void* copyTo, float* inVerts, int componentsPerVertex, int numVerts, int vertByteStride);
+	struct AttribCopier {
+		int componentsPerVertex;
+		int bytesPerComponent;
+		CopyCallback copier;
+		void* copyPoint;
+	};
+	int getComponentsPerVertex(int attribId);
+	AttribCopier getVertexCopier(int attribId);
+	AttribCopier getMeshCopier(int attribId);
+
+	typedef void (*ReadCallback)(void* readPoint, float* outVert);
+	ReadCallback getReader(unsigned int attribId);
+	static void readColorVertex(void* readPoint, float* outVert);
+	static void readFloatVertex(void* readPoint, float* outVert);
+	virtual const char* getClassFactory() {return "Mesh";}
+
+public:
+	/// <summary>	The per mesh flags. See Mesh::init()</summary>
 	unsigned int perMeshAttribs;
+	/// <summary>	The per vertex flags. See Mesh::init()</summary>
 	unsigned int perVertexAttribs;
+	/// <summary>	Miscellaneous flags. See Mesh::init()</summary>
 	unsigned int flags;
 
-	// nrVerts: the number of vertices in this mesh
-	int nrVerts;
+	// The number of vertices in this mesh
+	int numVerts;
 
 protected:
 // stock vertex attributes are id'd with the high-order 2 bytes
@@ -45,10 +80,10 @@ protected:
 #define MESH_AMBIENT_AND_DIFFUSE4   0x1000000
 #define MESH_SPECULAR               0x2000000
 #define MESH_SHININESS              0x4000000
-#define MESH_EMISSIVE               0x8000000
+#define MESH_EMISSION               0x8000000
 
 #define MESH_COLOR_ATTRIBS (MESH_AMBIENT | MESH_DIFFUSE | MESH_DIFFUSE4 | MESH_AMBIENT_AND_DIFFUSE \
-				| MESH_AMBIENT_AND_DIFFUSE4 | MESH_SPECULAR | MESH_SHININESS | MESH_EMISSIVE)
+				| MESH_AMBIENT_AND_DIFFUSE4 | MESH_SPECULAR | MESH_SHININESS | MESH_EMISSION)
 
 #define MESH_STATIC_DRAW 0x1
 #define MESH_DYNAMIC_DRAW 0x2
@@ -58,97 +93,140 @@ protected:
 // which means it can delete its buffers once copied into the open gl objects
 #define MESH_IN_MEMORY 0x8
 
-	// vertStride: the number of floats contained in one vertex (vertex data is interleaved)
+	/// <summary>	The number of bytes contained in one vertex (vertex data is
+	/// 			interleaved) </summary>
 	int vertByteStride;
-	// nrCustomAttribs: the number of custom vertex attributes stored in the vertBuffer
-	int nrCustomAttribs;
 
-	// texCoordOffset: the number of floats from the start of a vertex that represents the start of the texture coordinate
+	/// <summary>	The number of floats from the start of a vertex that represents
+	/// 			the start of the texture coordinate. </summary>
 	unsigned char texCoordOffset;
-	// normalOffset: the number of floats from the start of a vertex that represents the start of the normal
+	/// <summary>	The number of bytes from the start of a vertex that represents the
+	/// 			start of the normal. </summary>
 	unsigned char normalOffset;
-	// ambientOffset: the number of floats from the start of a vertex that represents the start of the ambient color
-	unsigned char ambientOffset;
-	// diffuseOffset: the number of floats from the start of a vertex that represents the start of the diffuse color
-	unsigned char diffuseOffset;
-	// specularOffset: the number of floats from the start of a vertex that represents the start of the specular color
-	unsigned char specularOffset;
-	// shininessOffset: the number of floats from the start of a vertex that represents the start of the shininess
-	unsigned char shininessOffset;
-	// emissiveOffset: the number of floats from the start of a vertex that represents the start of the emissive color
-	unsigned char emissiveOffset;
-	// customAttribOffsets: an array of offsets to custom attributes in the vertBuffer
-	unsigned char customAttribOffsets[16];
-	// customAttribLocations: an array that defines custom attribute locations
-	unsigned char customAttribLocations[16];
+	/// <summary>	The number of bytes from the start of a vertex that represents the start of the
+	/// 			diffuse color. </summary>
+	unsigned char colorOffset;
 
-	static float temporaryColorCopy[4];
-	static float* copyColor(unsigned char * from);
-
-	static const int STATIC_BLOCK_SIZE = 44;
+	static const int STATIC_BLOCK_SIZE = 92;
 	union {
 		struct {
 			float perMeshTexCoord[3];
 			float perMeshNormal[3];
-			unsigned char perMeshAmbient[4];
-			unsigned char perMeshDiffuse[4];
-			unsigned char perMeshSpecular[4];
-			unsigned char perMeshEmissive[4];
+			float perMeshAmbient[4];
+			float perMeshDiffuse[4];
+			float perMeshSpecular[4];
+			float perMeshEmissive[4];
 			float perMeshShininess[1];
 		};
 		unsigned char allStatics[STATIC_BLOCK_SIZE];
 	};
 
+	/// <summary>	The OpenGL id of the vertex buffer object. </summary>
 	unsigned int vbo;
+	/// <summary>	The OpenGL id of the vertex array object. </summary>
 	unsigned int vao;
+	/// <summary>	The maximum allocated space for the vertex buffer. </summary>
 	unsigned int maxBufferSize;
+	/// <summary>	The buffer of vertex data. </summary>
 	unsigned char* vertBuffer;
+	/// <summary>	true if the vertex/mesh data has has been changed since the last draw. 
+	/// 			The mesh will apply the new data to the VBO on the next draw() call. </summary>
 	bool isDirty;
-
-	typedef void (*CopyCallback)(void* copyPoint, float* inVerts, int componentsPerVertex, int nrVerts, int vertByteStride);
-	static void copyFloatAttribs(void* copyPoint, float* inVerts, int componentsPerVertex, int nrVerts, int vertByteStride);
-	static void copyColorAttribs(void* copyTo, float* inVerts, int componentsPerVertex, int nrVerts, int vertByteStride);
-	struct AttribCopier {
-		int componentsPerVertex;
-		int bytesPerComponent;
-		CopyCallback copier;
-		void* copyPoint;
-	};
-	AttribCopier getCopier(int attribId);
-
-	typedef void (*ReadCallback)(void* readPoint, float* outVert);
-	ReadCallback getReader(unsigned int attribId);
-	static void readColorVertex(void* readPoint, float* outVert);
-	static void readFloatVertex(void* readPoint, float* outVert);
 
 	static unsigned int setColorMaterial;
 
-	// prepareDraw(): called from one of two places. 
-	// 1. if vertex array objects are available, then it will
-	//    be called just after defining the vertex buffers, meaning 
-	//    just once until the vertices are redefined again.
-	// 2. if vertex array objects aren't available, then it will
-	//    be called as part of each draw
-	// prepareDraw() essentially enables all the client states for 
-	// what is needed, and binds to the proper buffers
+	/// <summary>	Prepares the mesh for drawing </summary>
+	/// <remarks>	Called from one of two places. 1. if vertex array objects are
+	/// 			available, then it will
+	/// 			   be called just after defining the vertex buffers, meaning just once until the
+	/// 			   vertices are redefined again.
+	/// 			2. if vertex array objects aren't available, then it will
+	/// 			   be called as part of each draw
+	/// 			prepareDraw() essentially enables all the client states for what is needed, and
+	/// 			binds to the proper buffers. </remarks>
+	/// <param name="stride">	The stride.</param>
 	void prepareDraw(int stride);
 	void applyAttribs();
 	void resetAttribs();
 	void cleanupDraw();
-	// defineGLObjects(): defines the vertex array object. Call this one, and it will call defineVBO
+	/// <summary>	defineGLObjects(): defines the vertex array object. Call this one, and it will
+	/// 			call defineVBO. </summary>
+	/// <remarks>	 </remarks>
 	void defineGLObjects();
-	// defineVBO(): defines the vertex buffer object. IndexedMesh will override this to additionally
-	// define the index buffer
+	/// <summary>	defineVBO(): defines the vertex buffer object. IndexedMesh will override this to
+	/// 			additionally define the index buffer. </summary>
+	/// <remarks>	. </remarks>
 	void defineVBO();
 
 public:
-	void cleanup(bool deleteGLObjects = false);
-	virtual const char* getClassFactory() {return "Mesh";}
 	virtual void bind();
-	void init(unsigned int nrVerts, unsigned int perVertexAttribs = 0, unsigned int perMeshAttribs = 0, unsigned int flags = 0);
+	void cleanup(bool deleteGLObjects = false);
+
+	/// <summary>	Initializes the mesh with the number of vertices needed and various flags. </summary>
+	/// <remarks>	Usually you are going to fill a vector or vectors with your vertex data, then
+	/// 			once you've filled them, you initialize the mesh with the desired number of vertices,
+	/// 			and then copy them in with Mesh::defineVertexAttribs. You can alternatively initialize with
+	/// 			0 vertices and add individual vertices with Mesh::addVertex() and 
+	/// 			Mesh::setVertexAttrib()</remarks>
+	/// <param name="numVerts">		   	The number of vertices in the mesh. </param>
+	/// <param name="perVertexAttribs">	(Optional) The per vertex attributes, defining what data will be stored 
+	/// 								with each vertex. 
+	///									If you define perVertex flags you will need to provide the associated vertex data through 
+	///									Mesh::defineVertexAttribs() or Mesh::setVertexAttrib(). Should be a 
+	///									bitwise or (|) of zero or more of the following:
+	/// 								- MESH_TEX_COORD2 - signifies that you will provide per-vertex texture coordinate data
+	///									- MESH_NORMAL - signifies that you will provide per-vertex normal data
+	///									- MESH_AMBIENT_AND_DIFFUSE - signifies that you will provide per-vertex 3-component color data
+	///									- MESH_AMBIENT_AND_DIFFUSE4 - signifies that you will provide per-vertex 4-component color data
+	/// 								</param>
+	/// <param name="flags">		   	(Optional) Miscellaneous flags. </param>
+	void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0);
+
+	/// <summary>	Define vertex attributes. </summary>
+	/// <remarks>	Copies the given vertex data into the mesh's internal OpenGL-optimized format. This method should be used if you
+	/// 			already have an array of data, and have therefore initialized the mesh (Mesh::init()) with a positive number of 
+	/// 			vertices.</remarks>
+	/// <param name="attribId">	Identifier for the attribute. Should be one of the following:
+	/// 							- MESH_POSITION - the vertex position data
+	/// 							- MESH_TEX_COORD2 - the vertex texture coordinate data
+	///								- MESH_NORMAL - the vertex normal data
+	///								- MESH_AMBIENT_AND_DIFFUSE - the vertex 3-component color data
+	///								- MESH_AMBIENT_AND_DIFFUSE4 - the vertex 4-component color data  </param>
+	/// <param name="verts">   	[in] The vertex data. </param>
 	void defineVertexAttribs(unsigned int attribId, float* verts);
-	void setVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* vert);
+
+	/// <summary>	Adds a vertex. </summary>
+	/// <remarks>	Should be used when you initialize the mesh with 0 vertices, and then add vertex data as you go. </remarks>
+	/// <returns>	The index of the added vertex, for use in Mesh::setVertexAttrib(). </returns>
 	int addVertex();
+
+	/// <summary>	Sets the vertex attribute data for a single vertex. </summary>
+	/// <remarks>	Should be used when you initialize the mesh with 0 vertices, and then add vertex data as you go with addVertex(). </remarks>
+	/// <param name="vertIndex">	Zero-based index of the vertex. Should be the index returned by addVertex() </param>
+	/// <param name="attribId"> 	Identifier for the attribute. See Mesh::defineVertexAttribs().</param>
+	/// <param name="vert">			[in] A pointer to the vertex data. </param>
+	void setVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* vert);
+
+	/// <summary>	Define data to be applied once per draw, i.e. just before drawing the mesh each time.</summary>
+	/// <remarks>	Anthony.johnson, 8/15/2013. </remarks>
+	/// <param name="attribId">	Identifier for the attribute. Should be one of the following:
+	///									- MESH_NORMAL - the 3-component normal for the mesh
+	/// 								- MESH_AMBIENT_AND_DIFFUSE - the 3-component color for the mesh
+	/// 								- MESH_AMBIENT_AND_DIFFUSE4 - the 4-component color for the mesh 
+	/// 								- MESH_SPECULAR - the 3-component specular color for the mesh  
+	/// 								- MESH_EMISSION - the 3-component emissive color for the mesh  
+	/// 								- MESH_SHININESS - the 1-component shininess value for the mesh
+	/// 					</param>
+	/// <param name="data">	   	[in] A pointer to the data that defines the attribute. If 0, the mesh will turn that per-mesh flag off, 
+	/// 						meaning it will take whatever the previous OpenGL state was. </param>
+	void setMeshAttrib(unsigned int attribId, float* data);
+
+	/// <summary>	Draws the mesh. </summary>
+	/// <remarks>	 </remarks>
+	/// <param name="drawMode">  	The draw mode. A standard OpenGL primitive type such as GL_QUADS, GL_TRIANGLES, GL_LINES, GL_LINE_STRIP, GL_TRIANGLE_STRIP, etc.</param>
+	/// <param name="vertOffset">	(Optional) The vertex offset to start at. If not provided, the whole mesh will be drawn.</param>
+	/// <param name="vertCount"> 	(Optional) The number of vertices to dray. </param>
+	/// <param name="vertStride">	(Optional) The vertex stride, i.e if 2, it will read every other vertex. </param>
 	void draw(int drawMode, int vertOffset = 0, int vertCount = 0, int vertStride = 0);
 	float* getVertexAttrib(unsigned int vertIndex, unsigned int attribId);
 };
@@ -156,22 +234,35 @@ public:
 class IndexedMesh : public Mesh
 {
 public:
-	IndexedMesh() : Mesh(MESH_INDEXED), nrIndices(0), maxIndexBufferSize(0), indexBuffer(0), indexVBO(0), storageType(0), elementSize(sizeof(unsigned int)){}
+	IndexedMesh() : Mesh(MESH_INDEXED), numIndices(0), maxIndexBufferSize(0), indexBuffer(0), indexVBO(0), storageType(0), elementSize(sizeof(unsigned int)){}
 	~IndexedMesh()  {cleanupIndexBuffer(true);}
 	virtual const char* getClassFactory() {return "IndexedMesh";}
 	virtual void bind();
 
-	void defineIndexBuffer(int nr, unsigned int * buffer);
-	void defineIndexBuffer(int nr, int* buffer) {defineIndexBuffer(nr, (unsigned int*) buffer);}
+	/// <summary>	Define the index buffer for an indexed mesh. </summary>
+	/// <remarks>	 </remarks>
+	/// <param name="num">   	Number of indices in the buffer. </param>
+	/// <param name="buffer">	[in] The index buffer. </param>
+	void defineIndexBuffer(int num, unsigned int * buffer);
+	void defineIndexBuffer(int num, int* buffer) {defineIndexBuffer(num, (unsigned int*) buffer);}
 	
+	/// <summary>	Adds an index to the index buffer. </summary>
+	/// <remarks>	 </remarks>
+	/// <param name="index">	If you want to add indices as you go, use this method. </param>
+	/// <returns>	The index of the vertex index within the index buffer. </returns>
 	unsigned int addIndex(unsigned int index);
 
+	/// <summary>	Draws the indexed mesh. </summary>
+	/// <remarks>	Anthony.johnson, 8/15/2013. </remarks>
+	/// <param name="drawMode">	The draw mode. </param>
+	/// <param name="start">   	(Optional) The start index within the index buffer. </param>
+	/// <param name="count">   	(Optional) The number of vertices. </param>
 	void draw(int drawMode, int start = 0, int count = 0);
 	void cleanupIndexBuffer(bool isDestructor = false);
 	unsigned int vertexForIndex(unsigned int index);
 
 protected:
-	unsigned int nrIndices;
+	unsigned int numIndices;
 	unsigned int maxIndexBufferSize;
 	unsigned int * indexBuffer;
 	unsigned int indexVBO;
@@ -179,7 +270,9 @@ protected:
 	unsigned int storageType;
 	void defineVBO();
 	void prepareDraw();
-	// defineGLObjects(): defines the vertex array object. Call this one, and it will call defineVBO
+	/// <summary>	defineGLObjects(): defines the vertex array object. Call this one, and it will
+	/// 			call defineVBO. </summary>
+	/// <remarks>	 </remarks>
 	void defineGLObjects();
 };
 
@@ -191,9 +284,10 @@ protected:
 
 #ifdef FLEXSIM_ENGINE_COMPILE
 
-visible void mesh(treenode meshnode, unsigned int perVertexAttribs, unsigned int perMeshAttribs, unsigned int flags);
+visible void mesh(treenode meshnode, unsigned int perVertexAttribs, unsigned int flags);
 visible int  meshaddvertex(treenode meshnode);
 visible void meshsetvertexattrib(treenode meshnode, unsigned int vertIndex, unsigned int attribId, float p1, float p2=0, float p3=0, float p4=0);
+visible void meshsetattrib(treenode meshnode, unsigned int attribId, float p1, float p2=0, float p3=0, float p4=0);
 visible void meshdraw(treenode meshnode, int drawMode, int offset, int count, int stride=0);
 visible int meshaddindex(treenode meshnode, unsigned int index);
 visible double meshinfo(treenode meshnode, unsigned int type, unsigned int index=0, unsigned int param=0);
