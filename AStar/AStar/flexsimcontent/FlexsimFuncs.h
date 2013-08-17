@@ -81,6 +81,43 @@ THE SOFTWARE.
 #ifndef TYPEDEFS
 #define TYPEDEFS
 
+
+#ifndef FLEXSIM_VALUE
+#define FLEXSIM_VALUE
+	class FlexSimValue
+	{
+	public:
+		double asDouble;
+		inline operator void*()const{return doubletoptr(asDouble);}
+		inline operator TreeNode*()const{return (TreeNode*)doubletoptr(asDouble);}
+		inline operator double()const{return asDouble;}
+		inline operator __int64()const{return (__int64)asDouble;}
+		inline operator int()const{return (int)asDouble;}
+		inline operator short()const{return (short)asDouble;}
+		inline operator char()const{return (char)asDouble;}
+		inline operator unsigned __int64()const{return (unsigned __int64)asDouble;}
+		inline operator unsigned int()const{return (unsigned int)asDouble;}
+		inline operator unsigned short()const{return (unsigned short)asDouble;}
+		inline operator unsigned char()const{return (unsigned char)asDouble;}
+		inline operator unsigned char*()const{return (unsigned char*)doubletoptr(asDouble);}
+		inline operator char*()const{return (char*)doubletoptr(asDouble);}
+		inline FlexSimValue(void* x) : asDouble(ptrtodouble(x)) {}
+		inline FlexSimValue(TreeNode* x) : asDouble(ptrtodouble(x)) {}
+		inline FlexSimValue(double x) : asDouble(x) {}
+		inline FlexSimValue(__int64 x) : asDouble((double)x) {}
+		inline FlexSimValue(int x) : asDouble((double)x) {}
+		inline FlexSimValue(short x) : asDouble((double)x) {}
+		inline FlexSimValue(char x) : asDouble((double)x) {}
+		inline FlexSimValue(unsigned __int64 x) : asDouble((double)x) {}
+		inline FlexSimValue(unsigned int x) : asDouble((double)x) {}
+		inline FlexSimValue(unsigned short x) : asDouble((double)x) {}
+		inline FlexSimValue(unsigned char x) : asDouble((double)x) {}
+		inline FlexSimValue(unsigned char* x) : asDouble((double)ptrtodouble(x)) {}
+		inline FlexSimValue(char* x) : asDouble((double)ptrtodouble(x)) {}
+		inline FlexSimValue(const char* x) : asDouble((double)ptrtodouble((char*)x)) {}
+	};
+#endif
+	typedef FlexSimValue (*_$iter)(int index);
 	typedef treenode     (*attfunc)(treenode );
 	typedef int          (*__executefsfile)(char* s, int direct);
 	typedef double       (*__inheritcode)(CallPoint* callpoint);
@@ -245,9 +282,11 @@ THE SOFTWARE.
 	typedef int          (*_cppgettoken)(treenode thetext, int index, ByteBlock * resultblock);
 	typedef int          (*_cppsettitletoken)(treenode thetext, int index, ByteBlock * resultblock, char * newtext);
 	typedef int          (*_cppsettoken)(treenode thetext, int index, ByteBlock * resultblock, char * newtext);
-	typedef std::function<double (CallPoint*)> queryCallback;
+#if _MSC_VER >= 1600
+	typedef std::function<double ()> queryCallback;
 	typedef int          (*_cpp_queryalias)(const char* queryStr, queryCallback& p1,  queryCallback& p2, queryCallback& p3,  queryCallback& p4,
 									queryCallback& p5,  queryCallback& p6, queryCallback& p7,  queryCallback& p8, queryCallback& p9);
+#endif
 	typedef treenode     (*_createcoordinatedtasksequence)(treenode dispatcher);
 	typedef treenode     (*_createcopyalias)(treenode classobject, treenode instancecontainer, int samename, int inobject, int cached, int replace);
 	typedef treenode     (*_createcoupling)(treenode container1, treenode container2);
@@ -356,6 +395,7 @@ THE SOFTWARE.
 	typedef double       (*_dropx)();
 	typedef double       (*_dropy)();
 	typedef double       (*_dropz)();
+	typedef void         (*_dumpquery)(treenode queryNode, treenode dumpNode, bool asTable);
 	typedef double       (*_duniformalias)( int    i,      int    j, int stream);
 	typedef double       (*_dynamicsplineall)(treenode start);
 	typedef int          (*_edscode)(EventDataStruct* eds);
@@ -548,6 +588,10 @@ THE SOFTWARE.
 	typedef unsigned int (*_getpreempt)(treenode tasksequence);
 	typedef double       (*_getpriority)(treenode tasksequence);
 	typedef char*        (*_getproperty)(char *filename, int property);
+	typedef double       (*_getquerycolcount)(TreeNode* queryNode);
+	typedef int          (*_getquerymatchcount)(TreeNode* queryNode);
+	typedef double       (*_getqueryvaluealias1)(TreeNode* queryNode, int row, char* colName);
+	typedef double       (*_getqueryvaluealias2)(TreeNode* queryNode, int row, int col);
 	typedef double       (*_getrank)(treenode);
 	typedef int          (*_getrunstate)();
 	typedef double       (*_getshapeindex)(char * thename);
@@ -1070,7 +1114,6 @@ THE SOFTWARE.
 	typedef treenode     (*_tonodealias2)(double x);
 	typedef treenode     (*_tonodealias3)(char* x);
 	typedef treenode     (*_tonodealias4)(void* x);
-	typedef double       (*_tonum)(treenode x);
 	typedef void*        (*_toptr)(int x);
 	typedef double       (*_tracemaskevents)(double x);
 	typedef double       (*_tracemaskobject)(treenode x);
@@ -1194,13 +1237,6 @@ THE SOFTWARE.
 		typedef void (*_sql_buildquery)(TreeNode* queryNode, char* query);
 		typedef int (*_sql_doquery)(TreeNode* queryNode, bool continueQuery);
 		typedef int (*_sql_continuequery)(TreeNode* queryNode);
-
-		typedef int (*_query)(CallPoint* callpoint);
-		typedef void (*_dumpquery)(TreeNode* queryNode, TreeNode* dumpNode, bool asTable);
-		typedef int (*_getquerymatchcount)(TreeNode* queryNode);
-		typedef double (*_getqueryvaluealias1)(TreeNode* queryNode, int row, char* colName);
-		typedef double (*_getqueryvaluealias2)(TreeNode* queryNode, int row, int col);
-		typedef double (*_getquerycolcount)(TreeNode* queryNode);
 		
 	#else
 		typedef double (*_transportincompletealias)(treenode object, treenode item, int portnumber, treenode transporter);
@@ -1210,6 +1246,7 @@ THE SOFTWARE.
 #endif
 
 /*** FLEXSIM FUNCTIONS ***/
+DECLARE_FLEXSIM_FUNCTION_1($iter)
 DECLARE_FLEXSIM_FUNCTION_1(_executefsfile)
 DECLARE_FLEXSIM_FUNCTION_1(_inheritcode)
 DECLARE_FLEXSIM_FUNCTION_1(_mpd)
@@ -1576,6 +1613,10 @@ DECLARE_FLEXSIM_FUNCTION_1(getparentwindow)
 DECLARE_FLEXSIM_FUNCTION_1(getpickingdrawfocus)
 DECLARE_FLEXSIM_FUNCTION_1(getpickingmode)
 DECLARE_FLEXSIM_FUNCTION_1(getproperty)
+DECLARE_FLEXSIM_FUNCTION_1(getquerycolcount)
+DECLARE_FLEXSIM_FUNCTION_1(getquerymatchcount)
+DECLARE_FLEXSIM_FUNCTION_2(getqueryvaluealias1, "getqueryvalue")
+DECLARE_FLEXSIM_FUNCTION_3(getqueryvaluealias2,  "?getqueryvalue@@YA?AUSqlValue@@PAVTreeNode@@HPAD@Z", "?getqueryvalue@@YA?AUSqlValue@@PEAVTreeNode@@HPEAD@Z")
 DECLARE_FLEXSIM_FUNCTION_1(getrank)
 DECLARE_FLEXSIM_FUNCTION_1(getrunstate)
 DECLARE_FLEXSIM_FUNCTION_1(getshapeindex)
@@ -2047,7 +2088,9 @@ DECLARE_FLEXSIM_FUNCTION_1(cppgettitletoken)
 DECLARE_FLEXSIM_FUNCTION_1(cppgettoken)
 DECLARE_FLEXSIM_FUNCTION_1(cppsettitletoken)
 DECLARE_FLEXSIM_FUNCTION_1(cppsettoken)
+#if _MSC_VER >= 1600
 DECLARE_FLEXSIM_FUNCTION_2(cpp_queryalias, "cpp_query")
+#endif
 DECLARE_FLEXSIM_FUNCTION_1(dbwritechanges)
 DECLARE_FLEXSIM_FUNCTION_1(divide)
 DECLARE_FLEXSIM_FUNCTION_1(drawrect)
@@ -2153,11 +2196,6 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_buildquery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_doquery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_continuequery)
-	DECLARE_FLEXSIM_FUNCTION_1(getquerycolcount)
-	DECLARE_FLEXSIM_FUNCTION_1(getquerymatchcount)
-	DECLARE_FLEXSIM_FUNCTION_2(getqueryvaluealias1, "getqueryvalue")
-	DECLARE_FLEXSIM_FUNCTION_3(getqueryvaluealias2,  "?getqueryvalue@@YA?AUSqlValue@@PAVTreeNode@@HPAD@Z", "?getqueryvalue@@YA?AUSqlValue@@PEAVTreeNode@@HPEAD@Z")
-	DECLARE_FLEXSIM_FUNCTION_1(query)
 	
 /*** FUNCTIONS ONLY REQUIRED FOR DLL PROJECT***/
 #else
@@ -2280,7 +2318,6 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(setpriority)
 	DECLARE_FLEXSIM_FUNCTION_1(setresetposition);
 	DECLARE_FLEXSIM_FUNCTION_1(stopobject);
-	DECLARE_FLEXSIM_FUNCTION_1(tonum);
 	DECLARE_FLEXSIM_FUNCTION_1(trafficcontrolinfo);
 	DECLARE_FLEXSIM_FUNCTION_1(updatelocations);
 	DECLARE_FLEXSIM_FUNCTION_2(dispatchcoordinatedtasksequencealias, "dispatchcoordinatedtasksequence")

@@ -3,38 +3,41 @@
 #include "basicmacros.h"
 #include <string.h>
 
-class FlexSimValue
-{
-public:
-	double asDouble;
-	inline operator void*()const{return doubletoptr(asDouble);}
-	inline operator TreeNode*()const{return (TreeNode*)doubletoptr(asDouble);}
-	inline operator double()const{return asDouble;}
-	inline operator __int64()const{return (__int64)asDouble;}
-	inline operator int()const{return (int)asDouble;}
-	inline operator short()const{return (short)asDouble;}
-	inline operator char()const{return (char)asDouble;}
-	inline operator unsigned __int64()const{return (unsigned __int64)asDouble;}
-	inline operator unsigned int()const{return (unsigned int)asDouble;}
-	inline operator unsigned short()const{return (unsigned short)asDouble;}
-	inline operator unsigned char()const{return (unsigned char)asDouble;}
-	inline operator unsigned char*()const{return (unsigned char*)doubletoptr(asDouble);}
-	inline operator char*()const{return (char*)doubletoptr(asDouble);}
-	inline FlexSimValue(void* x) : asDouble(ptrtodouble(x)) {}
-	inline FlexSimValue(TreeNode* x) : asDouble(ptrtodouble(x)) {}
-	inline FlexSimValue(double x) : asDouble(x) {}
-	inline FlexSimValue(__int64 x) : asDouble((double)x) {}
-	inline FlexSimValue(int x) : asDouble((double)x) {}
-	inline FlexSimValue(short x) : asDouble((double)x) {}
-	inline FlexSimValue(char x) : asDouble((double)x) {}
-	inline FlexSimValue(unsigned __int64 x) : asDouble((double)x) {}
-	inline FlexSimValue(unsigned int x) : asDouble((double)x) {}
-	inline FlexSimValue(unsigned short x) : asDouble((double)x) {}
-	inline FlexSimValue(unsigned char x) : asDouble((double)x) {}
-	inline FlexSimValue(unsigned char* x) : asDouble((double)ptrtodouble(x)) {}
-	inline FlexSimValue(char* x) : asDouble((double)ptrtodouble(x)) {}
-	inline FlexSimValue(const char* x) : asDouble((double)ptrtodouble((char*)x)) {}
-};
+#ifndef FLEXSIM_VALUE
+#define FLEXSIM_VALUE
+	class FlexSimValue
+	{
+	public:
+		double asDouble;
+		inline operator void*()const{return doubletoptr(asDouble);}
+		inline operator TreeNode*()const{return (TreeNode*)doubletoptr(asDouble);}
+		inline operator double()const{return asDouble;}
+		inline operator __int64()const{return (__int64)asDouble;}
+		inline operator int()const{return (int)asDouble;}
+		inline operator short()const{return (short)asDouble;}
+		inline operator char()const{return (char)asDouble;}
+		inline operator unsigned __int64()const{return (unsigned __int64)asDouble;}
+		inline operator unsigned int()const{return (unsigned int)asDouble;}
+		inline operator unsigned short()const{return (unsigned short)asDouble;}
+		inline operator unsigned char()const{return (unsigned char)asDouble;}
+		inline operator unsigned char*()const{return (unsigned char*)doubletoptr(asDouble);}
+		inline operator char*()const{return (char*)doubletoptr(asDouble);}
+		inline FlexSimValue(void* x) : asDouble(ptrtodouble(x)) {}
+		inline FlexSimValue(TreeNode* x) : asDouble(ptrtodouble(x)) {}
+		inline FlexSimValue(double x) : asDouble(x) {}
+		inline FlexSimValue(__int64 x) : asDouble((double)x) {}
+		inline FlexSimValue(int x) : asDouble((double)x) {}
+		inline FlexSimValue(short x) : asDouble((double)x) {}
+		inline FlexSimValue(char x) : asDouble((double)x) {}
+		inline FlexSimValue(unsigned __int64 x) : asDouble((double)x) {}
+		inline FlexSimValue(unsigned int x) : asDouble((double)x) {}
+		inline FlexSimValue(unsigned short x) : asDouble((double)x) {}
+		inline FlexSimValue(unsigned char x) : asDouble((double)x) {}
+		inline FlexSimValue(unsigned char* x) : asDouble((double)ptrtodouble(x)) {}
+		inline FlexSimValue(char* x) : asDouble((double)ptrtodouble(x)) {}
+		inline FlexSimValue(const char* x) : asDouble((double)ptrtodouble((char*)x)) {}
+	};
+#endif
 
 #define COMPARE_NUMBER(op, numberType) \
 	bool operator op (numberType& theNum)\
