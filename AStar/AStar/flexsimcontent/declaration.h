@@ -226,6 +226,7 @@ inline int comparetext(string str1, string str2)
 {
   return str1==str2;
 }
+inline int comparetext(string str1, string str2, int ignorecase){return comparetextalias1(str1, str2, ignorecase);}
 inline int stringcompare(string str1, string str2)
 {
   return strcmp((char*)str1.c_str(),(char*)str2.c_str());
@@ -613,8 +614,10 @@ inline double drawsphere(double x, double y, double z, double radius, double red
 	{return drawspherealias(x,y,z,radius,red,green,blue,opacity,textureindex);}
 inline double excellaunch(char* path){return excellaunchalias1(path);}
 inline double excellaunch(){return excellaunchalias2();}
-inline int stringsearch(char* str, char* substr, int startpos){return stringsearchalias(str, substr, startpos);}
-inline int stringsearch(string str, string substr, int startpos){return stringsearchalias((char*)str.c_str(), (char*)substr.c_str(), startpos);}
+inline int stringsearch(char* str, char* substr, int startpos){return stringsearchalias1(str, substr, startpos);}
+inline int stringsearch(char* str, char* substr, int startpos, int flags){return stringsearchalias2(str, substr, startpos, flags);}
+inline int stringsearch(string& str, string& substr, int startpos){return stringsearchalias1((char*)str.c_str(), (char*)substr.c_str(), startpos);}
+inline int stringsearch(string& str, string& substr, int startpos, int flags){return stringsearchalias2((char*)str.c_str(), (char*)substr.c_str(), startpos, flags);}
 inline double runspeed(double n1, double n2 = 0){return runspeedalias(n1,n2);}
 inline int fabs(int val){return (int)fabs((double)val);}
 inline int isclasstype(treenode obj, int classtype){return isclasstypealias1(obj, classtype);}

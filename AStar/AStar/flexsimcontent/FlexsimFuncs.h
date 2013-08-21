@@ -264,6 +264,7 @@ THE SOFTWARE.
 	typedef int          (*_combocurrentnode)(treenode thecombo);
 	typedef int          (*_comborefresh)(treenode thecombo);
 	typedef char*        (*_commandlineparam)(char* param);
+	typedef int          (*_comparetextalias1)(string str1, string str2, int ignorecase);
 	typedef int          (*_comparetrees)(treenode a, treenode b);
 	typedef double       (*_consoleexecutecpp)(HWND in, HWND out);
 	typedef double       (*_consoleexecutefs)(HWND in, HWND out);
@@ -1077,7 +1078,8 @@ THE SOFTWARE.
 	typedef double       (*_stopoutput)(treenode object);
 	typedef double       (*_stoptimealias)(double n1, double n2);
 	typedef double       (*_stringreturn)(char* result, CallPoint * callpoint);
-	typedef int          (*_stringsearchalias)(char* str, char* substr, int startpos);
+	typedef int          (*_stringsearchalias1)(char* str, char* substr, int startpos);
+	typedef int          (*_stringsearchalias2)(char* str, char* substr, int startpos, int flags);
 	typedef int          (*_stringsequal)(char *s1, char *s2);
 	typedef char*        (*_stringtokenalias)(char* token, char* delimit);
 	typedef double       (*_stringtonumalias)(char * str1);
@@ -1367,6 +1369,7 @@ DECLARE_FLEXSIM_FUNCTION_1(colorwhite)
 DECLARE_FLEXSIM_FUNCTION_1(coloryellow)
 DECLARE_FLEXSIM_FUNCTION_1(combocurrentnode)
 DECLARE_FLEXSIM_FUNCTION_1(comborefresh)
+DECLARE_FLEXSIM_FUNCTION_2(comparetextalias1, "?comparetext@@YAHPAD0H@Z", "?comparetext@@YAHPEAD0H@Z")
 DECLARE_FLEXSIM_FUNCTION_1(comparetrees)
 DECLARE_FLEXSIM_FUNCTION_1(consoleexecutefs)
 DECLARE_FLEXSIM_FUNCTION_1(content)
@@ -1982,7 +1985,8 @@ DECLARE_FLEXSIM_FUNCTION_1(stoplisten)
 DECLARE_FLEXSIM_FUNCTION_1(stopoutput)
 DECLARE_FLEXSIM_FUNCTION_2(stoptimealias, "stoptime")
 DECLARE_FLEXSIM_FUNCTION_1(stringreturn)
-DECLARE_FLEXSIM_FUNCTION_2(stringsearchalias, "stringsearch")
+DECLARE_FLEXSIM_FUNCTION_2(stringsearchalias1, "stringsearch")
+DECLARE_FLEXSIM_FUNCTION_3(stringsearchalias2, "?stringsearch@@YAHPAD0HH@Z", "?stringsearch@@YAHPEAD0HH@Z")
 DECLARE_FLEXSIM_FUNCTION_1(stringsequal)
 DECLARE_FLEXSIM_FUNCTION_2(stringtokenalias, "stringtoken")
 DECLARE_FLEXSIM_FUNCTION_2(stringtonumalias, "stringtonum")
