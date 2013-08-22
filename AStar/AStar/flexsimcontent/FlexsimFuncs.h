@@ -264,7 +264,7 @@ THE SOFTWARE.
 	typedef int          (*_combocurrentnode)(treenode thecombo);
 	typedef int          (*_comborefresh)(treenode thecombo);
 	typedef char*        (*_commandlineparam)(char* param);
-	typedef int          (*_comparetextalias1)(string str1, string str2, int ignorecase);
+	typedef int          (*_comparetextalias1)(char* str1, char* str2, int ignorecase);
 	typedef int          (*_comparetrees)(treenode a, treenode b);
 	typedef double       (*_consoleexecutecpp)(HWND in, HWND out);
 	typedef double       (*_consoleexecutefs)(HWND in, HWND out);
@@ -1010,6 +1010,7 @@ THE SOFTWARE.
 	typedef double       (*_setpriority)(treenode tasksequence, double newpriority);
 	typedef double       (*_setprogressbar)(double val);
 	typedef int          (*_setproperty)(char *filename, int property, char *newvalue);
+	typedef void         (*_setquerynode)(treenode queryNode);
 	typedef treenode     (*_setrank)(treenode, int);
 	typedef double       (*_setresetposition)(treenode obj);
 	typedef double       (*_setrot)(treenode involved, double rx, double ry, double rz);
@@ -1369,7 +1370,7 @@ DECLARE_FLEXSIM_FUNCTION_1(colorwhite)
 DECLARE_FLEXSIM_FUNCTION_1(coloryellow)
 DECLARE_FLEXSIM_FUNCTION_1(combocurrentnode)
 DECLARE_FLEXSIM_FUNCTION_1(comborefresh)
-DECLARE_FLEXSIM_FUNCTION_2(comparetextalias1, "?comparetext@@YAHPAD0H@Z", "?comparetext@@YAHPEAD0H@Z")
+DECLARE_FLEXSIM_FUNCTION_3(comparetextalias1, "?comparetext@@YAHPAD0H@Z", "?comparetext@@YAHPEAD0H@Z")
 DECLARE_FLEXSIM_FUNCTION_1(comparetrees)
 DECLARE_FLEXSIM_FUNCTION_1(consoleexecutefs)
 DECLARE_FLEXSIM_FUNCTION_1(content)
@@ -1619,7 +1620,7 @@ DECLARE_FLEXSIM_FUNCTION_1(getproperty)
 DECLARE_FLEXSIM_FUNCTION_1(getquerycolcount)
 DECLARE_FLEXSIM_FUNCTION_1(getquerymatchcount)
 DECLARE_FLEXSIM_FUNCTION_2(getqueryvaluealias1, "getqueryvalue")
-DECLARE_FLEXSIM_FUNCTION_3(getqueryvaluealias2,  "?getqueryvalue@@YA?AUSqlValue@@PAVTreeNode@@HPAD@Z", "?getqueryvalue@@YA?AUSqlValue@@PEAVTreeNode@@HPEAD@Z")
+DECLARE_FLEXSIM_FUNCTION_3(getqueryvaluealias2,  "?getqueryvalue@@YANHPADPA_N@Z", "?getqueryvalue@@YANHPEADPEA_N@Z")
 DECLARE_FLEXSIM_FUNCTION_1(getrank)
 DECLARE_FLEXSIM_FUNCTION_1(getrunstate)
 DECLARE_FLEXSIM_FUNCTION_1(getshapeindex)
@@ -1924,6 +1925,7 @@ DECLARE_FLEXSIM_FUNCTION_1(setobjecttextureindex)
 DECLARE_FLEXSIM_FUNCTION_2(setpickingdrawfocusalias, "setpickingdrawfocus")
 DECLARE_FLEXSIM_FUNCTION_1(setprogressbar)
 DECLARE_FLEXSIM_FUNCTION_1(setproperty)
+DECLARE_FLEXSIM_FUNCTION_1(setquerynode)
 DECLARE_FLEXSIM_FUNCTION_1(setrank)
 DECLARE_FLEXSIM_FUNCTION_1(setrot)
 DECLARE_FLEXSIM_FUNCTION_1(setselectedobject)

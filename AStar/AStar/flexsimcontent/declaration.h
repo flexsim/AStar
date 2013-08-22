@@ -226,7 +226,7 @@ inline int comparetext(string str1, string str2)
 {
   return str1==str2;
 }
-inline int comparetext(string str1, string str2, int ignorecase){return comparetextalias1(str1, str2, ignorecase);}
+inline int comparetext(string str1, string str2, int ignorecase){return comparetextalias1((char*)str1.c_str(), (char*)str2.c_str(), ignorecase);}
 inline int stringcompare(string str1, string str2)
 {
   return strcmp((char*)str1.c_str(),(char*)str2.c_str());

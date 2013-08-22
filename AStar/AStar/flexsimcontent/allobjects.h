@@ -637,6 +637,10 @@
 #define KINEMATIC_ENDDIST  36
 #define KINEMATIC_ENDRDIST  37
 #define KINEMATIC_TYPE  38
+#define KINEMATIC_STARTANGLE  39
+#define KINEMATIC_TURNANGLE  40
+#define KINEMATIC_TURNRADIUS  41
+
 #define KINEMATIC_TRAVEL  1
 #define KINEMATIC_ROTATE  2
 
@@ -3109,12 +3113,6 @@ TreeNode * node_v_rows;
 #define v_rows node_v_rows->safedatafloat()[0]
 TreeNode * node_v_modelstarttime;
 #define v_modelstarttime node_v_modelstarttime->safedatafloat()[0]
-TreeNode * node_v_defaultstartday;
-#define v_defaultstartday node_v_defaultstartday->safedatafloat()[0]
-TreeNode * node_v_defaultstarthour;
-#define v_defaultstarthour node_v_defaultstarthour->safedatafloat()[0]
-TreeNode * node_v_defaultstartampm;
-#define v_defaultstartampm node_v_defaultstartampm->safedatafloat()[0]
 TreeNode * node_v_downtrigger;
 TreeNode * node_v_uptrigger;
 TreeNode * node_v_downfunction;
