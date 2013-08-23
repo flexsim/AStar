@@ -589,10 +589,11 @@ THE SOFTWARE.
 	typedef unsigned int (*_getpreempt)(treenode tasksequence);
 	typedef double       (*_getpriority)(treenode tasksequence);
 	typedef char*        (*_getproperty)(char *filename, int property);
-	typedef double       (*_getquerycolcount)(TreeNode* queryNode);
-	typedef int          (*_getquerymatchcount)(TreeNode* queryNode);
-	typedef double       (*_getqueryvaluealias1)(TreeNode* queryNode, int row, char* colName);
-	typedef double       (*_getqueryvaluealias2)(TreeNode* queryNode, int row, int col);
+	typedef double       (*_getquerycolcount)();
+	typedef int          (*_getquerymatchcount)();
+	typedef int          (*_getquerymatchtablerow)(char* tableName, int matchRow);
+	typedef double       (*_getqueryvaluealias1)(int row, int col);
+	typedef double       (*_getqueryvaluealias2)(int row, char* colName);
 	typedef double       (*_getrank)(treenode);
 	typedef int          (*_getrunstate)();
 	typedef double       (*_getshapeindex)(char * thename);
@@ -1240,6 +1241,7 @@ THE SOFTWARE.
 		typedef void (*_sql_buildquery)(TreeNode* queryNode, char* query);
 		typedef int (*_sql_doquery)(TreeNode* queryNode, bool continueQuery);
 		typedef int (*_sql_continuequery)(TreeNode* queryNode);
+		typedef void (*_sql_setdelegate)(SqlDelegate* d);
 		
 	#else
 		typedef double (*_transportincompletealias)(treenode object, treenode item, int portnumber, treenode transporter);
@@ -1619,6 +1621,7 @@ DECLARE_FLEXSIM_FUNCTION_1(getpickingmode)
 DECLARE_FLEXSIM_FUNCTION_1(getproperty)
 DECLARE_FLEXSIM_FUNCTION_1(getquerycolcount)
 DECLARE_FLEXSIM_FUNCTION_1(getquerymatchcount)
+DECLARE_FLEXSIM_FUNCTION_1(getquerymatchtablerow)
 DECLARE_FLEXSIM_FUNCTION_2(getqueryvaluealias1, "getqueryvalue")
 DECLARE_FLEXSIM_FUNCTION_3(getqueryvaluealias2,  "?getqueryvalue@@YANHPADPA_N@Z", "?getqueryvalue@@YANHPEADPEA_N@Z")
 DECLARE_FLEXSIM_FUNCTION_1(getrank)
@@ -2202,6 +2205,7 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_buildquery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_doquery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_continuequery)
+	DECLARE_FLEXSIM_FUNCTION_1(sql_setdelegate)
 	
 /*** FUNCTIONS ONLY REQUIRED FOR DLL PROJECT***/
 #else

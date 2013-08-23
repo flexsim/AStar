@@ -46,6 +46,7 @@ typedef double (*FSfptr)(CallPoint*);
 class UserWindowStyle;
 class Mesh;
 class IndexedMesh;
+class SqlDelegate;
 extern void* flexsimmalloc(size_t);
 extern void * flexsimrealloc(void* memory, size_t size);
 extern void flexsimfree(void * p);
