@@ -589,7 +589,7 @@ template<class ObjType>
 #define SQL_TABLE_END INT_MAX - 4
 #define SQL_TABLE_GET_ALL_COLUMNS "#GET_ALL_COLUMNS#"
 #define SQL_COLUMN_END INT_MAX - 5
-#define SQL_NULL SqlValue(SqlValue::Null, 0);
+#define SQL_NULL SqlValue(SqlValue::Null, 0)
 
 class SqlDelegate : public SimpleDataType
 {

@@ -32,9 +32,23 @@ protected:
 		// initialize the per mesh color attribs' alpha to 1
 		perMeshAmbient[3] = perMeshDiffuse[3] = perMeshSpecular[3] = perMeshEmissive[3] = 1.0f;
 	}
+	// -15 stored using a single precision bias of 127
+	static const unsigned int  HALF_FLOAT_MIN_BIASED_EXP_AS_SINGLE_FP_EXP = 0x38000000;
+	// max exponent value in single precision that will be converted
+	// to Inf or Nan when stored as a half-float
+	static const unsigned int  HALF_FLOAT_MAX_BIASED_EXP_AS_SINGLE_FP_EXP = 0x47800000;
+	// 255 is the max exponent biased value
+	static const unsigned int  FLOAT_MAX_BIASED_EXP = (0xFF << 23);
+	static const unsigned int  HALF_FLOAT_MAX_BIASED_EXP = (0x1F << 10);
+	typedef unsigned short    hfloat;
+	static hfloat convertFloatToHFloat(float *f);
+	static float convertHFloatToFloat(hfloat hf);
+
 	typedef void (*CopyCallback)(void* copyPoint, float* inVerts, int componentsPerVertex, int numVerts, int vertByteStride);
+	static void copyHFloatAttribs(void* copyPoint, float* inVerts, int componentsPerVertex, int numVerts, int vertByteStride);
 	static void copyFloatAttribs(void* copyPoint, float* inVerts, int componentsPerVertex, int numVerts, int vertByteStride);
 	static void copyColorAttribs(void* copyTo, float* inVerts, int componentsPerVertex, int numVerts, int vertByteStride);
+	
 	struct AttribCopier {
 		int componentsPerVertex;
 		int bytesPerComponent;
@@ -176,8 +190,10 @@ public:
 	///									bitwise or (|) of zero or more of the following:
 	/// 								- MESH_TEX_COORD2 - signifies that you will provide per-vertex texture coordinate data
 	///									- MESH_NORMAL - signifies that you will provide per-vertex normal data
-	///									- MESH_AMBIENT_AND_DIFFUSE - signifies that you will provide per-vertex 3-component color data
-	///									- MESH_AMBIENT_AND_DIFFUSE4 - signifies that you will provide per-vertex 4-component color data
+	///									- MESH_AMBIENT_AND_DIFFUSE - signifies that you will provide per-vertex 3-component color data. Both ambient and diffuse colors will track the vertex color data.
+	///									- MESH_AMBIENT_AND_DIFFUSE4 - signifies that you will provide per-vertex 4-component color data. Both ambient and diffuse colors will track the vertex color data.
+	///									- MESH_DIFFUSE - signifies that you will provide per-vertex 3-component color data
+	///									- MESH_DIFFUSE4 - signifies that you will provide per-vertex 4-component color data
 	/// 								</param>
 	/// <param name="flags">		   	(Optional) Miscellaneous flags. </param>
 	void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0);

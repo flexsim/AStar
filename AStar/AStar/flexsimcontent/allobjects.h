@@ -1985,6 +1985,93 @@ extern int g_tasksequencecounter;
 
 
 template <class Number>
+class Vec4Generic 
+{
+public:
+	union {
+		struct {
+			Number x;
+			Number y;
+			Number z;
+			Number w;
+		};
+		struct {
+			Number r;
+			Number g;
+			Number b;
+			Number a;
+		};
+		Number loc[4];
+	};
+	template <class OtherNumber>
+	Vec4Generic(Vec4Generic<OtherNumber>& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}
+	template <class OtherNumber>
+	Vec4Generic(OtherNumber* other) : x(other[0]), y(other[1]), z(other[2]), w(other[3]) {}
+	Vec4Generic(Number x, Number y, Number z, Number w) : x(x), y(y), z(z), w(w) {}
+	Vec4Generic() {}
+
+	operator Number* () {return loc;}
+	Vec4Generic operator + (Vec4Generic& a) {return Vec4Generic(x + a.x, y + a.y, z + a.z, w + a.w);}
+	Vec4Generic operator - (Vec4Generic& a) {return Vec4Generic(x - a.x, y - a.y, z - a.z, w - a.w);}
+	Vec4Generic operator - () const {return Vec4Generic(-x, -y, -z, -w);}
+	Vec4Generic operator / (Vec4Generic& other) const {return Vec4Generic(x / other.x, y / other.y, z / other.z, w / other.w);}
+	Vec4Generic operator / (Number mult) const {return Vec4Generic(x / mult, y / mult, z / mult, w / mult);}
+	Vec4Generic operator * (Vec4Generic& other) const {return Vec4Generic(x * other.x, y * other.y, z * other.z, w * other.w);}
+	Vec4Generic operator * (Number mult) const {return Vec4Generic(x * mult, y * mult, z * mult, w * mult);}
+	Vec4Generic& operator += (Vec4Generic& other) {x += other.x; y += other.y; z += other.z; w += other.w; return *this;}
+	Vec4Generic& operator -= (Vec4Generic& other) {x -= other.x; y -= other.y; z -= other.z; w += other.w; return *this;}
+	bool operator == (Vec4Generic& other) {return x == other.x && y == other.y && z == other.z && w == other.w;}
+	bool operator != (Vec4Generic& other) {return x != other.x || y != other.y || z != other.z || w != other.w;}
+
+	template <class OtherNumber>
+	Vec4Generic& operator = (Vec4Generic<OtherNumber>& other) {x = other.x; y = other.y; z = other.z; w = other.w; return *this;}
+	Number& operator [] (int index) {return loc[index];}
+
+	Number getLength() const {return sqrt(x * x + y * y + z * z + w * w);}
+	Number getDistanceTo(Vec4Generic& other) const {return Vec3(x - other.x, y - other.y, z - other.z, w - other.w).getLength();}
+	Number getDotProduct(Vec4Generic& other) const {return x * other.x + y * other.y + z * other.z + w * other.w;}
+	Number getXYAngle() {return radianstodegrees(atan2(y, x));}
+	Number getYZAngle() {return radianstodegrees(atan2(z, y));}
+	Number getZXAngle() {return radianstodegrees(atan2(x, z));}
+	template <class OtherNumber>
+	void copyTo(OtherNumber* dest) {dest[0] = (OtherNumber)x; dest[1] = (OtherNumber)y; dest[2] = (OtherNumber)z; dest[3] = (OtherNumber)w;}
+	void normalize() 
+	{
+		Number length = getLength();
+		x /= length;
+		y /= length;
+		z /= length;
+		w /= length;
+	}
+	#define VEC_ROTATE_A_B(degs, a, b) \
+		Number rads = degreestoradians(degrees); \
+		Number cosRads = cos(rads); \
+		Number sinRads = sin(rads); \
+		Vec4Generic temp = *this; \
+		a = cosRads * temp.a - sinRads * temp.b; \
+		b = sinRads * temp.a + cosRads * temp.b;
+		
+	void rotateXY(Number degrees) 
+	{
+		VEC_ROTATE_A_B(degrees, x, y)
+	}
+	void rotateYZ(Number degrees) 
+	{
+		VEC_ROTATE_A_B(degrees, y, z)
+	}
+	void rotateZX(Number degrees) 
+	{
+		VEC_ROTATE_A_B(degrees, z, x)
+	}
+	static Vec4Generic fromRotAndDist(Number degs, Number length, Number zComp = 0) 
+	{
+		Number rads = degreestoradians(degs); 
+		return Vec4Generic(length * cos(rads), length * sin(rads), zComp);
+	}
+};
+
+
+template <class Number>
 class Vec3Generic 
 {
 public:
@@ -1994,22 +2081,28 @@ public:
 			Number y;
 			Number z;
 		};
+		struct {
+			Number r;
+			Number g;
+			Number b;
+		};
 		Number loc[3];
 	};
 	template <class OtherNumber>
 	Vec3Generic(Vec3Generic<OtherNumber>& other) : x(other.x), y(other.y), z(other.z) {}
+	template <class OtherNumber>
+	Vec3Generic(OtherNumber* other) : x(other[0]), y(other[1]), z(other[2]) {}
 	Vec3Generic(Number x, Number y, Number z) : x(x), y(y), z(z) {}
-	Vec3Generic(Number * loc) : x(loc[0]), y(loc[1]), z(loc[2]) {}
 	Vec3Generic() {}
 
 	operator Number* () {return loc;}
-	Vec3Generic operator + (Vec3Generic& a) {return Vec3(x + a.x, y + a.y, z + a.z);}
-	Vec3Generic operator - (Vec3Generic& a) {return Vec3(x - a.x, y - a.y, z - a.z);}
-	Vec3Generic operator - () const {return Vec3(-x, -y, -z);}
-	Vec3Generic operator / (Vec3Generic& other) const {return Vec3(x / other.x, y / other.y, z / other.z);}
-	Vec3Generic operator / (Number mult) const {return Vec3(x / mult, y / mult, z / mult);}
-	Vec3Generic operator * (Vec3Generic& other) const {return Vec3(x * other.x, y * other.y, z * other.z);}
-	Vec3Generic operator * (Number mult) const {return Vec3(x * mult, y * mult, z * mult);}
+	Vec3Generic operator + (Vec3Generic& a) {return Vec3Generic(x + a.x, y + a.y, z + a.z);}
+	Vec3Generic operator - (Vec3Generic& a) {return Vec3Generic(x - a.x, y - a.y, z - a.z);}
+	Vec3Generic operator - () const {return Vec3Generic(-x, -y, -z);}
+	Vec3Generic operator / (Vec3Generic& other) const {return Vec3Generic(x / other.x, y / other.y, z / other.z);}
+	Vec3Generic operator / (Number mult) const {return Vec3Generic(x / mult, y / mult, z / mult);}
+	Vec3Generic operator * (Vec3Generic& other) const {return Vec3Generic(x * other.x, y * other.y, z * other.z);}
+	Vec3Generic operator * (Number mult) const {return Vec3Generic(x * mult, y * mult, z * mult);}
 	Vec3Generic& operator += (Vec3Generic& other) {x += other.x; y += other.y; z += other.z; return *this;}
 	Vec3Generic& operator -= (Vec3Generic& other) {x -= other.x; y -= other.y; z -= other.z; return *this;}
 	bool operator == (Vec3Generic& other) {return x == other.x && y == other.y && z == other.z;}
@@ -2020,7 +2113,7 @@ public:
 	Number& operator [] (int index) {return loc[index];}
 
 	Number getLength() const {return sqrt(x * x + y * y + z * z);}
-	Number getDistanceTo(Vec3Generic& other) const {return Vec3(x - other.x, y - other.y, z - other.z).getLength();}
+	Number getDistanceTo(Vec3Generic& other) const {return Vec3Generic(x - other.x, y - other.y, z - other.z).getLength();}
 	Number getDotProduct(Vec3Generic& other) const {return x * other.x + y * other.y + z * other.z;}
 	Number getXYAngle() {return radianstodegrees(atan2(y, x));}
 	Number getYZAngle() {return radianstodegrees(atan2(z, y));}
@@ -2038,7 +2131,7 @@ public:
 		Number rads = degreestoradians(degrees); \
 		Number cosRads = cos(rads); \
 		Number sinRads = sin(rads); \
-		Vec3 temp = *this; \
+		Vec3Generic temp = *this; \
 		a = cosRads * temp.a - sinRads * temp.b; \
 		b = sinRads * temp.a + cosRads * temp.b;
 		
@@ -2057,7 +2150,7 @@ public:
 	static Vec3Generic fromRotAndDist(Number degs, Number length, Number zComp = 0) 
 	{
 		Number rads = degreestoradians(degs); 
-		return Vec3(length * cos(rads), length * sin(rads), zComp);
+		return Vec3Generic(length * cos(rads), length * sin(rads), zComp);
 	}
 };
 
@@ -2075,17 +2168,18 @@ public:
 	template <class OtherNumber>
 	Vec2Generic(Vec2Generic<OtherNumber>& other) : x(other.x), y(other.y) {}
 	Vec2Generic(Number x, Number y) : x(x), y(y) {}
-	Vec2Generic(Number * loc) : x(loc[0]), y(loc[1]) {}
+	template <class OtherNumber>
+	Vec2Generic(OtherNumber* other) : x(other[0]), y(other[1]) {}
 	Vec2Generic() {}
 
 	operator Number* () {return loc;}
-	Vec2Generic operator + (Vec2Generic& a) {return Vec2(x + a.x, y + a.y);}
-	Vec2Generic operator - (Vec2Generic& a) {return Vec2(x - a.x, y - a.y);}
-	Vec2Generic operator - () const {return Vec2(-x, -y);}
-	Vec2Generic operator / (Vec2Generic& other) const {return Vec2(x / other.x, y / other.y);}
-	Vec2Generic operator / (Number mult) const {return Vec2(x / mult, y / mult);}
-	Vec2Generic operator * (Vec2Generic& other) const {return Vec2(x * other.x, y * other.y);}
-	Vec2Generic operator * (Number mult) const {return Vec2(x * mult, y * mult);}
+	Vec2Generic operator + (Vec2Generic& a) {return Vec2Generic(x + a.x, y + a.y);}
+	Vec2Generic operator - (Vec2Generic& a) {return Vec2Generic(x - a.x, y - a.y);}
+	Vec2Generic operator - () const {return Vec2Generic(-x, -y);}
+	Vec2Generic operator / (Vec2Generic& other) const {return Vec2Generic(x / other.x, y / other.y);}
+	Vec2Generic operator / (Number mult) const {return Vec2Generic(x / mult, y / mult);}
+	Vec2Generic operator * (Vec2Generic& other) const {return Vec2Generic(x * other.x, y * other.y);}
+	Vec2Generic operator * (Number mult) const {return Vec2Generic(x * mult, y * mult);}
 	Vec2Generic& operator += (Vec2Generic& other) {x += other.x; y += other.y; return *this;}
 	Vec2Generic& operator -= (Vec2Generic& other) {x -= other.x; y -= other.y; return *this;}
 	bool operator == (Vec2Generic& other) {return x == other.x && y == other.y;}
@@ -2096,7 +2190,7 @@ public:
 	Number& operator [] (int index) {return loc[index];}
 
 	Number getLength() const {return sqrt(x * x + y * y);}
-	Number getDistanceTo(Vec2Generic& other) const {return Vec2(x - other.x, y - other.y).getLength();}
+	Number getDistanceTo(Vec2Generic& other) const {return Vec2Generic(x - other.x, y - other.y).getLength();}
 	Number getDotProduct(Vec2Generic& other) const {return x * other.x + y * other.y;}
 	Number getAngle() {return radianstodegrees(atan2(y, x));}
 	Number getDeterminant(Vec2Generic& other) {return x * other.y - y * other.x;}
@@ -2125,6 +2219,8 @@ public:
 
 };
 
+typedef Vec4Generic<double> Vec4;
+typedef Vec4Generic<float> Vec4f;
 typedef Vec3Generic<double> Vec3;
 typedef Vec3Generic<float> Vec3f;
 typedef Vec2Generic<double> Vec2;
@@ -2175,9 +2271,9 @@ public:
 	FS_CONTENT_DLL_FUNC virtual void reset(treenode returnTravelersTo);
 	// buildMesh: adds the edge's vertices to the mesh. Here I pass a void* instead of a vector<Vec3f> because I don't want allobjects.h to 
 	// include <vector> (modules must include allobjects.h, so I don't want to force <vector> upon them)
-	FS_CONTENT_DLL_FUNC void buildMeshEdges(void* verts, void* colors, bool includeSplineLines);
-	FS_CONTENT_DLL_FUNC void buildMeshPoints(void* verts, void* colors);
-	FS_CONTENT_DLL_FUNC void buildMeshQuads(void* verts, void* colors);
+	FS_CONTENT_DLL_FUNC void buildMeshEdges(Mesh& mesh, bool includeSplineLines);
+	FS_CONTENT_DLL_FUNC void buildMeshPoints(Mesh& mesh);
+	FS_CONTENT_DLL_FUNC void buildMeshQuads(Mesh& mesh);
 };
 
 class NetworkTravelMember : public CouplingDataType
@@ -4846,7 +4942,7 @@ int lastpredrawoutput;
 
 int lastpredrawinput;
 
-Mesh structuralMesh;
+IndexedMesh structuralMesh;
 
 Mesh platformsMesh;
 
