@@ -183,8 +183,7 @@ THE SOFTWARE.
 	typedef double       (*_bernoullialias)(double prob, double a, double b, int stream); // not in LK
 	typedef double       (*_betaalias)( double a,      double b,     double shape1,    double shape2 , int stream);
 	typedef void         (*_bindobjectclassvariable)(treenode object, treenode* binder, char* variablename, char* classname);
-	typedef int          (*_bindtexture_alias1)(int textureid);
-	typedef int          (*_bindtexture_alias2)(int textureid, int texUnit);
+	typedef int          (*_bindtexture)(int textureid);
 	typedef double       (*_binomialalias)( int    t,      double p, int stream);
 	typedef int          (*_bitwiseand)(int, int);
 	typedef int          (*_bitwisenot)(int);
@@ -1300,8 +1299,7 @@ DECLARE_FLEXSIM_FUNCTION_1(beginignoreundo)
 DECLARE_FLEXSIM_FUNCTION_2(bernoullialias, "bernoulli")
 DECLARE_FLEXSIM_FUNCTION_2(betaalias, "beta")
 DECLARE_FLEXSIM_FUNCTION_1(bindobjectclassvariable)
-DECLARE_FLEXSIM_FUNCTION_2(bindtexture_alias1, "bindtexture")
-DECLARE_FLEXSIM_FUNCTION_2(bindtexture_alias2, "?bindtexture@@YAHHH@Z")
+DECLARE_FLEXSIM_FUNCTION_1(bindtexture)
 DECLARE_FLEXSIM_FUNCTION_2(binomialalias, "binomial")
 DECLARE_FLEXSIM_FUNCTION_1(bitwiseand)
 DECLARE_FLEXSIM_FUNCTION_1(bitwisenot)
