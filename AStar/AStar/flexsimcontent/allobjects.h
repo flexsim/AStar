@@ -1436,6 +1436,37 @@
 #define FLUID_MULTIPLE  24
 #define FLUID_TYPE 25
 
+//Constants group: DATE & TIME
+#define DATE_TIME_NODE 31
+#define START_TIME 32
+#define START_TIME_NODE 33
+#define CURRENT_TIME 34
+#define CURRENT_TIME_NODE 35
+#define STOP_TIME 36
+#define STOP_TIME_NODE 37
+#define TIME_FORMAT 38
+#define DATE_FORMAT 39
+
+//Constants group: START TIME
+#define START_YEAR 41
+#define START_MONTH 42
+#define START_DAY 43
+#define START_DAYOFWEEK 44
+#define START_HOUR 45
+#define START_MINUTE 46
+#define START_SECOND 47
+#define START_MILLISECOND 48
+
+//Constants group: CURRENT TIME
+#define CURRENT_YEAR 51
+#define CURRENT_MONTH 52
+#define CURRENT_DAY 53
+#define CURRENT_DAYOFWEEK 54
+#define CURRENT_HOUR 55
+#define CURRENT_MINUTE 56
+#define CURRENT_SECOND 57
+#define CURRENT_MILLISECOND 58
+
 // Constants group: FLUID CONVEYOR
 #define FLUID_CONVEYOR_DIRECTION_FORWARD  1
 #define FLUID_CONVEYOR_DIRECTION_REVERSE  2
@@ -3209,6 +3240,8 @@ TreeNode * node_v_rows;
 #define v_rows node_v_rows->safedatafloat()[0]
 TreeNode * node_v_modelstarttime;
 #define v_modelstarttime node_v_modelstarttime->safedatafloat()[0]
+TreeNode * node_v_repeattype;
+#define v_repeattype node_v_repeattype->safedatafloat()[0]
 TreeNode * node_v_downtrigger;
 TreeNode * node_v_uptrigger;
 TreeNode * node_v_downfunction;
