@@ -353,6 +353,7 @@ public:
 	long unsigned int getdatasavesize(long unsigned int *savesize);
 	long unsigned int getlistsavesize(long unsigned int *savesize);
   
+	static bool didLastLoadHaveCppCode;
 	#define SAVE_MODE_FILE 0
 	#define SAVE_MODE_MEMORY 1
 	treefileheader * savetree(char* destination, int filetype);
