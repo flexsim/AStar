@@ -583,11 +583,16 @@ template<class ObjType>
 
 #define SQL_COL_NOT_FOUND INT_MAX
 #define SQL_COL_AMBIGUOUS INT_MAX - 1
+/// <summary>	"Not found" table is one where the table id has not yet been resolved. </summary>
 #define SQL_TABLE_NOT_FOUND INT_MAX - 2
+/// <summary>	Ambiguouse table is one where the user has not specified "TableName." before the column name. </summary>
 #define SQL_TABLE_AMBIGUOUS INT_MAX - 3
-#define SQL_GET_ALL_TABLES "#GET_ALL_TABLES#"
+#define SQL_GET_ALL_TABLES ((char*)0x12)
 #define SQL_TABLE_END INT_MAX - 4
-#define SQL_TABLE_GET_ALL_COLUMNS "#GET_ALL_COLUMNS#"
+/// <summary>	Tells SqlDelegate::getColId() to give back all column names. </summary>
+#define SQL_TABLE_GET_ALL_COLUMNS ((char*)0x2)
+/// <summary>	Tells SqlDelegate::getColId() to give back the next columns for all columns. </summary>
+#define SQL_TABLE_GET_ALL_COLUMNS_NEXT ((char*)0x3)
 #define SQL_COLUMN_END INT_MAX - 5
 #define SQL_NULL SqlValue(SqlValue::Null, 0)
 
