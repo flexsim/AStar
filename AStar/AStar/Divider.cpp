@@ -146,7 +146,7 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 		gray[2] -= 0.1f;
 	}
 	nrVerts = 0;
-	meshOffset = barrierMesh->nrVerts;
+	meshOffset = barrierMesh->numVerts;
 
 	// Add circles at each node
 	const float TWO_PI = 2 * 3.1415926536f;

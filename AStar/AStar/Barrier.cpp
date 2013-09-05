@@ -114,7 +114,7 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 	double width = xmax - xmin;
 	double height = ymax - ymin;
 
-	meshOffset = barrierMesh->nrVerts;
+	meshOffset = barrierMesh->numVerts;
 
 	float gray[3] = {0.4f, 0.4f, 0.4f};
 	float black[3] = {0.4f, 0.4f, 0.4f};

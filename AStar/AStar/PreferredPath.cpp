@@ -147,7 +147,7 @@ void PreferredPath::addVertices(Mesh* barrierMesh, float z)
 		light[2] += 0.2f;
 	}
 	nrVerts = 0;
-	meshOffset = barrierMesh->nrVerts;
+	meshOffset = barrierMesh->numVerts;
 
 	// Add circles at each node
 	const float TWO_PI = 2 * 3.1415926536f;

@@ -184,7 +184,7 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 		setDirty();
 	}
 	activeBarrier = 0;
-	return FlexsimObject::onClick(view, (int)clickcode);
+	return FlexSimObject::onClick(view, (int)clickcode);
 }
 
 double AStarNavigator::onDrag(TreeNode* view)
@@ -238,7 +238,7 @@ double AStarNavigator::onDrag(TreeNode* view)
 		return 1;
 	} 
 	
-	return FlexsimObject::onDrag(view);
+	return FlexSimObject::onDrag(view);
 }
 
 double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType)
@@ -1064,8 +1064,7 @@ void AStarNavigator::buildEdgeTable()
 }
 void AStarNavigator::buildBoundsMesh()
 {
-	boundsMesh.init(0, MESH_POSITION, 
-		MESH_NORMAL | MESH_EMISSIVE | MESH_AMBIENT_AND_DIFFUSE, MESH_FORCE_CLEANUP);
+	boundsMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
 	float up[3] = {0.0f, 0.0f, 1.0f};
 	TreeNode* color = node_b_color;
 	float boundsColor[3] = {
@@ -1075,9 +1074,9 @@ void AStarNavigator::buildBoundsMesh()
 	};
 	float black[3] = {0.0f, 0.0f, 0.0f};
 
-	boundsMesh.setVertexAttrib(0, MESH_NORMAL, up);
-	boundsMesh.setVertexAttrib(0, MESH_EMISSIVE, boundsColor);
-	boundsMesh.setVertexAttrib(0, MESH_AMBIENT_AND_DIFFUSE, black);
+	boundsMesh.setMeshAttrib(MESH_NORMAL, up);
+	boundsMesh.setMeshAttrib(MESH_EMISSIVE, boundsColor);
+	boundsMesh.setMeshAttrib(MESH_AMBIENT_AND_DIFFUSE, black);
 
 	float width = edgeTableXSize * nodeWidth;
 	float height = edgeTableYSize * nodeWidth;
@@ -1127,12 +1126,11 @@ void AStarNavigator::buildBoundsMesh()
 
 void AStarNavigator::buildBarrierMesh()
 {
-	barrierMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 
-		MESH_NORMAL | MESH_AMBIENT_AND_DIFFUSE, 0);
+	barrierMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0);
 	float up[3] = {0.0f, 0.0f, 1.0f};
 	float black[3] = {0.0f, 0.0f, 0.0f};
-	barrierMesh.setVertexAttrib(0, MESH_NORMAL, up);
-	barrierMesh.setVertexAttrib(0, MESH_AMBIENT_AND_DIFFUSE, black);
+	barrierMesh.setMeshAttrib(MESH_NORMAL, up);
+	barrierMesh.setMeshAttrib(MESH_AMBIENT_AND_DIFFUSE, black);
 	for (int i = 0; i < barrierList.size(); i++) {
 		barrierList[i]->nodeWidth = nodeWidth;
 		barrierList[i]->addVertices(&barrierMesh, 0.1f);
@@ -1146,7 +1144,7 @@ void AStarNavigator::drawTraffic(float z, TreeNode* view)
 #define SELECTIONMODE_MOUSEMOVE 10
 #define SELECTIONMODE_MOUSEDOWNLEFT 11
 
-	trafficMesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE4, MESH_NORMAL | MESH_EMISSIVE, 0);
+	trafficMesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE4, 0);
 
 	int pickMode = getpickingmode(view);
 	if (pickMode == SELECTIONMODE_MOUSEDOWNLEFT)
@@ -1176,8 +1174,8 @@ void AStarNavigator::drawTraffic(float z, TreeNode* view)
 	float red[4] = {1.0, 0.0, 0.0, 1.0};
 	double ratio = 1.0;
 
-	trafficMesh.setVertexAttrib(0, MESH_NORMAL, up);
-	trafficMesh.setVertexAttrib(0, MESH_EMISSIVE, red);
+	trafficMesh.setMeshAttrib(MESH_NORMAL, up);
+	trafficMesh.setMeshAttrib(MESH_EMISSIVE, red);
 	for(auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
 		AStarNodeExtraData* e = &(iter->second);
 		double x = (col0x + (e->col) * nodeWidth);
@@ -1237,8 +1235,7 @@ void AStarNavigator::drawTraffic(float z, TreeNode* view)
 
 void AStarNavigator::drawMembers(float z)
 {
-	memberMesh.init(0, MESH_POSITION, 
-		MESH_EMISSIVE | MESH_NORMAL | MESH_AMBIENT_AND_DIFFUSE4, MESH_FORCE_CLEANUP);
+	memberMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
 	TreeNode* colorNode = node_b_color;
 	float r = get(rank(colorNode, 1));
 	float g = get(rank(colorNode, 2));
@@ -1247,9 +1244,9 @@ void AStarNavigator::drawMembers(float z)
 	float up[3] = {0.0f, 0.0f, 1.0f};
 	float black[4] = {0.0f, 0.0f, 0.0f, 0.5f};
 
-	memberMesh.setVertexAttrib(0, MESH_NORMAL, up);
-	memberMesh.setVertexAttrib(0, MESH_EMISSIVE, color);
-	memberMesh.setVertexAttrib(0, MESH_AMBIENT_AND_DIFFUSE4, black);
+	memberMesh.setMeshAttrib(MESH_NORMAL, up);
+	memberMesh.setMeshAttrib(MESH_EMISSIVE, color);
+	memberMesh.setMeshAttrib(MESH_AMBIENT_AND_DIFFUSE4, black);
 
 	// Draw rectangles under every object
 	unsigned int numObjs = objectBarrierList.size();
@@ -1386,7 +1383,7 @@ void AStarNavigator::drawGrid(float z)
 	int maxDim = drawByRow ? edgeTableXSize : edgeTableYSize;
 	int minDim = !drawByRow ? edgeTableXSize : edgeTableYSize;
 	for(int i = 0; i < maxDim; i++) {
-		gridMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, MESH_FORCE_CLEANUP);
+		gridMesh.init(0, MESH_POSITION | MESH_EMISSIVE, MESH_FORCE_CLEANUP);
 		for(int j = 0; j < minDim; j++) {
 			int row = !drawByRow ? i : j;
 			int col = drawByRow ? i : j;
@@ -1461,7 +1458,7 @@ void AStarNavigator::drawGrid(float z)
 		}
 		gridMesh.draw(GL_LINES);
 	}
-	gridMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0, MESH_FORCE_CLEANUP);
+	gridMesh.init(0, MESH_POSITION | MESH_EMISSIVE, MESH_FORCE_CLEANUP);
 }
 
 void AStarNavigator::setDirty()
@@ -1656,7 +1653,7 @@ visible double AStarNavigator_addMember(FLEXSIMINTERFACE)
 		return 0;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	a->dragConnection(connectTo, 'A', o(FlexsimObject, connectTo).getClassType());
+	a->dragConnection(connectTo, 'A', o(FlexSimObject, connectTo).getClassType());
 	return 1;
 }
 
@@ -1668,6 +1665,6 @@ visible double AStarNavigator_removeMember(FLEXSIMINTERFACE)
 		return 0;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	a->dragConnection(disconnect, 'Q', o(FlexsimObject, disconnect).getClassType());
+	a->dragConnection(disconnect, 'Q', o(FlexSimObject, disconnect).getClassType());
 	return 1;
 }
