@@ -395,7 +395,7 @@ THE SOFTWARE.
 	typedef double       (*_dropx)();
 	typedef double       (*_dropy)();
 	typedef double       (*_dropz)();
-	typedef void         (*_dumpquery)(treenode queryNode, treenode dumpNode, bool asTable);
+	typedef void         (*_dumpquery)(treenode queryNode, treenode dumpNode, int asTable);
 	typedef double       (*_duniformalias)( int    i,      int    j, int stream);
 	typedef double       (*_dynamicsplineall)(treenode start);
 	typedef int          (*_edscode)(EventDataStruct* eds);
