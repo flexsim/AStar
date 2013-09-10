@@ -2057,8 +2057,8 @@ public:
 		};
 		Number loc[4];
 	};
-	template <class OtherNumber>
-	Vec4Generic(Vec4Generic<OtherNumber>& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}
+	template <class OtherVec>
+	Vec4Generic(OtherVec& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}
 	template <class OtherNumber>
 	Vec4Generic(OtherNumber* other) : x(other[0]), y(other[1]), z(other[2]), w(other[3]) {}
 	Vec4Generic(Number x, Number y, Number z, Number w) : x(x), y(y), z(z), w(w) {}
@@ -2142,8 +2142,8 @@ public:
 		};
 		Number loc[3];
 	};
-	template <class OtherNumber>
-	Vec3Generic(Vec3Generic<OtherNumber>& other) : x(other.x), y(other.y), z(other.z) {}
+	template <class OtherVec>
+	Vec3Generic(OtherVec& other) : x(other.x), y(other.y), z(other.z) {}
 	template <class OtherNumber>
 	Vec3Generic(OtherNumber* other) : x(other[0]), y(other[1]), z(other[2]) {}
 	Vec3Generic(Number x, Number y, Number z) : x(x), y(y), z(z) {}
@@ -2219,8 +2219,8 @@ public:
 		};
 		Number loc[2];
 	};
-	template <class OtherNumber>
-	Vec2Generic(Vec2Generic<OtherNumber>& other) : x(other.x), y(other.y) {}
+	template <class OtherVec>
+	Vec2Generic(OtherVec& other) : x(other.x), y(other.y) {}
 	Vec2Generic(Number x, Number y) : x(x), y(y) {}
 	template <class OtherNumber>
 	Vec2Generic(OtherNumber* other) : x(other[0]), y(other[1]) {}
