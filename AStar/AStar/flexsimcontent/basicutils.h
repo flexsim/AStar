@@ -372,7 +372,7 @@ FlexSimValue cpp_findmax(int nr, Value test, ReturnFunc returnFunc, ValidityFunc
 template<class ValueFunc, class ReturnFunc>
 double cpp_findmax(int nr, ValueFunc test, ReturnFunc returnFunc)
 {
-	return cpp_findmaxmin(nr, test, returnFunc, [&](int count) -> bool {return true;}, false, true);
+	return cpp_findmaxmin(nr, test, returnFunc, [](int count) -> bool {return true;}, false, true);
 }
 
 template<class ValueFunc>
@@ -391,13 +391,13 @@ double cpp_findmax(int nr, ValueFunc test)
 template<class ValueFunc, class ReturnFunc, class ValidityFunc>
 FlexSimValue cpp_findmin(int nr, ValueFunc test, ReturnFunc returnFunc, ValidityFunc validityFunc, bool reverse = false)
 {
-	return cpp_findmaxmin(nr, test, returnFunc, ValidityFunc validityFunc, reverse, false);
+	return cpp_findmaxmin(nr, test, returnFunc, validityFunc, reverse, false);
 }
 
 template<class ValueFunc, class ReturnFunc>
 double cpp_findmin(int nr, ValueFunc test, ReturnFunc returnFunc)
 {
-	return cpp_findmaxmin(nr, test, returnFunc, [&](int count) -> bool {return true;}, false, false);
+	return cpp_findmaxmin(nr, test, returnFunc, [](int count) -> bool {return true;}, false, false);
 }
 
 template<class Test>

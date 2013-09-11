@@ -321,6 +321,7 @@ THE SOFTWARE.
 	typedef char*        (*_dbgetfieldname)(int col);
 	typedef int          (*_dbgetmetrics)();
 	typedef int          (*_dbgetmode)();
+	typedef int          (*_dbnextrow)();
 	typedef int          (*_dbgetnumcols)();
 	typedef int          (*_dbgetnumrows)();
 	typedef char*        (*_dbgettablecell)(int row, int col);
@@ -332,7 +333,7 @@ THE SOFTWARE.
 	typedef int          (*_dbsettablecell)(int row, int col, char* sval);
 	typedef double       (*_dbsettablenum)(int row, int col, double val);
 	typedef double       (*_dbsettablestr)(double row, double col, char *val);
-	typedef int          (*_dbsqlqueryalias)(char * query);
+	typedef int          (*_dbsqlqueryalias)(char * query, int flags);
 	typedef int          (*_dbusername)(char * username, char * password);
 	typedef int          (*_dbusernamealias)(char * username, char * password);
 	typedef double       (*_dbviewtable)();
@@ -1400,6 +1401,7 @@ DECLARE_FLEXSIM_FUNCTION_1(dbexporttable)
 DECLARE_FLEXSIM_FUNCTION_1(dbgetfieldname)
 DECLARE_FLEXSIM_FUNCTION_1(dbgetmetrics)
 DECLARE_FLEXSIM_FUNCTION_1(dbgetmode)
+DECLARE_FLEXSIM_FUNCTION_1(dbnextrow)
 DECLARE_FLEXSIM_FUNCTION_1(dbgetnumcols)
 DECLARE_FLEXSIM_FUNCTION_1(dbgetnumrows)
 DECLARE_FLEXSIM_FUNCTION_1(dbgettablecell)
@@ -1411,7 +1413,7 @@ DECLARE_FLEXSIM_FUNCTION_2(dbopenalias, "dbopen")
 DECLARE_FLEXSIM_FUNCTION_1(dbsettablecell)
 DECLARE_FLEXSIM_FUNCTION_1(dbsettablenum)
 DECLARE_FLEXSIM_FUNCTION_1(dbsettablestr)
-DECLARE_FLEXSIM_FUNCTION_2(dbsqlqueryalias, "dbsqlquery")
+DECLARE_FLEXSIM_FUNCTION_3(dbsqlqueryalias, "?dbsqlquery@@YAHPADH@Z", "?dbsqlquery@@YAHPEADH@Z")
 DECLARE_FLEXSIM_FUNCTION_2(dbusernamealias, "dbusername")
 DECLARE_FLEXSIM_FUNCTION_1(dbviewtable)
 DECLARE_FLEXSIM_FUNCTION_1(deactivatekinematics)

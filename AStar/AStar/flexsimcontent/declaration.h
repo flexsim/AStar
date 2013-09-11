@@ -548,7 +548,7 @@ inline void logevent(char * name, treenode object = NULL, treenode involved = NU
 inline double fileopen(char * filename, char * mode = NULL){return fileopenalias(filename, mode);}
 inline double setviewtext(treenode target, string text){return setviewtextalias(target, (char*) text.c_str());}
 inline double addviewtext(treenode target, string text){return addviewtextalias(target, (char*) text.c_str());}
-inline int dbsqlquery(string query){return dbsqlqueryalias((char*)query.c_str());}
+inline int dbsqlquery(string query, int flags = 0){return dbsqlqueryalias((char*)query.c_str(), flags);}
 inline int dbopen(string dbname, string command, int tablemode, int loginprompt = 0){return dbopenalias((char*)dbname.c_str(), (char*)command.c_str(), tablemode, loginprompt);}
 inline int dbusername(string username, string password){return dbusernamealias((char*)username.c_str(),(char*)password.c_str());}
 
