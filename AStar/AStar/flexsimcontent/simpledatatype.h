@@ -581,29 +581,24 @@ template<class ObjType>
 };
 
 
-#define SQL_COL_NOT_FOUND INT_MAX
-#define SQL_COL_AMBIGUOUS INT_MAX - 1
-/// <summary>	"Not found" table is one where the table id has not yet been resolved. </summary>
-#define SQL_TABLE_NOT_FOUND INT_MAX - 2
-/// <summary>	Ambiguouse table is one where the user has not specified "TableName." before the column name. </summary>
-#define SQL_TABLE_AMBIGUOUS INT_MAX - 3
-#define SQL_GET_ALL_TABLES ((char*)0x12)
-#define SQL_TABLE_END INT_MAX - 4
-/// <summary>	Tells SqlDelegate::getColId() to give back all column names. </summary>
-#define SQL_TABLE_GET_ALL_COLUMNS ((char*)0x2)
-/// <summary>	Tells SqlDelegate::getColId() to give back the next columns for all columns. </summary>
-#define SQL_TABLE_GET_ALL_COLUMNS_NEXT ((char*)0x3)
-#define SQL_COLUMN_END INT_MAX - 5
-#define SQL_NULL SqlValue(SqlValue::Null, 0)
-
 class SqlDelegate : public SimpleDataType
 {
+
+/// <summary>	A macro that defines if a column as not found. Returned by the SqlDelegate::getColId() if it can find that column.</summary>
+#define SQL_COL_NOT_FOUND INT_MAX
+/// <summary>	"Not found" table is one that it tried to resolve but couldn't. </summary>
+#define SQL_TABLE_NOT_FOUND (INT_MAX - 2)
+
+#define SQL_COL_END ((const char*) 0x2)
+#define SQL_NULL SqlValue(SqlValue::Null, 0)
+
 public:
-	virtual int getColId(int tableId, char* colName) = 0;
-	virtual char* getColName(int tableId, int colId) {return "";}
+	virtual bool canResolveRefsAtParseTime() {return true;}
+	virtual int getColId(int tableId, const char* colName) = 0;
+	virtual const char* enumerateColNames(int tableId, int colNum){return SQL_COL_END;}
 	virtual struct SqlValue getValue(int tableId, int row, int colId) {return SQL_NULL;}
 
-	virtual int getTableId(char* tableName) {return 0;}
+	virtual int getTableId(const char* tableName) {return 0;}
 	virtual int getRowCount(int tableId) {return 0;}
 };
 

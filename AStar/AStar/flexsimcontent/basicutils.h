@@ -95,7 +95,7 @@ struct SqlValue
 		if (type != other.type) return false; 
 		if (type == Number) return numVal > other.numVal; 
 		if (type == Null) return false;
-		return strcmp(strVal, other.strVal) < 0;
+		return strcmp(strVal, other.strVal) > 0;
 	}
 	bool operator >= (SqlValue& other) 
 	{

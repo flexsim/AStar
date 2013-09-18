@@ -666,8 +666,6 @@ inline int aggregateundorecords(TreeNode* view, char* description, int id1, int 
 inline double colorarray(treenode involved, double val){return colorarrayalias1(involved, val);}
 inline void  colorarray(int val, double * destcolor){colorarrayalias2(val, destcolor);}
 
-inline double texshadow(int cmd, float FACEa, float FACEb, float FACEc, float FACEd, float FACEe, float FACEf, int copytex)
-{return texshadowalias(cmd, FACEa, FACEb, FACEc, FACEd, FACEe, FACEf, copytex);}
 inline void fglColor(float r, float g, float b, float a = 1.0f) {fglColorAlias(r, g, b, a);}
 // lambda's are only compatible with visual studio 2010+
 #if _MSC_VER >= 1600
