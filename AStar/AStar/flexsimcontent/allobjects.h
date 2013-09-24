@@ -1663,6 +1663,8 @@
 
 #define DB_SQL_FLAG_FORWARD_ONLY_CURSOR 0x1
 
+#define IGNORE_CASE 1
+
 
 
 // Global Variables
