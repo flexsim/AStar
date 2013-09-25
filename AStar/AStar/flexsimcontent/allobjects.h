@@ -1665,6 +1665,9 @@
 
 #define IGNORE_CASE 1
 
+#define EDIT_MODE_GET_MODE_NUM -1
+#define EDIT_MODE_GET_MODE_DELEGATE -2
+
 
 
 // Global Variables

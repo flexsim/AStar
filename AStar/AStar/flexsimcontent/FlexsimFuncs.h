@@ -750,7 +750,7 @@ THE SOFTWARE.
 	typedef double       (*_minutes)(double val);
 	typedef treenode     (*_model)();
 	typedef char*        (*_modeldir_cstr)();
-	typedef int          (*_modeleditmode)(int mode);
+	typedef double       (*_modeleditmode)(int mode);
 	typedef double       (*_module)(int cmd, int ptr, char *par, double n);
 	typedef int          (*_moveobjectalias1)(treenode client, treenode destination, int port);
 	typedef int          (*_moveobjectalias2)(treenode client, treenode destination, int port, int receivingport);
