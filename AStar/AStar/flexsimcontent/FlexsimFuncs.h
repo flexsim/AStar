@@ -115,9 +115,10 @@ THE SOFTWARE.
 		inline FlexSimValue(unsigned char* x) : asDouble((double)ptrtodouble(x)) {}
 		inline FlexSimValue(char* x) : asDouble((double)ptrtodouble(x)) {}
 		inline FlexSimValue(const char* x) : asDouble((double)ptrtodouble((char*)x)) {}
+		inline FlexSimValue(const FlexSimValue& x) : asDouble(x.asDouble) {}
 	};
 #endif
-	typedef FlexSimValue (*_$iter)(int index);
+	typedef double (*_$iteralias)(int index);
 	typedef treenode     (*attfunc)(treenode );
 	typedef int          (*__executefsfile)(char* s, int direct);
 	typedef double       (*__inheritcode)(CallPoint* callpoint);
@@ -283,9 +284,9 @@ THE SOFTWARE.
 	typedef int          (*_cppsettitletoken)(treenode thetext, int index, ByteBlock * resultblock, char * newtext);
 	typedef int          (*_cppsettoken)(treenode thetext, int index, ByteBlock * resultblock, char * newtext);
 #if _MSC_VER >= 1600
-	typedef std::function<double ()> queryCallback;
-	typedef int          (*_cpp_queryalias)(const char* queryStr, queryCallback& p1,  queryCallback& p2, queryCallback& p3,  queryCallback& p4,
-									queryCallback& p5,  queryCallback& p6, queryCallback& p7,  queryCallback& p8, queryCallback& p9);
+	typedef std::function<double ()> QueryCallback;
+	typedef int          (*_cpp_queryalias)(const char* queryStr, QueryCallback& p1,  QueryCallback& p2, QueryCallback& p3,  QueryCallback& p4,
+									QueryCallback& p5,  QueryCallback& p6, QueryCallback& p7,  QueryCallback& p8, QueryCallback& p9);
 #endif
 	typedef treenode     (*_createcoordinatedtasksequence)(treenode dispatcher);
 	typedef treenode     (*_createcopyalias)(treenode classobject, treenode instancecontainer, int samename, int inobject, int cached, int replace);
@@ -396,7 +397,7 @@ THE SOFTWARE.
 	typedef double       (*_dropx)();
 	typedef double       (*_dropy)();
 	typedef double       (*_dropz)();
-	typedef void         (*_dumpquery)(treenode queryNode, treenode dumpNode, int asTable);
+	typedef void         (*_dumpquery)(treenode dumpNode, int asTable);
 	typedef double       (*_duniformalias)( int    i,      int    j, int stream);
 	typedef double       (*_dynamicsplineall)(treenode start);
 	typedef int          (*_edscode)(EventDataStruct* eds);
@@ -592,7 +593,7 @@ THE SOFTWARE.
 	typedef int          (*_getquerymatchcount)();
 	typedef int          (*_getquerymatchtablerow)(char* tableName, int matchRow);
 	typedef double       (*_getqueryvaluealias1)(int row, int col);
-	typedef double       (*_getqueryvaluealias2)(int row, char* colName);
+	typedef double       (*_getqueryvaluealias2)(int row, const char* colName);
 	typedef double       (*_getrank)(treenode);
 	typedef int          (*_getrunstate)();
 	typedef double       (*_getshapeindex)(char * thename);
@@ -1250,7 +1251,7 @@ THE SOFTWARE.
 #endif
 
 /*** FLEXSIM FUNCTIONS ***/
-DECLARE_FLEXSIM_FUNCTION_1($iter)
+DECLARE_FLEXSIM_FUNCTION_2($iteralias, "$iter")
 DECLARE_FLEXSIM_FUNCTION_1(_executefsfile)
 DECLARE_FLEXSIM_FUNCTION_1(_inheritcode)
 DECLARE_FLEXSIM_FUNCTION_1(_mpd)

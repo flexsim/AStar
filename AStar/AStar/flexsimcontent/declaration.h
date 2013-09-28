@@ -669,17 +669,17 @@ inline void  colorarray(int val, double * destcolor){colorarrayalias2(val, destc
 inline void fglColor(float r, float g, float b, float a = 1.0f) {fglColorAlias(r, g, b, a);}
 // lambda's are only compatible with visual studio 2010+
 #if _MSC_VER >= 1600
-inline int cpp_query(const char* queryStr, queryCallback& p1 = queryCallback(0),  queryCallback& p2 = queryCallback(0), queryCallback& p3 = queryCallback(0),  queryCallback& p4 = queryCallback(0),
-									queryCallback& p5 = queryCallback(0),  queryCallback& p6 = queryCallback(0), queryCallback& p7 = queryCallback(0),  queryCallback& p8 = queryCallback(0), queryCallback& p9 = queryCallback(0))
+extern QueryCallback defQueryCallback;
+inline int cpp_query(const char* queryStr, QueryCallback& p1 = defQueryCallback,  QueryCallback& p2 = defQueryCallback, QueryCallback& p3 = defQueryCallback,  QueryCallback& p4 = defQueryCallback,
+									QueryCallback& p5 = defQueryCallback,  QueryCallback& p6 = defQueryCallback, QueryCallback& p7 = defQueryCallback,  QueryCallback& p8 = defQueryCallback, QueryCallback& p9 = defQueryCallback)
 {
 		return cpp_queryalias(queryStr, p1, p2, p3, p4, p5, p6, p7, p8, p9);
 }
-inline int cpp_query(std::string queryStr, queryCallback& p1 = queryCallback(0),  queryCallback& p2 = queryCallback(0), queryCallback& p3 = queryCallback(0),  queryCallback& p4 = queryCallback(0),
-									queryCallback& p5 = queryCallback(0),  queryCallback& p6 = queryCallback(0), queryCallback& p7 = queryCallback(0),  queryCallback& p8 = queryCallback(0), queryCallback& p9 = queryCallback(0))
-{
-	return cpp_queryalias(queryStr.c_str(), p1, p2, p3, p4, p5, p6, p7, p8, p9);
-}
+inline FlexSimValue $iter(int index) {return $iteralias(index);}
 #endif
+inline FlexSimValue getqueryvalue(int row, int col) {return getqueryvaluealias1(row, col);}
+inline FlexSimValue getqueryvalue(int row, const char* colName) {return getqueryvaluealias2(row, colName);}
+inline FlexSimValue getqueryvalue(int row, const std::string& colName) {return getqueryvaluealias2(row, colName.c_str());}
 
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 	inline treenode createevent(FlexSimEvent* e){return createeventalias2(e);}

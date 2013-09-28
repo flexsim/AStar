@@ -268,4 +268,6 @@ void IndexedMesh::draw(int drawMode, int start, int count)
 void IndexedMesh::cleanupIndexBuffer(bool isDestructor)
 	{ indexedmesh_cleanupindexbuffer(this, isDestructor); }
 
+QueryCallback defQueryCallback = []() -> double {return 0;};
+
 #endif
