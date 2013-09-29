@@ -36,6 +36,7 @@
 		inline FlexSimValue(unsigned char* x) : asDouble((double)ptrtodouble(x)) {}
 		inline FlexSimValue(char* x) : asDouble((double)ptrtodouble(x)) {}
 		inline FlexSimValue(const char* x) : asDouble((double)ptrtodouble((char*)x)) {}
+		inline FlexSimValue(const FlexSimValue& x) : asDouble(x.asDouble) {}
 	};
 #endif
 
@@ -260,15 +261,21 @@ public:
 
 #define PP_EQUAL(x, y) PP_COMPL(PP_NOT_EQUAL(x, y))
 
-#define VA_NARGS_II(p1, p2, p3, p4, p5, N, ...) N
+#define VA_NARGS_II(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, N, ...) N
 #define VA_NARGS_I(paramsinparen) VA_NARGS_II paramsinparen
-#define VA_NARGS(...) VA_NARGS_I((__VA_ARGS__, 5, 4, 3, 2, 1))
+#define VA_NARGS(...) VA_NARGS_I((__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1))
 
 #define VA_ARG_0(e0, ...) e0
 #define VA_ARG_1(e0, e1, ...) e1
 #define VA_ARG_2(e0, e1, e2, ...) e2
 #define VA_ARG_3(e0, e1, e2, e3, ...) e3
 #define VA_ARG_4(e0, e1, e2, e3, e4, ...) e4
+#define VA_ARG_5(e0, e1, e2, e3, e4, e5, ...) e5
+#define VA_ARG_6(e0, e1, e2, e3, e4, e5, e6, ...) e6
+#define VA_ARG_7(e0, e1, e2, e3, e4, e5, e6, e7, ...) e7
+#define VA_ARG_8(e0, e1, e2, e3, e4, e5, e6, e7, e8, ...) e8
+#define VA_ARG_9(e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, ...) e9
+#define VA_ARG_10(e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, ...) e10
 #define VA_ARG(_i, ...) PP_CAT(PP_CAT(VA_ARG_, _i),(__VA_ARGS__))
 
 // lambda's are only compatible with visual studio 2010+
@@ -467,65 +474,72 @@ void cpp_repeat(int nr, Do doIt)
 #define repeat(nr, doIt) cpp_repeat(nr, [&](int count) -> {doIt;});
 
 #ifndef FLEXSIM_ENGINE_COMPILE
-#define query(queryStr, ...) \
-	PP_IIF(PP_EQUAL(0, VA_NARGS(__VAR_ARGS__)), \
-		cpp_query(queryStr), \
-	PP_IIF(PP_EQUAL(1, VA_NARGS(__VAR_ARGS__)), \
-		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));}),\
-	PP_IIF(PP_EQUAL(2, VA_NARGS(__VAR_ARGS__)), \
-		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));}),\
-	PP_IIF(PP_EQUAL(3, VA_NARGS(__VAR_ARGS__)), \
-		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));}),\
-	PP_IIF(PP_EQUAL(4, VA_NARGS(__VAR_ARGS__)), \
-		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_4(__VA_ARGS__));}),\
-	PP_IIF(PP_EQUAL(5, VA_NARGS(__VAR_ARGS__)), \
-		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_4(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_5(__VA_ARGS__));}),\
-	PP_IIF(PP_EQUAL(6, VA_NARGS(__VAR_ARGS__)), \
-		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_4(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_5(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_6(__VA_ARGS__));}),\
-	PP_IIF(PP_EQUAL(7, VA_NARGS(__VAR_ARGS__)), \
-		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_4(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_5(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_6(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_7(__VA_ARGS__));}),\
-	PP_IIF(PP_EQUAL(8, VA_NARGS(__VAR_ARGS__)), \
-		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_4(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_5(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_6(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_7(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_8(__VA_ARGS__));}),\
-\
-		cpp_query(queryStr, [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_1(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_2(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_3(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_4(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_5(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_6(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_7(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_8(__VA_ARGS__));},\
-		                    [&](CallPoint* callPoint) -> double {return tonum(VA_ARG_9(__VA_ARGS__));})\
+#define query(...) \
+	PP_IIF(PP_EQUAL(1, VA_NARGS(__VA_ARGS__)), \
+		cpp_query(VA_ARG_0(__VA_ARGS__)), \
+	PP_IIF(PP_EQUAL(2, VA_NARGS(__VA_ARGS__)), \
+		cpp_query(VA_ARG_0(__VA_ARGS__), \
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));})),\
+	PP_IIF(PP_EQUAL(3, VA_NARGS(__VA_ARGS__)), \
+		cpp_query(VA_ARG_0(__VA_ARGS__),  \
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));})),\
+	PP_IIF(PP_EQUAL(4, VA_NARGS(__VA_ARGS__)), \
+		cpp_query(VA_ARG_0(__VA_ARGS__), \
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));})),\
+	PP_IIF(PP_EQUAL(5, VA_NARGS(__VA_ARGS__)), \
+		cpp_query(VA_ARG_0(__VA_ARGS__), \
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_4(__VA_ARGS__));})),\
+	PP_IIF(PP_EQUAL(6, VA_NARGS(__VA_ARGS__)), \
+		cpp_query(VA_ARG_0(__VA_ARGS__), \
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_4(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_5(__VA_ARGS__));})),\
+	PP_IIF(PP_EQUAL(7, VA_NARGS(__VA_ARGS__)), \
+		cpp_query(VA_ARG_0(__VA_ARGS__), \
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_4(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_5(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_6(__VA_ARGS__));})),\
+	PP_IIF(PP_EQUAL(8, VA_NARGS(__VA_ARGS__)), \
+		cpp_query(VA_ARG_0(__VA_ARGS__), \
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_4(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_5(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_6(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_7(__VA_ARGS__));})),\
+	PP_IIF(PP_EQUAL(9, VA_NARGS(__VA_ARGS__)), \
+		cpp_query(VA_ARG_0(__VA_ARGS__), \
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_4(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_5(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_6(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_7(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_8(__VA_ARGS__));})),\
+		cpp_query(VA_ARG_0(__VA_ARGS__), \
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_4(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_5(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_6(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_7(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_8(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_9(__VA_ARGS__));}))\
 	)))))))))
-
 #endif
 
 #endif
