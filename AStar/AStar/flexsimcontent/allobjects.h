@@ -5262,6 +5262,7 @@ TreeNode * node_v_cleardpevents;
 #define v_cleardpevents node_v_cleardpevents->safedatafloat()[0]
 TreeNode * node_v_inactivecouplings;
 #define v_inactivecouplings node_v_inactivecouplings->safedatafloat()[0]
+TreeNode * node_v_stopresume;
 
 // c++ member functions
 
@@ -5318,6 +5319,10 @@ FS_CONTENT_DLL_FUNC static double getItemInfo(treenode item, int val);
 FS_CONTENT_DLL_FUNC double destroyItemEvent(treenode item, int event);
 
 FS_CONTENT_DLL_FUNC double cleanItemEvent(treenode item, int event);
+
+FS_CONTENT_DLL_FUNC double stopObject(int stopstate);
+
+FS_CONTENT_DLL_FUNC double resumeObject();
 
 
 // c++ attributes
