@@ -1932,7 +1932,7 @@ DECLARE_FLEXSIM_FUNCTION_1(setselectedobject)
 DECLARE_FLEXSIM_FUNCTION_1(setsize)
 DECLARE_FLEXSIM_FUNCTION_1(setstate_s)
 DECLARE_FLEXSIM_FUNCTION_2(setstatealias1, "setstate")
-DECLARE_FLEXSIM_FUNCTION_3(setstatealias2, "?setstate@@YAHPAVTreeNode@@HH@Z","?setstate@@YAHPEAVTreeNode@@H0@Z")
+DECLARE_FLEXSIM_FUNCTION_3(setstatealias2, "?setstate@@YAHPAVTreeNode@@HH@Z","?setstate@@YAHPEAVTreeNode@@HH@Z")
 DECLARE_FLEXSIM_FUNCTION_3(setstatealias3, "?setstate@@YAHPAVTreeNode@@HPBD@Z","?setstate@@YAHPEAVTreeNode@@HPEBD@Z")
 DECLARE_FLEXSIM_FUNCTION_3(setstatealias4, "?setstate@@YAHPAVTreeNode@@H0@Z","?setstate@@YAHPEAVTreeNode@@H0@Z")
 DECLARE_FLEXSIM_FUNCTION_2(settablenumalias, "settablenum");
