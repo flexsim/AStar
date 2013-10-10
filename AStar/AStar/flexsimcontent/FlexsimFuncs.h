@@ -596,6 +596,7 @@ THE SOFTWARE.
 	typedef double       (*_getqueryvaluealias2)(int row, const char* colName);
 	typedef double       (*_getrank)(treenode);
 	typedef int          (*_getrunstate)();
+	typedef FlexSimValue (*_getsdtvalue)(treenode sdtNode, const char* valName);
 	typedef double       (*_getshapeindex)(char * thename);
 	typedef int          (*_getshapenrframes)(int shapeindex);
 	typedef double       (*_getsoundindex)(char * thename);
@@ -1015,6 +1016,7 @@ THE SOFTWARE.
 	typedef treenode     (*_setrank)(treenode, int);
 	typedef double       (*_setresetposition)(treenode obj);
 	typedef double       (*_setrot)(treenode involved, double rx, double ry, double rz);
+	typedef treenode     (*_setsdtvalue)(treenode sdtNode, const char* valName, FlexSimValue toVal);
 	typedef double       (*_setselectedobject)(treenode target, treenode newselected);
 	typedef double       (*_setsize)(treenode involved, double sx, double sy, double sz);
 	typedef int          (*_setstate_s)(treenode , char *);
@@ -1209,8 +1211,8 @@ THE SOFTWARE.
 		typedef double&  (*_sdtgetcurvalue)();
 		typedef char*    (*_sdtgetcurvaluename)();
 		typedef int&     (*_sdtgetcurvaluetype)();
-		typedef void     (*_sdtsetvalue)(SimpleDataType* sdt, char* valName, double toVal);
-		typedef double   (*_sdtgetvalue)(SimpleDataType* sdt, char* valName);
+		typedef void     (*_sdtsetvalue)(SimpleDataType* sdt, const char* valName, double toVal);
+		typedef double   (*_sdtgetvalue)(SimpleDataType* sdt, const char* valName);
 		typedef char*    (*_couplingtostring)(CouplingDataType* sdt, int verbose);
 		typedef void     (*_flexsimeventbind)(FlexSimEvent* e);
 		typedef void     (*_flexsimeventexecute)(FlexSimEvent* e);
@@ -1623,6 +1625,7 @@ DECLARE_FLEXSIM_FUNCTION_2(getqueryvaluealias1, "getqueryvalue")
 DECLARE_FLEXSIM_FUNCTION_3(getqueryvaluealias2,  "?getqueryvalue@@YANHPADPA_N@Z", "?getqueryvalue@@YANHPEADPEA_N@Z")
 DECLARE_FLEXSIM_FUNCTION_1(getrank)
 DECLARE_FLEXSIM_FUNCTION_1(getrunstate)
+DECLARE_FLEXSIM_FUNCTION_1(getsdtvalue)
 DECLARE_FLEXSIM_FUNCTION_1(getshapeindex)
 DECLARE_FLEXSIM_FUNCTION_1(getshapenrframes)
 DECLARE_FLEXSIM_FUNCTION_1(getsoundindex)
@@ -1928,6 +1931,7 @@ DECLARE_FLEXSIM_FUNCTION_1(setproperty)
 DECLARE_FLEXSIM_FUNCTION_1(setquerynode)
 DECLARE_FLEXSIM_FUNCTION_1(setrank)
 DECLARE_FLEXSIM_FUNCTION_1(setrot)
+DECLARE_FLEXSIM_FUNCTION_1(setsdtvalue)
 DECLARE_FLEXSIM_FUNCTION_1(setselectedobject)
 DECLARE_FLEXSIM_FUNCTION_1(setsize)
 DECLARE_FLEXSIM_FUNCTION_1(setstate_s)

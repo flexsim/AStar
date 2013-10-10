@@ -165,7 +165,7 @@ double& SimpleDataType::getCurValue()
 {
 	return sdtgetcurvalue();
 }
-char* SimpleDataType::getCurValueName() 
+const char* SimpleDataType::getCurValueName() 
 {
 	return sdtgetcurvaluename();
 }
@@ -173,8 +173,8 @@ int& SimpleDataType::getCurValueType()
 {
 	return sdtgetcurvaluetype();
 }
-double SimpleDataType::getValue(char* name){return sdtgetvalue(this, name);}
-void SimpleDataType::setValue(char* name, double value){sdtsetvalue(this, name, value);}
+double SimpleDataType::getValue(const char* name){return sdtgetvalue(this, name);}
+void SimpleDataType::setValue(const char* name, double value){sdtsetvalue(this, name, value);}
 
 char* CouplingDataType::toString(int verbose)
 {

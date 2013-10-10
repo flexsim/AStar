@@ -33,7 +33,7 @@ private:
 	static char* displayStrCopyPoint;
 	static bool displayVerbose;
 	static int detachAfterBind;
-	static FlexSimCVector<TreeNode*> nodeList;
+	static FlexSimCVector<NodeRef> nodeList;
 	static void attachSDTDerivative(TreeNode* x);
 	static void bindSDTNode(TreeNode* x);
 	static void detachSDTDerivative(TreeNode* x);
@@ -41,7 +41,7 @@ private:
 	static TreeNode* s_getBindTree(TreeNode* x);
 	static TreeNode* s_assertBindTree(TreeNode* x);
 	static double curValue;
-	static char * curValueName;
+	static const char * curValueName;
 #define SDT_VALUE_NUMBER 1
 #define SDT_VALUE_STRING 2
 	static int curValueType;
@@ -76,9 +76,9 @@ public:
 	static int getBindMode();
 	static double& getCurValue();
 	static int& getCurValueType();
-	static char * getCurValueName();
-	double getValue(char* name);
-	void setValue(char* name, double value);
+	static const char * getCurValueName();
+	double getValue(const char* name);
+	void setValue(const char* name, double value);
 	TreeNode* bindByName(const char* name, int asSubNode, int dataType, int * added = 0);
 
 	void bindDoubleByName(const char* name, double& val, int asSubNode);
