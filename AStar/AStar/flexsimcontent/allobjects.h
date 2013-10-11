@@ -4434,7 +4434,7 @@ FS_CONTENT_DLL_FUNC double onReset();
 
 FS_CONTENT_DLL_FUNC double resetVariables();
 
-FS_CONTENT_DLL_FUNC double generateItem(double curitemtype, string itemname, double rownumber);
+FS_CONTENT_DLL_FUNC virtual double generateItem(double curitemtype, string itemname, double rownumber);
 
 FS_CONTENT_DLL_FUNC virtual double updateLocations();
 
@@ -4623,7 +4623,7 @@ FS_CONTENT_DLL_FUNC double checkSetupOpFree(treenode item);
 
 FS_CONTENT_DLL_FUNC double checkProcessOpFree(treenode item);
 
-FS_CONTENT_DLL_FUNC double startSetupTime(treenode item, int port);
+FS_CONTENT_DLL_FUNC virtual double startSetupTime(treenode item, int port);
 
 
 // System
