@@ -135,8 +135,8 @@ void Divider::modifyTable(AStarNode* edgeTable,
 
 void Divider::addVertices(Mesh* barrierMesh, float z)
 {
-	float gray[3] = {0.4f, 0.4f, 0.4f};
-	float black[3] = {0.4f, 0.4f, 0.4f};
+	float gray[4] = {0.4f, 0.4f, 0.4f, 1.0f};
+	float black[4] = {0.4f, 0.4f, 0.4f, 1.0f};
 	if (isActive) {
 		black[0] += 0.2f;
 		black[1] += 0.2f;
@@ -172,9 +172,9 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 			int vertName = barrierMesh->addVertex();\
 			nrVerts++;\
 			if (i == activePointIndex)\
-				barrierMesh->setVertexAttrib(vertName, MESH_EMISSIVE, activeColor);\
+				barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, activeColor);\
 			else\
-				barrierMesh->setVertexAttrib(vertName, MESH_EMISSIVE, color);\
+				barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, color);\
 			barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
 		}
 
@@ -227,7 +227,7 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 #define ABV(pos, color) {\
 	int theVert = barrierMesh->addVertex();\
 	nrVerts++;\
-	barrierMesh->setVertexAttrib(theVert, MESH_EMISSIVE, color);\
+	barrierMesh->setVertexAttrib(theVert, MESH_DIFFUSE4, color);\
 	barrierMesh->setVertexAttrib(theVert, MESH_POSITION, pos);\
 	}\
 

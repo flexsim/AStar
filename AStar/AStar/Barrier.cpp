@@ -116,8 +116,8 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 
 	meshOffset = barrierMesh->numVerts;
 
-	float gray[3] = {0.4f, 0.4f, 0.4f};
-	float black[3] = {0.4f, 0.4f, 0.4f};
+	float gray[4] = {0.4f, 0.4f, 0.4f, 1.0f};
+	float black[4] = {0.4f, 0.4f, 0.4f, 1.0f};
 	if (isActive) {
 		black[0] += 0.2f;
 		black[1] += 0.2f;
@@ -145,7 +145,7 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 #define ABV(point, color) {\
 		int newVertex = barrierMesh->addVertex();\
 		barrierMesh->setVertexAttrib(newVertex, MESH_POSITION, point);\
-		barrierMesh->setVertexAttrib(newVertex, MESH_EMISSIVE, color);\
+		barrierMesh->setVertexAttrib(newVertex, MESH_DIFFUSE4, color);\
 		nrVerts++;\
 	}\
 
@@ -222,7 +222,7 @@ double Barrier::onClick(int clickCode, double x, double y)
 
 double Barrier::onMouseMove(double x, double y, double dx, double dy)
 {
-	if (mode & BARRIER_MODE_POINT_EDIT) {
+	if ((mode & BARRIER_MODE_POINT_EDIT) && activePointIndex < pointList.size()) {
 		Point* activePoint = pointList[(int)activePointIndex];
 		activePoint->x = x + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
 		activePoint->y = y + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);

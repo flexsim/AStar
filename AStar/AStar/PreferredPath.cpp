@@ -136,9 +136,9 @@ void PreferredPath::modifyTable(AStarNode* edgeTable,
 
 void PreferredPath::addVertices(Mesh* barrierMesh, float z)
 {
-	float dark[3] = {0.4f, 0.4f, 0.4f};
-	float light[3] = {0.0, 1.0f, 0.0f};
-	float highlight[3] = {0.3f, 0.3f, 0.3f};
+	float dark[4] = {0.4f, 0.4f, 0.4f, 1.0f};
+	float light[4] = {0.0, 1.0f, 0.0f, 1.0f};
+	float highlight[4] = {0.3f, 0.3f, 0.3f, 1.0f};
 	if (isActive) {
 		dark[0] += 0.2f;
 		dark[1] += 0.2f;
@@ -173,9 +173,9 @@ void PreferredPath::addVertices(Mesh* barrierMesh, float z)
 			int vertName = barrierMesh->addVertex();\
 			nrVerts++;\
 			if (i == activePointIndex)\
-				barrierMesh->setVertexAttrib(vertName, MESH_EMISSIVE, activeColor);\
+				barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, activeColor);\
 			else\
-				barrierMesh->setVertexAttrib(vertName, MESH_EMISSIVE, color);\
+				barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, color);\
 			barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
 		}
 
@@ -243,7 +243,7 @@ void PreferredPath::addVertices(Mesh* barrierMesh, float z)
 #define ABV(pos, color)  {\
 	int vertName = barrierMesh->addVertex();\
 	nrVerts++;\
-	barrierMesh->setVertexAttrib(vertName, MESH_EMISSIVE, color);\
+	barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, color);\
 	barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
 }
 

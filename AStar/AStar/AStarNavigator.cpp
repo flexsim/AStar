@@ -108,12 +108,14 @@ double AStarNavigator::onDraw(TreeNode* view)
 	int pickingmode = getpickingmode(view);
 	int drawMode = (int)this->drawMode;
 	if(drawMode == 0) return 0;
+
+	fglDisable(GL_TEXTURE_2D);
+	fglDisable(GL_LIGHTING);
 	
 	glScalef(1.0/b_spatialsx, 1.0/b_spatialsy, 1.0/b_spatialsz);
 	glTranslatef(-b_spatialx, -b_spatialy, -b_spatialz);
 
 	if (!pickingmode) {
-		glBindTexture(GL_TEXTURE_2D, 0);
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
 			drawGrid(0.1f);
 
@@ -128,32 +130,33 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
 			drawMembers(0.1f);
+	} else {
 
-		return 0;
-	}
+		if (drawMode && ASTAR_DRAW_MODE_TRAFFIC) {
+			drawTraffic(0.1f, view);
+		}
 
-	if (drawMode && ASTAR_DRAW_MODE_TRAFFIC) {
-		drawTraffic(0.1f, view);
-	}
+		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
+			for(int i = 0; i < barrierList.size(); i++) {
+				Barrier* barrier = barrierList[i];
 
-	if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
-		for(int i = 0; i < barrierList.size(); i++) {
-			Barrier* barrier = barrierList[i];
+				double x1, y1, x2, y2;
+				if (!barrier->getBoundingBox(x1, y1, x2, y2))
+					continue;
 
-			double x1, y1, x2, y2;
-			if (!barrier->getBoundingBox(x1, y1, x2, y2))
-				continue;
+				setpickingdrawfocus(view, holder, 0, barrier->holder);
+				barrierMesh.draw(GL_TRIANGLES, barrier->meshOffset, barrier->nrVerts);
 
-			setpickingdrawfocus(view, holder, 0, barrier->holder);
-			barrierMesh.draw(GL_TRIANGLES, barrier->meshOffset, barrier->nrVerts);
+			}
+		}
 
+		if (drawMode & ASTAR_DRAW_MODE_BOUNDS) {
+			setpickingdrawfocus(view, holder, PICK_TYPE_BOUNDS);
+			boundsMesh.draw(GL_QUADS);
 		}
 	}
-
-	if (drawMode & ASTAR_DRAW_MODE_BOUNDS) {
-		setpickingdrawfocus(view, holder, PICK_TYPE_BOUNDS);
-		boundsMesh.draw(GL_QUADS);
-	}
+	fglEnable(GL_TEXTURE_2D);
+	fglEnable(GL_LIGHTING);
 	return 0;
 }
 
@@ -1067,16 +1070,16 @@ void AStarNavigator::buildBoundsMesh()
 	boundsMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
 	float up[3] = {0.0f, 0.0f, 1.0f};
 	TreeNode* color = node_b_color;
-	float boundsColor[3] = {
+	float boundsColor[4] = {
 		(float)get(rank(color, 1)), 
 		(float)get(rank(color, 2)), 
-		(float)get(rank(color, 3))
+		(float)get(rank(color, 3)), 
+		1.0f
 	};
-	float black[3] = {0.0f, 0.0f, 0.0f};
+	float black[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 
 	boundsMesh.setMeshAttrib(MESH_NORMAL, up);
-	boundsMesh.setMeshAttrib(MESH_EMISSIVE, boundsColor);
-	boundsMesh.setMeshAttrib(MESH_AMBIENT_AND_DIFFUSE, black);
+	boundsMesh.setMeshAttrib(MESH_DIFFUSE4, boundsColor);
 
 	float width = edgeTableXSize * nodeWidth;
 	float height = edgeTableYSize * nodeWidth;
@@ -1126,11 +1129,10 @@ void AStarNavigator::buildBoundsMesh()
 
 void AStarNavigator::buildBarrierMesh()
 {
-	barrierMesh.init(0, MESH_POSITION | MESH_EMISSIVE, 0);
+	barrierMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, 0);
 	float up[3] = {0.0f, 0.0f, 1.0f};
-	float black[3] = {0.0f, 0.0f, 0.0f};
+	float black[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 	barrierMesh.setMeshAttrib(MESH_NORMAL, up);
-	barrierMesh.setMeshAttrib(MESH_AMBIENT_AND_DIFFUSE, black);
 	for (int i = 0; i < barrierList.size(); i++) {
 		barrierList[i]->nodeWidth = nodeWidth;
 		barrierList[i]->addVertices(&barrierMesh, 0.1f);
@@ -1160,7 +1162,7 @@ void AStarNavigator::drawTraffic(float z, TreeNode* view)
 	int newVertex = trafficMesh.addVertex();\
 	float pos[3] = {x + (offsetX * nodeWidth), y + (offsetY * nodeWidth), z};\
 	trafficMesh.setVertexAttrib(newVertex, MESH_POSITION, pos);\
-	trafficMesh.setVertexAttrib(newVertex, MESH_AMBIENT_AND_DIFFUSE4, color);\
+	trafficMesh.setVertexAttrib(newVertex, MESH_DIFFUSE4, color);\
 	}\
 
 
@@ -1175,7 +1177,7 @@ void AStarNavigator::drawTraffic(float z, TreeNode* view)
 	double ratio = 1.0;
 
 	trafficMesh.setMeshAttrib(MESH_NORMAL, up);
-	trafficMesh.setMeshAttrib(MESH_EMISSIVE, red);
+	trafficMesh.setMeshAttrib(MESH_DIFFUSE4, red);
 	for(auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
 		AStarNodeExtraData* e = &(iter->second);
 		double x = (col0x + (e->col) * nodeWidth);
@@ -1240,13 +1242,12 @@ void AStarNavigator::drawMembers(float z)
 	float r = get(rank(colorNode, 1));
 	float g = get(rank(colorNode, 2));
 	float b = get(rank(colorNode, 3));
-	float color[3] = {r, g, b};
+	float color[4] = {r, g, b, 1.0f};
 	float up[3] = {0.0f, 0.0f, 1.0f};
 	float black[4] = {0.0f, 0.0f, 0.0f, 0.5f};
 
 	memberMesh.setMeshAttrib(MESH_NORMAL, up);
-	memberMesh.setMeshAttrib(MESH_EMISSIVE, color);
-	memberMesh.setMeshAttrib(MESH_AMBIENT_AND_DIFFUSE4, black);
+	memberMesh.setMeshAttrib(MESH_DIFFUSE4, color);
 
 	// Draw rectangles under every object
 	unsigned int numObjs = objectBarrierList.size();
@@ -1376,14 +1377,14 @@ void AStarNavigator::drawGrid(float z)
 		return;
 	
 	double quarterNodeWidth = 0.25 * nodeWidth;
-	float gold[3] = {0.8f,0.8f,0.0f};
-	float red[3] = {1.0f, 0.0f, 0.0f};
+	float gold[4] = {0.8f,0.8f,0.0f, 1.0f};
+	float red[4] = {1.0f, 0.0f, 0.0f, 1.0f};
 	// Draw the grid one row at a time, using the large dimension
 	bool drawByRow = edgeTableXSize >= edgeTableYSize;
 	int maxDim = drawByRow ? edgeTableXSize : edgeTableYSize;
 	int minDim = !drawByRow ? edgeTableXSize : edgeTableYSize;
 	for(int i = 0; i < maxDim; i++) {
-		gridMesh.init(0, MESH_POSITION | MESH_EMISSIVE, MESH_FORCE_CLEANUP);
+		gridMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_FORCE_CLEANUP);
 		for(int j = 0; j < minDim; j++) {
 			int row = !drawByRow ? i : j;
 			int col = drawByRow ? i : j;
@@ -1403,12 +1404,12 @@ void AStarNavigator::drawGrid(float z)
 		int newVertex2 = gridMesh.addVertex();\
 		\
 		if (e && e->bonus##dir) {\
-			float green[3] = {0.0f, e->bonus##dir, 0.0f};\
-			gridMesh.setVertexAttrib(newVertex1, MESH_EMISSIVE, green);\
-			gridMesh.setVertexAttrib(newVertex2, MESH_EMISSIVE, green);\
+			float green[4] = {0.0f, e->bonus##dir, 0.0f, 1.0f};\
+			gridMesh.setVertexAttrib(newVertex1, MESH_DIFFUSE4, green);\
+			gridMesh.setVertexAttrib(newVertex2, MESH_DIFFUSE4, green);\
 		} else {\
-			gridMesh.setVertexAttrib(newVertex1, MESH_EMISSIVE, gold);\
-			gridMesh.setVertexAttrib(newVertex2, MESH_EMISSIVE, gold);\
+			gridMesh.setVertexAttrib(newVertex1, MESH_DIFFUSE4, gold);\
+			gridMesh.setVertexAttrib(newVertex2, MESH_DIFFUSE4, gold);\
 		}\
 		\
 		float pos1[3] = {(float)x1, (float)y1, (float)z1};\
@@ -1447,8 +1448,8 @@ void AStarNavigator::drawGrid(float z)
 				int newVertex1 = gridMesh.addVertex();
 				int newVertex2 = gridMesh.addVertex();
 
-				gridMesh.setVertexAttrib(newVertex1, MESH_EMISSIVE, red);
-				gridMesh.setVertexAttrib(newVertex2, MESH_EMISSIVE, red);
+				gridMesh.setVertexAttrib(newVertex1, MESH_DIFFUSE4, red);
+				gridMesh.setVertexAttrib(newVertex2, MESH_DIFFUSE4, red);
 
 				float pos1[3] = {(float)x, (float)y, z};
 				float pos2[3] = {(float)(x + 0.25 * nodeWidth), (float)(y + 0.25 * nodeWidth), z};
@@ -1458,7 +1459,7 @@ void AStarNavigator::drawGrid(float z)
 		}
 		gridMesh.draw(GL_LINES);
 	}
-	gridMesh.init(0, MESH_POSITION | MESH_EMISSIVE, MESH_FORCE_CLEANUP);
+	gridMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_FORCE_CLEANUP);
 }
 
 void AStarNavigator::setDirty()
