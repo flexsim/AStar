@@ -198,28 +198,18 @@
 if (!objectexists(i))
 	return 0;
 
+if (gets(documentwindow(i)) != "3D")
+	return 0;
+
 int mode = getvarnum(c, "mode");
 treenode selobj = selectedobject(i/*The view*/);
 treenode currBarrierNode = getvarnode(c, "currBarrierNode");
 
 treenode activeNavigator = tonode(getvarnum(c, "activeNavigator"));
-if (!objectexists(activeNavigator)) {
-	forobjecttreeunder(model) {
-		if (isclasstype(a, "AStar::AStarNavigator")) {
-			nodepoint(getvarnode(c, "activeNavigator"), a);
-			activeNavigator = tonode(getvarnum(c, "activeNavigator"));
-			break;
-		}
-	}
-}
-
-if (!objectexists(activeNavigator)) {
-	msg("A* Navigator Error", "No active A* Navigator found in model.", 1);
-	modeleditmode(0);
-	#define WM_LBUTTONUP 0x0202
-	postwindowmessage(windowfromnode(activedocumentnode()), WM_LBUTTONUP, 0, 0);
+if (!objectexists(activeNavigator))
+	activeNavigator = function_s(c, "findNavigator");
+if (!objectexists(activeNavigator))
 	return 0;
-}
 
 int mouseX = cursorinfo(i, 2, 1, 1);
 int mouseY = cursorinfo(i, 2, 2, 1);
@@ -298,8 +288,9 @@ if (getvarnum(c, "dragging")) {
         <node f="42-4" dt="2"><name>OnEntering</name><data>treenode iconGrid = nodefromwindow(keyboardfocus());
 treenode activeNavigator = tonode(getvarnum(c, "activeNavigator"));
 if (!objectexists(activeNavigator))
+	activeNavigator = function_s(c, "findNavigator");
+if (!objectexists(activeNavigator))
 	return 0;
-
 function_s(activeNavigator, "setEditMode", getvarnum(c, "mode"));
 nodepoint(viewfocus(c), iconGrid);
 nodepoint(objectfocus(c), selectedobject(iconGrid));</data></node>
@@ -336,6 +327,17 @@ if (barrierEditMode &amp; BARRIER_MODE_CREATE)
 setvarnum(theEditMode, "creating", 0);
 setvarnum(theEditMode, "editing", 1);
 </data></node>
+        <node f="42-4" dt="2"><name>findNavigator</name><data>forobjecttreeunder(model) {
+	if (isclasstype(a, "AStar::AStarNavigator")) {
+		nodepoint(getvarnode(c, "activeNavigator"), a);
+		return a;
+	}
+}
+
+msg("A* Navigator Error", "No active A* Navigator found in model.", 1);
+modeleditmode(0);
+#define WM_LBUTTONUP 0x0202
+postwindowmessage(windowfromnode(activedocumentnode()), WM_LBUTTONUP, 0, 0);</data></node>
        </node>
       </data></node>
       <node f="42-0" dt="4"><name>AStar::Barrier</name><data>
