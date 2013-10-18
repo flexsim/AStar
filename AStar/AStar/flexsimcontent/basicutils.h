@@ -579,12 +579,14 @@ void cpp_repeat(int nr, Do doIt)
 template<class T = TreeNode, void (*Adder)(treenode x, T* obj) = 0, T* (*Getter)(treenode x) = 0>
 class NodeListArray
 {
-	treenode parent;
+	TreeNode* parent;
 
 public:
 	NodeListArray() : parent(0) {}
 	NodeListArray(treenode parent) : parent(parent) {}
 	void init(treenode parent) {this->parent = parent;}
+
+	operator TreeNode*&(){return parent;}
 	
 	int size() {return content(parent);}
 
