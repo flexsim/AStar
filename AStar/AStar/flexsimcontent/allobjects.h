@@ -1597,9 +1597,11 @@
 #define VIEW_TYPE_PANEL 102
 #define VIEW_TYPE_CHECKBOX 105
 #define VIEW_TYPE_COMBOBOX 109
+#define VIEW_TYPE_LISTBOX 114
 #define VIEW_TYPE_TAB_CONTROL 115
 #define VIEW_TYPE_TOOLBAR 116
 #define VIEW_TYPE_TAB_CONTROL_BOTTOM 118
+#define VIEW_TYPE_TRACKER 122
 #define VIEW_TYPE_HTML 124
 
 #define CONSOLE_OUTPUT 1
@@ -2415,6 +2417,8 @@ visible treenode getallocatedfromkey(treenode tasksequence, int key);
 visible treenode getcoordinatedtasksequence(treenode dispatcher, int tsrank);
 
 visible double getcurtask(treenode tasksequence);
+
+visible treenode getdashboardcontrol(char* id, treenode startnode);
 
 visible double getedgedist(treenode netnode, int edgenum);
 
