@@ -503,7 +503,7 @@ set(spatialz(asn), z);</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
        </data></node>
-       <node f="42-0" dt="4"><name>Create Divider</name><data>
+       <node f="42-100000" dt="4"><name>Create Divider</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Divider")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -515,7 +515,7 @@ set(spatialz(asn), z);</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\onewaydivider.bmp</data></node>
        </data></node>
-       <node f="42-100000" dt="4"><name>Create Preferred Path</name><data>
+       <node f="42-0" dt="4"><name>Create Preferred Path</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::PreferredPath")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -703,9 +703,17 @@ set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
           <node f="40-0"><name></name></node>
           <node f="42-0" dt="2"><name>valuetype</name><data>distance</data></node>
           <node f="42-0" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
-          <node f="42-0" dt="1"><name>ishotlink</name><data>0000000000000000</data></node>
+          <node f="42-0" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
           <node f="42-0" dt="1"><name>step</name><data>9999999a3fb99999</data></node>
           <node f="42-0" dt="1"><name>conversion</name><data>0000000000000000</data></node>
+          <node f="42-4" dt="2"><name>OnKillFocus</name><data>treenode parent = ownerobject(c);
+if (stringtonum(getviewtext(node("/EditValue", parent))) &lt;= 0.1) {
+	setviewtext(node("/EditValue", parent), "0.1");
+	set(node("&gt;objectfocus+", parent), 0.1);
+}
+
+function_s(node("@&gt;objectfocus+", c), "rebuildMeshes");
+repaintall();</data></node>
          </node>
         </data>
          <node f="40-0"><name></name></node></node>
@@ -732,11 +740,16 @@ set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
           <node f="40-0"><name></name></node>
           <node f="42-0" dt="2"><name>valuetype</name><data>distance</data></node>
           <node f="42-0" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
-          <node f="42-0" dt="1"><name>ishotlink</name><data>0000000000000000</data></node>
+          <node f="42-0" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
           <node f="42-0" dt="1"><name>step</name><data>000000003ff00000</data></node>
           <node f="42-0" dt="1"><name>conversion</name><data>0000000000000000</data></node>
           <node f="42-0" dt="1"><name>coefficient</name><data>000000003ff00000</data></node>
           <node f="42-0" dt="1"><name>exponent</name><data>000000003ff00000</data></node>
+          <node f="42-4" dt="2"><name>OnKillFocus</name><data>treenode parent = ownerobject(c);
+if (stringtonum(getviewtext(node("/EditValue", parent))) &lt; 1) {
+	setviewtext(node("/EditValue", parent), "1.00");
+	set(node("&gt;objectfocus+", parent), 1);
+}</data></node>
          </node>
         </data>
          <node f="40-0"><name></name></node></node>
@@ -1470,6 +1483,7 @@ treenode selectBarrier = node("../SelectBarrier", c);
 function_s(selectBarrier, "refreshList");
 set(itemcurrent(selectBarrier), content(items(selectBarrier)));
 listboxrefresh(selectBarrier);
+executefsnode(OnSelect(selectBarrier), selectBarrier);
 repaintall();</data></node>
            <node f="42-0" dt="2"><name>OnPress</name><data>int filter = get(itemcurrent(node("../FilterType", c)));
 
@@ -1811,10 +1825,6 @@ if (objectexists(focus)) {
 		setviewtext(c, getname(focus));
 	}
 }</data></node>
-           <node f="42-0" dt="2"><name>style</name><data></data>
-            <node f="40-0"><name></name></node>
-            <node f="42-0"><name>ES_READONLY</name></node>
-           </node>
           </data></node>
           <node f="42-0" dt="4"><name>Path Weight</name><data>
            <node f="40-0"><name>object</name></node>
@@ -2016,6 +2026,9 @@ treenode astarNavigator = ownerobject(focus);
 
 if (!objectexists(focus))
 	return 0;
+	
+if (gets(node("../..&gt;result", c)) == "AStar::Barrier")
+	return 0;
 
 if (!eventdata) {
 	clearcontents(table);
@@ -2134,6 +2147,12 @@ repaintview(TheTable);
 
 treenode focus = node("..&gt;objectfocus+", c);
 treenode astarNavigator = ownerobject(focus);
+
+if (!objectexists(focus))
+	return 0;
+	
+if (gets(node("..&gt;result", c)) != "AStar::Barrier")
+	return 0;
 
 if (eventdata) {
 	double x1 = getvarnum(c, "posx");

@@ -247,6 +247,8 @@ double Divider::onClick(int clickCode, double x, double y)
 
 		// If creating, don't try to change the active node or the mode
 		if (mode & BARRIER_MODE_CREATE) {
+			if (modeleditmode(-1) == 0)
+				mode = 0;
 			return 0;
 		}
 

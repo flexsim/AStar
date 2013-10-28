@@ -21,8 +21,11 @@ AStarNavigator::AStarNavigator()
 
 AStarNavigator::~AStarNavigator()
 {
-	if (edgeTable)
+	if (edgeTable) {
 		delete [] edgeTable;
+		edgeTable = 0;
+		hasEdgeTable = 0;
+	}
 }
 
 void AStarNavigator::bindVariables(void)
@@ -939,6 +942,7 @@ void AStarNavigator::buildEdgeTable()
 			delete [] edgeTable;
 		edgeTable = 0;
 		hasEdgeTable = 0;
+		boundsMesh.init(0, 0, 0);
 		return;
 	}
 
@@ -1146,7 +1150,7 @@ void AStarNavigator::drawTraffic(float z, TreeNode* view)
 #define SELECTIONMODE_MOUSEMOVE 10
 #define SELECTIONMODE_MOUSEDOWNLEFT 11
 
-	trafficMesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE4, 0);
+	trafficMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, 0);
 
 	int pickMode = getpickingmode(view);
 	if (pickMode == SELECTIONMODE_MOUSEDOWNLEFT)
