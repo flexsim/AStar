@@ -20,7 +20,7 @@ private:
 
 public:
 	TreeNode* points;
-	NodeListArray<Point>::SdtSubNodeType pointList;
+	NodeListArray<Point>::SdtSubNodeBindingType pointList;
 	unsigned int meshOffset;
 	unsigned int nrVerts;
 	unsigned int isActive;
@@ -57,7 +57,7 @@ public:
 	virtual void addVertices(Mesh* barrierMesh, float z);
 
 	// These functions handle mouse events. [x, y] are model coords
-	virtual double onClick(int clickCode, double x, double y);
+	virtual double onClick(treenode view, int clickCode, double x, double y);
 	virtual double onMouseMove(double x, double y, double dx, double dy);
 
 	// These functions are for modifying barrier points. They each 

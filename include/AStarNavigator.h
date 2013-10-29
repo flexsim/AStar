@@ -183,16 +183,19 @@ public:
 	virtual double onDraw(TreeNode* view);
 	virtual double onDrag(TreeNode* view);
 	virtual double onClick(TreeNode* view, int clickcode);
+	virtual double onUndo(bool isUndo, treenode undoRecord);
+	void addCreateRecord(treenode view, Barrier* barrier);
 	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType);
 	virtual double onDestroy(TreeNode* view);
 	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed);
 	virtual double navigateToLoc(TreeNode* traveler, double x, double y, double endspeed, int driveshort = 1);
-	
+
 	virtual double updateLocations();
 	virtual double abortTravel(TreeNode* traveler, TreeNode* newts);
 	virtual unsigned int getClassType();
 
 	virtual void bindVariables(void);
+
 
 	void setDirty();
 };

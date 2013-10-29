@@ -241,20 +241,25 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 	}
 }
 
-double Divider::onClick(int clickCode, double x, double y)
+double Divider::onClick(treenode view, int clickCode, double x, double y)
 {
 	if (clickCode == LEFT_PRESS) {
 
 		// If creating, don't try to change the active node or the mode
 		if (mode & BARRIER_MODE_CREATE) {
-			if (modeleditmode(-1) == 0)
+			if (modeleditmode(-1) == 0) {
+				o(AStarNavigator, ownerobject(holder)).addCreateRecord(view, this);
 				mode = 0;
+			}
 			return 0;
 		}
 
 		// If the click is on a node, make that the active node
 		int clickedIndex = -1;
 		for (int i = 0; i < pointList.size(); i++) {
+			applicationcommand("addundotracking", tonum(view), tonum(node("x", pointList[i]->holder)));
+			applicationcommand("addundotracking", tonum(view), tonum(node("y", pointList[i]->holder)));
+
 			double pointX = pointList[i]->x;
 			double pointY = pointList[i]->y;
 			double dx = x - pointX;
@@ -296,6 +301,8 @@ double Divider::onClick(int clickCode, double x, double y)
 			activePointIndex = pointList.size();
 			if (pointList.size() < 2)
 				destroyobject(holder);
+			else
+				o(AStarNavigator, ownerobject(holder)).addCreateRecord(view, this);
 		}
 	}
 

@@ -11,6 +11,6 @@ void Point::bind(void)
 {
 	SimpleDataType::bind();
 
-	bindDouble(x, 0);
-	bindDouble(y, 0);
+	bindDouble(x, 1);
+	bindDouble(y, 1);
 }

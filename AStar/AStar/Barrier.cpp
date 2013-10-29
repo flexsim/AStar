@@ -162,13 +162,19 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 #undef ABV
 }
 
-double Barrier::onClick(int clickCode, double x, double y)
+double Barrier::onClick(treenode view, int clickCode, double x, double y)
 {
 	if (clickCode == LEFT_PRESS) {
 
 		// If creating, don't try to change the active node or the mode
 		if (mode & BARRIER_MODE_CREATE) {
+			o(AStarNavigator, ownerobject(holder)).addCreateRecord(view, this);
 			return 0;
+		}
+
+		for (int i = 0; i < pointList.size(); i++) {
+			applicationcommand("addundotracking", tonum(view), tonum(node("x", pointList[i]->holder)));
+			applicationcommand("addundotracking", tonum(view), tonum(node("y", pointList[i]->holder)));
 		}
 
 		// if the user clicked on a triangle, set the mode and active point

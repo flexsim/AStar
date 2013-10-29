@@ -171,17 +171,21 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 	if (objectexists(secondary)) {
 		Barrier* barrier = &o(Barrier, secondary);
 
+		// is there a current barrier
 		if (objectexists(tonode(activeBarrier))) {
 			Barrier* b = &o(Barrier, tonode(activeBarrier));
+			// is the clicked barrier different than the current barrier
 			if (b != barrier) {
+				// then reset the current barrier to be "not active"
 				b->activePointIndex = b->pointList.size();
 				b->isActive = 0;
 			}
 		}
+		// set the active barrier to the clicked barrier
 		activeBarrier = barrier->holder;
 		barrier->isActive = 1;
 		setDirty();
-		return barrier->onClick((int)clickcode, cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
+		return barrier->onClick(view, (int)clickcode, cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
 	}
 	if (objectexists(tonode(activeBarrier))) {
 		Barrier* b = &o(Barrier, tonode(activeBarrier));
@@ -191,6 +195,21 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 	}
 	activeBarrier = 0;
 	return FlexSimObject::onClick(view, (int)clickcode);
+}
+
+double AStarNavigator::onUndo(bool isUndo, treenode undoRecord)
+{
+	setDirty();
+	return 0;
+}
+
+void AStarNavigator::addCreateRecord(treenode view, Barrier* barrier)
+{
+	int undoId = beginaggregatedundo(view, "Create Barrier");
+	createundorecord(view, holder, UNDO_UPDATE_LINKS_ON_UNDO, 0, 0, 0);
+	createundorecord(view, barrier->holder, UNDO_CREATE_OBJECT, 0, 0, 0);
+	createundorecord(view, holder, UNDO_UPDATE_LINKS_ON_REDO, 0, 0, 0);
+	endaggregatedundo(view, undoId);
 }
 
 double AStarNavigator::onDrag(TreeNode* view)
@@ -1581,7 +1600,7 @@ visible double AStarNavigator_onClick(FLEXSIMINTERFACE)
 	AStarNavigator* a = &o(AStarNavigator, navNode);
 	if (objectexists(tonode(a->activeBarrier))) {
 		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
-		b->onClick((int)parval(1), parval(2), parval(3));
+		b->onClick(parnode(1), (int)parval(2), parval(3), parval(4));
 	}
 	return 1;
 }
