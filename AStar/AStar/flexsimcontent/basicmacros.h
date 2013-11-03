@@ -70,6 +70,7 @@ n21,n22,n23,n24,n25,n26,n27,n28,n29,n30
 
 #define visible extern "C" __declspec(dllexport)
 
+#define RETURN_TYPE_UNRESOLVED 0
 #define RETURN_TYPE_NUMBER 1
 #define RETURN_TYPE_STRING 2
 

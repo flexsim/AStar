@@ -584,9 +584,26 @@ class NodeListArray
 public:
 	NodeListArray() : parent(0) {}
 	NodeListArray(treenode parent) : parent(parent) {}
+	template <class OtherType>
+	NodeListArray(treenode parent, const OtherType& copyFrom) : parent(parent)
+	{
+		*this = copyFrom;
+	}
+	template <class OtherType>
+	NodeListArray(OtherType& copyFrom) : parent(copyFrom) {}
 	void init(treenode parent) {this->parent = parent;}
 
 	operator TreeNode*&(){return parent;}
+
+	template <class OtherType>
+	NodeListArray& operator = (const OtherType& copyFrom)
+	{
+		_ASSERTE(parent != 0)
+		clear();
+		for (int i = 0; i < copyFrom.size(); i++)
+			add(copyFrom[i]);
+		return *this;
+	}
 	
 	int size() {return content(parent);}
 

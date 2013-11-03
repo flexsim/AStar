@@ -101,6 +101,7 @@ THE SOFTWARE.
 		inline operator unsigned char()const{return (unsigned char)asDouble;}
 		inline operator unsigned char*()const{return (unsigned char*)doubletoptr(asDouble);}
 		inline operator char*()const{return (char*)doubletoptr(asDouble);}
+		inline operator std::string&(){static std::string tempStr;if (asDouble <= 1000000) tempStr = ""; else tempStr = (char*)doubletoptr(asDouble); return tempStr;}
 		inline FlexSimValue(void* x) : asDouble(ptrtodouble(x)) {}
 		inline FlexSimValue(TreeNode* x) : asDouble(ptrtodouble(x)) {}
 		inline FlexSimValue(double x) : asDouble(x) {}
@@ -115,6 +116,7 @@ THE SOFTWARE.
 		inline FlexSimValue(unsigned char* x) : asDouble((double)ptrtodouble(x)) {}
 		inline FlexSimValue(char* x) : asDouble((double)ptrtodouble(x)) {}
 		inline FlexSimValue(const char* x) : asDouble((double)ptrtodouble((char*)x)) {}
+		inline FlexSimValue(std::string& x) : asDouble((double)ptrtodouble((char*)x.c_str())) {}
 		inline FlexSimValue(const FlexSimValue& x) : asDouble(x.asDouble) {}
 	};
 #endif
@@ -128,6 +130,9 @@ THE SOFTWARE.
 	typedef int          (*__mpr)();
 	typedef int          (*__mpt)(char *m);
 	typedef int          (*__mpt)(char*);
+	#if FLEXSIM_TARGET_VERSION >= 710
+	typedef int          (*__partype)(int index, CallPoint * callpoint);
+	#endif
 	typedef double       (*__parval)(int index, CallPoint * callpoint);
 	typedef int          (*_activateview)(treenode xx);
 	typedef int          (*_activeview)();
@@ -823,7 +828,7 @@ THE SOFTWARE.
 	typedef treenode     (*_ownerobject)(treenode);
 	typedef treenode     (*_ownerview)(treenode);
 	typedef char*        (*_parg_cstr)();
-	typedef double       (*_parqty)( CallPoint * callpoint);
+	typedef double       (*__parqty)( CallPoint * callpoint);
 	typedef int          (*_particlecreate)(treenode c);
 	typedef int          (*_particlemove)(treenode client, treenode destination);
 	typedef double       (*_particleset)(treenode viewnode, int setno, int cmd, double p1, double p2, double p3, double p4, double p5, double p6);
@@ -1081,7 +1086,7 @@ THE SOFTWARE.
 	typedef double       (*_stopobject)(treenode involved, int state, int id, double priority);
 	typedef double       (*_stopoutput)(treenode object);
 	typedef double       (*_stoptimealias)(double n1, double n2);
-	typedef double       (*_stringreturn)(char* result, CallPoint * callpoint);
+	typedef double       (*__stringreturn)(char* result, CallPoint * callpoint);
 	typedef int          (*_stringsearchalias1)(char* str, char* substr, int startpos);
 	typedef int          (*_stringsearchalias2)(char* str, char* substr, int startpos, int flags);
 	typedef int          (*_stringsequal)(char *s1, char *s2);
@@ -1260,6 +1265,9 @@ DECLARE_FLEXSIM_FUNCTION_1(_mpd)
 DECLARE_FLEXSIM_FUNCTION_1(_mpf)
 DECLARE_FLEXSIM_FUNCTION_1(_mpr)
 DECLARE_FLEXSIM_FUNCTION_1(_mpt)
+#if FLEXSIM_TARGET_VERSION >= 710
+DECLARE_FLEXSIM_FUNCTION_1(_partype)
+#endif
 DECLARE_FLEXSIM_FUNCTION_1(_parval)
 DECLARE_FLEXSIM_FUNCTION_1(activateview)
 DECLARE_FLEXSIM_FUNCTION_1(activeview)
@@ -1802,7 +1810,7 @@ DECLARE_FLEXSIM_FUNCTION_1(outputtreecontent)
 DECLARE_FLEXSIM_FUNCTION_1(ownerobject)
 DECLARE_FLEXSIM_FUNCTION_1(ownerview)
 DECLARE_FLEXSIM_FUNCTION_1(parg_cstr)
-DECLARE_FLEXSIM_FUNCTION_1(parqty)
+DECLARE_FLEXSIM_FUNCTION_2(_parqty, "parqty")
 DECLARE_FLEXSIM_FUNCTION_1(particlecreate)
 DECLARE_FLEXSIM_FUNCTION_1(particlemove)
 DECLARE_FLEXSIM_FUNCTION_1(pc)
@@ -1990,7 +1998,7 @@ DECLARE_FLEXSIM_FUNCTION_1(stopinput)
 DECLARE_FLEXSIM_FUNCTION_1(stoplisten)
 DECLARE_FLEXSIM_FUNCTION_1(stopoutput)
 DECLARE_FLEXSIM_FUNCTION_2(stoptimealias, "stoptime")
-DECLARE_FLEXSIM_FUNCTION_1(stringreturn)
+DECLARE_FLEXSIM_FUNCTION_2(_stringreturn, "stringreturn")
 DECLARE_FLEXSIM_FUNCTION_2(stringsearchalias1, "stringsearch")
 DECLARE_FLEXSIM_FUNCTION_3(stringsearchalias2, "?stringsearch@@YAHPAD0HH@Z", "?stringsearch@@YAHPEAD0HH@Z")
 DECLARE_FLEXSIM_FUNCTION_1(stringsequal)

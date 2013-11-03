@@ -75,12 +75,18 @@ using std::string;
 		return (double)(size_t)x;
 	}
 #endif
+#ifndef FLEXSIM_TARGET_VER
+	#define FLEXSIM_TARGET_VERSION 9900
+#endif
 #define tonum(x) (ptrtodouble(x))
 
 // direct c++ parval
 #define parval(a) _parval(a,callPoint)
+#define partype(a) _partype(a,callPoint)
 #define parstr(a) ((char *) doubletoptr(parval(a)))
 #define parnode(a) ((treenode )doubletoptr(_parval(a,callPoint)))
+#define parqty() _parqty(callPoint)
+#define stringreturn(str) _stringreturn(str, callPoint)
 #define msgparam(a) parval(a+1)
 #define msgsendingobject parnode(1)
 
