@@ -1522,11 +1522,11 @@ visible double AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	AStarNavigator* a = &o(AStarNavigator, navNode);
 	Barrier* newBarrier = NULL;
 	switch (editMode) {
+	default:
 	case EDITMODE_SOLID_BARRIER: newBarrier = a->barrierList.add(new Barrier); break;
 	case EDITMODE_DIVIDER: newBarrier = a->barrierList.add(new Divider); break;
 	case EDITMODE_ONE_WAY_DIVIDER: newBarrier = a->barrierList.add(new OneWayDivider); break;
 	case EDITMODE_PREFERRED_PATH: newBarrier = a->barrierList.add(new PreferredPath(a->defaultPathWeight)); break;
-	default: return 0;
 	}
 
 	newBarrier->init(a->nodeWidth, parval(1), parval(2), parval(3), parval(4));

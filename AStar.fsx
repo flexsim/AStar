@@ -34,6 +34,13 @@
         <node f="42-0" dt="1"><name>deepSearch</name><data>000000003ff00000</data></node>
         <node f="42-0" dt="1"><name>ignoreDestBarrier</name><data>000000003ff00000</data></node>
         <node f="42-0" dt="1"><name>hasEdgeTable</name><data>0000000000000000</data></node>
+        <node f="42-0"><name>barriers</name></node>
+        <node f="42-0" dt="3"><name>activeBarrier</name><data><coupling>null</coupling></data></node>
+        <node f="42-0"><name>fixedResourceBarriers</name></node>
+        <node f="42-0" dt="1"><name>cachePaths</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>pathCount</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>requestCount</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>cacheUseCount</name><data>0000000000000000</data></node>
        </node>
        <node f="42-0"><name>behaviour</name>
         <node f="40-0"><name></name></node>
@@ -89,8 +96,8 @@
        </node>
        <node f="42-0"><name>spatial</name>
         <node f="40-0"><name></name></node>
-        <node f="42-0" dt="1"><name>spatialx</name><data>28f5c28fbfd28f5c</data></node>
-        <node f="42-0" dt="1"><name>spatialy</name><data>5c28f5c3c007c28f</data></node>
+        <node f="42-0" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>spatialz</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>spatialsx</name><data>000000003ff0e1fc</data></node>
         <node f="42-0" dt="1"><name>spatialsy</name><data>c00000003ff0e1fb</data></node>
@@ -209,7 +216,9 @@ treenode activeNavigator = tonode(getvarnum(c, "activeNavigator"));
 if (!objectexists(activeNavigator))
 	activeNavigator = function_s(c, "findNavigator");
 if (!objectexists(activeNavigator))
-	return 0;
+	activeNavigator = createinstance(node("/?AStarNavigator", library()), model());
+
+nodepoint(getvarnode(c, "activeNavigator"), activeNavigator);
 
 int mouseX = cursorinfo(i, 2, 1, 1);
 int mouseY = cursorinfo(i, 2, 2, 1);
@@ -232,8 +241,7 @@ if (!objectexists(selobj)) {
 			setvarnum(c, "creating", 1);
 			setvarnum(c, "editing", 0);
 			
-			function_s(activeNavigator, "addBarrier", mouseX, mouseY, mouseX, mouseY);
-			treenode activeBarrier = tonode(getvarnum(activeNavigator, "activeBarrier"));
+			treenode activeBarrier = function_s(activeNavigator, "addBarrier", mouseX, mouseY, mouseX, mouseY, mode);
 			function_s(activeNavigator, "setBarrierMode", activeBarrier, BARRIER_MODE_DYNAMIC_CREATE);
 			setselectedobject(i, activeNavigator);	
 		}
@@ -310,7 +318,7 @@ setvarnum(c, "dragY", 0);
 treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
 if (!objectexists(activeNav))
 	return 0;
-function_s(activeNav, "onClick", RIGHT_RELEASE, 0, 0);
+function_s(activeNav, "onClick", activedocumentnode(), RIGHT_RELEASE, 0, 0);
 function_s(activeNav, "rebuildMeshes");</data></node>
         <node f="42-4" dt="2"><name>checkStatus</name><data>#define BARRIER_MODE_CREATE 0x2
 
@@ -333,11 +341,7 @@ setvarnum(theEditMode, "editing", 1);
 		return a;
 	}
 }
-
-msg("A* Navigator Error", "No active A* Navigator found in model.", 1);
-modeleditmode(0);
-#define WM_LBUTTONUP 0x0202
-postwindowmessage(windowfromnode(activedocumentnode()), WM_LBUTTONUP, 0, 0);</data></node>
+</data></node>
        </node>
       </data></node>
       <node f="42-0" dt="4"><name>AStar::Barrier</name><data>
@@ -497,25 +501,25 @@ set(spatialx(asn), x);
 set(spatialy(asn), y);
 set(spatialz(asn), z);</data></node>
        </data></node>
-       <node f="42-0" dt="4"><name>Create Barrier</name><data>
+       <node f="42-100000" dt="4"><name>Barrier</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Barrier")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
        </data></node>
-       <node f="42-100000" dt="4"><name>Create Divider</name><data>
+       <node f="42-0" dt="4"><name>Divider</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Divider")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\divider.bmp</data></node>
        </data></node>
-       <node f="42-0" dt="4"><name>Create One-Way Divider</name><data>
+       <node f="42-0" dt="4"><name>One-Way Divider</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::OneWayDivider")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\onewaydivider.bmp</data></node>
        </data></node>
-       <node f="42-0" dt="4"><name>Create Preferred Path</name><data>
+       <node f="42-0" dt="4"><name>Preferred Path</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::PreferredPath")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -2514,4 +2518,6 @@ applylinks(parent);</data></node>
    </node>
   </node>
  </node>
+ <node f="42-0" dt="2"><name>release</name><data>1.0</data></node>
+ <node f="42-0" dt="2"><name>revision</name><data>.0</data></node>
 </node></flexsim-tree>
