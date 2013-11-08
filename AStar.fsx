@@ -500,7 +500,9 @@ treenode asn = createinstance(node("astar/1", library()), model());
 setname(asn, "AStarNavigator");
 set(spatialx(asn), x);
 set(spatialy(asn), y);
-set(spatialz(asn), z);</data></node>
+set(spatialz(asn), z);
+return asn;
+</data></node>
        </data></node>
        <node f="42-100000" dt="4"><name>Barrier</name><data>
         <node f="40-0"><name></name></node>
