@@ -218,6 +218,7 @@ if (!objectexists(activeNavigator))
 if (!objectexists(activeNavigator))
 	activeNavigator = createinstance(node("/?AStarNavigator", library()), model());
 
+applicationcommand("assertmoduledependency", "AStar");
 nodepoint(getvarnode(c, "activeNavigator"), activeNavigator);
 
 int mouseX = cursorinfo(i, 2, 1, 1);
