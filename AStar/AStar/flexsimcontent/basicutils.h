@@ -22,6 +22,7 @@
 		inline operator unsigned char()const{return (unsigned char)asDouble;}
 		inline operator unsigned char*()const{return (unsigned char*)doubletoptr(asDouble);}
 		inline operator char*()const{return (char*)doubletoptr(asDouble);}
+		inline operator std::string&(){static std::string tempStr;if (asDouble <= 1000000) tempStr = ""; else tempStr = (char*)doubletoptr(asDouble); return tempStr;}
 		inline FlexSimValue(void* x) : asDouble(ptrtodouble(x)) {}
 		inline FlexSimValue(TreeNode* x) : asDouble(ptrtodouble(x)) {}
 		inline FlexSimValue(double x) : asDouble(x) {}
@@ -36,6 +37,7 @@
 		inline FlexSimValue(unsigned char* x) : asDouble((double)ptrtodouble(x)) {}
 		inline FlexSimValue(char* x) : asDouble((double)ptrtodouble(x)) {}
 		inline FlexSimValue(const char* x) : asDouble((double)ptrtodouble((char*)x)) {}
+		inline FlexSimValue(std::string& x) : asDouble((double)ptrtodouble((char*)x.c_str())) {}
 		inline FlexSimValue(const FlexSimValue& x) : asDouble(x.asDouble) {}
 	};
 #endif
