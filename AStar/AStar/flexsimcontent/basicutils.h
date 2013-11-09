@@ -1,7 +1,7 @@
 #pragma once
 #include "basicclasses.h"
 #include "basicmacros.h"
-#include <string.h>
+#include <string>
 
 #ifndef FLEXSIM_VALUE
 #define FLEXSIM_VALUE
