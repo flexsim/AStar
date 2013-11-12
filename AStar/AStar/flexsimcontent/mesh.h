@@ -221,7 +221,7 @@ public:
 	/// <param name="vertIndex">	Zero-based index of the vertex. Should be the index returned by addVertex() </param>
 	/// <param name="attribId"> 	Identifier for the attribute. See Mesh::defineVertexAttribs().</param>
 	/// <param name="vert">			[in] A pointer to the vertex data. </param>
-	void setVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* vert);
+	unsigned int setVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* vert);
 
 	/// <summary>	Define data to be applied once per draw, i.e. just before drawing the mesh each time.</summary>
 	/// <remarks>	Anthony.johnson, 8/15/2013. </remarks>
@@ -254,6 +254,12 @@ public:
 	~IndexedMesh()  {cleanupIndexBuffer(true);}
 	virtual const char* getClassFactory() {return "IndexedMesh";}
 	virtual void bind();
+
+	void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0)
+	{
+		Mesh::init(numVerts, perVertexAttribs, flags); 
+		numIndices = 0;
+	}
 
 	/// <summary>	Define the index buffer for an indexed mesh. </summary>
 	/// <remarks>	 </remarks>

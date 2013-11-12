@@ -190,6 +190,45 @@ public:
 	double * safedatafloat();
 	ByteBlock * safedatabyteblock();
 
+
+	class IteratorElement
+	{
+	public:
+		TreeNode* listHead;
+		TreeNode* element;
+		int curRank;
+		IteratorElement(TreeNode* node, int curRank) 
+			: listHead(node->owner == node ? node : node->branch), 
+			curRank(curRank), element(listHead ? listHead->array[curRank] : 0)
+		{}
+		IteratorElement() : listHead(0), curRank(0), element(0) {}
+		IteratorElement(IteratorElement& other) : listHead(other.listHead), curRank(other.curRank), element(other.element) {}
+		TreeNode* operator ->() const {return element;}
+		TreeNode* operator * () {return element;}
+		TreeNode* operator * () const {return element;}
+		operator TreeNode*() const {return element;}
+		IteratorElement& swap(IteratorElement& other) 
+		{
+			IteratorElement temp = other;
+			other = *this;
+			*this = temp;
+			return *this;
+		}
+		IteratorElement& operator = (IteratorElement& other) 
+		{
+			if (listHead == other.listHead && curRank) {
+				element = other.element;
+				listHead->array[curRank] = element;
+				element->array = listHead->array + curRank;
+			} else {
+				listHead = other.listHead;
+				curRank = other.curRank;
+				element = other.element;
+			}
+			return *this;
+		}
+	};
+
 #ifdef FLEXSIM_ENGINE_COMPILE
 
 	void* operator new (size_t size);

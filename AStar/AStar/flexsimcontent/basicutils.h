@@ -622,17 +622,21 @@ public:
 			return operator[](getrank(x) - 1);
 		return NULL;
 	}
-	T* back()
-	{
-		if (size() == 0)
-			return 0;
-		treenode subNode = last(parent);
-		return Getter(subNode);
-	}
 	T* add(T* obj)
 	{
 		_ASSERTE(obj != 0);
 		treenode tmp = nodeadddata(nodeinsertinto(parent), DATA_POINTERCOUPLING);
+		Adder(tmp, obj);
+		return obj;
+	}
+	T* add(T* obj, int atIndex)
+	{
+		_ASSERTE(obj != 0 && atIndex <= size());
+		treenode tmp;
+		if (atIndex > 0)
+			tmp = nodeinsertafter(rank(parent, atIndex));
+		else tmp = setrank(nodeinsertinto(parent), 1);
+		nodeadddata(tmp, DATA_POINTERCOUPLING);
 		Adder(tmp, obj);
 		return obj;
 	}
@@ -685,6 +689,22 @@ public:
 		_ASSERTE(obj->holder != 0);
 		nodejoin(x, nodeadddata(nodeinsertinto(obj->holder), DATA_POINTERCOUPLING));
 	}
+
+	static T* SdtSubSubNodeCouplingGetter (treenode x)
+	{
+		treenode partner = x->datatype == DATA_POINTERCOUPLING ? x->dataascoupling->partner() : 0;  
+		if (partner)
+			return &o(T, up(up(partner)));
+		return 0;
+	}	
+
+	template <TreeNode* (*ContainerGetter)(T* obj)>
+	static void CustomCouplingAdder (treenode x, T* obj) 
+	{
+		_ASSERTE(obj->holder != 0);
+		nodejoin(x, nodeadddata(nodeinsertinto(ContainerGetter(obj)), DATA_POINTERCOUPLING));
+	}
+
 
 	static T* SdtSubNodeGetter (treenode x) {return &o(T, x);}
 	static void SdtSubNodeAdder (treenode x, T* obj) {nodeaddsimpledata(x, obj, 0);}
@@ -775,6 +795,13 @@ the function myAddToNetNodesVar, which in this example should look like this:
 void myAddToNetNodesVar(treenode x, NetworkNode* y) {
 	nodejoin(x, nodeadddata(nodeinsertinto(y->node_v_backpointer), DATATYPE_COUPLING);
 }
+
+Or for simplicity, you can instead just define the container for adding on the other side of the coupling by using the 
+CustomCouplingAdder to do this:
+class MyType {
+	static TreeNode* GetOtherContainer(OtherType* other) {return other->myTypeList;}
+	NodeListArray<OtherType, NodeListArray<OtherType>::CustomCouplingAdder<GetOtherContainer>>::SdtSubSubNodeType otherTypeList;
+};
 **********************************************************************/
 	typedef NodeListArray<T, Adder, ObjCouplingGetter> ObjCouplingType;
 
@@ -846,6 +873,99 @@ whose holder node contains the coupling sub-node. It's just like SubNodeCoupling
 an object reference instead of a node reference.
 **********************************************************************/
 	typedef NodeListArray<T, SdtSubNodeCouplingAdder, SdtSubNodeCouplingGetter> SdtSubNodeCouplingType;
+
+/*********************************************************************
+NodeListArray<OtherType, OtherTypeAdder>::SdtSubSubNodeCouplingType:
+This one represents a list of two-way couplings to objects. This will store the other side of the 
+coupling as a sub-sub-node of the object referenced, and when dereferenced it will return the object 
+whose holder node contains the parent of the coupling sub-node. It's just like SdtSubNodeCouplingType, 
+except it returns up(up(theCouplingPartner)) instead of just one up(). Also, in this case you must 
+define the adder, or just the container for the other side of the coupling by using the 
+CustomCouplingAdder to do this:
+class MyType {
+	static TreeNode* GetOtherContainer(OtherType* other) {return other->myTypeList;}
+	NodeListArray<OtherType, NodeListArray<OtherType>::CustomCouplingAdder<GetOtherContainer>>::SdtSubSubNodeType otherTypeList;
 };
 
+class OtherType {
+	NodeListArray<MyType>::ObjCouplingType myTypeList;
+}
+**********************************************************************/
+	typedef NodeListArray<T, Adder, SdtSubSubNodeCouplingGetter> SdtSubSubNodeCouplingType;
+
+	class IteratorElement
+	{
+		NodeListArray* list;
+		TreeNode::IteratorElement nodeElement;
+		int curIndex;
+	public:
+		IteratorElement() : arrayAddress(0), curIndex(0), nodeElement() {}
+		IteratorElement(NodeListArray* list, int curIndex) : list(list), curIndex(curIndex), nodeElement(list->parent, curIndex + 1) {}
+		IteratorElement(IteratorElement& other) : list(other.list), curIndex(other.curIndex), nodeElement(other.nodeElement) {}
+		T* operator ->() const {return list->operator[](curIndex);}
+		T* operator * () const {return list->operator[](curIndex);}
+		operator T*() const {return list->operator[](curIndex);}
+		IteratorElement& operator = (IteratorElement& other) 
+		{
+			nodeElement = other.nodeElement;
+			return *this;
+		}
+	};
+
+// Iterator for NodeListArray: for use with std iterator algorithms
+	class Iterator : public std::iterator<std::random_access_iterator_tag, IteratorElement, ptrdiff_t, IteratorElement*, IteratorElement>
+	{
+		NodeListArray * list;
+		ptrdiff_t curIndex;
+	public:
+		Iterator() : list(0), curIndex(-1) {}
+		Iterator(NodeListArray* list, int curIndex) : list(list), curIndex(curIndex) {}
+		Iterator(Iterator& other) : list(other.list), curIndex(other.curIndex) {}
+		Iterator& operator = (Iterator& other) {list = other.list; curIndex = other.curIndex; return *this;}
+		bool operator == (Iterator& other) {return list == other.list && curIndex == other.curIndex;}
+		bool operator != (Iterator& other) {return !(operator == (other));}
+		//T* operator * () const {return list->operator[](curIndex);}
+		//T* operator ->() {return list->operator[](curIndex);}
+		IteratorElement operator * () {return IteratorElement(list, curIndex);}
+		Iterator& operator ++() {curIndex++; return *this;}
+		Iterator& operator ++(int x) {curIndex++; return *this;}
+		Iterator& operator --() {curIndex--; return *this;}
+		Iterator& operator --(int x) {curIndex--; return *this;}
+		Iterator operator +(ptrdiff_t n) {return Iterator(list, curIndex + n);}
+		Iterator operator -(ptrdiff_t n) {return Iterator(list, curIndex - n);}
+		ptrdiff_t operator -(Iterator& other) {return curIndex - other.curIndex;}
+		bool operator <(Iterator& other) {return curIndex < other.curIndex;}
+		bool operator <=(Iterator& other) {return curIndex <= other.curIndex;}
+		bool operator >(Iterator& other) {return curIndex > other.curIndex;}
+		bool operator >=(Iterator& other) {return curIndex > other.curIndex;}
+		Iterator& operator +=(ptrdiff_t n) {curIndex -= n; return *this;}
+		Iterator& operator -=(ptrdiff_t n) {curIndex -= n; return *this;}
+		T* operator [](ptrdiff_t n) {return list[curIndex + n];}
+	};
+	// container iteration methods
+	Iterator begin() {return Iterator(this, 0);}
+	Iterator end() {return Iterator(this, size());}
+	Iterator rbegin() {return Iterator(this, size() - 1);}
+	Iterator rend() {return Iterator(this, -1);}
+	// vector-esque methods
+	void push_back(T* obj) {add(obj);}
+	void pop_back() {remove(size() - 1);}
+	Iterator insert(Iterator position, const T*& obj)
+	{
+		add(obj, position.curIndex);
+		return position;
+	}
+	T* back()
+	{
+		if (size() == 0)
+			return 0;
+		return Getter(last(parent));
+	}
+	T* front()
+	{
+		if (size() == 0)
+			return 0;
+		return Getter(first(parent));
+	}
+};
 
