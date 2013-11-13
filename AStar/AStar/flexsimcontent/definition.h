@@ -248,8 +248,8 @@ void Mesh::cleanup(bool isDestructor)
 	{ mesh_cleanup(this, isDestructor); }
 void Mesh::defineVertexAttribs(unsigned int  attribId, float* verts)
 	{ mesh_definevertexattribs(this, attribId, verts); }
-void Mesh::setVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* vert)
-	{ mesh_setvertexattrib(this, vertIndex, attribId, vert); }
+unsigned int Mesh::setVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* vert)
+	{ return mesh_setvertexattrib(this, vertIndex, attribId, vert); }
 void Mesh::setMeshAttrib(unsigned int attribId, float* vert)
 	{ mesh_setmeshattrib(this, attribId, vert); }
 int Mesh::addVertex()

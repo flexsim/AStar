@@ -1670,6 +1670,10 @@
 #define EDIT_MODE_GET_MODE_NUM -1
 #define EDIT_MODE_GET_MODE_DELEGATE -2
 
+#define PARAM_TYPE_NUMBER 1
+#define PARAM_TYPE_NODE 2
+#define PARAM_TYPE_STRING 3
+
 
 
 // Global Variables
@@ -2374,7 +2378,7 @@ treenode createwaittask(treenode dispatcher,double state,double priority,int pre
 
 visible double defaultdragconnection(treenode fromobject, treenode toobject, char characterpressed);
 
-treenode derefcoupling(treenode coupling);
+visible treenode derefcoupling(treenode coupling);
 
 double destroyfsparticle(treenode particlenode);
 

@@ -1234,7 +1234,7 @@ THE SOFTWARE.
 		typedef  void (*_mesh_init)(Mesh* m, unsigned int nrVerts, unsigned int perVertFlags, unsigned int generalFlags);
 		typedef  void (*_mesh_cleanup)(Mesh* m, bool isDestructor);
 		typedef  void (*_mesh_definevertexattribs)(Mesh* m, unsigned int attribId, float* verts);
-		typedef  void (*_mesh_setvertexattrib)(Mesh* m, int vertIndex, unsigned int attribId, float* vert);
+		typedef  unsigned int (*_mesh_setvertexattrib)(Mesh* m, int vertIndex, unsigned int attribId, float* vert);
 		typedef  void (*_mesh_setmeshattrib)(Mesh* m, unsigned int attribId, float* vert);
 		typedef  int (*_mesh_addvertex)(Mesh* m);
 		typedef  void (*_mesh_draw)(Mesh* m, int drawMode, int vertOffset, int vertCount, int vertStride);
