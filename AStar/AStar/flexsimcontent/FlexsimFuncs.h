@@ -1211,6 +1211,7 @@ THE SOFTWARE.
 		typedef treenode (*_sdtgetbindtree)(SimpleDataType* sdt);
 		typedef treenode (*_nodeaddsimpledata)(treenode x, SimpleDataType* sdt, int bind);
 		typedef treenode (*_nodeaddcouplingdata)(treenode x, CouplingDataType* sdt, int bind);
+		typedef treenode (*_nodedetachsimpledata)(treenode target);
 		typedef void     (*_sdtappendtodisplaystr)(const char* text);
 		typedef char*    (*_sdttostring)(SimpleDataType* sdt, int verbose);
 		typedef double&  (*_sdtgetcurvalue)();
@@ -2165,6 +2166,7 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(llinitialize)
 	DECLARE_FLEXSIM_FUNCTION_1(nodeaddcouplingdata)
 	DECLARE_FLEXSIM_FUNCTION_1(nodeaddsimpledata)
+	DECLARE_FLEXSIM_FUNCTION_1(nodedetachsimpledata)
 	DECLARE_FLEXSIM_FUNCTION_1(odtbindstructure)
 	DECLARE_FLEXSIM_FUNCTION_1(odtcleanup)
 	DECLARE_FLEXSIM_FUNCTION_1(odtinitialize)
