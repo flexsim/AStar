@@ -540,7 +540,7 @@ return asn;
         <node f="42-0" dt="1"><name>spatialx</name><data>00000000407c6000</data></node>
         <node f="42-0" dt="1"><name>spatialy</name><data>000000004058c000</data></node>
         <node f="42-0" dt="1"><name>spatialsx</name><data>00000000407e3000</data></node>
-        <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040831000</data></node>
+        <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040829800</data></node>
         <node f="42-0" dt="2"><name>windowtitle</name><data></data></node>
         <node f="42-4" dt="2"><name>OnOpen</name><data>treenode tabcontrol = node("/tabcontrol",c);
 iterate(1, content(tabcontrol), 1){
@@ -999,6 +999,7 @@ forobjectsbehind (c)
          <node f="42-0" dt="1"><name>spatialsy</name><data>00000000405d4000</data></node>
          <node f="42-0" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
          <node f="42-0" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
+         <node f="42-0" dt="1"><name>alignbottommargin</name><data>00000000401c0000</data></node>
          <node f="42-0" dt="2"><name>tooltip</name><data></data></node>
         </data>
          <node f="40-0"><name></name></node>
@@ -1026,7 +1027,7 @@ forobjectsbehind (c)
           <node f="40-0"><name>object</name></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-          <node f="42-0" dt="1"><name>spatialy</name><data>000000004052c000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040530000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>OnPress</name><data>treenode list = node("../MembersList", c);
@@ -1044,14 +1045,38 @@ if (objectexists(member)) {
 }</data>
            <node f="40-0"><name></name></node></node>
           <node f="42-0" dt="2"><name>tooltip</name><data>Open Properties Window of highlighted member</data></node>
-          <node f="42-0" dt="1"><name>alignbottomposition</name><data>0000000040430000</data></node>
+         </data>
+          <node f="40-0"><name></name></node></node>
+         <node f="42-0" dt="4"><name>Sampler</name><data>
+          <node f="40-0"><name>object</name></node>
+          <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+          <node f="42-0" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/SamplerButton</data></node>
+          <node f="42-0" dt="1"><name>spatialx</name><data>00000000405d4000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040310000</data></node>
+          <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
+          <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42-0" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
+          <node f="42-0" dt="2"><name>tooltip</name><data>Click this button then "sample" an object in FlexSim</data></node>
+          <node f="42-0"><name>variables</name>
+           <node f="40-0"><name></name></node>
+           <node f="42-0" dt="1"><name>valType</name><data>0000000040700000</data></node>
+          </node>
+          <node f="42-0"><name>eventfunctions</name>
+           <node f="40-0"><name></name></node>
+           <node f="42-4" dt="2"><name>onSample</name><data>treenode focus = node("@&gt;objectfocus+", c);
+
+function_s(focus, "addMember", parnode(3));
+
+nodefunction(node("../MembersList&gt;refresh",c));
+repaintall();</data></node>
+          </node>
          </data>
           <node f="40-0"><name></name></node></node>
          <node f="42-0" dt="4"><name>Add</name><data>
           <node f="40-0"><name>object</name></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>00000000405d4000</data></node>
-          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040310000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>OnPress</name><data>createpopup("VIEW:/standardviews/other/UniversalSelect", "", nodetopath(node("&gt;SelectDelegate",c), 1), c, 0, 0, 0,0);</data></node>
@@ -1093,7 +1118,7 @@ repaintall();</data></node>
           <node f="40-0"><name>object</name></node>
           <node f="42-0" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
           <node f="42-0" dt="1"><name>spatialx</name><data>00000000405d4000</data></node>
-          <node f="42-0" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
+          <node f="42-0" dt="1"><name>spatialy</name><data>00000000404d8000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42-0" dt="2"><name>OnPress</name><data>treenode membersList = node("../MembersList", c);
@@ -1156,6 +1181,12 @@ return NULL;</data></node>
           <node f="42-0" dt="1"><name>spatialy</name><data>0000000040310000</data></node>
           <node f="42-0" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
           <node f="42-0" dt="1"><name>spatialsy</name><data>000000004057c000</data></node>
+          <node f="42-4" dt="2"><name>hotlinkx</name><data>if (!eventdata) {
+	int list = get(itemcurrent(node("../MemberChooser", c)));
+	if (list == 2 || list == 3) { //Active/Inactive lists
+		nodefunction(node("&gt;refresh", c));
+	}
+}</data></node>
           <node f="42-4" dt="2"><name>refresh</name><data>treenode parent = up(c);
 int list = get(itemcurrent(node("../MemberChooser", parent)));
 
@@ -1921,27 +1952,27 @@ repaintall();
             <node f="42-0" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42-0" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
 treenode barrier = node("../..&gt;objectfocus+", c);
+treenode pointsNode = node("/points", barrier);
 
 if (content(node("&gt;viewfocus+", table)) &lt;= 2) {
 	msg("Error", "You must have at least 2 points.", 1);
 	return 0;
 }
 
-treenode selected = selectedobject(table);
+int index = gettableviewselection(table,1);
+
+treenode selected = rank(pointsNode, index);
 if (!objectexists(selected))
 	return 0;
-	
-if (content(selected) == 0) // and individual cell is selected (I want the row)
-	selected = up(selected);
 
-int index = getrank(selected);
 function_s(ownerobject(barrier), "removePoint", barrier, index-1);
 applylinks(table, 1);
 refreshview(table);
 function_s(ownerobject(barrier), "setActiveIndex", barrier, index -2);
 function_s(ownerobject(barrier), "rebuildMeshes");
 repaintall();
-</data></node>
+settableviewselection(table, maxof(1, index -1), 0, maxof(1, index -1), 2);
+repaintview(table);</data></node>
             <node f="42-0" dt="2"><name>tooltip</name><data>Remove the selected point</data></node>
             <node f="42-0" dt="2"><name>bitmap</name><data>buttons\remove.png</data></node>
             <node f="42-0" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
@@ -1958,14 +1989,11 @@ repaintall();
 treenode barrier = node("../..&gt;objectfocus+", c);
 treenode pointsNode = node("/points", barrier);
 
-treenode selected = selectedobject(table);
+int index = gettableviewselection(table,1);
+
+treenode selected = rank(pointsNode, index);
 if (!objectexists(selected))
 	return 0;
-	
-if (content(selected) == 0) // and individual cell is selected (I want the row)
-	selected = up(selected);
-
-int index = getrank(selected);
 
 if (index &lt;= 1)
 	return 0;
@@ -1976,7 +2004,8 @@ refreshview(table);
 function_s(ownerobject(barrier), "setActiveIndex", barrier, index -2);
 function_s(ownerobject(barrier), "rebuildMeshes");
 repaintall();
-</data></node>
+settableviewselection(table, index -1, 0, index -1, 2);
+repaintview(table);</data></node>
             <node f="42-0" dt="2"><name>tooltip</name><data>Move the selected point up in the list</data></node>
             <node f="42-0" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
            </data></node>
@@ -1990,16 +2019,14 @@ repaintall();
             <node f="42-0" dt="2"><name>bitmap</name><data>buttons\downarrow_blue.png</data></node>
             <node f="42-0" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
 treenode barrier = node("../..&gt;objectfocus+", c);
+treenode pointsNode = node("/points", barrier);
 
-treenode selected = selectedobject(table);
+int index = gettableviewselection(table,1);
+
+treenode selected = rank(pointsNode, index);
 if (!objectexists(selected))
 	return 0;
 	
-if (content(selected) == 0) // and individual cell is selected (I want the row)
-	selected = up(selected);
-
-int index = getrank(selected);
-
 if (index == 0 || index &gt;= content(node("&gt;viewfocus+", table)))
 	return 0;
 
@@ -2009,7 +2036,8 @@ refreshview(table);
 function_s(ownerobject(barrier), "setActiveIndex", barrier, index);
 function_s(ownerobject(barrier), "rebuildMeshes");
 repaintall();
-</data></node>
+settableviewselection(table, index +1, 0, index +1, 2);
+repaintview(table);</data></node>
             <node f="42-0" dt="2"><name>tooltip</name><data>Move the selected point down in the list</data></node>
             <node f="42-0" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
            </data></node>
