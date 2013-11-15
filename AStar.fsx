@@ -664,7 +664,7 @@ setchecked(node("/Draw Modes/Show Traffic", up(c)), drawmode &amp; ASTAR_DRAW_MO
 
 int gray = !get(node("@&gt;objectfocus+&gt;variables/cachePaths", c));
 
-forobjectsbehind (node("/Preferred Paths/Cache Paths", up(c)))
+forobjectsbehind (node("/Paths/Cache Paths", up(c)))
 	windowgray(windowfromnode(a), gray);
 
 listboxrefresh(node("/Members/MemberChooser", up(c)));
@@ -798,7 +798,7 @@ if (stringtonum(getviewtext(node("/EditValue", parent))) &lt; 1) {
          <node f="42-0" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/deepSearch</data></node>
          <node f="42-0" dt="2"><name>tooltip</name><data>Toggle deep search</data></node>
         </data></node>
-        <node f="42-0" dt="4"><name>Preferred Paths</name><data>
+        <node f="42-0" dt="4"><name>Paths</name><data>
          <node f="40-0"><name>object</name></node>
          <node f="42-0" dt="2"><name>viewfocus</name><data>MAIN:/project/model</data></node>
          <node f="42-0" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
