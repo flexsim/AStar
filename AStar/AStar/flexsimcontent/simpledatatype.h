@@ -92,6 +92,22 @@ template<class ObjType>
 	}
 #define bindObjRef(name, asSubNode) bindObjRefByName(#name, name, asSubNode)
 
+	/// <summary>	Binds a FlexSimValue. Use this method if the name you want to bind by is
+	/// 			different than the name of the member itself. Otherwise just use
+	/// 			bindFlexSimValue()</summary>
+	/// <param name="name">	The name of the member. </param>
+	/// <param name="val"> 	[in,out] The value. </param>
+	void bindFlexSimValueByName(const char* name, double& val);
+	/// <summary>	Binds a FlexSimValue. Similar to bindDouble() or
+	///				bindNumber(), except this method will check if tonode(value)
+	///				is a valid node reference, and if so, it will save a coupling pointer
+	///				to the node instead of using number data, so the reference will
+	/// 			properly be saved/loaded.
+	/// 			Note: bindFlexSimValue is a macro that expands the parameter to a name/value 
+	/// 			pair for calling bindFlexSimValueByName. </summary>
+	/// <param name="name">	The name of the member to bind. </param>
+	#define bindFlexSimValue(name) bindFlexSimValueByName(#name, name)
+
 	template<class T>
 	void bindNumberByName(char* name, T& val)
 	{
@@ -171,7 +187,6 @@ template<class ObjType>
 	}
 	#define bindString(name) bindStringByName(#name, name)
 
-	
 	void bindByteBlockByName(const char* name, ByteBlock& val, int asSubNode);
 	#define bindByteBlock(name, asSubNode) bindByteBlockByName(#name, name, asSubNode)
 

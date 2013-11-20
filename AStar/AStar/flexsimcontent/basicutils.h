@@ -12,6 +12,7 @@
 		inline operator void*()const{return doubletoptr(asDouble);}
 		inline operator TreeNode*()const{return (TreeNode*)doubletoptr(asDouble);}
 		inline operator double()const{return asDouble;}
+		inline operator double&() {return asDouble;}
 		inline operator __int64()const{return (__int64)asDouble;}
 		inline operator int()const{return (int)asDouble;}
 		inline operator short()const{return (short)asDouble;}
