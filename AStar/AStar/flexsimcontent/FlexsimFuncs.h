@@ -91,6 +91,7 @@ THE SOFTWARE.
 		inline operator void*()const{return doubletoptr(asDouble);}
 		inline operator TreeNode*()const{return (TreeNode*)doubletoptr(asDouble);}
 		inline operator double()const{return asDouble;}
+		inline operator double&() {return asDouble;}
 		inline operator __int64()const{return (__int64)asDouble;}
 		inline operator int()const{return (int)asDouble;}
 		inline operator short()const{return (short)asDouble;}
@@ -1201,6 +1202,7 @@ THE SOFTWARE.
 		typedef void     (*_odtbindvariablebynamealias3)(ObjectDataType* odt, const char* name, NodeRef& val);
 		typedef void     (*_odtbindvariablebynamealias4)(ObjectDataType* odt, const char* name, TreeNode*& val);
 		typedef treenode (*_sdtbindbyname)(SimpleDataType* sdt, const char* name, int asSubNode, int dataType, int * added);
+		typedef void     (*_sdtbindflexsimvaluebyname)(SimpleDataType* sdt, const char* name, double& val);
 		typedef void     (*_sdtbindnodeptrbyname)(SimpleDataType* sdt, const char* name, treenode& val);
 		typedef void     (*_sdtbindobjptrbyname)(SimpleDataType* sdt, const char* name, SimpleDataType*& val);
 		typedef void     (*_sdtbindsubnodebyname)(SimpleDataType* sdt, const char* name, treenode& val, int datatype);
@@ -2180,6 +2182,9 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindbyname)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbinddoublebyname)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindbyteblockbyname)
+#if FLEXSIM_TARGET_VERSION >= 710
+	DECLARE_FLEXSIM_FUNCTION_1(sdtbindflexsimvaluebyname)
+#endif
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindnodeptrbyname)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindnoderefbyname)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindobjptrbyname)

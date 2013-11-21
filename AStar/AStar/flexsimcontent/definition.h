@@ -131,6 +131,11 @@ TreeNode* SimpleDataType::bindByName(const char* name, int asSubNode, int dataTy
 	return sdtbindbyname(this, name, asSubNode, dataType, added);
 }
 
+void SimpleDataType::bindFlexSimValueByName(const char* name, double& val)
+{
+	sdtbindflexsimvaluebyname(this, name, val);
+}
+
 void SimpleDataType::bindNodePtrByName(const char* name, TreeNode*& val)
 {
 	sdtbindnodeptrbyname(this, name, val);

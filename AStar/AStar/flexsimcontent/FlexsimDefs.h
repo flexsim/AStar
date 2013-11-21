@@ -75,7 +75,7 @@ using std::string;
 		return (double)(size_t)x;
 	}
 #endif
-#ifndef FLEXSIM_TARGET_VER
+#ifndef FLEXSIM_TARGET_VERSION
 	#define FLEXSIM_TARGET_VERSION 9900
 #endif
 #define tonum(x) (ptrtodouble(x))
