@@ -7,6 +7,9 @@
 #include "basicmacros.h"
 #include "basicclasses.h"
 #include "byteblock.h"
+#ifdef FLEXSIM_ENGINE_COMPILE
+#include <vector>
+#endif
 
 #define CWSM_END 0
 #define CWSM_DOUBLE 1
@@ -113,15 +116,6 @@
 class ObjectDataType;
 TreeNode * cachedfunctionnode(TreeNode *theclass, int code);
 
-struct couplingrecord
-{
-	TreeNode** froms;
-	int nrfroms;
-	int maxnrfroms;
-	TreeNode* to;
-	int resolved;
-	double (* dupedmemberfunction) (FLEXSIMINTERFACE); 
-};
 struct mapcmp
 {
   bool operator()(TreeNode* s1, TreeNode* s2) const
@@ -434,11 +428,29 @@ public:
 	bool savedata(std::ostream& stream);
 	bool loaddata(std::istream& stream);
 	int savedata(char* source, long unsigned int * bytepos);
-	void serialize_firstpass();
-	void serialize_secondpass();
-	static void serialize_thirdpass();
+	void serialize_populateList();
+	void serialize_resolveCounters();
+	static void serialize_processOrphaned();
+	static void serialize_restoreOrphaned();
 	static int serializationcounter;
-
+	
+	struct OrphanedCoupling
+	{
+		TreeNode* couplingNode;
+		TreeNode* originalOwner;
+		int rank;
+	};
+	static std::vector<OrphanedCoupling> orphanedCouplings;
+	static TreeNode orphanedCouplingOwner;
+	struct couplingrecord
+	{
+		TreeNode** froms;
+		int nrfroms;
+		int maxnrfroms;
+		TreeNode* to;
+		int resolved;
+		double (* dupedmemberfunction) (FLEXSIMINTERFACE); 
+	};
 	// the following nodes are for saveing a tree
 	static couplingrecord* serializationlist;
 	static ptrdiff_t serializationlistsize;
