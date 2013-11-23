@@ -495,7 +495,7 @@ public:
 	void disownByteBlock(ByteBlock * toData);
 	void reownByteBlock();
 
-	int datatostring(char *datastring, int maxsize);
+	int datatostring(char *datastring, int maxsize, int precision = -1);
 	int stringtodata(char *datastring);
 	int isinobject();
   
