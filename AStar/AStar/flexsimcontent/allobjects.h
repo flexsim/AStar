@@ -4416,6 +4416,9 @@ TreeNode * node_v_objects;
 #define v_objects node_v_objects->safedatafloat()[0]
 TreeNode * node_v_charttype;
 #define v_charttype node_v_charttype->safedatafloat()[0]
+TreeNode * node_v_currency;
+TreeNode * node_v_precision;
+#define v_precision node_v_precision->safedatafloat()[0]
 TreeNode * node_v_usecollecttime;
 #define v_usecollecttime node_v_usecollecttime->safedatafloat()[0]
 TreeNode * node_v_mincollecttime;
@@ -4439,6 +4442,7 @@ TreeNode * node_v_showlegend;
 TreeNode * node_v_stacked;
 #define v_stacked node_v_stacked->safedatafloat()[0]
 TreeNode * node_v_data;
+TreeNode * node_v_displaydata;
 TreeNode * node_v_validdata;
 #define v_validdata node_v_validdata->safedatafloat()[0]
 TreeNode * node_v_generallisten;
@@ -4480,11 +4484,11 @@ FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
 
 FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
 
-FS_CONTENT_DLL_FUNC int initializeObjectMember(treenode membernode, treenode bundlenode);
+FS_CONTENT_DLL_FUNC int initializeObjectMember(treenode membernode);
 
 FS_CONTENT_DLL_FUNC int updateAllStats();
 
-FS_CONTENT_DLL_FUNC int updateMemberStats(treenode membernode);
+FS_CONTENT_DLL_FUNC double updateMemberStats(treenode membernode, double totalTime);
 
 FS_CONTENT_DLL_FUNC double updateTotals();
 
