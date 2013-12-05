@@ -63,10 +63,10 @@ public:
 	BYTE type;
 
 	#ifdef FLEXSIM_ENGINE_COMPILE
-		long unsigned int getsavesize(long unsigned int *savesize);
+		size_t getSaveSize();
 
-		int load(char* source, long unsigned int * bytepos);
-		int save(char* source, long unsigned int * bytepos);
+		int load(char*& source);
+		int save(char*& destination);
 		bool save(std::ostream& stream);
 		bool load(std::istream& stream);
 		int reset();

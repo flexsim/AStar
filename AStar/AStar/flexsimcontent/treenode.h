@@ -26,7 +26,7 @@
 #define FLAG_EXPANDED 0x01
 #define FLAG_HASOWNER 0x02
 #define FLAG_CPPFUNC 0x04
-#define FLAG_SELECTED 0x08
+//#define FLAG_SELECTED 0x08 deprecated: use FLAG_EX_SELECTED
 #define FLAG_HIDECONNECTORS 0x10
 #define FLAG_HIDELABEL 0x20
 #define FLAG_EXTENDEDFLAGS 0x40 // deprecated
@@ -61,13 +61,21 @@
 
 #define FLAG_EX_POINTEDTO			0x00100000 // flagged only when saved, and tells me if another CouplingDataType is pointing to this node
 #define FLAG_EX_DISTRIBUTEDSAVE		0x00200000 // flagged only when saved, and tells me if the node is to be saved in a "distributed file"
+
 #define FLAG_EX_TEMP                0x00400000 // for temporary use by local procedures, such as marking used packedmedia nodes
+#define FLAG_EX_VISITED				0x00400000 // visited: shared with temp: tells whether a node has been visited in a save traversal
+#define FLAG_EX_DELETINGNOW			0x00400000 // deleting now: prevents recursive delete. Uses temp because it's only temporary
+
 #define FLAG_EX_HASHEDLIST			0x00800000 // flag that says to manage a hash table of names
 #define FLAG_EX_DISOWNEDDATA		0x01000000 // flag that says my data is not owned by me... only set when live, not when saved
 #define FLAG_EX_ACTIVELISTENERS		0x02000000
 #define FLAG_EX_DESTROYONRESET		0x04000000
+#define FLAG_EX_PRESERVE_COUPLING  0x08000000 // flag that says I want to preserve coupling partners in a copy-paste or a createcopy().
 
-#define FLAG_EX_UNSAVABLE (FLAG_EX_DISOWNEDDATA | FLAG_EX_USER_SDT | FLAG_EX_INDEXCACHE | FLAG_EX_EXECUTINGNOW)
+#define FLAG_EX_EXTRA_BYTES			0x80000000 // reserve the last bit for future when we run out of bits and need to encode extra stuff to
+												// the tree file
+
+#define FLAG_EX_UNSAVABLE (FLAG_EX_DISOWNEDDATA | FLAG_EX_USER_SDT | FLAG_EX_INDEXCACHE | FLAG_EX_EXECUTINGNOW | FLAG_EX_TEMP)
 
 #define SF safefind
 #define SS safestep
@@ -99,6 +107,7 @@
 #define SAVE_TYPE_XML 7
 #define SAVE_TYPE_MEMORY_BUFFER 8
 #define SAVE_TYPE_CLIPBOARD 9
+#define SAVE_TYPE_FOR_COPY 10
 
 #define HOTLINK 1
 #define COLDLINK 2
@@ -115,6 +124,14 @@
 
 class ObjectDataType;
 TreeNode * cachedfunctionnode(TreeNode *theclass, int code);
+	
+enum TreeSaveFlags {
+	None = 0x0,
+	DoNotRemoveOrphaned = 0x1,
+	DoNotPreserveOrphaned = 0x2
+};
+inline TreeSaveFlags operator | (TreeSaveFlags a, TreeSaveFlags b)
+{return static_cast<TreeSaveFlags>(static_cast<int>(a) | static_cast<int>(b));}
 
 struct mapcmp
 {
@@ -379,22 +396,61 @@ public:
 	int ascodecpp();
 	int ascodefpp();
 	int ascodeglobalcpp();
-  
-  
+
+	/// <summary>	Moves all data from one node to a new node, including subtree, data, name, and flags. </summary>
+	/// <remarks>	Anthony.johnson, 12/4/2013. </remarks>
+	/// <param name="from">	[in,out] If non-null, source for the. </param>
+	static void moveAll(TreeNode* from, TreeNode* to);
+
 	// load-save
   
-	long unsigned int getdatasavesize(long unsigned int *savesize);
-	long unsigned int getlistsavesize(long unsigned int *savesize);
-  
 	static bool didLastLoadHaveCppCode;
-	#define SAVE_MODE_FILE 0
-	#define SAVE_MODE_MEMORY 1
-	treefileheader * savetree(char* destination, int filetype);
-	bool savetree(std::ostream& stream, int filetype);
-	bool loadtree(std::istream& stream, int copycache = 0);
-	int savetreetofile(const char* filepath, int filetype, int uncompressed=0);
-	int loadtree(char* source, int copycache = 0);
-	int loadtreefromfile(char* filepath);
+	static TreeSaveFlags curSaveFlags;
+	template <class BufferAllocator>
+	/// <summary>	Saves a tree. </summary>
+	/// <remarks>	Allocates the necessary storage buffer and returns that buffer. The caller
+	/// 			must take ownership of the returned buffer. </remarks>
+	/// <param name="bufferAllocator">	The buffer allocator. Can be a lambda that allocates the storage.</param>
+	/// <param name="saveType">		  	Type of the save. </param>
+	/// <param name="saveSizeOut">	  	[out] (Optional) If non-null, the resulting save size
+	/// 								out. </param>
+	/// <returns>	Returns the buffer. </returns>
+	char* saveTree(BufferAllocator bufferAllocator, int saveType, size_t* saveSizeOut = 0, TreeSaveFlags flags = None)
+	{
+		curSaveType = saveType;
+		curSaveFlags = flags;
+		saveTreePrepare();
+
+		size_t bufferSize = estimateSaveSize();
+		char* buffer = bufferAllocator(bufferSize);
+		size_t saveSize = 0;
+		if (buffer)
+			saveSize = saveTree(buffer, saveType);
+
+		saveTreeCleanup();
+
+		if (saveSizeOut)
+			*saveSizeOut = saveSize;
+
+		curSaveType = SAVE_TYPE_MODEL;
+		curSaveFlags = None;
+		return buffer;
+	}
+
+	/// <summary>	Saves a tree. </summary>
+	/// <remarks>	Allocates the necessary storage buffer and returns that buffer. The caller
+	/// 			takes ownership of the returned buffer. </remarks>
+	/// <param name="saveType">   	Type of the save. </param>
+	/// <param name="saveSizeOut">	[out] (Optional) If non-null, the resulting save size. </param>
+	/// <returns>	null if it fails, else. </returns>
+	char* saveTree(int saveType, size_t* saveSizeOut = 0, TreeSaveFlags flags = None)
+	{
+		return saveTree([](size_t bufferSize) -> char* {return new char[bufferSize];}, saveType, saveSizeOut, flags);
+	}
+private:
+	void saveTreePrepare();
+	void saveTreeCleanup();
+	size_t saveTree(char* destination, int filetype);
   
 	/* There are two main file versions right now
 	version 2 (really 0-2) are used for Flexsim 1-4
@@ -406,39 +462,60 @@ public:
 	bool save   (std::ostream& stream);
 	bool loadstream_v2(std::istream& stream);
 	bool loadstream_v3(std::istream& stream);
-	int save(char* destination, long unsigned int * bytepos);
-	int load_v3(char* source, long unsigned int * bytepos);
-	int load_v2(char* source, long unsigned int * bytepos);
-	long unsigned int getsavesize(long unsigned int *savesize);
-	long unsigned int getsavesizerecursive(long unsigned int *savesize);
+	int save(char*& destination);
+	int load_v3(char*& source);
+	int load_v2(char*& source);
+	bool savelist(std::ostream& stream);
+	bool loadlist(std::istream& stream);
+	int savelist(char*& destination);
+	int loadlist(char*& source);
+	typedef int (TreeNode::*LoadCallback)(char*& source);
+	static LoadCallback load;
+	typedef int (TreeNode::*LoadStreamCallback)(std::istream& stream);
+	static LoadStreamCallback loadstream;
+	int loaddata(char*& source);
+	bool savedata(std::ostream& stream);
+	bool loaddata(std::istream& stream);
+	int savedata(char*& source);
+	/// <summary>	Estimates the save size. </summary>
+	/// <remarks>	This will estimate the save size for the tree. It is just that,
+	/// 			an estimate. It may not be exact. When it is not exact, it will always
+	/// 			over-estimate the size needed so that if you use the return value to 
+	/// 			allocate a buffer, the buffer will always be large enough for the save. </remarks>
+	/// <param name="savesize">	[out] The save size. </param>
+	/// <returns>	. </returns>
+	size_t estimateSaveSize();
+	void estimateSaveSizeRecursive(size_t& savesize);
+	void estimateDataSaveSize(size_t& savesize);
+	void estimateListSaveSize(size_t& savesize);
+public:
+	bool savetree(std::ostream& stream, int filetype);
+	bool loadtree(std::istream& stream, int copycache = 0);
+	int savetreetofile(const char* filepath, int filetype, int uncompressed=0);
+	int loadtree(char* source, int copycache = 0, bool savedInSameProcess = false);
+	int loadtreefromfile(char* filepath);
+	void checkAddToSDTNodeList(int bindMode);
 	void populateSDTNodeList(int bindMode, bool resetList = false);
 	void bindSDTs(int bindMode, bool detachReattach = false);
 	static void bindSDTList(int bindMode, bool detachReattach = false);
-	typedef int (TreeNode::*_load)(char* source, long unsigned int * bytepos);
-	static _load load;
-	typedef int (TreeNode::*_loadstream)(std::istream& stream);
-	static _loadstream loadstream;
-
-	bool savelist(std::ostream& stream);
-	bool loadlist(std::istream& stream);
-	int savelist(char* destination, long unsigned int * bytepos);
-	int loadlist(char* source, long unsigned int * bytepos);
-  
-	int loaddata(char* source, long unsigned int * bytepos);
-	bool savedata(std::ostream& stream);
-	bool loaddata(std::istream& stream);
-	int savedata(char* source, long unsigned int * bytepos);
+private:
 	void serialize_populateList();
+	void serialize_preserveOrphaned();
 	void serialize_resolveCounters();
 	static void serialize_processOrphaned();
 	static void serialize_restoreOrphaned();
 	static int serializationcounter;
 	
+	enum OrphanType {
+		Orphaned,
+		Preserved
+	};
 	struct OrphanedCoupling
 	{
 		TreeNode* couplingNode;
 		TreeNode* originalOwner;
 		int rank;
+		OrphanType orphanType;
 	};
 	static std::vector<OrphanedCoupling> orphanedCouplings;
 	static TreeNode orphanedCouplingOwner;
@@ -457,19 +534,22 @@ public:
 	static ptrdiff_t serializationlistmaxsize;
 	static void addtoserializationlist(TreeNode*, TreeNode*);
 	static void resolveserialization(TreeNode*, int index);
-	static int livecopy;// used for preserving CouplingDataType pointers on a live createcopy.
+	static int curSaveType;
+	/// <summary>	when pasting/duplicating, if the copy/save was done in the same process, this is
+	/// 			a flag to signal that preserved couplings can indeed be preserved. </summary>
+	static bool loadBufferSavedInSameProcess;
   
 	static MSXML2::IXMLDOMDocumentPtr filemapdoc;
 
-	int pointerize(TreeNode ** links, long unsigned int population);
-	static FlexSimCVector<TreeNode*> pointerizationpointers;
-	static FlexSimCVector<TreeNode*> pointerizationpointedtos;
+	int pointerize_v2(TreeNode ** links, long unsigned int population);
+	static std::vector<NodeRef> pointerizationpointers;
+	static std::vector<NodeRef> pointerizationpointedtos;
 	static int xmlpointerizationcounter;
 	int serializepointers(TreeNode ** links,long unsigned int * index);
 	int pointerize();
+  
+ public:
 	void counttotalpopulation();
-  
-  
 	// data
 	int adddata(int type);
 	int addSimpleData(SimpleDataType* simple, int bind, int userSDT);
@@ -613,20 +693,31 @@ public:
 	static TreeNode* listenerassociated;
 	static TreeNode* listenercoupling;
 
-	template <class _func>
-	void enumerate(_func func, bool includeObjects = true)
+	static const int STOP_TRAVERSE_OBJ_TREE = 0x1;
+	static const int STOP_TRAVERSE_SUB_TREE = 0x2;
+	static const int STOP_TRAVERSE = STOP_TRAVERSE_OBJ_TREE | STOP_TRAVERSE_SUB_TREE;
+	template <class Func>
+	void traverseTree(Func func, bool includeObjects = true)
 	{
-		func(this);
+		int stopType = func(this);
 
-		if(includeObjects && datatype == DATA_OBJECT)
-			dataasobject->objecttree.enumerate(func, includeObjects);
+		if(includeObjects && datatype == DATA_OBJECT && !(stopType & STOP_TRAVERSE_OBJ_TREE))
+			dataasobject->objecttree.traverseTree(func, includeObjects);
 
-		for(int i = 1; i <= size(); i++)
-			step(i)->enumerate(func, includeObjects);
+		if (listsize > 0) {
+			TreeNode* curNode = step(1), *nextNode = 0;
+			while (curNode) {
+				nextNode = curNode->next();
+				curNode->traverseTree(func, includeObjects);
+				curNode = nextNode;
+			}
+		}
 
-		if(branch)
-			branch->enumerate(func, includeObjects);
+		if(branch && !(stopType & STOP_TRAVERSE_SUB_TREE))
+			branch->traverseTree(func, includeObjects);
 	}
+
+	bool contains(TreeNode* descendant);
 #endif
 };
 #pragma pack()//restore packing to its default value

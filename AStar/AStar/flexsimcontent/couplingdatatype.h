@@ -32,14 +32,14 @@ public:
 	#ifdef FLEXSIM_ENGINE_COMPILE
 		void disown(NodeRef& newPartner);
 		void reown();
-		long unsigned int couplinggetsavesize(long unsigned int * savesize);
-		bool couplingsave(std::ostream& stream);
-		bool couplingload(std::istream& stream);
-		int couplingsave(char* destination, long unsigned int * bytepos);
-		int couplingload(char* source     , long unsigned int * bytepos);
+		size_t getSaveSize();
+		bool save(std::ostream& stream);
+		bool load(std::istream& stream);
+		int save(char*& destination);
+		int load(char*& source);
 
-		int couplingsavexml(MSXML2::IXMLDOMDocumentPtr doc, MSXML2::IXMLDOMElementPtr parentnode);
-		int couplingloadxml(MSXML2::IXMLDOMNodePtr datanode);
+		int savexml(MSXML2::IXMLDOMDocumentPtr doc, MSXML2::IXMLDOMElementPtr parentnode);
+		int loadxml(MSXML2::IXMLDOMNodePtr datanode);
 	#endif
 };
 

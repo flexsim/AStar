@@ -79,11 +79,11 @@ public:
   
 		int nullTerminate();
  
-		long unsigned int getSaveSize(long unsigned int * savesize);
+		size_t getSaveSize();
 		bool save(std::ostream& stream);
 		bool load(std::istream& stream);
-		int save(char* destination, long unsigned int * bytepos);
-		int load(char* source     , long unsigned int * bytepos);
+		int save(char*& destination);
+		int load(char*& source);
   
 
 		int saveXML(MSXML2::IXMLDOMDocumentPtr doc, MSXML2::IXMLDOMElementPtr parentnode, bool isNameBB = false);

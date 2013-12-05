@@ -4425,32 +4425,16 @@ TreeNode * node_v_mincollecttime;
 #define v_mincollecttime node_v_mincollecttime->safedatafloat()[0]
 TreeNode * node_v_maxcollecttime;
 #define v_maxcollecttime node_v_maxcollecttime->safedatafloat()[0]
-TreeNode * node_v_collecthistory;
-#define v_collecthistory node_v_collecthistory->safedatafloat()[0]
-TreeNode * node_v_filtermintime;
-#define v_filtermintime node_v_filtermintime->safedatafloat()[0]
-TreeNode * node_v_filtermaxtime;
-#define v_filtermaxtime node_v_filtermaxtime->safedatafloat()[0]
-TreeNode * node_v_filterednow;
-#define v_filterednow node_v_filterednow->safedatafloat()[0]
-TreeNode * node_v_starttime;
-#define v_starttime node_v_starttime->safedatafloat()[0]
-TreeNode * node_v_timeinterval;
-#define v_timeinterval node_v_timeinterval->safedatafloat()[0]
 TreeNode * node_v_showlegend;
 #define v_showlegend node_v_showlegend->safedatafloat()[0]
-TreeNode * node_v_stacked;
-#define v_stacked node_v_stacked->safedatafloat()[0]
 TreeNode * node_v_data;
 TreeNode * node_v_displaydata;
 TreeNode * node_v_validdata;
 #define v_validdata node_v_validdata->safedatafloat()[0]
-TreeNode * node_v_generallisten;
-#define v_generallisten node_v_generallisten->safedatafloat()[0]
-TreeNode * node_v_aggregatelisten;
-#define v_aggregatelisten node_v_aggregatelisten->safedatafloat()[0]
 TreeNode * node_v_systemwarmuptime;
 #define v_systemwarmuptime node_v_systemwarmuptime->safedatafloat()[0]
+TreeNode * node_v_reset;
+#define v_reset node_v_reset->safedatafloat()[0]
 
 // c++ member functions
 
@@ -4467,6 +4451,12 @@ FS_CONTENT_DLL_FUNC virtual double onListen(treenode listenedto, treenode listen
 FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
 
 FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+
+FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+
+FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+
+FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
 
 FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
 
@@ -4493,6 +4483,8 @@ FS_CONTENT_DLL_FUNC double updateMemberStats(treenode membernode, double totalTi
 FS_CONTENT_DLL_FUNC double updateTotals();
 
 FS_CONTENT_DLL_FUNC double getTotalTime();
+
+FS_CONTENT_DLL_FUNC int isGroup(treenode membernode);
 
 FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
 
