@@ -498,6 +498,7 @@ public:
 	void populateSDTNodeList(int bindMode, bool resetList = false);
 	void bindSDTs(int bindMode, bool detachReattach = false);
 	static void bindSDTList(int bindMode, bool detachReattach = false);
+	static std::vector<TreeNode*> lastLoadPreservedCouplings;
 private:
 	void serialize_populateList();
 	void serialize_preserveOrphaned();
