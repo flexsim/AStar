@@ -52,7 +52,7 @@ protected:
 public:
 	static void appendToDisplayStr(const char* text);
 	static bool isDisplayVerbose();
-	static void bindNodeList(int doBindMode, bool detachReattach);
+	static void bindNodeList(int doBindMode, bool detachReattach, int startIndex = 0);
 	static void clearAttsFromNodeList();
 	TreeNode* holder;
 	SimpleDataType(){}

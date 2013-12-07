@@ -397,11 +397,6 @@ public:
 	int ascodefpp();
 	int ascodeglobalcpp();
 
-	/// <summary>	Moves all data from one node to a new node, including subtree, data, name, and flags. </summary>
-	/// <remarks>	Anthony.johnson, 12/4/2013. </remarks>
-	/// <param name="from">	[in,out] If non-null, source for the. </param>
-	static void moveAll(TreeNode* from, TreeNode* to);
-
 	// load-save
   
 	static bool didLastLoadHaveCppCode;
@@ -501,9 +496,10 @@ public:
 	static std::vector<TreeNode*> lastLoadPreservedCouplings;
 private:
 	void serialize_populateList();
-	void serialize_preserveOrphaned();
 	void serialize_resolveCounters();
-	static void serialize_processOrphaned();
+	static void serialize_preserveOrphaned();
+	static void serialize_removeOrphaned();
+	static void serialize_finalize();
 	static void serialize_restoreOrphaned();
 	static int serializationcounter;
 	

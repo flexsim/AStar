@@ -1113,6 +1113,7 @@ THE SOFTWARE.
 	typedef double       (*_switch_hidelabel)(treenode node, int on);
 	typedef double       (*_switch_hideshape)(treenode node, int on);
 	typedef double       (*_switch_noselect)(treenode node, int on);
+	typedef double       (*_switch_preservecoupling)(treenode node, int on);
 	typedef double       (*_switch_protected)(treenode node, int on);
 	typedef double       (*_switch_selected)(treenode node, int on);
 	typedef double       (*_switch_showobject)(treenode node, int on);
@@ -2026,6 +2027,7 @@ DECLARE_FLEXSIM_FUNCTION_1(switch_hidecontents)
 DECLARE_FLEXSIM_FUNCTION_1(switch_hidelabel)
 DECLARE_FLEXSIM_FUNCTION_1(switch_hideshape)
 DECLARE_FLEXSIM_FUNCTION_1(switch_noselect)
+DECLARE_FLEXSIM_FUNCTION_1(switch_preservecoupling)
 DECLARE_FLEXSIM_FUNCTION_1(switch_protected)
 DECLARE_FLEXSIM_FUNCTION_1(switch_selected)
 DECLARE_FLEXSIM_FUNCTION_1(switch_showobject)

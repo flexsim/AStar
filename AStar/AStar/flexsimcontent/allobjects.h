@@ -4036,6 +4036,8 @@ FS_CONTENT_DLL_FUNC virtual treenode addCopiedMember(treenode newObj, treenode o
 
 FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
 
+FS_CONTENT_DLL_FUNC int checkDestroy();
+
 
 // System
 
