@@ -541,8 +541,12 @@ using std::string;
 	#define KINEMATIC_ENDDIST  36
 	#define KINEMATIC_ENDRDIST  37
 	#define KINEMATIC_TYPE  38
+
 	#define KINEMATIC_TRAVEL  1
 	#define KINEMATIC_ROTATE  2
+	#define KINEMATIC_TURN_XY  3
+	#define KINEMATIC_TURN_YZ  4
+	#define KINEMATIC_TURN_ZX  5
 
 	// Constants group: TIME
 	#define TIME_NAME  1

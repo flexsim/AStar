@@ -948,7 +948,10 @@ THE SOFTWARE.
 	typedef double       (*_resumetransportsout)(treenode object, int rank);
 	typedef double       (*_richeditaddtext)(treenode theedit, char * thetext, int protectedflag, int lastone);
 	typedef char*        (*_richedittoken)(treenode theedit, int index, ByteBlock * resultblock);
+	// round() is a C++11 feature available in vs2013+
+	#if _MSC_VER < 1800
 	typedef double       (*_roundalias1)(double n1);
+	#endif
 	typedef double       (*_roundalias2)(double n1, int precision);
 	typedef double       (*_rundocument)(char* cmd, char * file);
 	typedef double       (*_runexpertfit)();
@@ -1143,7 +1146,10 @@ THE SOFTWARE.
 	typedef double       (*_traveltoupdate)(treenode object, treenode spline);
 	typedef int          (*_treewin__loadtree)(treenode xx, char * buffera);
 	typedef double       (*_triangularalias)( double min,    double max,   double mode, int stream);
+	// trunc() is a C++11 feature available in vs2013+
+	#if _MSC_VER < 1800
 	typedef double       (*_trunc)(double n1);
+	#endif
 	typedef int          (*_undos)(int state, int set);
 	typedef double       (*_uniformalias)( double a,      double b , int stream);
 	typedef treenode     (*_up)(treenode node);
@@ -1883,7 +1889,9 @@ DECLARE_FLEXSIM_FUNCTION_2(resumeanimationalias1, "resumeanimation")
 DECLARE_FLEXSIM_FUNCTION_3(resumeanimationalias2, "?resumeanimation@@YAXPAVTreeNode@@PADHN@Z", "?resumeanimation@@YAXPEAVTreeNode@@PEADHN@Z")
 DECLARE_FLEXSIM_FUNCTION_1(resumeinput)
 DECLARE_FLEXSIM_FUNCTION_1(resumeoutput)
+#if _MSC_VER < 1800
 DECLARE_FLEXSIM_FUNCTION_2(roundalias1, "round")
+#endif
 DECLARE_FLEXSIM_FUNCTION_2(roundalias2, "?round@@YANNH@Z")
 DECLARE_FLEXSIM_FUNCTION_1(rundocument)
 DECLARE_FLEXSIM_FUNCTION_1(runexpertfit)
@@ -2052,7 +2060,9 @@ DECLARE_FLEXSIM_FUNCTION_1(transformvectorxy)
 DECLARE_FLEXSIM_FUNCTION_1(transitionport)
 DECLARE_FLEXSIM_FUNCTION_1(treewin__loadtree)
 DECLARE_FLEXSIM_FUNCTION_2(triangularalias, "triangular")
+#if _MSC_VER < 1800
 DECLARE_FLEXSIM_FUNCTION_1(trunc)
+#endif
 DECLARE_FLEXSIM_FUNCTION_2(uniformalias, "uniform")
 DECLARE_FLEXSIM_FUNCTION_1(up)
 DECLARE_FLEXSIM_FUNCTION_2(updateanimationalias1, "updateanimation")

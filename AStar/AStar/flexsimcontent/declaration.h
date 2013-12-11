@@ -573,8 +573,9 @@ inline double draginfo(int op, double val = 0){return draginfoalias(op, val);}
 inline char* stringtoken(char* token, char* delimit){return stringtokenalias(token, delimit);}
 inline char* stringtoken(char* token, string delimit){return stringtokenalias(token, (char*)delimit.c_str());}
 inline char* stringtoken(string token, string delimit){return stringtokenalias((char*)token.c_str(), (char*)delimit.c_str());}
-
+#if _MSC_VER < 1800
 inline double round(double n1){return roundalias1(n1);}
+#endif
 inline double round(double n1, int precision){return roundalias2(n1, precision);}
 
 inline double clientconnect(int skt, string hostname, int port){return clientconnectalias(skt, (char*)hostname.c_str(), port);}
