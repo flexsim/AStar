@@ -4427,8 +4427,6 @@ TreeNode * node_v_mincollecttime;
 #define v_mincollecttime node_v_mincollecttime->safedatafloat()[0]
 TreeNode * node_v_maxcollecttime;
 #define v_maxcollecttime node_v_maxcollecttime->safedatafloat()[0]
-TreeNode * node_v_showlegend;
-#define v_showlegend node_v_showlegend->safedatafloat()[0]
 TreeNode * node_v_data;
 TreeNode * node_v_displaydata;
 TreeNode * node_v_validdata;
