@@ -148,6 +148,18 @@ template<class ObjType>
 	}
 	#define bindNumber(name) bindNumberByName(#name, name)
 
+
+	template<class T>
+	void bindEnumByName(char* name, T& val)
+	{
+		int bindMode = getBindMode();
+		int valAsInt = static_cast<int>(val);
+		bindNumberByName(name, valAsInt);
+		if (bindMode == SDT_BIND_ON_LOAD || bindMode == SDT_BIND_SET_VALUE)
+			val = static_cast<T>(valAsInt);
+	}
+	#define bindEnum(name) bindEnumByName(#name, name)
+
 	template<class Str>
 	void bindStringByName(char* name, Str& val)
 	{

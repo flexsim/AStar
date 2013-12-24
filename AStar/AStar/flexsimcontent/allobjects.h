@@ -4054,6 +4054,8 @@ public:
 
 TreeNode * node_v_objects;
 #define v_objects node_v_objects->safedatafloat()[0]
+TreeNode * node_v_colors;
+#define v_colors node_v_colors->safedatafloat()[0]
 TreeNode * node_v_charttype;
 #define v_charttype node_v_charttype->safedatafloat()[0]
 TreeNode * node_v_usecollecttime;
@@ -4082,6 +4084,7 @@ TreeNode * node_v_utilizedstates;
 #define v_utilizedstates node_v_utilizedstates->safedatafloat()[0]
 TreeNode * node_v_data;
 TreeNode * node_v_basedata;
+TreeNode * node_v_colordata;
 TreeNode * node_v_validdata;
 #define v_validdata node_v_validdata->safedatafloat()[0]
 TreeNode * node_v_useprofilenr;
@@ -4181,6 +4184,8 @@ public:
 
 TreeNode * node_v_objects;
 #define v_objects node_v_objects->safedatafloat()[0]
+TreeNode * node_v_colors;
+#define v_colors node_v_colors->safedatafloat()[0]
 TreeNode * node_v_charttype;
 #define v_charttype node_v_charttype->safedatafloat()[0]
 TreeNode * node_v_usecollecttime;
@@ -4210,6 +4215,7 @@ TreeNode * node_v_statistics;
 TreeNode * node_v_data;
 TreeNode * node_v_basedata;
 TreeNode * node_v_timedata;
+TreeNode * node_v_colordata;
 TreeNode * node_v_validdata;
 #define v_validdata node_v_validdata->safedatafloat()[0]
 TreeNode * node_v_useprofilenr;
@@ -4220,6 +4226,8 @@ TreeNode * node_v_aggregatelisten;
 #define v_aggregatelisten node_v_aggregatelisten->safedatafloat()[0]
 TreeNode * node_v_systemwarmuptime;
 #define v_systemwarmuptime node_v_systemwarmuptime->safedatafloat()[0]
+TreeNode * node_v_timemultiple;
+#define v_timemultiple node_v_timemultiple->safedatafloat()[0]
 TreeNode * node_v_xaxistitle;
 TreeNode * node_v_yaxistitle;
 
@@ -4317,6 +4325,8 @@ public:
 
 TreeNode * node_v_trackedvariables;
 #define v_trackedvariables node_v_trackedvariables->safedatafloat()[0]
+TreeNode * node_v_colors;
+#define v_colors node_v_colors->safedatafloat()[0]
 TreeNode * node_v_charttype;
 #define v_charttype node_v_charttype->safedatafloat()[0]
 TreeNode * node_v_showlegend;
@@ -4325,6 +4335,9 @@ TreeNode * node_v_nrbuckets;
 #define v_nrbuckets node_v_nrbuckets->safedatafloat()[0]
 TreeNode * node_v_normalize;
 #define v_normalize node_v_normalize->safedatafloat()[0]
+TreeNode * node_v_colordata;
+TreeNode * node_v_timemultiple;
+#define v_timemultiple node_v_timemultiple->safedatafloat()[0]
 TreeNode * node_v_xaxistitle;
 TreeNode * node_v_yaxistitle;
 
