@@ -643,6 +643,9 @@
 
 #define KINEMATIC_TRAVEL  1
 #define KINEMATIC_ROTATE  2
+#define KINEMATIC_TURN_XY  3
+#define KINEMATIC_TURN_YZ  4
+#define KINEMATIC_TURN_ZX  5
 
 // Constants group: MTBF_MTTR
 #define MTBF_MTTR_BEGIN_DOWN_TIME  1
@@ -1415,6 +1418,7 @@
 #define CWSM_BUNDLE_RANGE 6
 #define CWSM_BUNDLE 7
 #define CWSM_BINARY_BYTEBLOCK 8
+#define CWSM_JSON 9
 
 #define STATE_PROFILE_CURRENT 1
 #define STATE_PROFILE_SINCE 2
@@ -1462,13 +1466,19 @@
 
 //Constants group: CURRENT TIME
 #define CURRENT_YEAR 51
-#define CURRENT_MONTH 52
-#define CURRENT_DAY 53
-#define CURRENT_DAYOFWEEK 54
-#define CURRENT_HOUR 55
-#define CURRENT_MINUTE 56
-#define CURRENT_SECOND 57
-#define CURRENT_MILLISECOND 58
+#define CURRENT_YEAR_OF_TIME 52
+#define CURRENT_MONTH_OF_YEAR 53
+#define CURRENT_DAY 54
+#define CURRENT_DAY_OF_MONTH 55
+#define CURRENT_DAY_OF_WEEK 56
+#define CURRENT_HOUR 57
+#define CURRENT_HOUR_OF_DAY 58
+#define CURRENT_MINUTE 59
+#define CURRENT_MINUTE_OF_HOUR 60
+#define CURRENT_SECOND 61
+#define CURRENT_SECOND_OF_MINUTE 62
+#define CURRENT_MILLISECOND 63
+#define CURRENT_MILLISECOND_OF_SECOND 64
 
 // Constants group: FLUID CONVEYOR
 #define FLUID_CONVEYOR_DIRECTION_FORWARD  1
@@ -2304,8 +2314,9 @@ class NetworkTravelMember : public CouplingDataType
 	NodeRef currentNodeRef;
 	NodeRef reqNode;
 	int blockingState;
-}
+};
 
+void createhelptoc();
 ;
 
 
@@ -4150,6 +4161,8 @@ FS_CONTENT_DLL_FUNC int unfilterAll(treenode graph);
 
 FS_CONTENT_DLL_FUNC double getTotalTime();
 
+FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+
 FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
 
 FS_CONTENT_DLL_FUNC treenode getStateProfile(treenode object);
@@ -4297,6 +4310,8 @@ FS_CONTENT_DLL_FUNC int unfilterAll(treenode graph);
 
 FS_CONTENT_DLL_FUNC double getTotalTime();
 
+FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+
 FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
 
 FS_CONTENT_DLL_FUNC treenode onChangeObjectSet();
@@ -4366,6 +4381,8 @@ FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
 FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
 
 FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+
+FS_CONTENT_DLL_FUNC double setProperties(treenode view);
 
 FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
 
@@ -4498,6 +4515,8 @@ FS_CONTENT_DLL_FUNC double updateTotals();
 FS_CONTENT_DLL_FUNC double getTotalTime();
 
 FS_CONTENT_DLL_FUNC int isGroup(treenode membernode);
+
+FS_CONTENT_DLL_FUNC double setProperties(treenode view);
 
 FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
 

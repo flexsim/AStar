@@ -550,23 +550,59 @@ using std::string;
 
 	// Constants group: TIME
 	#define TIME_NAME  1
-	#define TIME_ABBREVIATION  2
-	#define TIME_MULTIPLE  3
+	#define TIME_PLURAL_NAME  2
+	#define TIME_ABBREVIATION  3
+	#define TIME_MULTIPLE  4
 
 	// Constants group: LENGTH
-	#define LENGTH_NAME  4
-	#define LENGTH_ABBREVIATION  5
-	#define LENGTH_MULTIPLE  6
+	#define LENGTH_NAME  11
+	#define LENGTH_PLURAL_NAME  12
+	#define LENGTH_ABBREVIATION  13
+	#define LENGTH_MULTIPLE  14
 
-	// Constants group: VOLUME
-	#define VOLUME_NAME  7
-	#define VOLUME_ABBREVIATION  8
-	#define VOLUME_MULTIPLE  9
+	// Constants group: FLUID
+	#define FLUID_NAME  21
+	#define FLUID_PLURAL_NAME  22
+	#define FLUID_ABBREVIATION  23
+	#define FLUID_MULTIPLE  24
+	#define FLUID_TYPE 25
 
-	// Constants group: MASS
-	#define MASS_NAME  10
-	#define MASS_ABBREVIATION  11
-	#define MASS_MULTIPLE  12
+	//Constants group: DATE & TIME
+	#define DATE_TIME_NODE 31
+	#define START_TIME 32
+	#define START_TIME_NODE 33
+	#define CURRENT_TIME 34
+	#define CURRENT_TIME_NODE 35
+	#define STOP_TIME 36
+	#define STOP_TIME_NODE 37
+	#define TIME_FORMAT 38
+	#define DATE_FORMAT 39
+
+	//Constants group: START TIME
+	#define START_YEAR 41
+	#define START_MONTH 42
+	#define START_DAY 43
+	#define START_DAYOFWEEK 44
+	#define START_HOUR 45
+	#define START_MINUTE 46
+	#define START_SECOND 47
+	#define START_MILLISECOND 48
+
+	//Constants group: CURRENT TIME
+	#define CURRENT_YEAR 51
+	#define CURRENT_YEAR_OF_TIME 52
+	#define CURRENT_MONTH_OF_YEAR 53
+	#define CURRENT_DAY 54
+	#define CURRENT_DAY_OF_MONTH 55
+	#define CURRENT_DAY_OF_WEEK 56
+	#define CURRENT_HOUR 57
+	#define CURRENT_HOUR_OF_DAY 58
+	#define CURRENT_MINUTE 59
+	#define CURRENT_MINUTE_OF_HOUR 60
+	#define CURRENT_SECOND 61
+	#define CURRENT_SECOND_OF_MINUTE 62
+	#define CURRENT_MILLISECOND 63
+	#define CURRENT_MILLISECOND_OF_SECOND 64
 
 	// Constants group: MTBF_MTTR
 	#define MTBF_MTTR_BEGIN_DOWN_TIME  1
@@ -576,6 +612,136 @@ using std::string;
 
 	#define FLEXSIM_MESSAGE_USER_CALLBACK 2001
 	#define FLEXSIM_MESSAGE_USER_NODEFUNCTION 2002
+
+	/* Mesh Class */
+	#define MESH_POSITION               0x0
+	#define MESH_TEX_COORD1             0x0010000
+	#define MESH_TEX_COORD2             0x0020000
+	#define MESH_TEX_COORD3             0x0040000
+	#define MESH_NORMAL                 0x0080000
+	#define MESH_AMBIENT                0x0100000
+	#define MESH_DIFFUSE                0x0200000
+	#define MESH_DIFFUSE4               0x0400000
+	#define MESH_AMBIENT_AND_DIFFUSE    0x0800000
+	#define MESH_AMBIENT_AND_DIFFUSE4   0x1000000
+	#define MESH_SPECULAR               0x2000000
+	#define MESH_SHININESS              0x4000000
+	#define MESH_EMISSIVE               0x8000000
+
+	#define MESH_STATIC_DRAW 			0x1
+	#define MESH_DYNAMIC_DRAW 			0x2
+	#define MESH_INDEXED 				0x4
+
+	#define MESH_PER_VERTEX_ATTRIBS 1
+	#define MESH_PER_MESH_ATTRIBS 2
+	#define MESH_FLAGS 3
+	#define MESH_NR_VERTS 4
+	#define MESH_GET_INDEX 5
+
+	#define MESH_COLOR_RED 0
+	#define MESH_COLOR_GREEN 1
+	#define MESH_COLOR_BLUE 2
+	#define MESH_COLOR_ALPHA 3
+	#define MESH_POS_X 0
+	#define MESH_POS_Y 1
+	#define MESH_POS_Z 2
+	#define MESH_TEX_S 0
+	#define MESH_TEX_T 1
+	#define MESH_TEX_R 2
+	#define MESH_TEX_Q 3
+	#define MESH_SHININESS 0
+
+	#define DRAG_INFO_DX 1
+	#define DRAG_INFO_DY 2
+	#define DRAG_INFO_DZ 3
+	#define DRAG_INFO_MDX 4
+	#define DRAG_INFO_MDY 5
+	#define DRAG_INFO_BUTTON_STATE 6
+	#define DRAG_INFO_SET_DX 7
+	#define DRAG_INFO_SET_DY 8
+	#define DRAG_INFO_SET_DZ 9
+	#define DRAG_INFO_SET_MDX 10
+	#define DRAG_INFO_SET_MDY 11
+	#define DRAG_INFO_SET_BUTTON_STATE 12
+	#define DRAG_INFO_SNAPPED_DX 13
+	#define DRAG_INFO_SNAPPED_DY 14
+	#define DRAG_INFO_SNAPPED_DZ 15
+
+	#define DETECT_DRAG_XY 0
+	#define DETECT_DRAG_XZ 1
+	#define DETECT_DRAG_YZ 2
+	#define DETECT_DRAG_X 3
+	#define DETECT_DRAG_Y 4
+	#define DETECT_DRAG_Z 5
+
+	#define SM_RESET 1
+	#define SM_MESSAGE 2
+	#define SM_EVENT 3
+	#define SM_DRAW 4
+	#define SM_INOPEN 5
+	#define SM_OUTOPEN 6
+	#define SM_ACCEPT 7
+	#define SM_GIVE 8
+	#define SM_ENTER 9
+	#define SM_EXIT 10
+	#define SM_COMPILE 11
+	#define SM_CREATE 12
+	#define SM_DESTROY 13
+	#define SM_LOAD 14
+	#define SM_CLICK 15
+	#define SM_RUNSTART 16
+	#define SM_RUNWARM 17
+	#define SM_RUNEND 18
+	#define SM_PRELISTEN 19
+	#define SM_LISTEN 20
+	#define SM_PREDRAW 21
+	#define SM_DRAWPLANAR 22
+	#define SM_PREDRAWPLANAR 23
+	#define SM_STATECHANGE 24
+	#define SM_DRAG 25
+
+	#define LISTENER_INFO_CODE 1
+	#define LISTENER_INFO_ASSOCIATED 2
+	#define LISTENER_INFO_COUPLING 3
+
+	// nodefunction listen event macros
+	#define NFL_PRE_LISTEN 0x1
+	#define NFL_LISTEN 0x2
+	#define NFL_PERSIST 0x4
+	#define NFL_PASS_THROUGH_PARAMS 0x8
+
+	#define NFL_STOP_LISTENING -1
+
+	#define STAT_MEAN 1
+	#define STAT_CONF_INTERVAL_HALF_WIDTH 2
+	#define STAT_MIN 3
+	#define STAT_MAX 4
+	#define STAT_VARIANCE 5
+	#define STAT_STD_DEV 6
+	#define STAT_SUM 7
+
+	#define DRAW_FLAG_BILLBOARD_MASK 0x3
+	#define DRAW_FLAG_ONE_SIDED 0x4
+	#define DRAW_FLAG_TWO_SIDED 0x8
+	#define DRAW_FLAG_NO_DEPTH_TEST 0x10
+	#define DRAW_FLAG_REFLECTIVE 0x20
+	#define DRAW_FLAG_LUMINOUS 0x40
+	#define DRAW_FLAG_SCALE_CHILDREN 0x80
+	#define DRAW_FLAG_IGNORE_PICKING 0x100
+	#define DRAW_FLAG_NO_ON_DRAW 0x200
+	#define DRAW_FLAG_NO_ON_PRE_DRAW 0x400
+	#define DRAW_FLAG_SKIP_ALL_DRAW 0x800
+	
+	#define DB_SQL_FLAG_FORWARD_ONLY_CURSOR 0x1
+
+	#define IGNORE_CASE 1
+
+	#define EDIT_MODE_GET_MODE_NUM -1
+	#define EDIT_MODE_GET_MODE_DELEGATE -2
+
+	#define PARAM_TYPE_NUMBER 1
+	#define PARAM_TYPE_NODE 2
+	#define PARAM_TYPE_STRING 3
 
 	#include "array.h"
 

@@ -20,6 +20,7 @@
 #define CWSM_BUNDLE_RANGE 6
 #define CWSM_BUNDLE 7
 #define CWSM_BINARY_BYTEBLOCK 8
+#define CWSM_JSON 9
 
 #define DATA_UNDEFINED 255
 // test cvs branch
