@@ -2316,7 +2316,6 @@ class NetworkTravelMember : public CouplingDataType
 	int blockingState;
 };
 
-void createhelptoc();
 ;
 
 

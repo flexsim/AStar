@@ -204,6 +204,7 @@ public:
   
 
 	TreeNode* thefunctionbindings[SM_MAX_MESSAGES];
+
 	struct hashvalue {int counterindex; int offset;};
 	static HashTable<hashvalue> hashattributes;
 	static HashTable<hashvalue> hashbasetable;
@@ -216,7 +217,7 @@ public:
 	int indexbindings;
 
 	basetable * thebasetable;
-	int createbasetable();
+	basetable* createbasetable();
 
 
 	#define H_LOC_ODT_VARIABLE(v,ODTMEMBERPREFIX)  \
