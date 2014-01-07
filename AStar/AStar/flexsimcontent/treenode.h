@@ -626,7 +626,7 @@ private:
 	int updatehotlinks(int e, int); //char*);
 	int updatehotlinks_in(int e, int);  //char*);
 	int updatehotlinks_out(int e, int);  //char*);
-	TreeNode * locatehotlink(int e, int, int);  //char*);
+	TreeNode * locatehotlink(int type, int byExpr);  //char*);
 	int isnamehotlink(int t);
 	int resetbuttonstate(int e);
   
