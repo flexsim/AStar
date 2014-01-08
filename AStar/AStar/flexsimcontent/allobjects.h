@@ -2316,6 +2316,8 @@ class NetworkTravelMember : public CouplingDataType
 	int blockingState;
 };
 
+void searchhelpmanual(string searchStr, treenode destNode)
+
 ;
 
 
@@ -4090,6 +4092,8 @@ TreeNode * node_v_stacked;
 #define v_stacked node_v_stacked->safedatafloat()[0]
 TreeNode * node_v_doutilization;
 #define v_doutilization node_v_doutilization->safedatafloat()[0]
+TreeNode * node_v_fontsize;
+#define v_fontsize node_v_fontsize->safedatafloat()[0]
 TreeNode * node_v_utilizedstates;
 #define v_utilizedstates node_v_utilizedstates->safedatafloat()[0]
 TreeNode * node_v_data;
@@ -4220,6 +4224,8 @@ TreeNode * node_v_timeinterval;
 #define v_timeinterval node_v_timeinterval->safedatafloat()[0]
 TreeNode * node_v_showlegend;
 #define v_showlegend node_v_showlegend->safedatafloat()[0]
+TreeNode * node_v_fontsize;
+#define v_fontsize node_v_fontsize->safedatafloat()[0]
 TreeNode * node_v_stacked;
 #define v_stacked node_v_stacked->safedatafloat()[0]
 TreeNode * node_v_statistics;
@@ -4450,6 +4456,8 @@ TreeNode * node_v_charttype;
 TreeNode * node_v_currency;
 TreeNode * node_v_precision;
 #define v_precision node_v_precision->safedatafloat()[0]
+TreeNode * node_v_fontsize;
+#define v_fontsize node_v_fontsize->safedatafloat()[0]
 TreeNode * node_v_usecollecttime;
 #define v_usecollecttime node_v_usecollecttime->safedatafloat()[0]
 TreeNode * node_v_mincollecttime;

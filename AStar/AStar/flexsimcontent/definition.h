@@ -268,7 +268,7 @@ void IndexedMesh::defineIndexBuffer(int nr, unsigned int * buffer)
 	{ indexedmesh_defineindexbuffer(this, nr, buffer); }
 unsigned int IndexedMesh::addIndex(unsigned int index)
 	{ return indexedmesh_addindex(this, index); }
-void IndexedMesh::draw(int drawMode, int start, int count)
+void IndexedMesh::draw(int drawMode, int start, int count, int stride)
 	{ indexedmesh_draw(this, drawMode, start, count); }
 void IndexedMesh::cleanupIndexBuffer(bool isDestructor)
 	{ indexedmesh_cleanupindexbuffer(this, isDestructor); }

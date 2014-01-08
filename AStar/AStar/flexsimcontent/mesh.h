@@ -196,7 +196,7 @@ public:
 	///									- MESH_DIFFUSE4 - signifies that you will provide per-vertex 4-component color data
 	/// 								</param>
 	/// <param name="flags">		   	(Optional) Miscellaneous flags. </param>
-	void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0);
+	virtual void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0);
 
 	/// <summary>	Define vertex attributes. </summary>
 	/// <remarks>	Copies the given vertex data into the mesh's internal OpenGL-optimized format. This method should be used if you
@@ -207,7 +207,9 @@ public:
 	/// 							- MESH_TEX_COORD2 - the vertex texture coordinate data
 	///								- MESH_NORMAL - the vertex normal data
 	///								- MESH_AMBIENT_AND_DIFFUSE - the vertex 3-component color data
-	///								- MESH_AMBIENT_AND_DIFFUSE4 - the vertex 4-component color data  </param>
+	///								- MESH_AMBIENT_AND_DIFFUSE4 - the vertex 4-component color data  
+	///								- MESH_DIFFUSE - the vertex 3-component color data
+	///								- MESH_DIFFUSE4 - the vertex 4-component color data</param>
 	/// <param name="verts">   	[in] The vertex data. </param>
 	void defineVertexAttribs(unsigned int attribId, float* verts);
 
@@ -243,7 +245,7 @@ public:
 	/// <param name="vertOffset">	(Optional) The vertex offset to start at. If not provided, the whole mesh will be drawn.</param>
 	/// <param name="vertCount"> 	(Optional) The number of vertices to dray. </param>
 	/// <param name="vertStride">	(Optional) The vertex stride, i.e if 2, it will read every other vertex. </param>
-	void draw(int drawMode, int vertOffset = 0, int vertCount = 0, int vertStride = 0);
+	virtual void draw(int drawMode, int vertOffset = 0, int vertCount = 0, int vertStride = 0);
 	float* getVertexAttrib(unsigned int vertIndex, unsigned int attribId);
 };
 
@@ -255,7 +257,7 @@ public:
 	virtual const char* getClassFactory() {return "IndexedMesh";}
 	virtual void bind();
 
-	void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0)
+	virtual void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0) override
 	{
 		Mesh::init(numVerts, perVertexAttribs, flags); 
 		numIndices = 0;
@@ -269,8 +271,8 @@ public:
 	void defineIndexBuffer(int num, int* buffer) {defineIndexBuffer(num, (unsigned int*) buffer);}
 	
 	/// <summary>	Adds an index to the index buffer. </summary>
-	/// <remarks>	 </remarks>
-	/// <param name="index">	If you want to add indices as you go, use this method. </param>
+	/// <remarks>	 If you want to add indices as you go, use this method. </remarks>
+	/// <param name="index">	The vertex index, returned by addVertex()</param>
 	/// <returns>	The index of the vertex index within the index buffer. </returns>
 	unsigned int addIndex(unsigned int index);
 
@@ -279,7 +281,7 @@ public:
 	/// <param name="drawMode">	The draw mode. </param>
 	/// <param name="start">   	(Optional) The start index within the index buffer. </param>
 	/// <param name="count">   	(Optional) The number of vertices. </param>
-	void draw(int drawMode, int start = 0, int count = 0);
+	virtual void draw(int drawMode, int vertOffset = 0, int vertCount = 0, int vertStride = 0) override;
 	void cleanupIndexBuffer(bool isDestructor = false);
 	unsigned int vertexForIndex(unsigned int index);
 

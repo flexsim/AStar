@@ -749,8 +749,8 @@ THE SOFTWARE.
 	typedef double       (*_menumain)();
 	typedef void 		 (*_mesh)(treenode meshnode, unsigned int perVertexAttribs, unsigned int flags);
 	typedef int  		 (*_meshaddvertex)(treenode meshnode);
-	typedef void 		 (*_meshsetvertexattrib)(treenode meshnode, unsigned int vertIndex, unsigned int attribId, double p1, double p2, double p3, double p4);
-	typedef void 		 (*_meshsetattrib)(treenode meshnode, unsigned int attribId, double p1, double p2, double p3, double p4);
+	typedef void 		 (*_meshsetvertexattrib)(treenode meshnode, unsigned int vertIndex, unsigned int attribId, float p1, float p2, float p3, float p4);
+	typedef void 		 (*_meshsetattrib)(treenode meshnode, unsigned int attribId, float p1, float p2, float p3, float p4);
 	typedef void		 (*_meshdraw)(treenode meshnode, int drawMode, int offset, int count, int stride);
 	typedef int			 (*_meshaddindex)(treenode meshnode, unsigned int index);
 	typedef double		 (*_meshinfo)(treenode meshnode, int type, unsigned int index, unsigned int param);
