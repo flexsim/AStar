@@ -4070,6 +4070,8 @@ TreeNode * node_v_colors;
 #define v_colors node_v_colors->safedatafloat()[0]
 TreeNode * node_v_charttype;
 #define v_charttype node_v_charttype->safedatafloat()[0]
+TreeNode * node_v_statestrings;
+#define v_statestrings node_v_statestrings->safedatafloat()[0]
 TreeNode * node_v_usecollecttime;
 #define v_usecollecttime node_v_usecollecttime->safedatafloat()[0]
 TreeNode * node_v_mincollecttime;
@@ -4151,6 +4153,10 @@ FS_CONTENT_DLL_FUNC treenode getNextMemberNode(treenode membernode);
 FS_CONTENT_DLL_FUNC int updateAllCurStates();
 
 FS_CONTENT_DLL_FUNC int updateCurState(treenode membernode);
+
+FS_CONTENT_DLL_FUNC int updateCurStateString(treenode membernode);
+
+FS_CONTENT_DLL_FUNC int updateStates();
 
 FS_CONTENT_DLL_FUNC int updateAllStates(treenode membernode, int onreset);
 

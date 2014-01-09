@@ -529,6 +529,9 @@ THE SOFTWARE.
 	typedef double       (*_get)(treenode attnode);
 	typedef treenode     (*_getallocatedfromkey)(treenode tasksequence, int key);
 	typedef char*        (*_getapplicationtitle)();
+	typedef const char*  (*_getbundlefieldname)(treenode x, int fieldnr);
+	typedef int          (*_getbundlefieldnr)(treenode x, char* fieldname);
+	typedef int          (*_getbundlefieldtype)(treenode x, int fieldnr);
 	typedef int          (*_getbundlenrentries)(treenode x);
 	typedef int          (*_getbundlenrfields)(treenode x);
 	typedef double       (*_getbundlevaluealias1)(treenode x, int entrynr, char* fieldname);
@@ -1596,6 +1599,9 @@ DECLARE_FLEXSIM_FUNCTION_1(generateuniqueid)
 DECLARE_FLEXSIM_FUNCTION_2(geometricalias, "geometric")
 DECLARE_FLEXSIM_FUNCTION_1(get)
 DECLARE_FLEXSIM_FUNCTION_1(getapplicationtitle)
+DECLARE_FLEXSIM_FUNCTION_1(getbundlefieldname);
+DECLARE_FLEXSIM_FUNCTION_1(getbundlefieldnr);
+DECLARE_FLEXSIM_FUNCTION_1(getbundlefieldtype);
 DECLARE_FLEXSIM_FUNCTION_1(getbundlenrentries);
 DECLARE_FLEXSIM_FUNCTION_1(getbundlenrfields);
 DECLARE_FLEXSIM_FUNCTION_2(getbundlevaluealias1, "getbundlevalue");
