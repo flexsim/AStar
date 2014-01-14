@@ -619,6 +619,7 @@ private:
 	TreeNode * findtheclass(int code, TreeNode **);
 	TreeNode * rememberfunctionnode(int code, TreeNode *);
 	double executememberfunctionwithexceptionhandling(FLEXSIMINTERFACE);
+	void reportDllConnectionFailure(TreeNode* codeNode);
   
 	// gui
   
