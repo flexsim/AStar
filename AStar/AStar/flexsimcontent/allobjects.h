@@ -1323,6 +1323,16 @@
 #define DASHBOARD_WINDOW_MODE_RESIZING_SXSY 8
 #define DASHBOARD_WINDOW_MODE_RESIZING_XSY 9
 
+#define CHART_TYPE_HORIZONTAL_BAR = 1;
+#define CHART_TYPE_VERTICAL_BAR = 2;
+#define CHART_TYPE_PIE = 3;
+#define CHART_TYPE_LINE = 4;
+#define CHART_TYPE_DATA_TABLE = 5;
+#define CHART_TYPE_TIME_PLOT = 6;
+#define CHART_TYPE_TIME_SERIES_HISTOGRAM = 7;
+#define CHART_TYPE_FINANCIAL = 8;
+#define CHART_TYPE_GANTT = 9;
+
 #define CURSOR_DEFAULT 1
 #define CURSOR_SIZE_XY 8
 #define CURSOR_SIZE_YX 9
@@ -4250,8 +4260,8 @@ TreeNode * node_v_aggregatelisten;
 #define v_aggregatelisten node_v_aggregatelisten->safedatafloat()[0]
 TreeNode * node_v_systemwarmuptime;
 #define v_systemwarmuptime node_v_systemwarmuptime->safedatafloat()[0]
-TreeNode * node_v_timemultiple;
-#define v_timemultiple node_v_timemultiple->safedatafloat()[0]
+TreeNode * node_v_timescale;
+#define v_timescale node_v_timescale->safedatafloat()[0]
 TreeNode * node_v_xaxistitle;
 TreeNode * node_v_yaxistitle;
 
@@ -4343,6 +4353,122 @@ FS_CONTENT_DLL_FUNC virtual void bindVariables();
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
+// GanttChart
+
+class GanttChart : public StatisticObject 
+{
+public:
+
+TreeNode * node_v_objects;
+#define v_objects node_v_objects->safedatafloat()[0]
+TreeNode * node_v_colors;
+#define v_colors node_v_colors->safedatafloat()[0]
+TreeNode * node_v_charttype;
+#define v_charttype node_v_charttype->safedatafloat()[0]
+TreeNode * node_v_usecollecttime;
+#define v_usecollecttime node_v_usecollecttime->safedatafloat()[0]
+TreeNode * node_v_mincollecttime;
+#define v_mincollecttime node_v_mincollecttime->safedatafloat()[0]
+TreeNode * node_v_maxcollecttime;
+#define v_maxcollecttime node_v_maxcollecttime->safedatafloat()[0]
+TreeNode * node_v_showlegend;
+#define v_showlegend node_v_showlegend->safedatafloat()[0]
+TreeNode * node_v_fontsize;
+#define v_fontsize node_v_fontsize->safedatafloat()[0]
+TreeNode * node_v_barsize;
+#define v_barsize node_v_barsize->safedatafloat()[0]
+TreeNode * node_v_itemtrace;
+#define v_itemtrace node_v_itemtrace->safedatafloat()[0]
+TreeNode * node_v_timescale;
+#define v_timescale node_v_timescale->safedatafloat()[0]
+TreeNode * node_v_xaxistitle;
+TreeNode * node_v_reloadbundles;
+#define v_reloadbundles node_v_reloadbundles->safedatafloat()[0]
+TreeNode * node_v_newtime;
+#define v_newtime node_v_newtime->safedatafloat()[0]
+TreeNode * node_v_includedstates;
+#define v_includedstates node_v_includedstates->safedatafloat()[0]
+TreeNode * node_v_series;
+TreeNode * node_v_entrylegend;
+TreeNode * node_v_data;
+TreeNode * node_v_colordata;
+TreeNode * node_v_validdata;
+#define v_validdata node_v_validdata->safedatafloat()[0]
+TreeNode * node_v_useprofilenr;
+#define v_useprofilenr node_v_useprofilenr->safedatafloat()[0]
+
+// c++ member functions
+
+FS_CONTENT_DLL_FUNC virtual double onReset();
+
+FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+
+FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+
+FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode  view);
+
+FS_CONTENT_DLL_FUNC virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
+
+FS_CONTENT_DLL_FUNC int getLastEntryNum(int series);
+
+FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
+
+FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+
+FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+
+FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+
+FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
+
+FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+
+FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
+
+FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+
+FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
+
+FS_CONTENT_DLL_FUNC int initializeObjectMember(treenode membernode);
+
+FS_CONTENT_DLL_FUNC treenode getNextMemberNode(treenode membernode);
+
+FS_CONTENT_DLL_FUNC double updateCurrentStates();
+
+FS_CONTENT_DLL_FUNC double getTotalTime();
+
+FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+
+FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
+
+FS_CONTENT_DLL_FUNC treenode getStateProfile(treenode object);
+
+FS_CONTENT_DLL_FUNC treenode refreshStates();
+
+FS_CONTENT_DLL_FUNC treenode onChangeObjectSet();
+
+FS_CONTENT_DLL_FUNC treenode getMember(int nr);
+
+FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
+
+FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+
+
+// System
+
+FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
 // TrackedVariableChart
 
 class TrackedVariableChart : public StatisticObject 
@@ -4362,8 +4488,8 @@ TreeNode * node_v_nrbuckets;
 TreeNode * node_v_normalize;
 #define v_normalize node_v_normalize->safedatafloat()[0]
 TreeNode * node_v_colordata;
-TreeNode * node_v_timemultiple;
-#define v_timemultiple node_v_timemultiple->safedatafloat()[0]
+TreeNode * node_v_timescale;
+#define v_timescale node_v_timescale->safedatafloat()[0]
 TreeNode * node_v_xaxistitle;
 TreeNode * node_v_yaxistitle;
 

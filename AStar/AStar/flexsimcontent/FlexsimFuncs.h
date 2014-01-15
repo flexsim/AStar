@@ -917,6 +917,7 @@ THE SOFTWARE.
 	typedef double       (*_releaseitem_alias2)(treenode item, int port);
 	typedef double       (*_relloc)(treenode primary, treenode start, int xyz);
 	typedef int          (*_removeallcouplingreferences)(treenode xx);
+	typedef int 		 (*_removebundleentry)(treenode x, int entrynum);
 	typedef int          (*_removeeventsofobjectalias)(treenode object, double simtime, int code, char* data,  treenode involvedobject);
 	typedef int          (*_removefirstbundleentry)(treenode x);
 	typedef int          (*_removelastbundleentry)(treenode x);
@@ -1873,6 +1874,7 @@ DECLARE_FLEXSIM_FUNCTION_1(refreshview)
 DECLARE_FLEXSIM_FUNCTION_2(reftablealias, "reftable");
 DECLARE_FLEXSIM_FUNCTION_1(registereventtype)
 DECLARE_FLEXSIM_FUNCTION_1(removeallcouplingreferences)
+DECLARE_FLEXSIM_FUNCTION_1(removebundleentry)
 DECLARE_FLEXSIM_FUNCTION_2(removeeventsofobjectalias, "removeeventsofobject")
 DECLARE_FLEXSIM_FUNCTION_1(removefirstbundleentry);
 DECLARE_FLEXSIM_FUNCTION_1(removelastbundleentry);
