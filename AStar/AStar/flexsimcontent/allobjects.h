@@ -4365,6 +4365,8 @@ TreeNode * node_v_colors;
 #define v_colors node_v_colors->safedatafloat()[0]
 TreeNode * node_v_charttype;
 #define v_charttype node_v_charttype->safedatafloat()[0]
+TreeNode * node_v_tracerequirementtrigger;
+TreeNode * node_v_itemnametrigger;
 TreeNode * node_v_usecollecttime;
 #define v_usecollecttime node_v_usecollecttime->safedatafloat()[0]
 TreeNode * node_v_mincollecttime;
@@ -6077,6 +6079,8 @@ TreeNode * node_v_robotkinematics;
 #define v_robotkinematics node_v_robotkinematics->safedatafloat()[0]
 TreeNode * node_v_clampaxis;
 #define v_clampaxis node_v_clampaxis->safedatafloat()[0]
+TreeNode * node_v_clamporientation;
+#define v_clamporientation node_v_clamporientation->safedatafloat()[0]
 TreeNode * node_v_clampwidth;
 #define v_clampwidth node_v_clampwidth->safedatafloat()[0]
 TreeNode * node_v_lastpathnum;
