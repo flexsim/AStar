@@ -1323,15 +1323,15 @@
 #define DASHBOARD_WINDOW_MODE_RESIZING_SXSY 8
 #define DASHBOARD_WINDOW_MODE_RESIZING_XSY 9
 
-#define CHART_TYPE_HORIZONTAL_BAR = 1;
-#define CHART_TYPE_VERTICAL_BAR = 2;
-#define CHART_TYPE_PIE = 3;
-#define CHART_TYPE_LINE = 4;
-#define CHART_TYPE_DATA_TABLE = 5;
-#define CHART_TYPE_TIME_PLOT = 6;
-#define CHART_TYPE_TIME_SERIES_HISTOGRAM = 7;
-#define CHART_TYPE_FINANCIAL = 8;
-#define CHART_TYPE_GANTT = 9;
+#define CHART_TYPE_HORIZONTAL_BAR 1
+#define CHART_TYPE_VERTICAL_BAR 2
+#define CHART_TYPE_PIE 3
+#define CHART_TYPE_LINE 4
+#define CHART_TYPE_DATA_TABLE 5
+#define CHART_TYPE_TIME_PLOT 6
+#define CHART_TYPE_TIME_SERIES_HISTOGRAM 7
+#define CHART_TYPE_FINANCIAL 8
+#define CHART_TYPE_GANTT 9
 
 #define CURSOR_DEFAULT 1
 #define CURSOR_SIZE_XY 8
@@ -4106,6 +4106,8 @@ TreeNode * node_v_doutilization;
 #define v_doutilization node_v_doutilization->safedatafloat()[0]
 TreeNode * node_v_fontsize;
 #define v_fontsize node_v_fontsize->safedatafloat()[0]
+TreeNode * node_v_barsize;
+#define v_barsize node_v_barsize->safedatafloat()[0]
 TreeNode * node_v_utilizedstates;
 #define v_utilizedstates node_v_utilizedstates->safedatafloat()[0]
 TreeNode * node_v_data;
@@ -4242,6 +4244,8 @@ TreeNode * node_v_showlegend;
 #define v_showlegend node_v_showlegend->safedatafloat()[0]
 TreeNode * node_v_fontsize;
 #define v_fontsize node_v_fontsize->safedatafloat()[0]
+TreeNode * node_v_barsize;
+#define v_barsize node_v_barsize->safedatafloat()[0]
 TreeNode * node_v_stacked;
 #define v_stacked node_v_stacked->safedatafloat()[0]
 TreeNode * node_v_statistics;
