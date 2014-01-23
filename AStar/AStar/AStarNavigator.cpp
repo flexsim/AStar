@@ -120,7 +120,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 	if (!pickingmode) {
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
-			drawGrid(0.1f);
+			drawGrid(0.01f);
 
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
 			boundsMesh.draw(GL_QUADS);
@@ -129,14 +129,14 @@ double AStarNavigator::onDraw(TreeNode* view)
 			barrierMesh.draw(GL_TRIANGLES);
 
 		if (drawMode & ASTAR_DRAW_MODE_TRAFFIC)
-			drawTraffic(0.15f, view);
+			drawTraffic(0.015f, view);
 
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
-			drawMembers(0.1f);
+			drawMembers(0.02f);
 	} else {
 
 		if (drawMode && ASTAR_DRAW_MODE_TRAFFIC) {
-			drawTraffic(0.1f, view);
+			drawTraffic(0.02f, view);
 		}
 
 		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
@@ -219,7 +219,7 @@ double AStarNavigator::onDrag(TreeNode* view)
 	double dx = draginfo(DRAG_INFO_DX);
 	double dy = draginfo(DRAG_INFO_DY);
 
-	// Move all attached barriers and objects
+	// Move all attached barriers
 	if (pickType == PICK_TYPE_BOUNDS) {
 		for (int i = 0; i < barrierList.size(); i++) {
 			Barrier* barrier = barrierList[i];
@@ -230,13 +230,14 @@ double AStarNavigator::onDrag(TreeNode* view)
 				point->y += dy;
 			}
 		}
-
+		//Don't move objects associated with AStar, just the barriers
+		/*
 		for (int i = 0; i < objectBarrierList.size(); i++) {
 			TreeNode* obj = objectBarrierList[i]->holder;
 			inc(spatialx(obj), dx);
 			inc(spatialy(obj), dy);
 		}
-
+		
 		TreeNode* travelers = node_v_travelmembers;
 		for (int i = 1; i <= content(travelers); i++) {
 			TreeNode* traveler = ownerobject(tonode(get(rank(travelers, i))));
@@ -250,6 +251,7 @@ double AStarNavigator::onDrag(TreeNode* view)
 			inc(spatialx(traveler), dx);
 			inc(spatialy(traveler), dy);
 		}
+		*/
 		savedXOffset += dx / nodeWidth;
 		savedYOffset += dy / nodeWidth;
 		setDirty();
@@ -293,9 +295,8 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 				  }
 		}
 	
-	} else if (isclasstype(connectTo, CLASSTYPE_FIXEDRESOURCE)) {
+	} else if (isclasstype(connectTo, CLASSTYPE_FIXEDRESOURCE) || isclasstype(connectTo, CLASSTYPE_VISUALTOOL)) {
 		FixedResource* theFR =  &(o(FixedResource, connectTo));
-		
 
 		switch(keyPressed & 0x7f) {
 		case 'A':
@@ -340,9 +341,6 @@ double AStarNavigator::onDestroy(TreeNode* view)
 
 double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destination, double endSpeed)
 {
-	double xStart = xcenter(traveler);
-	double yStart = ycenter(traveler);
-
 	double loc[3];
 	vectorproject(destination, 0.5 * xsize(destination), -0.5 * ysize(destination), 0, model(), loc);
 	double xDest = loc[0];
@@ -353,9 +351,18 @@ double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destinatio
 
 double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, double endSpeed, int driveShort)
 {
-	setstate(traveler, STATE_TRAVEL_LOADED);
-	xStart = xcenter(traveler);
-	yStart = ycenter(traveler);
+	if (content(traveler))
+		setstate(traveler, STATE_TRAVEL_LOADED);
+	else
+		setstate(traveler, STATE_TRAVEL_EMPTY);
+
+	double centerx = 0.5 * xsize(traveler);
+	double centery = 0.5 * ysize(traveler);
+
+	double outputVector[3];
+	vectorproject(traveler, centerx, - centery, 0, model(), outputVector);
+	xStart = outputVector[0];
+	yStart = outputVector[1];
 	
 	destx = x;
 	desty = y;
@@ -738,6 +745,9 @@ the outside 8 nodes.
 	int nrNodes = backwardsList.size();
 
 	kinematics = te->node_v_kinematics;
+	vectorproject(model(), xStart, yStart, 0, up(traveler), outputVector);
+	xStart = outputVector[0];
+	yStart = outputVector[1];
 	initkinematics(kinematics, xStart, yStart, 0, 0,0,0, 1, 0);
 	endTime = time();
 
@@ -984,10 +994,31 @@ void AStarNavigator::buildEdgeTable()
 		// spatialx/y are the top left corner
 		// Treat objects as a solid barrier
 		TreeNode* theObj = objectBarrierList[i]->holder;
-		double x1 = get(spatialx(theObj));
-		double y1 = get(spatialy(theObj)) - get(spatialsy(theObj));
-		double x2 = x1 + get(spatialsx(theObj));
-		double y2 = get(spatialy(theObj));
+
+		double centerx = 0.5 * xsize(theObj);
+		double centery = 0.5 * ysize(theObj);
+
+		double outputVector[3];
+		vectorproject(theObj, centerx, - centery, 0, model(), outputVector);
+		
+		double x1;
+		double y2;
+		double y1;
+		double x2;
+
+		//Check to see if the object is rotated at all, if so round the rotation to the nearest 90 degrees
+		int rotation = round(zrot(theObj) / 90) * 90;
+		if (rotation != 0 && rotation % 180 != 0 && rotation % 90 == 0) {
+			x1 = outputVector[0] - centery;
+			y2 = outputVector[1] + centerx;
+			y1 = y2 - get(spatialsx(theObj));
+			x2 = x1 + get(spatialsy(theObj));
+		} else {
+			x1 = outputVector[0] - centerx;
+			y2 = outputVector[1] + centery;
+			y1 = y2 - get(spatialsy(theObj));
+			x2 = x1 + get(spatialsx(theObj));
+		}
 
 		// Shrink the bounding box for objects
 		double halfNodeWidth = 0.5 * nodeWidth;
@@ -1038,10 +1069,31 @@ void AStarNavigator::buildEdgeTable()
 
 	for (int i = 0; i < objectBarrierList.size(); i++) {
 		TreeNode* theObj = objectBarrierList[i]->holder;
-		double x1 = get(spatialx(theObj));
-		double y1 = get(spatialy(theObj)) - get(spatialsy(theObj));
-		double x2 = x1 + get(spatialsx(theObj));
-		double y2 = get(spatialy(theObj));
+
+		double centerx = 0.5 * xsize(theObj);
+		double centery = 0.5 * ysize(theObj);
+
+		double outputVector[3];
+		vectorproject(theObj, centerx, - centery, 0, model(), outputVector);
+		
+		double x1;
+		double y2;
+		double y1;
+		double x2;
+
+		//Check to see if the object is rotated at all, if so round the rotation to the nearest 90 degrees
+		int rotation = round(zrot(theObj) / 90) * 90;
+		if (rotation != 0 && rotation % 180 != 0 && rotation % 90 == 0) {
+			x1 = outputVector[0] - centery;
+			y2 = outputVector[1] + centerx;
+			y1 = y2 - get(spatialsx(theObj));
+			x2 = x1 + get(spatialsy(theObj));
+		} else {
+			x1 = outputVector[0] - centerx;
+			y2 = outputVector[1] + centery;
+			y1 = y2 - get(spatialsy(theObj));
+			x2 = x1 + get(spatialsx(theObj));
+		}
 
 		// Shrink the bounding box for objects
 		double halfNodeWidth = 0.5 * nodeWidth;
@@ -1097,7 +1149,7 @@ void AStarNavigator::buildBoundsMesh()
 		(float)get(rank(color, 1)), 
 		(float)get(rank(color, 2)), 
 		(float)get(rank(color, 3)), 
-		1.0f
+		0.75f
 	};
 	float black[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 
@@ -1265,7 +1317,7 @@ void AStarNavigator::drawMembers(float z)
 	float r = get(rank(colorNode, 1));
 	float g = get(rank(colorNode, 2));
 	float b = get(rank(colorNode, 3));
-	float color[4] = {r, g, b, 1.0f};
+	float color[4] = {r, g, b, 0.3f};
 	float up[3] = {0.0f, 0.0f, 1.0f};
 	float black[4] = {0.0f, 0.0f, 0.0f, 0.5f};
 
@@ -1279,10 +1331,31 @@ void AStarNavigator::drawMembers(float z)
 		TreeNode* theNode = theFR->holder;
 
 		// The position is the top left corner
-		float x = spatialx(theNode)->dataasdouble[0];
-		float y = spatialy(theNode)->dataasdouble[0];
-		float width = spatialsx(theNode)->dataasdouble[0];
-		float height = spatialsy(theNode)->dataasdouble[0];
+		double centerx = 0.5 * xsize(theNode);
+		double centery = 0.5 * ysize(theNode);
+
+		double outputVector[3];
+		vectorproject(theNode, centerx, - centery, 0, model(), outputVector);
+		
+		float x;
+		float y;
+		float width;
+		float height;
+
+		//Check to see if the object is rotated at all, if so round the rotation to the nearest 90 degrees
+		int rotation = round(zrot(theNode) / 90) * 90;
+		if (rotation != 0 && rotation % 180 != 0 && rotation % 90 == 0) {
+			x = outputVector[0] - centery;
+			y = outputVector[1] + centerx;
+			width = spatialsy(theNode)->dataasdouble[0];
+			height = spatialsx(theNode)->dataasdouble[0];
+		} else {
+			x = outputVector[0] - centerx;
+			y = outputVector[1] + centery;
+			width = spatialsx(theNode)->dataasdouble[0];
+			height = spatialsy(theNode)->dataasdouble[0];
+		}
+
 		float topLeft[3] = {x, y, z};
 		float bottomLeft[3] = {x, y - height, z};
 		float topRight[3] = {x + width, y, z};
@@ -1319,12 +1392,15 @@ void AStarNavigator::drawMembers(float z)
 	for (int i = 1; i <= numTravelers; i++) {
 		TreeNode* traveler = ownerobject(tonode(get(rank(travelers, i))));
 
-		float x = spatialx(traveler)->dataasdouble[0];
-		float y = spatialy(traveler)->dataasdouble[0];
+		double outputVector[3];
+		vectorproject(traveler, 0.5 * xsize(traveler), -0.5 * ysize(traveler), 0, model(), outputVector);
+		float x = outputVector[0];
+		float y = outputVector[1];
+
 		float width = spatialsx(traveler)->dataasdouble[0];
 		float height = spatialsy(traveler)->dataasdouble[0];
 		float radius = sqrt(width * width / 4.0 + height * height / 4.0);
-		float center[3] = {x + width / 2.0, y - height / 2.0, z};
+		float center[3] = {x, y, z};
 
 		// Triangle strip
 		for (int i = 0; i < numSides; i++) {
@@ -1356,12 +1432,15 @@ void AStarNavigator::drawMembers(float z)
 	for (int i = 1; i <= numTravelers; i++) {
 		TreeNode* traveler = ownerobject(tonode(get(rank(travelers, i))));
 
-		float x = spatialx(traveler)->dataasdouble[0];
-		float y = spatialy(traveler)->dataasdouble[0];
+		double outputVector[3];
+		vectorproject(traveler, 0.5 * xsize(traveler), -0.5 * ysize(traveler), 0, model(), outputVector);
+		float x = outputVector[0];
+		float y = outputVector[1];
+
 		float width = spatialsx(traveler)->dataasdouble[0];
 		float height = spatialsy(traveler)->dataasdouble[0];
 		float radius = sqrt(width * width / 4.0 + height * height / 4.0);
-		float center[3] = {x + width / 2.0, y - height / 2.0, z};
+		float center[3] = {x, y, z};
 
 		// Triangle strip
 		for (int i = 0; i < numSides; i++) {

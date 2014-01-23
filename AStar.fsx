@@ -99,9 +99,9 @@
         <node f="42-0" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>spatialz</name><data>0000000000000000</data></node>
-        <node f="42-0" dt="1"><name>spatialsx</name><data>000000003ff0e1fc</data></node>
-        <node f="42-0" dt="1"><name>spatialsy</name><data>c00000003ff0e1fb</data></node>
-        <node f="42-0" dt="1"><name>spatialsz</name><data>600000003fe0aa9d</data></node>
+        <node f="42-0" dt="1"><name>spatialsx</name><data>8f5c28f63ff0f5c2</data></node>
+        <node f="42-0" dt="1"><name>spatialsy</name><data>8f5c28f63ff0f5c2</data></node>
+        <node f="42-0" dt="1"><name>spatialsz</name><data>0a3d70a43fe0a3d7</data></node>
         <node f="42-0" dt="1"><name>spatialrx</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
@@ -2548,7 +2548,35 @@ applylinks(parent);</data></node>
     </node>
    </node>
   </node>
+  <node f="42-0" dt="2"><name>add</name><data>MAIN:/project/exec/globals/nodevariables/ModelUnitScaling</data>
+   <node f="40-0"><name></name></node>
+   <node f="42-0" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40-0"><name></name></node>
+    <node f="42-0" dt="1"><name>rank</name><data>00000000404d0000</data></node>
+    <node f="42-0" dt="2"><name>after</name><data>ThreeDView</data></node>
+    <node f="42-0" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42-0"><name>data</name>
+     <node f="40-0"><name></name></node>
+     <node f="42-0" dt="2"><name>AStarNavigator</name><data>/?AStarNavigator</data>
+      <node f="40-0"><name></name></node>
+      <node f="42-0"><name>size</name>
+       <node f="40-0"><name></name></node>
+       <node f="42-0" dt="1"><name></name><data>8f5c28f63ff0f5c2</data></node>
+       <node f="42-0" dt="1"><name></name><data>8f5c28f63ff0f5c2</data></node>
+       <node f="42-0" dt="1"><name></name><data>0a3d70a43fe0a3d7</data></node>
+      </node>
+      <node f="42-0"><name>length</name>
+       <node f="40-0"><name></name></node>
+       <node f="42-0" dt="2"><name>nodeWidth</name><data>&gt;variables/nodeWidth</data>
+        <node f="40-0"><name></name></node>
+        <node f="42-0" dt="1"><name></name><data>000000003ff00000</data></node>
+       </node>
+      </node>
+     </node>
+    </node>
+   </node>
+  </node>
  </node>
  <node f="42-0" dt="2"><name>release</name><data>1.0</data></node>
- <node f="42-0" dt="2"><name>revision</name><data>.0</data></node>
+ <node f="42-0" dt="2"><name>revision</name><data>.2</data></node>
 </node></flexsim-tree>
