@@ -685,6 +685,7 @@ drawmode += getchecked(node("/Draw Modes/Show Members", up(c))) ? ASTAR_DRAW_MOD
 drawmode += getchecked(node("/Draw Modes/Show Traffic", up(c))) ? ASTAR_DRAW_MODE_TRAFFIC : 0;
 
 set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
+        <node f="42-0" dt="2"><name>helptopic</name><data>tab_AStar</data></node>
        </data>
         <node f="40-0"><name></name></node>
         <node f="42-0" dt="4"><name>Node Spacing</name><data>
@@ -1250,6 +1251,7 @@ function_s(editor, "refreshList");
 windowshow(windowfromnode(node("/Edit Table", parent)), 0);
 windowshow(windowfromnode(editor), 1);
 </data></node>
+        <node f="42-0" dt="2"><name>helptopic</name><data>tab_AStar_Barriers</data></node>
        </data>
         <node f="40-0"><name></name></node>
         <node f="42-0" dt="4"><name>editor view</name><data>
@@ -2572,6 +2574,47 @@ applylinks(parent);</data></node>
         <node f="42-0" dt="1"><name></name><data>000000003ff00000</data></node>
        </node>
       </node>
+     </node>
+    </node>
+   </node>
+  </node>
+  <node f="42-0" dt="2"><name>add</name><data>MAIN:/project/exec/globals/helpmanual/TableOfContents</data>
+   <node f="40-0"><name></name></node>
+   <node f="42-0" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40-0"><name></name></node>
+    <node f="42-0" dt="1"><name>rank</name><data>0000000040340000</data></node>
+    <node f="42-0" dt="2"><name>after</name><data>Miscellaneous Concepts</data></node>
+    <node f="42-0" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42-0"><name>data</name>
+     <node f="40-0"><name></name></node>
+     <node f="42-0" dt="4"><name>AStar Module</name><data>
+      <node f="40-0"><name></name></node>
+      <node f="42-0" dt="2"><name>viewfocus</name><data>modules\AStar\help\index.html</data></node>
+      <node f="42-0" dt="2"><name>title</name><data>AStar Module</data></node>
+     </data>
+      <node f="40-0"><name></name></node>
+      <node f="42-0" dt="4"><name>Concepts</name><data>
+       <node f="40-0"><name></name></node>
+       <node f="42-0" dt="2"><name>viewfocus</name><data>modules\AStar\help\Concepts.html</data></node>
+       <node f="42-0" dt="2"><name>title</name><data>AStar Module Concepts</data></node>
+      </data>
+       <node f="40-0"><name></name></node></node>
+      <node f="42-0" dt="4"><name>Example</name><data>
+       <node f="40-0"><name></name></node>
+       <node f="42-0" dt="2"><name>viewfocus</name><data>modules\AStar\help\Example.html</data></node>
+       <node f="42-0" dt="2"><name>title</name><data>AStar Module Example</data></node>
+      </data>
+       <node f="40-0"><name></name></node></node>
+      <node f="42-0" dt="4"><name>Reference</name><data>
+       <node f="40-0"><name></name></node>
+       <node f="42-0" dt="2"><name>viewfocus</name><data>modules\AStar\help\Reference.html</data></node>
+       <node f="42-0" dt="2"><name>uniqueid</name><data>tab_AStar</data>
+        <node f="40-0"><name></name></node>
+        <node f="42-0" dt="2"><name>tab_AStar_Barriers</name><data>#Barriers</data></node>
+       </node>
+       <node f="42-0" dt="2"><name>title</name><data>AStar Module Reference</data></node>
+      </data>
+       <node f="40-0"><name></name></node></node>
      </node>
     </node>
    </node>

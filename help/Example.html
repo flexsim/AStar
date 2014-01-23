@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><title>AStar Navigator Example</title><meta name="generator" content="Fast-Help Multi-User"><meta name="keywords" content="">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="stylesheet" type="text/css" href="../../../help/FlexsimHelp.css">
+<link rel="stylesheet" type="text/css" href="../../../help/shadowbox/shadowbox.css">
+</head>
+<body bgcolor="#ffffff">
+
+<h2>A* Navigator Example</h2>
+
+<h3>The Model</h3>
+
+<p><img alt="" src="Images/ExampleModelLayout.png" 
+	class="autoresize" style="width: 759px; height: 438px;"/></p>
+
+<p>We'll use the following model to show how the A* Navigator can be used in a simple model. The real power of the A* Module is to layout
+very large and complex models that would require large network node layouts to handle all of the TaskExecuters.</p>
+	
+<h3>Create the Navigator</h3>
+
+<p>First, an AStarNavigator object must be added to the model.  Only one AStarNavigator object is available per model.</p>
+
+<ul>
+	<li>Create an AStarNavigator object by click and dragging from the Library to somewhere in the 3D view.</li>
+</ul>
+
+<p><img alt="" src="Images/ExampleCreateAStar.png" 
+	class="autoresize" style="width: 460px; height: 120px;"/></p>
+
+<h3>Connecting Members</h3>	
+
+<p>In this model, there is only one TaskExecuter object, however, we also want to include the Rack as a barrier.</p>
+
+<ul>
+	<li>Make an 'A' connection between the AStarNavigator and the Operator.  This can be done by holding the 'A' key down and clicking and dragging
+	from the AStarNavigator to the Operator, or from the Operator to the AStarNavigator. A blue circle will appear below the Operator.</li>
+	<li>Make an 'A' connection between the AStarNavigator and the Rack. A blue rectangle should will below the Operator.</li>
+</ul>
+	
+<p><img alt="" src="Images/ExampleMembers.png" 
+	class="autoresize" style="width: 476px; height: 357px;"/></p>
+	
+<h3>Creating Barriers</h3>
+
+<p>Along with the Rack, we will also create a couple of barriers to represent walls or obstacles that the operator cannot walk through.</p>
+
+<ul>
+	<li>Click on the Divider icon in the Library to enter create mode.</li>
+	<li>Click somewhere to the right of the Queue to create a new divider.</li>
+	<li>Click twice more near the points shown in the image below to finish the divider.</li>
+	<li>Right-click to exit create mode.</li>
+</ul>
+
+<p><img alt="" src="Images/ExampleDivider.png" 
+	class="autoresize" style="width: 840px; height: 416px;"/></p>
+	
+<ul>
+	<li>Click on the Barrier icon in the Library to enter create mode.</li>
+	<li>Click once where the lower left corner of the barrier will be as shown below.</li>
+	<li>Click again in the upper right hand corner to complete the barrier.</li>
+	<li>Right-click to exit create mode.</li>
+</ul>
+	
+<p><img alt="" src="Images/ExampleBarrier.png" 
+	class="autoresize" style="width: 357px; height: 342px;"/></p>
+
+<h3>Run the Model</h3>
+	
+<p>You can now reset and run the model to see how the operator performs. Remember, if you make any changes to your barriers the model must be reset before running.</p>	
+
+<p><img alt="" src="Images/ExampleWrongPath.png" 
+	class="autoresize" style="width: 708px; height: 381px;"/></p>
+	
+<p>Notice that the operator found that the shortest path is to move up and over our divider. Though there are multiple ways to alter the operator's path
+(for instance making the divider extend out further) we will modify the operator's path through a Preferred Path.</p>
+
+<h3>Create Preferred Paths</h3>
+
+<p>Preferred paths are not 'set' paths, rather they give the nodes associated with the preferred path a greater weight in the search algorithm.  This will in affect,
+pull the operator toward the preferred path.</p>
+
+<ul>
+	<li>Click on the Preferred Path icon in the Library to enter create mode.</li>
+	<li>Create the following two preferred paths shown in the image below.  Preferred paths are one-directional and thus must be laid out in the correct order.</li>
+	<li>Right-click to exit create mode.</li>
+</ul>
+
+<p><img alt="" src="Images/ExamplePreferredPaths.png" 
+	class="autoresize" style="width: 713px; height: 368px;"/></p>
+
+
+<h3>Run the Model</h3>
+	
+<p>Reset and run the model.</p>
+
+<p><img alt="" src="Images/ExampleComplete.png" 
+	class="autoresize" style="width: 830px; height: 560px;"/></p>
+	
+<p>If your operator continues to move up and over the divider, you can either move the preferred path or you can change the preferred path
+weight in the AStarNavigator object's properties window.</p>	
+
+<p><img alt="" src="Images/ExamplePathWeight.png" 
+	class="autoresize" style="width: 483px; height: 425px;"/></p>
+	
+<p>Results of your model may vary from this example as placement of barriers and objects will make a difference in the calculated paths of the operator.</p>
+
+
+<br/><br/>
+	<script type="text/javascript" src="../../../help/jquery.min.js"></script>
+	<script type="text/javascript" src="../../../help/shadowbox/shadowbox.js"></script>
+	<script type="text/javascript" src="../../../help/JavascriptUtilities.js"></script>
+	<script>
+	$( document ).ready(function() {
+		checklivecontent(document.title);
+	});
+	</script>
+</body>
+</html>
