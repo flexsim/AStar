@@ -335,8 +335,8 @@ public:
   
 	// access
   
-	inline TreeNode * faststep(int);
-	inline TreeNode * step(int);
+	inline TreeNode * faststep(size_t);
+	inline TreeNode * step(size_t);
 	TreeNode * find(const char *);
 	TreeNode * findrecursive(const char *searchname);
   
