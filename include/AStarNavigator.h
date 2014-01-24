@@ -176,25 +176,25 @@ public:
 	AStarNavigator();
 	~AStarNavigator();
 	
-	virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
-	virtual double onReset();
-	virtual double onRunWarm();
-	virtual double onTimerEvent(TreeNode* involved, int code, char *datastr);
-	virtual double onDraw(TreeNode* view);
-	virtual double onDrag(TreeNode* view);
-	virtual double onClick(TreeNode* view, int clickcode);
-	virtual double onUndo(bool isUndo, treenode undoRecord);
+	virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO) override;
+	virtual double onReset() override;
+	virtual double onRunWarm() override;
+	virtual double onTimerEvent(TreeNode* involved, int code, char *datastr) override;
+	virtual double onDraw(TreeNode* view) override;
+	virtual double onDrag(TreeNode* view) override;
+	virtual double onClick(TreeNode* view, int clickcode) override;
+	virtual double onUndo(bool isUndo, treenode undoRecord) override;
 	void addCreateRecord(treenode view, Barrier* barrier);
-	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType);
-	virtual double onDestroy(TreeNode* view);
-	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed);
-	virtual double navigateToLoc(TreeNode* traveler, double x, double y, double endspeed, int driveshort = 1);
+	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType) override;
+	virtual double onDestroy(TreeNode* view) override;
+	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed) override;
+	virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed) override;
 
-	virtual double updateLocations();
-	virtual double abortTravel(TreeNode* traveler, TreeNode* newts);
-	virtual unsigned int getClassType();
+	virtual double updateLocations() override;
+	virtual double abortTravel(TreeNode* traveler, TreeNode* newts) override;
+	virtual unsigned int getClassType() override;
 
-	virtual void bindVariables(void);
+	virtual void bindVariables(void) override;
 
 
 	void setDirty();

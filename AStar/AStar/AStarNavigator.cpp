@@ -343,13 +343,12 @@ double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destinatio
 {
 	double loc[3];
 	vectorproject(destination, 0.5 * xsize(destination), -0.5 * ysize(destination), 0, model(), loc);
-	double xDest = loc[0];
-	double yDest = loc[1];
 
-	return navigateToLoc(traveler, xDest, yDest, endSpeed, 0);
+	return navigateToLoc(traveler, loc, endSpeed);
 }
 
-double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, double endSpeed, int driveShort)
+
+double AStarNavigator::navigateToLoc(treenode traveler, double* destLoc, double endSpeed)
 {
 	if (content(traveler))
 		setstate(traveler, STATE_TRAVEL_LOADED);
@@ -364,6 +363,8 @@ double AStarNavigator::navigateToLoc(TreeNode* traveler, double x, double y, dou
 	xStart = outputVector[0];
 	yStart = outputVector[1];
 	
+	double x = destLoc[0];
+	double y = destLoc[1];
 	destx = x;
 	desty = y;
 
@@ -754,9 +755,7 @@ the outside 8 nodes.
 
 	AStarSearchEntry e, laste;
 	laste.colRow = backwardsList[nrNodes - 1];
-	if(driveShort) 
-		driveShort = (int)round(0.4*xsize(traveler) / nodeWidth);
-	for(int i = nrNodes - 2; i >= /*driveShort*/0; i--) {
+	for(int i = nrNodes - 2; i >= 0; i--) {
 		e.colRow = backwardsList[i];
 		endTime = addkinematic(kinematics, (e.col - laste.col)*nodeWidth, (e.row - laste.row)*nodeWidth, 0, 
 			te->v_maxspeed, 0,0,0,0,endTime, KINEMATIC_TRAVEL);
@@ -927,9 +926,7 @@ double AStarNavigator::onTimerEvent(TreeNode* involved, int code, char* datastr)
 		updatekinematics(kinematics, object, time());
 		te->b_spatialx -= 0.5*te->b_spatialsx;
 		te->b_spatialy += 0.5*te->b_spatialsy;
-		transfernode(involved, node_v_travelmembers);
-		int tasktype = gettasktype(object, 0);
-		
+		transfernode(involved, node_v_travelmembers);		
 		te->onDestinationArrival(0);
 	}
 	return 0;
