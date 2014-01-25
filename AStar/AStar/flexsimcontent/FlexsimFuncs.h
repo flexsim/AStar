@@ -197,7 +197,7 @@ THE SOFTWARE.
 	typedef int          (*_bitwiseor)(int, int);
 	typedef double       (*_buildall)();
 	typedef double       (*_buildnodeflexscript)(treenode node);
-	typedef int          (*_calculate6DOFrobotinversekinematics)(double x, double y, double z, treenode item, treenode orienobj, double approachoffset, treenode robot, double* d, double* a, double xtrans, double * returnval);
+	typedef int          (*_calculate6DOFrobotinversekinematics)(double * loc, treenode planningItem, double* rotOffset, double approachoffset, treenode robot, double* d, double* a, double xtrans, double * returnval);
 	typedef double       (*_calculateconfidence)(double stddev, double nrofdatapoints, double confidence);
 	typedef double       (*_callwebscriptmethod)(treenode view, char* id, char* name, ...);
 	typedef char*        (*_cdir_cstr)();

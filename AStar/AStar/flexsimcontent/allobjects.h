@@ -6125,6 +6125,14 @@ FS_CONTENT_DLL_FUNC double drawSkeleton(double* d, double* a, double xtrans, dou
 
 FS_CONTENT_DLL_FUNC double autoCalculateTable(double* d, double * a, double * xtrans);
 
+FS_CONTENT_DLL_FUNC double applyJointsToItem();
+
+FS_CONTENT_DLL_FUNC double applyItemToJoints();
+
+FS_CONTENT_DLL_FUNC double calcApproachOffsetDist(treenode item);
+
+FS_CONTENT_DLL_FUNC Vec3 calcApproachOffsetRot();
+
 
 // System
 
