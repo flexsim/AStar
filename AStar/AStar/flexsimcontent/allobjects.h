@@ -6081,8 +6081,6 @@ TreeNode * node_v_yrotspeed;
 #define v_yrotspeed node_v_yrotspeed->safedatafloat()[0]
 TreeNode * node_v_robotkinematics;
 #define v_robotkinematics node_v_robotkinematics->safedatafloat()[0]
-TreeNode * node_v_clampaxis;
-#define v_clampaxis node_v_clampaxis->safedatafloat()[0]
 TreeNode * node_v_clamporientation;
 #define v_clamporientation node_v_clamporientation->safedatafloat()[0]
 TreeNode * node_v_clampwidth;
@@ -6125,13 +6123,51 @@ FS_CONTENT_DLL_FUNC double drawSkeleton(double* d, double* a, double xtrans, dou
 
 FS_CONTENT_DLL_FUNC double autoCalculateTable(double* d, double * a, double * xtrans);
 
-FS_CONTENT_DLL_FUNC double applyJointsToItem();
+FS_CONTENT_DLL_FUNC double applyJointsToItem(int orientationType);
 
-FS_CONTENT_DLL_FUNC double applyItemToJoints();
+FS_CONTENT_DLL_FUNC double applyItemToJoints(int orientationType);
 
-FS_CONTENT_DLL_FUNC double calcApproachOffsetDist(treenode item);
+FS_CONTENT_DLL_FUNC double calcApproachOffsetDist(treenode item, int orientationType);
 
-FS_CONTENT_DLL_FUNC Vec3 calcApproachOffsetRot();
+FS_CONTENT_DLL_FUNC Vec3 calcApproachOffsetRot(int orientationType);
+
+FS_CONTENT_DLL_FUNC Vec3 calcItemRot(int orientationType);
+
+FS_CONTENT_DLL_FUNC double calcClampWidth(treenode item, int orientationType);
+
+
+// c++ attributes
+
+
+static const int CLAMP_Z_BY_X = 1;
+static const int CLAMP_Z_BY_Y = 2;
+static const int CLAMP_Z_NEG_BY_X = 3;
+static const int CLAMP_Z_NEG_BY_Y = 4;
+static const int CLAMP_Y_BY_Z = 5;
+static const int CLAMP_Y_BY_X = 6;
+static const int CLAMP_Y_NEG_BY_Z = 7;
+static const int CLAMP_Y_NEG_BY_X = 8;
+static const int CLAMP_X_BY_Y = 9;
+static const int CLAMP_X_BY_Z = 10;
+static const int CLAMP_X_NEG_BY_Y = 11;
+static const int CLAMP_X_NEG_BY_Z = 12;
+
+
+
+static const int MOTION_METHOD_SIMPLE = 1;
+static const int MOTION_METHOD_MOVE_TIME = 2;
+static const int MOTION_METHOD_SPEEDS = 3;
+static const int MOTION_METHOD_PATHS = 4;
+
+
+
+static const int PATH_CYCLETIME = 1;
+static const int PATH_TABLE = 2;
+static const int PATH_CLOSE_CLAMP_TIME = 3;
+static const int PATH_OPEN_CLAMP_TIME = 4;
+static const int PATH_NEXT_PATH = 5;
+static const int PATH_CLAMP_ORIENTATION = 6;
+
 
 
 // System
