@@ -41,8 +41,10 @@ class FlexSimEvent : public CouplingDataType
 	virtual const char* getClassFactory(){return "FlexSimEvent";}
 	virtual void bind();
 	virtual void getDescription(char* toStr, size_t maxSize);
-#ifdef FLEXSIM_ENGINE_COMPILE
+protected:
 	CallPoint* getListenerCallPoint(){return (CallPoint*)*((void**)&(data[0]));}
+#ifdef FLEXSIM_ENGINE_COMPILE
+public:
 	bool isChildClass() {return *((void**)this) != *((void**)&childChecker);}
 private:
 	static FlexSimEvent childChecker;
