@@ -623,7 +623,6 @@ iterate(1, content(tabcontrol), 1){
           <node f="42-0" dt="2"><name></name><data>VIEW:/modules/AStar/Pages/Triggers</data></node>
           <node f="42-0" dt="2"><name></name><data>VIEW:/pages/shared/Labels</data></node>
           <node f="42-0" dt="2"><name></name><data>VIEW:/pages/shared/General</data></node>
-          <node f="42-0" dt="2"><name></name><data>VIEW:/pages/shared/Statistics</data></node>
          </node>
          <node f="42-0" dt="2"><name>tooltip</name><data>Source pages</data></node>
         </data>
