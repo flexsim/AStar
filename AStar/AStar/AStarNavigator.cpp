@@ -752,14 +752,18 @@ the outside 8 nodes.
 	initkinematics(kinematics, xStart, yStart, 0, 0,0,0, 1, 0);
 	endTime = time();
 
-
 	AStarSearchEntry e, laste;
 	laste.colRow = backwardsList[nrNodes - 1];
 	for(int i = nrNodes - 2; i >= 0; i--) {
 		e.colRow = backwardsList[i];
-		endTime = addkinematic(kinematics, (e.col - laste.col)*nodeWidth, (e.row - laste.row)*nodeWidth, 0, 
+		double nextX = (e.col - laste.col)*nodeWidth;
+		double nextY = (e.row - laste.row)*nodeWidth;
+		endTime = addkinematic(kinematics, nextX, nextY, 0,
 			te->v_maxspeed, 0,0,0,0,endTime, KINEMATIC_TRAVEL);
-		
+
+		double totalTravelDist = sqrt(sqr(nextX) + sqr(nextY));
+		te->v_totaltraveldist += totalTravelDist;
+
 		AStarNodeExtraData* extra;
 		auto extraIter = edgeTableExtraData.find(e.colRow);
 		if (extraIter == edgeTableExtraData.end()) {
@@ -1004,7 +1008,7 @@ void AStarNavigator::buildEdgeTable()
 		double x2;
 
 		//Check to see if the object is rotated at all, if so round the rotation to the nearest 90 degrees
-		int rotation = round(zrot(theObj) / 90) * 90;
+		int rotation = (int)(round(zrot(theObj) / 90) * 90);
 		if (rotation != 0 && rotation % 180 != 0 && rotation % 90 == 0) {
 			x1 = outputVector[0] - centery;
 			y2 = outputVector[1] + centerx;
@@ -1079,7 +1083,7 @@ void AStarNavigator::buildEdgeTable()
 		double x2;
 
 		//Check to see if the object is rotated at all, if so round the rotation to the nearest 90 degrees
-		int rotation = round(zrot(theObj) / 90) * 90;
+		int rotation = (int)(round(zrot(theObj) / 90) * 90);
 		if (rotation != 0 && rotation % 180 != 0 && rotation % 90 == 0) {
 			x1 = outputVector[0] - centery;
 			y2 = outputVector[1] + centerx;
@@ -1340,7 +1344,7 @@ void AStarNavigator::drawMembers(float z)
 		float height;
 
 		//Check to see if the object is rotated at all, if so round the rotation to the nearest 90 degrees
-		int rotation = round(zrot(theNode) / 90) * 90;
+		int rotation = (int)(round(zrot(theNode) / 90) * 90);
 		if (rotation != 0 && rotation % 180 != 0 && rotation % 90 == 0) {
 			x = outputVector[0] - centery;
 			y = outputVector[1] + centerx;
