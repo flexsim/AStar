@@ -126,9 +126,10 @@ FixedResource object to the A* Navigator object, or by clicking on the A* Naviga
 <p>Arbitrary rotations of FixedResrouce objects will not result in a rotated barrier.  The barrier associated with a FixedResource object will rotate 
 to the nearest 90 degrees.</p>
 
-<p><span class="emphasis">Offset Travel - </span>Since offset travel does not use a navigator to calculate where the TaskExecuter moves to, TaskExecuter's
-may enter a FixedResource's barrier. To disable this, open the TaskExecuter's properties window and change <span class="alias">Travel offsets for load/unload 
-tasks</span> to <span class="alias">Do not travel offsets for load/unload tasks</span>.</p>
+<p><span class="emphasis">Offset Travel - </span>Since offset travel by default does not use a navigator to calculate where the TaskExecuter moves to, TaskExecuter's
+may enter a FixedResource's barrier. To change this, open the TaskExecuter's properties window and change <span class="alias">Travel offsets for load/unload 
+tasks</span> to <span class="alias">Use navigator for offset travel</span> or to completely remove offset travel change this to
+<span class="alias">Do not travel offsets for load/unload tasks</span>.</p>
 
 <p class="note"><span class="emphasis">Note: </span>The blue box is drawn just above the bottom of the object, so some objects may not show depending
 on their 3D shape.</p>
