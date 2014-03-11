@@ -1147,6 +1147,7 @@
 #define ANIM_VAR_KEYFRAME_VAL 2
 #define ANIM_VAR_COMPONENT_VAL 3
 #define ANIM_VAR_KEYFRAME_GAP 4
+#define ANIM_VAR_COMPONENT 5
 
 #define ANIMATION_CONTENT 10
 #define ANIMATION_KEYFRAMES 1
@@ -2042,37 +2043,40 @@ public:
 		Number loc[4];
 	};
 	template <class OtherVec>
-	Vec4Generic(OtherVec& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}
+	Vec4Generic(const OtherVec& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}
+	template <class OtherNumber>
+	Vec4Generic(const OtherNumber* other) : x(other[0]), y(other[1]), z(other[2]), w(other[3]) {}
 	template <class OtherNumber>
 	Vec4Generic(OtherNumber* other) : x(other[0]), y(other[1]), z(other[2]), w(other[3]) {}
 	Vec4Generic(Number x, Number y, Number z, Number w) : x(x), y(y), z(z), w(w) {}
 	Vec4Generic() {}
 
 	operator Number* () {return loc;}
-	Vec4Generic operator + (Vec4Generic& a) {return Vec4Generic(x + a.x, y + a.y, z + a.z, w + a.w);}
-	Vec4Generic operator - (Vec4Generic& a) {return Vec4Generic(x - a.x, y - a.y, z - a.z, w - a.w);}
-	Vec4Generic operator - () const {return Vec4Generic(-x, -y, -z, -w);}
-	Vec4Generic operator / (Vec4Generic& other) const {return Vec4Generic(x / other.x, y / other.y, z / other.z, w / other.w);}
-	Vec4Generic operator / (Number mult) const {return Vec4Generic(x / mult, y / mult, z / mult, w / mult);}
-	Vec4Generic operator * (Vec4Generic& other) const {return Vec4Generic(x * other.x, y * other.y, z * other.z, w * other.w);}
-	Vec4Generic operator * (Number mult) const {return Vec4Generic(x * mult, y * mult, z * mult, w * mult);}
-	Vec4Generic& operator += (Vec4Generic& other) {x += other.x; y += other.y; z += other.z; w += other.w; return *this;}
-	Vec4Generic& operator -= (Vec4Generic& other) {x -= other.x; y -= other.y; z -= other.z; w += other.w; return *this;}
-	bool operator == (Vec4Generic& other) {return x == other.x && y == other.y && z == other.z && w == other.w;}
-	bool operator != (Vec4Generic& other) {return x != other.x || y != other.y || z != other.z || w != other.w;}
+	const Vec4Generic operator + (const Vec4Generic& a) const {return Vec4Generic(x + a.x, y + a.y, z + a.z, w + a.w);}
+	const Vec4Generic operator - (const Vec4Generic& a) const {return Vec4Generic(x - a.x, y - a.y, z - a.z, w - a.w);}
+	const Vec4Generic operator - () const {return Vec4Generic(-x, -y, -z, -w);}
+	const Vec4Generic operator / (const Vec4Generic& other) const {return Vec4Generic(x / other.x, y / other.y, z / other.z, w / other.w);}
+	const Vec4Generic operator / (Number mult) const {return Vec4Generic(x / mult, y / mult, z / mult, w / mult);}
+	const Vec4Generic operator * (const Vec4Generic& other) const {return Vec4Generic(x * other.x, y * other.y, z * other.z, w * other.w);}
+	const Vec4Generic operator * (Number mult) const {return Vec4Generic(x * mult, y * mult, z * mult, w * mult);}
+	Vec4Generic& operator += (const Vec4Generic& other) {x += other.x; y += other.y; z += other.z; w += other.w; return *this;}
+	Vec4Generic& operator -= (const Vec4Generic& other) {x -= other.x; y -= other.y; z -= other.z; w += other.w; return *this;}
+	const bool operator == (const Vec4Generic& other) const {return x == other.x && y == other.y && z == other.z && w == other.w;}
+	const bool operator != (const Vec4Generic& other) const {return x != other.x || y != other.y || z != other.z || w != other.w;}
 
 	template <class OtherNumber>
-	Vec4Generic& operator = (Vec4Generic<OtherNumber>& other) {x = other.x; y = other.y; z = other.z; w = other.w; return *this;}
+	Vec4Generic& operator = (const Vec4Generic<OtherNumber>& other) {x = other.x; y = other.y; z = other.z; w = other.w; return *this;}
 	Number& operator [] (int index) {return loc[index];}
+	Number const& operator [] (int index) const {return loc[index];}
 
 	Number getLength() const {return sqrt(x * x + y * y + z * z + w * w);}
-	Number getDistanceTo(Vec4Generic& other) const {return Vec3(x - other.x, y - other.y, z - other.z, w - other.w).getLength();}
-	Number getDotProduct(Vec4Generic& other) const {return x * other.x + y * other.y + z * other.z + w * other.w;}
-	Number getXYAngle() {return radianstodegrees(atan2(y, x));}
-	Number getYZAngle() {return radianstodegrees(atan2(z, y));}
-	Number getZXAngle() {return radianstodegrees(atan2(x, z));}
+	Number getDistanceTo(const Vec4Generic& other) const {return Vec3(x - other.x, y - other.y, z - other.z, w - other.w).getLength();}
+	Number getDotProduct(const Vec4Generic& other) const {return x * other.x + y * other.y + z * other.z + w * other.w;}
+	Number getXYAngle() const {return radianstodegrees(atan2(y, x));}
+	Number getYZAngle() const {return radianstodegrees(atan2(z, y));}
+	Number getZXAngle() const {return radianstodegrees(atan2(x, z));}
 	template <class OtherNumber>
-	void copyTo(OtherNumber* dest) {dest[0] = (OtherNumber)x; dest[1] = (OtherNumber)y; dest[2] = (OtherNumber)z; dest[3] = (OtherNumber)w;}
+	void copyTo(OtherNumber* dest) const {dest[0] = (OtherNumber)x; dest[1] = (OtherNumber)y; dest[2] = (OtherNumber)z; dest[3] = (OtherNumber)w;}
 	void normalize() 
 	{
 		Number length = getLength();
@@ -2127,37 +2131,40 @@ public:
 		Number loc[3];
 	};
 	template <class OtherVec>
-	Vec3Generic(OtherVec& other) : x(other.x), y(other.y), z(other.z) {}
+	Vec3Generic(const OtherVec& other) : x(other.x), y(other.y), z(other.z) {}
+	template <class OtherNumber>
+	Vec3Generic(const OtherNumber* other) : x(other[0]), y(other[1]), z(other[2]) {}
 	template <class OtherNumber>
 	Vec3Generic(OtherNumber* other) : x(other[0]), y(other[1]), z(other[2]) {}
 	Vec3Generic(Number x, Number y, Number z) : x(x), y(y), z(z) {}
 	Vec3Generic() {}
 
 	operator Number* () {return loc;}
-	Vec3Generic operator + (Vec3Generic& a) {return Vec3Generic(x + a.x, y + a.y, z + a.z);}
-	Vec3Generic operator - (Vec3Generic& a) {return Vec3Generic(x - a.x, y - a.y, z - a.z);}
+	Vec3Generic operator + (const Vec3Generic& a) const {return Vec3Generic(x + a.x, y + a.y, z + a.z);}
+	Vec3Generic operator - (const Vec3Generic& a) const {return Vec3Generic(x - a.x, y - a.y, z - a.z);}
 	Vec3Generic operator - () const {return Vec3Generic(-x, -y, -z);}
-	Vec3Generic operator / (Vec3Generic& other) const {return Vec3Generic(x / other.x, y / other.y, z / other.z);}
+	Vec3Generic operator / (const Vec3Generic& other) const {return Vec3Generic(x / other.x, y / other.y, z / other.z);}
 	Vec3Generic operator / (Number mult) const {return Vec3Generic(x / mult, y / mult, z / mult);}
-	Vec3Generic operator * (Vec3Generic& other) const {return Vec3Generic(x * other.x, y * other.y, z * other.z);}
+	Vec3Generic operator * (const Vec3Generic& other) const {return Vec3Generic(x * other.x, y * other.y, z * other.z);}
 	Vec3Generic operator * (Number mult) const {return Vec3Generic(x * mult, y * mult, z * mult);}
-	Vec3Generic& operator += (Vec3Generic& other) {x += other.x; y += other.y; z += other.z; return *this;}
-	Vec3Generic& operator -= (Vec3Generic& other) {x -= other.x; y -= other.y; z -= other.z; return *this;}
-	bool operator == (Vec3Generic& other) {return x == other.x && y == other.y && z == other.z;}
-	bool operator != (Vec3Generic& other) {return x != other.x || y != other.y || z != other.z;}
+	Vec3Generic& operator += (const Vec3Generic& other) {x += other.x; y += other.y; z += other.z; return *this;}
+	Vec3Generic& operator -= (const Vec3Generic& other) {x -= other.x; y -= other.y; z -= other.z; return *this;}
+	bool operator == (const Vec3Generic& other) const {return x == other.x && y == other.y && z == other.z;}
+	bool operator != (const Vec3Generic& other) const {return x != other.x || y != other.y || z != other.z;}
 
 	template <class OtherNumber>
-	Vec3Generic& operator = (Vec3Generic<OtherNumber>& other) {x = other.x; y = other.y; z = other.z; return *this;}
+	Vec3Generic& operator = (const Vec3Generic<OtherNumber>& other) {x = other.x; y = other.y; z = other.z; return *this;}
 	Number& operator [] (int index) {return loc[index];}
+	Number const& operator [] (int index) const {return loc[index];}
 
 	Number getLength() const {return sqrt(x * x + y * y + z * z);}
-	Number getDistanceTo(Vec3Generic& other) const {return Vec3Generic(x - other.x, y - other.y, z - other.z).getLength();}
-	Number getDotProduct(Vec3Generic& other) const {return x * other.x + y * other.y + z * other.z;}
-	Number getXYAngle() {return radianstodegrees(atan2(y, x));}
-	Number getYZAngle() {return radianstodegrees(atan2(z, y));}
-	Number getZXAngle() {return radianstodegrees(atan2(x, z));}
+	Number getDistanceTo(const Vec3Generic& other) const {return Vec3Generic(x - other.x, y - other.y, z - other.z).getLength();}
+	Number getDotProduct(const Vec3Generic& other) const {return x * other.x + y * other.y + z * other.z;}
+	Number getXYAngle() const {return radianstodegrees(atan2(y, x));}
+	Number getYZAngle() const {return radianstodegrees(atan2(z, y));}
+	Number getZXAngle() const {return radianstodegrees(atan2(x, z));}
 	template <class OtherNumber>
-	void copyTo(OtherNumber* dest) {dest[0] = (OtherNumber)x; dest[1] = (OtherNumber)y; dest[2] = (OtherNumber)z;}
+	void copyTo(OtherNumber* dest) const {dest[0] = (OtherNumber)x; dest[1] = (OtherNumber)y; dest[2] = (OtherNumber)z;}
 	void normalize() 
 	{
 		Number length = getLength();
@@ -2204,36 +2211,39 @@ public:
 		Number loc[2];
 	};
 	template <class OtherVec>
-	Vec2Generic(OtherVec& other) : x(other.x), y(other.y) {}
+	Vec2Generic(const OtherVec& other) : x(other.x), y(other.y) {}
 	Vec2Generic(Number x, Number y) : x(x), y(y) {}
+	template <class OtherNumber>
+	Vec2Generic(const OtherNumber* other) : x(other[0]), y(other[1]) {}
 	template <class OtherNumber>
 	Vec2Generic(OtherNumber* other) : x(other[0]), y(other[1]) {}
 	Vec2Generic() {}
 
 	operator Number* () {return loc;}
-	Vec2Generic operator + (Vec2Generic& a) {return Vec2Generic(x + a.x, y + a.y);}
-	Vec2Generic operator - (Vec2Generic& a) {return Vec2Generic(x - a.x, y - a.y);}
+	Vec2Generic operator + (const Vec2Generic& a) const {return Vec2Generic(x + a.x, y + a.y);}
+	Vec2Generic operator - (const Vec2Generic& a) const {return Vec2Generic(x - a.x, y - a.y);}
 	Vec2Generic operator - () const {return Vec2Generic(-x, -y);}
-	Vec2Generic operator / (Vec2Generic& other) const {return Vec2Generic(x / other.x, y / other.y);}
+	Vec2Generic operator / (const Vec2Generic& other) const {return Vec2Generic(x / other.x, y / other.y);}
 	Vec2Generic operator / (Number mult) const {return Vec2Generic(x / mult, y / mult);}
-	Vec2Generic operator * (Vec2Generic& other) const {return Vec2Generic(x * other.x, y * other.y);}
+	Vec2Generic operator * (const Vec2Generic& other) const {return Vec2Generic(x * other.x, y * other.y);}
 	Vec2Generic operator * (Number mult) const {return Vec2Generic(x * mult, y * mult);}
-	Vec2Generic& operator += (Vec2Generic& other) {x += other.x; y += other.y; return *this;}
-	Vec2Generic& operator -= (Vec2Generic& other) {x -= other.x; y -= other.y; return *this;}
-	bool operator == (Vec2Generic& other) {return x == other.x && y == other.y;}
-	bool operator != (Vec2Generic& other) {return x != other.x || y != other.y;}
+	Vec2Generic& operator += (const Vec2Generic& other) {x += other.x; y += other.y; return *this;}
+	Vec2Generic& operator -= (const Vec2Generic& other) {x -= other.x; y -= other.y; return *this;}
+	bool operator == (const Vec2Generic& other) const {return x == other.x && y == other.y;}
+	bool operator != (const Vec2Generic& other) const {return x != other.x || y != other.y;}
 	
 	template <class OtherNumber>
-	Vec2Generic& operator = (Vec2Generic<OtherNumber>& other) {x = other.x; y = other.y; return *this;}
+	Vec2Generic& operator = (const Vec2Generic<OtherNumber>& other) {x = other.x; y = other.y; return *this;}
 	Number& operator [] (int index) {return loc[index];}
+	Number const& operator [] (int index) const {return loc[index];}
 
 	Number getLength() const {return sqrt(x * x + y * y);}
-	Number getDistanceTo(Vec2Generic& other) const {return Vec2Generic(x - other.x, y - other.y).getLength();}
-	Number getDotProduct(Vec2Generic& other) const {return x * other.x + y * other.y;}
-	Number getAngle() {return radianstodegrees(atan2(y, x));}
-	Number getDeterminant(Vec2Generic& other) {return x * other.y - y * other.x;}
+	Number getDistanceTo(const Vec2Generic& other) const {return Vec2Generic(x - other.x, y - other.y).getLength();}
+	Number getDotProduct(const Vec2Generic& other) const {return x * other.x + y * other.y;}
+	Number getAngle() const {return radianstodegrees(atan2(y, x));}
+	Number getDeterminant(const Vec2Generic& other) const {return x * other.y - y * other.x;}
 	template <class OtherNumber>
-	void copyTo(OtherNumber* dest) {dest[0] = (OtherNumber)x; dest[1] = (OtherNumber)y;}
+	void copyTo(OtherNumber* dest) const {dest[0] = (OtherNumber)x; dest[1] = (OtherNumber)y;}
 	void normalize() 
 	{
 		Number length = getLength();
@@ -2686,6 +2696,8 @@ visible double resumeobject(treenode involved, int id);
 visible double resumetransportsin(treenode object, int rank DEFAULTZERO);
 
 visible double resumetransportsout(treenode object, int rank DEFAULTZERO);
+
+double rotationproject(treenode originSpace, double rx, double ry, double rz, treenode ontoSpace, double* rotationsOut);
 
 double savenodestate(treenode savenode, int size DEFAULTZERO, int nrofpointers DEFAULTONE, treenode* nodes DEFAULTNULL);
 
@@ -4357,6 +4369,125 @@ FS_CONTENT_DLL_FUNC virtual void bindVariables();
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
+// CustomChart
+
+class CustomChart : public StatisticObject 
+{
+public:
+
+TreeNode * node_v_associations;
+#define v_associations node_v_associations->safedatafloat()[0]
+TreeNode * node_v_colors;
+#define v_colors node_v_colors->safedatafloat()[0]
+TreeNode * node_v_charttype;
+#define v_charttype node_v_charttype->safedatafloat()[0]
+TreeNode * node_v_numcategories;
+TreeNode * node_v_categorytitle;
+TreeNode * node_v_numseries;
+TreeNode * node_v_seriestitle;
+TreeNode * node_v_datapointvalue;
+TreeNode * node_v_usecollecttime;
+#define v_usecollecttime node_v_usecollecttime->safedatafloat()[0]
+TreeNode * node_v_mincollecttime;
+#define v_mincollecttime node_v_mincollecttime->safedatafloat()[0]
+TreeNode * node_v_maxcollecttime;
+#define v_maxcollecttime node_v_maxcollecttime->safedatafloat()[0]
+TreeNode * node_v_collecthistory;
+#define v_collecthistory node_v_collecthistory->safedatafloat()[0]
+TreeNode * node_v_starttime;
+#define v_starttime node_v_starttime->safedatafloat()[0]
+TreeNode * node_v_timeinterval;
+#define v_timeinterval node_v_timeinterval->safedatafloat()[0]
+TreeNode * node_v_showlegend;
+#define v_showlegend node_v_showlegend->safedatafloat()[0]
+TreeNode * node_v_fontsize;
+#define v_fontsize node_v_fontsize->safedatafloat()[0]
+TreeNode * node_v_barsize;
+#define v_barsize node_v_barsize->safedatafloat()[0]
+TreeNode * node_v_stacked;
+#define v_stacked node_v_stacked->safedatafloat()[0]
+TreeNode * node_v_reloadbundle;
+#define v_reloadbundle node_v_reloadbundle->safedatafloat()[0]
+TreeNode * node_v_data;
+TreeNode * node_v_timedata;
+TreeNode * node_v_colordata;
+TreeNode * node_v_validdata;
+#define v_validdata node_v_validdata->safedatafloat()[0]
+TreeNode * node_v_systemwarmuptime;
+#define v_systemwarmuptime node_v_systemwarmuptime->safedatafloat()[0]
+TreeNode * node_v_timescale;
+#define v_timescale node_v_timescale->safedatafloat()[0]
+TreeNode * node_v_xaxistitle;
+TreeNode * node_v_yaxistitle;
+
+// c++ member functions
+
+FS_CONTENT_DLL_FUNC virtual double onReset();
+
+FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+
+FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+
+FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode  view);
+
+FS_CONTENT_DLL_FUNC virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
+
+FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
+
+FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+
+FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+
+FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+
+FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
+
+FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+
+FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
+
+FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+
+FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
+
+FS_CONTENT_DLL_FUNC int initializeAggregateMember(treenode groupnode);
+
+FS_CONTENT_DLL_FUNC treenode getNextMemberNode(treenode membernode);
+
+FS_CONTENT_DLL_FUNC int updateAllStats();
+
+FS_CONTENT_DLL_FUNC double updateTimeStats();
+
+FS_CONTENT_DLL_FUNC double getTotalTime();
+
+FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+
+FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
+
+FS_CONTENT_DLL_FUNC treenode onChangeAssociationSet();
+
+FS_CONTENT_DLL_FUNC treenode getMember(int nr);
+
+FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
+
+FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newNode);
+
+
+// System
+
+FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
 // GanttChart
 
 class GanttChart : public StatisticObject 
@@ -4533,6 +4664,8 @@ FS_CONTENT_DLL_FUNC double initializeData(treenode view);
 
 FS_CONTENT_DLL_FUNC double updateData(treenode view);
 
+FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newNode);
+
 
 // System
 
@@ -4564,6 +4697,8 @@ FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum
 
 FS_CONTENT_DLL_FUNC double parseUserHtml();
 
+FS_CONTENT_DLL_FUNC double dumpHtml(treenode toNode, int replace);
+
 FS_CONTENT_DLL_FUNC  HtmlStatistic();
 
 FS_CONTENT_DLL_FUNC  ~HtmlStatistic();
@@ -4571,7 +4706,7 @@ FS_CONTENT_DLL_FUNC  ~HtmlStatistic();
 
 // c++ attributes
 
-HWND console;;
+HWND console;
 
 
 // System
@@ -6532,11 +6667,11 @@ bool isMeshDirty;
 
 int meshEdgePointSplit;
 
-int meshPointQuadSplit;
-
 int meshEnd;
 
 Mesh mesh;
+
+Mesh arrowMesh;
 
 int meshCheckSum;
 
