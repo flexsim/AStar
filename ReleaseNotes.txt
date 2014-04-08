@@ -1,0 +1,18 @@
+AStar Module
+
+===============================================================================
+Release Notes
+
+--- Version 1.0.4 ---
+
+*	Fixed calculations for total travel distance on TaskExecuter objects.
+*	Fixed an issue with using offset travel and traveltoloc tasks.
+*	Added Help Manual to FlexSim.
+
+--- Version 1.0.2 ---
+
+*	Fixed an issue with TaskExecuter's being set to state TRAVEL_LOADED when the state should have been TRAVE_EMPTY.
+*	Added VisualTool to objects that can be added to the AStarNavigator as barriers.
+*	Fixed issues with FixedResource and TaskExecuter objects that are inside container objects.
+*	Barriers created by FixedResource objects can now be rotated 90 degrees.
+*	Fixed bug with using AStar in models using units other than meters.

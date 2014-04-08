@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <Fragment>
+    <DirectoryRef Id="InstallDir">
+      <Directory Id="CursorsDir" Name="cursors">
+        <Component Id="Cursors" Guid="8A7D379F-0996-40ED-B6A4-74E4D9867AE1">
+          <File Name="dividertool.cur" />
+          <File Name="onewaydividertool.cur" />
+          <File Name="preferredpathtool.cur" />
+          <File Name="solidbarriertool.cur" />
+        </Component>
+      </Directory>
+    </DirectoryRef>
+  </Fragment>
+</Wix>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <DirectoryRef Id="InstallDir">
+      <Directory Id="HelpDir" Name="help" >
+        <Component Id="HelpFiles" Guid="E728FB77-BF69-4177-BB4F-E36E8CAAADA1" Feature="MainModule">
+          <File Name="Concepts.html" />
+          <File Name="Example.html" />
+          <File Name="index.html" />
+          <File Name="Reference.html" />
+        </Component>
+        <Directory Id="HelpImagesDir" Name="Images" >
+          <Component Id="HelpImages" Guid="A2C49FD0-ABC9-4749-957B-B939BD6867CB">
+            <File Name="AStar.png" />
+            <File Name="AStarPage.png" />
+            <File Name="BarriersPage.png" />
+            <File Name="CachedPaths.png" />
+            <File Name="DeepSearch.png" />
+            <File Name="Divider.png" />
+            <File Name="DividerProperties.png" />
+            <File Name="ExampleBarrier.png" />
+            <File Name="ExampleComplete.png" />
+            <File Name="ExampleCreateAStar.png" />
+            <File Name="ExampleDivider.png" />
+            <File Name="ExampleMembers.png" />
+            <File Name="ExampleModelLayout.png" />
+            <File Name="ExamplePathWeight.png" />
+            <File Name="ExamplePreferredPaths.png" />
+            <File Name="ExampleWrongPath.png" />
+            <File Name="Library.png" />
+            <File Name="NoDeepSearch.png" />
+            <File Name="ObjectBarrier.png" />
+            <File Name="OneWayDivider.png" />
+            <File Name="PreferredPath.png" />
+            <File Name="PropertiesWindow.png" />
+            <File Name="SolidBarrier.png" />
+            <File Name="TaskExecuter.png" />
+          </Component>
+        </Directory>
+      </Directory>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="HelpManual">
+      <ComponentRef Id="HelpFiles" />
+      <ComponentRef Id="HelpImages" />
+    </ComponentGroup>
+  </Fragment>
+</Wix>

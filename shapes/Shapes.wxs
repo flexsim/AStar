@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <Fragment>
+    <DirectoryRef Id="InstallDir">
+      <Directory Id="ShapesDir" Name="shapes">
+        <Component Id="Shapes" Guid="5C4A9479-19DE-4F9E-8271-25BDB2793DD3">
+          <File Name="AStar.3ds" />
+        </Component>
+      </Directory>
+    </DirectoryRef>
+  </Fragment>
+</Wix>
