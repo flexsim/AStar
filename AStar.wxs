@@ -35,6 +35,7 @@
       <Directory Id="InstallDir" Name="AStar" FileSource="..\AStar">
         <Component Id="DLLBinaries" Guid="B1F46686-7687-4075-B605-7FAE5A79E7A0">
           <File Name="AStar.dll" />
+          <File Name="AStar_x86.dll" />
         </Component>
         <Component Id="ModuleTree" Guid="8436E21F-03F0-43CD-BD51-C86C9C6453AC">
           <File Name="AStar.t" />
