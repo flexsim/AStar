@@ -746,6 +746,9 @@
 #define ITEMVAR_PROCESSTIME 2
 #define ITEMVAR_SETUPTIME 3
 
+#ifdef DOUBLE_CLICK
+	#undef DOUBLE_CLICK
+#endif
 #define DOUBLE_CLICK 1
 #define LEFT_PRESS 2
 #define LEFT_RELEASE 3
@@ -1022,7 +1025,6 @@
 #define MESH_TEX_T 1
 #define MESH_TEX_R 2
 #define MESH_TEX_Q 3
-#define MESH_SHININESS 0
 
 // Texture Channels
 #define TEX_UNIT_SHADOWS 1
@@ -1619,7 +1621,9 @@
 #define VIEW_TYPE_BUTTON 100
 #define VIEW_TYPE_EDIT 101
 #define VIEW_TYPE_PANEL 102
+#define VIEW_TYPE_STATIC 103
 #define VIEW_TYPE_CHECKBOX 105
+#define VIEW_TYPE_RADIOBUTTON 106
 #define VIEW_TYPE_COMBOBOX 109
 #define VIEW_TYPE_LISTBOX 114
 #define VIEW_TYPE_TAB_CONTROL 115
@@ -1649,7 +1653,6 @@
 
 #define OVERRIDE_DRAW_SIZER_X      0x10
 #define OVERRIDE_DRAW_SIZER_Y      0x20
-#define OVERRIDE_DRAW_SIZER_Z      0x40
 #define OVERRIDE_DRAW_SIZER_Z      0x80
 #define OVERRIDE_DRAW_SIZER_X_NEG  0x100
 #define OVERRIDE_DRAW_SIZER_Y_NEG  0x200
@@ -1705,8 +1708,6 @@
 
 // Included Header
 #include <float.h>
-#define msgparam(num) parval(num + 1)
-#define msgsendingobject parnode(1)
 
 // The following #defines can be changed to customize the connection controls.
 // The following keys are already in use and should NOT be used here : A, Q, S, W, O, T, N, P, X
@@ -1888,12 +1889,6 @@ class SendMessageEvent : public FlexSimEvent {
 };
 
 extern char * tasktypenames[];
-
-#define DOUBLE_CLICK 1
-#define LEFT_PRESS 2
-#define LEFT_RELEASE 3
-#define RIGHT_PRESS 4
-#define RIGHT_RELEASE 5
 
 typedef treenode treenode;
 extern treenode* nexttreeunderstack;
@@ -2085,7 +2080,7 @@ public:
 		z /= length;
 		w /= length;
 	}
-	#define VEC_ROTATE_A_B(degs, a, b) \
+	#define VEC4_ROTATE_A_B(degs, a, b) \
 		Number rads = degreestoradians(degrees); \
 		Number cosRads = cos(rads); \
 		Number sinRads = sin(rads); \
@@ -2095,15 +2090,15 @@ public:
 		
 	void rotateXY(Number degrees) 
 	{
-		VEC_ROTATE_A_B(degrees, x, y)
+		VEC4_ROTATE_A_B(degrees, x, y)
 	}
 	void rotateYZ(Number degrees) 
 	{
-		VEC_ROTATE_A_B(degrees, y, z)
+		VEC4_ROTATE_A_B(degrees, y, z)
 	}
 	void rotateZX(Number degrees) 
 	{
-		VEC_ROTATE_A_B(degrees, z, x)
+		VEC4_ROTATE_A_B(degrees, z, x)
 	}
 	static Vec4Generic fromRotAndDist(Number degs, Number length, Number zComp = 0) 
 	{
@@ -2172,7 +2167,7 @@ public:
 		y /= length;
 		z /= length;
 	}
-	#define VEC_ROTATE_A_B(degs, a, b) \
+	#define VEC3_ROTATE_A_B(degs, a, b) \
 		Number rads = degreestoradians(degrees); \
 		Number cosRads = cos(rads); \
 		Number sinRads = sin(rads); \
@@ -2182,15 +2177,15 @@ public:
 		
 	void rotateXY(Number degrees) 
 	{
-		VEC_ROTATE_A_B(degrees, x, y)
+		VEC3_ROTATE_A_B(degrees, x, y)
 	}
 	void rotateYZ(Number degrees) 
 	{
-		VEC_ROTATE_A_B(degrees, y, z)
+		VEC3_ROTATE_A_B(degrees, y, z)
 	}
 	void rotateZX(Number degrees) 
 	{
-		VEC_ROTATE_A_B(degrees, z, x)
+		VEC3_ROTATE_A_B(degrees, z, x)
 	}
 	static Vec3Generic fromRotAndDist(Number degs, Number length, Number zComp = 0) 
 	{

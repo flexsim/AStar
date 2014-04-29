@@ -2,6 +2,10 @@
 
 #include "basicclasses.h"
 #include "simpledatatype.h"
+#include <vector>
+#ifdef FLEXSIM_ENGINE_COMPILE
+	#include <fstream>
+#endif
 
 /// <summary>	A class encapsulating data and functionality for drawing geometry in OpenGL.</summary>
 /// <remarks>	The mesh class, and its accompanying mesh api in flexscript, replace the old immediate-mode
@@ -15,8 +19,8 @@
 class Mesh : public SimpleDataType
 {
 public:
-	Mesh() : numVerts(0), vertByteStride(0), flags(0), perMeshAttribs(0), perVertexAttribs(0), 
-			vertBuffer(0), vbo(0), vao(0), maxBufferSize(0), isDirty(true)
+	Mesh() : lastShaderProgram(0), numVerts(0), vertByteStride(0), flags(0), perMeshAttribs(0), perVertexAttribs(0),
+		vertBuffer(0), vbo(0), vao(0), maxBufferSize(0), isDirty(true), customVertexAttribs(0)
 	{
 		holder = 0;
 		// initialize the per mesh color attribs' alpha to 1
@@ -25,8 +29,8 @@ public:
 	~Mesh() {cleanup(true);}
 
 protected:
-	Mesh(int flags) : numVerts(0), vertByteStride(0), flags(flags), perMeshAttribs(0), perVertexAttribs(0), 
-			vertBuffer(0), vbo(0), vao(0), maxBufferSize(0), isDirty(true) 
+	Mesh(int flags) : lastShaderProgram(0), numVerts(0), vertByteStride(0), flags(flags), perMeshAttribs(0), perVertexAttribs(0),
+		vertBuffer(0), vbo(0), vao(0), maxBufferSize(0), isDirty(true), customVertexAttribs(0)
 	{
 		holder = 0;
 		// initialize the per mesh color attribs' alpha to 1
@@ -64,6 +68,41 @@ protected:
 	static void readColorVertex(void* readPoint, float* outVert);
 	static void readFloatVertex(void* readPoint, float* outVert);
 	virtual const char* getClassFactory() {return "Mesh";}
+
+	struct CustomVertexAttrib {
+		string name;
+		GLint attribLocation;
+		unsigned char attribOffset;
+		int componentsPerVertex;
+		GLenum type;
+		void bind(TreeNode* x);
+	};
+
+	std::vector<CustomVertexAttrib*>* customVertexAttribs;
+
+	GLint lastShaderProgram;
+	void cleanupCustomVertexAttribs();
+
+#ifdef FLEXSIM_ENGINE_COMPILE
+public:
+	typedef void (Mesh::*_drawCallback)(int drawMode, int vertOffset, int vertCount, int vertStride);
+	static _drawCallback drawCallback;
+	static std::ofstream renderFile;
+	static void startPOVExport(const char* filePath);
+	static void endPOVExport();
+
+	static void startCyclesExport(const char* filePath);
+	static void endCyclesExport();
+protected:
+	void drawRenderMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+
+	void drawPOVExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+	void printPOVMeshData();
+	void printPOVVertexData();
+
+	void drawCyclesExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+	void printCyclesVertexData(int drawMode);
+#endif
 
 public:
 	/// <summary>	The per mesh flags. See Mesh::init()</summary>
@@ -159,9 +198,10 @@ protected:
 	/// 			prepareDraw() essentially enables all the client states for what is needed, and
 	/// 			binds to the proper buffers. </remarks>
 	/// <param name="stride">	The stride.</param>
-	void prepareDraw(int stride);
+	void prepareDraw(int offset = 0, int stride = 0);
 	void applyAttribs();
 	void resetAttribs();
+	void checkForShaderChange();
 	void cleanupDraw();
 	/// <summary>	defineGLObjects(): defines the vertex array object. Call this one, and it will
 	/// 			call defineVBO. </summary>
@@ -197,6 +237,15 @@ public:
 	/// 								</param>
 	/// <param name="flags">		   	(Optional) Miscellaneous flags. </param>
 	virtual void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0);
+
+	/// <summary>	Adds a custom vertex attribute data to a mesh. </summary>
+	/// <remarks>	This should be used immediately after calling init() if you want to add custom vertex attributes in 
+	///				addition to the default set defined by perVertexFlags. </remarks>
+	/// <returns>	The index of the added vertex attrib. </returns>
+	/// <param name="name">	Specifies the name of the vertex attribute defined in the shader.</param>
+	/// <param name="componentsPerVertex">	Specifies the number of components per generic vertex attribute. Must be 1, 2, 3, or 4.</param>
+	/// <param name="type">	Specifies the data type of each component in the array. Symbolic constants GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT, GL_FIXED, or GL_FLOAT are accepted.</param>
+	unsigned int addCustomVertexAttrib(const char* name, int componentsPerVertex, GLenum type);
 
 	/// <summary>	Define vertex attributes. </summary>
 	/// <remarks>	Copies the given vertex data into the mesh's internal OpenGL-optimized format. This method should be used if you
@@ -247,6 +296,8 @@ public:
 	/// <param name="vertStride">	(Optional) The vertex stride, i.e if 2, it will read every other vertex. </param>
 	virtual void draw(int drawMode, int vertOffset = 0, int vertCount = 0, int vertStride = 0);
 	float* getVertexAttrib(unsigned int vertIndex, unsigned int attribId);
+
+
 };
 
 class IndexedMesh : public Mesh
@@ -298,6 +349,16 @@ protected:
 	/// 			call defineVBO. </summary>
 	/// <remarks>	 </remarks>
 	void defineGLObjects();
+
+#ifdef FLEXSIM_ENGINE_COMPILE
+	public:
+		typedef void (IndexedMesh::*_drawCallback)(int drawMode, int vertOffset, int vertCount, int vertStride);
+		static _drawCallback indexedDrawCallback;
+		void indexedDrawRenderMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+		void indexedDrawPOVExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+
+		void indexedDrawCyclesExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+#endif
 };
 
 #define MESH_PER_VERTEX_ATTRIBS 1
@@ -310,6 +371,7 @@ protected:
 
 visible void mesh(treenode meshnode, unsigned int perVertexAttribs, unsigned int flags);
 visible int  meshaddvertex(treenode meshnode);
+visible void meshaddcustomvertexattrib(treenode meshnode, const char* name, int componentsPerVertex, GLenum type);
 visible void meshsetvertexattrib(treenode meshnode, unsigned int vertIndex, unsigned int attribId, float p1, float p2=0, float p3=0, float p4=0);
 visible void meshsetattrib(treenode meshnode, unsigned int attribId, float p1, float p2=0, float p3=0, float p4=0);
 visible void meshdraw(treenode meshnode, int drawMode, int offset, int count, int stride=0);

@@ -55,7 +55,7 @@ public:
 	static void bindNodeList(int doBindMode, bool detachReattach, int startIndex = 0);
 	static void clearAttsFromNodeList();
 	TreeNode* holder;
-	SimpleDataType(){}
+	SimpleDataType() : holder(0) {}
 	virtual ~SimpleDataType(){}
 	virtual const char* getClassFactory(){return 0;}
 	virtual void bind(){}
@@ -436,22 +436,40 @@ template<class ObjType>
 		}
 	};
 
-	template <typename T> class StlValueBinder<T*> {
+	template <> class StlValueBinder<SimpleDataType*> {
 	public:
-		static treenode Saver(treenode x, T** toVal)
+		static treenode Saver(treenode x, SimpleDataType** toVal)
 			{return nodepoint(nodeadddata(x, DATA_POINTERCOUPLING), *toVal ? (*toVal)->holder : 0);}
-		static T* Loader(treenode x)
+		static SimpleDataType* Loader(treenode x)
 		{
 			treenode dereference = tonode(get(x)); 
 			if (objectexists(dereference))
-				return &o(T, dereference);
+				return &o(SimpleDataType, dereference);
 			return 0;
 		}
-		static void Displayer(T** x)
+		static void Displayer(SimpleDataType** x)
 		{
 			if(x && (*x))
 				StlValueBinder<treenode>::Displayer(&((*x)->holder));
 			else appendToDisplayStr("NULL");
+		}
+	};
+
+	template <class T> class StlValueBinder<T*> {
+	public:
+		static void Saver(treenode x, T** toVal)
+		{
+			(*toVal)->bind(x);
+		}
+		static T* Loader(treenode x)
+		{
+			T* newT = new T;
+			newT->bind(x);
+			return newT;
+		}
+		static void Displayer(T** x)
+		{
+			(*x)->bind(0);
 		}
 	};
 
@@ -492,7 +510,6 @@ template<class ObjType>
 			break;
 		}
 		case SDT_BIND_ON_DISPLAY: {
-			SetType::iterator temp = theSet.begin();
 			appendToDisplayStr(prefix);
 			appendToDisplayStr(": ");
 			for (SetType::iterator temp = theSet.begin(); temp != theSet.end(); temp++) {
@@ -627,5 +644,7 @@ public:
 
 	virtual int getTableId(const char* tableName) {return 0;}
 	virtual int getRowCount(int tableId) {return 0;}
+
+	virtual const char* getClassFactory() { return "SqlDelegate"; }
 };
 

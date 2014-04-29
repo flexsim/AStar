@@ -24,7 +24,7 @@ template< class ArrayType, localvartype TypeID>
 class array 
 {
 private:
-	int size;
+	size_t size;
 	ArrayType* elements;
 public:
 	int arraytype;
@@ -36,7 +36,7 @@ public:
 	void operator=(array<ArrayType, TypeID>* setto);
 	void operator=(size_t _size);
 	void setsize(size_t n);
-	int getsize();
+	size_t getsize();
 	void fill(ArrayType* copyfrom);
 };
 
@@ -82,7 +82,7 @@ ArrayType& array<ArrayType, TypeID>::operator[]( int n )
 }
 
 template<class ArrayType, localvartype TypeID>
-int array<ArrayType, TypeID>::getsize(){return size;}
+size_t array<ArrayType, TypeID>::getsize(){return size;}
 template<class ArrayType, localvartype TypeID>
 void array<ArrayType, TypeID>::setsize(size_t _size)
 {
@@ -92,8 +92,8 @@ void array<ArrayType, TypeID>::setsize(size_t _size)
 	if(_size > 0)
 		elements = new ArrayType[_size+1];
 	else elements = NULL;
-	int copyn= size>_size?_size:size;
-	for(int i = 1; i <= copyn; i++)
+	size_t copyn= size>_size?_size:size;
+	for(size_t i = 1; i <= copyn; i++)
 		elements[i] = oldelements[i];
 	if(size>0 && oldelements != NULL) delete [] oldelements;
 	size = _size;

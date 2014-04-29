@@ -18,7 +18,7 @@ class ByteBlock
 public:
 	char *block;                // (4 or 8 bytes)
 private:
-	long unsigned int blocksize;// (4 bytes)
+	unsigned int blocksize;     // (4 bytes)
 	unsigned short parity;      // (2 bytes)
 public:
 	ByteBlock() : parity((unsigned short)(size_t)this), blocksize(1)
@@ -46,9 +46,9 @@ public:
 	}
 	static char* getStaticBlock();
 	void write(const char *source);
-	void write(const char *source, long unsigned intsize, int nullterminate);
-	bool setSize(long unsigned int);
-	long unsigned int getSize();
+	void write(const char *source, size_t intsize, bool nullterminate);
+	bool setSize(size_t);
+	unsigned int getSize();
 	char *getBuffer();
 	void append(const char *source);
 	ByteBlock& operator =(const char * c)
@@ -69,32 +69,32 @@ public:
 		void operator delete(void* p);
 		inline bool checkParity(){return parity==(unsigned short)(size_t)this;}//true if valid
   
-		void write(const char *source, long unsigned intsize);
+		void write(const char *source, size_t intsize);
 		void writeFast(const char *source);
-		int read(char *dest, long unsigned intsize);
-		void append(const char *source, long unsigned intsize, int nullterminate);
+		void read(char *dest, size_t intsize);
+		void append(const char *source, size_t intsize, int nullterminate);
   
   
 		static char staticBlock[1];
   
-		int nullTerminate();
+		void nullTerminate();
  
 		size_t getSaveSize();
 		bool save(std::ostream& stream);
 		bool load(std::istream& stream);
-		int save(char*& destination);
-		int load(char*& source);
+		bool save(char*& destination);
+		bool load(char*& source);
   
 
-		int saveXML(MSXML2::IXMLDOMDocumentPtr doc, MSXML2::IXMLDOMElementPtr parentnode, bool isNameBB = false);
-		int loadXML(MSXML2::IXMLDOMNodePtr parentnode);
+		bool saveXML(MSXML2::IXMLDOMDocumentPtr doc, MSXML2::IXMLDOMElementPtr parentnode, bool isNameBB = false);
+		bool loadXML(MSXML2::IXMLDOMNodePtr parentnode);
   
 
-		int replaceSubString(int preposition, int position, char *substitute);
-		int searchSubString(char *pattern, char *substitute, int rep); // return 1 when not at end; set substringcursor when done
+		void replaceSubString(size_t preposition, size_t position, char *substitute);
+		bool searchSubString(char *pattern, char *substitute, bool rep); // return true when not at end; set substringcursor when done
 
-		int parserSearchSubString(char *pattern, char *substitute, int rep); // return 1 when not at end; set substringcursor when done
-		int parserSearchSubStringNotWholeWord(char *pattern, char *substitute, int rep); // return 1 when not at end; set substringcursor when done
+		bool parserSearchSubString(char *pattern, char *substitute, int rep); // return true when not at end; set substringcursor when done
+		bool parserSearchSubStringNotWholeWord(char *pattern, char *substitute, bool rep); // return true when not at end; set substringcursor when done
 	#endif
 };
 #pragma pack()//restore packing to its default value

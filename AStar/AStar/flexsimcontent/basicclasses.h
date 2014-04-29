@@ -33,8 +33,6 @@ class ExperimentChildManager;
 typedef char* (*customdisplayfunction)(TreeNode*, int);
 class ConsoleWin;
 template<class ElementType> class FlexSimCVector;
-// auto_array_ptr is patterned after std::auto_ptr, but it "owns" an array allocated with new[]
-template<class ElementType> class auto_array_ptr;
 template<class ElementType> class HashTable;
 template<class RefType> class SafeRef;
 typedef SafeRef<TreeNode> NodeRef;

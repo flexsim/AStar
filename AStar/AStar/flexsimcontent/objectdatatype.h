@@ -37,15 +37,15 @@ public:
 	};
 	
 	#ifdef FLEXSIM_ENGINE_COMPILE
-		void getRot(int entryIndex, glm::dvec3& rot);
+		void getRot(size_t entryIndex, glm::dvec3& rot);
 	#endif
 	void clear();
-	void addEntries(int nrCachePoints);
+	void addEntries(size_t nrCachePoints);
 	unsigned int calcCheckSum(treenode spline);
 	void buildCache(treenode holder);
 
 	Entry * entries;
-	int nrEntries;
+	size_t nrEntries;
 	double length;
 	unsigned int checkSum;
 };
@@ -165,9 +165,9 @@ public:
 
 	// these are for fast lookup of spline distances
 	SplineCache* splineCache;
-	void addSplineCache(int np, int res);
+	void addSplineCache(size_t np, size_t res);
 	void clearSplineCache(bool isDestructor = false);
-	void buildSplineCache(int res);
+	void buildSplineCache(size_t res);
 
 	TreeNode * classcache;
 	TreeNode * superclasscache;

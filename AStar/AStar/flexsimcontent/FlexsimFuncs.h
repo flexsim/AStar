@@ -31,6 +31,12 @@ THE SOFTWARE.
 #include <functional>
 #include <string>
 
+#undef DECLARE_FLEXSIM_FUNCTION_1
+#undef DECLARE_FLEXSIM_FUNCTION_2
+#undef DECLARE_FLEXSIM_FUNCTION_3
+#undef DECLARE_FLEXSIM_ATTRIBUTE
+#undef DECLARE_FLEXSIM_GLOBAL_VARIABLE
+
 #if DECLARATIONTYPE == FLEXSIM_DECLARATION_PHASE
 
 	#define DECLARE_FLEXSIM_FUNCTION_1(name) extern _##name name;
@@ -752,6 +758,7 @@ THE SOFTWARE.
 	typedef double       (*_menumain)();
 	typedef void 		 (*_mesh)(treenode meshnode, unsigned int perVertexAttribs, unsigned int flags);
 	typedef int  		 (*_meshaddvertex)(treenode meshnode);
+	typedef unsigned int (*_meshaddcustomvertexattrib)(treenode meshnode, const char* name, int componentsPerVertex, GLenum type);
 	typedef void 		 (*_meshsetvertexattrib)(treenode meshnode, unsigned int vertIndex, unsigned int attribId, float p1, float p2, float p3, float p4);
 	typedef void 		 (*_meshsetattrib)(treenode meshnode, unsigned int attribId, float p1, float p2, float p3, float p4);
 	typedef void		 (*_meshdraw)(treenode meshnode, int drawMode, int offset, int count, int stride);
@@ -1241,13 +1248,14 @@ THE SOFTWARE.
 		typedef void (*_byteblock_write2)(ByteBlock* x, const char *source, long unsigned intsize, int nullterminate);
 		typedef void (*_byteblock_append)(ByteBlock* x, const char *source);
 		typedef bool (*_byteblock_setsize)(ByteBlock* x, long unsigned int size);
-		typedef long unsigned int (*_byteblock_getsize)(ByteBlock* x);
+		typedef unsigned int (*_byteblock_getsize)(ByteBlock* x);
 		typedef char* (*_byteblock_getbuffer)(ByteBlock* x);
 
 		typedef  void (*_mesh_bind)(Mesh* m);
 		typedef  void (*_mesh_init)(Mesh* m, unsigned int nrVerts, unsigned int perVertFlags, unsigned int generalFlags);
 		typedef  void (*_mesh_cleanup)(Mesh* m, bool isDestructor);
-		typedef  void (*_mesh_definevertexattribs)(Mesh* m, unsigned int attribId, float* verts);
+		typedef  void(*_mesh_definevertexattribs)(Mesh* m, unsigned int attribId, float* verts);
+		typedef  unsigned int(*_mesh_addcustomvertexattrib)(Mesh* m, const char* name, int componentsPerVertex, GLenum type);
 		typedef  unsigned int (*_mesh_setvertexattrib)(Mesh* m, int vertIndex, unsigned int attribId, float* vert);
 		typedef  void (*_mesh_setmeshattrib)(Mesh* m, unsigned int attribId, float* vert);
 		typedef  int (*_mesh_addvertex)(Mesh* m);
@@ -1395,6 +1403,7 @@ DECLARE_FLEXSIM_FUNCTION_1(colorwhite)
 DECLARE_FLEXSIM_FUNCTION_1(coloryellow)
 DECLARE_FLEXSIM_FUNCTION_1(combocurrentnode)
 DECLARE_FLEXSIM_FUNCTION_1(comborefresh)
+DECLARE_FLEXSIM_FUNCTION_1(commandlineparam)
 DECLARE_FLEXSIM_FUNCTION_3(comparetextalias1, "?comparetext@@YAHPAD0H@Z", "?comparetext@@YAHPEAD0H@Z")
 DECLARE_FLEXSIM_FUNCTION_1(comparetrees)
 DECLARE_FLEXSIM_FUNCTION_1(consoleexecutefs)
@@ -1760,6 +1769,7 @@ DECLARE_FLEXSIM_FUNCTION_1(menugray)
 DECLARE_FLEXSIM_FUNCTION_1(menumain)
 DECLARE_FLEXSIM_FUNCTION_1(mesh)
 DECLARE_FLEXSIM_FUNCTION_1(meshaddvertex)
+DECLARE_FLEXSIM_FUNCTION_1(meshaddcustomvertexattrib)
 DECLARE_FLEXSIM_FUNCTION_1(meshsetvertexattrib)
 DECLARE_FLEXSIM_FUNCTION_1(meshdraw)
 DECLARE_FLEXSIM_FUNCTION_1(meshaddindex)
@@ -2229,6 +2239,7 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(mesh_init)
 	DECLARE_FLEXSIM_FUNCTION_1(mesh_cleanup)
 	DECLARE_FLEXSIM_FUNCTION_1(mesh_definevertexattribs)
+	DECLARE_FLEXSIM_FUNCTION_1(mesh_addcustomvertexattrib)
 	DECLARE_FLEXSIM_FUNCTION_1(mesh_setvertexattrib)
 	DECLARE_FLEXSIM_FUNCTION_1(mesh_setmeshattrib)
 	DECLARE_FLEXSIM_FUNCTION_1(mesh_addvertex)
@@ -2246,20 +2257,19 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 /*** FUNCTIONS ONLY REQUIRED FOR DLL PROJECT***/
 #else
 	DECLARE_FLEXSIM_FUNCTION_1(addsphere)
-	DECLARE_FLEXSIM_FUNCTION_1(backupfile);
-	DECLARE_FLEXSIM_FUNCTION_1(bcgetitemkinematics);
-	DECLARE_FLEXSIM_FUNCTION_1(bcgetitemposition);
-	DECLARE_FLEXSIM_FUNCTION_1(bcsetdirection);
-	DECLARE_FLEXSIM_FUNCTION_1(bcsetitemconveystate);
-	DECLARE_FLEXSIM_FUNCTION_1(changeconveyorspeed);
+	DECLARE_FLEXSIM_FUNCTION_1(backupfile)
+	DECLARE_FLEXSIM_FUNCTION_1(bcgetitemkinematics)
+	DECLARE_FLEXSIM_FUNCTION_1(bcgetitemposition)
+	DECLARE_FLEXSIM_FUNCTION_1(bcsetdirection)
+	DECLARE_FLEXSIM_FUNCTION_1(bcsetitemconveystate)
+	DECLARE_FLEXSIM_FUNCTION_1(changeconveyorspeed)
 	DECLARE_FLEXSIM_FUNCTION_1(changetask)
-	DECLARE_FLEXSIM_FUNCTION_1(closenodeedge);
+	DECLARE_FLEXSIM_FUNCTION_1(closenodeedge)
 	DECLARE_FLEXSIM_FUNCTION_1(codetotemplatetext)
-	DECLARE_FLEXSIM_FUNCTION_1(commandlineparam);
-	DECLARE_FLEXSIM_FUNCTION_1(consoleexecutecpp);
-	DECLARE_FLEXSIM_FUNCTION_1(containerentry);
-	DECLARE_FLEXSIM_FUNCTION_1(containerexit);
-	DECLARE_FLEXSIM_FUNCTION_1(contextdragconnection);
+	DECLARE_FLEXSIM_FUNCTION_1(consoleexecutecpp)
+	DECLARE_FLEXSIM_FUNCTION_1(containerentry)
+	DECLARE_FLEXSIM_FUNCTION_1(containerexit)
+	DECLARE_FLEXSIM_FUNCTION_1(contextdragconnection)
 	DECLARE_FLEXSIM_FUNCTION_1(createcoordinatedtasksequence)
 	DECLARE_FLEXSIM_FUNCTION_1(createemptytasksequence)
 	DECLARE_FLEXSIM_FUNCTION_1(distancetotravel)
@@ -2269,26 +2279,26 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(getallocatedfromkey)
 	DECLARE_FLEXSIM_FUNCTION_1(getcoordinatedtasksequence)
 	DECLARE_FLEXSIM_FUNCTION_1(getcurtask)
-	DECLARE_FLEXSIM_FUNCTION_1(getedgedist);
-	DECLARE_FLEXSIM_FUNCTION_1(getedgespeedlimit);
-	DECLARE_FLEXSIM_FUNCTION_1(geteventtime);
-	DECLARE_FLEXSIM_FUNCTION_1(getiteminvolved);
-	DECLARE_FLEXSIM_FUNCTION_1(getitemsendto);
-	DECLARE_FLEXSIM_FUNCTION_1(getitemstate);
-	DECLARE_FLEXSIM_FUNCTION_1(getitemvar);
-	DECLARE_FLEXSIM_FUNCTION_1(getmodulelicense);
+	DECLARE_FLEXSIM_FUNCTION_1(getedgedist)
+	DECLARE_FLEXSIM_FUNCTION_1(getedgespeedlimit)
+	DECLARE_FLEXSIM_FUNCTION_1(geteventtime)
+	DECLARE_FLEXSIM_FUNCTION_1(getiteminvolved)
+	DECLARE_FLEXSIM_FUNCTION_1(getitemsendto)
+	DECLARE_FLEXSIM_FUNCTION_1(getitemstate)
+	DECLARE_FLEXSIM_FUNCTION_1(getitemvar)
+	DECLARE_FLEXSIM_FUNCTION_1(getmodulelicense)
 	DECLARE_FLEXSIM_FUNCTION_1(getmoverecord)
 	DECLARE_FLEXSIM_FUNCTION_1(getmoverecordvalue)
-	DECLARE_FLEXSIM_FUNCTION_1(getnetnode);
-	DECLARE_FLEXSIM_FUNCTION_1(getnetnodespline);
-	DECLARE_FLEXSIM_FUNCTION_1(getnetworkdistance);
-	DECLARE_FLEXSIM_FUNCTION_1(getnextnetnode);
-	DECLARE_FLEXSIM_FUNCTION_1(getnextnetnodeoutport);
+	DECLARE_FLEXSIM_FUNCTION_1(getnetnode)
+	DECLARE_FLEXSIM_FUNCTION_1(getnetnodespline)
+	DECLARE_FLEXSIM_FUNCTION_1(getnetworkdistance)
+	DECLARE_FLEXSIM_FUNCTION_1(getnextnetnode)
+	DECLARE_FLEXSIM_FUNCTION_1(getnextnetnodeoutport)
 	DECLARE_FLEXSIM_FUNCTION_1(getnroftasks)
 	DECLARE_FLEXSIM_FUNCTION_1(getnummoverecords)
 	DECLARE_FLEXSIM_FUNCTION_1(getnumstaterecords)
-	DECLARE_FLEXSIM_FUNCTION_1(getobjvarfastpointer);
-	DECLARE_FLEXSIM_FUNCTION_1(getobjvarfastpointeroffset);
+	DECLARE_FLEXSIM_FUNCTION_1(getobjvarfastpointer)
+	DECLARE_FLEXSIM_FUNCTION_1(getobjvarfastpointeroffset)
 	DECLARE_FLEXSIM_FUNCTION_1(getpreempt)
 	DECLARE_FLEXSIM_FUNCTION_1(getpriority)
 	DECLARE_FLEXSIM_FUNCTION_1(getstaterecord)
@@ -2298,18 +2308,18 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(gettasksequencequeue)
 	DECLARE_FLEXSIM_FUNCTION_1(gettasktype)
 	DECLARE_FLEXSIM_FUNCTION_1(gettaskvariable)
-	DECLARE_FLEXSIM_FUNCTION_1(gettenetnode);
+	DECLARE_FLEXSIM_FUNCTION_1(gettenetnode)
 	DECLARE_FLEXSIM_FUNCTION_1(gettotalnroftasks)
-	DECLARE_FLEXSIM_FUNCTION_1(holditem);
+	DECLARE_FLEXSIM_FUNCTION_1(holditem)
 	DECLARE_FLEXSIM_FUNCTION_1(insertallocatetask)
-	DECLARE_FLEXSIM_FUNCTION_1(insertmultiallocatetask);
+	DECLARE_FLEXSIM_FUNCTION_1(insertmultiallocatetask)
 	DECLARE_FLEXSIM_FUNCTION_1(insertsynctask)
-	DECLARE_FLEXSIM_FUNCTION_1(isedgeforward);
-	DECLARE_FLEXSIM_FUNCTION_1(license);
+	DECLARE_FLEXSIM_FUNCTION_1(isedgeforward)
+	DECLARE_FLEXSIM_FUNCTION_1(license)
 	DECLARE_FLEXSIM_FUNCTION_1(movetasksequence)
-	DECLARE_FLEXSIM_FUNCTION_1(netnodefromrank);
-	DECLARE_FLEXSIM_FUNCTION_1(opennodeedge);
-	DECLARE_FLEXSIM_FUNCTION_1(optimizenetwork);
+	DECLARE_FLEXSIM_FUNCTION_1(netnodefromrank)
+	DECLARE_FLEXSIM_FUNCTION_1(opennodeedge)
+	DECLARE_FLEXSIM_FUNCTION_1(optimizenetwork)
 	DECLARE_FLEXSIM_FUNCTION_1(pickoffsetx)
 	DECLARE_FLEXSIM_FUNCTION_1(pickoffsety)
 	DECLARE_FLEXSIM_FUNCTION_1(pickoffsetz)
@@ -2317,55 +2327,55 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(placeoffsety)
 	DECLARE_FLEXSIM_FUNCTION_1(placeoffsetz)
 	DECLARE_FLEXSIM_FUNCTION_1(profiletasksequence)
-	DECLARE_FLEXSIM_FUNCTION_1(rackdrawfilledcell);
-	DECLARE_FLEXSIM_FUNCTION_1(rackdrawvirtualcontent);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetbaycontent);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetbayloc);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetbayofitem);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetbaysize);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetcellcontent);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetcellvar);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetcontenttable);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetitembybaylevel);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetlevelloc);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetlevelofitem);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetlevelsize);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetnrofbays);
-	DECLARE_FLEXSIM_FUNCTION_1(rackgetnroflevels);
-	DECLARE_FLEXSIM_FUNCTION_1(rackrecycleitem);
-	DECLARE_FLEXSIM_FUNCTION_1(rackrestoreitem);
-	DECLARE_FLEXSIM_FUNCTION_1(racksetcellcontent);
-	DECLARE_FLEXSIM_FUNCTION_1(racksetcellvar);
-	DECLARE_FLEXSIM_FUNCTION_1(rankfromnetnode);
-	DECLARE_FLEXSIM_FUNCTION_1(reassignnetnode);
+	DECLARE_FLEXSIM_FUNCTION_1(rackdrawfilledcell)
+	DECLARE_FLEXSIM_FUNCTION_1(rackdrawvirtualcontent)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetbaycontent)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetbayloc)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetbayofitem)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetbaysize)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetcellcontent)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetcellvar)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetcontenttable)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetitembybaylevel)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetlevelloc)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetlevelofitem)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetlevelsize)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetnrofbays)
+	DECLARE_FLEXSIM_FUNCTION_1(rackgetnroflevels)
+	DECLARE_FLEXSIM_FUNCTION_1(rackrecycleitem)
+	DECLARE_FLEXSIM_FUNCTION_1(rackrestoreitem)
+	DECLARE_FLEXSIM_FUNCTION_1(racksetcellcontent)
+	DECLARE_FLEXSIM_FUNCTION_1(racksetcellvar)
+	DECLARE_FLEXSIM_FUNCTION_1(rankfromnetnode)
+	DECLARE_FLEXSIM_FUNCTION_1(reassignnetnode)
 	DECLARE_FLEXSIM_FUNCTION_2(receiveitem_alias1, "receiveitem")
 	DECLARE_FLEXSIM_FUNCTION_3(receiveitem_alias2, "?releaseitem@@YANPAVTreeNode@@H@Z", "?releaseitem@@YANPEAVTreeNode@@H@Z")
-	DECLARE_FLEXSIM_FUNCTION_1(recycleitem);
-	DECLARE_FLEXSIM_FUNCTION_1(recyclenode);
+	DECLARE_FLEXSIM_FUNCTION_1(recycleitem)
+	DECLARE_FLEXSIM_FUNCTION_1(recyclenode)
 	DECLARE_FLEXSIM_FUNCTION_1(redirectnetworktraveler);
 	DECLARE_FLEXSIM_FUNCTION_2(releaseitem_alias1, "releaseitem")
 	DECLARE_FLEXSIM_FUNCTION_3(releaseitem_alias2, "?releaseitem@@YANPAVTreeNode@@H@Z", "?releaseitem@@YANPEAVTreeNode@@H@Z")
 	DECLARE_FLEXSIM_FUNCTION_1(reordertasks)
 	DECLARE_FLEXSIM_FUNCTION_1(requestoperators)
 	DECLARE_FLEXSIM_FUNCTION_1(rerankbesttask)
-	DECLARE_FLEXSIM_FUNCTION_1(resumeobjectalias);
-	DECLARE_FLEXSIM_FUNCTION_1(resumetransportsin);
-	DECLARE_FLEXSIM_FUNCTION_1(resumetransportsout);
-	DECLARE_FLEXSIM_FUNCTION_1(savebyname);
-	DECLARE_FLEXSIM_FUNCTION_1(savestoppedtransportin);
-	DECLARE_FLEXSIM_FUNCTION_1(savestoppedtransportout);
-	DECLARE_FLEXSIM_FUNCTION_1(senddelayedmessage);
+	DECLARE_FLEXSIM_FUNCTION_1(resumeobjectalias)
+	DECLARE_FLEXSIM_FUNCTION_1(resumetransportsin)
+	DECLARE_FLEXSIM_FUNCTION_1(resumetransportsout)
+	DECLARE_FLEXSIM_FUNCTION_1(savebyname)
+	DECLARE_FLEXSIM_FUNCTION_1(savestoppedtransportin)
+	DECLARE_FLEXSIM_FUNCTION_1(savestoppedtransportout)
+	DECLARE_FLEXSIM_FUNCTION_1(senddelayedmessage)
 	DECLARE_FLEXSIM_FUNCTION_1(setcollisioncheck)
-	DECLARE_FLEXSIM_FUNCTION_1(seteventtime);
-	DECLARE_FLEXSIM_FUNCTION_1(setiteminvolved);
-	DECLARE_FLEXSIM_FUNCTION_1(setitemsendto);
-	DECLARE_FLEXSIM_FUNCTION_1(setitemvar);
+	DECLARE_FLEXSIM_FUNCTION_1(seteventtime)
+	DECLARE_FLEXSIM_FUNCTION_1(setiteminvolved)
+	DECLARE_FLEXSIM_FUNCTION_1(setitemsendto)
+	DECLARE_FLEXSIM_FUNCTION_1(setitemvar)
 	DECLARE_FLEXSIM_FUNCTION_1(setpreempt)
 	DECLARE_FLEXSIM_FUNCTION_1(setpriority)
-	DECLARE_FLEXSIM_FUNCTION_1(setresetposition);
-	DECLARE_FLEXSIM_FUNCTION_1(stopobject);
-	DECLARE_FLEXSIM_FUNCTION_1(trafficcontrolinfo);
-	DECLARE_FLEXSIM_FUNCTION_1(updatelocations);
+	DECLARE_FLEXSIM_FUNCTION_1(setresetposition)
+	DECLARE_FLEXSIM_FUNCTION_1(stopobject)
+	DECLARE_FLEXSIM_FUNCTION_1(trafficcontrolinfo)
+	DECLARE_FLEXSIM_FUNCTION_1(updatelocations)
 	DECLARE_FLEXSIM_FUNCTION_2(dispatchcoordinatedtasksequencealias, "dispatchcoordinatedtasksequence")
 	DECLARE_FLEXSIM_FUNCTION_2(dispatchtasksequencealias, "dispatchtasksequence")
 	DECLARE_FLEXSIM_FUNCTION_2(gettreedrawpositionalias, "gettreedrawposition")

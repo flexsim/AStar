@@ -3,6 +3,12 @@
 #include "basicmacros.h"
 #include <string>
 
+#if _MSC_VER >= 1700
+#define EXPLICIT explicit
+#else
+#define EXPLICIT 
+#endif
+
 #ifndef FLEXSIM_VALUE
 #define FLEXSIM_VALUE
 	class FlexSimValue
@@ -157,12 +163,17 @@ public:
 		init(x);
 		return *this;
 	}
-	// when VS supports it, this should be explicit operator bool() {} (it's a C++0x standard but not supported as of VS2012)
-	operator bool() {return get() != 0;}
-	bool operator !() {return get() == 0;}
-	bool operator ==(RefType* other) {return get() == other;}
-	bool operator !=(RefType* other) {return get() != other;}
-	inline operator RefType*()
+	EXPLICIT operator bool() const {return get() != 0;}
+	bool operator !() const {return get() == 0;}
+	bool operator ==(const RefType* other) const {return get() == other;}
+	bool operator ==(const SafeRef<RefType>& other) const { return get() == other.get(); }
+	bool operator ==(RefType* other) const { return get() == other; }
+	bool operator ==(SafeRef<RefType>& other) const { return get() == other.get(); }
+	bool operator !=(const RefType* other) const { return get() != other; }
+	bool operator !=(const SafeRef<RefType>& other) const { return get() != other.get(); }
+	bool operator !=(RefType* other) const { return get() != other; }
+	bool operator !=(SafeRef<RefType>& other) const { return get() != other.get(); }
+	inline operator RefType*() const
 	{
 		try {
 			if(ref && ref->id == id)
@@ -170,8 +181,8 @@ public:
 		} catch (...) {;}
 		return 0;
 	}
-	inline RefType* get() {return operator RefType*();}
-	inline RefType* operator ->(){return operator RefType*();}
+	inline RefType* get() const {return operator RefType*();}
+	inline RefType* operator ->() const {return operator RefType*();}
 };
 
 
@@ -194,23 +205,25 @@ public:
 		return *this;
 	}
 	// when VS supports it, this should be explicit operator bool() {} (it's a C++0x standard but not supported as of VS2012)
-	operator bool() {return get() != 0;}
-	const bool operator !() const {return get() == 0;}
-	bool operator !() {return get() == 0;}
-	const bool operator ==(ObjType* other) const {return get() == other;}
-	bool operator ==(ObjType* other) {return get() == other;}
-	const bool operator !=(ObjType* other) const {return get() != other;}
-	bool operator !=(ObjType* other) {return get() != other;}
-	const ObjType* operator->() const {return get();};
-	ObjType* operator->() {return get();};
-	inline operator ObjType*()
+	EXPLICIT operator bool() const {return get() != 0;}
+	bool operator !() const {return get() == 0;}
+	bool operator ==(const ObjType* other) const { return get() == other; }
+	bool operator ==(const ObjRef<ObjType>& other) const { return get() == other.get(); }
+	bool operator ==(ObjType* other) const { return get() == other; }
+	bool operator ==(ObjRef<ObjType>& other) const { return get() == other.get(); }
+	bool operator !=(const ObjType* other) const { return get() != other; }
+	bool operator !=(const ObjRef<ObjType>& other) const { return get() != other.get(); }
+	bool operator !=(ObjType* other) const { return get() != other; }
+	bool operator !=(ObjRef<ObjType>& other) const { return get() != other.get(); }
+	ObjType* operator->() const { return get(); };
+	inline operator ObjType*() const
 	{
 		TreeNode* x = SafeRef::get();
 		if(x)
 			return &o(ObjType, x);
 		else return 0;
 	}
-	inline ObjType* get() {return operator ObjType*();}
+	inline ObjType* get() const { return operator ObjType*(); }
 };
 
 
@@ -285,28 +298,26 @@ public:
 #if _MSC_VER >= 1600
 
 template<class Test, class Return>
-FlexSimValue cpp_findmatch(int nr, Test test, Return returnFunc, bool reverse = false)
+FlexSimValue cpp_findmatch(size_t nr, Test test, Return returnFunc, bool reverse = false)
 {
-	int start, end, incr;
+	size_t start, end;
 	if (reverse) {
 		start = nr;
 		end = 0;
-		incr = -1;
 	} else {
 		start = 1;
 		end = nr + 1;
-		incr = 1;
 	}
-	for (int i = start; i != end; i+=incr)
+	for (size_t i = start; i != end; reverse ? i-- : i++)
 		if (test(i))
 			return returnFunc(i);
 	return 0;
 }
 
 template<class Test>
-int cpp_findmatch(int nr, Test test)
+size_t cpp_findmatch(size_t nr, Test test)
 {
-	for (int i = 1; i <= nr; i++)
+	for (size_t i = 1; i <= nr; i++)
 		if (test(i))
 			return i;
 	return 0;
@@ -438,43 +449,43 @@ void cpp_repeat(int nr, Do doIt)
 
 #define findmatch(...) \
 	PP_IIF(PP_EQUAL(2, VA_NARGS(__VA_ARGS__)), \
-		cpp_findmatch(VA_ARG_0(__VA_ARGS__), [&](int count) -> bool {return VA_ARG_1(__VA_ARGS__);}), \
+		cpp_findmatch(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> bool {return VA_ARG_1(__VA_ARGS__);}), \
 		PP_IIF(PP_EQUAL(3, VA_NARGS(__VA_ARGS__)), \
-			cpp_findmatch(VA_ARG_0(__VA_ARGS__), [&](int count) -> bool {return VA_ARG_1(__VA_ARGS__);}, \
-						[&](int count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}), \
-			cpp_findmatch(VA_ARG_0(__VA_ARGS__), [&](int count) -> bool {return VA_ARG_1(__VA_ARGS__);}, \
-						[&](int count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}, VA_ARG_3(__VA_ARGS__))))
+			cpp_findmatch(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> bool {return VA_ARG_1(__VA_ARGS__);}, \
+						[&](size_t count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}), \
+			cpp_findmatch(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> bool {return VA_ARG_1(__VA_ARGS__);}, \
+						[&](size_t count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}, VA_ARG_3(__VA_ARGS__))))
 
 
 #define findmax(...) \
 	PP_IIF(PP_EQUAL(2, VA_NARGS(__VA_ARGS__)), \
-		cpp_findmax(VA_ARG_0(__VA_ARGS__), [&](int count) -> double {return VA_ARG_1(__VA_ARGS__);}), \
+		cpp_findmax(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> double {return VA_ARG_1(__VA_ARGS__);}), \
 		PP_IIF(PP_EQUAL(3, VA_NARGS(__VA_ARGS__)), \
-			cpp_findmax(VA_ARG_0(__VA_ARGS__), [&](int count) -> double {return VA_ARG_1(__VA_ARGS__);}, \
-					[&](int count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}), \
+			cpp_findmax(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> double {return VA_ARG_1(__VA_ARGS__);}, \
+			[&](size_t count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__); }), \
 			PP_IIF(PP_EQUAL(4, VA_NARGS(__VA_ARGS__)), \
-				cpp_findmax(VA_ARG_0(__VA_ARGS__), [&](int count) -> double {return VA_ARG_1(__VA_ARGS__);}, \
-						[&](int count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}, \
-						[&](int count) -> bool {return VA_ARG_3(__VA_ARGS__);}), \
-				cpp_findmax(VA_ARG_0(__VA_ARGS__), [&](int count) -> double {return VA_ARG_1(__VA_ARGS__);}, \
-						[&](int count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}, \
-						[&](int count) -> bool {return VA_ARG_3(__VA_ARGS__);}, VA_ARG_4(__VA_ARGS)))))
+				cpp_findmax(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> double {return VA_ARG_1(__VA_ARGS__);}, \
+				[&](size_t count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__); }, \
+				[&](size_t count) -> bool {return VA_ARG_3(__VA_ARGS__); }), \
+				cpp_findmax(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> double {return VA_ARG_1(__VA_ARGS__);}, \
+				[&](size_t count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__); }, \
+				[&](size_t count) -> bool {return VA_ARG_3(__VA_ARGS__); }, VA_ARG_4(__VA_ARGS)))))
 
 #define findmin(...) \
 	PP_IIF(PP_EQUAL(2, VA_NARGS(__VA_ARGS__)), \
-		cpp_findmin(VA_ARG_0(__VA_ARGS__), [&](int count) -> double {return VA_ARG_1(__VA_ARGS__);}), \
+		cpp_findmin(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> double {return VA_ARG_1(__VA_ARGS__);}), \
 		PP_IIF(PP_EQUAL(3, VA_NARGS(__VA_ARGS__)), \
-			cpp_findmin(VA_ARG_0(__VA_ARGS__), [&](int count) -> double {return VA_ARG_1(__VA_ARGS__);}, \
-					[&](int count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}), \
+			cpp_findmin(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> double {return VA_ARG_1(__VA_ARGS__);}, \
+			[&](size_t count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__); }), \
 			PP_IIF(PP_EQUAL(4, VA_NARGS(__VA_ARGS__)), \
-				cpp_findmin(VA_ARG_0(__VA_ARGS__), [&](int count) -> double {return VA_ARG_1(__VA_ARGS__);}, \
-						[&](int count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}, \
-						[&](int count) -> bool {return VA_ARG_3(__VA_ARGS__);}), \
-				cpp_findmin(VA_ARG_0(__VA_ARGS__), [&](int count) -> double {return VA_ARG_1(__VA_ARGS__);}, \
-						[&](int count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}, \
-						[&](int count) -> bool {return VA_ARG_3(__VA_ARGS__);}, VA_ARG_4(__VA_ARGS)))))
+				cpp_findmin(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> double {return VA_ARG_1(__VA_ARGS__);}, \
+				[&](size_t count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__); }, \
+				[&](size_t count) -> bool {return VA_ARG_3(__VA_ARGS__); }), \
+				cpp_findmin(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> double {return VA_ARG_1(__VA_ARGS__);}, \
+				[&](size_t count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__); }, \
+				[&](size_t count) -> bool {return VA_ARG_3(__VA_ARGS__); }, VA_ARG_4(__VA_ARGS)))))
 
-#define repeat(nr, doIt) cpp_repeat(nr, [&](int count) -> {doIt;});
+#define repeat(nr, doIt) cpp_repeat(nr, [&](size_t count) -> {doIt;});
 
 #ifndef FLEXSIM_ENGINE_COMPILE
 #define query(...) \
@@ -561,8 +572,8 @@ void cpp_repeat(int nr, Do doIt)
 /// where the other side of the coupling is created in the "stored" attribute
 /// of the associated object, and so on. 
 /// 
-/// So, below are the basic defined ones that you can use out of the box. See the documeation of 
-/// each on for more information
+/// So, below are the basic defined ones that you can use out of the box. See the documentation of 
+/// each one for more information
 /// NodeListArray<YourClass>::ObjPtrType
 /// NodeListArray<YourClass>::CouplingSdtPtrType
 /// NodeListArray<YourClass>::ObjStoredAttCouplingType
@@ -608,15 +619,15 @@ public:
 		return *this;
 	}
 	
-	int size() {return content(parent);}
+	int size() const{return content(parent);}
 
-	T* operator[](int index)
+	T* operator[](int index) const
 	{
 		_ASSERTE(index >= 0 && index < size());
 		treenode subNode = rank(parent, index + 1);
 		return Getter(subNode);
 	}
-	T* operator[](const char* name)
+	T* operator[](const char* name) const
 	{
 		treenode x = node(name, parent);
 		if(objectexists(x))
@@ -649,7 +660,7 @@ public:
 	void clear(){clearcontents(parent);}
 	void swap(int index1, int index2){swapnoderanks(parent, index2 + 1, index1 + 1);}
 	void setRank(int fromIndex, int toIndex){setrank(rank(parent, fromIndex + 1), toIndex + 1);}
-	int find(T* x)
+	int find(T* x) const
 	{
 		int tmpSize = size();
 		for(int i = 0; i < tmpSize; i++) 
@@ -956,13 +967,13 @@ class OtherType {
 		add(obj, position.curIndex);
 		return position;
 	}
-	T* back()
+	T* back() const
 	{
 		if (size() == 0)
 			return 0;
 		return Getter(last(parent));
 	}
-	T* front()
+	T* front() const
 	{
 		if (size() == 0)
 			return 0;

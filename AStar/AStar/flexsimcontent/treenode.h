@@ -132,7 +132,9 @@ enum TreeSaveFlags {
 	DoNotPreserveOrphaned = 0x2
 };
 inline TreeSaveFlags operator | (TreeSaveFlags a, TreeSaveFlags b)
-{return static_cast<TreeSaveFlags>(static_cast<int>(a) | static_cast<int>(b));}
+{
+	return static_cast<TreeSaveFlags>(static_cast<__int64>(a) | static_cast<__int64>(b));
+}
 
 struct mapcmp
 {
@@ -162,7 +164,7 @@ class TreeNode
 {
   //DATA MEMBERS ARE MANUALLY ALIGNED (NO PADDING)
 private:
-	long unsigned int listsize;                   // (4 bytes)
+	unsigned int listsize;                        // (4 bytes)
 	TreeNode ** array;                            // (4 or 8 bytes)
 	TreeNode ** arraybase;                        // (4 or 8 bytes)
 public:
@@ -267,7 +269,7 @@ public:
 
 	// checking
   
-	int isvalidindex(long unsigned int i);
+	int isvalidindex(size_t i);
 	inline bool checkParity(){return parity==(unsigned short)(size_t)this;}//true if valid
 	TreeWin* treewindow();
 	// creation
@@ -297,7 +299,7 @@ public:
 	int remove(TreeNode*);
 	int destroy(TreeNode*);
 	int nullify(TreeNode*);
-	int swap(int index1, int index2);
+	int swap(size_t index1, size_t index2);
 	int validatelist();
   
 	int insertbranch();
@@ -319,7 +321,7 @@ public:
 	typedef int (TreeNode::*_writelabel)(const char *);
 	static _writelabel writelabel_wrapper;
 
-	int writelabel(const char *buffer, unsigned int size);
+	int writelabel(const char *buffer, size_t size);
 
 	// undoable method pointers for setting number data
 	void setdatafloat_default(double*);
@@ -351,7 +353,7 @@ public:
 	#define F safefind
 	TreeNode * safefindrecursive(const char *);	
 	#define FR safefindrecursive
-	inline TreeNode * safestep(int);		
+	inline TreeNode * safestep(size_t);		
 	#define S safestep
 	TreeNode * safenext();			
 	#define N safenext
@@ -512,7 +514,7 @@ private:
 	{
 		TreeNode* couplingNode;
 		TreeNode* originalOwner;
-		int rank;
+		size_t rank;
 		OrphanType orphanType;
 	};
 	static std::vector<OrphanedCoupling> orphanedCouplings;
@@ -520,10 +522,10 @@ private:
 	struct couplingrecord
 	{
 		TreeNode** froms;
-		int nrfroms;
-		int maxnrfroms;
+		size_t nrfroms;
+		size_t maxnrfroms;
 		TreeNode* to;
-		int resolved;
+		bool resolved;
 		double (* dupedmemberfunction) (FLEXSIMINTERFACE); 
 	};
 	// the following nodes are for saveing a tree
@@ -539,11 +541,11 @@ private:
   
 	static MSXML2::IXMLDOMDocumentPtr filemapdoc;
 
-	int pointerize_v2(TreeNode ** links, long unsigned int population);
+	int pointerize_v2(TreeNode ** links, size_t population);
 	static std::vector<NodeRef> pointerizationpointers;
 	static std::vector<NodeRef> pointerizationpointedtos;
 	static int xmlpointerizationcounter;
-	int serializepointers(TreeNode ** links,long unsigned int * index);
+	int serializepointers(TreeNode ** links, size_t * index);
 	int pointerize();
   
  public:
@@ -573,7 +575,7 @@ private:
 	void disownByteBlock(ByteBlock * toData);
 	void reownByteBlock();
 
-	int datatostring(char *datastring, int maxsize, int precision = -1);
+	int datatostring(char *datastring, size_t maxsize, int precision = -1);
 	int stringtodata(char *datastring);
 	int isinobject();
   

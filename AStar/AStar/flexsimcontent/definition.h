@@ -41,6 +41,7 @@ int bindflexsimfunctions()
 	
 // Make DECLARATIONTYPE FLEXSIM_BINDING_PHASE and include flexsimfuncs.h, which sets the function pointers to GetProcAddress(...)
 #pragma push_macro("DECLARATIONTYPE")
+#undef DECLARATIONTYPE
 #define DECLARATIONTYPE FLEXSIM_BINDING_PHASE
 #include "FlexsimFuncs.h"
 #pragma pop_macro("DECLARATIONTYPE")
@@ -225,11 +226,12 @@ char* ByteBlock::getStaticBlock()
 {
 	return bbgetstaticblock();
 }
+
 void ByteBlock::write(const char *source) {byteblock_write1(this, source);}
-void ByteBlock::write(const char *source, long unsigned intsize, int nullterminate) { byteblock_write2(this, source, intsize, nullterminate); }
+void ByteBlock::write(const char *source, size_t intsize, bool nullterminate) { byteblock_write2(this, source, intsize, nullterminate); }
 void ByteBlock::append(const char* source) { return byteblock_append(this, source); }
-bool ByteBlock::setSize(long unsigned int size) { return byteblock_setsize(this, size); }
-long unsigned int ByteBlock::getSize() { return byteblock_getsize(this); }
+bool ByteBlock::setSize(size_t size) { return byteblock_setsize(this, size); }
+unsigned int ByteBlock::getSize() { return byteblock_getsize(this); }
 char * ByteBlock::getBuffer() { return byteblock_getbuffer(this); }
 
 void FlexSimEvent::execute()
@@ -253,6 +255,8 @@ void Mesh::cleanup(bool isDestructor)
 	{ mesh_cleanup(this, isDestructor); }
 void Mesh::defineVertexAttribs(unsigned int  attribId, float* verts)
 	{ mesh_definevertexattribs(this, attribId, verts); }
+unsigned int Mesh::addCustomVertexAttrib(const char* name, int componentsPerVertex, GLenum type)
+	{ return mesh_addcustomvertexattrib(this, name, componentsPerVertex, type); }
 unsigned int Mesh::setVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* vert)
 	{ return mesh_setvertexattrib(this, vertIndex, attribId, vert); }
 void Mesh::setMeshAttrib(unsigned int attribId, float* vert)

@@ -43,6 +43,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 
 // Here I do DECLARATIONTYPE FLEXSIM_DEFINITION_PHASE, which allocates memory space for the flexsim function pointers
 // then include flexsimfuncs.h
+#undef DECLARATIONTYPE
 #define DECLARATIONTYPE FLEXSIM_DEFINITION_PHASE 
 #include "FlexsimFuncs.h"
 
