@@ -87,7 +87,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;flexsimcontent\flexsimcontent_x86.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;flexsimcontent\flexsimcontent_x86.lib;flexsimcontent\flexsim_x86.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <OutputFile>$(OutDir)$(TargetName)_x86$(TargetExt)</OutputFile>
     </Link>
@@ -109,7 +109,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;flexsimcontent\flexsimcontent.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;flexsimcontent\flexsimcontent.lib;flexsimcontent\flexsim.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <BuildLog>
@@ -134,7 +134,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;flexsimcontent\flexsimcontent_x86.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;flexsimcontent\flexsimcontent_x86.lib;flexsimcontent\flexsim_x86.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <OutputFile>$(OutDir)$(TargetName)_x86$(TargetExt)</OutputFile>
     </Link>
@@ -160,7 +160,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;flexsimcontent\flexsimcontent.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;flexsimcontent\flexsimcontent.lib;flexsimcontent\flexsim.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <BuildLog>
@@ -181,7 +181,6 @@
     <ClInclude Include="AStar.h" />
     <ClInclude Include="flexsimcontent\all.h" />
     <ClInclude Include="flexsimcontent\allobjects.h" />
-    <ClInclude Include="flexsimcontent\array.h" />
     <ClInclude Include="flexsimcontent\attributes.h" />
     <ClInclude Include="flexsimcontent\attributes_table.h" />
     <ClInclude Include="flexsimcontent\basicclasses.h" />
@@ -189,6 +188,7 @@
     <ClInclude Include="flexsimcontent\basicutils.h" />
     <ClInclude Include="flexsimcontent\byteblock.h" />
     <ClInclude Include="flexsimcontent\couplingdatatype.h" />
+    <ClInclude Include="flexsimcontent\datatypes.h" />
     <ClInclude Include="flexsimcontent\declaration.h" />
     <ClInclude Include="flexsimcontent\definition.h" />
     <ClInclude Include="flexsimcontent\FlexsimDefs.h" />

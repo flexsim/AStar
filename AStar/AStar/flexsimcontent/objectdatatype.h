@@ -6,6 +6,7 @@
 
 //class TreeNode; 
 
+#include "byteblock.h"
 #include "treenode.h"
 #include "hashtable.h"
 #include "simpledatatype.h"
@@ -145,9 +146,9 @@ public:
 
 	void operator delete (void* p){flexsimfree(p);}
 
-	void initialize();
+	engine_export void initialize();
 	ObjectDataType(){initialize();}
-	void cleanup();
+	engine_export void cleanup();
 	virtual ~ObjectDataType(){cleanup();}
 	int resetbasetable();
 
@@ -243,6 +244,10 @@ public:
 	void bindVariableByName(const char* name, ByteBlock& val);
 	void bindVariableByName(const char* name, NodeRef& val);
 	#define bindVariable(x) bindVariableByName(#x, x)
+
+	engine_export virtual TreeNode* getObjectTree() override;
+	engine_export virtual TreeNode* getLabelNode(const char* labelName, bool assert) override;
+	engine_export virtual TreeNode* getLabelNode(int labelRank, bool assert) override;
 };
 
 int bindattributestree(ObjectDataType *, TreeNode * client);

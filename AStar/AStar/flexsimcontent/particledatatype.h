@@ -8,8 +8,9 @@
 //class TreeNode; 
 
 #include "treenode.h"
+#include "simpledatatype.h"
 
-class ParticleDataType
+class ParticleDataType : public SimpleDataType
 {
 public:
   
@@ -35,8 +36,6 @@ public:
 		type(0)
 	{}
 
-
-	TreeNode * holder;
 	int version;
 
 	int shapeindex;

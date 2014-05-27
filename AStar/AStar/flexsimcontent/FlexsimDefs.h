@@ -44,7 +44,6 @@ using std::string;
 	#include "basicmacros.h"
 	#include "basicutils.h"
 	#include "treenode.h"
-	#include "array.h"
 
 	extern double (*_parval)(int, CallPoint *);
 

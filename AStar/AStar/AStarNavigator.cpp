@@ -1352,13 +1352,13 @@ void AStarNavigator::drawMembers(float z)
 		if (rotation != 0 && rotation % 180 != 0 && rotation % 90 == 0) {
 			x = outputVector[0] - centery;
 			y = outputVector[1] + centerx;
-			width = spatialsy(theNode)->dataasdouble[0];
-			height = spatialsx(theNode)->dataasdouble[0];
+			width = spatialsy(theNode)->safedatafloat()[0];
+			height = spatialsx(theNode)->safedatafloat()[0];
 		} else {
 			x = outputVector[0] - centerx;
 			y = outputVector[1] + centery;
-			width = spatialsx(theNode)->dataasdouble[0];
-			height = spatialsy(theNode)->dataasdouble[0];
+			width = spatialsx(theNode)->safedatafloat()[0];
+			height = spatialsy(theNode)->safedatafloat()[0];
 		}
 
 		float topLeft[3] = {x, y, z};
@@ -1402,8 +1402,8 @@ void AStarNavigator::drawMembers(float z)
 		float x = outputVector[0];
 		float y = outputVector[1];
 
-		float width = spatialsx(traveler)->dataasdouble[0];
-		float height = spatialsy(traveler)->dataasdouble[0];
+		float width = spatialsx(traveler)->safedatafloat()[0];
+		float height = spatialsy(traveler)->safedatafloat()[0];
 		float radius = sqrt(width * width / 4.0 + height * height / 4.0);
 		float center[3] = {x, y, z};
 
@@ -1442,8 +1442,8 @@ void AStarNavigator::drawMembers(float z)
 		float x = outputVector[0];
 		float y = outputVector[1];
 
-		float width = spatialsx(traveler)->dataasdouble[0];
-		float height = spatialsy(traveler)->dataasdouble[0];
+		float width = spatialsx(traveler)->safedatafloat()[0];
+		float height = spatialsy(traveler)->safedatafloat()[0];
 		float radius = sqrt(width * width / 4.0 + height * height / 4.0);
 		float center[3] = {x, y, z};
 

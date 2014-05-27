@@ -1701,6 +1701,19 @@
 #define PARAM_TYPE_NODE 2
 #define PARAM_TYPE_STRING 3
 
+// shader pass macros
+#define SHADERTYPE_DEFAULT 0
+#define SHADERTYPE_RENDER_SHADOWS 1
+#define SHADERTYPE_BLUR 2
+#define SHADERTYPE_SUM_AREA_TABLE 3
+
+#define SHADOWTYPE_NONE 0
+#define SHADOWTYPE_HARD 1
+#define SHADOWTYPE_VSM 2
+#define SHADOWTYPE_PCSS 3
+#define SHADOWTYPE_PCSS_SAVSM 4
+
+
 
 
 // Global Variables

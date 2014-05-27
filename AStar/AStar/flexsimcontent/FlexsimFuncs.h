@@ -296,7 +296,7 @@ THE SOFTWARE.
 	typedef int          (*_cppsettitletoken)(treenode thetext, int index, ByteBlock * resultblock, char * newtext);
 	typedef int          (*_cppsettoken)(treenode thetext, int index, ByteBlock * resultblock, char * newtext);
 #if _MSC_VER >= 1600
-	typedef std::function<double ()> QueryCallback;
+	typedef std::function<Variant ()> QueryCallback;
 	typedef int          (*_cpp_queryalias)(const char* queryStr, QueryCallback& p1,  QueryCallback& p2, QueryCallback& p3,  QueryCallback& p4,
 									QueryCallback& p5,  QueryCallback& p6, QueryCallback& p7,  QueryCallback& p8, QueryCallback& p9);
 #endif
@@ -1270,7 +1270,7 @@ THE SOFTWARE.
 		typedef void (*_sql_buildquery)(TreeNode* queryNode, char* query);
 		typedef int (*_sql_doquery)(TreeNode* queryNode, bool continueQuery);
 		typedef int (*_sql_continuequery)(TreeNode* queryNode);
-		typedef void (*_sql_setdelegate)(SqlDelegate* d);
+		typedef void(*_sql_setdelegate)(SqlDelegate* d);
 		
 	#else
 		typedef double (*_transportincompletealias)(treenode object, treenode item, int portnumber, treenode transporter);
@@ -2253,6 +2253,8 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_doquery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_continuequery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_setdelegate)
+
+
 	
 /*** FUNCTIONS ONLY REQUIRED FOR DLL PROJECT***/
 #else

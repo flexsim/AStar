@@ -2,6 +2,9 @@
 #include "basicclasses.h"
 #include "basicmacros.h"
 #include <string>
+#ifdef FLEXSIM_ENGINE_COMPILE
+	#include <excpt.h>
+#endif
 
 #if _MSC_VER >= 1700
 #define EXPLICIT explicit
@@ -175,10 +178,11 @@ public:
 	bool operator !=(SafeRef<RefType>& other) const { return get() != other.get(); }
 	inline operator RefType*() const
 	{
-		try {
+		__try {// c++ doesn't throw an exception for an access violation, so I catch it with __try __except
+			// alternatively, I could implement an access violation handler in the engine using the signal() method.
 			if(ref && ref->id == id)
 				return ref;
-		} catch (...) {;}
+		} __except (EXCEPTION_EXECUTE_HANDLER) {}
 		return 0;
 	}
 	inline RefType* get() const {return operator RefType*();}
@@ -691,7 +695,7 @@ public:
 	static void SubNodeCouplingAdder (treenode x, TreeNode* obj) {nodejoin(x, nodeadddata(nodeinsertinto(obj), DATA_POINTERCOUPLING));}
 	static T* SdtSubNodeCouplingGetter (treenode x)
 	{
-		treenode partner = x->datatype == DATA_POINTERCOUPLING ? x->dataascoupling->partner() : 0;  
+		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner() : 0;  
 		if (partner)
 			return &o(T, up(partner));
 		return 0;
@@ -704,7 +708,7 @@ public:
 
 	static T* SdtSubSubNodeCouplingGetter (treenode x)
 	{
-		treenode partner = x->datatype == DATA_POINTERCOUPLING ? x->dataascoupling->partner() : 0;  
+		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner() : 0;
 		if (partner)
 			return &o(T, up(up(partner)));
 		return 0;
@@ -727,7 +731,7 @@ public:
 
 	static T* ObjPtrGetter(treenode x)
 	{
-		treenode partner = x->datatype == DATA_POINTERCOUPLING ? x->dataascoupling->partner() : 0;   
+		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->object<CouplingDataType>()->partner() : 0;
 		if (partner)
 			return &o(T, partner);
 		return 0;
@@ -745,7 +749,7 @@ public:
 
 	static T* ObjCouplingGetter (treenode x)
 	{
-		treenode partner = x->datatype == DATA_POINTERCOUPLING ? x->dataascoupling->partner() : 0;  
+		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->object<CouplingDataType>()->partner() : 0;
 		if (partner)
 			return &o(T, ownerobject(partner));
 		return 0;

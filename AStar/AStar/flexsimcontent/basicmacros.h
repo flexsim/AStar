@@ -86,7 +86,8 @@ n21,n22,n23,n24,n25,n26,n27,n28,n29,n30
 # define parametersinterface CallPoint * callpoint
 # define parameters callpoint
 
-#define o(type,instance) (((type*)(instance->data))[0])
+#define o(type,instance) (*(instance->object<type>()))
+#define objectAs(T) object<T>()
 
 #define CppStart 
 #define CppEnd 
@@ -220,6 +221,38 @@ inline double ptrtodouble(void* x)
 {
 //	return ((double*)&x)[0];
 	return (double)(size_t)x;
+}
+
+#ifdef FLEXSIM_ENGINE_COMPILE
+	#define engine_export __declspec(dllexport)
+	#define engine_private public
+#else
+	#define engine_export
+	#define engine_private private
+#endif
+
+#if defined FLEXSIM_ENGINE_COMPILE || defined COMPILING_FLEXSIM_CONTENT
+	#define content_private public
+#else
+	#define content_private private
+#endif
+
+#if defined FLEXSIM_ENGINE_COMPILE || defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
+#define module_private public
+#else
+#define module_private private
+#endif
+
+template <class Dest, class Src>
+Dest force_cast(Src src)
+{
+	union
+	{
+		Dest d;
+		Src s;
+	} convertor;
+	convertor.s = src;
+	return convertor.d;
 }
 
 #endif

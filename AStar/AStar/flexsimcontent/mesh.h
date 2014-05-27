@@ -330,8 +330,9 @@ public:
 	/// <summary>	Draws the indexed mesh. </summary>
 	/// <remarks>	Anthony.johnson, 8/15/2013. </remarks>
 	/// <param name="drawMode">	The draw mode. </param>
-	/// <param name="start">   	(Optional) The start index within the index buffer. </param>
-	/// <param name="count">   	(Optional) The number of vertices. </param>
+	/// <param name="vertOffset">	(Optional) The vertex offset to start at. If not provided, the whole mesh will be drawn.</param>
+	/// <param name="vertCount"> 	(Optional) The number of vertices to dray. </param>
+	/// <param name="vertStride">	(Optional) The vertex stride, i.e if 2, it will read every other vertex. </param>
 	virtual void draw(int drawMode, int vertOffset = 0, int vertCount = 0, int vertStride = 0) override;
 	void cleanupIndexBuffer(bool isDestructor = false);
 	unsigned int vertexForIndex(unsigned int index);

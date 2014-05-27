@@ -61,6 +61,10 @@ public:
 	virtual void bind(){}
 	void bind(int bindMode);
 	virtual char* toString(int verbose);
+	virtual TreeNode* getObjectTree() { return 0; }
+	virtual TreeNode* getLabelNode(const char* labelName, bool assert) { return 0; }
+	virtual TreeNode* getLabelNode(int labelRank, bool assert) { return 0; }
+	virtual Variant evaluate(VariantParams& params) { return Variant(); }
 	char* defaultToString(int verbose);
 	void* operator new (size_t size)
 	{
