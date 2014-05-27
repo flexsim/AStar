@@ -42,7 +42,6 @@
         </Component>
         <Component Id="Notes" Guid="C3AD8667-83C8-4850-A7AB-95ED387CB061">
           <File Name="ReleaseNotes.txt" />
-          <File Name="AStarHelp.pdf" />
         </Component>
       </Directory>
     </Directory>
