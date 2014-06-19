@@ -25,7 +25,7 @@ public:
 	// value
 	engine_export Variant __getValue();
 	engine_export TreeNode* __setValue(const Variant&);
-	__declspec(property(get = getValue, put = setValue)) Variant value;
+	__declspec(property(get = __getValue, put = __setValue)) Variant value;
 
 	// name
 	engine_export FlexSimPrivateTypes::String __getName();

@@ -80,7 +80,7 @@ private:
 	// union member classes: a method to get around Visual Studio's non-compliance with
 	// c++11: declare a super-class that has all the same data but no constructors, and 
 	// use that super class as the member of the union, then down-cast as needed to get
-	// to the method's, constructors, destructors, etc.
+	// to the methods, constructors, destructors, etc.
 	class StringUnionMember : public NewDelete
 	{
 	protected:
@@ -111,6 +111,7 @@ private:
 		}
 		explicit String() { buffer = 0; length = 0; }
 		explicit String(const char* str) { construct(str, strlen(str)); }
+		explicit String(const char* str, bool isWeak) { buffer = const_cast<char*>(str); length = -1; }
 		String(const std::string& str) { construct(str.c_str(), str.length()); }
 		String(const String& str) { construct(str.buffer, str.length); }
 		String(String&& str) { move(str); }
@@ -141,10 +142,10 @@ private:
 			return *this;
 		}
 
-		operator const char*() { return buffer; }
+		operator const char*() const { return buffer; }
 		const char* c_str() const { return buffer; }
-		size_t getLength() const { return length; }
-		operator std::string() { return std::string(buffer, length); }
+		size_t getLength() const { return length != -1 ? length : strlen(buffer); }
+		operator std::string() const { return std::string(buffer, length); }
 
 		inline bool operator == (const std::string& other) const { return strcmp(other.c_str(), buffer) == 0; }
 		inline bool operator == (const char* other) const { return strcmp(other, buffer) == 0; }
@@ -455,7 +456,7 @@ public:
 	VariantType type;
 private:
 	// a weak str ptr is one that's not owned by me, so I shouldn't deallocate it
-	static const unsigned char WEAK_STR_PTR = 0x1;
+	static const unsigned char WEAK_STR = 0x1;
 	unsigned char flags;
 	short reserved;// reserved for future use
 	union
@@ -502,14 +503,18 @@ private:
 public:
 	// constructors
 	Variant() : type(VariantType::Null), asInt(0), flags(0), reserved(0) {}
-	Variant(const Variant& copyFrom) : flags(0), reserved(0)
+	Variant(const Variant& copyFrom) : flags(copyFrom.flags), reserved(0)
 	{
 		type = copyFrom.type;
 		switch (type) {
 			case VariantType::Int: asInt = copyFrom.asInt; break;
 			case VariantType::Double: asDouble = copyFrom.asDouble; break;
 			case VariantType::TreeNode: asTreeNode = copyFrom.asTreeNode; break;
-			case VariantType::String: ::new (&asString()) FlexSimPrivateTypes::String(copyFrom.asString()); break;
+			case VariantType::String: 
+				if (copyFrom.flags & WEAK_STR)
+					::new (&asString()) FlexSimPrivateTypes::String(copyFrom.asString(), true);
+				else ::new (&asString()) FlexSimPrivateTypes::String(copyFrom.asString());
+				break;
 
 			case VariantType::IntArray: ::new (&asIntArray()) intarray(copyFrom.asIntArray()); break;
 			case VariantType::DoubleArray: ::new (&asDoubleArray()) doublearray(copyFrom.asDoubleArray()); break;
@@ -518,14 +523,14 @@ public:
 			default: asInt = 0; break;
 		}
 	}
-	Variant(Variant&& from) : flags(0), reserved(0)
+	Variant(Variant&& from) : flags(from.flags), reserved(0)
 	{
 		type = from.type;
 		switch (type) {
 			case VariantType::Int: asInt = from.asInt; break;
 			case VariantType::Double: asDouble = from.asDouble; break;
 			case VariantType::TreeNode: asTreeNode = from.asTreeNode; break;
-			case VariantType::String:  ::new (&asString()) FlexSimPrivateTypes::String(std::move(from.asString())); break;
+			case VariantType::String: ::new (&asString()) FlexSimPrivateTypes::String(std::move(from.asString())); break;
 			case VariantType::IntArray: 
 				::new (&asIntArray()) intarray(std::move(from.asIntArray())); 
 				from.asIntArray().~intarray(); break;
@@ -544,6 +549,7 @@ public:
 		from.asInt = 0;
 	}
 
+	Variant(bool val) : type(VariantType::Int), asInt(val), flags(0), reserved(0) {}
 	Variant(int val) : type(VariantType::Int), asInt(val), flags(0), reserved(0) {}
 	Variant(double val) : type(VariantType::Double), asDouble(val), flags(0), reserved(0) {}
 	Variant(TreeNode* val) : type(VariantType::TreeNode), asTreeNode(val), flags(0), reserved(0) {}
@@ -576,12 +582,19 @@ public:
 		::new (&asStringArray()) stringarray(val);
 	}
 private:
+	Variant(const char* val, unsigned char flags) : type(VariantType::String), flags(flags), reserved(0)
+	{
+		::new (&asString()) FlexSimPrivateTypes::String(val, true);
+	}
 	void cleanup()
 	{
 		switch (type) {
 			case VariantType::Null: case VariantType::TreeNode: case VariantType::Double: case VariantType::Int:
 				break;
-			case VariantType::String: asString().~String(); break;
+			case VariantType::String: 
+				if (!(flags & WEAK_STR))
+					asString().~String(); 
+				break;
 			case VariantType::IntArray: asIntArray().~intarray(); break;
 			case VariantType::DoubleArray: asDoubleArray().~doublearray(); break;
 			case VariantType::TreeNodeArray: asTreeNodeArray().~treenodearray(); break;
@@ -730,6 +743,120 @@ public:
 			default: return stringarray(0);
 		}
 	}
+
+	static Variant createWeakStr(const char* str)
+	{
+		return Variant(str, WEAK_STR);
+	}
+
+	bool isNumberType() const { return type == VariantType::Double || type == VariantType::Int; }
+	EXPLICIT operator bool() const
+	{
+		switch (type) {
+			case VariantType::Int: return asInt != 0;
+			case VariantType::Double: return asDouble != 0;
+			case VariantType::TreeNode: return asTreeNode != 0;
+			case VariantType::Null: return false;
+			default: return true;
+		}
+	}
+	bool operator < (const Variant& other) const
+	{
+		bool isNumType = isNumberType();
+		bool isOtherNumType = other.isNumberType();
+		if (isNumType != isOtherNumType)
+			return false;
+		if (isNumType)
+			return operator double() < other.operator double();
+		else if (type == VariantType::String) {
+			if (other.type != VariantType::String)
+				return false;
+			return strcmp(asString(), other.asString()) < 0;
+		}
+		return false;
+	}
+	bool operator <= (const Variant& other) const
+	{
+		return !operator > (other);
+	}
+	bool operator > (const Variant& other) const
+	{
+		bool isNumType = isNumberType();
+		bool isOtherNumType = other.isNumberType();
+		if (isNumType != isOtherNumType)
+			return false;
+		if (isNumType)
+			return operator double() > other.operator double();
+		else if (type == VariantType::String) {
+			if (other.type != VariantType::String)
+				return false;
+			return strcmp(asString(), other.asString()) > 0;
+		}
+		return false;
+	}
+	bool operator >= (const Variant& other) const
+	{
+		return !operator < (other);
+	}
+	bool operator == (const Variant& other) const
+	{
+		bool isNumType = isNumberType();
+		bool isOtherNumType = other.isNumberType();
+		if (isNumType != isOtherNumType)
+			return false;
+		if (isNumType)
+			return operator double() == other.operator double();
+		else if (type == VariantType::String) {
+			if (other.type != VariantType::String)
+				return false;
+			return strcmp(asString(), other.asString()) == 0;
+		}
+		return false;
+	}
+	bool operator != (const Variant& other) const
+	{
+		return !operator == (other);
+	}
+	Variant operator -() const
+	{
+		switch (type) {
+			case VariantType::Int: return -asInt;
+			case VariantType::Double: return -asDouble;
+			default: return Variant();
+		}
+	}
+
+#define COMPARE_NUMBER(op, numberType) \
+	bool operator op (numberType& theNum) const \
+	{\
+		if (type == VariantType::Double) return asDouble op theNum;\
+		else if (type == VariantType::Int) return asInt op theNum;\
+		return false;\
+	}\
+
+#define COMPARE_NUMBER_TYPES(op)\
+	COMPARE_NUMBER(op, float)\
+	COMPARE_NUMBER(op, double)\
+	COMPARE_NUMBER(op, char)\
+	COMPARE_NUMBER(op, short)\
+	COMPARE_NUMBER(op, int)\
+	COMPARE_NUMBER(op, __int64)\
+	COMPARE_NUMBER(op, unsigned char)\
+	COMPARE_NUMBER(op, unsigned short)\
+	COMPARE_NUMBER(op, unsigned int)\
+	COMPARE_NUMBER(op, unsigned __int64)
+
+	COMPARE_NUMBER_TYPES(<)
+	COMPARE_NUMBER_TYPES(>)
+	COMPARE_NUMBER_TYPES(<= )
+	COMPARE_NUMBER_TYPES(>= )
+	COMPARE_NUMBER_TYPES(== )
+
+
+
+
+
+
 #ifdef FLEXSIM_ENGINE_COMPILE
 	double forceLegacyDouble() const
 	{
@@ -741,10 +868,12 @@ public:
 			default: return 0;
 		}
 	}
-#endif
+
 	// only return my pointer if it's a non-owned cstr, i.e. it won't
 	// go out of scope if I'm destructed.
-	//operator const char*() const { return type == VariantType::String ? asString->operator const char*() : 0; }
+	operator const char*() const { return (type == VariantType::String && (flags & WEAK_STR)) ? asString().operator const char*() : 0; }
+
+#endif
 };
 
 class VariantParams

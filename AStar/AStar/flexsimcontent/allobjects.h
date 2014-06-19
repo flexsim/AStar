@@ -477,6 +477,7 @@
 #define VISUALOBJECT_MODEL  5
 #define VISUALOBJECT_TEXT  6
 #define VISUALOBJECT_SLIDE  7
+#define VISUALOBJECT_FLOOR  8
 
 // Constants group: EDGE
 #define EDGE_NOCONNECTION  1
@@ -1701,6 +1702,9 @@
 #define PARAM_TYPE_NODE 2
 #define PARAM_TYPE_STRING 3
 
+#define FGL_INFO_SHADERTYPE 1
+#define FGL_INFO_SHADOWTYPE 2
+
 // shader pass macros
 #define SHADERTYPE_DEFAULT 0
 #define SHADERTYPE_RENDER_SHADOWS 1
@@ -2058,6 +2062,17 @@ public:
 	Vec4Generic(OtherNumber* other) : x(other[0]), y(other[1]), z(other[2]), w(other[3]) {}
 	Vec4Generic(Number x, Number y, Number z, Number w) : x(x), y(y), z(z), w(w) {}
 	Vec4Generic() {}
+	#if _MSC_VER >= 1700
+	template <class OtherNumber>
+	Vec4Generic(std::initializer_list<OtherNumber> list) 
+	{
+		int index = 0;
+		for (auto x = list.begin(); x != list.end() && index < 4; x++, index++)
+			this->operator [] (index) = (Number)*x;
+	}
+	template <class OtherNumber>
+	Vec4Generic& operator = (std::initializer_list<OtherNumber> list) { ::new (this) (list); return *this; }
+	#endif
 
 	operator Number* () {return loc;}
 	const Vec4Generic operator + (const Vec4Generic& a) const {return Vec4Generic(x + a.x, y + a.y, z + a.z, w + a.w);}
@@ -2146,6 +2161,17 @@ public:
 	Vec3Generic(OtherNumber* other) : x(other[0]), y(other[1]), z(other[2]) {}
 	Vec3Generic(Number x, Number y, Number z) : x(x), y(y), z(z) {}
 	Vec3Generic() {}
+	#if _MSC_VER >= 1700
+	template <class OtherNumber>
+	Vec3Generic(std::initializer_list<OtherNumber> list) 
+	{
+		int index = 0;
+		for (auto x = list.begin(); x != list.end() && index < 3; x++, index++)
+			this->operator [] (index) = (Number)*x;
+	}
+	template <class OtherNumber>
+	Vec3Generic& operator = (std::initializer_list<OtherNumber> list) { ::new (this) (list); return *this; }
+	#endif
 
 	operator Number* () {return loc;}
 	Vec3Generic operator + (const Vec3Generic& a) const {return Vec3Generic(x + a.x, y + a.y, z + a.z);}
@@ -2226,6 +2252,17 @@ public:
 	template <class OtherNumber>
 	Vec2Generic(OtherNumber* other) : x(other[0]), y(other[1]) {}
 	Vec2Generic() {}
+	#if _MSC_VER >= 1700
+	template <class OtherNumber>
+	Vec2Generic(std::initializer_list<OtherNumber> list) 
+	{
+		int index = 0;
+		for (auto x = list.begin(); x != list.end() && index < 2; x++, index++)
+			this->operator [] (index) = (Number)*x;
+	}
+	template <class OtherNumber>
+	Vec2Generic& operator = (std::initializer_list<OtherNumber> list) { ::new (this) (list); return *this; }
+	#endif
 
 	operator Number* () {return loc;}
 	Vec2Generic operator + (const Vec2Generic& a) const {return Vec2Generic(x + a.x, y + a.y);}
@@ -2448,6 +2485,8 @@ visible double endwaittask(treenode dispatcher);
 treenode* enumerateteam(treenode team, int * returnnrofoperators, int recursivecall DEFAULTZERO);
 
 visible int evaluatepullcriteria(treenode fr, treenode item, int port, int bypassflags);
+
+double fglinfo(int op, treenode view);
 
 treenode findnextclassvariable(treenode*curclass, treenode curvariable);
 
@@ -2697,6 +2736,8 @@ visible double rerankbesttask(treenode involved);
 
 treenode restorenode(treenode containerbranch, treenode destcontainer);
 
+__declspec(dllexport) double resumeobject(treenode involved, int id, int stateprofile);
+
 __declspec(dllexport) double resumeobject(treenode involved);
 
 visible double resumeobject(treenode involved, int id);
@@ -2738,6 +2779,8 @@ visible double setpriority(treenode tasksequence, double newpriority);
 visible double setresetposition(treenode obj);
 
 visible double settrackedvariable(char* name, double value);
+
+__declspec(dllexport) double stopobject(treenode involved, int state, int id, double priority, int stateprofile);
 
 __declspec(dllexport) double stopobject(treenode involved, int state);
 
@@ -2815,9 +2858,9 @@ FS_CONTENT_DLL_FUNC virtual double onRunWarm();
 
 FS_CONTENT_DLL_FUNC virtual double onUndo(bool isUndo, treenode undoRecord);
 
-FS_CONTENT_DLL_FUNC double stopObject(int stopstate, int id, double priority DEFAULTZERO);
+FS_CONTENT_DLL_FUNC double stopObject(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate);
+FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC double resumeObject(int id);
 
@@ -2895,11 +2938,11 @@ FS_CONTENT_DLL_FUNC virtual double onMessage(treenode fromobject, double par1, d
 
 FS_CONTENT_DLL_FUNC virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double stopObject(int stopstate, int id, double priority DEFAULTZERO);
+FS_CONTENT_DLL_FUNC double stopObject(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate);
+FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resumeObject(int id);
+FS_CONTENT_DLL_FUNC double resumeObject(int id, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double resumeObject();
 
@@ -3063,7 +3106,7 @@ FS_CONTENT_DLL_FUNC treenode createMoveTaskSequence(treenode dispatcher, treenod
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate);
+FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double resumeObject();
 
@@ -3273,6 +3316,10 @@ TreeNode * node_v_modelstarttime;
 #define v_modelstarttime node_v_modelstarttime->safedatafloat()[0]
 TreeNode * node_v_repeattype;
 #define v_repeattype node_v_repeattype->safedatafloat()[0]
+TreeNode * node_v_calendarstarttime;
+#define v_calendarstarttime node_v_calendarstarttime->safedatafloat()[0]
+TreeNode * node_v_snapto;
+#define v_snapto node_v_snapto->safedatafloat()[0]
 TreeNode * node_v_downtrigger;
 TreeNode * node_v_uptrigger;
 TreeNode * node_v_downfunction;
@@ -3989,6 +4036,8 @@ FS_CONTENT_DLL_FUNC double onPreDraw(treenode view);
 
 FS_CONTENT_DLL_FUNC double onReset();
 
+FS_CONTENT_DLL_FUNC double buildMesh();
+
 FS_CONTENT_DLL_FUNC double drawPlane();
 
 FS_CONTENT_DLL_FUNC double drawCube();
@@ -3998,6 +4047,8 @@ FS_CONTENT_DLL_FUNC double drawColumn();
 FS_CONTENT_DLL_FUNC double drawSphere();
 
 FS_CONTENT_DLL_FUNC double drawString(treenode view);
+
+FS_CONTENT_DLL_FUNC double drawFloor(treenode view);
 
 FS_CONTENT_DLL_FUNC double arrangeObject(double posx, double posy, double posz, double rotx, double roty, double rotz, double size);
 
@@ -4020,6 +4071,13 @@ FS_CONTENT_DLL_FUNC unsigned int getClassType();
 FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
 
 FS_CONTENT_DLL_FUNC double doConnectIndirection(treenode otherobject, char characterpressed, int tome);
+
+
+// c++ attributes
+
+Mesh shapeMesh;
+
+int meshShapeType;
 
 
 // System
@@ -4174,6 +4232,8 @@ FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDat
 
 FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
 
+FS_CONTENT_DLL_FUNC int initalizeObjects();
+
 FS_CONTENT_DLL_FUNC int getMaxGroupNameWidth();
 
 FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
@@ -4184,15 +4244,15 @@ FS_CONTENT_DLL_FUNC treenode getNextMemberNode(treenode membernode);
 
 FS_CONTENT_DLL_FUNC int updateAllCurStates();
 
-FS_CONTENT_DLL_FUNC int updateCurState(treenode membernode);
+FS_CONTENT_DLL_FUNC int updateCurState(treenode membernode, int entrynr);
 
-FS_CONTENT_DLL_FUNC int updateCurStateString(treenode membernode);
+FS_CONTENT_DLL_FUNC int updateCurStateString(treenode membernode, int entrynr);
 
 FS_CONTENT_DLL_FUNC int updateStates();
 
-FS_CONTENT_DLL_FUNC int updateAllStates(treenode membernode, int onreset);
+FS_CONTENT_DLL_FUNC int updateAllStates(treenode membernode, int entrynr, int onreset);
 
-FS_CONTENT_DLL_FUNC int saveBaseStates(treenode membernode);
+FS_CONTENT_DLL_FUNC int saveBaseStates(treenode membernode, int entrynr);
 
 FS_CONTENT_DLL_FUNC int filterAllByTime(treenode view);
 
@@ -4221,6 +4281,8 @@ FS_CONTENT_DLL_FUNC treenode getMember(int nr);
 FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
 
 FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+
+FS_CONTENT_DLL_FUNC treenode addGroup(int groupRank);
 
 
 // System
@@ -4325,6 +4387,8 @@ FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDat
 
 FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
 
+FS_CONTENT_DLL_FUNC int initializeObjects();
+
 FS_CONTENT_DLL_FUNC int getMaxGroupNameWidth();
 
 FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
@@ -4337,7 +4401,7 @@ FS_CONTENT_DLL_FUNC treenode getNextMemberNode(treenode membernode);
 
 FS_CONTENT_DLL_FUNC int updateAllStats();
 
-FS_CONTENT_DLL_FUNC int updateMemberStats(treenode membernode);
+FS_CONTENT_DLL_FUNC int updateMemberStats(treenode membernode, int entrynr);
 
 FS_CONTENT_DLL_FUNC double updateTimeStats();
 
@@ -4345,11 +4409,11 @@ FS_CONTENT_DLL_FUNC double calculateAvgContent(treenode obj, treenode statnode, 
 
 FS_CONTENT_DLL_FUNC double calculateAvgStayTime(treenode obj, treenode statnode);
 
-FS_CONTENT_DLL_FUNC int saveBaseStats(treenode membernode);
+FS_CONTENT_DLL_FUNC int saveBaseStats(treenode membernode, int entrynr);
 
 FS_CONTENT_DLL_FUNC int filterAllByTime(treenode view);
 
-FS_CONTENT_DLL_FUNC int filterByTime(treenode membernode);
+FS_CONTENT_DLL_FUNC int filterByTime(treenode membernode, int entrynr);
 
 FS_CONTENT_DLL_FUNC int unfilterAll(treenode graph);
 
@@ -4368,6 +4432,8 @@ FS_CONTENT_DLL_FUNC treenode getMember(int nr);
 FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
 
 FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+
+FS_CONTENT_DLL_FUNC treenode addGroup(int groupRank);
 
 
 // System
@@ -4580,6 +4646,8 @@ FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDat
 
 FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
 
+FS_CONTENT_DLL_FUNC int initalizeObjects();
+
 FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
 
 FS_CONTENT_DLL_FUNC int initializeObjectMember(treenode membernode);
@@ -4605,6 +4673,8 @@ FS_CONTENT_DLL_FUNC treenode getMember(int nr);
 FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
 
 FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+
+FS_CONTENT_DLL_FUNC treenode addGroup(int groupRank);
 
 
 // System
@@ -4790,13 +4860,17 @@ FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDat
 
 FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
 
+FS_CONTENT_DLL_FUNC int initalizeObjects();
+
+FS_CONTENT_DLL_FUNC treenode getNextMemberNode(treenode membernode);
+
 FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
 
 FS_CONTENT_DLL_FUNC int initializeObjectMember(treenode membernode);
 
 FS_CONTENT_DLL_FUNC int updateAllStats();
 
-FS_CONTENT_DLL_FUNC double updateMemberStats(treenode membernode, double totalTime);
+FS_CONTENT_DLL_FUNC double updateMemberStats(treenode membernode, double totalTime, int entrynr);
 
 FS_CONTENT_DLL_FUNC double updateTotals();
 
@@ -5032,7 +5106,7 @@ FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
 
 FS_CONTENT_DLL_FUNC double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate);
+FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double resumeObject();
 
@@ -5533,7 +5607,7 @@ FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode involvedobj, treenode
 
 FS_CONTENT_DLL_FUNC virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate);
+FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC double resumeObject();
 
@@ -5751,7 +5825,7 @@ FS_CONTENT_DLL_FUNC double destroyItemEvent(treenode item, int event);
 
 FS_CONTENT_DLL_FUNC double cleanItemEvent(treenode item, int event);
 
-FS_CONTENT_DLL_FUNC double stopObject(int stopstate);
+FS_CONTENT_DLL_FUNC double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC double resumeObject();
 
@@ -5792,7 +5866,7 @@ TreeNode * node_v_poffsetz;
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double stopObject(int stopstate);
+FS_CONTENT_DLL_FUNC double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC double resumeObject();
 
@@ -5859,7 +5933,9 @@ FS_CONTENT_DLL_FUNC double rankInOrder(treenode tasksequence);
 
 FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate);
+FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC double resumeObject(int id, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double resumeObject();
 
@@ -6021,7 +6097,7 @@ FS_CONTENT_DLL_FUNC virtual double finishOffset();
 
 FS_CONTENT_DLL_FUNC treenode  findDefaultNavigator();
 
-FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate);
+FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double resumeObject();
 
@@ -6485,7 +6561,7 @@ FS_CONTENT_DLL_FUNC double getPickOffset(treenode item, treenode toobject, doubl
 
 FS_CONTENT_DLL_FUNC double getPlaceOffset(treenode item, treenode fromobject,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC double stopObject(int stopstate);
+FS_CONTENT_DLL_FUNC double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC double resumeObject();
 
@@ -6926,7 +7002,7 @@ FS_CONTENT_DLL_FUNC virtual double emptyObject();
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate);
+FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double resumeObject();
 
@@ -7444,7 +7520,7 @@ FS_CONTENT_DLL_FUNC virtual double moveMaterialOut(double amount, int port);
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate);
+FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double resumeObject();
 

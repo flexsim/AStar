@@ -243,6 +243,12 @@ inline double ptrtodouble(void* x)
 #define module_private private
 #endif
 
+#if _MSC_VER >= 1700
+#define EXPLICIT explicit
+#else
+#define EXPLICIT 
+#endif
+
 template <class Dest, class Src>
 Dest force_cast(Src src)
 {

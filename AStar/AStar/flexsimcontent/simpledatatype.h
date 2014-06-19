@@ -638,13 +638,13 @@ class SqlDelegate : public SimpleDataType
 #define SQL_TABLE_NOT_FOUND (INT_MAX - 2)
 
 #define SQL_COL_END ((const char*) 0x2)
-#define SQL_NULL SqlValue(SqlValue::Null, 0)
+#define SQL_NULL Variant()
 
 public:
 	virtual bool canResolveRefsAtParseTime() {return true;}
 	virtual int getColId(int tableId, const char* colName) = 0;
 	virtual const char* enumerateColNames(int tableId, int colNum){return SQL_COL_END;}
-	virtual struct SqlValue getValue(int tableId, int row, int colId) {return SQL_NULL;}
+	virtual Variant getValue(int tableId, int row, int colId) {return SQL_NULL;}
 
 	virtual int getTableId(const char* tableName) {return 0;}
 	virtual int getRowCount(int tableId) {return 0;}

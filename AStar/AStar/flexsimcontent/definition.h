@@ -255,8 +255,8 @@ void Mesh::cleanup(bool isDestructor)
 	{ mesh_cleanup(this, isDestructor); }
 void Mesh::defineVertexAttribs(unsigned int  attribId, float* verts)
 	{ mesh_definevertexattribs(this, attribId, verts); }
-unsigned int Mesh::addCustomVertexAttrib(const char* name, int componentsPerVertex, GLenum type)
-	{ return mesh_addcustomvertexattrib(this, name, componentsPerVertex, type); }
+unsigned int Mesh::addCustomVertexAttrib(const char* name, int componentsPerVertex, GLenum type, bool isNormalized)
+	{ return mesh_addcustomvertexattrib(this, name, componentsPerVertex, type, isNormalized); }
 unsigned int Mesh::setVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* vert)
 	{ return mesh_setvertexattrib(this, vertIndex, attribId, vert); }
 void Mesh::setMeshAttrib(unsigned int attribId, float* vert)

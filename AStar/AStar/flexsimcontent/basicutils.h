@@ -5,11 +5,6 @@
 #ifdef FLEXSIM_ENGINE_COMPILE
 	#include <excpt.h>
 #endif
-
-#if _MSC_VER >= 1700
-#define EXPLICIT explicit
-#else
-#define EXPLICIT 
 #endif
 
 #ifndef FLEXSIM_VALUE
@@ -51,92 +46,6 @@
 		inline FlexSimValue(const FlexSimValue& x) : asDouble(x.asDouble) {}
 	};
 #endif
-
-#define COMPARE_NUMBER(op, numberType) \
-	bool operator op (numberType& theNum)\
-	{\
-		if (type == Number) return numVal op theNum;\
-		return false;\
-	}\
-
-#define COMPARE_NUMBER_TYPES(op)\
-	COMPARE_NUMBER(op, float)\
-	COMPARE_NUMBER(op, double)\
-	COMPARE_NUMBER(op, char)\
-	COMPARE_NUMBER(op, short)\
-	COMPARE_NUMBER(op, int)\
-	COMPARE_NUMBER(op, __int64)\
-	COMPARE_NUMBER(op, unsigned char)\
-	COMPARE_NUMBER(op, unsigned short)\
-	COMPARE_NUMBER(op, unsigned int)\
-	COMPARE_NUMBER(op, unsigned __int64)
-
-struct SqlValue
-{
-	enum ValueType
-	{
-		Number = 1,
-		String = 2,
-		Null = 3
-	} type;
-	union {
-		double numVal;
-		char* strVal;
-	};
-	SqlValue(char* strVal) : type(String), strVal(strVal) {}
-	SqlValue(double numVal) : type(Number), numVal(numVal) {}
-	SqlValue(int numVal) : type(Number), numVal(numVal) {}
-	SqlValue(ValueType type, double numVal) : type(type), numVal(numVal) {}
-	operator bool() {return type == Number && numVal != 0;}
-	operator double() {if (type == Number) return numVal; return 0;}
-	bool operator < (SqlValue& other) 
-	{
-		if (type != other.type) return false; 
-		if (type == Number) return numVal < other.numVal; 
-		if (type == Null) return false;
-		return strcmp(strVal, other.strVal) < 0;
-	}
-	bool operator <= (SqlValue& other) 
-	{
-		if (type != other.type) return false; 
-		if (type == Number) return numVal <= other.numVal; 
-		if (type == Null) return false;
-		return strcmp(strVal, other.strVal) <= 0;
-	}
-	bool operator > (SqlValue& other) 
-	{
-		if (type != other.type) return false; 
-		if (type == Number) return numVal > other.numVal; 
-		if (type == Null) return false;
-		return strcmp(strVal, other.strVal) > 0;
-	}
-	bool operator >= (SqlValue& other) 
-	{
-		if (type != other.type) return false; 
-		if (type == Number) return numVal >= other.numVal; 
-		if (type == Null) return false;
-		return strcmp(strVal, other.strVal) >= 0;
-	}
-	bool operator == (SqlValue& other) 
-	{
-		if (type != other.type) return false; 
-		if (type == Number) return numVal == other.numVal; 
-		if (type == Null) return false;
-		return strcmp(strVal, other.strVal) == 0;
-	}
-	bool operator != (SqlValue& other) 
-	{
-		if (type != other.type) return false; 
-		if (type == Number) return numVal != other.numVal; 
-		if (type == Null) return false;
-		return strcmp(strVal, other.strVal) != 0;
-	}
-	COMPARE_NUMBER_TYPES(<);
-	COMPARE_NUMBER_TYPES(>);
-	COMPARE_NUMBER_TYPES(<=);
-	COMPARE_NUMBER_TYPES(>=);
-	COMPARE_NUMBER_TYPES(==);
-};
 
 #undef COMPARE_NUMBER_TYPES
 #undef COMPARE_NUMBER
@@ -497,66 +406,66 @@ void cpp_repeat(int nr, Do doIt)
 		cpp_query(VA_ARG_0(__VA_ARGS__)), \
 	PP_IIF(PP_EQUAL(2, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));})),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(3, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__),  \
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));})),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(4, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));})),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(5, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_4(__VA_ARGS__));})),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(6, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_4(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_5(__VA_ARGS__));})),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(7, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_4(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_5(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_6(__VA_ARGS__));})),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_6(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(8, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_4(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_5(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_6(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_7(__VA_ARGS__));})),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_6(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_7(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(9, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_4(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_5(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_6(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_7(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_8(__VA_ARGS__));})),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_6(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_7(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_8(__VA_ARGS__));})),\
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_3(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_4(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_5(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_6(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_7(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_8(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> double {return FlexSimValue(VA_ARG_9(__VA_ARGS__));}))\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_6(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_7(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_8(__VA_ARGS__));}),\
+		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_9(__VA_ARGS__));}))\
 	)))))))))
 #endif
 

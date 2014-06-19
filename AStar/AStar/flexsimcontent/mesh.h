@@ -51,7 +51,15 @@ protected:
 	typedef void (*CopyCallback)(void* copyPoint, float* inVerts, int componentsPerVertex, int numVerts, int vertByteStride);
 	static void copyHFloatAttribs(void* copyPoint, float* inVerts, int componentsPerVertex, int numVerts, int vertByteStride);
 	static void copyFloatAttribs(void* copyPoint, float* inVerts, int componentsPerVertex, int numVerts, int vertByteStride);
-	static void copyColorAttribs(void* copyTo, float* inVerts, int componentsPerVertex, int numVerts, int vertByteStride);
+	static void copyUnsignedByteAttribsStraight(void* copyTo, float* inVerts, int componentsPerVert, int numVerts, int vertByteStride);
+	static void copyUnsignedByteAttribsNormalized(void* copyTo, float* inVerts, int componentsPerVert, int numVerts, int vertByteStride);
+	static void copySignedByteAttribsStraight(void* copyTo, float* inVerts, int componentsPerVert, int numVerts, int vertByteStride);
+	static void copySignedByteAttribsNormalized(void* copyTo, float* inVerts, int componentsPerVert, int numVerts, int vertByteStride);
+	static void copyColorAttribs(void* copyTo, float* inVerts, int componentsPerVert, int numVerts, int vertByteStride);
+	static void copyUnsignedShortAttribsStraight(void* copyTo, float* inVerts, int componentsPerVert, int numVerts, int vertByteStride);
+	static void copyUnsignedShortAttribsNormalized(void* copyTo, float* inVerts, int componentsPerVert, int numVerts, int vertByteStride);
+	static void copySignedShortAttribsStraight(void* copyTo, float* inVerts, int componentsPerVert, int numVerts, int vertByteStride);
+	static void copySignedShortAttribsNormalized(void* copyTo, float* inVerts, int componentsPerVert, int numVerts, int vertByteStride);
 	
 	struct AttribCopier {
 		int componentsPerVertex;
@@ -59,7 +67,17 @@ protected:
 		CopyCallback copier;
 		void* copyPoint;
 	};
+	struct CustomVertexAttrib {
+		string name;
+		GLint attribLocation;
+		unsigned char attribOffset;
+		int componentsPerVertex;
+		GLenum type;
+		bool isNormalized;
+		void bind(TreeNode* x);
+	};
 	int getComponentsPerVertex(int attribId);
+	void fillVertexCopier(const CustomVertexAttrib& attrib, AttribCopier& copier);
 	AttribCopier getVertexCopier(int attribId);
 	AttribCopier getMeshCopier(int attribId);
 
@@ -69,14 +87,6 @@ protected:
 	static void readFloatVertex(void* readPoint, float* outVert);
 	virtual const char* getClassFactory() {return "Mesh";}
 
-	struct CustomVertexAttrib {
-		string name;
-		GLint attribLocation;
-		unsigned char attribOffset;
-		int componentsPerVertex;
-		GLenum type;
-		void bind(TreeNode* x);
-	};
 
 	std::vector<CustomVertexAttrib*>* customVertexAttribs;
 
@@ -102,6 +112,7 @@ protected:
 
 	void drawCyclesExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
 	void printCyclesVertexData(int drawMode);
+	void assertBufferSize(unsigned char*& buffer, unsigned int& maxSize, unsigned int sizeNeeded, int vertByteStride, bool growExactly);
 #endif
 
 public:
@@ -142,6 +153,7 @@ protected:
 #define MESH_DYNAMIC_DRAW 0x2
 #define MESH_INDEXED 0x4
 #define MESH_FORCE_CLEANUP 0x8
+#define MESH_NO_POSITION 0x10
 // MESH_IN_MEMORY: (not implemented, just an idea at this point) means the mesh is not bound to the tree, 
 // which means it can delete its buffers once copied into the open gl objects
 #define MESH_IN_MEMORY 0x8
@@ -201,7 +213,7 @@ protected:
 	void prepareDraw(int offset = 0, int stride = 0);
 	void applyAttribs();
 	void resetAttribs();
-	void checkForShaderChange();
+	bool checkForShaderChange();
 	void cleanupDraw();
 	/// <summary>	defineGLObjects(): defines the vertex array object. Call this one, and it will
 	/// 			call defineVBO. </summary>
@@ -213,8 +225,8 @@ protected:
 	void defineVBO();
 
 public:
-	virtual void bind();
-	void cleanup(bool deleteGLObjects = false);
+	engine_export virtual void bind();
+	engine_export void cleanup(bool deleteGLObjects = false);
 
 	/// <summary>	Initializes the mesh with the number of vertices needed and various flags. </summary>
 	/// <remarks>	Usually you are going to fill a vector or vectors with your vertex data, then
@@ -236,8 +248,9 @@ public:
 	///									- MESH_DIFFUSE4 - signifies that you will provide per-vertex 4-component color data
 	/// 								</param>
 	/// <param name="flags">		   	(Optional) Miscellaneous flags. </param>
-	virtual void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0);
+	engine_export virtual void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0);
 
+	int initVertexAttrib(CustomVertexAttrib& attrib, const char* name, int componentsPerVertex, GLenum type, bool isNormalized);
 	/// <summary>	Adds a custom vertex attribute data to a mesh. </summary>
 	/// <remarks>	This should be used immediately after calling init() if you want to add custom vertex attributes in 
 	///				addition to the default set defined by perVertexFlags. </remarks>
@@ -245,7 +258,9 @@ public:
 	/// <param name="name">	Specifies the name of the vertex attribute defined in the shader.</param>
 	/// <param name="componentsPerVertex">	Specifies the number of components per generic vertex attribute. Must be 1, 2, 3, or 4.</param>
 	/// <param name="type">	Specifies the data type of each component in the array. Symbolic constants GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT, GL_FIXED, or GL_FLOAT are accepted.</param>
-	unsigned int addCustomVertexAttrib(const char* name, int componentsPerVertex, GLenum type);
+	/// <param name="isNormalized">	Specifies whether the value should be normalized when converting to a float in the shader. This is ignored if 
+	/// 							type is GL_FLOAT. If true, then you should pass normalized float values in when defining vertex data.</param>
+	engine_export unsigned int addCustomVertexAttrib(const char* name, int componentsPerVertex, GLenum type, bool isNormalized);
 
 	/// <summary>	Define vertex attributes. </summary>
 	/// <remarks>	Copies the given vertex data into the mesh's internal OpenGL-optimized format. This method should be used if you
@@ -260,19 +275,19 @@ public:
 	///								- MESH_DIFFUSE - the vertex 3-component color data
 	///								- MESH_DIFFUSE4 - the vertex 4-component color data</param>
 	/// <param name="verts">   	[in] The vertex data. </param>
-	void defineVertexAttribs(unsigned int attribId, float* verts);
+	engine_export void defineVertexAttribs(unsigned int attribId, float* verts);
 
 	/// <summary>	Adds a vertex. </summary>
 	/// <remarks>	Should be used when you initialize the mesh with 0 vertices, and then add vertex data as you go. </remarks>
 	/// <returns>	The index of the added vertex, for use in Mesh::setVertexAttrib(). </returns>
-	int addVertex();
+	engine_export int addVertex();
 
 	/// <summary>	Sets the vertex attribute data for a single vertex. </summary>
 	/// <remarks>	Should be used when you initialize the mesh with 0 vertices, and then add vertex data as you go with addVertex(). </remarks>
 	/// <param name="vertIndex">	Zero-based index of the vertex. Should be the index returned by addVertex() </param>
 	/// <param name="attribId"> 	Identifier for the attribute. See Mesh::defineVertexAttribs().</param>
 	/// <param name="vert">			[in] A pointer to the vertex data. </param>
-	unsigned int setVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* vert);
+	engine_export unsigned int setVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* vert);
 
 	/// <summary>	Define data to be applied once per draw, i.e. just before drawing the mesh each time.</summary>
 	/// <remarks>	Anthony.johnson, 8/15/2013. </remarks>
@@ -286,7 +301,7 @@ public:
 	/// 					</param>
 	/// <param name="data">	   	[in] A pointer to the data that defines the attribute. If 0, the mesh will turn that per-mesh flag off, 
 	/// 						meaning it will take whatever the previous OpenGL state was. </param>
-	void setMeshAttrib(unsigned int attribId, float* data);
+	engine_export void setMeshAttrib(unsigned int attribId, float* data);
 
 	/// <summary>	Draws the mesh. </summary>
 	/// <remarks>	 </remarks>
@@ -294,8 +309,8 @@ public:
 	/// <param name="vertOffset">	(Optional) The vertex offset to start at. If not provided, the whole mesh will be drawn.</param>
 	/// <param name="vertCount"> 	(Optional) The number of vertices to dray. </param>
 	/// <param name="vertStride">	(Optional) The vertex stride, i.e if 2, it will read every other vertex. </param>
-	virtual void draw(int drawMode, int vertOffset = 0, int vertCount = 0, int vertStride = 0);
-	float* getVertexAttrib(unsigned int vertIndex, unsigned int attribId);
+	engine_export virtual void draw(int drawMode, int vertOffset = 0, int vertCount = 0, int vertStride = 0);
+	engine_export float* getVertexAttrib(unsigned int vertIndex, unsigned int attribId);
 
 
 };
@@ -306,7 +321,7 @@ public:
 	IndexedMesh() : Mesh(MESH_INDEXED), numIndices(0), maxIndexBufferSize(0), indexBuffer(0), indexVBO(0), storageType(0), elementSize(sizeof(unsigned int)){}
 	~IndexedMesh()  {cleanupIndexBuffer(true);}
 	virtual const char* getClassFactory() {return "IndexedMesh";}
-	virtual void bind();
+	engine_export virtual void bind();
 
 	virtual void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0) override
 	{
@@ -318,14 +333,14 @@ public:
 	/// <remarks>	 </remarks>
 	/// <param name="num">   	Number of indices in the buffer. </param>
 	/// <param name="buffer">	[in] The index buffer. </param>
-	void defineIndexBuffer(int num, unsigned int * buffer);
-	void defineIndexBuffer(int num, int* buffer) {defineIndexBuffer(num, (unsigned int*) buffer);}
+	engine_export void defineIndexBuffer(int num, unsigned int * buffer);
+	engine_export void defineIndexBuffer(int num, int* buffer) { defineIndexBuffer(num, (unsigned int*)buffer); }
 	
 	/// <summary>	Adds an index to the index buffer. </summary>
 	/// <remarks>	 If you want to add indices as you go, use this method. </remarks>
 	/// <param name="index">	The vertex index, returned by addVertex()</param>
 	/// <returns>	The index of the vertex index within the index buffer. </returns>
-	unsigned int addIndex(unsigned int index);
+	engine_export unsigned int addIndex(unsigned int index);
 
 	/// <summary>	Draws the indexed mesh. </summary>
 	/// <remarks>	Anthony.johnson, 8/15/2013. </remarks>
@@ -333,9 +348,9 @@ public:
 	/// <param name="vertOffset">	(Optional) The vertex offset to start at. If not provided, the whole mesh will be drawn.</param>
 	/// <param name="vertCount"> 	(Optional) The number of vertices to dray. </param>
 	/// <param name="vertStride">	(Optional) The vertex stride, i.e if 2, it will read every other vertex. </param>
-	virtual void draw(int drawMode, int vertOffset = 0, int vertCount = 0, int vertStride = 0) override;
-	void cleanupIndexBuffer(bool isDestructor = false);
-	unsigned int vertexForIndex(unsigned int index);
+	engine_export virtual void draw(int drawMode, int vertOffset = 0, int vertCount = 0, int vertStride = 0) override;
+	engine_export void cleanupIndexBuffer(bool isDestructor = false);
+	engine_export unsigned int vertexForIndex(unsigned int index);
 
 protected:
 	unsigned int numIndices;
@@ -346,6 +361,7 @@ protected:
 	unsigned int storageType;
 	void defineVBO();
 	void prepareDraw();
+	void cleanupDraw();
 	/// <summary>	defineGLObjects(): defines the vertex array object. Call this one, and it will
 	/// 			call defineVBO. </summary>
 	/// <remarks>	 </remarks>
@@ -362,6 +378,69 @@ protected:
 #endif
 };
 
+class InstancedMesh : public IndexedMesh
+{
+public:
+	InstancedMesh() : IndexedMesh(), instancedVertBuffer(0), instancedAttribs(0), maxInstancedBufferSize(0), instancedVertByteStride(0) {}
+	~InstancedMesh() { cleanupInstancedVerts(); }
+	virtual void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0) override
+	{
+		cleanupInstancedVerts();
+		IndexedMesh::init(numVerts, perVertexAttribs, flags);
+		numInstancedVerts = 0;
+	}
+
+protected:
+	struct InstancedVertexAttrib : public Mesh::CustomVertexAttrib {
+		GLuint attribDivisor;
+		void bind(TreeNode* x);
+	};
+	std::vector <InstancedVertexAttrib> * instancedAttribs;
+	unsigned char* instancedVertBuffer;
+	int instancedVertByteStride;
+	unsigned int maxInstancedBufferSize;
+
+	/// <summary>	Cleans up the instanced attributes. </summary>
+	/// <remarks>	</remarks>
+	engine_export void cleanupInstancedVerts();
+	bool checkForShaderChange();
+	void defineGLObjects();
+	void defineVBO();
+	void prepareDraw(int instanceOffset, int instanceStride);
+	void cleanupDraw();
+public:
+	GLuint instanceVBO;
+	int numInstancedVerts;
+	/// <summary>	Binds the mesh. </summary>
+	/// <remarks>	</remarks>
+	engine_export virtual void bind() override;
+
+	/// <summary>	Adds an instanced vertex attribute to the mesh. </summary>
+	/// <remarks>	All instanced vertex attributes should be added before 
+	/// 			any instanced vertex data is actually defined.</remarks>
+	/// <param name="name">				  	Specifies the name of the vertex attribute defined in the
+	/// 									shader. </param>
+	/// <param name="componentsPerVertex">	Specifies the number of components per generic vertex
+	/// 									attribute. Must be 1, 2, 3, or 4. </param>
+	/// <param name="type">				  	Specifies the data type of each component in the array.
+	/// 									Symbolic constants GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT,
+	/// 									GL_UNSIGNED_SHORT, GL_FIXED, or GL_FLOAT are accepted. </param>
+	/// <param name="attribDivisor">	  	The attribute divisor. For more information, see OpenGL documentation
+	/// 									for glVertexAttribDivisor(). Usually this will be 1, meaning the
+	/// 									vertex attribute will advance once for each instance of vertices in
+	/// 									the mesh. </param>
+	/// <returns>	The index of the added instanced vertex attrib. </returns>
+	engine_export unsigned int addInstancedVertexAttrib(const char* name, int componentsPerVertex, GLenum type, GLuint attribDivisor, bool isNormalized);
+
+	engine_export unsigned int addInstancedVertex();
+	engine_export void setInstancedVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* data);
+	engine_export void defineInstancedVertexAttribs(unsigned int vertIndex, unsigned int attribId, float* data);
+	engine_export void draw(int drawMode, int instanceOffset, int numInstances, int instanceStride);
+	void draw(int drawMode) { draw(drawMode, 0, 0, 0); }
+
+	void instancedDrawRenderMode(int drawMode, int instanceOffset, int numInstances, int instanceStride);
+};
+
 #define MESH_PER_VERTEX_ATTRIBS 1
 #define MESH_PER_MESH_ATTRIBS 2
 #define MESH_FLAGS 3
@@ -372,7 +451,7 @@ protected:
 
 visible void mesh(treenode meshnode, unsigned int perVertexAttribs, unsigned int flags);
 visible int  meshaddvertex(treenode meshnode);
-visible void meshaddcustomvertexattrib(treenode meshnode, const char* name, int componentsPerVertex, GLenum type);
+visible void meshaddcustomvertexattrib(treenode meshnode, const char* name, int componentsPerVertex, GLenum type, bool isNormalized);
 visible void meshsetvertexattrib(treenode meshnode, unsigned int vertIndex, unsigned int attribId, float p1, float p2=0, float p3=0, float p4=0);
 visible void meshsetattrib(treenode meshnode, unsigned int attribId, float p1, float p2=0, float p3=0, float p4=0);
 visible void meshdraw(treenode meshnode, int drawMode, int offset, int count, int stride=0);

@@ -484,6 +484,7 @@ THE SOFTWARE.
 	typedef int          (*_fgldebuglevel)(int level);
 	typedef void         (*_fglDisable)(GLenum x);
 	typedef void         (*_fglEnable)(GLenum x);
+	typedef double       (*_fglinfo)(int op, treenode view);
 	typedef void         (*_fglLoadIdentity)();
 	typedef void         (*_fglMatrixMode)(GLenum mode);
 	typedef void         (*_fglNormal)(float x, float y, float z);
@@ -758,7 +759,7 @@ THE SOFTWARE.
 	typedef double       (*_menumain)();
 	typedef void 		 (*_mesh)(treenode meshnode, unsigned int perVertexAttribs, unsigned int flags);
 	typedef int  		 (*_meshaddvertex)(treenode meshnode);
-	typedef unsigned int (*_meshaddcustomvertexattrib)(treenode meshnode, const char* name, int componentsPerVertex, GLenum type);
+	typedef unsigned int (*_meshaddcustomvertexattrib)(treenode meshnode, const char* name, int componentsPerVertex, GLenum type, bool isNormalized);
 	typedef void 		 (*_meshsetvertexattrib)(treenode meshnode, unsigned int vertIndex, unsigned int attribId, float p1, float p2, float p3, float p4);
 	typedef void 		 (*_meshsetattrib)(treenode meshnode, unsigned int attribId, float p1, float p2, float p3, float p4);
 	typedef void		 (*_meshdraw)(treenode meshnode, int drawMode, int offset, int count, int stride);
@@ -1255,7 +1256,7 @@ THE SOFTWARE.
 		typedef  void (*_mesh_init)(Mesh* m, unsigned int nrVerts, unsigned int perVertFlags, unsigned int generalFlags);
 		typedef  void (*_mesh_cleanup)(Mesh* m, bool isDestructor);
 		typedef  void(*_mesh_definevertexattribs)(Mesh* m, unsigned int attribId, float* verts);
-		typedef  unsigned int(*_mesh_addcustomvertexattrib)(Mesh* m, const char* name, int componentsPerVertex, GLenum type);
+		typedef  unsigned int(*_mesh_addcustomvertexattrib)(Mesh* m, const char* name, int componentsPerVertex, GLenum type, bool isNormalized);
 		typedef  unsigned int (*_mesh_setvertexattrib)(Mesh* m, int vertIndex, unsigned int attribId, float* vert);
 		typedef  void (*_mesh_setmeshattrib)(Mesh* m, unsigned int attribId, float* vert);
 		typedef  int (*_mesh_addvertex)(Mesh* m);
@@ -1271,6 +1272,8 @@ THE SOFTWARE.
 		typedef int (*_sql_doquery)(TreeNode* queryNode, bool continueQuery);
 		typedef int (*_sql_continuequery)(TreeNode* queryNode);
 		typedef void(*_sql_setdelegate)(SqlDelegate* d);
+
+		typedef double(*_fglInfo)(int op, treenode view);
 		
 	#else
 		typedef double (*_transportincompletealias)(treenode object, treenode item, int portnumber, treenode transporter);
@@ -2253,6 +2256,7 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_doquery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_continuequery)
 	DECLARE_FLEXSIM_FUNCTION_1(sql_setdelegate)
+	DECLARE_FLEXSIM_FUNCTION_1(fglInfo)
 
 
 	
@@ -2277,6 +2281,7 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(distancetotravel)
 	DECLARE_FLEXSIM_FUNCTION_1(drawspheres)
 	DECLARE_FLEXSIM_FUNCTION_1(enablefullhistory)
+	DECLARE_FLEXSIM_FUNCTION_1(fglinfo)
 	DECLARE_FLEXSIM_FUNCTION_1(freeoperators)
 	DECLARE_FLEXSIM_FUNCTION_1(getallocatedfromkey)
 	DECLARE_FLEXSIM_FUNCTION_1(getcoordinatedtasksequence)
