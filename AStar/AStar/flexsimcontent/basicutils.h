@@ -5,7 +5,6 @@
 #ifdef FLEXSIM_ENGINE_COMPILE
 	#include <excpt.h>
 #endif
-#endif
 
 #ifndef FLEXSIM_VALUE
 #define FLEXSIM_VALUE

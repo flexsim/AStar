@@ -3,7 +3,7 @@
   <!--Note to self: if you're having issues with the msi replacing C:\Program Files\ with
   C:\Program Files (x86)\ make sure you have the compiler option -arch x64 -->
   
-	<Product Id="136BB8C0-AAD4-4EA0-8639-0F502B5B2D31" Name="FlexSim AStar Module 1.0.6" Language="1033" Version="1.0.0.0" 
+	<Product Id="136BB8C0-AAD4-4EA0-8639-0F502B5B2D31" Name="FlexSim AStar Module 1.0.6" Language="1033" Version="1.0.6.0" 
            Manufacturer="FlexSim Software Products Inc." UpgradeCode="ECA79D4B-8995-48FC-AE32-9213C223E008">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
