@@ -734,4 +734,21 @@ inline FlexSimValue getqueryvalue(int row, const std::string& colName) {return g
 	inline double getdatastat(int stat, treenode dataset, treenode unused, double p1, double p2, double p3){return getdatastat_alias1(stat, dataset, unused, p1, p2, p3);}
 #endif
 
+
+engine_export Variant getlabel(treenode object, const char* labelName);
+inline Variant getlabel(treenode object, const string& labelName) { return getlabel(object, labelName.c_str()); }
+engine_export Variant getlabel(treenode object, int labelRank);
+engine_export Variant getlabel(treenode object, Variant labelName);
+
+engine_export void setlabel(treenode object, const char* labelName, Variant toVal);
+inline void setlabel(treenode object, const string& labelName, Variant toVal) {return setlabel(object, labelName.c_str(), toVal);}
+engine_export void setlabel(treenode object, int labelRank, Variant toVal);
+engine_export void setlabel(treenode object, Variant labelName, Variant toVal);
+
+
+
+
+
+
+
 #endif

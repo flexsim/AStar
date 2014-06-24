@@ -3,7 +3,7 @@
   <!--Note to self: if you're having issues with the msi replacing C:\Program Files\ with
   C:\Program Files (x86)\ make sure you have the compiler option -arch x64 -->
   
-	<Product Id="136BB8C0-AAD4-4EA0-8639-0F502B5B2D31" Name="FlexSim AStar Module 1.0.6" Language="1033" Version="1.0.6.0" 
+	<Product Id="136BB8C0-AAD4-4EA0-8639-0F502B5B2D31" Name="FlexSim AStar Module 1.0.8" Language="1033" Version="1.0.8.0" 
            Manufacturer="FlexSim Software Products Inc." UpgradeCode="ECA79D4B-8995-48FC-AE32-9213C223E008">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
@@ -23,7 +23,7 @@
     <Property Id="PREVIOUSVERSIONSINSTALLED" Secure="yes" />
     <Upgrade Id="ECA79D4B-8995-48FC-AE32-9213C223E008">
       <UpgradeVersion
-        Minimum="1.0.0.0" Maximum="1.0.4.0"
+        Minimum="1.0.0.0" Maximum="1.0.6.0"
         Property="PREVIOUSVERSIONSINSTALLED"
         IncludeMinimum="yes" IncludeMaximum="yes" />
     </Upgrade>
@@ -32,7 +32,7 @@
 
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="InstallDir" Name="AStar" FileSource="..\AStar">
+      <Directory Id="InstallDir" Name="AStar" FileSource=".\">
         <Component Id="DLLBinaries" Guid="B1F46686-7687-4075-B605-7FAE5A79E7A0">
           <File Name="AStar.dll" />
           <File Name="AStar_x86.dll" />

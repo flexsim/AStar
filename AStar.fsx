@@ -197,10 +197,12 @@
         <node f="42-0" dt="1"><name>editing</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>mode</name><data>0000000000000000</data></node>
         <node f="42-0" dt="3"><name>activeNavigator</name><data><coupling>null</coupling></data></node>
+        <node f="42-0" dt="3"><name>currBarrierNode</name><data><coupling>null</coupling></data></node>
        </node>
        <node f="42-0"><name>eventfunctions</name>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
+#define BARRIER_MODE_MOVE 0x4
 
 if (!objectexists(i))
 	return 0;
@@ -210,7 +212,7 @@ if (gets(documentwindow(i)) != "3D")
 
 int mode = getvarnum(c, "mode");
 treenode selobj = selectedobject(i/*The view*/);
-treenode currBarrierNode = getvarnode(c, "currBarrierNode");
+treenode currBarrierNode = tonode(getvarnum(c, "currBarrierNode"));
 
 treenode activeNavigator = tonode(getvarnum(c, "activeNavigator"));
 if (!objectexists(activeNavigator))
@@ -239,12 +241,16 @@ if (!objectexists(selobj)) {
 		
 		// Allow the user to pan the view
 		if (fabs(dx) &lt; 2 &amp;&amp; fabs(dy) &lt; 2) {
-			setvarnum(c, "creating", 1);
-			setvarnum(c, "editing", 0);
-			
-			treenode activeBarrier = function_s(activeNavigator, "addBarrier", mouseX, mouseY, mouseX, mouseY, mode);
-			function_s(activeNavigator, "setBarrierMode", activeBarrier, BARRIER_MODE_DYNAMIC_CREATE);
-			setselectedobject(i, activeNavigator);	
+			if (!getvarnum(c, "creating")) {
+				setvarnum(c, "creating", 1);
+				setvarnum(c, "editing", 0);
+				
+				treenode activeBarrier = function_s(activeNavigator, "addBarrier", mouseX, mouseY, mouseX, mouseY, mode);
+				function_s(activeNavigator, "setBarrierMode", activeBarrier, BARRIER_MODE_DYNAMIC_CREATE);
+				setselectedobject(i, activeNavigator);
+				nodepoint(getvarnode(c, "currBarrierNode"), activeBarrier); 
+				return 0;
+			}
 		}
 	}
 } else {
@@ -255,6 +261,7 @@ if (!objectexists(selobj)) {
 	}	
 }
 
+
 if (clickCode == LEFT_PRESS) {
 	setvarnum(c, "dragX", 0);
 	setvarnum(c, "dragY", 0);
@@ -263,8 +270,12 @@ if (clickCode == LEFT_PRESS) {
 
 if (clickCode == LEFT_RELEASE) {
 	setvarnum(c, "dragging", 0);
-}
-</data></node>
+	if (mode == EDITMODE_SOLID_BARRIER &amp;&amp; getvarnum(c, "creating")) {
+		setvarnum(c, "creating", 0);
+		setvarnum(c, "editing", 1);
+		function_s(activeNavigator, "setBarrierMode", currBarrierNode, 0); //So the barrier isn't deleted on right click
+	}
+}</data></node>
         <node f="42-4" dt="2"><name>OnMouseMove</name><data>if (!objectexists(i))
 		return 0;
 		
@@ -504,13 +515,13 @@ set(spatialz(asn), z);
 return asn;
 </data></node>
        </data></node>
-       <node f="42-100000" dt="4"><name>Barrier</name><data>
+       <node f="42-0" dt="4"><name>Barrier</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Barrier")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
        </data></node>
-       <node f="42-0" dt="4"><name>Divider</name><data>
+       <node f="42-100000" dt="4"><name>Divider</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Divider")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -2553,7 +2564,7 @@ applylinks(parent);</data></node>
    <node f="40-0"><name></name></node>
    <node f="42-0" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40-0"><name></name></node>
-    <node f="42-0" dt="1"><name>rank</name><data>0000000040488000</data></node>
+    <node f="42-0" dt="1"><name>rank</name><data>00000000404a8000</data></node>
     <node f="42-0" dt="2"><name>after</name><data>ThreeDView</data></node>
     <node f="42-0" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42-0"><name>data</name>

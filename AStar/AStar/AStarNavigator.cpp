@@ -149,7 +149,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 				setpickingdrawfocus(view, holder, 0, barrier->holder);
 				barrierMesh.draw(GL_TRIANGLES, barrier->meshOffset, barrier->nrVerts);
-
 			}
 		}
 
@@ -279,9 +278,11 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 		switch(keyPressed & 0x7f) {
 		case 'A': {
 			TreeNode* theNavigator = tonode(get(first(navigatorNode)));
-			TreeNode* travelMembers = node_v_travelmembers;
-			if (theNavigator->parent == travelMembers)
-				return 0;
+			TreeNode* travelMembers = node_v_travelmembers; 
+			if (validlink(theNavigator, "")) {
+				if (theNavigator->parent == travelMembers)
+					return 0;
+			}
 			clearcontents(navigatorNode);
 			createcoupling(navigatorNode, travelMembers);
 			break;

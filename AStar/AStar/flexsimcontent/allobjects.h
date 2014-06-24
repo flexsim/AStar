@@ -2942,7 +2942,7 @@ FS_CONTENT_DLL_FUNC double stopObject(int stopstate, int id, double priority DEF
 
 FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resumeObject(int id, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual double resumeObject(int id, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double resumeObject();
 
@@ -5868,7 +5868,7 @@ TreeNode * node_v_poffsetz;
 
 FS_CONTENT_DLL_FUNC double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resumeObject();
+FS_CONTENT_DLL_FUNC virtual double resumeObject(int id, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC double onTransportInNotify(treenode item, int port);
 
@@ -6563,7 +6563,7 @@ FS_CONTENT_DLL_FUNC double getPlaceOffset(treenode item, treenode fromobject,  d
 
 FS_CONTENT_DLL_FUNC double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resumeObject();
+FS_CONTENT_DLL_FUNC virtual double resumeObject(int id, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 

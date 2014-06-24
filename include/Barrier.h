@@ -27,6 +27,7 @@ public:
 
 	unsigned int mode;
 	unsigned int activePointIndex;
+	unsigned int arrow;
 
 	double nodeWidth;
 

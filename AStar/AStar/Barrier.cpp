@@ -43,6 +43,8 @@ void Barrier::init(double nodeWidth, double x1, double y1, double x2, double y2)
 	this->nodeWidth = nodeWidth;
 	addPoint(x1, y1);
 	addPoint(x2, y2);
+
+	arrow = 0;
 }
 
 bool Barrier::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
@@ -116,32 +118,45 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 
 	meshOffset = barrierMesh->numVerts;
 
-	float gray[4] = {0.4f, 0.4f, 0.4f, 1.0f};
+	float red[4] = {1.0f, 0.0f, 0.0f, 1.0f};
 	float black[4] = {0.4f, 0.4f, 0.4f, 1.0f};
 	if (isActive) {
 		black[0] += 0.2f;
 		black[1] += 0.2f;
 		black[2] += 0.2f;
-		gray[0] += 0.3f;
-		gray[1] += 0.3f;
-		gray[2] += 0.3f;
 	}
+
+	float scale = 0.1 * (height + width);
 	
+	Vec3f right[3] = {
+		Vec3f(xmax, ymin + height *0.5f + 0.25f * scale, z),
+		Vec3f(xmax, ymin + height *0.5f - 0.25f * scale, z),
+		Vec3f(xmax + 0.5f * scale, ymin + height *0.5f, z)
+	};
+
+	Vec3f left[3] = {
+		Vec3f(xmin, ymin + height *0.5f + 0.25f * scale, z),
+		Vec3f(xmin, ymin + height *0.5f - 0.25f * scale, z),
+		Vec3f(xmin - 0.5f * scale, ymin + height *0.5f, z)
+	};
+
+	Vec3f top[3] = {
+		Vec3f(xmin + width * 0.5f - 0.25f * scale, ymax, z),
+		Vec3f(xmin + width * 0.5f + 0.25f * scale, ymax, z),
+		Vec3f(xmin + width * 0.5f, ymax + 0.5f * scale, z)
+	};
+
+	Vec3f bottom[3] = {
+		Vec3f(xmin + width * 0.5f - 0.25f * scale, ymin, z),
+		Vec3f(xmin + width * 0.5f + 0.25f * scale, ymin, z),
+		Vec3f(xmin + width * 0.5f, ymin - 0.5f * scale, z)
+	};
 
 	float bottomLeft[3] = {xmin, ymin, z};
-	float topLeft[3] = {xmin, ymax, z};
-	float topRight[3] = {xmax, ymax, z};
+	float topRight[3] = { xmax, ymax, z }; 
+	float topLeft[3] = { xmin, ymax, z };
 	float bottomRight[3] = {xmax, ymin, z};
-
-	triangleEdgeLength = sqrt(width * width + height * height) / 10.0;
-	triangleEdgeLength = max(0.8 * nodeWidth, triangleEdgeLength);
-	if (triangleEdgeLength > min(width, height))
-		triangleEdgeLength = min(width, height);
-	float triangleBottomRight[3] = {xmin + triangleEdgeLength, ymin, z};
-	float triangleBottomTop[3] = {xmin, ymin + triangleEdgeLength, z};
-	float triangleTopLeft[3] = {xmax - triangleEdgeLength, ymax, z};
-	float triangleTopBottom[3] = {xmax, ymax - triangleEdgeLength, z};
-
+	
 #define ABV(point, color) {\
 		int newVertex = barrierMesh->addVertex();\
 		barrierMesh->setVertexAttrib(newVertex, MESH_POSITION, point);\
@@ -150,14 +165,15 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 	}\
 
 #define ABT(p1, p2, p3, color) ABV(p1, color) ABV(p2, color) ABV(p3, color)
-
-	ABT(triangleTopBottom, topRight, triangleTopLeft, gray);
-	ABT(triangleBottomRight, triangleBottomTop, bottomLeft, gray);
-	ABT(triangleBottomTop, triangleTopLeft, topLeft, black);
-	ABT(triangleBottomRight, triangleTopLeft, triangleBottomTop, black);
-	ABT(triangleBottomRight, triangleTopBottom, triangleTopLeft, black);
-	ABT(triangleBottomRight, bottomRight, triangleTopBottom, black);
-
+	if (isActive) {
+		ABT(left[0], left[1], left[2], red);
+		ABT(right[0], right[1], right[2], red);
+		ABT(top[0], top[1], top[2], red);
+		ABT(bottom[0], bottom[1], bottom[2], red);
+	}
+	ABT(bottomRight, topLeft, bottomLeft, black);
+	ABT(bottomRight, topRight, topLeft, black);
+	
 #undef ABT
 #undef ABV
 }
@@ -177,32 +193,34 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 			applicationcommand("addundotracking", tonum(view), tonum(node("y", pointList[i]->holder)));
 		}
 
-		// if the user clicked on a triangle, set the mode and active point
-		Point* bottomLeftPoint = pointList[0];
-		double blx = bottomLeftPoint->x;
-		double bly = bottomLeftPoint->y;
-		
-		// Transform click to barrier coords
-		x -= blx;
-		y -= bly;
-
 		double xmin, ymin, xmax, ymax;
 		if (!getBoundingBox(xmin, ymin, xmax, ymax))
 			return 0;
 
-		double width = xmax - xmin;
-		double height = ymax - ymin;
-
-		// If the click is in the bottom left corner
-		if ((x + y) <= triangleEdgeLength) {
+		// Left Arrow
+		if (x < xmin) {
 			activePointIndex = 0;
 			mode = BARRIER_MODE_POINT_EDIT;
+			arrow = 1;
 		
-		// If the click is in the top right corner
-		} else if ((x + y) >= width + height - triangleEdgeLength) {
+		// Right Arrow
+		} else if (x > xmax) {
 			activePointIndex = 1;
 			mode = BARRIER_MODE_POINT_EDIT;
+			arrow = 2;
 		
+		// Top Arrow
+		} else if (y > ymax) {
+			activePointIndex = 1;
+			mode = BARRIER_MODE_POINT_EDIT;
+			arrow = 3;
+		
+		// Bottom Arrow
+		} else if (y < ymin) {
+			activePointIndex = 0;
+			mode = BARRIER_MODE_POINT_EDIT;
+			arrow = 4;
+
 		} else {
 			activePointIndex = 0;
 			mode = BARRIER_MODE_MOVE;
@@ -213,6 +231,7 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 		if (mode & BARRIER_MODE_POINT_EDIT) {
 			activePointIndex = 0;
 			mode = 0;
+			arrow = 0;
 		}
 	}
 
@@ -230,8 +249,13 @@ double Barrier::onMouseMove(double x, double y, double dx, double dy)
 {
 	if ((mode & BARRIER_MODE_POINT_EDIT) && activePointIndex < pointList.size()) {
 		Point* activePoint = pointList[(int)activePointIndex];
-		activePoint->x = x + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
-		activePoint->y = y + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
+
+		if (arrow <= 2) {
+			activePoint->x = x + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
+		}
+		if (arrow == 0 || arrow > 2) {
+			activePoint->y = y + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
+		}
 
 		Point* bottomLeft = pointList[0];
 		Point* topRight = pointList[1];
@@ -321,8 +345,7 @@ visible double Barrier_setMode(FLEXSIMINTERFACE)
 
 	TreeNode* barNode = parnode(1);
 
-	if ((int)parnode(2) == 0)
-		return 0;
+
 
 	try {
 		Barrier* b = &o(Barrier, barNode);
