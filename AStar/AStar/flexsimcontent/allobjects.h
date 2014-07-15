@@ -1058,7 +1058,6 @@
 #define CLF_CONSOLE_SCRIPT		0x00002000
 #define CLF_COMPILE				0x00001000
 #define CLF_COMMERCIAL_USE		0x00080000
-#define CLF_EXPERTFIT			0x00040000
 #define CLF_OPTQUEST			0x00020000
 #define CLF_XMLSAVELOAD			0x00010000
 
@@ -1141,6 +1140,7 @@
 #define LA_LF_BORROW_RETURN 22
 #define LA_HAS_TRUSTED_STORAGE_CONTENTS 23
 #define LA_SEND_UPGRADE_REQUEST 24
+#define LA_REEVALUATE_LICENSE 25
 
 #define ANIM_INFO_BODIES 1
 #define ANIM_INFO_ANIMATIONS 2
@@ -2884,6 +2884,14 @@ FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode fromObj);
 
 FS_CONTENT_DLL_FUNC static double toggleCppVarsOnCreate(treenode theobject);
 
+FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
+
+FS_CONTENT_DLL_FUNC virtual double onTransportOutNotify(treenode item, int port);
+
+FS_CONTENT_DLL_FUNC virtual double onTransportOutComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
+
+FS_CONTENT_DLL_FUNC virtual double onTransportInComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
+
 
 // System
 
@@ -3639,9 +3647,15 @@ FS_CONTENT_DLL_FUNC double getRowHeaders(int startrow, int rows, int col);
 
 FS_CONTENT_DLL_FUNC double getColHeaders(int startcol, int cols, int row);
 
+FS_CONTENT_DLL_FUNC int getBundleColHeaders(int startcol, int cols, int row);
+
 FS_CONTENT_DLL_FUNC double importData(int startrow, int startcol, int rows, int cols, int curtable, double percentdone, double percentmain);
 
+FS_CONTENT_DLL_FUNC double importBundleData(int startrow, int startcol, int rows, int cols, int curtable, double percentdone, double percentmain);
+
 FS_CONTENT_DLL_FUNC double exportData(int startrow, int startcol, int headers, int curtable, double percentdone, double percentmain);
+
+FS_CONTENT_DLL_FUNC int isNumber(string str);
 
 
 // System

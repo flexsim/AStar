@@ -521,7 +521,23 @@ inline double logistic( double locate, double scale, int stream=0){return logist
 
 inline double loglogistic( double locate, double scale, double shape, int stream=0){return loglogisticalias(locate, scale, shape, stream);}
 
-inline double loglaplace( double locate, double scale, double shape, int stream=0){return loglaplacealias(locate, scale, shape, stream);}
+inline double loglaplace(double locate, double scale, double shape, int stream = 0){ return loglaplacealias(locate, scale, shape, stream); }
+
+inline double cauchy(double locate, double scale, int stream = 0){ return cauchyalias(locate, scale, stream); }
+
+inline double extremevalue1a(double locate, double scale, int stream = 0){ return extremevalue1aalias(locate, scale, stream); }
+
+inline double extremevalue1b(double locate, double scale, int stream = 0){ return extremevalue1balias(locate, scale, stream); }
+
+inline double hypergeometric(int sample, int m, int n, int stream = 0){ return hypergeometricalias(sample, m, n, stream); }
+
+inline double inverseweibull(double locate, double scale, double shape, int stream = 0){ return inverseweibullalias(locate, scale, shape, stream); }
+
+inline double laplace(double locate, double scale, int stream = 0){ return laplacealias(locate, scale, stream); }
+
+inline double logarithmic(double theta, int stream = 0){ return logarithmicalias(theta, stream); }
+
+inline double pareto(double min, double scale, int stream = 0){ return paretoalias(min, scale, stream); }
 
 inline double randomwalk( double locate, double scale, double shape, int stream=0){return randomwalkalias(locate, scale, shape, stream);}
 
@@ -529,7 +545,7 @@ inline double empirical( char *tablename, int stream=0){return empiricalalias(ta
 
 inline double cempirical( char *tablename, int stream=0){return cempiricalalias(tablename, stream);}
 
-inline double dempirical( char *tablename, int stream=0){return dempiricalalias(tablename, stream);}
+inline double dempirical(char *tablename, int stream = 0){ return dempiricalalias(tablename, stream); }
 
 inline double applicationcommand(char* commandname, n10argsdefaultinterface){return applicationcommandalias(commandname, n10args);}
 

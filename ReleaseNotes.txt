@@ -3,6 +3,11 @@ AStar Module
 ===============================================================================
 Release Notes
 
+--- Version 1.0.8 ---
+
+*	Fixed an issue with attaching TaskExecuters to AStar when they weren't already connected to a navigator.
+*	Updated barriers to draw resizing arrows.
+
 --- Version 1.0.4 ---
 
 *	Fixed calculations for total travel distance on TaskExecuter objects.

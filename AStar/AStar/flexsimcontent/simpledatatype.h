@@ -61,9 +61,11 @@ public:
 	virtual void bind(){}
 	void bind(int bindMode);
 	virtual char* toString(int verbose);
+engine_private:
 	virtual TreeNode* getObjectTree() { return 0; }
 	virtual TreeNode* getLabelNode(const char* labelName, bool assert) { return 0; }
 	virtual TreeNode* getLabelNode(int labelRank, bool assert) { return 0; }
+public:
 	virtual Variant evaluate(VariantParams& params) { return Variant(); }
 	char* defaultToString(int verbose);
 	void* operator new (size_t size)
@@ -288,7 +290,10 @@ template<class ObjType>
 	// now for some stl stuff
 	
 	// original Saver() definitions
-	template <typename Type> class StlValueBinder {
+	template <typename Type, class Enable = void> class StlValueBinder;
+	
+	template <typename Type>
+	class StlValueBinder<Type, typename std::enable_if<!std::is_pointer<Type>::value && !std::is_integral<Type>::value && !std::is_floating_point<Type>::value, void>::type> {
 	public:
 		static treenode Saver(treenode x, Type* toVal)
 		{
@@ -312,93 +317,25 @@ template<class ObjType>
 			sprintf(str, format, x);\
 			appendToDisplayStr(str);
 
-	template <> class StlValueBinder<double> {
+	template <class Type> 
+	class StlValueBinder<Type, typename std::enable_if<std::is_floating_point<Type>::value, void>::type> {
 	public:
-		static treenode Saver(treenode x, double* toVal)
-			{return set(nodeadddata(x, DATA_FLOAT), *toVal);}
-		static double Loader(treenode x)
-			{return get(x);}
-		static void Displayer(double* x)
-			{FORMAT_AND_DISPLAY("%lf", *x);}
+		static treenode Saver(treenode x, Type* toVal)
+			{return set(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
+		static Type Loader(treenode x)
+			{return (Type)get(x);}
+		static void Displayer(Type* x)
+			{FORMAT_AND_DISPLAY("%lf", (double)*x);}
 	};
 
-	template <> class StlValueBinder<float> {
+	template <class Type> 
+	class StlValueBinder<Type, typename std::enable_if<std::is_integral<Type>::value, void>::type> {
 	public:
-		static treenode Saver(treenode x, float* toVal)
+		static treenode Saver(treenode x, Type* toVal)
 			{return set(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
-		static float Loader(treenode x)
-			{return (float)get(x);}
-		static void Displayer(float* x)
-			{FORMAT_AND_DISPLAY("%f", *x);}
-	};
-
-	template <> class StlValueBinder<int> {
-	public:
-		static treenode Saver(treenode x, int* toVal)
-			{return set(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
-		static int Loader(treenode x)
-			{return (int)get(x);}
-		static void Displayer(int* x)
-			{FORMAT_AND_DISPLAY("%d", *x);}
-	};
-
-	template <> class StlValueBinder<unsigned int> {
-	public:
-		static treenode Saver(treenode x, unsigned int* toVal)
-			{return set(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
-		static unsigned int Loader(treenode x)
-			{return (unsigned int)get(x);}
-		static void Displayer(unsigned int* x)
-			{FORMAT_AND_DISPLAY("%u", *x);}
-	};
-
-	template <> class StlValueBinder<short> {
-	public:
-		static treenode Saver(treenode x, short* toVal)
-			{return set(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
-		static short Loader(treenode x)
-			{return (short)get(x);}
-		static void Displayer(short* x)
-			{FORMAT_AND_DISPLAY("%d", (int)*x);}
-	};
-
-	template <> class StlValueBinder<unsigned short> {
-	public:
-		static treenode Saver(treenode x, unsigned short* toVal)
-			{return set(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
-		static unsigned short Loader(treenode x)
-			{return (unsigned short)get(x);}
-		static void Displayer(unsigned short* x)
-			{FORMAT_AND_DISPLAY("%u", (unsigned int)*x);}
-	};
-
-	template <> class StlValueBinder<char> {
-	public:
-		static treenode Saver(treenode x, char* toVal)
-			{return set(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
-		static char Loader(treenode x)
-			{return (char)get(x);}
-		static void Displayer(char* x)
-			{FORMAT_AND_DISPLAY("%d", (int)*x);}
-	};
-
-	template <> class StlValueBinder<unsigned char> {
-	public:
-		static treenode Saver(treenode x, unsigned char* toVal)
-			{return set(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
-		static unsigned char Loader(treenode x)
-			{return (unsigned char)get(x);}
-		static void Displayer(unsigned char* x)
-			{FORMAT_AND_DISPLAY("%u", (unsigned int)*x);}
-	};
-
-	template <> class StlValueBinder<bool> {
-	public:
-		static treenode Saver(treenode x, bool* toVal)
-			{return set(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
-		static bool Loader(treenode x)
-			{return (bool)get(x);}
-		static void Displayer(bool* x)
+		static Type Loader(treenode x)
+			{return (Type)get(x);}
+		static void Displayer(Type* x)
 			{FORMAT_AND_DISPLAY("%d", (int)*x);}
 	};
 
@@ -440,18 +377,19 @@ template<class ObjType>
 		}
 	};
 
-	template <> class StlValueBinder<SimpleDataType*> {
+	template <class T> 
+	class StlValueBinder<T*, typename std::enable_if<std::is_base_of<SimpleDataType, T>::value, void>::type> {
 	public:
-		static treenode Saver(treenode x, SimpleDataType** toVal)
+		static treenode Saver(treenode x, T** toVal)
 			{return nodepoint(nodeadddata(x, DATA_POINTERCOUPLING), *toVal ? (*toVal)->holder : 0);}
-		static SimpleDataType* Loader(treenode x)
+		static T* Loader(treenode x)
 		{
 			treenode dereference = tonode(get(x)); 
 			if (objectexists(dereference))
-				return &o(SimpleDataType, dereference);
+				return dereference->object<T>();
 			return 0;
 		}
-		static void Displayer(SimpleDataType** x)
+		static void Displayer(T** x)
 		{
 			if(x && (*x))
 				StlValueBinder<treenode>::Displayer(&((*x)->holder));
@@ -459,7 +397,9 @@ template<class ObjType>
 		}
 	};
 
-	template <class T> class StlValueBinder<T*> {
+
+	template <class T>
+	class StlValueBinder<T*, typename std::enable_if<!std::is_base_of<SimpleDataType, T>::value, void>::type> {
 	public:
 		static void Saver(treenode x, T** toVal)
 		{

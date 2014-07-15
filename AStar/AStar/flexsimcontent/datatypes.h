@@ -749,7 +749,7 @@ public:
 		return Variant(str, WEAK_STR);
 	}
 
-	bool isNumberType() const { return type == VariantType::Double || type == VariantType::Int; }
+	bool isNumberType() const { return type == VariantType::Double || type == VariantType::Int; };
 	EXPLICIT operator bool() const
 	{
 		switch (type) {
@@ -830,7 +830,7 @@ public:
 	bool operator op (numberType& theNum) const \
 	{\
 		if (type == VariantType::Double) return asDouble op theNum;\
-		else if (type == VariantType::Int) return asInt op theNum;\
+		else if (type == VariantType::Int) return asInt op static_cast<int>(theNum);\
 		return false;\
 	}\
 
@@ -855,8 +855,6 @@ public:
 
 
 
-
-
 #ifdef FLEXSIM_ENGINE_COMPILE
 	double forceLegacyDouble() const
 	{
@@ -868,43 +866,43 @@ public:
 			default: return 0;
 		}
 	}
+#endif
 
 	// only return my pointer if it's a non-owned cstr, i.e. it won't
 	// go out of scope if I'm destructed.
-	operator const char*() const { return (type == VariantType::String && (flags & WEAK_STR)) ? asString().operator const char*() : 0; }
-
-#endif
+	const char* getWeakStr() const { return (type == VariantType::String && (flags & WEAK_STR)) ? asString().operator const char*() : 0; }
+	const char* c_str() const { return (type == VariantType::String) ? asString().operator const char*() : ""; }
 };
 
 class VariantParams
 {
 public:
-	Variant& getParam(size_t paramNum);
+	const Variant& getParam(size_t paramNum);
 
 #ifdef FLEXSIM_ENGINE_COMPILE
 	VariantParams() : numParams(0) {}
-	VariantParams(Variant& p1) : numParams(1) {
+	VariantParams(const Variant& p1) : numParams(1) {
 		params[0] = &p1;
 	}
-	VariantParams(Variant& p1, Variant& p2) : numParams(2)
+	VariantParams(const Variant& p1, const Variant& p2) : numParams(2)
 	{
 		params[0] = &p1;
 		params[1] = &p2;
 	}
-	VariantParams(Variant& p1, Variant& p2, Variant& p3) : numParams(3)
+	VariantParams(const Variant& p1, const Variant& p2, const Variant& p3) : numParams(3)
 	{
 		params[0] = &p1;
 		params[1] = &p2;
 		params[2] = &p3;
 	}
-	VariantParams(Variant& p1, Variant& p2, Variant& p3, Variant& p4) : numParams(4)
+	VariantParams(const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4) : numParams(4)
 	{
 		params[0] = &p1;
 		params[1] = &p2;
 		params[2] = &p3;
 		params[3] = &p4;
 	}
-	VariantParams(Variant& p1, Variant& p2, Variant& p3, Variant& p4, Variant& p5) : numParams(5)
+	VariantParams(const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5) : numParams(5)
 	{
 		params[0] = &p1;
 		params[1] = &p2;
@@ -912,8 +910,8 @@ public:
 		params[3] = &p4;
 		params[4] = &p5;
 	}
-	VariantParams(Variant& p1, Variant& p2, Variant& p3, Variant& p4, Variant& p5, 
-	              Variant& p6, Variant& p7, Variant& p8, Variant& p9, Variant& p10) : numParams(10)
+	VariantParams(const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5,
+		const Variant& p6, const Variant& p7, const Variant& p8, const Variant& p9, const Variant& p10) : numParams(10)
 	{
 		params[0] = &p1;
 		params[1] = &p2;
@@ -931,7 +929,7 @@ public:
 
 private:
 	size_t numParams;
-	Variant* params[10];
+	const Variant* params[10];
 #endif
 };
 

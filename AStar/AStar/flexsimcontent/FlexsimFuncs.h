@@ -250,6 +250,7 @@ THE SOFTWARE.
 	typedef double       (*_cmdsaveas)();
 	typedef double       (*_cmdsavesession)(char * thename);
 	typedef double       (*_cmdsavetree)(treenode thenode, char * thename);
+	typedef double       (*_cauchyalias)( double locate, double scale, int stream);
 	typedef int          (*_codetotemplate)(treenode thecode, treenode theedit, int firstcommentonly);
 	typedef double       (*_codetotemplatetext)(treenode view, treenode destnode);
 	typedef char*        (*_codetotemplatetext_cstr)(treenode thecode);
@@ -470,6 +471,8 @@ THE SOFTWARE.
 	typedef double       (*_exportdatasetalias)(treenode, char * table, int format, char* wrOption);
 	typedef int          (*_exportfullhistory)(char *dbname);
 	typedef double       (*_exporttablealias)(treenode, char * table, int usetopgrey, int useleftgrey);
+	typedef double       (*_extremevalue1aalias)( double locate, double scale, int stream);
+	typedef double       (*_extremevalue1balias)( double locate, double scale, int stream);
 	typedef double       (*_factorial)(double n1);
 	typedef size_t       (*_familycreate)(treenode familycontainer, char * name);
 	typedef size_t       (*_familydelete)(treenode familycontainer, char * name);
@@ -653,6 +656,7 @@ THE SOFTWARE.
 	typedef double       (*_hours)(double val);
 	typedef double       (*_howmanyattributes)();
 	typedef double       (*_howmanycommands)();
+	typedef double       (*_hypergeometricalias)(int sample, int m, int n, int stream);
 	typedef double       (*_importdataset)(treenode, char * table, int format);
 	typedef double       (*_importednodefunction)(treenode node, n10argsinterface);
 	typedef double       (*_importtablealias)(treenode, char * table, int usetopgrey, int useleftgrey);
@@ -677,6 +681,7 @@ THE SOFTWARE.
 	typedef treenode     (*_inserttaskalias)(treenode tasksequence,  unsigned int  type, treenode involved1, treenode involved2 , double var1 , double var2 , double var3 , double var4);
 	typedef int          (*_installpackage)(char * packagefile);
 	typedef double       (*_inversegaussianalias)( double locate, double scale, double shape , int stream);
+	typedef double       (*_inverseweibullalias)( double locate, double scale, double shape, int stream);
 	typedef double       (*_invertedweibullalias)( double locate, double scale, double shape, int stream);
 	typedef int          (*_ipopen)(treenode object, int index);
 	typedef int          (*_ipopno)(treenode, int);
@@ -690,6 +695,7 @@ THE SOFTWARE.
 	typedef double       (*_johnsonunboundedalias)( double locate, double scale, double shape1, double shape2, int stream);
 	typedef HWND         (*_keyboardfocus)(unsigned int x);
 	typedef treenode     (*_label)(treenode object, char* labelname);
+	typedef double       (*_laplacealias)( double locate, double scale, int stream);
 	typedef treenode     (*_last)(treenode);
 	typedef treenode     (*_lastclickednode)();
 	typedef double       (*_lastkey)();
@@ -739,6 +745,7 @@ THE SOFTWARE.
 	typedef treenode     (*_loc_medialist_sounds)();
 	typedef treenode     (*_loc_tools)();
 	typedef treenode     (*_loc_undolist)();
+	typedef double       (*_logarithmicalias)( double theta, int stream);
 	typedef void         (*_logeventalias1)(int _eventcode, treenode object, treenode involved, double p1, double p2, double p3, double p4);
 	typedef void         (*_logeventalias2)(char* name, treenode object, treenode involved, double p1, double p2, double p3, double p4);
 	typedef double       (*_logisticalias)( double locate, double scale, int stream);
@@ -839,6 +846,7 @@ THE SOFTWARE.
 	typedef double       (*_outputtreecontent)(treenode target, char * filename);
 	typedef treenode     (*_ownerobject)(treenode);
 	typedef treenode     (*_ownerview)(treenode);
+	typedef double       (*_paretoalias)( double min, double scale, int stream);
 	typedef char*        (*_parg_cstr)();
 	typedef double       (*__parqty)( CallPoint * callpoint);
 	typedef int          (*_particlecreate)(treenode c);
@@ -1345,6 +1353,7 @@ DECLARE_FLEXSIM_FUNCTION_1(buildnodeflexscript)
 DECLARE_FLEXSIM_FUNCTION_1(calculate6DOFrobotinversekinematics)
 DECLARE_FLEXSIM_FUNCTION_1(calculateconfidence)
 DECLARE_FLEXSIM_FUNCTION_1(callwebscriptmethod)
+DECLARE_FLEXSIM_FUNCTION_2(cauchyalias, "cauchy")
 DECLARE_FLEXSIM_FUNCTION_1(cdir_cstr)
 DECLARE_FLEXSIM_FUNCTION_2(cempiricalalias, "cempirical")
 DECLARE_FLEXSIM_FUNCTION_1(centerobject)
@@ -1553,6 +1562,8 @@ DECLARE_FLEXSIM_FUNCTION_2(exponentialalias, "exponential")
 DECLARE_FLEXSIM_FUNCTION_2(exportdatasetalias, "exportdataset")
 DECLARE_FLEXSIM_FUNCTION_1(exportfullhistory)
 DECLARE_FLEXSIM_FUNCTION_2(exporttablealias, "exporttable")
+DECLARE_FLEXSIM_FUNCTION_2(extremevalue1aalias, "extremevalue1a")
+DECLARE_FLEXSIM_FUNCTION_2(extremevalue1balias, "extremevalue1b")
 DECLARE_FLEXSIM_FUNCTION_1(factorial)
 DECLARE_FLEXSIM_FUNCTION_1(familycreate)
 DECLARE_FLEXSIM_FUNCTION_1(familydelete)
@@ -1687,6 +1698,7 @@ DECLARE_FLEXSIM_FUNCTION_1(highlightviewtext)
 DECLARE_FLEXSIM_FUNCTION_1(hours)
 DECLARE_FLEXSIM_FUNCTION_1(howmanyattributes)
 DECLARE_FLEXSIM_FUNCTION_1(howmanycommands)
+DECLARE_FLEXSIM_FUNCTION_2(hypergeometricalias, "hypergeometric")
 DECLARE_FLEXSIM_FUNCTION_1(importdataset)
 DECLARE_FLEXSIM_FUNCTION_2(importednodefunction, "nodefunction")
 DECLARE_FLEXSIM_FUNCTION_2(importtablealias, "importtable")
@@ -1698,6 +1710,7 @@ DECLARE_FLEXSIM_FUNCTION_1(inobject)
 DECLARE_FLEXSIM_FUNCTION_1(inputopen)
 DECLARE_FLEXSIM_FUNCTION_1(insertcopy)
 DECLARE_FLEXSIM_FUNCTION_2(inversegaussianalias, "inversegaussian")
+DECLARE_FLEXSIM_FUNCTION_2(inverseweibullalias, "inverseweibull")
 DECLARE_FLEXSIM_FUNCTION_2(invertedweibullalias, "invertedweibull")
 DECLARE_FLEXSIM_FUNCTION_1(ipopen)
 DECLARE_FLEXSIM_FUNCTION_1(ipopno)
@@ -1708,6 +1721,7 @@ DECLARE_FLEXSIM_FUNCTION_2(iskeydownalias, "iskeydown")
 DECLARE_FLEXSIM_FUNCTION_2(johnsonboundedalias, "johnsonbounded")
 DECLARE_FLEXSIM_FUNCTION_2(johnsonunboundedalias, "johnsonunbounded")
 DECLARE_FLEXSIM_FUNCTION_1(keyboardfocus)
+DECLARE_FLEXSIM_FUNCTION_2(laplacealias, "laplace")
 DECLARE_FLEXSIM_FUNCTION_1(last)
 DECLARE_FLEXSIM_FUNCTION_1(lastclickednode)
 DECLARE_FLEXSIM_FUNCTION_1(lastkey)
@@ -1753,6 +1767,7 @@ DECLARE_FLEXSIM_FUNCTION_1(loc_medialist_objects)
 DECLARE_FLEXSIM_FUNCTION_1(loc_medialist_sounds)
 DECLARE_FLEXSIM_FUNCTION_1(loc_tools)
 DECLARE_FLEXSIM_FUNCTION_1(loc_undolist)
+DECLARE_FLEXSIM_FUNCTION_2(logarithmicalias, "logarithmic")
 DECLARE_FLEXSIM_FUNCTION_2(logeventalias1,"logevent")
 DECLARE_FLEXSIM_FUNCTION_3(logeventalias2,"?logevent@@YAXPADPAVTreeNode@@1NNNN@Z","?logevent@@YAXPEADPEAVTreeNode@@1NNNN@Z")
 DECLARE_FLEXSIM_FUNCTION_2(logisticalias, "logistic")
@@ -1839,6 +1854,7 @@ DECLARE_FLEXSIM_FUNCTION_1(outputopen)
 DECLARE_FLEXSIM_FUNCTION_1(outputtreecontent)
 DECLARE_FLEXSIM_FUNCTION_1(ownerobject)
 DECLARE_FLEXSIM_FUNCTION_1(ownerview)
+DECLARE_FLEXSIM_FUNCTION_2(paretoalias, "pareto")
 DECLARE_FLEXSIM_FUNCTION_1(parg_cstr)
 DECLARE_FLEXSIM_FUNCTION_2(_parqty, "parqty")
 DECLARE_FLEXSIM_FUNCTION_1(particlecreate)

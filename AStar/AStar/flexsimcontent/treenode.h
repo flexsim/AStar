@@ -40,14 +40,14 @@ public:
 	// evaluate
 	engine_export Variant evaluate(VariantParams& params);
 	engine_export Variant evaluate();
-	engine_export Variant evaluate(Variant p1);
-	engine_export Variant evaluate(Variant p1, Variant p2);
-	engine_export Variant evaluate(Variant p1, Variant p2, Variant p3);
-	engine_export Variant evaluate(Variant p1, Variant p2, Variant p3, Variant p4);
-	engine_export Variant evaluate(Variant p1, Variant p2, Variant p3, Variant p4, Variant p5);
-	engine_export Variant evaluate(Variant p1, Variant p2, Variant p3, Variant p4, Variant p5, Variant p6,
-	                               Variant p7 = Variant(), Variant p8 = Variant(), Variant p9 = Variant(), 
-	                               Variant p10 = Variant());
+	engine_export Variant evaluate(const Variant& p1);
+	engine_export Variant evaluate(const Variant& p1, const Variant& p2);
+	engine_export Variant evaluate(const Variant& p1, const Variant& p2, const Variant& p3);
+	engine_export Variant evaluate(const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
+	engine_export Variant evaluate(const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
+	engine_export Variant evaluate(const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5, const Variant& p6,
+	                      const Variant& p7 = Variant(), const Variant& p8 = Variant(), const Variant& p9 = Variant(),
+	                      const Variant& p10 = Variant());
 	
 	// object data
 	template <class T = ObjectDataType>
