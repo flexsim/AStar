@@ -2884,14 +2884,6 @@ FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode fromObj);
 
 FS_CONTENT_DLL_FUNC static double toggleCppVarsOnCreate(treenode theobject);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
-
-FS_CONTENT_DLL_FUNC virtual double onTransportOutNotify(treenode item, int port);
-
-FS_CONTENT_DLL_FUNC virtual double onTransportOutComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
-
-FS_CONTENT_DLL_FUNC virtual double onTransportInComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
-
 
 // System
 
@@ -3647,15 +3639,9 @@ FS_CONTENT_DLL_FUNC double getRowHeaders(int startrow, int rows, int col);
 
 FS_CONTENT_DLL_FUNC double getColHeaders(int startcol, int cols, int row);
 
-FS_CONTENT_DLL_FUNC int getBundleColHeaders(int startcol, int cols, int row);
-
 FS_CONTENT_DLL_FUNC double importData(int startrow, int startcol, int rows, int cols, int curtable, double percentdone, double percentmain);
 
-FS_CONTENT_DLL_FUNC double importBundleData(int startrow, int startcol, int rows, int cols, int curtable, double percentdone, double percentmain);
-
 FS_CONTENT_DLL_FUNC double exportData(int startrow, int startcol, int headers, int curtable, double percentdone, double percentmain);
-
-FS_CONTENT_DLL_FUNC int isNumber(string str);
 
 
 // System

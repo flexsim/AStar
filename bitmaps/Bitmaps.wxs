@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
   <Fragment>
-    <DirectoryRef Id="InstallDir">
+    <DirectoryRef Id="INSTALLDIR">
       <Directory Id="BitmapsDir" Name="bitmaps">
         <Component Id="Bitmaps" Guid="90FF25EF-83E5-4363-A300-BF76D0CE223E">
           <File Name="astar.bmp" Id="AStarThumbNail"/>

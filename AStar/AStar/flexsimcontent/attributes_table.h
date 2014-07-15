@@ -38,7 +38,7 @@ DECLARE_ATTRIBUTE(1,gridfog,"Grid fog density factor: 0=none 1=max")
 DECLARE_ATTRIBUTE(1,gridx,"Grid x spacing")
 DECLARE_ATTRIBUTE(1,gridy,"Grid y spacing")
 DECLARE_ATTRIBUTE(1,gridz,"Grid z spacing")
-DECLARE_ATTRIBUTE(1,gridorientation,"Grid orientation (0-x/y, 1-x/z, 2-y/z)")
+DECLARE_ATTRIBUTE(1,gridplane,"Grid orientation (0-x/y, 1-x/z, 2-y/z)")
 DECLARE_ATTRIBUTE(.1,connectorsize,"Connector size. Relative to space unit.")
 DECLARE_ATTRIBUTE(1,connectorstyle,"Connector style.")
 DECLARE_ATTRIBUTE(1,labelscale,"Magnification factor for display of object names.")
@@ -137,6 +137,7 @@ DECLARE_ATTRIBUTE(1,OnFocus,"Node function executed on focus lost")
 DECLARE_ATTRIBUTE(1,OnKillFocus,"Node function executed on focus lost")
 DECLARE_ATTRIBUTE(1,OnSize,"Node function executed on window size")
 DECLARE_ATTRIBUTE(0,OnMenuPopup,"Attribute fired on menu popup")
+DECLARE_ATTRIBUTE(0,OnLoad,"Function node executed once the DOM of an html widget is loaded")
 
 
 // view data links

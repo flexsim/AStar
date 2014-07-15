@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Fragment>
-    <DirectoryRef Id="InstallDir">
+    <DirectoryRef Id="INSTALLDIR">
       <Directory Id="HelpDir" Name="help" >
         <Component Id="HelpFiles" Guid="E728FB77-BF69-4177-BB4F-E36E8CAAADA1" Feature="MainModule">
           <File Name="Concepts.html" />

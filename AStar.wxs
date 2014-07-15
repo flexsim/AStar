@@ -2,15 +2,18 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <!--Note to self: if you're having issues with the msi replacing C:\Program Files\ with
   C:\Program Files (x86)\ make sure you have the compiler option -arch x64 -->
-  
-	<Product Id="136BB8C0-AAD4-4EA0-8639-0F502B5B2D31" Name="FlexSim AStar Module 1.0.8" Language="1033" Version="1.0.8.0" 
-           Manufacturer="FlexSim Software Products Inc." UpgradeCode="ECA79D4B-8995-48FC-AE32-9213C223E008">
-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
-		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+  <?include "$(var.ProjectDir)WixVariables.wxi" ?>
+
+  <Product Id="$(var.ProductGUID)" Name="$(var.FullProductName)" Language="1033" Version="$(var.Version)" 
+           Manufacturer="FlexSim Software Products Inc." UpgradeCode="$(var.UpgradeCode)">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" 
+             Description="$(var.FullProductName)"/>
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate EmbedCab="yes"/>
 
-		<Feature Id="MainModule" Title="AStar Module" Level="1">
+		<Feature Id="MainModule" Title="AStar Module" Level="1" ConfigurableDirectory="INSTALLDIR">
       <ComponentRef Id="DLLBinaries"/>
       <ComponentRef Id="ModuleTree"/>
       <ComponentRef Id="Bitmaps"/>
@@ -21,18 +24,49 @@
 		</Feature>
 
     <Property Id="PREVIOUSVERSIONSINSTALLED" Secure="yes" />
-    <Upgrade Id="ECA79D4B-8995-48FC-AE32-9213C223E008">
+    <Upgrade Id="$(var.UpgradeCode)">
       <UpgradeVersion
-        Minimum="1.0.0.0" Maximum="1.0.6.0"
+        Minimum="$(var.MinUpradeVersion)" Maximum="$(var.Version)"
         Property="PREVIOUSVERSIONSINSTALLED"
         IncludeMinimum="yes" IncludeMaximum="yes" />
     </Upgrade>
 
-	</Product>
+    <UIRef Id="WixUI_InstallDir"/>
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.ProjectDir)FlexSimSoftwareLicenseAgreement.rtf"/>
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)SideImage.bmp"/>
+    <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)TopImage.bmp"/>
+
+    <Property Id="FLEXSIMINSTALLDIR" Secure="yes">
+      <RegistrySearch Id="Locate_EXISTINGINSTALLDIR" 
+                      Root="HKLM" 
+                      Key="SOFTWARE\FlexSim\$(var.FlexSimVersion)\Capabilities" 
+                      Name="InstallDir" Type="directory" />
+    </Property>
+
+    <CustomAction Id="SetInstallDir" Execute="firstSequence" Property="INSTALLDIR" Value="[FLEXSIMINSTALLDIR]\modules\AStar" />
+    
+    <CustomAction Id="LaunchApplication"
+                  Directory="INSTALLDIR"
+                  ExeCommand="[FLEXSIMINSTALLDIR]\program\flexsim.exe"
+                  Execute="deferred"
+                  Return="asyncNoWait" />
+
+    <InstallUISequence>
+      <Custom Action="SetInstallDir" After="FileCost" />
+    </InstallUISequence>
+
+    <InstallExecuteSequence>
+      <Custom Action="LaunchApplication" Before="InstallFinalize">NOT installed</Custom>
+    </InstallExecuteSequence>
+    
+  </Product>
 
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="InstallDir" Name="AStar" FileSource=".\">
+      <Directory Id="INSTALLDIR" Name="AStar" FileSource=".\">
         <Component Id="DLLBinaries" Guid="B1F46686-7687-4075-B605-7FAE5A79E7A0">
           <File Name="AStar.dll" />
           <File Name="AStar_x86.dll" />

@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
   <Fragment>
-    <DirectoryRef Id="InstallDir">
+    <DirectoryRef Id="INSTALLDIR">
       <Directory Id="CursorsDir" Name="cursors">
         <Component Id="Cursors" Guid="8A7D379F-0996-40ED-B6A4-74E4D9867AE1">
           <File Name="dividertool.cur" />
