@@ -13,6 +13,10 @@
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate EmbedCab="yes"/>
 
+    <Condition Message="The correct version of FlexSim is not found on this computer. Please install $(var.FlexSimVersion) before installing this module.">
+      NOT (FLEXSIMINSTALLDIR = "")
+    </Condition>
+
 		<Feature Id="MainModule" Title="AStar Module" Level="1" ConfigurableDirectory="INSTALLDIR">
       <ComponentRef Id="DLLBinaries"/>
       <ComponentRef Id="ModuleTree"/>
@@ -55,11 +59,11 @@
                   Return="asyncNoWait" />
 
     <InstallUISequence>
-      <Custom Action="SetInstallDir" After="FileCost" />
+      <Custom Action="SetInstallDir" After="FileCost">FLEXSIMINSTALLDIR</Custom>
     </InstallUISequence>
 
     <InstallExecuteSequence>
-      <Custom Action="LaunchApplication" Before="InstallFinalize">NOT installed</Custom>
+      <Custom Action="LaunchApplication" Before="InstallFinalize">NOT Installed</Custom>
     </InstallExecuteSequence>
     
   </Product>
