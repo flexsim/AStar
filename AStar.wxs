@@ -42,7 +42,7 @@
     <Property Id="FLEXSIMINSTALLDIR" Secure="yes">
       <RegistrySearch Id="Locate_EXISTINGINSTALLDIR" 
                       Root="HKLM" 
-                      Key="SOFTWARE\FlexSim\$(var.FlexSimVersion)\Capabilities" 
+                      Key="SOFTWARE\FlexSim\$(var.FlexSimVersion)" 
                       Name="InstallDir" Type="directory" />
     </Property>
 
