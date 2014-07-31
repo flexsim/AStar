@@ -2629,6 +2629,62 @@ applylinks(parent);</data></node>
     </node>
    </node>
   </node>
+  <node f="42-0" dt="2"><name>add</name><data>VIEW:/picklists/transportrefpicklist</data>
+   <node f="40-0"><name></name></node>
+   <node f="42-0" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40-0"><name></name></node>
+    <node f="42-0" dt="1"><name>rank</name><data>00000000402a0000</data></node>
+    <node f="42-0" dt="2"><name>after</name><data>Task Executer as Flowitem</data></node>
+    <node f="42-0" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42-0"><name>data</name>
+     <node f="40-0"><name></name></node>
+     <node f="42-0" dt="2"><name>AStar: Task Executer as Flowitem</name><data>/**AStar: Task Executer as Flowitem*/
+/**\nMove the item into the model, then connect it to the AStar Navigator. Then tell it to travel to the destination and unload itself into the object. Note: this will only work for flow items created from the TaskExecuterFlowItem in the flow item bin.*/
+
+doublearray absloc = makearray(3);
+doublearray absrot = makearray(3);
+// find out the location of the item relative to the model.
+updatelocations(current);
+absloc[1] = vectorprojectx(item, 0.5*xsize(item),-0.5*ysize(item),0, model());
+absloc[2] = vectorprojecty(item, 0.5*xsize(item),-0.5*ysize(item),0, model());
+absloc[3] = vectorprojectz(item, 0.5*xsize(item),-0.5*ysize(item),0, model());
+
+// find out the rotation of the item relative to the model.
+treenode container = up(item);
+absrot[1] = xrot(item);
+absrot[2] = yrot(item);
+absrot[3] = zrot(item);
+while (container != model()){
+	absrot[1]+=xrot(container);
+	absrot[2]+=yrot(container);
+	absrot[3]+=zrot(container);
+	container = up(container);
+}
+
+// notify myself that the item is about to be loaded.
+transportoutcomplete(current, item, port);
+// move the item into the model.
+moveobject(item, model(), port);
+// set the location of the item.
+setloc(item, absloc[1] - (0.5*xsize(item)), absloc[2] + (0.5*ysize(item)), absloc[3]);
+// set the rotation of the item
+setrot(item,absrot[1], absrot[2], absrot[3]);
+
+// connect the item to the AStar Navigator
+treenode aStar = node("AStarNavigator", model());
+if (objectexists(aStar)) {
+	contextdragconnection(aStar, item, 'A');
+}
+
+// create a task sequence to travel to the destination location and unload itself into the object.
+treenode ts = createemptytasksequence(item,0,0);
+inserttask(ts,TASKTYPE_TRAVEL,outobject(current, port),NULL);
+inserttask(ts,TASKTYPE_FRUNLOAD,item,outobject(current,port),opipno(current,port));
+dispatchtasksequence(ts);
+return 0;</data></node>
+    </node>
+   </node>
+  </node>
  </node>
  <node f="42-0" dt="2"><name>release</name><data>1.0</data></node>
  <node f="42-0" dt="2"><name>revision</name><data>.8</data></node>

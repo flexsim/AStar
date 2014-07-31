@@ -2884,6 +2884,14 @@ FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode fromObj);
 
 FS_CONTENT_DLL_FUNC static double toggleCppVarsOnCreate(treenode theobject);
 
+FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
+
+FS_CONTENT_DLL_FUNC virtual double onTransportOutNotify(treenode item, int port);
+
+FS_CONTENT_DLL_FUNC virtual double onTransportOutComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
+
+FS_CONTENT_DLL_FUNC virtual double onTransportInComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
+
 
 // System
 
@@ -3284,9 +3292,9 @@ TreeNode * node_v_rangecutoff;
 
 FS_CONTENT_DLL_FUNC double updateVersion(char* newversion, char* oldversion);
 
-FS_CONTENT_DLL_FUNC double onReset();
+FS_CONTENT_DLL_FUNC virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *strdata);
+FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
@@ -3639,9 +3647,15 @@ FS_CONTENT_DLL_FUNC double getRowHeaders(int startrow, int rows, int col);
 
 FS_CONTENT_DLL_FUNC double getColHeaders(int startcol, int cols, int row);
 
+FS_CONTENT_DLL_FUNC int getBundleColHeaders(int startcol, int cols, int row);
+
 FS_CONTENT_DLL_FUNC double importData(int startrow, int startcol, int rows, int cols, int curtable, double percentdone, double percentmain);
 
+FS_CONTENT_DLL_FUNC double importBundleData(int startrow, int startcol, int rows, int cols, int curtable, double percentdone, double percentmain);
+
 FS_CONTENT_DLL_FUNC double exportData(int startrow, int startcol, int headers, int curtable, double percentdone, double percentmain);
+
+FS_CONTENT_DLL_FUNC int isNumber(string str);
 
 
 // System

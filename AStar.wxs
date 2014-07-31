@@ -18,13 +18,14 @@
     </Condition>
 
 		<Feature Id="MainModule" Title="AStar Module" Level="1" ConfigurableDirectory="INSTALLDIR">
-      <ComponentRef Id="DLLBinaries"/>
-      <ComponentRef Id="ModuleTree"/>
-      <ComponentRef Id="Bitmaps"/>
-      <ComponentRef Id="Cursors"/>
-      <ComponentRef Id="Shapes"/>
+      <ComponentRef Id="DLLBinaries_x64"/>
+      <ComponentRef Id="DLLBinaries_x86"/>
       <ComponentRef Id="Notes"/>
-			<ComponentGroupRef Id="HelpManual" />
+      <ComponentRef Id="ModuleTree"/>
+      <ComponentGroupRef Id="group_bitmaps"/>
+      <ComponentGroupRef Id="group_cursors"/>
+      <ComponentGroupRef Id="group_shapes"/>
+			<ComponentGroupRef Id="group_help" />
 		</Feature>
 
     <Property Id="PREVIOUSVERSIONSINSTALLED" Secure="yes" />
@@ -71,14 +72,16 @@
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="INSTALLDIR" Name="AStar" FileSource=".\">
-        <Component Id="DLLBinaries" Guid="B1F46686-7687-4075-B605-7FAE5A79E7A0">
+        <Component Id="DLLBinaries_x64" Guid="B8FF3568-4258-4C2F-AD1E-1FB4499D7BDD">
           <File Name="AStar.dll" />
+        </Component>
+        <Component Id="DLLBinaries_x86" Guid="8C85D7DC-C100-4B3C-8689-BC093CA8D93F">
           <File Name="AStar_x86.dll" />
         </Component>
-        <Component Id="ModuleTree" Guid="8436E21F-03F0-43CD-BD51-C86C9C6453AC">
+        <Component Id="ModuleTree" Guid="03C7E4DD-62F2-465C-AC18-D035161881F1">
           <File Name="AStar.t" />
         </Component>
-        <Component Id="Notes" Guid="C3AD8667-83C8-4850-A7AB-95ED387CB061">
+        <Component Id="Notes" Guid="1D674323-81FE-4D12-8961-B33FC87D5BA5">
           <File Name="ReleaseNotes.txt" />
         </Component>
       </Directory>
