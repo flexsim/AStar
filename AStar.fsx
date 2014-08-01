@@ -2625,6 +2625,12 @@ applylinks(parent);</data></node>
        <node f="42-0" dt="2"><name>title</name><data>AStar Module Reference</data></node>
       </data>
        <node f="40-0"><name></name></node></node>
+      <node f="42-0" dt="4"><name>Release Notes</name><data>
+       <node f="40-0"><name></name></node>
+       <node f="42-0" dt="2"><name>viewfocus</name><data>modules\AStar\help\ReleaseNotes.html</data></node>
+       <node f="42-0" dt="2"><name>title</name><data>AStar Module Release Notes</data></node>
+      </data>
+       <node f="40-0"><name></name></node></node>
      </node>
     </node>
    </node>

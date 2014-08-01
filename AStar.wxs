@@ -13,7 +13,7 @@
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate EmbedCab="yes"/>
 
-    <Condition Message="The correct version of FlexSim is not found on this computer. Please install $(var.FlexSimVersion) before installing this module.">
+    <Condition Message="The correct version of FlexSim is not found on this computer. Please install $(var.FlexSimVersion) $(var.Platform) before installing this module.">
       NOT (FLEXSIMINSTALLDIR = "")
     </Condition>
 

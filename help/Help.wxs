@@ -26,6 +26,7 @@
       <ComponentRef Id="comp_CE25B3E8E7D948A383244339E7B92A5D" />
       <ComponentRef Id="comp_E247950C23434A8E87D69A63534D1D57" />
       <ComponentRef Id="comp_0C9B21CE90D349529FDD01ED5E3CA8BF" />
+      <ComponentRef Id="comp_07403D5AFB7E413FB3228D269C3F88C1" />
       <ComponentRef Id="comp_25877399B6B944C48ED5ADBDE29EBC6F" />
       <ComponentRef Id="comp_DF18943C777C4C37B98B1E320F81FAFA" />
       <ComponentRef Id="comp_D1E5C1395922486E9A46C5C6E93707B3" />
@@ -64,6 +65,9 @@
         </Component>
         <Component Id="comp_0C9B21CE90D349529FDD01ED5E3CA8BF" Guid="7825B9D1-4B01-47CB-B8DF-41C02E58264B">
           <File Id="file_62976907B104432D815709625B3F8006" KeyPath="yes" Source="$(var.ProjectDir)help\Reference.html" />
+        </Component>
+        <Component Id="comp_07403D5AFB7E413FB3228D269C3F88C1" Guid="B70F37FE-659D-42A0-A011-0B1833D9A063">
+          <File Id="file_A400A7F0EEE94376BAC591B871AFBB7C" KeyPath="yes" Source="$(var.ProjectDir)help\ReleaseNotes.html" />
         </Component>
         <Directory Id="dir_24F5B799E18F427696115FBD3AEDF23C" Name="Images">
           <Component Id="comp_25877399B6B944C48ED5ADBDE29EBC6F" Guid="4EA7A9E4-7E3C-48ED-88A2-65EFD8299ABD">
