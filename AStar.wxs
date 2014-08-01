@@ -20,7 +20,6 @@
 		<Feature Id="MainModule" Title="AStar Module" Level="1" ConfigurableDirectory="INSTALLDIR">
       <ComponentRef Id="DLLBinaries_x64"/>
       <ComponentRef Id="DLLBinaries_x86"/>
-      <ComponentRef Id="Notes"/>
       <ComponentRef Id="ModuleTree"/>
       <ComponentGroupRef Id="group_bitmaps"/>
       <ComponentGroupRef Id="group_cursors"/>
@@ -80,9 +79,6 @@
         </Component>
         <Component Id="ModuleTree" Guid="03C7E4DD-62F2-465C-AC18-D035161881F1">
           <File Name="AStar.t" />
-        </Component>
-        <Component Id="Notes" Guid="1D674323-81FE-4D12-8961-B33FC87D5BA5">
-          <File Name="ReleaseNotes.txt" />
         </Component>
       </Directory>
     </Directory>
