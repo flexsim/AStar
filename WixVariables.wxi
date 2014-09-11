@@ -4,7 +4,13 @@
   <?define FullProductName = "FlexSim AStar Module 1.0.8"?>
   <?define FlexSimVersion = "FlexSim 7.3"?>
   <?define Version = "1.0.8"?>
-  <?define ProductGUID = "DCC29B92-7B0C-43FC-BE9B-93EE271CFACD"?>
-  <?define UpgradeCode = "0B7B2ED6-6323-431F-9C00-B6FA49899CE7"?>
+<!--Program GUIDs>
+<FlexSim="DCC29B92-7B0C-43FC-BE9B-93EE271CFACD">
+</Program GUIDs-->
+  <?define ProductGUID ="DCC29B92-7B0C-43FC-BE9B-93EE271CFACD"?>
+<!--Program GUIDs>
+<FlexSim="0B7B2ED6-6323-431F-9C00-B6FA49899CE7">
+</Program GUIDs-->
+  <?define UpgradeCode ="0B7B2ED6-6323-431F-9C00-B6FA49899CE7"?>
   <?define MinUpradeVersion = "1.0.8"?>
 </Include>
