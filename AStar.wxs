@@ -14,7 +14,7 @@
 		<MediaTemplate EmbedCab="yes"/>
 
     <Condition Message="The correct version of FlexSim is not found on this computer. Please install $(var.FlexSimVersion) $(var.Platform) before installing this module.">
-      NOT (FLEXSIMINSTALLDIR = "")
+      NOT (FLEXSIMINSTALLDIR = "") AND NOT Installed
     </Condition>
 
 		<Feature Id="MainModule" Title="AStar Module" Level="1" ConfigurableDirectory="INSTALLDIR">
