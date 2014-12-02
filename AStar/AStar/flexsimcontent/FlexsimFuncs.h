@@ -505,9 +505,6 @@ THE SOFTWARE.
 	typedef treenode     (*_findownerobject)(treenode);
 	typedef void         (*_finishundorecord)(TreeNode* view, int uniqueid);
 	typedef treenode     (*_first)(treenode);
-	typedef void         (*_flexsimfreeexport)(void* p);
-	typedef void *       (*_flexsimmallocexport)(size_t size);
-	typedef void *       (*_flexsimreallocexport)(void* memory, size_t size);
 	typedef treenode     (*_flowitembin)();
 	typedef int          (*_flyactive)();
 	typedef int          (*_flybysimclock)();
@@ -1284,6 +1281,9 @@ THE SOFTWARE.
 		typedef double(*_fglInfo)(int op, treenode view);
 		
 	#else
+		typedef void (*_flexsimfree)(void*);
+		typedef void* (*_flexsimmalloc)(size_t);
+		typedef void* (*_flexsimrealloc)(void*, size_t);
 		typedef double (*_transportincompletealias)(treenode object, treenode item, int portnumber, treenode transporter);
 		typedef double (*_transportoutcompletealias)(treenode object, treenode item, int portnumber, treenode transporter);
 	#endif
@@ -2209,9 +2209,6 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(flexsimeventbind)
 	DECLARE_FLEXSIM_FUNCTION_1(flexsimeventexecute)
 	DECLARE_FLEXSIM_FUNCTION_1(flexsimeventgetdescription)
-	DECLARE_FLEXSIM_FUNCTION_1(flexsimfreeexport)
-	DECLARE_FLEXSIM_FUNCTION_1(flexsimmallocexport)
-	DECLARE_FLEXSIM_FUNCTION_1(flexsimreallocexport)
 	DECLARE_FLEXSIM_FUNCTION_1(getcorecommandfunction)
 	DECLARE_FLEXSIM_FUNCTION_1(inobjectinfo)
 	DECLARE_FLEXSIM_FUNCTION_1(llinitialize)
@@ -2298,6 +2295,9 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(drawspheres)
 	DECLARE_FLEXSIM_FUNCTION_1(enablefullhistory)
 	DECLARE_FLEXSIM_FUNCTION_1(fglinfo)
+	DECLARE_FLEXSIM_FUNCTION_1(flexsimfree)
+	DECLARE_FLEXSIM_FUNCTION_1(flexsimmalloc)
+	DECLARE_FLEXSIM_FUNCTION_1(flexsimrealloc)
 	DECLARE_FLEXSIM_FUNCTION_1(freeoperators)
 	DECLARE_FLEXSIM_FUNCTION_1(getallocatedfromkey)
 	DECLARE_FLEXSIM_FUNCTION_1(getcoordinatedtasksequence)

@@ -28,62 +28,7 @@ void* defaultgetflexsimexportedfunction(char* functionname)
 	return thefunction;
 }
 
-int bindflexsimfunctions()
-{
-	flexSimModule = GetModuleHandle(0);
-	_getflexsimexportedfunction getflexsimexportedfunction = (_getflexsimexportedfunction)GetProcAddress(flexSimModule, "getexportedfunction");
-
-	if(!getflexsimexportedfunction)
-		getflexsimexportedfunction = (_getflexsimexportedfunction) &defaultgetflexsimexportedfunction;
-
-	int nrUnboundFunctions = 0;
-	unboundFunctions = "Flexsim could not load a dll module correctly \nbecause some flexsim functions could not be bound\n\nUnsuccessful Bindings:\n";
-	
-// Make DECLARATIONTYPE FLEXSIM_BINDING_PHASE and include flexsimfuncs.h, which sets the function pointers to GetProcAddress(...)
-#pragma push_macro("DECLARATIONTYPE")
-#undef DECLARATIONTYPE
-#define DECLARATIONTYPE FLEXSIM_BINDING_PHASE
-#include "FlexsimFuncs.h"
-#pragma pop_macro("DECLARATIONTYPE")
-
-	#if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
-		if (nrUnboundFunctions > 0)
-		{
-			MessageBox(NULL, (char*)unboundFunctions.c_str(), "", MB_OK|MB_TOPMOST);
-		}
-
-		int versionerror = 0;
-		if (llgetallocsize() != sizeof(TreeNode)) 
-			versionerror = 1;
-		if (odtgetallocsize() != sizeof(ObjectDataType)) 
-			versionerror = 1;
-		#if defined COMPILING_FLEXSIM_CONTENT
-			if (versionerror)
-				MessageBox(NULL, "Flexsim's content dll was built against the wrong version of the Flexsim engine.\r\nThe dll was loaded unsuccessfully.", "Versioning Error", MB_OK|MB_TOPMOST);
-		#else
-			if (versionerror)
-				MessageBox(NULL, "A module dll was built against the wrong version of the Flexsim content.\r\nThe dll was loaded unsuccessfully.", "Versioning Error", MB_OK|MB_TOPMOST);
-		#endif
-
-		return nrUnboundFunctions == 0 && !versionerror;
-	#else
-		return true;
-	#endif
-}
-
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
-void * flexsimmalloc(size_t size)
-{
-	return flexsimmallocexport(size);
-}
-void flexsimfree(void* p)
-{
-	return flexsimfreeexport(p);
-}
-void * flexsimrealloc(void* p, size_t size)
-{
-	return flexsimreallocexport(p, size);
-}
 void ObjectDataType::cleanup()
 {
 	odtcleanup(this);

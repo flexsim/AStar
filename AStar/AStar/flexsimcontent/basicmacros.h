@@ -243,7 +243,7 @@ inline double ptrtodouble(void* x)
 #define module_private private
 #endif
 
-#if _MSC_VER >= 1700
+#if _MSC_VER >= 1800 // VS 2013 (compiler v18) introduced c++11 explicit conversions
 #define EXPLICIT explicit
 #else
 #define EXPLICIT 

@@ -65,14 +65,17 @@ using std::string;
 
 	extern double (*_parval)(int, CallPoint *);
 
-	inline void * doubletoptr(double x)
-	{
-		return (void*)(size_t)x;
-	}
-	inline double ptrtodouble(void* x)
-	{
-		return (double)(size_t)x;
-	}
+	#if COMPILING_FLEXSIM_CONTENT || COMPILING_MODULE_DLL
+		inline void * doubletoptr(double x)
+		{
+			return (void*)(size_t)x;
+		}
+		inline double ptrtodouble(void* x)
+		{
+			return (double)(size_t)x;
+		}
+	#endif
+
 #endif
 #ifndef FLEXSIM_TARGET_VERSION
 	#define FLEXSIM_TARGET_VERSION 9900
@@ -742,7 +745,13 @@ using std::string;
 	#define PARAM_TYPE_NODE 2
 	#define PARAM_TYPE_STRING 3
 
-	#include "array.h"
+	#if !defined COMPILING_FLEXSIM_CONTENT && !defined COMPILING_MODULE_DLL
+		extern void* (*flexsimmalloc) (size_t);
+		extern void(*flexsimfree) (void*);
+		#include "basicmacros.h"
+	#endif
+
+	#include "datatypes.h"
 
 	#define DECLARATIONTYPE FLEXSIM_DECLARATION_PHASE
 	#include "FlexsimFuncs.h"

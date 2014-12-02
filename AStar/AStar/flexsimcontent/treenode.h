@@ -50,7 +50,7 @@ public:
 	                      const Variant& p10 = Variant());
 	
 	// object data
-	template <class T = ObjectDataType>
+	template <class T>
 	T* object() const { return (T*)data; }
 
 	template <class T> friend class SafeRef;

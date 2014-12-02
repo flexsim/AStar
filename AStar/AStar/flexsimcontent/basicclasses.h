@@ -1,5 +1,4 @@
 #pragma once
-
 class TreeNode;
 typedef TreeNode* treenode;
 class ByteBlock;
@@ -45,8 +44,17 @@ class UserWindowStyle;
 class Mesh;
 class IndexedMesh;
 class SqlDelegate;
-extern void* flexsimmalloc(size_t);
-extern void * flexsimrealloc(void* memory, size_t size);
-extern void flexsimfree(void * p);
 
+#pragma push_macro("engine_export")
+#ifdef FLEXSIM_ENGINE_COMPILE
+#define engine_export __declspec(dllexport)
+#else
+#define engine_export __declspec(dllimport)
+#endif
+
+extern "C" engine_export void* flexsimmalloc(size_t);
+extern "C" engine_export void * flexsimrealloc(void* memory, size_t size);
+extern "C" engine_export void flexsimfree(void * p);
+
+#pragma pop_macro("engine_export")
 

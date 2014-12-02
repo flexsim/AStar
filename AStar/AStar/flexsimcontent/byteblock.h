@@ -90,7 +90,7 @@ public:
 		bool loadXML(MSXML2::IXMLDOMNodePtr parentnode);
   
 
-		void replaceSubString(size_t preposition, size_t position, char *substitute);
+		void replaceSubString(ptrdiff_t preposition, size_t position, char *substitute);
 		bool searchSubString(char *pattern, char *substitute, bool rep); // return true when not at end; set substringcursor when done
 
 		bool parserSearchSubString(char *pattern, char *substitute, int rep); // return true when not at end; set substringcursor when done

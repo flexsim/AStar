@@ -21,14 +21,13 @@ extern int cpr();
 enum class VariantType : unsigned char
 {
 	Null = 0,
-	Int = 1,
-	Double = 2,
-	TreeNode = 3,
-	String = 4,
-	IntArray = 5,
-	DoubleArray = 6,
-	TreeNodeArray = 7,
-	StringArray = 8
+	Number = 1,
+	TreeNode = 2,
+	String = 3,
+	IntArray = 4,
+	DoubleArray = 5,
+	TreeNodeArray = 6,
+	StringArray = 7
 };
 
 enum class WarningType : int
@@ -142,15 +141,43 @@ private:
 			return *this;
 		}
 
+		String operator+(const String& other) const
+		{
+			std::string str(buffer, getLength());
+			str.append(other.buffer, other.getLength());
+			return String(str);
+		}
+		String operator+(const std::string& other) const
+		{
+			std::string str(buffer, getLength());
+			str.append(other);
+			return String(str);
+		}
+		String operator+(const char* other) const
+		{
+			std::string str(buffer, getLength());
+			str.append(other);
+			return String(str);
+		}
+
+
 		operator const char*() const { return buffer; }
 		const char* c_str() const { return buffer; }
 		size_t getLength() const { return length != -1 ? length : strlen(buffer); }
 		operator std::string() const { return std::string(buffer, length); }
 
-		inline bool operator == (const std::string& other) const { return strcmp(other.c_str(), buffer) == 0; }
-		inline bool operator == (const char* other) const { return strcmp(other, buffer) == 0; }
-		inline bool operator != (const std::string& other) const { return strcmp(other.c_str(), buffer) != 0; }
-		inline bool operator != (const char* other) const { return strcmp(other, buffer) != 0; }
+#define COMPARE_STRING(op) \
+	inline bool operator op (const std::string& other) const { return strcmp(other.c_str(), buffer) op 0; } \
+	inline bool operator op (const char* other) const { return strcmp(other, buffer) op 0; }
+
+		COMPARE_STRING(==);
+		COMPARE_STRING(!=);
+		COMPARE_STRING(<);
+		COMPARE_STRING(>);
+		COMPARE_STRING(<=);
+		COMPARE_STRING(>=);
+
+#undef COMPARE_STRING
 	};
 
 	template <class T>
@@ -326,7 +353,7 @@ private:
 		inline size_t size() const { return vectorSize; }
 	};
 
-	template<class ElementType = int, VariantType TypeId = VariantType::Int>
+	template<class ElementType = int, VariantType TypeId = VariantType::Number>
 	class FlexSimArrayUnionMember : public NewDelete
 	{
 	protected:
@@ -334,7 +361,7 @@ private:
 	};
 };
 
-template<class ElementType = int, VariantType TypeId = VariantType::Int>
+template<class ElementType = double, VariantType TypeId = VariantType::Number>
 class FlexSimArray : public FlexSimPrivateTypes::FlexSimArrayUnionMember<ElementType, TypeId>
 {
 private:
@@ -349,15 +376,15 @@ private:
 	inline MySharedPtrType& theArray()\
 		{ return reinterpret_cast<MySharedPtrType&>(theArrayUnionMember); }\
 public:\
-	VariantType elementType;\
-	FlexSimArray() : elementType(TypeId) \
+	VariantType arrayType;\
+	FlexSimArray() : arrayType(TypeId) \
 	{\
 		::new (&theArray()) FlexSimPrivateTypes::SharedPtr<MyVecType>(new MyVecType);\
 	}\
-	FlexSimArray(size_t size) : elementType(TypeId) {\
+	FlexSimArray(size_t size) : arrayType(TypeId) {\
 		::new (&theArray()) FlexSimPrivateTypes::SharedPtr<MyVecType>(new MyVecType(size + 1));\
 	}\
-	FlexSimArray(const MyType& other) : elementType(TypeId) {\
+	FlexSimArray(const MyType& other) : arrayType(TypeId) {\
 		::new (&theArray()) FlexSimPrivateTypes::SharedPtr<MyVecType>(other.theArray());\
 	}\
 	~FlexSimArray() {\
@@ -388,25 +415,25 @@ public:\
 
 	FLEXSIM_ARRAY_DEF
 
-
-	typedef FlexSimArray<int, VariantType::Int> IntArray;
-	typedef FlexSimArray<double, VariantType::Double> DoubleArray;
-	typedef FlexSimArray<TreeNode*, VariantType::TreeNode> TreeNodeArray;
-	typedef FlexSimArray<FlexSimPrivateTypes::String, VariantType::String> StringArray;
-	typedef FlexSimArrayUnionMember<int, VariantType::Int> IntArrayUnionMember;
-	typedef FlexSimArrayUnionMember<double, VariantType::Double> DoubleArrayUnionMember;
-	typedef FlexSimArrayUnionMember<TreeNode*, VariantType::TreeNode> TreeNodeArrayUnionMember;
-	typedef FlexSimArrayUnionMember<FlexSimPrivateTypes::String, VariantType::String> StringArrayUnionMember;
+	typedef FlexSimArray<int, VariantType::IntArray> IntArray;
+	typedef FlexSimArray<double, VariantType::DoubleArray> DoubleArray;
+	typedef FlexSimArray<TreeNode*, VariantType::TreeNodeArray> TreeNodeArray;
+	typedef FlexSimArray<FlexSimPrivateTypes::String, VariantType::StringArray> StringArray;
+	typedef FlexSimArrayUnionMember<int, VariantType::IntArray> IntArrayUnionMember;
+	typedef FlexSimArrayUnionMember<double, VariantType::IntArray> DoubleArrayUnionMember;
+	typedef FlexSimArrayUnionMember<TreeNode*, VariantType::TreeNodeArray> TreeNodeArrayUnionMember;
+	typedef FlexSimArrayUnionMember<FlexSimPrivateTypes::String, VariantType::StringArray> StringArrayUnionMember;
 };
 
+
 template <> 
-class FlexSimArray<FlexSimPrivateTypes::String, VariantType::String> 
-	: public FlexSimPrivateTypes::FlexSimArrayUnionMember<FlexSimPrivateTypes::String, VariantType::String>
+class FlexSimArray<FlexSimPrivateTypes::String, VariantType::StringArray> 
+	: public FlexSimPrivateTypes::FlexSimArrayUnionMember<FlexSimPrivateTypes::String, VariantType::StringArray>
 {
 public:
 	typedef FlexSimPrivateTypes::String ElementType;
 private:
-	static const VariantType TypeId = VariantType::String;
+	static const VariantType TypeId = VariantType::StringArray;
 	typedef FlexSimArray<ElementType, TypeId> MyType;
 	typedef FlexSimPrivateTypes::Vector<ElementType> MyVecType;
 	typedef FlexSimPrivateTypes::SharedPtr<MyVecType> MySharedPtrType;
@@ -463,8 +490,7 @@ private:
 	{
 		// union x86/x64 bytes = 8/16
 		TreeNode* asTreeNode; // 4/8 bytes
-		double asDouble; // 8 bytes
-		int asInt; // 4 bytes
+		double asNumber; // 8 bytes
 		FlexSimPrivateTypes::StringUnionMember asStringUnionMember; // 8/16 bytes 
 
 		FlexSimArray<>::IntArrayUnionMember asIntArrayUnionMember; // 4/8 bytes
@@ -501,14 +527,15 @@ private:
 
 
 public:
+
+#pragma region constructors
 	// constructors
-	Variant() : type(VariantType::Null), asInt(0), flags(0), reserved(0) {}
+	Variant() : type(VariantType::Null), asNumber(0.0), flags(0), reserved(0) {}
 	Variant(const Variant& copyFrom) : flags(copyFrom.flags), reserved(0)
 	{
 		type = copyFrom.type;
 		switch (type) {
-			case VariantType::Int: asInt = copyFrom.asInt; break;
-			case VariantType::Double: asDouble = copyFrom.asDouble; break;
+		case VariantType::Number: asNumber = copyFrom.asNumber; break;
 			case VariantType::TreeNode: asTreeNode = copyFrom.asTreeNode; break;
 			case VariantType::String: 
 				if (copyFrom.flags & WEAK_STR)
@@ -520,15 +547,14 @@ public:
 			case VariantType::DoubleArray: ::new (&asDoubleArray()) doublearray(copyFrom.asDoubleArray()); break;
 			case VariantType::TreeNodeArray: ::new (&asTreeNodeArray()) treenodearray(copyFrom.asTreeNodeArray()); break;
 			case VariantType::StringArray: ::new (&asStringArray()) stringarray(copyFrom.asStringArray()); break;
-			default: asInt = 0; break;
+			default: asNumber = 0; break;
 		}
 	}
 	Variant(Variant&& from) : flags(from.flags), reserved(0)
 	{
 		type = from.type;
 		switch (type) {
-			case VariantType::Int: asInt = from.asInt; break;
-			case VariantType::Double: asDouble = from.asDouble; break;
+		case VariantType::Number: asNumber = from.asNumber; break;
 			case VariantType::TreeNode: asTreeNode = from.asTreeNode; break;
 			case VariantType::String: ::new (&asString()) FlexSimPrivateTypes::String(std::move(from.asString())); break;
 			case VariantType::IntArray: 
@@ -543,15 +569,15 @@ public:
 			case VariantType::StringArray: 
 				::new (&asStringArray()) stringarray(std::move(from.asStringArray()));  
 				from.asStringArray().~stringarray(); break;
-			default: asInt = 0; break;
+			default: asNumber = 0; break;
 		}
 		from.type = VariantType::Null;
-		from.asInt = 0;
+		from.asNumber = 0;
 	}
 
-	Variant(bool val) : type(VariantType::Int), asInt(val), flags(0), reserved(0) {}
-	Variant(int val) : type(VariantType::Int), asInt(val), flags(0), reserved(0) {}
-	Variant(double val) : type(VariantType::Double), asDouble(val), flags(0), reserved(0) {}
+	Variant(bool val) : type(VariantType::Number), asNumber(val), flags(0), reserved(0) {}
+	Variant(int val) : type(VariantType::Number), asNumber(val), flags(0), reserved(0) {}
+	Variant(double val) : type(VariantType::Number), asNumber(val), flags(0), reserved(0) {}
 	Variant(TreeNode* val) : type(VariantType::TreeNode), asTreeNode(val), flags(0), reserved(0) {}
 	Variant(const std::string& val) : type(VariantType::String), flags(0), reserved(0)
 	{
@@ -589,7 +615,7 @@ private:
 	void cleanup()
 	{
 		switch (type) {
-			case VariantType::Null: case VariantType::TreeNode: case VariantType::Double: case VariantType::Int:
+		case VariantType::Null: case VariantType::TreeNode: case VariantType::Number:
 				break;
 			case VariantType::String: 
 				if (!(flags & WEAK_STR))
@@ -607,6 +633,9 @@ private:
 			}
 		}
 	}
+
+#pragma endregion Contains both public and private constructors
+
 public:
 
 	~Variant()
@@ -614,6 +643,7 @@ public:
 		cleanup();
 	}
 	
+#pragma region assignment operators
 	// assignment operators
 	Variant& operator = (Variant&& copyFrom)
 	{
@@ -689,21 +719,21 @@ public:
 		::new (this) Variant(val);
 		return *this;
 	}
+#pragma endregion Contains assignment operators for every VariantType and other Variants
 
+#pragma region casting operators
 	// casting operators
 	operator double() const
 	{
 		switch (type) {
-			case VariantType::Double: return asDouble;
-			case VariantType::Int: return static_cast<double>(asInt);
+		case VariantType::Number: return asNumber;
 			default: return 0.0;
 		}
 	}
 	operator int() const
 	{
 		switch (type) {
-			case VariantType::Double: return static_cast<int>(asDouble);
-			case VariantType::Int: return asInt;
+		case VariantType::Number: return static_cast<int>(asNumber);
 			default: return 0;
 		}
 	}
@@ -744,22 +774,27 @@ public:
 		}
 	}
 
+	EXPLICIT operator bool() const
+	{
+		switch (type) {
+		case VariantType::Number: return asNumber != 0.0;
+		case VariantType::TreeNode: return asTreeNode != 0;
+		case VariantType::Null: return false;
+		default: return true;
+		}
+	}
+#pragma endregion
+
 	static Variant createWeakStr(const char* str)
 	{
 		return Variant(str, WEAK_STR);
 	}
 
-	bool isNumberType() const { return type == VariantType::Double || type == VariantType::Int; };
-	EXPLICIT operator bool() const
-	{
-		switch (type) {
-			case VariantType::Int: return asInt != 0;
-			case VariantType::Double: return asDouble != 0;
-			case VariantType::TreeNode: return asTreeNode != 0;
-			case VariantType::Null: return false;
-			default: return true;
-		}
-	}
+	inline bool isNumberType() const { return type == VariantType::Number; };
+	
+
+#pragma region Variant comparisons
+
 	bool operator < (const Variant& other) const
 	{
 		bool isNumType = isNumberType();
@@ -817,62 +852,267 @@ public:
 	{
 		return !operator == (other);
 	}
+
+#pragma endregion Variant compared to Variant
+
 	Variant operator -() const
 	{
 		switch (type) {
-			case VariantType::Int: return -asInt;
-			case VariantType::Double: return -asDouble;
+			case VariantType::Number: return -asNumber;
 			default: return Variant();
 		}
 	}
 
-#define COMPARE_NUMBER(op, numberType) \
-	bool operator op (numberType& theNum) const \
+#pragma region string comparisons
+
+#define COMPARE_STRING(op, inType) \
+	bool operator op (inType str) const \
 	{\
-		if (type == VariantType::Double) return asDouble op theNum;\
-		else if (type == VariantType::Int) return asInt op static_cast<int>(theNum);\
-		return false;\
+		if (type == VariantType::String) \
+			return asString() == str; \
+		return false; \
+	}\
+
+#define COMPARE_STRING_PAIR(op) \
+	COMPARE_STRING(op, const std::string&); \
+	COMPARE_STRING(op, const char*);
+
+	COMPARE_STRING_PAIR(== )
+		COMPARE_STRING_PAIR(!= )
+		COMPARE_STRING_PAIR(> )
+		COMPARE_STRING_PAIR(< )
+		COMPARE_STRING_PAIR(>= )
+		COMPARE_STRING_PAIR(<= )
+
+#undef COMPARE_STRING_PAIR
+#undef COMPARE_STRING
+
+#pragma endregion Variant compareOp stringType (char* or std::string)
+
+
+#define FOR_ALL_NUMBER_TYPES(macro, p1)\
+	macro(float, p1)\
+	macro(double, p1)\
+	macro(char, p1)\
+	macro(short, p1)\
+	macro(int, p1)\
+	macro(__int64, p1)\
+	macro(unsigned char, p1)\
+	macro(unsigned short, p1)\
+	macro(unsigned int, p1)\
+	macro(unsigned __int64, p1)
+
+#define FOR_ALL_NUMBER_TYPES_2(macro, p1, p2)\
+	macro(float, p1, p2)\
+	macro(double, p1, p2)\
+	macro(char, p1, p2)\
+	macro(short, p1, p2)\
+	macro(int, p1, p2)\
+	macro(__int64, p1, p2)\
+	macro(unsigned char, p1, p2)\
+	macro(unsigned short, p1, p2)\
+	macro(unsigned int, p1, p2)\
+	macro(unsigned __int64, p1, p2)
+
+#pragma region number comparisons
+
+#define COMPARE_NUMBER(numberType, op) \
+	bool operator op (numberType theNum) const \
+	{\
+	if (type == VariantType::Number) return asNumber op theNum; \
+	return false; \
 	}\
 
 #define COMPARE_NUMBER_TYPES(op)\
-	COMPARE_NUMBER(op, float)\
-	COMPARE_NUMBER(op, double)\
-	COMPARE_NUMBER(op, char)\
-	COMPARE_NUMBER(op, short)\
-	COMPARE_NUMBER(op, int)\
-	COMPARE_NUMBER(op, __int64)\
-	COMPARE_NUMBER(op, unsigned char)\
-	COMPARE_NUMBER(op, unsigned short)\
-	COMPARE_NUMBER(op, unsigned int)\
-	COMPARE_NUMBER(op, unsigned __int64)
+	FOR_ALL_NUMBER_TYPES(COMPARE_NUMBER, op)
 
-	COMPARE_NUMBER_TYPES(<)
-	COMPARE_NUMBER_TYPES(>)
-	COMPARE_NUMBER_TYPES(<= )
-	COMPARE_NUMBER_TYPES(>= )
-	COMPARE_NUMBER_TYPES(== )
+		COMPARE_NUMBER_TYPES(<)
+		COMPARE_NUMBER_TYPES(>)
+		COMPARE_NUMBER_TYPES(<= )
+		COMPARE_NUMBER_TYPES(>= )
+		COMPARE_NUMBER_TYPES(== )
+		COMPARE_NUMBER_TYPES(!= )
+
+#undef COMPARE_NUMBER
+#undef COMPARE_NUMBER_TYPES
+
+#pragma endregion Variant compare numberType (float, double, etc)
 
 
+#pragma region binary operators
+
+#define BINARY_NUM_OP(numberType, op)\
+	Variant operator op (numberType num) const\
+	{\
+		if (type == VariantType::Number)\
+			return asNumber op num;\
+		return Variant();\
+	}
 
 
-#ifdef FLEXSIM_ENGINE_COMPILE
+
+	
+
+	// Variant op numberType
+	FOR_ALL_NUMBER_TYPES(BINARY_NUM_OP, +)
+	FOR_ALL_NUMBER_TYPES(BINARY_NUM_OP, -)
+	FOR_ALL_NUMBER_TYPES(BINARY_NUM_OP, *)
+	FOR_ALL_NUMBER_TYPES(BINARY_NUM_OP, /)
+
+	// Variant op Variant (+ operator deals with strings
+	Variant operator + (const Variant& other) const
+	{
+		if (type == VariantType::Number && other.type == VariantType::Number) {
+			return Variant(asNumber + other.asNumber);
+		} else if (type == VariantType::String && other.type == VariantType::String) {
+			return Variant(asString() + other.asString());
+		}
+
+		return Variant();
+	}
+
+#define BINARY_VARIANT_OP(op)\
+	Variant operator op (const Variant& other) const\
+	{\
+		if (type == VariantType::Number) return Variant(asNumber op other.asNumber);\
+		return Variant();\
+	}
+
+	// More Variant op Variant
+	BINARY_VARIANT_OP(-)
+	BINARY_VARIANT_OP(*)
+	BINARY_VARIANT_OP(/)
+
+	// Variant op string
+	Variant operator + (const std::string& other) const
+	{
+		if (type == VariantType::String)
+			return Variant(asString() + other);
+		return Variant();
+	}
+
+	Variant operator + (const char* other) const
+	{
+		if (type == VariantType::String)
+			return Variant(asString() + other);
+		return Variant();
+	}
+
+#undef BINARY_VARIANT_OP
+#undef ALL_BINARY_NUM_OPS
+#undef BINARY_NUM_OP
+
+#pragma endregion Variant op numberType, Variant op Variant, Variant op stringType
+
+#pragma region unary operators
+#define UNARY_NUM_OP(op)\
+	Variant& operator op()\
+	{\
+		if (type == VariantType::Number)\
+			asNumber##op;\
+		return *this;\
+	}\
+	\
+	Variant operator op(int)\
+	{\
+		if (type == VariantType::Number) {\
+			Variant tmp(*this); \
+			operator++();\
+			return tmp;\
+		}\
+		return Variant(*this);\
+	}\
+
+	UNARY_NUM_OP(++)
+	UNARY_NUM_OP(--)
+#undef UNARY_NUM_OP
+#pragma endregion ++, --, pre and post
+
 	double forceLegacyDouble() const
 	{
 		switch (type) {
-			case VariantType::Double: return asDouble;
-			case VariantType::Int: return static_cast<double>(asInt);
+			case VariantType::Number: return asNumber;
 			case VariantType::TreeNode: return ptrtodouble(asTreeNode);
 			case VariantType::String: return ptrtodouble((void*)asString().c_str());
 			default: return 0;
 		}
 	}
-#endif
 
 	// only return my pointer if it's a non-owned cstr, i.e. it won't
 	// go out of scope if I'm destructed.
 	const char* getWeakStr() const { return (type == VariantType::String && (flags & WEAK_STR)) ? asString().operator const char*() : 0; }
 	const char* c_str() const { return (type == VariantType::String) ? asString().operator const char*() : ""; }
 };
+
+#pragma region number comparisons
+
+#define COMPARE_NUMBER(numberType, op, notOp)\
+	inline bool operator op (numberType left, const Variant& right) {\
+		return !(right notOp left);\
+	}\
+
+#define COMPARE_NUMBER_TYPES(op, notOp)\
+	FOR_ALL_NUMBER_TYPES_2(COMPARE_NUMBER, op, notOp)
+
+	COMPARE_NUMBER_TYPES(<, >=)
+	COMPARE_NUMBER_TYPES(<=, >)
+	COMPARE_NUMBER_TYPES(>, <=)
+	COMPARE_NUMBER_TYPES(>=, <)
+	COMPARE_NUMBER_TYPES(==, !=)
+	COMPARE_NUMBER_TYPES(!=, ==)
+
+#undef COMPARE_NUMBER
+#undef COMPARE_NUMBER_TYPES
+
+#pragma endregion numberType compare Variant
+
+#pragma region string comparisons
+#define COMPARE_STRING(op, notOp, inType) \
+	inline bool operator op (inType left, const Variant& right) { return !(right notOp left); }
+
+#define COMPARE_STRING_PAIR(op, notOp) \
+	COMPARE_STRING(op, notOp, const std::string&) \
+	COMPARE_STRING(op, notOp, const char*)
+
+	COMPARE_STRING_PAIR(<, >= )
+	COMPARE_STRING_PAIR(<=, >)
+	COMPARE_STRING_PAIR(>, <=)
+	COMPARE_STRING_PAIR(>=, <)
+	COMPARE_STRING_PAIR(==, !=)
+	COMPARE_STRING_PAIR(!=, ==)
+
+#undef COMPARE_STRING_PAIR
+#undef COMPARE_STRING
+#pragma endregion stringType compare Variant
+
+#pragma region binary operators
+
+	// For number types, return a Variant => cast left and right as doubles
+	// This means double arithmetic will always be used with variants.
+	// To do integer arithmetic, cast the Variant as an integer
+#define BINARY_OP(numType, op)\
+	inline Variant operator op (numType left, const Variant& right) {\
+		return Variant(static_cast<double>(left) op static_cast<double>(right)); \
+	}
+
+	FOR_ALL_NUMBER_TYPES(BINARY_OP, +)
+	FOR_ALL_NUMBER_TYPES(BINARY_OP, -)
+	FOR_ALL_NUMBER_TYPES(BINARY_OP, *)
+	FOR_ALL_NUMBER_TYPES(BINARY_OP, /)
+
+inline Variant operator + (const std::string& left, const Variant& right)
+{
+	return Variant(std::string(left).append(right));
+}
+
+inline Variant operator + (const char* left, const Variant& right)
+{
+	return Variant(std::string(left).append(right));
+}
+
+#undef BINARY_OP
+
+#pragma endregion numberType op Variant, stringType op Variant
 
 class VariantParams
 {
@@ -932,6 +1172,7 @@ private:
 	const Variant* params[10];
 #endif
 };
+
 
 #ifdef FLEXSIM_ENGINE_COMPILE
 #undef flexsimmalloc
