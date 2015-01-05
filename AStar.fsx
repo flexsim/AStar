@@ -41,6 +41,29 @@
         <node f="42-0" dt="1"><name>pathCount</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>requestCount</name><data>0000000000000000</data></node>
         <node f="42-0" dt="1"><name>cacheUseCount</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="2"><name>messagetrigger</name><data>treenode current = ownerobject(c);
+</data>
+         <node f="40-0"><name></name></node></node>
+        <node f="42-0" dt="2"><name>ondrawtrigger</name><data>treenode current = ownerobject(c);
+treenode view = parnode(1);
+
+// If this function returns a true, the default draw code of the object will not be executed.
+</data></node>
+        <node f="42-0"><name>timetables</name></node>
+        <node f="42-0"><name>networknodes</name></node>
+        <node f="42-0" dt="1"><name>timeoflaststop</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>nrofstops</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>statebeforestop</name><data>0000000000000000</data></node>
+        <node f="42-0"><name>collisionspheres</name></node>
+        <node f="42-0"><name>collisionobjects</name></node>
+        <node f="42-0" dt="2"><name>resettrigger</name><data>treenode current = ownerobject(c);
+</data></node>
+        <node f="42-0" dt="1"><name>savedstate</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>resetposition</name><data>0000000000000000</data></node>
+        <node f="42-0" dt="1"><name>doanimations</name><data>000000003ff00000</data></node>
+        <node f="42-0"><name>travelmembers</name></node>
+        <node f="42-0"><name>activetravelmembers</name></node>
+        <node f="42-0" dt="1"><name>lastupdatetime</name><data>0000000000000000</data></node>
        </node>
        <node f="42-0"><name>behaviour</name>
         <node f="40-0"><name></name></node>
@@ -2694,5 +2717,5 @@ return 0;</data></node>
  </node>
  <node f="42-0" dt="2"><name>release</name><data>1.0</data></node>
  <node f="42-0" dt="2"><name>revision</name><data>.8</data></node>
- <node f="42-0" dt="2"><name>flexsim release</name><data>7.3</data></node>
+ <node f="42-0" dt="2"><name>flexsim release</name><data>7.5</data></node>
 </node></flexsim-tree>

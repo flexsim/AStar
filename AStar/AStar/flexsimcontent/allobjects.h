@@ -1058,6 +1058,7 @@
 #define CLF_CONSOLE_SCRIPT		0x00002000
 #define CLF_COMPILE				0x00001000
 #define CLF_COMMERCIAL_USE		0x00080000
+#define CLF_EXPERTFIT			0x00040000
 #define CLF_OPTQUEST			0x00020000
 #define CLF_XMLSAVELOAD			0x00010000
 
@@ -2062,7 +2063,7 @@ public:
 	Vec4Generic(OtherNumber* other) : x(other[0]), y(other[1]), z(other[2]), w(other[3]) {}
 	Vec4Generic(Number x, Number y, Number z, Number w) : x(x), y(y), z(z), w(w) {}
 	Vec4Generic() {}
-	#if _MSC_VER >= 1700
+	#if _MSC_VER >= 1800
 	template <class OtherNumber>
 	Vec4Generic(std::initializer_list<OtherNumber> list) 
 	{
@@ -2161,7 +2162,7 @@ public:
 	Vec3Generic(OtherNumber* other) : x(other[0]), y(other[1]), z(other[2]) {}
 	Vec3Generic(Number x, Number y, Number z) : x(x), y(y), z(z) {}
 	Vec3Generic() {}
-	#if _MSC_VER >= 1700
+	#if _MSC_VER >= 1800
 	template <class OtherNumber>
 	Vec3Generic(std::initializer_list<OtherNumber> list) 
 	{
@@ -2252,7 +2253,7 @@ public:
 	template <class OtherNumber>
 	Vec2Generic(OtherNumber* other) : x(other[0]), y(other[1]) {}
 	Vec2Generic() {}
-	#if _MSC_VER >= 1700
+	#if _MSC_VER >= 1800
 	template <class OtherNumber>
 	Vec2Generic(std::initializer_list<OtherNumber> list) 
 	{
@@ -2486,7 +2487,7 @@ treenode* enumerateteam(treenode team, int * returnnrofoperators, int recursivec
 
 visible int evaluatepullcriteria(treenode fr, treenode item, int port, int bypassflags);
 
-double fglinfo(int op, treenode view);
+visible double fglinfo(int op, treenode view);
 
 treenode findnextclassvariable(treenode*curclass, treenode curvariable);
 
@@ -2746,7 +2747,7 @@ visible double resumetransportsin(treenode object, int rank DEFAULTZERO);
 
 visible double resumetransportsout(treenode object, int rank DEFAULTZERO);
 
-double rotationproject(treenode originSpace, double rx, double ry, double rz, treenode ontoSpace, double* rotationsOut);
+visible double rotationproject(treenode originSpace, double rx, double ry, double rz, treenode ontoSpace, double* rotationsOut);
 
 double savenodestate(treenode savenode, int size DEFAULTZERO, int nrofpointers DEFAULTONE, treenode* nodes DEFAULTNULL);
 
@@ -2858,11 +2859,11 @@ FS_CONTENT_DLL_FUNC virtual double onRunWarm();
 
 FS_CONTENT_DLL_FUNC virtual double onUndo(bool isUndo, treenode undoRecord);
 
-FS_CONTENT_DLL_FUNC double stopObject(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resumeObject(int id);
+FS_CONTENT_DLL_FUNC virtual double resumeObject(int id, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double resumeObject();
 
@@ -2891,6 +2892,8 @@ FS_CONTENT_DLL_FUNC virtual double onTransportOutNotify(treenode item, int port)
 FS_CONTENT_DLL_FUNC virtual double onTransportOutComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
 
 FS_CONTENT_DLL_FUNC virtual double onTransportInComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
+
+FS_CONTENT_DLL_FUNC double resetLabels();
 
 
 // System
@@ -2946,7 +2949,7 @@ FS_CONTENT_DLL_FUNC virtual double onMessage(treenode fromobject, double par1, d
 
 FS_CONTENT_DLL_FUNC virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double stopObject(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
@@ -4332,8 +4335,6 @@ TreeNode * node_v_filtermaxtime;
 #define v_filtermaxtime node_v_filtermaxtime->safedatafloat()[0]
 TreeNode * node_v_filterednow;
 #define v_filterednow node_v_filterednow->safedatafloat()[0]
-TreeNode * node_v_starttime;
-#define v_starttime node_v_starttime->safedatafloat()[0]
 TreeNode * node_v_timeinterval;
 #define v_timeinterval node_v_timeinterval->safedatafloat()[0]
 TreeNode * node_v_showlegend;
@@ -4621,6 +4622,10 @@ TreeNode * node_v_validdata;
 #define v_validdata node_v_validdata->safedatafloat()[0]
 TreeNode * node_v_useprofilenr;
 #define v_useprofilenr node_v_useprofilenr->safedatafloat()[0]
+TreeNode * node_v_wrap;
+#define v_wrap node_v_wrap->safedatafloat()[0]
+TreeNode * node_v_wraptime;
+#define v_wraptime node_v_wraptime->safedatafloat()[0]
 
 // c++ member functions
 
@@ -6112,6 +6117,8 @@ FS_CONTENT_DLL_FUNC virtual double finishOffset();
 FS_CONTENT_DLL_FUNC treenode  findDefaultNavigator();
 
 FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC double resumeObject(int id, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double resumeObject();
 
