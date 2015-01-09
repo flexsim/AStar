@@ -12,5 +12,5 @@
 <FlexSim="0B7B2ED6-6323-431F-9C00-B6FA49899CE7">
 </Program GUIDs-->
   <?define UpgradeCode ="0B7B2ED6-6323-431F-9C00-B6FA49899CE7"?>
-  <?define MinUpradeVersion = "1.0.8"?>
+  <?define MinUpgradeVersion = "1.0.8"?>
 </Include>
