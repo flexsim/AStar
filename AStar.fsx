@@ -2715,7 +2715,7 @@ return 0;</data></node>
    </node>
   </node>
  </node>
- <node f="42-0" dt="2"><name>release</name><data>1.0</data></node>
- <node f="42-0" dt="2"><name>revision</name><data>.8</data></node>
+ <node f="42-0" dt="2"><name>release</name><data>1.1</data></node>
+ <node f="42-0" dt="2"><name>revision</name><data>.0</data></node>
  <node f="42-0" dt="2"><name>flexsim release</name><data>7.5</data></node>
 </node></flexsim-tree>
