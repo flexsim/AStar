@@ -23,6 +23,8 @@
 			<ComponentGroupRef Id="group_help" />
 		</Feature>
 
+    <Property Id="SHOULDLAUNCH" Value="true"/>
+    
     <Property Id="PREVIOUSVERSIONSINSTALLED" Secure="yes" />
     <Upgrade Id="$(var.UpgradeCode)">
       <UpgradeVersion
@@ -59,7 +61,7 @@
     </InstallUISequence>
 
     <InstallExecuteSequence>
-      <Custom Action="LaunchApplication" Before="InstallFinalize">NOT Installed</Custom>
+      <Custom Action="LaunchApplication" Before="InstallFinalize">NOT Installed AND SHOULDLAUNCH = "true"</Custom>
     </InstallExecuteSequence>
     
   </Product>
