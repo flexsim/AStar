@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
   <!-- Define Main Naming Properties Here-->
-  <?define FullProductName = "FlexSim 7.5 AStar Module 1.1.0"?>
-  <?define FlexSimVersion = "FlexSim 7.5"?>
+  <?define FullProductName = "FlexSim 7.5 Beta AStar Module 1.1.0"?>
+  <?define FlexSimVersion = "FlexSim 7.5 Beta"?>
   <?define Version = "1.1.0"?>
 <!--Program GUIDs>
 <FlexSim="456F0255-6475-4857-AD4F-A5D9A06DA757">
