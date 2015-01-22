@@ -171,7 +171,7 @@ public:
 	NodeRef activeBarrier;
 	
 	TreeNode* fixedResourceBarriers;
-	NodeListArray<FixedResource>::ObjStoredAttCouplingType objectBarrierList;
+	NodeListArray<ObjectDataType>::ObjStoredAttCouplingType objectBarrierList;
 
 	AStarNavigator();
 	~AStarNavigator();
