@@ -48,9 +48,17 @@ public:
 	// This function is used by the AStarNavigator to determine the effect a barrier
 	// will have on the nodes it influences. [c0, r0] are the coords of the bottom left
 	// corner of the grid.
-	virtual void modifyTable(AStarNode* edgeTable, 
+	virtual void addBarriersToTable(AStarNode* edgeTable, 
 		std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
 		double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize);
+
+	// This function is used by the AStarNavigator to determine the effect a barrier
+	// will have on the nodes it influences. [c0, r0] are the coords of the bottom left
+	// corner of the grid.
+	virtual void addPassagesToTable(AStarNode* edgeTable,
+		std::unordered_map<unsigned int, AStarNodeExtraData>* extraData,
+		double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
+	{}
 
 	// This function is called by the AStarNavigator class to add vertices to the 
 	// given mesh. This mesh draws GL_TRIANGLES at z height and has an emissive per-vertex attribute.

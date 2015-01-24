@@ -27,7 +27,7 @@ void PreferredPath::bind(void)
 	bindDouble(pathWeight, 0);
 }
 
-void PreferredPath::modifyTable(AStarNode* edgeTable, 
+void PreferredPath::addPassagesToTable(AStarNode* edgeTable, 
 						  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
 						  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
 {
@@ -79,8 +79,7 @@ void PreferredPath::modifyTable(AStarNode* edgeTable,
 		int currCol = col;
 		int currRow = row;
 		// now step through the line, essentially walking along the edges of the grid tiles
-		// under the line, and set the divider by zeroing out the bits on each side of the line
-		// I'm walking on
+		// under the line
 		while(currCol != nextCol || currRow != nextRow) {
 
 			AStarSearchEntry e;
@@ -88,11 +87,12 @@ void PreferredPath::modifyTable(AStarNode* edgeTable,
 			e.row = currRow;
 			AStarNodeExtraData * extra;
 			auto extraIter = extraData->find(e.colRow);
+			AStarNode& node = DeRefEdgeTable(e.row, e.col);
 			if(extraIter == extraData->end()) {
 				extra = &((*extraData)[e.colRow]);
 				memset(extra, 0, sizeof(AStarNodeExtraData));
 				extra->colRow = e.colRow;
-				DeRefEdgeTable(e.row, e.col).noExtraData = 0;
+				node.noExtraData = 0;
 			} else {
 				extra = &(extraIter->second);
 			}
@@ -100,6 +100,15 @@ void PreferredPath::modifyTable(AStarNode* edgeTable,
 			extra->bonusLeft = (char)maxof(-128,minof(127, extra->bonusLeft - horizontalWeight));
 			extra->bonusUp = (char)maxof(-128,minof(127, extra->bonusUp + verticalWeight));
 			extra->bonusDown = (char)maxof(-128,minof(127, extra->bonusDown - verticalWeight));
+
+			if (dx > 0)
+				node.canGoRight = true;
+			if (dx < 0)
+				node.canGoLeft = true;
+			if (dy > 0)
+				node.canGoUp = true;
+			if (dy < 0)
+				node.canGoDown = true;
 
 			// the way that I essentially move along the line
 			// is at each grid point, I do a test step horizontally, 

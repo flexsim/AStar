@@ -196,6 +196,7 @@ public:
 
 	virtual void bindVariables(void) override;
 
+	void blockGridModelPos(const Vec3& modelPos);
 
 	void setDirty();
 };

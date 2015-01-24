@@ -38,7 +38,7 @@ bool Divider::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
 
 	return true;
 }
-void Divider::modifyTable(AStarNode* edgeTable, 
+void Divider::addBarriersToTable(AStarNode* edgeTable, 
 						  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
 						  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
 {

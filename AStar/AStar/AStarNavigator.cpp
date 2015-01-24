@@ -1059,15 +1059,13 @@ void AStarNavigator::buildEdgeTable()
 	maxPathWeight = 0.0;
 	for(int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
-		barrier->modifyTable(edgeTable, &edgeTableExtraData, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
-		if (comparetext(barrier->getClassFactory(), "AStar::PreferredPath")) {
-			PreferredPath* path = (PreferredPath*)barrier;
-			maxPathWeight = max(path->pathWeight, maxPathWeight);
-		}
+		barrier->addBarriersToTable(edgeTable, &edgeTableExtraData, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
 	}
 
 	for (int i = 0; i < objectBarrierList.size(); i++) {
 		TreeNode* theObj = objectBarrierList[i]->holder;
+		if (function_s(theObj, "customizeAStarGrid", tonum(holder), nodeWidth))
+			continue;
 		
 		Vec2 objMin(FLT_MAX, FLT_MAX), objMax(-FLT_MAX, -FLT_MAX);
 		int rotation = ((int)round(zrot(theObj) / 90) * 90);
@@ -1159,14 +1157,32 @@ void AStarNavigator::buildEdgeTable()
 					Vec3 objPos;
 					vectorproject(model(), modelPos.x, modelPos.y, modelPos.z, theObj, objPos);
 					if (objPos.x > minThreshold.x && objPos.x < maxThreshold.x && objPos.y > minThreshold.y && objPos.y < maxThreshold.y) {
-						AStarNode* theNode = &(DeRefEdgeTable(row, col));
-						theNode->canGoUp = 0;
-						theNode->canGoDown = 0;
-						theNode->canGoLeft = 0;
-						theNode->canGoRight = 0;
+						AStarNode& theNode = DeRefEdgeTable(row, col);
+						theNode.canGoUp = false;
+						theNode.canGoDown = false;
+						theNode.canGoLeft = false;
+						theNode.canGoRight = false;
+
+						if (col > 0)
+							DeRefEdgeTable(row, col - 1).canGoRight = false;
+						if (col < edgeTableXSize - 1)
+							DeRefEdgeTable(row, col + 1).canGoLeft = false;
+						if (row > 0)
+							DeRefEdgeTable(row - 1, col).canGoUp = false;
+						if (row < edgeTableYSize)
+							DeRefEdgeTable(row + 1, col).canGoDown = false;
 					}
 				}
 			}
+		}
+	}
+
+	for (int i = 0; i < barrierList.size(); i++) {
+		Barrier* barrier = barrierList[i];
+		barrier->addPassagesToTable(edgeTable, &edgeTableExtraData, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
+		if (comparetext(barrier->getClassFactory(), "AStar::PreferredPath")) {
+			PreferredPath* path = (PreferredPath*)barrier;
+			maxPathWeight = max(path->pathWeight, maxPathWeight);
 		}
 	}
 
@@ -1362,50 +1378,25 @@ void AStarNavigator::drawMembers(float z)
 		ObjectDataType* theFR = objectBarrierList[i];
 		TreeNode* theNode = theFR->holder;
 
-		// The position is the top left corner
-		double centerx = 0.5 * xsize(theNode);
-		double centery = 0.5 * ysize(theNode);
+		Vec3 topLeft, bottomLeft, topRight, bottomRight;
+		vectorproject(theNode, 0, 0, 0, model(), topLeft);
+		vectorproject(theNode, 0, -ysize(theNode), 0, model(), bottomLeft);
+		vectorproject(theNode, xsize(theNode), -ysize(theNode), 0, model(), bottomRight);
+		vectorproject(theNode, xsize(theNode), 0, 0, model(), topRight);
+		topLeft.z = bottomLeft.z = topRight.z = bottomRight.z = 0;
 
-		double outputVector[3];
-		vectorproject(theNode, centerx, - centery, 0, model(), outputVector);
-		
-		float x;
-		float y;
-		float width;
-		float height;
+		auto addVertex = [this](const Vec3& pos) {
+			Vec3f posf(pos);
+			int newVertex = memberMesh.addVertex();
+			memberMesh.setVertexAttrib(newVertex, MESH_POSITION, posf);
+		};
 
-		//Check to see if the object is rotated at all, if so round the rotation to the nearest 90 degrees
-		int rotation = (int)(round(zrot(theNode) / 90) * 90);
-		if (rotation != 0 && rotation % 180 != 0 && rotation % 90 == 0) {
-			x = outputVector[0] - centery;
-			y = outputVector[1] + centerx;
-			width = get(spatialsy(theNode));
-			height = get(spatialsx(theNode));
-		} else {
-			x = outputVector[0] - centerx;
-			y = outputVector[1] + centery;
-			width = get(spatialsx(theNode));
-			height = get(spatialsy(theNode));
-		}
-
-		float topLeft[3] = {x, y, z};
-		float bottomLeft[3] = {x, y - height, z};
-		float topRight[3] = {x + width, y, z};
-		float bottomRight[3] = {topRight[0], bottomLeft[1], z};
-
-#define ABV(pos) {\
-	int newVertex = memberMesh.addVertex();\
-	memberMesh.setVertexAttrib(newVertex, MESH_POSITION, pos);\
-	}
-
-#define ABT(pos1, pos2, pos3) ABV(pos1) ABV(pos2) ABV(pos3)
-
-		ABT(topLeft, bottomLeft, topRight);
-		ABT(bottomRight, topRight, bottomLeft);
-
-#undef ABV
-#undef ABT
-
+		addVertex(topLeft);
+		addVertex(bottomLeft);
+		addVertex(topRight);
+		addVertex(bottomRight);
+		addVertex(topRight);
+		addVertex(bottomLeft);
 	}
 
 #define ABV(pos) {\
@@ -1605,6 +1596,35 @@ void AStarNavigator::setDirty()
 unsigned int AStarNavigator::getClassType()
 {
 	return CLASSTYPE_WANTCONNECTLOGIC | CLASSTYPE_FLEXSIMOBJECT | CLASSTYPE_NAVIGATOR;
+}
+
+void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
+{
+	int col = (modelPos.x - xOffset) / nodeWidth;
+	int row = (modelPos.y - yOffset) / nodeWidth;
+
+	if (col >= 0 && col < edgeTableXSize && row >= 0 && row < edgeTableYSize) {
+		AStarNode& node = DeRefEdgeTable(row, col);
+		node.canGoDown = false;
+		node.canGoUp = false;
+		node.canGoRight = false;
+		node.canGoLeft = false;
+
+		if (col > 0)
+			DeRefEdgeTable(row, col - 1).canGoRight = 0;
+		if (col < edgeTableXSize - 1)
+			DeRefEdgeTable(row, col + 1).canGoLeft = 0;
+		if (row > 0)
+			DeRefEdgeTable(row - 1, col).canGoUp = 0;
+		if (row < edgeTableYSize - 1)
+			DeRefEdgeTable(row + 1, col).canGoDown = 0;
+	}
+}
+
+visible double AStarNavigator_blockGridModelPos(FLEXSIMINTERFACE)
+{
+	o(AStarNavigator, c).blockGridModelPos(Vec3(parval(1), parval(2), parval(3)));
+	return 0;
 }
 
 visible double AStarNavigator_setEditMode(FLEXSIMINTERFACE)

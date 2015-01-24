@@ -90,6 +90,7 @@ treenode view = parnode(1);
          <node f="42-10000" dt="2"><name>setBarrierMode</name><data>dll:"module:AStar" func:"Barrier_setMode"</data></node>
          <node f="42-10000" dt="2"><name>onMouseMove</name><data>dll:"module:AStar" func:"AStarNavigator_onMouseMove"</data></node>
          <node f="42-10000" dt="2"><name>onClick</name><data>dll:"module:AStar" func:"AStarNavigator_onClick"</data></node>
+         <node f="42-10000" dt="2"><name>blockGridModelPos</name><data>dll:"module:AStar" func:"AStarNavigator_blockGridModelPos"</data></node>
         </node>
         <node f="42-0"><name>cppfunctions</name>
          <node f="40-0"><name></name></node></node>
@@ -544,7 +545,7 @@ return asn;
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
        </data></node>
-       <node f="42-100000" dt="4"><name>Divider</name><data>
+       <node f="42-0" dt="4"><name>Divider</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Divider")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -556,7 +557,7 @@ return asn;
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\onewaydivider.bmp</data></node>
        </data></node>
-       <node f="42-0" dt="4"><name>Preferred Path</name><data>
+       <node f="42-100000" dt="4"><name>Preferred Path</name><data>
         <node f="40-0"><name></name></node>
         <node f="42-4" dt="2"><name>OnClick</name><data>modeleditmode("AStar::PreferredPath")</data></node>
         <node f="42-0" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>

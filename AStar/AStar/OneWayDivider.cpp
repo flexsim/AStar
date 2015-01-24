@@ -18,7 +18,7 @@ void OneWayDivider::bind(void)
 	Divider::bind();
 }
 
-void OneWayDivider::modifyTable(AStarNode* edgeTable, 
+void OneWayDivider::addBarriersToTable(AStarNode* edgeTable, 
 						  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
 						  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
 {
