@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
   <!-- Define Main Naming Properties Here-->
-  <?define FullProductName = "FlexSim 7.5 Beta AStar Module 1.1.0"?>
-  <?define FlexSimVersion = "FlexSim 7.5 Beta"?>
+  <?define FullProductName = "FlexSim 7.5 AStar Module 1.1.0"?>
+  <?define FlexSimVersion = "FlexSim 7.5"?>
   <?define Version = "1.1.0"?>
 <!--Program GUIDs>
-<FlexSim="456F0255-6475-4857-AD4F-A5D9A06DA757">
+<FlexSim="124DDD12-0BD0-464E-B753-4BC53D27770A">
 </Program GUIDs-->
   <?define ProductGUID ="DCC29B92-7B0C-43FC-BE9B-93EE271CFACD"?>
 <!--Program GUIDs>
-<FlexSim="D4BFFF02-D3B3-4466-AB2E-93F3CEA014D5">
+<FlexSim="B1582CD5-BF46-408E-B32C-B097CB640C30">
 </Program GUIDs-->
   <?define UpgradeCode ="0B7B2ED6-6323-431F-9C00-B6FA49899CE7"?>
   <?define MinUpgradeVersion = "1.0.8"?>

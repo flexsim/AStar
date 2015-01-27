@@ -70,19 +70,19 @@
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="INSTALLDIR" Name="AStar" FileSource=".\">
 <!--Program GUIDs>
-<FlexSim="968E0A97-6DDC-449C-BD70-45BE68D50A0E">
+<FlexSim="13B0FE6A-695A-4E00-AA00-13CA0C52E16B">
 </Program GUIDs-->
         <Component Id="DLLBinaries_x64" Guid="B8FF3568-4258-4C2F-AD1E-1FB4499D7BDD">
           <File Name="AStar.dll" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="2D38EC42-8AB5-4B6A-A869-48608C2E887B">
+<FlexSim="24982AC0-8C5D-492C-9026-88ADA3197660">
 </Program GUIDs-->
         <Component Id="DLLBinaries_x86" Guid="8C85D7DC-C100-4B3C-8689-BC093CA8D93F">
           <File Name="AStar_x86.dll" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="505E70C1-2E6C-4A6C-B043-D37D414AC56E">
+<FlexSim="C51A90C5-07DA-4505-B86C-7FA9DB6F2906">
 </Program GUIDs-->
         <Component Id="ModuleTree" Guid="03C7E4DD-62F2-465C-AC18-D035161881F1">
           <File Name="AStar.t" />
