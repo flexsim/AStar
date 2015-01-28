@@ -66,6 +66,11 @@ double AStarNavigator::onReset()
 	while (content(node_v_activetravelmembers) > 0)
 		transfernode(last(node_v_activetravelmembers), node_v_travelmembers);
 
+	for (size_t i = 1; i <= content(node_v_travelmembers); i++) {
+		treenode teNode = ownerobject(tonode(get(rank(node_v_travelmembers, i))));
+		teNode->objectAs(TaskExecuter)->moveToResetPosition();
+	}
+
 	edgeTableExtraData.clear();
 	buildEdgeTable();
 	setDirty();
