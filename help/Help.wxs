@@ -24,7 +24,6 @@
     <ComponentGroup Id="group_help">
       <ComponentRef Id="comp_AFC9288D63E94D8B9891DE4DAE947F54" />
       <ComponentRef Id="comp_CE25B3E8E7D948A383244339E7B92A5D" />
-      <ComponentRef Id="comp_E247950C23434A8E87D69A63534D1D57" />
       <ComponentRef Id="comp_0C9B21CE90D349529FDD01ED5E3CA8BF" />
       <ComponentRef Id="comp_07403D5AFB7E413FB3228D269C3F88C1" />
       <ComponentRef Id="comp_25877399B6B944C48ED5ADBDE29EBC6F" />
@@ -65,12 +64,6 @@
 </Program GUIDs-->
         <Component Id="comp_CE25B3E8E7D948A383244339E7B92A5D" Guid="C6C5BC66-0878-4173-8049-6C9ABC2A50B1">
           <File Id="file_855B4E050CBC4C9598C3F8A4A028AB3B" KeyPath="yes" Source="$(var.ProjectDir)help\Example.html" />
-        </Component>
-<!--Program GUIDs>
-<FlexSim="BF795B95-01C1-477F-AC1B-F03E6E0A4204">
-</Program GUIDs-->
-        <Component Id="comp_E247950C23434A8E87D69A63534D1D57" Guid="699CEE72-ED75-460A-BDF7-DDD89B6A6084">
-          <File Id="file_278C67CEB4CD4EBC8166D047C13A6EB3" KeyPath="yes" Source="$(var.ProjectDir)help\index.html" />
         </Component>
 <!--Program GUIDs>
 <FlexSim="20A69980-2A0C-4900-8F0A-692A22071E15">

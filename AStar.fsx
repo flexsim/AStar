@@ -2621,9 +2621,8 @@ applylinks(parent);</data></node>
     <node f="42-0" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42-0"><name>data</name>
      <node f="40-0"><name></name></node>
-     <node f="42-0" dt="4"><name>AStar Module</name><data>
+     <node f="42-0" dt="4"><name>AStar</name><data>
       <node f="40-0"><name></name></node>
-      <node f="42-0" dt="2"><name>viewfocus</name><data>modules\AStar\help\index.html</data></node>
       <node f="42-0" dt="2"><name>title</name><data>AStar Module</data></node>
      </data>
       <node f="40-0"><name></name></node>
