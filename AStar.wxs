@@ -14,8 +14,11 @@
 		<MediaTemplate EmbedCab="yes"/>
 
 		<Feature Id="MainModule" Title="AStar Module" Level="1" ConfigurableDirectory="INSTALLDIR">
-      <ComponentRef Id="DLLBinaries_x64"/>
-      <ComponentRef Id="DLLBinaries_x86"/>
+      <?if $(var.Platform) = x86 ?>
+        <ComponentRef Id="DLLBinaries_x86"/>
+      <?else?>
+        <ComponentRef Id="DLLBinaries_x64"/>
+      <?endif?>
       <ComponentRef Id="ModuleTree"/>
       <ComponentGroupRef Id="group_bitmaps"/>
       <ComponentGroupRef Id="group_cursors"/>
@@ -69,20 +72,29 @@
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="INSTALLDIR" Name="AStar" FileSource=".\">
-<!--Program GUIDs>
-<FlexSim="13B0FE6A-695A-4E00-AA00-13CA0C52E16B">
-</Program GUIDs-->
-        <Component Id="DLLBinaries_x64" Guid="B8FF3568-4258-4C2F-AD1E-1FB4499D7BDD">
-          <File Name="AStar.dll" />
-        </Component>
+        <?if $(var.Platform) = x86 ?>
 <!--Program GUIDs>
 <FlexSim="24982AC0-8C5D-492C-9026-88ADA3197660">
+<FlexSimHC="A6B9A475-6762-41FA-A633-C782C49703A1">
+<FlexSimChinese="C1254ACE-8457-4D3D-99B1-6127DE171A4F">
 </Program GUIDs-->
-        <Component Id="DLLBinaries_x86" Guid="8C85D7DC-C100-4B3C-8689-BC093CA8D93F">
-          <File Name="AStar_x86.dll" />
-        </Component>
+          <Component Id="DLLBinaries_x86" Guid="8C85D7DC-C100-4B3C-8689-BC093CA8D93F">
+            <File Name="AStar_x86.dll" />
+          </Component>
+        <?else?>
+<!--Program GUIDs>
+<FlexSim="13B0FE6A-695A-4E00-AA00-13CA0C52E16B">
+<FlexSimHC="F114356A-F14C-4330-9F19-479B1AE45548">
+<FlexSimChinese="0EAFECB3-5C84-4EAD-A5CA-61B64D7B766B">
+</Program GUIDs-->
+          <Component Id="DLLBinaries_x64" Guid="B8FF3568-4258-4C2F-AD1E-1FB4499D7BDD">
+            <File Name="AStar.dll" />
+          </Component>
+        <?endif?>
 <!--Program GUIDs>
 <FlexSim="C51A90C5-07DA-4505-B86C-7FA9DB6F2906">
+<FlexSimHC="24D9648F-B751-4BF6-8170-A56676C54883">
+<FlexSimChinese="A38C419D-1D8E-429D-BAD6-64978D42866C">
 </Program GUIDs-->
         <Component Id="ModuleTree" Guid="03C7E4DD-62F2-465C-AC18-D035161881F1">
           <File Name="AStar.t" />
