@@ -8,7 +8,7 @@
    <node f="40-0"><name></name></node>
    <node f="42-0" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40-0"><name></name></node>
-    <node f="42-0" dt="1"><name>rank</name><data>00000000403e0000</data></node>
+    <node f="42-0" dt="1"><name>rank</name><data>0000000040400000</data></node>
     <node f="42-0" dt="2"><name>after</name><data>dynamo</data></node>
     <node f="42-0" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42-0"><name>data</name>
@@ -45,7 +45,7 @@
 </data>
          <node f="40-0"><name></name></node></node>
         <node f="42-0" dt="2"><name>ondrawtrigger</name><data>treenode current = ownerobject(c);
-treenode view = parnode(1);
+treenode view = param(1);
 
 // If this function returns a true, the default draw code of the object will not be executed.
 </data></node>
@@ -522,11 +522,11 @@ nodepoint(objectfocus(c), 0);</data></node>
          <node f="40-0"><name></name></node>
          <node f="42-0" dt="2"><name>picture</name><data>modules\AStar\bitmaps\astarnavigatorsmall.png</data></node>
         </node>
-        <node f="42-4" dt="2"><name>dropscript</name><data>treenode ontoObject = parnode(1);
-double x = parval(2);
-double y = parval(3);
-double z = parval(4);
-treenode view = parnode(5);
+        <node f="42-4" dt="2"><name>dropscript</name><data>treenode ontoObject = param(1);
+double x = param(2);
+double y = param(3);
+double z = param(4);
+treenode view = param(5);
 
 if (objectexists(node("AStarNavigator", model)))
 	return 0;
@@ -1100,7 +1100,7 @@ if (objectexists(member)) {
            <node f="40-0"><name></name></node>
            <node f="42-4" dt="2"><name>onSample</name><data>treenode focus = node("@&gt;objectfocus+", c);
 
-function_s(focus, "addMember", parnode(3));
+function_s(focus, "addMember", param(3));
 
 nodefunction(node("../MembersList&gt;refresh",c));
 repaintall();</data></node>
@@ -1194,8 +1194,8 @@ if (objectexists(object)) {
 	repaintall();
 }
 </data></node>
-          <node f="42-4" dt="2"><name>searchObjects</name><data>string name = parstr(1);
-treenode members = parnode(2);
+          <node f="42-4" dt="2"><name>searchObjects</name><data>string name = param(1);
+treenode members = param(2);
 
 for (int i = 1; i &lt;= content(members); i++) {
 	treenode object = ownerobject(tonode(get(rank(members, i))));
@@ -1249,7 +1249,7 @@ switch (list) {
 }
 
 listboxrefresh(parent);</data></node>
-          <node f="42-4" dt="2"><name>displaymembers</name><data>treenode members = parnode(1);
+          <node f="42-4" dt="2"><name>displaymembers</name><data>treenode members = param(1);
 
 treenode itms = items(up(c));
 
@@ -1548,7 +1548,7 @@ repaintview(TheTable);
            <node f="40-0"><name></name></node></node>
           <node f="42-0"><name>eventfunctions</name>
            <node f="40-0"><name></name></node>
-           <node f="42-4" dt="2"><name>add</name><data>int type = parval(1);
+           <node f="42-4" dt="2"><name>add</name><data>int type = param(1);
 treenode focus = node("@&gt;objectfocus+", c);
 
 function_s(focus, "addBarrier", 0, 0, 10, 10, type);
@@ -1774,7 +1774,7 @@ for (int i = 1; i &lt;= content(barriers); i++) {
 
 nodepoint(node("../Attributes&gt;objectfocus", c), barrierNode);
 function_s(node("../Attributes", c), "refreshData");</data></node>
-           <node f="42-4" dt="2"><name>filterList</name><data>string type = parstr(1);
+           <node f="42-4" dt="2"><name>filterList</name><data>string type = param(1);
 
 treenode result = node("&gt;result", c);
 treenode barriers = node("@&gt;objectfocus+&gt;variables/barriers", c);
@@ -2588,7 +2588,7 @@ applylinks(parent);</data></node>
    <node f="40-0"><name></name></node>
    <node f="42-0" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40-0"><name></name></node>
-    <node f="42-0" dt="1"><name>rank</name><data>00000000404a8000</data></node>
+    <node f="42-0" dt="1"><name>rank</name><data>00000000404b0000</data></node>
     <node f="42-0" dt="2"><name>after</name><data>ThreeDView</data></node>
     <node f="42-0" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42-0"><name>data</name>
@@ -2662,7 +2662,7 @@ applylinks(parent);</data></node>
    <node f="40-0"><name></name></node>
    <node f="42-0" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40-0"><name></name></node>
-    <node f="42-0" dt="1"><name>rank</name><data>00000000402a0000</data></node>
+    <node f="42-0" dt="1"><name>rank</name><data>00000000402c0000</data></node>
     <node f="42-0" dt="2"><name>after</name><data>Task Executer as Flowitem</data></node>
     <node f="42-0" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42-0"><name>data</name>
