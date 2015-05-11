@@ -5,7 +5,7 @@
   <WARNING>Manual changes to this file may cause incorrect behavior.</WARNING>
   <ParaffinFileVersion>2</ParaffinFileVersion>
   <GroupName>group_help</GroupName>
-  <Directory>FlexSimStable\modules\AStar\help\</Directory>
+  <Directory>.\</Directory>
   <DirAlias>$(var.ProjectDir)help\</DirAlias>
   <Win64></Win64>
   <Norecurse>false</Norecurse>

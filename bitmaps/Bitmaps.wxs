@@ -5,7 +5,7 @@
   <WARNING>Manual changes to this file may cause incorrect behavior.</WARNING>
   <ParaffinFileVersion>2</ParaffinFileVersion>
   <GroupName>group_bitmaps</GroupName>
-  <Directory>FlexSimStable\modules\AStar\bitmaps\</Directory>
+  <Directory>.\</Directory>
   <DirAlias>$(var.ProjectDir)bitmaps\</DirAlias>
   <Win64></Win64>
   <Norecurse>false</Norecurse>

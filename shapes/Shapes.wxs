@@ -5,7 +5,7 @@
   <WARNING>Manual changes to this file may cause incorrect behavior.</WARNING>
   <ParaffinFileVersion>2</ParaffinFileVersion>
   <GroupName>group_shapes</GroupName>
-  <Directory>FlexSimStable\modules\AStar\shapes\</Directory>
+  <Directory>.\</Directory>
   <DirAlias>$(var.ProjectDir)shapes\</DirAlias>
   <Win64></Win64>
   <Norecurse>false</Norecurse>
