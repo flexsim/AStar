@@ -19,7 +19,6 @@ class ScenePositionCache;
 class PortDrawCache;
 class Cuboid;
 class FRECT;
-class ParticleDataType;
 class ViewPoint;
 class VisualFeatureTag;
 class VisualFeatureTagList;
@@ -33,17 +32,31 @@ typedef char* (*customdisplayfunction)(TreeNode*, int);
 class ConsoleWin;
 template<class ElementType> class FlexSimCVector;
 template<class ElementType> class HashTable;
-template<class RefType> class SafeRef;
-typedef SafeRef<TreeNode> NodeRef;
+class NodeRef;
 template<class ObjType> class ObjRef;
 class Bundle;
-struct CommandInfoStruct;
 class FlexSimValue;
-typedef double (*FSfptr)(CallPoint*);
 class UserWindowStyle;
 class Mesh;
 class IndexedMesh;
-class SqlDelegate;
+class SqlDataSource;
+class SqlQuery;
+class FlexScriptCode;
+class CppCode;
+namespace Compiler {
+	struct ASTNodeVector;
+	struct AbstractSyntaxTree;
+	struct ASTNode;
+	struct CommandInfoStruct;
+	struct ClassInfo;
+	struct FlexScriptLambda;
+};
+class Variant;
+class VariantParams;
+class TableView;
+class TableViewDataSource;
+class BundleViewDataSource;
+class List;
 
 #pragma push_macro("engine_export")
 #ifdef FLEXSIM_ENGINE_COMPILE

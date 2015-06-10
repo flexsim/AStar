@@ -112,7 +112,7 @@ char* SimpleDataType::toString(int verbose)
 {
 	return sdttostring(this, verbose);
 }
-double& SimpleDataType::getCurValue() 
+Variant& SimpleDataType::getCurValue() 
 {
 	return sdtgetcurvalue();
 }
@@ -120,12 +120,8 @@ const char* SimpleDataType::getCurValueName()
 {
 	return sdtgetcurvaluename();
 }
-int& SimpleDataType::getCurValueType() 
-{
-	return sdtgetcurvaluetype();
-}
-double SimpleDataType::getValue(const char* name){return sdtgetvalue(this, name);}
-void SimpleDataType::setValue(const char* name, double value){sdtsetvalue(this, name, value);}
+Variant SimpleDataType::getValue(const char* name){return sdtgetvalue(this, name);}
+void SimpleDataType::setValue(const char* name, Variant value){sdtsetvalue(this, name, value);}
 
 char* CouplingDataType::toString(int verbose)
 {
@@ -176,7 +172,7 @@ void ByteBlock::write(const char *source) {byteblock_write1(this, source);}
 void ByteBlock::write(const char *source, size_t intsize, bool nullterminate) { byteblock_write2(this, source, intsize, nullterminate); }
 void ByteBlock::append(const char* source) { return byteblock_append(this, source); }
 bool ByteBlock::setSize(size_t size) { return byteblock_setsize(this, size); }
-unsigned int ByteBlock::getSize() { return byteblock_getsize(this); }
+unsigned int ByteBlock::getSize() const { return byteblock_getsize((ByteBlock*)this); }
 char * ByteBlock::getBuffer() { return byteblock_getbuffer(this); }
 
 void FlexSimEvent::execute()
@@ -222,6 +218,6 @@ void IndexedMesh::draw(int drawMode, int start, int count, int stride)
 void IndexedMesh::cleanupIndexBuffer(bool isDestructor)
 	{ indexedmesh_cleanupindexbuffer(this, isDestructor); }
 
-QueryCallback defQueryCallback = []() -> Variant {return 0;};
+QueryCallback defQueryCallback([]() -> Variant {return 0;});
 
 #endif

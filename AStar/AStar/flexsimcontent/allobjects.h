@@ -231,9 +231,38 @@
 // Constants
 
 
+#define iterate(__start__, __end__, __inc__) for (double count = __start__; __inc__ > 0 ? count < __end__ + .001 * __inc__ : count > __end__ + 0.001 * __inc__; count += __inc__)
+#define inheritcode _inheritcode(callPoint)
+#define local(index) __local__(index, callPoint)
+#define localarray(qty, datatype) __localarray__(qty, datatype, callPoint)
+
+#ifdef THIS_SHOULD_NEVER_BE_DEFINED_BECAUSE_IT_SHOULD_ONLY_BE_SEEN_BY_FLEXSCRIPT
+	#define forobjecttreeunder(__top__) for (treenode a = first(__top__); objectexists(a); a = nextforobjecttreeunder(a, __top__))
+	#define forobjectlayerunder(__top__) for (treenode a = first(__top__); objectexists(a); a = next(a))
+	#define forobjectsbefore(__node__) for (treenode a = prev(__node__); objectexists(a) && getrank(a) >= 1; a = prev(a))
+	#define forobjectsbehind(__node__) for (treenode a = next(__node__); objectexists(a); a = next(a))
+	#define max(__left__, __right__) ((__left__ >= __right__) ? __left__ : __right__)
+	#define min(__left__, __right__) ((__left__ <= __right__) ? __left__ : __right__)
+	#define eq(__a__, __b__) (__a__ == __b__)
+	#define ne(__a__, __b__) (__a__ != __b__)
+#endif
+
+#define makearray(__size__) __size__
+#define partype(__a__) _partype(__a__,callPoint)
+#define msgparam(__a__) _param(__a__ + 1, callPoint)
+#define msgsendingobject parnode(1)
+#define param(__a__) _param(__a__, callPoint)
+#define parval(__a__) _parval(__a__, callPoint)
+#define parnode(__a__) _parnode(__a__, callPoint)
+#define parstr(__a__) _parstr(__a__, callPoint)
+#define parqty() _parqty(callPoint)
+#define setcurrent(__a__) __setcurrent__(__a__, callPoint)
+#define setitem(__a__) __setitem__(__a__, callPoint)
+#define setport(__a__) __setport__(__a__, callPoint)
+
 // Constants group: GLOBAL
 #define GLOBAL_DELAYINDEFINITE  1000000000
-#define GLOBAL_UNREACHABLE  -1
+#define GLOBAL_UNREACHABLE  340282346600000000000000000000000000000.0
 
 // Constants group: EVENT
 #define EVENT_OPENINPUTS  1
@@ -435,15 +464,6 @@
 #define FRSTATE_READY  2
 #define FRSTATE_MOVEREQUESTED  3
 
-// Constants group: QUEUENODERANK
-#define QUEUENODERANK_STATE  1
-#define QUEUENODERANK_SENDTO  2
-#define QUEUENODERANK_VAR1  3
-#define QUEUENODERANK_VAR2  4
-#define QUEUENODERANK_VAR3  5
-#define QUEUENODERANK_INVOLVED  6
-#define QUEUENODERANK_MAX  6
-
 // Constants group: SPACING
 #define SPACING_LENGTH  1
 #define SPACING_LENGTHPLUSSETVALUE  2
@@ -641,6 +661,7 @@
 #define KINEMATIC_STARTANGLE  39
 #define KINEMATIC_TURNANGLE  40
 #define KINEMATIC_TURNRADIUS  41
+#define KINEMATIC_PRUNE  42
 
 #define KINEMATIC_TRAVEL  1
 #define KINEMATIC_ROTATE  2
@@ -653,7 +674,6 @@
 #define MTBF_MTTR_BEGIN_DOWN_TIME_NO_RESUME  2
 #define MTBF_MTTR_FINISH_DOWN_TIME  3
 #define MTBF_MTTR_FINISH_DOWN_TIME_NO_RESUME  4
-
 
 // commands
 #define OPT_VARIABLE 1
@@ -1153,7 +1173,7 @@
 #define ANIM_VAR_KEYFRAME_GAP 4
 #define ANIM_VAR_COMPONENT 5
 
-#define ANIMATION_CONTENT 10
+#define ANIMATION_CONTENT 12
 #define ANIMATION_KEYFRAMES 1
 #define ANIMATION_REPEAT_TYPE 2
 #define ANIMATION_REPEAT_VALUE 3
@@ -1164,6 +1184,8 @@
 #define ANIMATION_CUR_REPEAT_TYPE 8
 #define ANIMATION_CUR_REPEAT_VALUE 9
 #define ANIMATION_LAST_UPDATE_TIME 10
+#define ANIMATION_TRIGGERS 11
+#define ANIMATION_CLIPS 12
 
 #define REPEAT_TYPE_DEFAULT 0
 #define REPEAT_TYPE_NONE 1
@@ -1587,8 +1609,6 @@
 #define PULL_REEVALUATE_ON_READY -2
 #define PORT_STATE_REEVALUATE 2
 
-#define TRACKED_VAR_TIME_WEIGHTED 1
-
 #define OFFSET_NONE 0
 #define OFFSET_BY_TE_LOGIC 1
 #define OFFSET_NONE_AND_BLOCK 2
@@ -1651,6 +1671,7 @@
 #define RESUME_AT_NEXT_KEYFRAME 1
 #define RESUME_AT_TIME 2
 
+#define FLEXSIM_MESSAGE_USER_CALLBACK 2001
 #define FLEXSIM_MESSAGE_USER_NODEFUNCTION 2002
 
 #define OVERRIDE_DRAW_SIZER_X      0x10
@@ -1673,6 +1694,7 @@
 #define STAT_VARIANCE 5
 #define STAT_STD_DEV 6
 #define STAT_SUM 7
+#define STAT_COUNT 8
 
 #define DRAW_FLAG_BILLBOARD_MASK 0x3
 #define DRAW_FLAG_ONE_SIDED 0x4
@@ -1718,13 +1740,77 @@
 #define SHADOWTYPE_PCSS 3
 #define SHADOWTYPE_PCSS_SAVSM 4
 
+#define LIST_PULL_ALL_OR_NOTHING 0x1
+#define LIST_PARSE_QUERY 0x2
+#define LIST_PULL_ENTRY_NODES 0x4
+#define LIST_DO_NOT_REMOVE 0x8
+#define LIST_DO_NOT_BACK_ORDER 0x10
+#define LIST_PULL_BACK_ORDERS 0x20
+#define LIST_DO_NOT_FULFILL 0x40
+
+#define LIST_PARAM_PULLER -496432586
+#define LIST_PARAM_VALUE -496432586
+#define LIST_PARAM_NUM_REQUIRED_STILL -496432587
+#define LIST_PARAM_NUM_REQUESTED_STILL -496432588
+
+// Config
+#define VREC_DEBUG_NOOUTPUT 0
+
+// Paths
+#define VREC_PATH_FFMPEG concat(pdir(), "ffmpeg\\ffmpeg.exe")
+#define VREC_PATH_TOOLS concat(pdir(), "ffmpeg\\")
+#define VREC_PATH_TOOL_RUNFFMPEG concat(VREC_PATH_TOOLS, "run_ffmpeg.bat")
+#define VREC_PATH_TOOL_CLEANUP concat(VREC_PATH_TOOLS, "cleanup.bat")
+
+// Messages
+#define VREC_MSG_JOBS_RUN 1
+#define VREC_MSG_JOB_START 2
+#define VREC_MSG_JOB_STOP 3
+#define VREC_MSG_SEQ_START 4
+#define VREC_MSG_SEQ_STOP 5
+#define VREC_MSG_FRAME 6
+
+// Size modes
+#define VREC_SIZEMODE_CUSTOM 0
+#define VREC_SIZEMODE_INHERIT 1
+#define VREC_SIZEMODE_VIEW 2
+
+// Record modes
+#define VREC_RECMODE_ALL 1
+#define VREC_RECMODE_ONE 2
+
+// Metrics
+#define VREC_METRIC_OUT_TIME 1
+#define VREC_METRIC_OUT_FRAMES 2
+#define VREC_METRIC_SEQ_TIME 3
+#define VREC_METRIC_SEQ_FRAMES 4
+#define VREC_METRIC_SEQ_INTERVAL 5
+#define VREC_METRIC_LAY_WIDTH 6
+#define VREC_METRIC_LAY_HEIGHT 7
+#define VREC_METRIC_LAY_VFLIP 8
+
+// Layer types
+#define VREC_LAYER_COLOR 1
+#define VREC_LAYER_VIEW 2
+
+// Animation
+//// Coordinates
+#define VREC_COORD_X 1
+#define VREC_COORD_Y 2
+//// Margin types
+#define VREC_MARGIN_PIXELS 1
+#define VREC_MARGIN_PERCENT 2
+//// Alignment types
+#define VREC_ALIGN_MIN 1
+#define VREC_ALIGN_MID 2
+#define VREC_ALIGN_MAX 3
+//// Interpolation types
+#define VREC_INTERPOLATE_LINEAR 1
+#define VREC_INTERPOLATE_COSINE 2
 
 
 
-// Global Variables
-
-
-// Included Header
+// Include Header
 #include <float.h>
 
 // The following #defines can be changed to customize the connection controls.
@@ -1741,6 +1827,8 @@ typedef treenode treenode;
 #define DEFAULTNULL = 0x0
 #define DEFAULTONE = 1
 #define DEFAULTPARAM(val) = val
+
+class FlexSimEventHandler;
 
 class FlexSimObject;
 
@@ -1815,6 +1903,23 @@ public:
 	treenode kinematics;
 };
 
+class NetworkNodeMember : public CouplingDataType
+{
+public:
+	virtual const char* getClassFactory() {return "NetworkNodeMember";}
+	virtual void bind();
+	struct ConnectionInfo
+	{
+		int tableRow;
+		float distance;
+		int outPort;
+	};
+	std::vector<ConnectionInfo> connections;
+	std::vector<float> distanceTable;
+	std::vector<unsigned char> nextOutPortTable;
+	NetworkNode* getNetNode();
+};
+
 class TrafficControlRequest
 {
 	public:
@@ -1826,25 +1931,6 @@ class TrafficControlRequest
 
 	static char* displaydata(treenode thenode, int verbose);
 };
-///////////////////////////////////////////////////////////
-// definition of fsparticle
-///////////////////////////////////////////////////////////
-class fsparticle: public ParticleDataType {
-  public: 
-
-  fsparticle();
-  ~fsparticle();
-
-  float itemtype;
-
-  int state; 
-  int sendto; 
-  double var1; 
-  double var2; 
-  double var3; 
-  treenode involved; 
-  treenode labels;
-};
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -1852,16 +1938,23 @@ class fsparticle: public ParticleDataType {
 
 class TaskSequence : public SimpleDataType{
 	public:
+	TaskSequence() : labelsNode(0) {}
+	~TaskSequence() {if (labelsNode) delete labelsNode;}
 	float priority; 
 	unsigned char preempt; 
 	unsigned char coordinated; // if the task is coordinated
-	unsigned short curtask; // this number is the rank of the task that is currently being worked on.
+	unsigned int curtask; // this number is the rank of the task that is currently being worked on.
 	treenode owner; // this is only used in coordinated tasks.  It is there so that the proxy task executers have a reference back to the dispatcher that has the task sequence
-	unsigned short milestone; // this is the rank of the current milestone
-	unsigned short nrofallocations; // this is the current number of objects allocated or whose allocation has been requested
+	unsigned int milestone; // this is the rank of the current milestone
+	unsigned int nrofallocations; // this is the current number of objects allocated or whose allocation has been requested
 	virtual const char* getClassFactory() {return "TaskSequence";}
 	virtual void bind();
 	virtual char* toString(int verbose);
+	virtual treenode getObjectTree();
+	virtual TreeNode* getLabelNode(const char* labelName, bool assert);
+	virtual TreeNode* getLabelNode(int labelRank, bool assert);
+	treenode labelsNode;
+	void reset();
 };
 
 class Task : public SimpleDataType{
@@ -1882,9 +1975,9 @@ class Task : public SimpleDataType{
 	// executer.  However, it will not tell a proxy executer to begin a task until all of the previous tasks for that executer have been finished.  If it gets to a 
 	// proxy task, and the executer is busy on a previous proxy task, it will set the syncenextkey variable of the previous proxy task to the rank of this task.  
 	// Then it will trigger the next task once the executer is finished.
-	unsigned short syncnextkey;
+	unsigned int syncnextkey;
 	// The executerkey is specified by the user.  This is a reference to the rank of an allocate task, and specifies the executer that will execute a proxy task.
-	unsigned short executerkey;
+	unsigned int executerkey;
 	virtual const char* getClassFactory() {return "Task";}
 	virtual void bind();
 	virtual char* toString(int verbose);
@@ -1906,9 +1999,60 @@ class SendMessageEvent : public FlexSimEvent {
 	virtual void bind();
 };
 
+class SimulationStartEvent : public FlexSimEvent {
+public:
+	SimulationStartEvent() : FlexSimEvent() {}
+	SimulationStartEvent(FlexSimEventHandler* firstObject);
+	virtual void execute();
+	virtual const char* getClassFactory() {return "SimulationStartEvent";}
+	virtual void bind();
+	FS_CONTENT_DLL_FUNC static void addObject(FlexSimEventHandler* object);
+private:
+	std::vector<ObjRef<FlexSimEventHandler>> objects;
+	static ObjRef<SimulationStartEvent> simulationStartEvent;
+};
+
+class FRItemInfo : public SimpleDataType
+{
+friend class FixedResource;
+friend class TaskExecuter;
+public:
+	FRItemInfo() : state(0), sendto(0), involved(0), transportOutCompleteObject(0), transportInCompleteObject(0) {}
+	virtual const char* getClassFactory() {return "FRItemInfo";}
+	virtual void bind();
+	void reset();
+private:
+	int state;
+	int sendto;
+	double vars[3];
+	treenode involved;
+public:
+	treenode transportOutCompleteObject;
+	treenode transportInCompleteObject;
+};
+
+struct conviteminfostruct : public SimpleDataType {
+	virtual const char* getClassFactory() {return "conviteminfostruct";}
+	virtual void bind();
+	double entrytime;
+	double distbehindkinematic; 
+	double totalspacebefore; 
+	double spacing; 
+	double prodlength; 
+	int frontedgepe; 
+	int backedgepe;
+	// used for basic conveyors
+	double position;
+	int frontedgedp;
+	int backedgedp; 
+	int backspacedp; 
+};
+
+struct bciteminfostruct{
+};
+
 extern char * tasktypenames[];
 
-typedef treenode treenode;
 extern treenode* nexttreeunderstack;
 extern int nexttreeunderstacktop;
 extern int nexttreeunderstacksize;
@@ -1923,9 +2067,7 @@ struct delayedmessagedata
 #define OUT_OF_GLOBAL_SCOPE(NAME) double dummy##NAME##Function(){try{
 
 extern int globalnouserreset;
-extern treenode _nndisttable;
-extern treenode _nnmembers;
-extern treenode _nnnextnodetable;
+extern treenode _defaultNetworkNavigator;
 
 extern double messageeventfilter_p1;
 extern double messageeventfilter_p2;
@@ -2382,14 +2524,43 @@ class NetworkTravelMember : public CouplingDataType
 	int blockingState;
 };
 
-void searchhelpmanual(string searchStr, treenode destNode)
+///////////////////////////////////////////////////////
+// Tracked Variable
+///////////////////////////////////////////////////////
+class TrackedVariable : public SimpleDataType
+{
+  public:
+	virtual const char* getClassFactory() { return "TrackedVariable"; }
+	virtual void bind();
+	
+	treenode data;
+	double isTimeWeighted;
+	double fullHistory;
+	double cumulative;
+	double cumulativeTime;
+	double minValue;
+	double maxValue;
+	double numEntries;
+	
+	FS_CONTENT_DLL_FUNC void reset();
+	FS_CONTENT_DLL_FUNC void resetStats(bool toZero);
+	FS_CONTENT_DLL_FUNC void set(double value);
+	
+	FS_CONTENT_DLL_FUNC double getAvg();
+	FS_CONTENT_DLL_FUNC double getMin();
+	FS_CONTENT_DLL_FUNC double getMax();
+	FS_CONTENT_DLL_FUNC double getCurrent();
+	FS_CONTENT_DLL_FUNC double getCount();
+};
+
+void searchhelpmanual(string searchStr, treenode destNode);
 
 ;
 
 
 
 // Global Functions
-double pounddefines();
+Variant pounddefines();
 
 visible double addsphere(treenode obj, double xval, double yval, double zval, double radius);
 
@@ -2403,21 +2574,21 @@ visible double  bcsetdirection(treenode conveyor, int direction);
 
 visible double bcsetitemconveystate(treenode conveyor, treenode item, double startpoint, double startspeed, double destspeed, double accdec);
 
-double calloperator(treenode dispatcher, treenode origin, treenode involved, double priority, int preempt);
+Variant calloperator(treenode dispatcher, treenode origin, treenode involved, double priority, int preempt);
 
 visible double changeconveyorspeed(treenode conveyor, double newspeed);
 
 visible treenode changetask(treenode tasksequence, int taskrank, unsigned short type, treenode involved1 DEFAULTNULL, treenode involved2 DEFAULTNULL, double var1 DEFAULTZERO, double var2 DEFAULTZERO, double var3 DEFAULTZERO, double var4 DEFAULTZERO);
 
-double checkforcollisions(treenode obj);
+Variant checkforcollisions(treenode obj);
 
 unsigned int classtype(treenode involved);
 
-double closenodeedge(treenode curnode, char* edgename);
+Variant closenodeedge(treenode curnode, char* edgename);
 
 visible double closenodeedge(treenode curnode, int edgenum);
 
-double containerdragconnection(treenode fromobject, treenode toobject, char characterpressed);
+Variant containerdragconnection(treenode fromobject, treenode toobject, char characterpressed);
 
 visible double containerentry(treenode container, treenode item);
 
@@ -2425,15 +2596,13 @@ visible double containerexit(treenode container, treenode item);
 
 visible double contextdragconnection(treenode fromobject, treenode toobject, char keypressed);
 
-double contextdragconnection(treenode fromobject, treenode toobject, string keypressed);
+Variant contextdragconnection(treenode fromobject, treenode toobject, string keypressed);
 
 visible treenode createcoordinatedtasksequence(treenode dispatcher);
 
 visible treenode createdelaytask(treenode dispatcher,double delaytime,double state,double priority,int preempt);
 
 visible treenode createemptytasksequence(treenode dispatcher, double priority, int preempt);
-
-treenode createfsparticle( treenode container);
 
 visible treenode createglobaltasksequence(string name, treenode dispatcher, treenode d1, treenode d2, treenode d3, treenode d4, treenode d5);
 
@@ -2461,11 +2630,9 @@ visible double defaultdragconnection(treenode fromobject, treenode toobject, cha
 
 visible treenode derefcoupling(treenode coupling);
 
-double destroyfsparticle(treenode particlenode);
-
 int destroymessageeventfilter(treenode object, double simtime, int code, void* data, treenode involved);
 
-double destroymessageevents(treenode object, double simtime, treenode fromobj, double p1 DEFAULTPARAM(FLT_MAX), double p2 DEFAULTPARAM(FLT_MAX), double p3 DEFAULTPARAM(FLT_MAX));
+Variant destroymessageevents(treenode object, double simtime, treenode fromobj, double p1 DEFAULTPARAM(FLT_MAX), double p2 DEFAULTPARAM(FLT_MAX), double p3 DEFAULTPARAM(FLT_MAX));
 
 visible double dispatchcoordinatedtasksequence(treenode tasksequence, treenode dispatcher DEFAULTNULL);
 
@@ -2475,7 +2642,7 @@ visible double distancetotravel(treenode traveler, treenode destination);
 
 visible double drawspheres(treenode object, treenode view);
 
-double draw_spheres(treenode whose, treenode window, double color[4]);
+Variant draw_spheres(treenode whose, treenode window, double color[4]);
 
 visible int emptyfluidobject(treenode curobj);
 
@@ -2493,11 +2660,11 @@ treenode findnextclassvariable(treenode*curclass, treenode curvariable);
 
 visible double freeoperators(treenode dispatcher, treenode involved);
 
-double fsRotatexy(double matrix[4][4], double rz);
+Variant fsRotatexy(double matrix[4][4], double rz);
 
-double fsScalexy(double matrix[4][4], double sx, double sy);
+Variant fsScalexy(double matrix[4][4], double sx, double sy);
 
-double fsTranslatexy(double matrix[4][4], double x, double y);
+Variant fsTranslatexy(double matrix[4][4], double x, double y);
 
 visible treenode getallocatedfromkey(treenode tasksequence, int key);
 
@@ -2513,7 +2680,7 @@ visible double getedgespeedlimit(treenode netnode, int edgenum);
 
 visible double geteventtime(char *eventname, double mode);
 
-double geteventtime(string eventname, double mode);
+Variant geteventtime(string eventname, double mode);
 
 visible treenode getiteminvolved(treenode item);
 
@@ -2529,7 +2696,7 @@ visible treenode getnetnode(treenode object, int index);
 
 visible treenode getnetnodespline(treenode netnode, int outport);
 
-visible double getnetworkdistance(int fromnn, int tonn);
+visible double getnetworkdistance(int fromCol, int toCol);
 
 visible treenode getnextparametersobject(treenode curobj, string focus, int useclass, int forward);
 
@@ -2567,25 +2734,31 @@ visible double gettotalnroftasks(treenode tasksequence);
 
 visible double gettrackedvariable(char* name);
 
+__declspec(dllexport) double gettrackedvariable(char* name, int valtype);
+
+__declspec(dllexport) double gettrackedvariable(treenode trackedvar);
+
+__declspec(dllexport) double gettrackedvariable(treenode trackedvar, int valtype);
+
 visible treenode getutilizedobject(treenode team, treenode item, treenode station, int operatornr);
 
 visible treenode getvirtualexit(treenode netnode, int index);
 
-double groupaddmember(treenode child, treenode parent, char* groupname);
+Variant groupaddmember(treenode child, treenode parent, char* groupname);
 
-double groupdelete(treenode child, char* groupname);
+Variant groupdelete(treenode child, char* groupname);
 
 treenode groupmember(treenode child, char* groupname, unsigned int membernum);
 
-double groupnrofmembers(treenode child, char* groupname);
+Variant groupnrofmembers(treenode child, char* groupname);
 
 treenode groupparent(treenode child, char *groupname);
 
-double groupremovemember(treenode child, char* groupname);
+Variant groupremovemember(treenode child, char* groupname);
 
 visible double holditem(treenode item);
 
-double inititem(treenode item);
+Variant inititem(treenode item);
 
 visible int insertallocatetask(treenode tasksequence, treenode dispatcher, double priority, double preempt, int noblock DEFAULTZERO);
 
@@ -2613,9 +2786,9 @@ visible treenode inserttask(treenode tasksequence,  unsigned int  type, treenode
 
 visible int isedgeforward(treenode netnode, int outport);
 
-double loadnodestate(treenode loadnode, treenode* nodes DEFAULTNULL);
+Variant loadnodestate(treenode loadnode, treenode* nodes DEFAULTNULL);
 
-double loadstatelayer(treenode layer);
+Variant loadstatelayer(treenode layer);
 
 visible treenode loaduserlibrary(string filename, treenode libraryview DEFAULTNULL, int reloadmedia DEFAULTZERO, int changeitemcurrent DEFAULTZERO, int autoinstall DEFAULTZERO);
 
@@ -2625,7 +2798,7 @@ double memberremove(treenode child, string parentname, int type);
 
 double memberremoveall(string parentname, int type);
 
-double modelupdatelayer(treenode layer, char* newversion, char *oldversion);
+Variant modelupdatelayer(treenode layer, char* newversion, char *oldversion);
 
 visible double movetasksequence(treenode tasksequence, treenode dispatcher);
 
@@ -2633,13 +2806,7 @@ visible treenode netnodefromrank(int netnoderank);
 
 visible double notifylinecontroller(treenode obj, int therank, double objoutput, int sendinglast);
 
-visible treenode nndisttable();
-
-visible treenode nnmembers();
-
-visible treenode nnnextnodetable();
-
-double opennodeedge(treenode curnode, char* edgename);
+Variant opennodeedge(treenode curnode, char* edgename);
 
 visible double opennodeedge(treenode curnode, int edgenum);
 
@@ -2660,6 +2827,8 @@ visible double placeoffsetz(treenode station, treenode item, treenode otherobjec
 visible double profiletasksequence(treenode ts);
 
 visible int pullitem(treenode fr, treenode item, int port, int bypassflags DEFAULTZERO);
+
+visible void pushitem(treenode item, treenode toFR, int outPort, int inPort);
 
 visible double rackdrawfilledcell(treenode rack, int bay, int level, double x, double y, double z, double sx, double sy, double sz, double red, double green, double blue, int glbeginend DEFAULTONE);
 
@@ -2727,7 +2896,7 @@ visible double releaseitem(treenode item);
 
 __declspec(dllexport) double releaseitem(treenode item, int port);
 
-double releaseoperators(treenode dispatcher, treenode involved);
+Variant releaseoperators(treenode dispatcher, treenode involved);
 
 visible double reordertasks(treenode involved);
 
@@ -2749,9 +2918,9 @@ visible double resumetransportsout(treenode object, int rank DEFAULTZERO);
 
 visible double rotationproject(treenode originSpace, double rx, double ry, double rz, treenode ontoSpace, double* rotationsOut);
 
-double savenodestate(treenode savenode, int size DEFAULTZERO, int nrofpointers DEFAULTONE, treenode* nodes DEFAULTNULL);
+Variant savenodestate(treenode savenode, int size DEFAULTZERO, int nrofpointers DEFAULTONE, treenode* nodes DEFAULTNULL);
 
-double savestatelayer(treenode layer);
+Variant savestatelayer(treenode layer);
 
 visible double savestoppedtransportin(treenode object, treenode transporter);
 
@@ -2759,13 +2928,13 @@ visible double savestoppedtransportout(treenode object, treenode transporter);
 
 visible double senddelayedmessage(treenode toobject, double delaytime, treenode fromobject, double par1, double par2 DEFAULTZERO, double par3 DEFAULTZERO);
 
-double senddelayedmessage(treenode toobject, double delaytime, treenode fromobject);
+Variant senddelayedmessage(treenode toobject, double delaytime, treenode fromobject);
 
 visible double setcollisioncheck(treenode collisionobj, double val,double interval DEFAULTZERO);
 
 visible double seteventtime(char *eventname, double timeval, double mode, double newevent);
 
-double seteventtime(string eventname, double timeval, double mode, double newevent);
+Variant seteventtime(string eventname, double timeval, double mode, double newevent);
 
 visible double setiteminvolved(treenode item, treenode involved);
 
@@ -2781,21 +2950,23 @@ visible double setresetposition(treenode obj);
 
 visible double settrackedvariable(char* name, double value);
 
+__declspec(dllexport) double settrackedvariable(treenode trackedvar, double value);
+
 __declspec(dllexport) double stopobject(treenode involved, int state, int id, double priority, int stateprofile);
 
 __declspec(dllexport) double stopobject(treenode involved, int state);
 
 visible double stopobject(treenode involved, int state, int id, double priority);
 
-double syncmember(treenode child, char * groupname);
+Variant syncmember(treenode child, char * groupname);
 
-double syncmemberauto(treenode child, char * groupname);
+Variant syncmemberauto(treenode child, char * groupname);
 
-double syncquantity(treenode child, char* groupname);
+Variant syncquantity(treenode child, char* groupname);
 
-double trackdefaultsoncreate(treenode item);
+visible double trackdefaultsoncreate(treenode item);
 
-double trackdefaultsondestroy(treenode item);
+visible double trackdefaultsondestroy(treenode item);
 
 visible double trafficcontrolinfo(treenode tc, int info, double _a, double _b);
 
@@ -2815,12 +2986,11 @@ __declspec(dllexport) double updatereport(char* reportname);
 
 __declspec(dllexport) double updatereport(treenode thereport);
 
-double updateconveyorsectioninfo(treenode conveyor);
+Variant updateconveyorsectioninfo(treenode conveyor);
 
 
 // FlexSimEventHandler
-
-class FlexSimEventHandler  : public ObjectDataType 
+class FlexSimEventHandler : public ObjectDataType
 {
 public:
 
@@ -2853,6 +3023,8 @@ FS_CONTENT_DLL_FUNC virtual double onMessage(treenode fromobject, double par1, d
 
 FS_CONTENT_DLL_FUNC virtual double onReset();
 
+FS_CONTENT_DLL_FUNC virtual double onStartSimulation();
+
 FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
 
 FS_CONTENT_DLL_FUNC virtual double onRunWarm();
@@ -2879,7 +3051,7 @@ FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
 FS_CONTENT_DLL_FUNC virtual double rotateAroundAxis(double angle, double x, double y);
 
-FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(int axis, double x, double y);
+FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(const Vec2& point1, const Vec2& point2);
 
 FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode fromObj);
 
@@ -2904,33 +3076,32 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FlexSimObject
-
-class FlexSimObject : public FlexSimEventHandler 
+class FlexSimObject : public FlexSimEventHandler
 {
 public:
 
-TreeNode * node_v_messagetrigger;
-TreeNode * node_v_ondrawtrigger;
-TreeNode * node_v_timetables;
+TreeNode* node_v_messagetrigger;
+TreeNode* node_v_ondrawtrigger;
+TreeNode* node_v_timetables;
 #define v_timetables node_v_timetables->safedatafloat()[0]
-TreeNode * node_v_networknodes;
+TreeNode* node_v_networknodes;
 #define v_networknodes node_v_networknodes->safedatafloat()[0]
-TreeNode * node_v_timeoflaststop;
+TreeNode* node_v_timeoflaststop;
 #define v_timeoflaststop node_v_timeoflaststop->safedatafloat()[0]
-TreeNode * node_v_nrofstops;
+TreeNode* node_v_nrofstops;
 #define v_nrofstops node_v_nrofstops->safedatafloat()[0]
-TreeNode * node_v_statebeforestop;
+TreeNode* node_v_statebeforestop;
 #define v_statebeforestop node_v_statebeforestop->safedatafloat()[0]
-TreeNode * node_v_collisionspheres;
+TreeNode* node_v_collisionspheres;
 #define v_collisionspheres node_v_collisionspheres->safedatafloat()[0]
-TreeNode * node_v_collisionobjects;
+TreeNode* node_v_collisionobjects;
 #define v_collisionobjects node_v_collisionobjects->safedatafloat()[0]
-TreeNode * node_v_resettrigger;
-TreeNode * node_v_savedstate;
+TreeNode* node_v_resettrigger;
+TreeNode* node_v_savedstate;
 #define v_savedstate node_v_savedstate->safedatafloat()[0]
-TreeNode * node_v_resetposition;
+TreeNode* node_v_resetposition;
 #define v_resetposition node_v_resetposition->safedatafloat()[0]
-TreeNode * node_v_doanimations;
+TreeNode* node_v_doanimations;
 #define v_doanimations node_v_doanimations->safedatafloat()[0]
 
 // c++ member functions
@@ -2995,7 +3166,6 @@ FS_CONTENT_DLL_FUNC static char* displayMessageData(int code, char* edata);
 
 
 // c++ attributes
-
 double* protectLocs;
 
 unsigned char portInfoFlag;
@@ -3009,38 +3179,37 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FixedResource
-
-class FixedResource : public FlexSimObject 
+class FixedResource : public FlexSimObject
 {
 public:
 
-TreeNode * node_v_nrreleased;
+TreeNode* node_v_nrreleased;
 #define v_nrreleased node_v_nrreleased->safedatafloat()[0]
-TreeNode * node_v_pull;
+TreeNode* node_v_pull;
 #define v_pull node_v_pull->safedatafloat()[0]
-TreeNode * node_v_sendtoport;
-TreeNode * node_v_receivefromport;
-TreeNode * node_v_pullrequirement;
-TreeNode * node_v_entrytrigger;
-TreeNode * node_v_exittrigger;
-TreeNode * node_v_usetransport;
+TreeNode* node_v_sendtoport;
+TreeNode* node_v_receivefromport;
+TreeNode* node_v_pullrequirement;
+TreeNode* node_v_entrytrigger;
+TreeNode* node_v_exittrigger;
+TreeNode* node_v_usetransport;
 #define v_usetransport node_v_usetransport->safedatafloat()[0]
-TreeNode * node_v_transportpriority;
+TreeNode* node_v_transportpriority;
 #define v_transportpriority node_v_transportpriority->safedatafloat()[0]
-TreeNode * node_v_preempttransport;
+TreeNode* node_v_preempttransport;
 #define v_preempttransport node_v_preempttransport->safedatafloat()[0]
-TreeNode * node_v_transportdispatcher;
-TreeNode * node_v_nroftransportsout;
+TreeNode* node_v_transportdispatcher;
+TreeNode* node_v_nroftransportsout;
 #define v_nroftransportsout node_v_nroftransportsout->safedatafloat()[0]
-TreeNode * node_v_nroftransportsin;
+TreeNode* node_v_nroftransportsin;
 #define v_nroftransportsin node_v_nroftransportsin->safedatafloat()[0]
-TreeNode * node_v_outwaitinfo;
+TreeNode* node_v_outwaitinfo;
 #define v_outwaitinfo node_v_outwaitinfo->safedatafloat()[0]
-TreeNode * node_v_sendtocontinuous;
+TreeNode* node_v_sendtocontinuous;
 #define v_sendtocontinuous node_v_sendtocontinuous->safedatafloat()[0]
-TreeNode * node_v_pullcontinuous;
+TreeNode* node_v_pullcontinuous;
 #define v_pullcontinuous node_v_pullcontinuous->safedatafloat()[0]
-TreeNode * node_v_lifo;
+TreeNode* node_v_lifo;
 #define v_lifo node_v_lifo->safedatafloat()[0]
 
 // c++ member functions
@@ -3087,6 +3256,8 @@ FS_CONTENT_DLL_FUNC virtual double onTransportInComplete(treenode item, int port
 
 FS_CONTENT_DLL_FUNC double resetVariables();
 
+FS_CONTENT_DLL_FUNC static inline FRItemInfo* getItemInfo(treenode flowitem);
+
 FS_CONTENT_DLL_FUNC static int initItem(treenode flowitem);
 
 FS_CONTENT_DLL_FUNC static int setItemVar(treenode flowitem, int varnum, double val);
@@ -3101,11 +3272,11 @@ FS_CONTENT_DLL_FUNC double holdItem(treenode flowitem);
 
 FS_CONTENT_DLL_FUNC static inline double getItemState(treenode flowitem);
 
-FS_CONTENT_DLL_FUNC static inline double setItemState(treenode flowitem, int state);
+FS_CONTENT_DLL_FUNC static double setItemState(treenode flowitem, int state);
 
-FS_CONTENT_DLL_FUNC static inline int getItemSendTo(treenode flowitem);
+FS_CONTENT_DLL_FUNC static int getItemSendTo(treenode flowitem);
 
-FS_CONTENT_DLL_FUNC static inline int setItemSendTo(treenode flowitem, double sendto);
+FS_CONTENT_DLL_FUNC static int setItemSendTo(treenode flowitem, int sendto);
 
 FS_CONTENT_DLL_FUNC double cleanItemData(treenode item);
 
@@ -3135,7 +3306,6 @@ FS_CONTENT_DLL_FUNC double saveStoppedTransportIn(treenode transporter);
 
 
 // c++ attributes
-
 double inPort;
 
 treenode lastReleased;
@@ -3153,16 +3323,15 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Navigator
-
-class Navigator : public FlexSimObject 
+class Navigator : public FlexSimObject
 {
 public:
 
-TreeNode * node_v_travelmembers;
+TreeNode* node_v_travelmembers;
 #define v_travelmembers node_v_travelmembers->safedatafloat()[0]
-TreeNode * node_v_activetravelmembers;
+TreeNode* node_v_activetravelmembers;
 #define v_activetravelmembers node_v_activetravelmembers->safedatafloat()[0]
-TreeNode * node_v_lastupdatetime;
+TreeNode* node_v_lastupdatetime;
 #define v_lastupdatetime node_v_lastupdatetime->safedatafloat()[0]
 
 // c++ member functions
@@ -3208,26 +3377,25 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // GlobalTable
-
-class GlobalTable  : public ObjectDataType 
+class GlobalTable : public ObjectDataType
 {
 public:
 
-TreeNode * node_v_data;
+TreeNode* node_v_data;
 #define v_data node_v_data->safedatafloat()[0]
-TreeNode * node_v_rows;
+TreeNode* node_v_rows;
 #define v_rows node_v_rows->safedatafloat()[0]
-TreeNode * node_v_columns;
+TreeNode* node_v_columns;
 #define v_columns node_v_columns->safedatafloat()[0]
-TreeNode * node_v_initonreset;
+TreeNode* node_v_initonreset;
 #define v_initonreset node_v_initonreset->safedatafloat()[0]
-TreeNode * node_v_width;
+TreeNode* node_v_width;
 #define v_width node_v_width->safedatafloat()[0]
-TreeNode * node_v_height;
+TreeNode* node_v_height;
 #define v_height node_v_height->safedatafloat()[0]
-TreeNode * node_v_cellwidth;
+TreeNode* node_v_cellwidth;
 #define v_cellwidth node_v_cellwidth->safedatafloat()[0]
-TreeNode * node_v_cellheight;
+TreeNode* node_v_cellheight;
 #define v_cellheight node_v_cellheight->safedatafloat()[0]
 
 // System
@@ -3238,19 +3406,18 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // UserEvent
-
-class UserEvent  : public ObjectDataType 
+class UserEvent : public ObjectDataType
 {
 public:
 
-TreeNode * node_v_time;
+TreeNode* node_v_time;
 #define v_time node_v_time->safedatafloat()[0]
-TreeNode * node_v_repeat;
+TreeNode* node_v_repeat;
 #define v_repeat node_v_repeat->safedatafloat()[0]
-TreeNode * node_v_event;
-TreeNode * node_v_reset;
+TreeNode* node_v_event;
+TreeNode* node_v_reset;
 #define v_reset node_v_reset->safedatafloat()[0]
-TreeNode * node_v_firsttime;
+TreeNode* node_v_firsttime;
 #define v_firsttime node_v_firsttime->safedatafloat()[0]
 
 // c++ member functions
@@ -3266,29 +3433,28 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // MTBFMTTR
-
-class MTBFMTTR  : public ObjectDataType 
+class MTBFMTTR : public ObjectDataType
 {
 public:
 
-TreeNode * node_v_members;
+TreeNode* node_v_members;
 #define v_members node_v_members->safedatafloat()[0]
-TreeNode * node_v_mtbf;
-TreeNode * node_v_mttr;
-TreeNode * node_v_state;
+TreeNode* node_v_mtbf;
+TreeNode* node_v_mttr;
+TreeNode* node_v_state;
 #define v_state node_v_state->safedatafloat()[0]
-TreeNode * node_v_firstmtbf;
-TreeNode * node_v_applyindividuals;
+TreeNode* node_v_firstmtbf;
+TreeNode* node_v_applyindividuals;
 #define v_applyindividuals node_v_applyindividuals->safedatafloat()[0]
-TreeNode * node_v_downtrigger;
-TreeNode * node_v_uptrigger;
-TreeNode * node_v_downfunction;
-TreeNode * node_v_upfunction;
-TreeNode * node_v_mtbfstates;
+TreeNode* node_v_downtrigger;
+TreeNode* node_v_uptrigger;
+TreeNode* node_v_downfunction;
+TreeNode* node_v_upfunction;
+TreeNode* node_v_mtbfstates;
 #define v_mtbfstates node_v_mtbfstates->safedatafloat()[0]
-TreeNode * node_v_accuracy;
+TreeNode* node_v_accuracy;
 #define v_accuracy node_v_accuracy->safedatafloat()[0]
-TreeNode * node_v_rangecutoff;
+TreeNode* node_v_rangecutoff;
 #define v_rangecutoff node_v_rangecutoff->safedatafloat()[0]
 
 // c++ member functions
@@ -3310,31 +3476,30 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // TimeTable
-
-class TimeTable  : public ObjectDataType 
+class TimeTable : public ObjectDataType
 {
 public:
 
-TreeNode * node_v_table;
+TreeNode* node_v_table;
 #define v_table node_v_table->safedatafloat()[0]
-TreeNode * node_v_members;
+TreeNode* node_v_members;
 #define v_members node_v_members->safedatafloat()[0]
-TreeNode * node_v_repeattime;
+TreeNode* node_v_repeattime;
 #define v_repeattime node_v_repeattime->safedatafloat()[0]
-TreeNode * node_v_rows;
+TreeNode* node_v_rows;
 #define v_rows node_v_rows->safedatafloat()[0]
-TreeNode * node_v_modelstarttime;
+TreeNode* node_v_modelstarttime;
 #define v_modelstarttime node_v_modelstarttime->safedatafloat()[0]
-TreeNode * node_v_repeattype;
+TreeNode* node_v_repeattype;
 #define v_repeattype node_v_repeattype->safedatafloat()[0]
-TreeNode * node_v_calendarstarttime;
+TreeNode* node_v_calendarstarttime;
 #define v_calendarstarttime node_v_calendarstarttime->safedatafloat()[0]
-TreeNode * node_v_snapto;
+TreeNode* node_v_snapto;
 #define v_snapto node_v_snapto->safedatafloat()[0]
-TreeNode * node_v_downtrigger;
-TreeNode * node_v_uptrigger;
-TreeNode * node_v_downfunction;
-TreeNode * node_v_upfunction;
+TreeNode* node_v_downtrigger;
+TreeNode* node_v_uptrigger;
+TreeNode* node_v_downfunction;
+TreeNode* node_v_upfunction;
 
 // System
 
@@ -3344,22 +3509,19 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // NetworkNavigator
-
-class NetworkNavigator : public Navigator 
+class NetworkNavigator : public Navigator
 {
 public:
 
-TreeNode * node_v_nodemembers;
+TreeNode* node_v_nodemembers;
 #define v_nodemembers node_v_nodemembers->safedatafloat()[0]
-TreeNode * node_v_distancetable;
-TreeNode * node_v_nextnodetable;
-TreeNode * node_v_unsettled;
-#define v_unsettled node_v_unsettled->safedatafloat()[0]
-TreeNode * node_v_nrtofirstnode;
+TreeNode* node_v_nrtofirstnode;
 #define v_nrtofirstnode node_v_nrtofirstnode->safedatafloat()[0]
-TreeNode * node_v_modified;
+TreeNode* node_v_modified;
 #define v_modified node_v_modified->safedatafloat()[0]
-TreeNode * node_v_connecting;
+TreeNode* node_v_arrowsize;
+#define v_arrowsize node_v_arrowsize->safedatafloat()[0]
+TreeNode* node_v_connecting;
 #define v_connecting node_v_connecting->safedatafloat()[0]
 
 // c++ member functions
@@ -3388,6 +3550,8 @@ FS_CONTENT_DLL_FUNC int getNextOutPort(NetworkRequest* netreq);
 
 FS_CONTENT_DLL_FUNC int getNextOutPort(NetworkNode* from, NetworkNode* to);
 
+FS_CONTENT_DLL_FUNC double getNextOutPort(int fromRow, int toCol);
+
 FS_CONTENT_DLL_FUNC double getDistRemaining(NetworkNode * netnode, int destcol);
 
 FS_CONTENT_DLL_FUNC double toggleAllShowModes(double newmode, int selectedonly);
@@ -3403,6 +3567,8 @@ FS_CONTENT_DLL_FUNC double queryDistance(TaskExecuter* te, FlexSimObject* destob
 FS_CONTENT_DLL_FUNC double queryDistanceEx(TaskExecuter* te, FlexSimObject* destobj, NetworkNode* originnetnode, NetworkNode** bestorigin DEFAULTNULL, NetworkNode** bestdestnode DEFAULTNULL, int * bestoriginrow DEFAULTNULL, int * bestdestcol DEFAULTNULL, double* bestdist DEFAULTNULL);
 
 FS_CONTENT_DLL_FUNC double queryDistance(NetworkNode* from, NetworkNode* to);
+
+FS_CONTENT_DLL_FUNC double queryDistance(int fromCol, int toCol);
 
 FS_CONTENT_DLL_FUNC double getTravelerInfo(TaskExecuter* te, FlexSimObject * destobj, int info);
 
@@ -3422,6 +3588,8 @@ FS_CONTENT_DLL_FUNC double validateTravelMemberStructure(treenode curtmemnode);
 
 FS_CONTENT_DLL_FUNC static treenode getTENetNode(treenode membernode);
 
+FS_CONTENT_DLL_FUNC static NetworkNavigator* getInstance();
+
 
 // System
 
@@ -3431,23 +3599,22 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Avi
-
-class Avi  : public ObjectDataType 
+class Avi : public ObjectDataType
 {
 public:
 
-TreeNode * node_v_starttime;
+TreeNode* node_v_starttime;
 #define v_starttime node_v_starttime->safedatafloat()[0]
-TreeNode * node_v_endtime;
+TreeNode* node_v_endtime;
 #define v_endtime node_v_endtime->safedatafloat()[0]
-TreeNode * node_v_framespersecond;
+TreeNode* node_v_framespersecond;
 #define v_framespersecond node_v_framespersecond->safedatafloat()[0]
-TreeNode * node_v_timebetweenframes;
+TreeNode* node_v_timebetweenframes;
 #define v_timebetweenframes node_v_timebetweenframes->safedatafloat()[0]
-TreeNode * node_v_aviname;
-TreeNode * node_v_makingavi;
+TreeNode* node_v_aviname;
+TreeNode* node_v_makingavi;
 #define v_makingavi node_v_makingavi->safedatafloat()[0]
-TreeNode * node_v_flypath;
+TreeNode* node_v_flypath;
 #define v_flypath node_v_flypath->safedatafloat()[0]
 
 // System
@@ -3457,17 +3624,47 @@ FS_CONTENT_DLL_FUNC virtual void bindVariables();
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
-// Mixer
-
-class Mixer : public FixedResource 
+// VideoRecorder
+class VideoRecorder : public ObjectDataType
 {
 public:
 
-TreeNode * node_v_batchquantity;
+TreeNode* node_v_outputs;
+#define v_outputs node_v_outputs->safedatafloat()[0]
+TreeNode* node_v_sequences;
+#define v_sequences node_v_sequences->safedatafloat()[0]
+TreeNode* node_v_jobscallback;
+TreeNode* node_v_preview;
+#define v_preview node_v_preview->safedatafloat()[0]
+TreeNode* node_v_active;
+#define v_active node_v_active->safedatafloat()[0]
+
+// c++ member functions
+
+FS_CONTENT_DLL_FUNC double getMetric(int metric, string sout, string sseq, string slay);
+
+FS_CONTENT_DLL_FUNC double getMetric(int metric, string sout, string sseq);
+
+FS_CONTENT_DLL_FUNC double getMetric(int metric);
+
+
+// System
+
+FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// Mixer
+class Mixer : public FixedResource
+{
+public:
+
+TreeNode* node_v_batchquantity;
 #define v_batchquantity node_v_batchquantity->safedatafloat()[0]
-TreeNode * node_v_mixtime;
+TreeNode* node_v_mixtime;
 #define v_mixtime node_v_mixtime->safedatafloat()[0]
-TreeNode * node_v_cleanuptime;
+TreeNode* node_v_cleanuptime;
 #define v_cleanuptime node_v_cleanuptime->safedatafloat()[0]
 
 // c++ member functions
@@ -3491,17 +3688,16 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // GlobalVarGen
-
-class GlobalVarGen  : public ObjectDataType 
+class GlobalVarGen : public ObjectDataType
 {
 public:
 
-TreeNode * node_v_definecode;
-TreeNode * node_v_loadcode;
-TreeNode * node_v_table;
+TreeNode* node_v_definecode;
+TreeNode* node_v_loadcode;
+TreeNode* node_v_table;
 #define v_table node_v_table->safedatafloat()[0]
-TreeNode * node_v_usercode;
-TreeNode * node_v_commands;
+TreeNode* node_v_usercode;
+TreeNode* node_v_commands;
 #define v_commands node_v_commands->safedatafloat()[0]
 
 // c++ member functions
@@ -3517,18 +3713,17 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // WatchList
-
-class WatchList  : public ObjectDataType 
+class WatchList : public ObjectDataType
 {
 public:
 
-TreeNode * node_v_watchtable;
+TreeNode* node_v_watchtable;
 #define v_watchtable node_v_watchtable->safedatafloat()[0]
-TreeNode * node_v_tablerowtemplate;
+TreeNode* node_v_tablerowtemplate;
 #define v_tablerowtemplate node_v_tablerowtemplate->safedatafloat()[0]
-TreeNode * node_v_numwatches;
+TreeNode* node_v_numwatches;
 #define v_numwatches node_v_numwatches->safedatafloat()[0]
-TreeNode * node_v_onchangetrigger;
+TreeNode* node_v_onchangetrigger;
 
 // c++ member functions
 
@@ -3543,8 +3738,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // PreLoad
-
-class PreLoad  : public ObjectDataType 
+class PreLoad : public ObjectDataType
 {
 public:
 
@@ -3557,15 +3751,14 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // DelayPipe
-
-class DelayPipe : public FixedResource 
+class DelayPipe : public FixedResource
 {
 public:
 
-TreeNode * node_v_delaytime;
-TreeNode * node_v_maxcontent;
+TreeNode* node_v_delaytime;
+TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode * node_v_pipesections;
+TreeNode* node_v_pipesections;
 #define v_pipesections node_v_pipesections->safedatafloat()[0]
 
 // c++ member functions
@@ -3591,40 +3784,39 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // ExcelAuto
-
-class ExcelAuto  : public ObjectDataType 
+class ExcelAuto : public ObjectDataType
 {
 public:
 
-TreeNode * node_v_needtocompile;
+TreeNode* node_v_needtocompile;
 #define v_needtocompile node_v_needtocompile->safedatafloat()[0]
-TreeNode * node_v_excellocation;
-TreeNode * node_v_curworkbook;
-TreeNode * node_v_importexcelfiles;
+TreeNode* node_v_excellocation;
+TreeNode* node_v_curworkbook;
+TreeNode* node_v_importexcelfiles;
 #define v_importexcelfiles node_v_importexcelfiles->safedatafloat()[0]
-TreeNode * node_v_importtable;
+TreeNode* node_v_importtable;
 #define v_importtable node_v_importtable->safedatafloat()[0]
-TreeNode * node_v_exporttable;
+TreeNode* node_v_exporttable;
 #define v_exporttable node_v_exporttable->safedatafloat()[0]
-TreeNode * node_v_rowtemplate;
+TreeNode* node_v_rowtemplate;
 #define v_rowtemplate node_v_rowtemplate->safedatafloat()[0]
-TreeNode * node_v_exporttemplate;
+TreeNode* node_v_exporttemplate;
 #define v_exporttemplate node_v_exporttemplate->safedatafloat()[0]
-TreeNode * node_v_filetemplate;
+TreeNode* node_v_filetemplate;
 #define v_filetemplate node_v_filetemplate->safedatafloat()[0]
-TreeNode * node_v_sheet;
-TreeNode * node_v_tname;
-TreeNode * node_v_headerval;
+TreeNode* node_v_sheet;
+TreeNode* node_v_tname;
+TreeNode* node_v_headerval;
 #define v_headerval node_v_headerval->safedatafloat()[0]
-TreeNode * node_v_datadistinctval;
+TreeNode* node_v_datadistinctval;
 #define v_datadistinctval node_v_datadistinctval->safedatafloat()[0]
-TreeNode * node_v_usepostimportcode;
+TreeNode* node_v_usepostimportcode;
 #define v_usepostimportcode node_v_usepostimportcode->safedatafloat()[0]
-TreeNode * node_v_OnImport;
-TreeNode * node_v_CustomImport;
-TreeNode * node_v_CustomExport;
-TreeNode * node_v_desccustomimport;
-TreeNode * node_v_desccustomexport;
+TreeNode* node_v_OnImport;
+TreeNode* node_v_CustomImport;
+TreeNode* node_v_CustomExport;
+TreeNode* node_v_desccustomimport;
+TreeNode* node_v_desccustomexport;
 
 // c++ member functions
 
@@ -3669,22 +3861,21 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // DiscreteCombiner
-
-class DiscreteCombiner : public FixedResource 
+class DiscreteCombiner : public FixedResource
 {
 public:
 
-TreeNode * node_v_curaccum;
+TreeNode* node_v_curaccum;
 #define v_curaccum node_v_curaccum->safedatafloat()[0]
-TreeNode * node_v_boxcollected;
+TreeNode* node_v_boxcollected;
 #define v_boxcollected node_v_boxcollected->safedatafloat()[0]
-TreeNode * node_v_packqty;
+TreeNode* node_v_packqty;
 #define v_packqty node_v_packqty->safedatafloat()[0]
-TreeNode * node_v_cycletime;
-TreeNode * node_v_processfinishtrigger;
-TreeNode * node_v_recycle;
+TreeNode* node_v_cycletime;
+TreeNode* node_v_processfinishtrigger;
+TreeNode* node_v_recycle;
 #define v_recycle node_v_recycle->safedatafloat()[0]
-TreeNode * node_v_curheight;
+TreeNode* node_v_curheight;
 #define v_curheight node_v_curheight->safedatafloat()[0]
 
 // c++ member functions
@@ -3708,27 +3899,26 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // DiscreteGenerator
-
-class DiscreteGenerator : public FixedResource 
+class DiscreteGenerator : public FixedResource
 {
 public:
 
-TreeNode * node_v_rate;
+TreeNode* node_v_rate;
 #define v_rate node_v_rate->safedatafloat()[0]
-TreeNode * node_v_scale;
+TreeNode* node_v_scale;
 #define v_scale node_v_scale->safedatafloat()[0]
-TreeNode * node_v_timezerocreate;
+TreeNode* node_v_timezerocreate;
 #define v_timezerocreate node_v_timezerocreate->safedatafloat()[0]
-TreeNode * node_v_interarrivaltime;
+TreeNode* node_v_interarrivaltime;
 #define v_interarrivaltime node_v_interarrivaltime->safedatafloat()[0]
-TreeNode * node_v_creationtrigger;
-TreeNode * node_v_flowitemclass;
+TreeNode* node_v_creationtrigger;
+TreeNode* node_v_flowitemclass;
 #define v_flowitemclass node_v_flowitemclass->safedatafloat()[0]
-TreeNode * node_v_flowitembin;
+TreeNode* node_v_flowitembin;
 #define v_flowitembin node_v_flowitembin->safedatafloat()[0]
-TreeNode * node_v_flowitemtype;
+TreeNode* node_v_flowitemtype;
 #define v_flowitemtype node_v_flowitemtype->safedatafloat()[0]
-TreeNode * node_v_flowitemname;
+TreeNode* node_v_flowitemname;
 
 // c++ member functions
 
@@ -3744,7 +3934,6 @@ FS_CONTENT_DLL_FUNC double generateItem(double curitemtype, string itemname);
 
 
 // c++ attributes
-
 treenode flowitemtocreate;
 
 
@@ -3756,30 +3945,29 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // DiscreteProcessor
-
-class DiscreteProcessor : public FixedResource 
+class DiscreteProcessor : public FixedResource
 {
 public:
 
-TreeNode * node_v_rate;
+TreeNode* node_v_rate;
 #define v_rate node_v_rate->safedatafloat()[0]
-TreeNode * node_v_processtime;
+TreeNode* node_v_processtime;
 #define v_processtime node_v_processtime->safedatafloat()[0]
-TreeNode * node_v_scale;
+TreeNode* node_v_scale;
 #define v_scale node_v_scale->safedatafloat()[0]
-TreeNode * node_v_loss;
+TreeNode* node_v_loss;
 #define v_loss node_v_loss->safedatafloat()[0]
-TreeNode * node_v_processfinishtrigger;
-TreeNode * node_v_useprocessoperators;
+TreeNode* node_v_processfinishtrigger;
+TreeNode* node_v_useprocessoperators;
 #define v_useprocessoperators node_v_useprocessoperators->safedatafloat()[0]
-TreeNode * node_v_processoperatorpriority;
+TreeNode* node_v_processoperatorpriority;
 #define v_processoperatorpriority node_v_processoperatorpriority->safedatafloat()[0]
-TreeNode * node_v_preemptprocessoperators;
+TreeNode* node_v_preemptprocessoperators;
 #define v_preemptprocessoperators node_v_preemptprocessoperators->safedatafloat()[0]
-TreeNode * node_v_processdispatcher;
-TreeNode * node_v_convey;
+TreeNode* node_v_processdispatcher;
+TreeNode* node_v_convey;
 #define v_convey node_v_convey->safedatafloat()[0]
-TreeNode * node_v_recycle;
+TreeNode* node_v_recycle;
 #define v_recycle node_v_recycle->safedatafloat()[0]
 
 // c++ member functions
@@ -3805,15 +3993,14 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FlowNode
-
-class FlowNode : public FixedResource 
+class FlowNode : public FixedResource
 {
 public:
 
-TreeNode * node_v_itemspeed;
-TreeNode * node_v_maxcontent;
+TreeNode* node_v_itemspeed;
+TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode * node_v_sideoffset;
+TreeNode* node_v_sideoffset;
 #define v_sideoffset node_v_sideoffset->safedatafloat()[0]
 
 // c++ member functions
@@ -3841,35 +4028,34 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Reservoir
-
-class Reservoir : public FixedResource 
+class Reservoir : public FixedResource
 {
 public:
 
-TreeNode * node_v_maxcontent;
+TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode * node_v_curcontent;
+TreeNode* node_v_curcontent;
 #define v_curcontent node_v_curcontent->safedatafloat()[0]
-TreeNode * node_v_highmark;
+TreeNode* node_v_highmark;
 #define v_highmark node_v_highmark->safedatafloat()[0]
-TreeNode * node_v_middlemark;
+TreeNode* node_v_middlemark;
 #define v_middlemark node_v_middlemark->safedatafloat()[0]
-TreeNode * node_v_lowmark;
+TreeNode* node_v_lowmark;
 #define v_lowmark node_v_lowmark->safedatafloat()[0]
-TreeNode * node_v_lastouttime;
+TreeNode* node_v_lastouttime;
 #define v_lastouttime node_v_lastouttime->safedatafloat()[0]
-TreeNode * node_v_lastintime;
+TreeNode* node_v_lastintime;
 #define v_lastintime node_v_lastintime->safedatafloat()[0]
-TreeNode * node_v_unitsinitem;
+TreeNode* node_v_unitsinitem;
 #define v_unitsinitem node_v_unitsinitem->safedatafloat()[0]
-TreeNode * node_v_risethroughhighmarktrigger;
-TreeNode * node_v_fallthroughhighmarktrigger;
-TreeNode * node_v_risethroughmiddlemarktrigger;
-TreeNode * node_v_fallthroughmiddlemarktrigger;
-TreeNode * node_v_risethroughlowmarktrigger;
-TreeNode * node_v_fallthroughlowmarktrigger;
-TreeNode * node_v_inflowrate;
-TreeNode * node_v_outflowrate;
+TreeNode* node_v_risethroughhighmarktrigger;
+TreeNode* node_v_fallthroughhighmarktrigger;
+TreeNode* node_v_risethroughmiddlemarktrigger;
+TreeNode* node_v_fallthroughmiddlemarktrigger;
+TreeNode* node_v_risethroughlowmarktrigger;
+TreeNode* node_v_fallthroughlowmarktrigger;
+TreeNode* node_v_inflowrate;
+TreeNode* node_v_outflowrate;
 
 // c++ member functions
 
@@ -3898,67 +4084,66 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Recorder
-
-class Recorder : public FlexSimObject 
+class Recorder : public FlexSimObject
 {
 public:
 
-TreeNode * node_v_timedriven;
+TreeNode* node_v_timedriven;
 #define v_timedriven node_v_timedriven->safedatafloat()[0]
-TreeNode * node_v_timebetweenchecks;
+TreeNode* node_v_timebetweenchecks;
 #define v_timebetweenchecks node_v_timebetweenchecks->safedatafloat()[0]
-TreeNode * node_v_outputtype;
+TreeNode* node_v_outputtype;
 #define v_outputtype node_v_outputtype->safedatafloat()[0]
-TreeNode * node_v_datatype;
+TreeNode* node_v_datatype;
 #define v_datatype node_v_datatype->safedatafloat()[0]
-TreeNode * node_v_standardtype;
+TreeNode* node_v_standardtype;
 #define v_standardtype node_v_standardtype->safedatafloat()[0]
-TreeNode * node_v_graphtype;
+TreeNode* node_v_graphtype;
 #define v_graphtype node_v_graphtype->safedatafloat()[0]
-TreeNode * node_v_weighttype;
+TreeNode* node_v_weighttype;
 #define v_weighttype node_v_weighttype->safedatafloat()[0]
-TreeNode * node_v_objectrank;
+TreeNode* node_v_objectrank;
 #define v_objectrank node_v_objectrank->safedatafloat()[0]
-TreeNode * node_v_drawbackground;
+TreeNode* node_v_drawbackground;
 #define v_drawbackground node_v_drawbackground->safedatafloat()[0]
-TreeNode * node_v_histomin;
+TreeNode* node_v_histomin;
 #define v_histomin node_v_histomin->safedatafloat()[0]
-TreeNode * node_v_histomax;
+TreeNode* node_v_histomax;
 #define v_histomax node_v_histomax->safedatafloat()[0]
-TreeNode * node_v_histobuckets;
+TreeNode* node_v_histobuckets;
 #define v_histobuckets node_v_histobuckets->safedatafloat()[0]
-TreeNode * node_v_numpoints;
+TreeNode* node_v_numpoints;
 #define v_numpoints node_v_numpoints->safedatafloat()[0]
-TreeNode * node_v_autodomain;
+TreeNode* node_v_autodomain;
 #define v_autodomain node_v_autodomain->safedatafloat()[0]
-TreeNode * node_v_autorange;
+TreeNode* node_v_autorange;
 #define v_autorange node_v_autorange->safedatafloat()[0]
-TreeNode * node_v_xmin;
+TreeNode* node_v_xmin;
 #define v_xmin node_v_xmin->safedatafloat()[0]
-TreeNode * node_v_xmax;
+TreeNode* node_v_xmax;
 #define v_xmax node_v_xmax->safedatafloat()[0]
-TreeNode * node_v_ymin;
+TreeNode* node_v_ymin;
 #define v_ymin node_v_ymin->safedatafloat()[0]
-TreeNode * node_v_ymax;
+TreeNode* node_v_ymax;
 #define v_ymax node_v_ymax->safedatafloat()[0]
-TreeNode * node_v_tablexval;
-TreeNode * node_v_tableyval;
-TreeNode * node_v_linecolor;
+TreeNode* node_v_tablexval;
+TreeNode* node_v_tableyval;
+TreeNode* node_v_linecolor;
 #define v_linecolor node_v_linecolor->safedatafloat()[0]
-TreeNode * node_v_graphtitle;
-TreeNode * node_v_draw3dgraph;
+TreeNode* node_v_graphtitle;
+TreeNode* node_v_draw3dgraph;
 #define v_draw3dgraph node_v_draw3dgraph->safedatafloat()[0]
-TreeNode * node_v_datapointer;
+TreeNode* node_v_datapointer;
 #define v_datapointer node_v_datapointer->safedatafloat()[0]
-TreeNode * node_v_numwatches;
+TreeNode* node_v_numwatches;
 #define v_numwatches node_v_numwatches->safedatafloat()[0]
-TreeNode * node_v_graphdata;
+TreeNode* node_v_graphdata;
 #define v_graphdata node_v_graphdata->safedatafloat()[0]
-TreeNode * node_v_watchtable;
+TreeNode* node_v_watchtable;
 #define v_watchtable node_v_watchtable->safedatafloat()[0]
-TreeNode * node_v_bucketnames;
+TreeNode* node_v_bucketnames;
 #define v_bucketnames node_v_bucketnames->safedatafloat()[0]
-TreeNode * node_v_tablerowtemplate;
+TreeNode* node_v_tablerowtemplate;
 #define v_tablerowtemplate node_v_tablerowtemplate->safedatafloat()[0]
 
 // c++ member functions
@@ -4004,44 +4189,45 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // VisualTool
-
-class VisualTool : public FlexSimObject 
+class VisualTool : public FlexSimObject
 {
 public:
 
-TreeNode * node_v_shapetypes;
+TreeNode* node_v_shapetypes;
 #define v_shapetypes node_v_shapetypes->safedatafloat()[0]
-TreeNode * node_v_divisions;
+TreeNode* node_v_divisions;
 #define v_divisions node_v_divisions->safedatafloat()[0]
-TreeNode * node_v_repeatx;
+TreeNode* node_v_repeatx;
 #define v_repeatx node_v_repeatx->safedatafloat()[0]
-TreeNode * node_v_repeaty;
+TreeNode* node_v_repeaty;
 #define v_repeaty node_v_repeaty->safedatafloat()[0]
-TreeNode * node_v_nroftexts;
+TreeNode* node_v_nroftexts;
 #define v_nroftexts node_v_nroftexts->safedatafloat()[0]
-TreeNode * node_v_settextloc;
+TreeNode* node_v_settextloc;
 #define v_settextloc node_v_settextloc->safedatafloat()[0]
-TreeNode * node_v_containercontent;
+TreeNode* node_v_containercontent;
 #define v_containercontent node_v_containercontent->safedatafloat()[0]
-TreeNode * node_v_objectref;
-TreeNode * node_v_textcode;
-TreeNode * node_v_textnode;
-TreeNode * node_v_textsize;
+TreeNode* node_v_objectref;
+TreeNode* node_v_textcode;
+TreeNode* node_v_textnode;
+TreeNode* node_v_textsize;
 #define v_textsize node_v_textsize->safedatafloat()[0]
-TreeNode * node_v_viewmagnification;
+TreeNode* node_v_viewmagnification;
 #define v_viewmagnification node_v_viewmagnification->safedatafloat()[0]
-TreeNode * node_v_viewdistance;
+TreeNode* node_v_viewdistance;
 #define v_viewdistance node_v_viewdistance->safedatafloat()[0]
-TreeNode * node_v_textthickness;
+TreeNode* node_v_textthickness;
 #define v_textthickness node_v_textthickness->safedatafloat()[0]
-TreeNode * node_v_billboardtype;
+TreeNode* node_v_billboardtype;
 #define v_billboardtype node_v_billboardtype->safedatafloat()[0]
-TreeNode * node_v_showcontents;
+TreeNode* node_v_showcontents;
 #define v_showcontents node_v_showcontents->safedatafloat()[0]
-TreeNode * node_v_connectinputs;
-TreeNode * node_v_connectoutputs;
+TreeNode* node_v_connectinputs;
+TreeNode* node_v_connectoutputs;
 
 // c++ member functions
+
+FS_CONTENT_DLL_FUNC  VisualTool();
 
 FS_CONTENT_DLL_FUNC double onDraw(treenode view);
 
@@ -4091,7 +4277,6 @@ FS_CONTENT_DLL_FUNC double doConnectIndirection(treenode otherobject, char chara
 
 
 // c++ attributes
-
 Mesh shapeMesh;
 
 int meshShapeType;
@@ -4105,8 +4290,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // StatisticObject
-
-class StatisticObject  : public ObjectDataType 
+class StatisticObject : public ObjectDataType
 {
 public:
 
@@ -4164,53 +4348,54 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // StateChart
-
-class StateChart : public StatisticObject 
+class StateChart : public StatisticObject
 {
 public:
 
-TreeNode * node_v_objects;
+TreeNode* node_v_objects;
 #define v_objects node_v_objects->safedatafloat()[0]
-TreeNode * node_v_colors;
+TreeNode* node_v_colors;
 #define v_colors node_v_colors->safedatafloat()[0]
-TreeNode * node_v_charttype;
+TreeNode* node_v_charttype;
 #define v_charttype node_v_charttype->safedatafloat()[0]
-TreeNode * node_v_statestrings;
+TreeNode* node_v_statestrings;
 #define v_statestrings node_v_statestrings->safedatafloat()[0]
-TreeNode * node_v_usecollecttime;
+TreeNode* node_v_usecollecttime;
 #define v_usecollecttime node_v_usecollecttime->safedatafloat()[0]
-TreeNode * node_v_mincollecttime;
+TreeNode* node_v_mincollecttime;
 #define v_mincollecttime node_v_mincollecttime->safedatafloat()[0]
-TreeNode * node_v_maxcollecttime;
+TreeNode* node_v_maxcollecttime;
 #define v_maxcollecttime node_v_maxcollecttime->safedatafloat()[0]
-TreeNode * node_v_collecthistory;
+TreeNode* node_v_collecthistory;
 #define v_collecthistory node_v_collecthistory->safedatafloat()[0]
-TreeNode * node_v_filtermintime;
+TreeNode* node_v_filtermintime;
 #define v_filtermintime node_v_filtermintime->safedatafloat()[0]
-TreeNode * node_v_filtermaxtime;
+TreeNode* node_v_filtermaxtime;
 #define v_filtermaxtime node_v_filtermaxtime->safedatafloat()[0]
-TreeNode * node_v_filterednow;
+TreeNode* node_v_filterednow;
 #define v_filterednow node_v_filterednow->safedatafloat()[0]
-TreeNode * node_v_showtotals;
+TreeNode* node_v_showtotals;
 #define v_showtotals node_v_showtotals->safedatafloat()[0]
-TreeNode * node_v_showlegend;
+TreeNode* node_v_showlegend;
 #define v_showlegend node_v_showlegend->safedatafloat()[0]
-TreeNode * node_v_stacked;
+TreeNode* node_v_stacked;
 #define v_stacked node_v_stacked->safedatafloat()[0]
-TreeNode * node_v_doutilization;
+TreeNode* node_v_doutilization;
 #define v_doutilization node_v_doutilization->safedatafloat()[0]
-TreeNode * node_v_fontsize;
+TreeNode* node_v_fontsize;
 #define v_fontsize node_v_fontsize->safedatafloat()[0]
-TreeNode * node_v_barsize;
+TreeNode* node_v_barsize;
 #define v_barsize node_v_barsize->safedatafloat()[0]
-TreeNode * node_v_utilizedstates;
+TreeNode* node_v_precision;
+#define v_precision node_v_precision->safedatafloat()[0]
+TreeNode* node_v_utilizedstates;
 #define v_utilizedstates node_v_utilizedstates->safedatafloat()[0]
-TreeNode * node_v_data;
-TreeNode * node_v_basedata;
-TreeNode * node_v_colordata;
-TreeNode * node_v_validdata;
+TreeNode* node_v_data;
+TreeNode* node_v_basedata;
+TreeNode* node_v_colordata;
+TreeNode* node_v_validdata;
 #define v_validdata node_v_validdata->safedatafloat()[0]
-TreeNode * node_v_useprofilenr;
+TreeNode* node_v_useprofilenr;
 #define v_useprofilenr node_v_useprofilenr->safedatafloat()[0]
 
 // c++ member functions
@@ -4310,61 +4495,62 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // StatChart
-
-class StatChart : public StatisticObject 
+class StatChart : public StatisticObject
 {
 public:
 
-TreeNode * node_v_objects;
+TreeNode* node_v_objects;
 #define v_objects node_v_objects->safedatafloat()[0]
-TreeNode * node_v_colors;
+TreeNode* node_v_colors;
 #define v_colors node_v_colors->safedatafloat()[0]
-TreeNode * node_v_charttype;
+TreeNode* node_v_charttype;
 #define v_charttype node_v_charttype->safedatafloat()[0]
-TreeNode * node_v_usecollecttime;
+TreeNode* node_v_usecollecttime;
 #define v_usecollecttime node_v_usecollecttime->safedatafloat()[0]
-TreeNode * node_v_mincollecttime;
+TreeNode* node_v_mincollecttime;
 #define v_mincollecttime node_v_mincollecttime->safedatafloat()[0]
-TreeNode * node_v_maxcollecttime;
+TreeNode* node_v_maxcollecttime;
 #define v_maxcollecttime node_v_maxcollecttime->safedatafloat()[0]
-TreeNode * node_v_collecthistory;
+TreeNode* node_v_collecthistory;
 #define v_collecthistory node_v_collecthistory->safedatafloat()[0]
-TreeNode * node_v_filtermintime;
+TreeNode* node_v_filtermintime;
 #define v_filtermintime node_v_filtermintime->safedatafloat()[0]
-TreeNode * node_v_filtermaxtime;
+TreeNode* node_v_filtermaxtime;
 #define v_filtermaxtime node_v_filtermaxtime->safedatafloat()[0]
-TreeNode * node_v_filterednow;
+TreeNode* node_v_filterednow;
 #define v_filterednow node_v_filterednow->safedatafloat()[0]
-TreeNode * node_v_timeinterval;
+TreeNode* node_v_timeinterval;
 #define v_timeinterval node_v_timeinterval->safedatafloat()[0]
-TreeNode * node_v_showlegend;
+TreeNode* node_v_showlegend;
 #define v_showlegend node_v_showlegend->safedatafloat()[0]
-TreeNode * node_v_fontsize;
+TreeNode* node_v_fontsize;
 #define v_fontsize node_v_fontsize->safedatafloat()[0]
-TreeNode * node_v_barsize;
+TreeNode* node_v_barsize;
 #define v_barsize node_v_barsize->safedatafloat()[0]
-TreeNode * node_v_stacked;
+TreeNode* node_v_precision;
+#define v_precision node_v_precision->safedatafloat()[0]
+TreeNode* node_v_stacked;
 #define v_stacked node_v_stacked->safedatafloat()[0]
-TreeNode * node_v_statistics;
+TreeNode* node_v_statistics;
 #define v_statistics node_v_statistics->safedatafloat()[0]
-TreeNode * node_v_data;
-TreeNode * node_v_basedata;
-TreeNode * node_v_timedata;
-TreeNode * node_v_colordata;
-TreeNode * node_v_validdata;
+TreeNode* node_v_data;
+TreeNode* node_v_basedata;
+TreeNode* node_v_timedata;
+TreeNode* node_v_colordata;
+TreeNode* node_v_validdata;
 #define v_validdata node_v_validdata->safedatafloat()[0]
-TreeNode * node_v_useprofilenr;
+TreeNode* node_v_useprofilenr;
 #define v_useprofilenr node_v_useprofilenr->safedatafloat()[0]
-TreeNode * node_v_generallisten;
+TreeNode* node_v_generallisten;
 #define v_generallisten node_v_generallisten->safedatafloat()[0]
-TreeNode * node_v_aggregatelisten;
+TreeNode* node_v_aggregatelisten;
 #define v_aggregatelisten node_v_aggregatelisten->safedatafloat()[0]
-TreeNode * node_v_systemwarmuptime;
+TreeNode* node_v_systemwarmuptime;
 #define v_systemwarmuptime node_v_systemwarmuptime->safedatafloat()[0]
-TreeNode * node_v_timescale;
+TreeNode* node_v_timescale;
 #define v_timescale node_v_timescale->safedatafloat()[0]
-TreeNode * node_v_xaxistitle;
-TreeNode * node_v_yaxistitle;
+TreeNode* node_v_xaxistitle;
+TreeNode* node_v_yaxistitle;
 
 // c++ member functions
 
@@ -4459,55 +4645,54 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // CustomChart
-
-class CustomChart : public StatisticObject 
+class CustomChart : public StatisticObject
 {
 public:
 
-TreeNode * node_v_associations;
+TreeNode* node_v_associations;
 #define v_associations node_v_associations->safedatafloat()[0]
-TreeNode * node_v_colors;
+TreeNode* node_v_colors;
 #define v_colors node_v_colors->safedatafloat()[0]
-TreeNode * node_v_charttype;
+TreeNode* node_v_charttype;
 #define v_charttype node_v_charttype->safedatafloat()[0]
-TreeNode * node_v_numcategories;
-TreeNode * node_v_categorytitle;
-TreeNode * node_v_numseries;
-TreeNode * node_v_seriestitle;
-TreeNode * node_v_datapointvalue;
-TreeNode * node_v_usecollecttime;
+TreeNode* node_v_numcategories;
+TreeNode* node_v_categorytitle;
+TreeNode* node_v_numseries;
+TreeNode* node_v_seriestitle;
+TreeNode* node_v_datapointvalue;
+TreeNode* node_v_usecollecttime;
 #define v_usecollecttime node_v_usecollecttime->safedatafloat()[0]
-TreeNode * node_v_mincollecttime;
+TreeNode* node_v_mincollecttime;
 #define v_mincollecttime node_v_mincollecttime->safedatafloat()[0]
-TreeNode * node_v_maxcollecttime;
+TreeNode* node_v_maxcollecttime;
 #define v_maxcollecttime node_v_maxcollecttime->safedatafloat()[0]
-TreeNode * node_v_collecthistory;
+TreeNode* node_v_collecthistory;
 #define v_collecthistory node_v_collecthistory->safedatafloat()[0]
-TreeNode * node_v_starttime;
-#define v_starttime node_v_starttime->safedatafloat()[0]
-TreeNode * node_v_timeinterval;
+TreeNode* node_v_timeinterval;
 #define v_timeinterval node_v_timeinterval->safedatafloat()[0]
-TreeNode * node_v_showlegend;
+TreeNode* node_v_showlegend;
 #define v_showlegend node_v_showlegend->safedatafloat()[0]
-TreeNode * node_v_fontsize;
+TreeNode* node_v_fontsize;
 #define v_fontsize node_v_fontsize->safedatafloat()[0]
-TreeNode * node_v_barsize;
+TreeNode* node_v_barsize;
 #define v_barsize node_v_barsize->safedatafloat()[0]
-TreeNode * node_v_stacked;
+TreeNode* node_v_precision;
+#define v_precision node_v_precision->safedatafloat()[0]
+TreeNode* node_v_stacked;
 #define v_stacked node_v_stacked->safedatafloat()[0]
-TreeNode * node_v_reloadbundle;
+TreeNode* node_v_reloadbundle;
 #define v_reloadbundle node_v_reloadbundle->safedatafloat()[0]
-TreeNode * node_v_data;
-TreeNode * node_v_timedata;
-TreeNode * node_v_colordata;
-TreeNode * node_v_validdata;
+TreeNode* node_v_data;
+TreeNode* node_v_timedata;
+TreeNode* node_v_colordata;
+TreeNode* node_v_validdata;
 #define v_validdata node_v_validdata->safedatafloat()[0]
-TreeNode * node_v_systemwarmuptime;
+TreeNode* node_v_systemwarmuptime;
 #define v_systemwarmuptime node_v_systemwarmuptime->safedatafloat()[0]
-TreeNode * node_v_timescale;
+TreeNode* node_v_timescale;
 #define v_timescale node_v_timescale->safedatafloat()[0]
-TreeNode * node_v_xaxistitle;
-TreeNode * node_v_yaxistitle;
+TreeNode* node_v_xaxistitle;
+TreeNode* node_v_yaxistitle;
 
 // c++ member functions
 
@@ -4578,53 +4763,52 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // GanttChart
-
-class GanttChart : public StatisticObject 
+class GanttChart : public StatisticObject
 {
 public:
 
-TreeNode * node_v_objects;
+TreeNode* node_v_objects;
 #define v_objects node_v_objects->safedatafloat()[0]
-TreeNode * node_v_colors;
+TreeNode* node_v_colors;
 #define v_colors node_v_colors->safedatafloat()[0]
-TreeNode * node_v_charttype;
+TreeNode* node_v_charttype;
 #define v_charttype node_v_charttype->safedatafloat()[0]
-TreeNode * node_v_tracerequirementtrigger;
-TreeNode * node_v_itemnametrigger;
-TreeNode * node_v_usecollecttime;
+TreeNode* node_v_tracerequirementtrigger;
+TreeNode* node_v_itemnametrigger;
+TreeNode* node_v_usecollecttime;
 #define v_usecollecttime node_v_usecollecttime->safedatafloat()[0]
-TreeNode * node_v_mincollecttime;
+TreeNode* node_v_mincollecttime;
 #define v_mincollecttime node_v_mincollecttime->safedatafloat()[0]
-TreeNode * node_v_maxcollecttime;
+TreeNode* node_v_maxcollecttime;
 #define v_maxcollecttime node_v_maxcollecttime->safedatafloat()[0]
-TreeNode * node_v_showlegend;
+TreeNode* node_v_showlegend;
 #define v_showlegend node_v_showlegend->safedatafloat()[0]
-TreeNode * node_v_fontsize;
+TreeNode* node_v_fontsize;
 #define v_fontsize node_v_fontsize->safedatafloat()[0]
-TreeNode * node_v_barsize;
+TreeNode* node_v_barsize;
 #define v_barsize node_v_barsize->safedatafloat()[0]
-TreeNode * node_v_itemtrace;
+TreeNode* node_v_itemtrace;
 #define v_itemtrace node_v_itemtrace->safedatafloat()[0]
-TreeNode * node_v_timescale;
+TreeNode* node_v_timescale;
 #define v_timescale node_v_timescale->safedatafloat()[0]
-TreeNode * node_v_xaxistitle;
-TreeNode * node_v_reloadbundles;
+TreeNode* node_v_xaxistitle;
+TreeNode* node_v_reloadbundles;
 #define v_reloadbundles node_v_reloadbundles->safedatafloat()[0]
-TreeNode * node_v_newtime;
+TreeNode* node_v_newtime;
 #define v_newtime node_v_newtime->safedatafloat()[0]
-TreeNode * node_v_includedstates;
+TreeNode* node_v_includedstates;
 #define v_includedstates node_v_includedstates->safedatafloat()[0]
-TreeNode * node_v_series;
-TreeNode * node_v_entrylegend;
-TreeNode * node_v_data;
-TreeNode * node_v_colordata;
-TreeNode * node_v_validdata;
+TreeNode* node_v_series;
+TreeNode* node_v_entrylegend;
+TreeNode* node_v_data;
+TreeNode* node_v_colordata;
+TreeNode* node_v_validdata;
 #define v_validdata node_v_validdata->safedatafloat()[0]
-TreeNode * node_v_useprofilenr;
+TreeNode* node_v_useprofilenr;
 #define v_useprofilenr node_v_useprofilenr->safedatafloat()[0]
-TreeNode * node_v_wrap;
+TreeNode* node_v_wrap;
 #define v_wrap node_v_wrap->safedatafloat()[0]
-TreeNode * node_v_wraptime;
+TreeNode* node_v_wraptime;
 #define v_wraptime node_v_wraptime->safedatafloat()[0]
 
 // c++ member functions
@@ -4685,7 +4869,7 @@ FS_CONTENT_DLL_FUNC treenode getStateProfile(treenode object);
 
 FS_CONTENT_DLL_FUNC treenode refreshStates();
 
-FS_CONTENT_DLL_FUNC treenode onChangeObjectSet();
+FS_CONTENT_DLL_FUNC virtual treenode onChangeObjectSet();
 
 FS_CONTENT_DLL_FUNC treenode getMember(int nr);
 
@@ -4703,29 +4887,86 @@ FS_CONTENT_DLL_FUNC virtual void bindVariables();
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
-// TrackedVariableChart
-
-class TrackedVariableChart : public StatisticObject 
+// CustomGanttChart
+class CustomGanttChart : public GanttChart
 {
 public:
 
-TreeNode * node_v_trackedvariables;
+TreeNode* node_v_associations;
+#define v_associations node_v_associations->safedatafloat()[0]
+TreeNode* node_v_lockmodeltime;
+#define v_lockmodeltime node_v_lockmodeltime->safedatafloat()[0]
+TreeNode* node_v_chartendtime;
+#define v_chartendtime node_v_chartendtime->safedatafloat()[0]
+TreeNode* node_v_ordered;
+#define v_ordered node_v_ordered->safedatafloat()[0]
+TreeNode* node_v_numseries;
+TreeNode* node_v_seriestitle;
+TreeNode* node_v_seriesspan;
+TreeNode* node_v_numentries;
+TreeNode* node_v_starttime;
+TreeNode* node_v_endtime;
+TreeNode* node_v_legend;
+TreeNode* node_v_legendtitle;
+TreeNode* node_v_legendshow;
+TreeNode* node_v_clickcallback;
+TreeNode* node_v_spanbarsize;
+#define v_spanbarsize node_v_spanbarsize->safedatafloat()[0]
+
+// c++ member functions
+
+FS_CONTENT_DLL_FUNC virtual double onReset();
+
+FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+
+FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+
+FS_CONTENT_DLL_FUNC double updateOrderedStats();
+
+FS_CONTENT_DLL_FUNC double updateUnorderedStats();
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+
+FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+
+FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
+
+FS_CONTENT_DLL_FUNC treenode onChangeAssociationSet();
+
+FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
+
+FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newNode);
+
+
+// System
+
+FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// TrackedVariableChart
+class TrackedVariableChart : public StatisticObject
+{
+public:
+
+TreeNode* node_v_trackedvariables;
 #define v_trackedvariables node_v_trackedvariables->safedatafloat()[0]
-TreeNode * node_v_colors;
+TreeNode* node_v_colors;
 #define v_colors node_v_colors->safedatafloat()[0]
-TreeNode * node_v_charttype;
+TreeNode* node_v_charttype;
 #define v_charttype node_v_charttype->safedatafloat()[0]
-TreeNode * node_v_showlegend;
+TreeNode* node_v_showlegend;
 #define v_showlegend node_v_showlegend->safedatafloat()[0]
-TreeNode * node_v_nrbuckets;
+TreeNode* node_v_nrbuckets;
 #define v_nrbuckets node_v_nrbuckets->safedatafloat()[0]
-TreeNode * node_v_normalize;
+TreeNode* node_v_normalize;
 #define v_normalize node_v_normalize->safedatafloat()[0]
-TreeNode * node_v_colordata;
-TreeNode * node_v_timescale;
+TreeNode* node_v_colordata;
+TreeNode* node_v_timescale;
 #define v_timescale node_v_timescale->safedatafloat()[0]
-TreeNode * node_v_xaxistitle;
-TreeNode * node_v_yaxistitle;
+TreeNode* node_v_xaxistitle;
+TreeNode* node_v_yaxistitle;
 
 // c++ member functions
 
@@ -4772,17 +5013,16 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // HtmlStatistic
-
-class HtmlStatistic : public StatisticObject 
+class HtmlStatistic : public StatisticObject
 {
 public:
 
-TreeNode * node_v_userhtml;
-TreeNode * node_v_userheader;
-TreeNode * node_v_hasdynamicflexscript;
+TreeNode* node_v_userhtml;
+TreeNode* node_v_userheader;
+TreeNode* node_v_hasdynamicflexscript;
 #define v_hasdynamicflexscript node_v_hasdynamicflexscript->safedatafloat()[0]
-TreeNode * node_v_flexscriptprocessor;
-TreeNode * node_v_elementid;
+TreeNode* node_v_flexscriptprocessor;
+TreeNode* node_v_elementid;
 
 // c++ member functions
 
@@ -4802,7 +5042,6 @@ FS_CONTENT_DLL_FUNC  ~HtmlStatistic();
 
 
 // c++ attributes
-
 HWND console;
 
 
@@ -4814,33 +5053,30 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FinancialAnalysis
-
-class FinancialAnalysis : public StatisticObject 
+class FinancialAnalysis : public StatisticObject
 {
 public:
 
-TreeNode * node_v_objects;
+TreeNode* node_v_objects;
 #define v_objects node_v_objects->safedatafloat()[0]
-TreeNode * node_v_charttype;
+TreeNode* node_v_charttype;
 #define v_charttype node_v_charttype->safedatafloat()[0]
-TreeNode * node_v_currency;
-TreeNode * node_v_precision;
+TreeNode* node_v_currency;
+TreeNode* node_v_precision;
 #define v_precision node_v_precision->safedatafloat()[0]
-TreeNode * node_v_fontsize;
+TreeNode* node_v_fontsize;
 #define v_fontsize node_v_fontsize->safedatafloat()[0]
-TreeNode * node_v_usecollecttime;
+TreeNode* node_v_usecollecttime;
 #define v_usecollecttime node_v_usecollecttime->safedatafloat()[0]
-TreeNode * node_v_mincollecttime;
+TreeNode* node_v_mincollecttime;
 #define v_mincollecttime node_v_mincollecttime->safedatafloat()[0]
-TreeNode * node_v_maxcollecttime;
+TreeNode* node_v_maxcollecttime;
 #define v_maxcollecttime node_v_maxcollecttime->safedatafloat()[0]
-TreeNode * node_v_data;
-TreeNode * node_v_displaydata;
-TreeNode * node_v_validdata;
+TreeNode* node_v_data;
+TreeNode* node_v_displaydata;
+TreeNode* node_v_validdata;
 #define v_validdata node_v_validdata->safedatafloat()[0]
-TreeNode * node_v_systemwarmuptime;
-#define v_systemwarmuptime node_v_systemwarmuptime->safedatafloat()[0]
-TreeNode * node_v_reset;
+TreeNode* node_v_reset;
 #define v_reset node_v_reset->safedatafloat()[0]
 
 // c++ member functions
@@ -4920,33 +5156,30 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Source
-
-class Source : public FixedResource 
+class Source : public FixedResource
 {
 public:
 
-TreeNode * node_v_arrivalmode;
+TreeNode* node_v_arrivalmode;
 #define v_arrivalmode node_v_arrivalmode->safedatafloat()[0]
-TreeNode * node_v_interarrivaltime;
-TreeNode * node_v_timezerocreate;
+TreeNode* node_v_interarrivaltime;
+TreeNode* node_v_timezerocreate;
 #define v_timezerocreate node_v_timezerocreate->safedatafloat()[0]
-TreeNode * node_v_interarrivalitemtype;
+TreeNode* node_v_interarrivalitemtype;
 #define v_interarrivalitemtype node_v_interarrivalitemtype->safedatafloat()[0]
-TreeNode * node_v_itemclass;
+TreeNode* node_v_itemclass;
 #define v_itemclass node_v_itemclass->safedatafloat()[0]
-TreeNode * node_v_schedule;
+TreeNode* node_v_schedule;
 #define v_schedule node_v_schedule->safedatafloat()[0]
-TreeNode * node_v_repeat;
+TreeNode* node_v_repeat;
 #define v_repeat node_v_repeat->safedatafloat()[0]
-TreeNode * node_v_sequence;
+TreeNode* node_v_sequence;
 #define v_sequence node_v_sequence->safedatafloat()[0]
-TreeNode * node_v_sequencecurrow;
+TreeNode* node_v_sequencecurrow;
 #define v_sequencecurrow node_v_sequencecurrow->safedatafloat()[0]
-TreeNode * node_v_creationtrigger;
-TreeNode * node_v_flowitembin;
+TreeNode* node_v_creationtrigger;
+TreeNode* node_v_flowitembin;
 #define v_flowitembin node_v_flowitembin->safedatafloat()[0]
-TreeNode * node_v_createparticle;
-#define v_createparticle node_v_createparticle->safedatafloat()[0]
 
 // c++ member functions
 
@@ -4958,7 +5191,7 @@ FS_CONTENT_DLL_FUNC double onReset();
 
 FS_CONTENT_DLL_FUNC double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double generateItem(double curitemtype, string itemname, double rownumber);
+FS_CONTENT_DLL_FUNC virtual double generateItem(double curitemtype, const string& itemname, double rownumber);
 
 FS_CONTENT_DLL_FUNC virtual double updateLocations();
 
@@ -4966,7 +5199,6 @@ FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
 
 
 // c++ attributes
-
 treenode flowitemtocreate;
 
 
@@ -4978,39 +5210,38 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Queue
-
-class Queue : public FixedResource 
+class Queue : public FixedResource
 {
 public:
 
-TreeNode * node_v_maxcontent;
+TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode * node_v_usebatching;
+TreeNode* node_v_usebatching;
 #define v_usebatching node_v_usebatching->safedatafloat()[0]
-TreeNode * node_v_batchsize;
+TreeNode* node_v_batchsize;
 #define v_batchsize node_v_batchsize->safedatafloat()[0]
-TreeNode * node_v_maxwaittime;
+TreeNode* node_v_maxwaittime;
 #define v_maxwaittime node_v_maxwaittime->safedatafloat()[0]
-TreeNode * node_v_flush;
+TreeNode* node_v_flush;
 #define v_flush node_v_flush->safedatafloat()[0]
-TreeNode * node_v_currentbatchsize;
+TreeNode* node_v_currentbatchsize;
 #define v_currentbatchsize node_v_currentbatchsize->safedatafloat()[0]
-TreeNode * node_v_endcollectingtrigger;
-TreeNode * node_v_placemode;
+TreeNode* node_v_endcollectingtrigger;
+TreeNode* node_v_placemode;
 #define v_placemode node_v_placemode->safedatafloat()[0]
-TreeNode * node_v_stackinitz;
+TreeNode* node_v_stackinitz;
 #define v_stackinitz node_v_stackinitz->safedatafloat()[0]
-TreeNode * node_v_curxfringe;
+TreeNode* node_v_curxfringe;
 #define v_curxfringe node_v_curxfringe->safedatafloat()[0]
-TreeNode * node_v_curyloc;
+TreeNode* node_v_curyloc;
 #define v_curyloc node_v_curyloc->safedatafloat()[0]
-TreeNode * node_v_curmaxysize;
+TreeNode* node_v_curmaxysize;
 #define v_curmaxysize node_v_curmaxysize->safedatafloat()[0]
-TreeNode * node_v_curzloc;
+TreeNode* node_v_curzloc;
 #define v_curzloc node_v_curzloc->safedatafloat()[0]
-TreeNode * node_v_curmaxzsize;
+TreeNode* node_v_curmaxzsize;
 #define v_curmaxzsize node_v_curmaxzsize->safedatafloat()[0]
-TreeNode * node_v_productspacing;
+TreeNode* node_v_productspacing;
 #define v_productspacing node_v_productspacing->safedatafloat()[0]
 
 // c++ member functions
@@ -5041,7 +5272,6 @@ FS_CONTENT_DLL_FUNC virtual double checkReceiveItem();
 
 
 // c++ attributes
-
 int lastpredrawoutput;
 
 int lastpredrawinput;
@@ -5057,56 +5287,55 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Processor
-
-class Processor : public FixedResource 
+class Processor : public FixedResource
 {
 public:
 
-TreeNode * node_v_cycletime;
-TreeNode * node_v_setuptime;
-TreeNode * node_v_maxcontent;
+TreeNode* node_v_cycletime;
+TreeNode* node_v_setuptime;
+TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode * node_v_useprocessoperators;
+TreeNode* node_v_useprocessoperators;
 #define v_useprocessoperators node_v_useprocessoperators->safedatafloat()[0]
-TreeNode * node_v_usesetupoperators;
+TreeNode* node_v_usesetupoperators;
 #define v_usesetupoperators node_v_usesetupoperators->safedatafloat()[0]
-TreeNode * node_v_nrofprocessoperators;
+TreeNode* node_v_nrofprocessoperators;
 #define v_nrofprocessoperators node_v_nrofprocessoperators->safedatafloat()[0]
-TreeNode * node_v_processoperatorpriority;
+TreeNode* node_v_processoperatorpriority;
 #define v_processoperatorpriority node_v_processoperatorpriority->safedatafloat()[0]
-TreeNode * node_v_preemptprocessoperators;
+TreeNode* node_v_preemptprocessoperators;
 #define v_preemptprocessoperators node_v_preemptprocessoperators->safedatafloat()[0]
-TreeNode * node_v_processdispatcher;
-TreeNode * node_v_setupfinishtrigger;
-TreeNode * node_v_processfinishtrigger;
-TreeNode * node_v_mtbf;
-TreeNode * node_v_breakdowntrigger;
-TreeNode * node_v_mttr;
-TreeNode * node_v_repairtrigger;
-TreeNode * node_v_usedownoperators;
+TreeNode* node_v_processdispatcher;
+TreeNode* node_v_setupfinishtrigger;
+TreeNode* node_v_processfinishtrigger;
+TreeNode* node_v_mtbf;
+TreeNode* node_v_breakdowntrigger;
+TreeNode* node_v_mttr;
+TreeNode* node_v_repairtrigger;
+TreeNode* node_v_usedownoperators;
 #define v_usedownoperators node_v_usedownoperators->safedatafloat()[0]
-TreeNode * node_v_nrofdownoperators;
+TreeNode* node_v_nrofdownoperators;
 #define v_nrofdownoperators node_v_nrofdownoperators->safedatafloat()[0]
-TreeNode * node_v_downoperatorpriority;
+TreeNode* node_v_downoperatorpriority;
 #define v_downoperatorpriority node_v_downoperatorpriority->safedatafloat()[0]
-TreeNode * node_v_preemptdownoperators;
+TreeNode* node_v_preemptdownoperators;
 #define v_preemptdownoperators node_v_preemptdownoperators->safedatafloat()[0]
-TreeNode * node_v_downdispatcher;
-TreeNode * node_v_curdowndispatcher;
+TreeNode* node_v_downdispatcher;
+TreeNode* node_v_curdowndispatcher;
 #define v_curdowndispatcher node_v_curdowndispatcher->safedatafloat()[0]
-TreeNode * node_v_nextdown;
+TreeNode* node_v_nextdown;
 #define v_nextdown node_v_nextdown->safedatafloat()[0]
-TreeNode * node_v_convey;
+TreeNode* node_v_convey;
 #define v_convey node_v_convey->safedatafloat()[0]
-TreeNode * node_v_nextrepairtime;
+TreeNode* node_v_nextrepairtime;
 #define v_nextrepairtime node_v_nextrepairtime->safedatafloat()[0]
-TreeNode * node_v_usesameop;
+TreeNode* node_v_usesameop;
 #define v_usesameop node_v_usesameop->safedatafloat()[0]
-TreeNode * node_v_nrofsetupoperators;
+TreeNode* node_v_nrofsetupoperators;
 #define v_nrofsetupoperators node_v_nrofsetupoperators->safedatafloat()[0]
-TreeNode * node_v_processingdownflag;
+TreeNode* node_v_processingdownflag;
 #define v_processingdownflag node_v_processingdownflag->safedatafloat()[0]
-TreeNode * node_v_mtbfstates;
+TreeNode* node_v_mtbfstates;
 #define v_mtbfstates node_v_mtbfstates->safedatafloat()[0]
 
 // c++ member functions
@@ -5158,12 +5387,11 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Sink
-
-class Sink : public FixedResource 
+class Sink : public FixedResource
 {
 public:
 
-TreeNode * node_v_recycle;
+TreeNode* node_v_recycle;
 #define v_recycle node_v_recycle->safedatafloat()[0]
 
 // c++ member functions
@@ -5189,24 +5417,23 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Combiner
-
-class Combiner : public Processor 
+class Combiner : public Processor
 {
 public:
 
-TreeNode * node_v_collectingcontainer;
+TreeNode* node_v_collectingcontainer;
 #define v_collectingcontainer node_v_collectingcontainer->safedatafloat()[0]
-TreeNode * node_v_componentlist;
+TreeNode* node_v_componentlist;
 #define v_componentlist node_v_componentlist->safedatafloat()[0]
-TreeNode * node_v_currentcomponentsum;
+TreeNode* node_v_currentcomponentsum;
 #define v_currentcomponentsum node_v_currentcomponentsum->safedatafloat()[0]
-TreeNode * node_v_targetcomponentsum;
+TreeNode* node_v_targetcomponentsum;
 #define v_targetcomponentsum node_v_targetcomponentsum->safedatafloat()[0]
-TreeNode * node_v_pack;
+TreeNode* node_v_pack;
 #define v_pack node_v_pack->safedatafloat()[0]
-TreeNode * node_v_overriddenreceivefromport;
-TreeNode * node_v_overriddenpullrequirement;
-TreeNode * node_v_recycle;
+TreeNode* node_v_overriddenreceivefromport;
+TreeNode* node_v_overriddenpullrequirement;
+TreeNode* node_v_recycle;
 #define v_recycle node_v_recycle->safedatafloat()[0]
 
 // c++ member functions
@@ -5248,16 +5475,15 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Separator
-
-class Separator : public Processor 
+class Separator : public Processor
 {
 public:
 
-TreeNode * node_v_unpack;
+TreeNode* node_v_unpack;
 #define v_unpack node_v_unpack->safedatafloat()[0]
-TreeNode * node_v_splitquantity;
-TreeNode * node_v_overriddensendtoport;
-TreeNode * node_v_recycle;
+TreeNode* node_v_splitquantity;
+TreeNode* node_v_overriddensendtoport;
+TreeNode* node_v_recycle;
 #define v_recycle node_v_recycle->safedatafloat()[0]
 
 // c++ member functions
@@ -5285,36 +5511,35 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // MultiProcessor
-
-class MultiProcessor : public FixedResource 
+class MultiProcessor : public FixedResource
 {
 public:
 
-TreeNode * node_v_optable;
+TreeNode* node_v_optable;
 #define v_optable node_v_optable->safedatafloat()[0]
-TreeNode * node_v_nrofprocesses;
+TreeNode* node_v_nrofprocesses;
 #define v_nrofprocesses node_v_nrofprocesses->safedatafloat()[0]
-TreeNode * node_v_curdispatcher;
+TreeNode* node_v_curdispatcher;
 #define v_curdispatcher node_v_curdispatcher->safedatafloat()[0]
-TreeNode * node_v_processfinishtrigger;
-TreeNode * node_v_nrofdownoperators;
+TreeNode* node_v_processfinishtrigger;
+TreeNode* node_v_nrofdownoperators;
 #define v_nrofdownoperators node_v_nrofdownoperators->safedatafloat()[0]
-TreeNode * node_v_downdispatcher;
-TreeNode * node_v_downoppriority;
+TreeNode* node_v_downdispatcher;
+TreeNode* node_v_downoppriority;
 #define v_downoppriority node_v_downoppriority->safedatafloat()[0]
-TreeNode * node_v_downoppreempt;
+TreeNode* node_v_downoppreempt;
 #define v_downoppreempt node_v_downoppreempt->safedatafloat()[0]
-TreeNode * node_v_mtbf;
-TreeNode * node_v_mttr;
-TreeNode * node_v_breakdowntrigger;
-TreeNode * node_v_repairtrigger;
-TreeNode * node_v_nextdown;
+TreeNode* node_v_mtbf;
+TreeNode* node_v_mttr;
+TreeNode* node_v_breakdowntrigger;
+TreeNode* node_v_repairtrigger;
+TreeNode* node_v_nextdown;
 #define v_nextdown node_v_nextdown->safedatafloat()[0]
-TreeNode * node_v_nextrepair;
+TreeNode* node_v_nextrepair;
 #define v_nextrepair node_v_nextrepair->safedatafloat()[0]
-TreeNode * node_v_convey;
+TreeNode* node_v_convey;
 #define v_convey node_v_convey->safedatafloat()[0]
-TreeNode * node_v_nonestate;
+TreeNode* node_v_nonestate;
 #define v_nonestate node_v_nonestate->safedatafloat()[0]
 
 // c++ member functions
@@ -5342,36 +5567,35 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Rack
-
-class Rack : public FixedResource 
+class Rack : public FixedResource
 {
 public:
 
-TreeNode * node_v_placeinbay;
-TreeNode * node_v_placeinlevel;
-TreeNode * node_v_minimumstaytime;
-TreeNode * node_v_enddwelltimetrigger;
-TreeNode * node_v_maxcontent;
+TreeNode* node_v_placeinbay;
+TreeNode* node_v_placeinlevel;
+TreeNode* node_v_minimumstaytime;
+TreeNode* node_v_enddwelltimetrigger;
+TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode * node_v_contenttable;
+TreeNode* node_v_contenttable;
 #define v_contenttable node_v_contenttable->safedatafloat()[0]
-TreeNode * node_v_locationtable;
+TreeNode* node_v_locationtable;
 #define v_locationtable node_v_locationtable->safedatafloat()[0]
-TreeNode * node_v_sizetable;
+TreeNode* node_v_sizetable;
 #define v_sizetable node_v_sizetable->safedatafloat()[0]
-TreeNode * node_v_rackdrawmode;
+TreeNode* node_v_rackdrawmode;
 #define v_rackdrawmode node_v_rackdrawmode->safedatafloat()[0]
-TreeNode * node_v_pickplaceyoffset;
+TreeNode* node_v_pickplaceyoffset;
 #define v_pickplaceyoffset node_v_pickplaceyoffset->safedatafloat()[0]
-TreeNode * node_v_tiltvalue;
+TreeNode* node_v_tiltvalue;
 #define v_tiltvalue node_v_tiltvalue->safedatafloat()[0]
-TreeNode * node_v_tiltangle;
+TreeNode* node_v_tiltangle;
 #define v_tiltangle node_v_tiltangle->safedatafloat()[0]
-TreeNode * node_v_markreadytogo;
+TreeNode* node_v_markreadytogo;
 #define v_markreadytogo node_v_markreadytogo->safedatafloat()[0]
-TreeNode * node_v_floorstorage;
+TreeNode* node_v_floorstorage;
 #define v_floorstorage node_v_floorstorage->safedatafloat()[0]
-TreeNode * node_v_opacity;
+TreeNode* node_v_opacity;
 #define v_opacity node_v_opacity->safedatafloat()[0]
 
 // c++ member functions
@@ -5472,7 +5696,6 @@ FS_CONTENT_DLL_FUNC double refreshTable();
 
 
 // c++ attributes
-
 int lastpredrawoutput;
 
 int lastpredrawinput;
@@ -5498,98 +5721,97 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Conveyor
-
-class Conveyor : public FixedResource 
+class Conveyor : public FixedResource
 {
 public:
 
-TreeNode * node_v_speed;
+TreeNode* node_v_speed;
 #define v_speed node_v_speed->safedatafloat()[0]
-TreeNode * node_v_maxcontent;
+TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode * node_v_accumulating;
+TreeNode* node_v_accumulating;
 #define v_accumulating node_v_accumulating->safedatafloat()[0]
-TreeNode * node_v_conveyendtrigger;
-TreeNode * node_v_lastexittime;
+TreeNode* node_v_conveyendtrigger;
+TreeNode* node_v_lastexittime;
 #define v_lastexittime node_v_lastexittime->safedatafloat()[0]
-TreeNode * node_v_lastentrytime;
+TreeNode* node_v_lastentrytime;
 #define v_lastentrytime node_v_lastentrytime->safedatafloat()[0]
-TreeNode * node_v_lastexitsize;
+TreeNode* node_v_lastexitsize;
 #define v_lastexitsize node_v_lastexitsize->safedatafloat()[0]
-TreeNode * node_v_conveytimesle;
+TreeNode* node_v_conveytimesle;
 #define v_conveytimesle node_v_conveytimesle->safedatafloat()[0]
-TreeNode * node_v_conveyorlength;
+TreeNode* node_v_conveyorlength;
 #define v_conveyorlength node_v_conveyorlength->safedatafloat()[0]
-TreeNode * node_v_needinputevent;
+TreeNode* node_v_needinputevent;
 #define v_needinputevent node_v_needinputevent->safedatafloat()[0]
-TreeNode * node_v_filledlength;
+TreeNode* node_v_filledlength;
 #define v_filledlength node_v_filledlength->safedatafloat()[0]
-TreeNode * node_v_spacingmode;
+TreeNode* node_v_spacingmode;
 #define v_spacingmode node_v_spacingmode->safedatafloat()[0]
-TreeNode * node_v_spacing;
+TreeNode* node_v_spacing;
 #define v_spacing node_v_spacing->safedatafloat()[0]
-TreeNode * node_v_zoffset;
+TreeNode* node_v_zoffset;
 #define v_zoffset node_v_zoffset->safedatafloat()[0]
-TreeNode * node_v_siderelative;
+TreeNode* node_v_siderelative;
 #define v_siderelative node_v_siderelative->safedatafloat()[0]
-TreeNode * node_v_sideheight;
+TreeNode* node_v_sideheight;
 #define v_sideheight node_v_sideheight->safedatafloat()[0]
-TreeNode * node_v_nroflegs;
+TreeNode* node_v_nroflegs;
 #define v_nroflegs node_v_nroflegs->safedatafloat()[0]
-TreeNode * node_v_legsrelative;
+TreeNode* node_v_legsrelative;
 #define v_legsrelative node_v_legsrelative->safedatafloat()[0]
-TreeNode * node_v_legheight;
+TreeNode* node_v_legheight;
 #define v_legheight node_v_legheight->safedatafloat()[0]
-TreeNode * node_v_texturedist;
+TreeNode* node_v_texturedist;
 #define v_texturedist node_v_texturedist->safedatafloat()[0]
-TreeNode * node_v_prodzoffset;
+TreeNode* node_v_prodzoffset;
 #define v_prodzoffset node_v_prodzoffset->safedatafloat()[0]
-TreeNode * node_v_sections;
+TreeNode* node_v_sections;
 #define v_sections node_v_sections->safedatafloat()[0]
-TreeNode * node_v_lastentrysize;
+TreeNode* node_v_lastentrysize;
 #define v_lastentrysize node_v_lastentrysize->safedatafloat()[0]
-TreeNode * node_v_photoeyes;
+TreeNode* node_v_photoeyes;
 #define v_photoeyes node_v_photoeyes->safedatafloat()[0]
-TreeNode * node_v_photoeyecovertrigger;
-TreeNode * node_v_photoeyeuncovertrigger;
-TreeNode * node_v_orientationmode;
+TreeNode* node_v_photoeyecovertrigger;
+TreeNode* node_v_photoeyeuncovertrigger;
+TreeNode* node_v_orientationmode;
 #define v_orientationmode node_v_orientationmode->safedatafloat()[0]
-TreeNode * node_v_zorient;
+TreeNode* node_v_zorient;
 #define v_zorient node_v_zorient->safedatafloat()[0]
-TreeNode * node_v_yorient;
+TreeNode* node_v_yorient;
 #define v_yorient node_v_yorient->safedatafloat()[0]
-TreeNode * node_v_userlength;
+TreeNode* node_v_userlength;
 #define v_userlength node_v_userlength->safedatafloat()[0]
-TreeNode * node_v_scaleitemsize;
+TreeNode* node_v_scaleitemsize;
 #define v_scaleitemsize node_v_scaleitemsize->safedatafloat()[0]
-TreeNode * node_v_sectiontotallength;
+TreeNode* node_v_sectiontotallength;
 #define v_sectiontotallength node_v_sectiontotallength->safedatafloat()[0]
-TreeNode * node_v_blockedlength;
+TreeNode* node_v_blockedlength;
 #define v_blockedlength node_v_blockedlength->safedatafloat()[0]
-TreeNode * node_v_notifyofblockedlength;
+TreeNode* node_v_notifyofblockedlength;
 #define v_notifyofblockedlength node_v_notifyofblockedlength->safedatafloat()[0]
-TreeNode * node_v_zerospeedtime;
+TreeNode* node_v_zerospeedtime;
 #define v_zerospeedtime node_v_zerospeedtime->safedatafloat()[0]
-TreeNode * node_v_lastpositivespeed;
+TreeNode* node_v_lastpositivespeed;
 #define v_lastpositivespeed node_v_lastpositivespeed->safedatafloat()[0]
-TreeNode * node_v_convkinematic;
-TreeNode * node_v_totalexitedspace;
+TreeNode* node_v_convkinematic;
+TreeNode* node_v_totalexitedspace;
 #define v_totalexitedspace node_v_totalexitedspace->safedatafloat()[0]
-TreeNode * node_v_curtexper;
+TreeNode* node_v_curtexper;
 #define v_curtexper node_v_curtexper->safedatafloat()[0]
-TreeNode * node_v_drawcont;
+TreeNode* node_v_drawcont;
 #define v_drawcont node_v_drawcont->safedatafloat()[0]
-TreeNode * node_v_drawstop;
+TreeNode* node_v_drawstop;
 #define v_drawstop node_v_drawstop->safedatafloat()[0]
-TreeNode * node_v_textureincrement;
+TreeNode* node_v_textureincrement;
 #define v_textureincrement node_v_textureincrement->safedatafloat()[0]
-TreeNode * node_v_movewhilepaused;
+TreeNode* node_v_movewhilepaused;
 #define v_movewhilepaused node_v_movewhilepaused->safedatafloat()[0]
-TreeNode * node_v_lastdrawtime;
+TreeNode* node_v_lastdrawtime;
 #define v_lastdrawtime node_v_lastdrawtime->safedatafloat()[0]
-TreeNode * node_v_texremainder;
+TreeNode* node_v_texremainder;
 #define v_texremainder node_v_texremainder->safedatafloat()[0]
-TreeNode * node_v_sideoffset;
+TreeNode* node_v_sideoffset;
 #define v_sideoffset node_v_sideoffset->safedatafloat()[0]
 
 // c++ member functions
@@ -5652,17 +5874,18 @@ FS_CONTENT_DLL_FUNC virtual double blockedLengthNotifyUpstream(double length);
 
 FS_CONTENT_DLL_FUNC virtual double resetConveyorKinematics();
 
-FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(int axis, double x, double y);
+FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(const Vec2& point1, const Vec2& point2);
 
 FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
 
 FS_CONTENT_DLL_FUNC double initItem(treenode item);
 
-FS_CONTENT_DLL_FUNC static char* displayConvItemInfo(treenode x, int verbose);
+FS_CONTENT_DLL_FUNC double buildBaseMesh(treenode cursection);
+
+FS_CONTENT_DLL_FUNC double buildConveyorMesh(treenode cursection);
 
 
 // c++ attributes
-
 treenode cursection;
 
 double cursecstartx;
@@ -5687,9 +5910,19 @@ double cursecradius;
 
 double accummaxloc;
 
-struct conviteminfostruct{double entrytime;double distbehindkinematic; double totalspacebefore; double spacing; double prodlength; int frontedgepe; int backedgepe;};
-
 double drawangle;
+
+Mesh legMesh;
+
+Mesh photoeyeMesh;
+
+Mesh conveyorMesh;
+
+bool baseMeshBuilt;
+
+double builtY;
+
+double builtZ;
 
 
 // System
@@ -5700,21 +5933,20 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // MergeSort
-
-class MergeSort : public Conveyor 
+class MergeSort : public Conveyor
 {
 public:
 
-TreeNode * node_v_inputtable;
+TreeNode* node_v_inputtable;
 #define v_inputtable node_v_inputtable->safedatafloat()[0]
-TreeNode * node_v_outputtable;
+TreeNode* node_v_outputtable;
 #define v_outputtable node_v_outputtable->safedatafloat()[0]
-TreeNode * node_v_sortedtable;
+TreeNode* node_v_sortedtable;
 #define v_sortedtable node_v_sortedtable->safedatafloat()[0]
-TreeNode * node_v_sendrequirement;
-TreeNode * node_v_blocktime;
+TreeNode* node_v_sendrequirement;
+TreeNode* node_v_blocktime;
 #define v_blocktime node_v_blocktime->safedatafloat()[0]
-TreeNode * node_v_madeattempt;
+TreeNode* node_v_madeattempt;
 #define v_madeattempt node_v_madeattempt->safedatafloat()[0]
 
 // c++ member functions
@@ -5757,6 +5989,14 @@ FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
 
 FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
 
+FS_CONTENT_DLL_FUNC double buildPortMesh();
+
+
+// c++ attributes
+Mesh inputMesh;
+
+Mesh outputMesh;
+
 
 // System
 
@@ -5766,29 +6006,30 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // BasicConveyor
-
-class BasicConveyor : public Conveyor 
+class BasicConveyor : public Conveyor
 {
 public:
 
-TreeNode * node_v_decisionpointtable;
+TreeNode* node_v_decisionpointtable;
 #define v_decisionpointtable node_v_decisionpointtable->safedatafloat()[0]
-TreeNode * node_v_dptablecache;
-TreeNode * node_v_recycledkinematics;
+TreeNode* node_v_dptablecache;
+TreeNode* node_v_recycledkinematics;
 #define v_recycledkinematics node_v_recycledkinematics->safedatafloat()[0]
-TreeNode * node_v_recyclednodes;
+TreeNode* node_v_recyclednodes;
 #define v_recyclednodes node_v_recyclednodes->safedatafloat()[0]
-TreeNode * node_v_direction;
+TreeNode* node_v_direction;
 #define v_direction node_v_direction->safedatafloat()[0]
-TreeNode * node_v_lastupdatetime;
+TreeNode* node_v_lastupdatetime;
 #define v_lastupdatetime node_v_lastupdatetime->safedatafloat()[0]
-TreeNode * node_v_cleardpevents;
+TreeNode* node_v_cleardpevents;
 #define v_cleardpevents node_v_cleardpevents->safedatafloat()[0]
-TreeNode * node_v_inactivecouplings;
+TreeNode* node_v_inactivecouplings;
 #define v_inactivecouplings node_v_inactivecouplings->safedatafloat()[0]
-TreeNode * node_v_stopresume;
+TreeNode* node_v_stopresume;
 
 // c++ member functions
+
+FS_CONTENT_DLL_FUNC inline treenode getMainItemKinematics(treenode item);
 
 FS_CONTENT_DLL_FUNC double onReset();
 
@@ -5836,8 +6077,6 @@ FS_CONTENT_DLL_FUNC treenode getItemKinematics(treenode item, int kintype);
 
 FS_CONTENT_DLL_FUNC static char* showDPCacheInfo(treenode dpcache, int verbose);
 
-FS_CONTENT_DLL_FUNC static char* showItemInfo(treenode iteminfonode, int verbose);
-
 FS_CONTENT_DLL_FUNC static double getItemInfo(treenode item, int val);
 
 FS_CONTENT_DLL_FUNC double destroyItemEvent(treenode item, int event);
@@ -5848,14 +6087,15 @@ FS_CONTENT_DLL_FUNC double stopObjectAndSetState(int stopstate, int stateprofile
 
 FS_CONTENT_DLL_FUNC double resumeObject();
 
+FS_CONTENT_DLL_FUNC double buildDecisionMesh();
+
 
 // c++ attributes
-
 struct dptableentry{int row; double position; bool spaceneeded; int coverstate;};;
 
-struct iteminfostruct{double position;int frontedgedp;int backedgedp; int backspacedp; double space; double prodlength;};;
-
 treenode exitingitem;;
+
+Mesh decisionPointMesh;
 
 
 // System
@@ -5866,21 +6106,21 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // BasicFR
-
-class BasicFR : public FixedResource 
+class BasicFR : public FixedResource
 {
 public:
 
-TreeNode * node_v_transportinnotifycomplete;
-TreeNode * node_v_transportoutnotifycomplete;
-TreeNode * node_v_stopresume;
-TreeNode * node_v_pickplaceoffset;
-TreeNode * node_v_advancedfunctions;
-TreeNode * node_v_poffsetx;
+TreeNode* node_v_transportinnotifycomplete;
+TreeNode* node_v_transportoutnotifycomplete;
+TreeNode* node_v_stopresume;
+TreeNode* node_v_pickplaceoffset;
+TreeNode* node_v_advancedfunctions;
+TreeNode* node_v_statechange;
+TreeNode* node_v_poffsetx;
 #define v_poffsetx node_v_poffsetx->safedatafloat()[0]
-TreeNode * node_v_poffsety;
+TreeNode* node_v_poffsety;
 #define v_poffsety node_v_poffsety->safedatafloat()[0]
-TreeNode * node_v_poffsetz;
+TreeNode* node_v_poffsetz;
 #define v_poffsetz node_v_poffsetz->safedatafloat()[0]
 
 // c++ member functions
@@ -5909,6 +6149,8 @@ FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
 
 FS_CONTENT_DLL_FUNC double onKeyedClick(treenode view, int code, char key);
 
+FS_CONTENT_DLL_FUNC double onStateChange(int toState, treenode stateProfile);
+
 
 // System
 
@@ -5918,21 +6160,20 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Dispatcher
-
-class Dispatcher : public FlexSimObject 
+class Dispatcher : public FlexSimObject
 {
 public:
 
-TreeNode * node_v_tasksequencequeue;
+TreeNode* node_v_tasksequencequeue;
 #define v_tasksequencequeue node_v_tasksequencequeue->safedatafloat()[0]
-TreeNode * node_v_coordinatedtasks;
+TreeNode* node_v_coordinatedtasks;
 #define v_coordinatedtasks node_v_coordinatedtasks->safedatafloat()[0]
-TreeNode * node_v_passimmediately;
+TreeNode* node_v_passimmediately;
 #define v_passimmediately node_v_passimmediately->safedatafloat()[0]
-TreeNode * node_v_passto;
-TreeNode * node_v_queuestrategy;
-TreeNode * node_v_onresourceavailable;
-TreeNode * node_v_onreceivets;
+TreeNode* node_v_passto;
+TreeNode* node_v_queuestrategy;
+TreeNode* node_v_onresourceavailable;
+TreeNode* node_v_onreceivets;
 
 // c++ member functions
 
@@ -5995,85 +6236,86 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // TaskExecuter
-
-class TaskExecuter : public Dispatcher 
+class TaskExecuter : public Dispatcher
 {
 public:
 
-TreeNode * node_v_maxcontent;
+TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode * node_v_loadtime;
-TreeNode * node_v_loadtrigger;
-TreeNode * node_v_unloadtime;
-TreeNode * node_v_unloadtrigger;
-TreeNode * node_v_maxspeed;
+TreeNode* node_v_loadtime;
+TreeNode* node_v_loadtrigger;
+TreeNode* node_v_unloadtime;
+TreeNode* node_v_unloadtrigger;
+TreeNode* node_v_maxspeed;
 #define v_maxspeed node_v_maxspeed->safedatafloat()[0]
-TreeNode * node_v_acceleration;
+TreeNode* node_v_acceleration;
 #define v_acceleration node_v_acceleration->safedatafloat()[0]
-TreeNode * node_v_deceleration;
+TreeNode* node_v_deceleration;
 #define v_deceleration node_v_deceleration->safedatafloat()[0]
-TreeNode * node_v_navigator;
+TreeNode* node_v_navigator;
 #define v_navigator node_v_navigator->safedatafloat()[0]
-TreeNode * node_v_oldbreakrequirement;
+TreeNode* node_v_oldbreakrequirement;
 #define v_oldbreakrequirement node_v_oldbreakrequirement->safedatafloat()[0]
-TreeNode * node_v_breakto;
-TreeNode * node_v_modifyrotation;
+TreeNode* node_v_breakto;
+TreeNode* node_v_modifyrotation;
 #define v_modifyrotation node_v_modifyrotation->safedatafloat()[0]
-TreeNode * node_v_useoffsets;
+TreeNode* node_v_useoffsets;
 #define v_useoffsets node_v_useoffsets->safedatafloat()[0]
-TreeNode * node_v_offsettingnow;
+TreeNode* node_v_offsettingnow;
 #define v_offsettingnow node_v_offsettingnow->safedatafloat()[0]
-TreeNode * node_v_offsetbegintime;
+TreeNode* node_v_offsetbegintime;
 #define v_offsetbegintime node_v_offsetbegintime->safedatafloat()[0]
-TreeNode * node_v_offsettotaltime;
+TreeNode* node_v_offsettotaltime;
 #define v_offsettotaltime node_v_offsettotaltime->safedatafloat()[0]
-TreeNode * node_v_offsetlocx;
+TreeNode* node_v_offsetlocx;
 #define v_offsetlocx node_v_offsetlocx->safedatafloat()[0]
-TreeNode * node_v_offsetlocy;
+TreeNode* node_v_offsetlocy;
 #define v_offsetlocy node_v_offsetlocy->safedatafloat()[0]
-TreeNode * node_v_offsetlocz;
+TreeNode* node_v_offsetlocz;
 #define v_offsetlocz node_v_offsetlocz->safedatafloat()[0]
-TreeNode * node_v_offsetbeginx;
+TreeNode* node_v_offsetbeginx;
 #define v_offsetbeginx node_v_offsetbeginx->safedatafloat()[0]
-TreeNode * node_v_offsetbeginy;
+TreeNode* node_v_offsetbeginy;
 #define v_offsetbeginy node_v_offsetbeginy->safedatafloat()[0]
-TreeNode * node_v_offsetbeginz;
+TreeNode* node_v_offsetbeginz;
 #define v_offsetbeginz node_v_offsetbeginz->safedatafloat()[0]
-TreeNode * node_v_offsetbeginxrot;
+TreeNode* node_v_offsetbeginxrot;
 #define v_offsetbeginxrot node_v_offsetbeginxrot->safedatafloat()[0]
-TreeNode * node_v_offsetbeginyrot;
+TreeNode* node_v_offsetbeginyrot;
 #define v_offsetbeginyrot node_v_offsetbeginyrot->safedatafloat()[0]
-TreeNode * node_v_offsetbeginzrot;
+TreeNode* node_v_offsetbeginzrot;
 #define v_offsetbeginzrot node_v_offsetbeginzrot->safedatafloat()[0]
-TreeNode * node_v_loadedspeed;
+TreeNode* node_v_loadedspeed;
 #define v_loadedspeed node_v_loadedspeed->safedatafloat()[0]
-TreeNode * node_v_emptyspeed;
+TreeNode* node_v_emptyspeed;
 #define v_emptyspeed node_v_emptyspeed->safedatafloat()[0]
-TreeNode * node_v_curloadunloadtime;
+TreeNode* node_v_curloadunloadtime;
 #define v_curloadunloadtime node_v_curloadunloadtime->safedatafloat()[0]
-TreeNode * node_v_lastupdatedspeed;
+TreeNode* node_v_lastupdatedspeed;
 #define v_lastupdatedspeed node_v_lastupdatedspeed->safedatafloat()[0]
-TreeNode * node_v_travelvstart;
+TreeNode* node_v_travelvstart;
 #define v_travelvstart node_v_travelvstart->safedatafloat()[0]
-TreeNode * node_v_travelvend;
+TreeNode* node_v_travelvend;
 #define v_travelvend node_v_travelvend->safedatafloat()[0]
-TreeNode * node_v_lastspeedupdatetime;
+TreeNode* node_v_lastspeedupdatetime;
 #define v_lastspeedupdatetime node_v_lastspeedupdatetime->safedatafloat()[0]
-TreeNode * node_v_collisiontrigger;
-TreeNode * node_v_collcheckinterval;
+TreeNode* node_v_collisiontrigger;
+TreeNode* node_v_collcheckinterval;
 #define v_collcheckinterval node_v_collcheckinterval->safedatafloat()[0]
-TreeNode * node_v_drawcollspheres;
+TreeNode* node_v_drawcollspheres;
 #define v_drawcollspheres node_v_drawcollspheres->safedatafloat()[0]
-TreeNode * node_v_incollision;
+TreeNode* node_v_incollision;
 #define v_incollision node_v_incollision->safedatafloat()[0]
-TreeNode * node_v_collcheckstate;
+TreeNode* node_v_collcheckstate;
 #define v_collcheckstate node_v_collcheckstate->safedatafloat()[0]
-TreeNode * node_v_totaltraveldist;
+TreeNode* node_v_totaltraveldist;
 #define v_totaltraveldist node_v_totaltraveldist->safedatafloat()[0]
-TreeNode * node_v_kinematics;
-TreeNode * node_v_flipthreshold;
+TreeNode* node_v_kinematics;
+TreeNode* node_v_flipthreshold;
 #define v_flipthreshold node_v_flipthreshold->safedatafloat()[0]
-TreeNode * node_v_activetasksequence;
+TreeNode* node_v_availableonstart;
+#define v_availableonstart node_v_availableonstart->safedatafloat()[0]
+TreeNode* node_v_activetasksequence;
 #define v_activetasksequence node_v_activetasksequence->safedatafloat()[0]
 
 // c++ member functions
@@ -6166,9 +6408,10 @@ FS_CONTENT_DLL_FUNC virtual void onOffsetFinishNotify();
 
 FS_CONTENT_DLL_FUNC virtual double onResourceAvailable(int port);
 
+FS_CONTENT_DLL_FUNC virtual double onStartSimulation();
+
 
 // c++ attributes
-
 double offsetloc[3] ;
 
 treenode activetask;
@@ -6184,8 +6427,7 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Operator
-
-class Operator : public TaskExecuter 
+class Operator : public TaskExecuter
 {
 public:
 
@@ -6217,18 +6459,17 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Transporter
-
-class Transporter : public TaskExecuter 
+class Transporter : public TaskExecuter
 {
 public:
 
-TreeNode * node_v_forkspeed;
+TreeNode* node_v_forkspeed;
 #define v_forkspeed node_v_forkspeed->safedatafloat()[0]
-TreeNode * node_v_forkinitialheight;
+TreeNode* node_v_forkinitialheight;
 #define v_forkinitialheight node_v_forkinitialheight->safedatafloat()[0]
-TreeNode * node_v_forkdestheight;
+TreeNode* node_v_forkdestheight;
 #define v_forkdestheight node_v_forkdestheight->safedatafloat()[0]
-TreeNode * node_v_forkbegintime;
+TreeNode* node_v_forkbegintime;
 #define v_forkbegintime node_v_forkbegintime->safedatafloat()[0]
 
 // c++ member functions
@@ -6262,17 +6503,18 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Elevator
-
-class Elevator : public TaskExecuter 
+class Elevator : public TaskExecuter
 {
 public:
 
-TreeNode * node_v_shellzloc;
+TreeNode* node_v_shellzloc;
 #define v_shellzloc node_v_shellzloc->safedatafloat()[0]
-TreeNode * node_v_xconvey;
+TreeNode* node_v_xconvey;
 #define v_xconvey node_v_xconvey->safedatafloat()[0]
 
 // c++ member functions
+
+FS_CONTENT_DLL_FUNC double onReset();
 
 FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
@@ -6294,7 +6536,6 @@ FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
 
 
 // c++ attributes
-
 double lastzloc;
 
 
@@ -6306,33 +6547,32 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Robot
-
-class Robot : public TaskExecuter 
+class Robot : public TaskExecuter
 {
 public:
 
-TreeNode * node_v_motionmethod;
+TreeNode* node_v_motionmethod;
 #define v_motionmethod node_v_motionmethod->safedatafloat()[0]
-TreeNode * node_v_extensionspeed;
+TreeNode* node_v_extensionspeed;
 #define v_extensionspeed node_v_extensionspeed->safedatafloat()[0]
-TreeNode * node_v_rotationspeed;
+TreeNode* node_v_rotationspeed;
 #define v_rotationspeed node_v_rotationspeed->safedatafloat()[0]
-TreeNode * node_v_yrotspeed;
+TreeNode* node_v_yrotspeed;
 #define v_yrotspeed node_v_yrotspeed->safedatafloat()[0]
-TreeNode * node_v_robotkinematics;
+TreeNode* node_v_robotkinematics;
 #define v_robotkinematics node_v_robotkinematics->safedatafloat()[0]
-TreeNode * node_v_clamporientation;
+TreeNode* node_v_clamporientation;
 #define v_clamporientation node_v_clamporientation->safedatafloat()[0]
-TreeNode * node_v_clampwidth;
+TreeNode* node_v_clampwidth;
 #define v_clampwidth node_v_clampwidth->safedatafloat()[0]
-TreeNode * node_v_lastpathnum;
+TreeNode* node_v_lastpathnum;
 #define v_lastpathnum node_v_lastpathnum->safedatafloat()[0]
-TreeNode * node_v_nextpathselected;
+TreeNode* node_v_nextpathselected;
 #define v_nextpathselected node_v_nextpathselected->safedatafloat()[0]
-TreeNode * node_v_pathtables;
+TreeNode* node_v_pathtables;
 #define v_pathtables node_v_pathtables->safedatafloat()[0]
-TreeNode * node_v_movetime;
-TreeNode * node_v_speedtable;
+TreeNode* node_v_movetime;
+TreeNode* node_v_speedtable;
 #define v_speedtable node_v_speedtable->safedatafloat()[0]
 
 // c++ member functions
@@ -6378,7 +6618,6 @@ FS_CONTENT_DLL_FUNC double calcClampWidth(treenode item, int orientationType);
 
 // c++ attributes
 
-
 static const int CLAMP_Z_BY_X = 1;
 static const int CLAMP_Z_BY_Y = 2;
 static const int CLAMP_Z_NEG_BY_X = 3;
@@ -6418,26 +6657,25 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Crane
-
-class Crane : public TaskExecuter 
+class Crane : public TaskExecuter
 {
 public:
 
-TreeNode * node_v_shellxloc;
+TreeNode* node_v_shellxloc;
 #define v_shellxloc node_v_shellxloc->safedatafloat()[0]
-TreeNode * node_v_shellyloc;
+TreeNode* node_v_shellyloc;
 #define v_shellyloc node_v_shellyloc->safedatafloat()[0]
-TreeNode * node_v_shellzloc;
+TreeNode* node_v_shellzloc;
 #define v_shellzloc node_v_shellzloc->safedatafloat()[0]
-TreeNode * node_v_moving;
+TreeNode* node_v_moving;
 #define v_moving node_v_moving->safedatafloat()[0]
-TreeNode * node_v_liftheight;
+TreeNode* node_v_liftheight;
 #define v_liftheight node_v_liftheight->safedatafloat()[0]
-TreeNode * node_v_travelsequence;
-TreeNode * node_v_cranespeeds;
+TreeNode* node_v_travelsequence;
+TreeNode* node_v_cranespeeds;
 #define v_cranespeeds node_v_cranespeeds->safedatafloat()[0]
-TreeNode * node_v_cranekinematics;
-TreeNode * node_v_liftradius;
+TreeNode* node_v_cranekinematics;
+TreeNode* node_v_liftradius;
 #define v_liftradius node_v_liftradius->safedatafloat()[0]
 
 // c++ member functions
@@ -6466,7 +6704,7 @@ FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
 
 FS_CONTENT_DLL_FUNC virtual double rotateAroundAxis(double angle, double x, double y);
 
-FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(int axis, double x, double y);
+FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(const Vec2& point1, const Vec2& point2);
 
 FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
 
@@ -6476,7 +6714,6 @@ FS_CONTENT_DLL_FUNC double scaleComponents(int picktype, double newsize);
 
 
 // c++ attributes
-
 double lastxloc;
 
 double lastyloc;
@@ -6494,27 +6731,26 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // ASRSvehicle
-
-class ASRSvehicle : public TaskExecuter 
+class ASRSvehicle : public TaskExecuter
 {
 public:
 
-TreeNode * node_v_forkspeed;
+TreeNode* node_v_forkspeed;
 #define v_forkspeed node_v_forkspeed->safedatafloat()[0]
-TreeNode * node_v_forkinitialheight;
+TreeNode* node_v_forkinitialheight;
 #define v_forkinitialheight node_v_forkinitialheight->safedatafloat()[0]
-TreeNode * node_v_forkkinematics;
-TreeNode * node_v_yconvey;
+TreeNode* node_v_forkkinematics;
+TreeNode* node_v_yconvey;
 #define v_yconvey node_v_yconvey->safedatafloat()[0]
-TreeNode * node_v_forkresetheight;
+TreeNode* node_v_forkresetheight;
 #define v_forkresetheight node_v_forkresetheight->safedatafloat()[0]
-TreeNode * node_v_railx;
+TreeNode* node_v_railx;
 #define v_railx node_v_railx->safedatafloat()[0]
-TreeNode * node_v_raily;
+TreeNode* node_v_raily;
 #define v_raily node_v_raily->safedatafloat()[0]
-TreeNode * node_v_railz;
+TreeNode* node_v_railz;
 #define v_railz node_v_railz->safedatafloat()[0]
-TreeNode * node_v_extensionspeed;
+TreeNode* node_v_extensionspeed;
 #define v_extensionspeed node_v_extensionspeed->safedatafloat()[0]
 
 // c++ member functions
@@ -6552,22 +6788,22 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // BasicTE
-
-class BasicTE : public TaskExecuter 
+class BasicTE : public TaskExecuter
 {
 public:
 
-TreeNode * node_v_onbeginoffset;
-TreeNode * node_v_onupdateoffset;
-TreeNode * node_v_onfinishoffset;
-TreeNode * node_v_pickplaceoffset;
-TreeNode * node_v_stopresume;
-TreeNode * node_v_advancedfunctions;
-TreeNode * node_v_poffsetx;
+TreeNode* node_v_onbeginoffset;
+TreeNode* node_v_onupdateoffset;
+TreeNode* node_v_onfinishoffset;
+TreeNode* node_v_pickplaceoffset;
+TreeNode* node_v_stopresume;
+TreeNode* node_v_advancedfunctions;
+TreeNode* node_v_statechange;
+TreeNode* node_v_poffsetx;
 #define v_poffsetx node_v_poffsetx->safedatafloat()[0]
-TreeNode * node_v_poffsety;
+TreeNode* node_v_poffsety;
 #define v_poffsety node_v_poffsety->safedatafloat()[0]
-TreeNode * node_v_poffsetz;
+TreeNode* node_v_poffsetz;
 #define v_poffsetz node_v_poffsetz->safedatafloat()[0]
 
 // c++ member functions
@@ -6596,6 +6832,8 @@ FS_CONTENT_DLL_FUNC virtual double onPreempt();
 
 FS_CONTENT_DLL_FUNC double onKeyedClick(treenode view, int code, char key);
 
+FS_CONTENT_DLL_FUNC double onStateChange(int toState, treenode stateProfile);
+
 
 // System
 
@@ -6605,48 +6843,47 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // NetworkNode
-
-class NetworkNode : public FlexSimObject 
+class NetworkNode : public FlexSimObject
 {
 public:
 
-TreeNode * node_v_network;
+TreeNode* node_v_network;
 #define v_network node_v_network->safedatafloat()[0]
-TreeNode * node_v_travellers;
+TreeNode* node_v_travellers;
 #define v_travellers node_v_travellers->safedatafloat()[0]
-TreeNode * node_v_activetravellers;
+TreeNode* node_v_activetravellers;
 #define v_activetravellers node_v_activetravellers->safedatafloat()[0]
-TreeNode * node_v_stations;
+TreeNode* node_v_stations;
 #define v_stations node_v_stations->safedatafloat()[0]
-TreeNode * node_v_showmode;
+TreeNode* node_v_showmode;
 #define v_showmode node_v_showmode->safedatafloat()[0]
-TreeNode * node_v_maxinactive;
+TreeNode* node_v_maxinactive;
 #define v_maxinactive node_v_maxinactive->safedatafloat()[0]
-TreeNode * node_v_lastxloc;
+TreeNode* node_v_lastxloc;
 #define v_lastxloc node_v_lastxloc->safedatafloat()[0]
-TreeNode * node_v_lastyloc;
+TreeNode* node_v_lastyloc;
 #define v_lastyloc node_v_lastyloc->safedatafloat()[0]
-TreeNode * node_v_lastzloc;
+TreeNode* node_v_lastzloc;
 #define v_lastzloc node_v_lastzloc->safedatafloat()[0]
-TreeNode * node_v_showme;
+TreeNode* node_v_showme;
 #define v_showme node_v_showme->safedatafloat()[0]
-TreeNode * node_v_lastupdatetime;
+TreeNode* node_v_lastupdatetime;
 #define v_lastupdatetime node_v_lastupdatetime->safedatafloat()[0]
-TreeNode * node_v_entrytrigger;
-TreeNode * node_v_arrivaltrigger;
-TreeNode * node_v_drawsize;
+TreeNode* node_v_entrytrigger;
+TreeNode* node_v_arrivaltrigger;
+TreeNode* node_v_drawsize;
 #define v_drawsize node_v_drawsize->safedatafloat()[0]
-TreeNode * node_v_clicked;
+TreeNode* node_v_clicked;
 #define v_clicked node_v_clicked->safedatafloat()[0]
-TreeNode * node_v_sideoffset;
+TreeNode* node_v_sideoffset;
 #define v_sideoffset node_v_sideoffset->safedatafloat()[0]
-TreeNode * node_v_disttosideoffset;
+TreeNode* node_v_disttosideoffset;
 #define v_disttosideoffset node_v_disttosideoffset->safedatafloat()[0]
-TreeNode * node_v_trafficcontrollers;
+TreeNode* node_v_trafficcontrollers;
 #define v_trafficcontrollers node_v_trafficcontrollers->safedatafloat()[0]
-TreeNode * node_v_virtualexits;
+TreeNode* node_v_virtualexits;
 #define v_virtualexits node_v_virtualexits->safedatafloat()[0]
-TreeNode * node_v_notifyofblockedlength;
+TreeNode* node_v_notifyofblockedlength;
 #define v_notifyofblockedlength node_v_notifyofblockedlength->safedatafloat()[0]
 
 // c++ member functions
@@ -6743,7 +6980,7 @@ FS_CONTENT_DLL_FUNC virtual double validateData(int notifyuser DEFAULTONE);
 
 FS_CONTENT_DLL_FUNC virtual double rotateAroundAxis(double angle, double x, double y);
 
-FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(int axis, double x, double y);
+FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(const Vec2& point1, const Vec2& point2);
 
 FS_CONTENT_DLL_FUNC double buildStaticMeshes();
 
@@ -6759,7 +6996,6 @@ FS_CONTENT_DLL_FUNC double addSplineAtts(treenode obj);
 
 
 // c++ attributes
-
 static Mesh pointMesh;
 
 static Mesh selectionMesh;
@@ -6791,32 +7027,31 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // TrafficControl
-
-class TrafficControl : public FlexSimObject 
+class TrafficControl : public FlexSimObject
 {
 public:
 
-TreeNode * node_v_requests;
+TreeNode* node_v_requests;
 #define v_requests node_v_requests->safedatafloat()[0]
-TreeNode * node_v_numberactive;
+TreeNode* node_v_numberactive;
 #define v_numberactive node_v_numberactive->safedatafloat()[0]
-TreeNode * node_v_maxactive;
+TreeNode* node_v_maxactive;
 #define v_maxactive node_v_maxactive->safedatafloat()[0]
-TreeNode * node_v_controlmode;
+TreeNode* node_v_controlmode;
 #define v_controlmode node_v_controlmode->safedatafloat()[0]
-TreeNode * node_v_netnodemembers;
+TreeNode* node_v_netnodemembers;
 #define v_netnodemembers node_v_netnodemembers->safedatafloat()[0]
-TreeNode * node_v_modetable;
+TreeNode* node_v_modetable;
 #define v_modetable node_v_modetable->safedatafloat()[0]
-TreeNode * node_v_curtablemode;
+TreeNode* node_v_curtablemode;
 #define v_curtablemode node_v_curtablemode->safedatafloat()[0]
-TreeNode * node_v_searchbestmode;
+TreeNode* node_v_searchbestmode;
 #define v_searchbestmode node_v_searchbestmode->safedatafloat()[0]
-TreeNode * node_v_speedtable;
+TreeNode* node_v_speedtable;
 #define v_speedtable node_v_speedtable->safedatafloat()[0]
-TreeNode * node_v_entrytrigger;
-TreeNode * node_v_exittrigger;
-TreeNode * node_v_requesttrigger;
+TreeNode* node_v_entrytrigger;
+TreeNode* node_v_exittrigger;
+TreeNode* node_v_requesttrigger;
 
 // c++ member functions
 
@@ -6866,7 +7101,6 @@ FS_CONTENT_DLL_FUNC virtual double info(int info, double _a, double _b);
 
 
 // c++ attributes
-
 struct travelrequest{treenode requester;short opnum; short fromnode; short destnode; treenode traveldata;};
 
 int matchingcolumn;
@@ -6880,18 +7114,17 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidTicker
-
-class FluidTicker : public FlexSimObject 
+class FluidTicker : public FlexSimObject
 {
 public:
 
-TreeNode * node_v_ticktime;
+TreeNode* node_v_ticktime;
 #define v_ticktime node_v_ticktime->safedatafloat()[0]
-TreeNode * node_v_objectlist;
+TreeNode* node_v_objectlist;
 #define v_objectlist node_v_objectlist->safedatafloat()[0]
-TreeNode * node_v_maxcomponents;
+TreeNode* node_v_maxcomponents;
 #define v_maxcomponents node_v_maxcomponents->safedatafloat()[0]
-TreeNode * node_v_lasttick;
+TreeNode* node_v_lasttick;
 #define v_lasttick node_v_lasttick->safedatafloat()[0]
 
 // c++ member functions
@@ -6935,56 +7168,55 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidObject
-
-class FluidObject : public FlexSimObject 
+class FluidObject : public FlexSimObject
 {
 public:
 
-TreeNode * node_v_maxcontent;
+TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode * node_v_curcontent;
+TreeNode* node_v_curcontent;
 #define v_curcontent node_v_curcontent->safedatafloat()[0]
-TreeNode * node_v_productid;
+TreeNode* node_v_productid;
 #define v_productid node_v_productid->safedatafloat()[0]
-TreeNode * node_v_maxobjectinrate;
+TreeNode* node_v_maxobjectinrate;
 #define v_maxobjectinrate node_v_maxobjectinrate->safedatafloat()[0]
-TreeNode * node_v_maxportinrate;
+TreeNode* node_v_maxportinrate;
 #define v_maxportinrate node_v_maxportinrate->safedatafloat()[0]
-TreeNode * node_v_portinratescalefactors;
+TreeNode* node_v_portinratescalefactors;
 #define v_portinratescalefactors node_v_portinratescalefactors->safedatafloat()[0]
-TreeNode * node_v_maxobjectoutrate;
+TreeNode* node_v_maxobjectoutrate;
 #define v_maxobjectoutrate node_v_maxobjectoutrate->safedatafloat()[0]
-TreeNode * node_v_maxportoutrate;
+TreeNode* node_v_maxportoutrate;
 #define v_maxportoutrate node_v_maxportoutrate->safedatafloat()[0]
-TreeNode * node_v_portoutratescalefactors;
+TreeNode* node_v_portoutratescalefactors;
 #define v_portoutratescalefactors node_v_portoutratescalefactors->safedatafloat()[0]
-TreeNode * node_v_lastinputamount;
+TreeNode* node_v_lastinputamount;
 #define v_lastinputamount node_v_lastinputamount->safedatafloat()[0]
-TreeNode * node_v_lastoutputamount;
+TreeNode* node_v_lastoutputamount;
 #define v_lastoutputamount node_v_lastoutputamount->safedatafloat()[0]
-TreeNode * node_v_barlocx;
+TreeNode* node_v_barlocx;
 #define v_barlocx node_v_barlocx->safedatafloat()[0]
-TreeNode * node_v_barlocy;
+TreeNode* node_v_barlocy;
 #define v_barlocy node_v_barlocy->safedatafloat()[0]
-TreeNode * node_v_barlocz;
+TreeNode* node_v_barlocz;
 #define v_barlocz node_v_barlocz->safedatafloat()[0]
-TreeNode * node_v_barrotx;
+TreeNode* node_v_barrotx;
 #define v_barrotx node_v_barrotx->safedatafloat()[0]
-TreeNode * node_v_barroty;
+TreeNode* node_v_barroty;
 #define v_barroty node_v_barroty->safedatafloat()[0]
-TreeNode * node_v_barrotz;
+TreeNode* node_v_barrotz;
 #define v_barrotz node_v_barrotz->safedatafloat()[0]
-TreeNode * node_v_barsizex;
+TreeNode* node_v_barsizex;
 #define v_barsizex node_v_barsizex->safedatafloat()[0]
-TreeNode * node_v_barsizey;
+TreeNode* node_v_barsizey;
 #define v_barsizey node_v_barsizey->safedatafloat()[0]
-TreeNode * node_v_barsizez;
+TreeNode* node_v_barsizez;
 #define v_barsizez node_v_barsizez->safedatafloat()[0]
-TreeNode * node_v_barcylinder;
+TreeNode* node_v_barcylinder;
 #define v_barcylinder node_v_barcylinder->safedatafloat()[0]
-TreeNode * node_v_drawbar;
+TreeNode* node_v_drawbar;
 #define v_drawbar node_v_drawbar->safedatafloat()[0]
-TreeNode * node_v_objectstats;
+TreeNode* node_v_objectstats;
 #define v_objectstats node_v_objectstats->safedatafloat()[0]
 
 // c++ member functions
@@ -7036,27 +7268,26 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidTank
-
-class FluidTank : public FluidObject 
+class FluidTank : public FluidObject
 {
 public:
 
-TreeNode * node_v_lowmark;
+TreeNode* node_v_lowmark;
 #define v_lowmark node_v_lowmark->safedatafloat()[0]
-TreeNode * node_v_midmark;
+TreeNode* node_v_midmark;
 #define v_midmark node_v_midmark->safedatafloat()[0]
-TreeNode * node_v_highmark;
+TreeNode* node_v_highmark;
 #define v_highmark node_v_highmark->safedatafloat()[0]
-TreeNode * node_v_lowmarktrigger;
-TreeNode * node_v_midmarktrigger;
-TreeNode * node_v_highmarktrigger;
-TreeNode * node_v_adjustinputrates;
-TreeNode * node_v_adjustoutputrates;
-TreeNode * node_v_emptytrigger;
-TreeNode * node_v_fulltrigger;
-TreeNode * node_v_initialcontent;
+TreeNode* node_v_lowmarktrigger;
+TreeNode* node_v_midmarktrigger;
+TreeNode* node_v_highmarktrigger;
+TreeNode* node_v_adjustinputrates;
+TreeNode* node_v_adjustoutputrates;
+TreeNode* node_v_emptytrigger;
+TreeNode* node_v_fulltrigger;
+TreeNode* node_v_initialcontent;
 #define v_initialcontent node_v_initialcontent->safedatafloat()[0]
-TreeNode * node_v_initialproductid;
+TreeNode* node_v_initialproductid;
 #define v_initialproductid node_v_initialproductid->safedatafloat()[0]
 
 // c++ member functions
@@ -7084,24 +7315,23 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidGenerator
-
-class FluidGenerator : public FluidObject 
+class FluidGenerator : public FluidObject
 {
 public:
 
-TreeNode * node_v_refillmode;
+TreeNode* node_v_refillmode;
 #define v_refillmode node_v_refillmode->safedatafloat()[0]
-TreeNode * node_v_refilldelay;
+TreeNode* node_v_refilldelay;
 #define v_refilldelay node_v_refilldelay->safedatafloat()[0]
-TreeNode * node_v_refillrate;
+TreeNode* node_v_refillrate;
 #define v_refillrate node_v_refillrate->safedatafloat()[0]
-TreeNode * node_v_emptytrigger;
-TreeNode * node_v_fulltrigger;
-TreeNode * node_v_initialcontent;
+TreeNode* node_v_emptytrigger;
+TreeNode* node_v_fulltrigger;
+TreeNode* node_v_initialcontent;
 #define v_initialcontent node_v_initialcontent->safedatafloat()[0]
-TreeNode * node_v_initialproductid;
+TreeNode* node_v_initialproductid;
 #define v_initialproductid node_v_initialproductid->safedatafloat()[0]
-TreeNode * node_v_adjustoutputrates;
+TreeNode* node_v_adjustoutputrates;
 
 // c++ member functions
 
@@ -7130,13 +7360,12 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidTerminator
-
-class FluidTerminator : public FluidObject 
+class FluidTerminator : public FluidObject
 {
 public:
 
-TreeNode * node_v_adjustinputrates;
-TreeNode * node_v_totalinput;
+TreeNode* node_v_adjustinputrates;
+TreeNode* node_v_totalinput;
 #define v_totalinput node_v_totalinput->safedatafloat()[0]
 
 // c++ member functions
@@ -7168,40 +7397,39 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidMixer
-
-class FluidMixer : public FluidObject 
+class FluidMixer : public FluidObject
 {
 public:
 
-TreeNode * node_v_curstep;
+TreeNode* node_v_curstep;
 #define v_curstep node_v_curstep->safedatafloat()[0]
-TreeNode * node_v_targetproductid;
+TreeNode* node_v_targetproductid;
 #define v_targetproductid node_v_targetproductid->safedatafloat()[0]
-TreeNode * node_v_steptable;
+TreeNode* node_v_steptable;
 #define v_steptable node_v_steptable->safedatafloat()[0]
-TreeNode * node_v_recipetable;
+TreeNode* node_v_recipetable;
 #define v_recipetable node_v_recipetable->safedatafloat()[0]
-TreeNode * node_v_currentsteptable;
+TreeNode* node_v_currentsteptable;
 #define v_currentsteptable node_v_currentsteptable->safedatafloat()[0]
-TreeNode * node_v_portcolortable;
+TreeNode* node_v_portcolortable;
 #define v_portcolortable node_v_portcolortable->safedatafloat()[0]
-TreeNode * node_v_adjustoutputrates;
-TreeNode * node_v_emptytrigger;
-TreeNode * node_v_beforedelaytrigger;
-TreeNode * node_v_afterdelaytrigger;
-TreeNode * node_v_indelay;
+TreeNode* node_v_adjustoutputrates;
+TreeNode* node_v_emptytrigger;
+TreeNode* node_v_beforedelaytrigger;
+TreeNode* node_v_afterdelaytrigger;
+TreeNode* node_v_indelay;
 #define v_indelay node_v_indelay->safedatafloat()[0]
-TreeNode * node_v_collecting;
+TreeNode* node_v_collecting;
 #define v_collecting node_v_collecting->safedatafloat()[0]
-TreeNode * node_v_usermaxoutrate;
+TreeNode* node_v_usermaxoutrate;
 #define v_usermaxoutrate node_v_usermaxoutrate->safedatafloat()[0]
-TreeNode * node_v_batchstarttime;
+TreeNode* node_v_batchstarttime;
 #define v_batchstarttime node_v_batchstarttime->safedatafloat()[0]
-TreeNode * node_v_totalbatchtime;
+TreeNode* node_v_totalbatchtime;
 #define v_totalbatchtime node_v_totalbatchtime->safedatafloat()[0]
-TreeNode * node_v_numbatches;
+TreeNode* node_v_numbatches;
 #define v_numbatches node_v_numbatches->safedatafloat()[0]
-TreeNode * node_v_avgbatchtime;
+TreeNode* node_v_avgbatchtime;
 #define v_avgbatchtime node_v_avgbatchtime->safedatafloat()[0]
 
 // c++ member functions
@@ -7239,23 +7467,22 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidBlender
-
-class FluidBlender : public FluidObject 
+class FluidBlender : public FluidObject
 {
 public:
 
-TreeNode * node_v_maxtotalinrate;
+TreeNode* node_v_maxtotalinrate;
 #define v_maxtotalinrate node_v_maxtotalinrate->safedatafloat()[0]
-TreeNode * node_v_targetproductid;
+TreeNode* node_v_targetproductid;
 #define v_targetproductid node_v_targetproductid->safedatafloat()[0]
-TreeNode * node_v_recipetable;
+TreeNode* node_v_recipetable;
 #define v_recipetable node_v_recipetable->safedatafloat()[0]
-TreeNode * node_v_adjustoutputrates;
-TreeNode * node_v_curoutrate;
+TreeNode* node_v_adjustoutputrates;
+TreeNode* node_v_curoutrate;
 #define v_curoutrate node_v_curoutrate->safedatafloat()[0]
-TreeNode * node_v_avgoutrate;
+TreeNode* node_v_avgoutrate;
 #define v_avgoutrate node_v_avgoutrate->safedatafloat()[0]
-TreeNode * node_v_numupdates;
+TreeNode* node_v_numupdates;
 #define v_numupdates node_v_numupdates->safedatafloat()[0]
 
 // c++ member functions
@@ -7285,21 +7512,20 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidSplitter
-
-class FluidSplitter : public FluidObject 
+class FluidSplitter : public FluidObject
 {
 public:
 
-TreeNode * node_v_maxtotaloutrate;
+TreeNode* node_v_maxtotaloutrate;
 #define v_maxtotaloutrate node_v_maxtotaloutrate->safedatafloat()[0]
-TreeNode * node_v_recipetable;
+TreeNode* node_v_recipetable;
 #define v_recipetable node_v_recipetable->safedatafloat()[0]
-TreeNode * node_v_adjustinputrates;
-TreeNode * node_v_curinrate;
+TreeNode* node_v_adjustinputrates;
+TreeNode* node_v_curinrate;
 #define v_curinrate node_v_curinrate->safedatafloat()[0]
-TreeNode * node_v_avginrate;
+TreeNode* node_v_avginrate;
 #define v_avginrate node_v_avginrate->safedatafloat()[0]
-TreeNode * node_v_numupdates;
+TreeNode* node_v_numupdates;
 #define v_numupdates node_v_numupdates->safedatafloat()[0]
 
 // c++ member functions
@@ -7329,34 +7555,33 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidPipe
-
-class FluidPipe : public FluidObject 
+class FluidPipe : public FluidObject
 {
 public:
 
-TreeNode * node_v_maxflowrate;
+TreeNode* node_v_maxflowrate;
 #define v_maxflowrate node_v_maxflowrate->safedatafloat()[0]
-TreeNode * node_v_tablerate;
+TreeNode* node_v_tablerate;
 #define v_tablerate node_v_tablerate->safedatafloat()[0]
-TreeNode * node_v_transfertime;
+TreeNode* node_v_transfertime;
 #define v_transfertime node_v_transfertime->safedatafloat()[0]
-TreeNode * node_v_flowmode;
+TreeNode* node_v_flowmode;
 #define v_flowmode node_v_flowmode->safedatafloat()[0]
-TreeNode * node_v_accumulated;
+TreeNode* node_v_accumulated;
 #define v_accumulated node_v_accumulated->safedatafloat()[0]
-TreeNode * node_v_futureoutputrates;
+TreeNode* node_v_futureoutputrates;
 #define v_futureoutputrates node_v_futureoutputrates->safedatafloat()[0]
-TreeNode * node_v_adjustinputrates;
-TreeNode * node_v_adjustoutputrates;
-TreeNode * node_v_emptytrigger;
-TreeNode * node_v_fulltrigger;
-TreeNode * node_v_pipesections;
+TreeNode* node_v_adjustinputrates;
+TreeNode* node_v_adjustoutputrates;
+TreeNode* node_v_emptytrigger;
+TreeNode* node_v_fulltrigger;
+TreeNode* node_v_pipesections;
 #define v_pipesections node_v_pipesections->safedatafloat()[0]
-TreeNode * node_v_curoutrate;
+TreeNode* node_v_curoutrate;
 #define v_curoutrate node_v_curoutrate->safedatafloat()[0]
-TreeNode * node_v_avgoutrate;
+TreeNode* node_v_avgoutrate;
 #define v_avgoutrate node_v_avgoutrate->safedatafloat()[0]
-TreeNode * node_v_numupdates;
+TreeNode* node_v_numupdates;
 #define v_numupdates node_v_numupdates->safedatafloat()[0]
 
 // c++ member functions
@@ -7394,32 +7619,31 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidProcessor
-
-class FluidProcessor : public FluidObject 
+class FluidProcessor : public FluidObject
 {
 public:
 
-TreeNode * node_v_maxflowrate;
+TreeNode* node_v_maxflowrate;
 #define v_maxflowrate node_v_maxflowrate->safedatafloat()[0]
-TreeNode * node_v_tablerate;
+TreeNode* node_v_tablerate;
 #define v_tablerate node_v_tablerate->safedatafloat()[0]
-TreeNode * node_v_transfertime;
+TreeNode* node_v_transfertime;
 #define v_transfertime node_v_transfertime->safedatafloat()[0]
-TreeNode * node_v_loss;
+TreeNode* node_v_loss;
 #define v_loss node_v_loss->safedatafloat()[0]
-TreeNode * node_v_accumulated;
+TreeNode* node_v_accumulated;
 #define v_accumulated node_v_accumulated->safedatafloat()[0]
-TreeNode * node_v_futureoutputrates;
+TreeNode* node_v_futureoutputrates;
 #define v_futureoutputrates node_v_futureoutputrates->safedatafloat()[0]
-TreeNode * node_v_receiveportnumber;
-TreeNode * node_v_destinationportnumber;
-TreeNode * node_v_emptytrigger;
-TreeNode * node_v_fulltrigger;
-TreeNode * node_v_curoutrate;
+TreeNode* node_v_receiveportnumber;
+TreeNode* node_v_destinationportnumber;
+TreeNode* node_v_emptytrigger;
+TreeNode* node_v_fulltrigger;
+TreeNode* node_v_curoutrate;
 #define v_curoutrate node_v_curoutrate->safedatafloat()[0]
-TreeNode * node_v_avgoutrate;
+TreeNode* node_v_avgoutrate;
 #define v_avgoutrate node_v_avgoutrate->safedatafloat()[0]
-TreeNode * node_v_numupdates;
+TreeNode* node_v_numupdates;
 #define v_numupdates node_v_numupdates->safedatafloat()[0]
 
 // c++ member functions
@@ -7451,56 +7675,55 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidObject2
-
-class FluidObject2 : public FixedResource 
+class FluidObject2 : public FixedResource
 {
 public:
 
-TreeNode * node_v_maxcontent;
+TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode * node_v_curcontent;
+TreeNode* node_v_curcontent;
 #define v_curcontent node_v_curcontent->safedatafloat()[0]
-TreeNode * node_v_productid;
+TreeNode* node_v_productid;
 #define v_productid node_v_productid->safedatafloat()[0]
-TreeNode * node_v_maxobjectinrate;
+TreeNode* node_v_maxobjectinrate;
 #define v_maxobjectinrate node_v_maxobjectinrate->safedatafloat()[0]
-TreeNode * node_v_maxportinrate;
+TreeNode* node_v_maxportinrate;
 #define v_maxportinrate node_v_maxportinrate->safedatafloat()[0]
-TreeNode * node_v_portinratescalefactors;
+TreeNode* node_v_portinratescalefactors;
 #define v_portinratescalefactors node_v_portinratescalefactors->safedatafloat()[0]
-TreeNode * node_v_maxobjectoutrate;
+TreeNode* node_v_maxobjectoutrate;
 #define v_maxobjectoutrate node_v_maxobjectoutrate->safedatafloat()[0]
-TreeNode * node_v_maxportoutrate;
+TreeNode* node_v_maxportoutrate;
 #define v_maxportoutrate node_v_maxportoutrate->safedatafloat()[0]
-TreeNode * node_v_portoutratescalefactors;
+TreeNode* node_v_portoutratescalefactors;
 #define v_portoutratescalefactors node_v_portoutratescalefactors->safedatafloat()[0]
-TreeNode * node_v_lastinputamount;
+TreeNode* node_v_lastinputamount;
 #define v_lastinputamount node_v_lastinputamount->safedatafloat()[0]
-TreeNode * node_v_lastoutputamount;
+TreeNode* node_v_lastoutputamount;
 #define v_lastoutputamount node_v_lastoutputamount->safedatafloat()[0]
-TreeNode * node_v_barlocx;
+TreeNode* node_v_barlocx;
 #define v_barlocx node_v_barlocx->safedatafloat()[0]
-TreeNode * node_v_barlocy;
+TreeNode* node_v_barlocy;
 #define v_barlocy node_v_barlocy->safedatafloat()[0]
-TreeNode * node_v_barlocz;
+TreeNode* node_v_barlocz;
 #define v_barlocz node_v_barlocz->safedatafloat()[0]
-TreeNode * node_v_barrotx;
+TreeNode* node_v_barrotx;
 #define v_barrotx node_v_barrotx->safedatafloat()[0]
-TreeNode * node_v_barroty;
+TreeNode* node_v_barroty;
 #define v_barroty node_v_barroty->safedatafloat()[0]
-TreeNode * node_v_barrotz;
+TreeNode* node_v_barrotz;
 #define v_barrotz node_v_barrotz->safedatafloat()[0]
-TreeNode * node_v_barsizex;
+TreeNode* node_v_barsizex;
 #define v_barsizex node_v_barsizex->safedatafloat()[0]
-TreeNode * node_v_barsizey;
+TreeNode* node_v_barsizey;
 #define v_barsizey node_v_barsizey->safedatafloat()[0]
-TreeNode * node_v_barsizez;
+TreeNode* node_v_barsizez;
 #define v_barsizez node_v_barsizez->safedatafloat()[0]
-TreeNode * node_v_barcylinder;
+TreeNode* node_v_barcylinder;
 #define v_barcylinder node_v_barcylinder->safedatafloat()[0]
-TreeNode * node_v_drawbar;
+TreeNode* node_v_drawbar;
 #define v_drawbar node_v_drawbar->safedatafloat()[0]
-TreeNode * node_v_objectstats;
+TreeNode* node_v_objectstats;
 #define v_objectstats node_v_objectstats->safedatafloat()[0]
 
 // c++ member functions
@@ -7554,22 +7777,21 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // ItemToFluid
-
-class ItemToFluid : public FluidObject2 
+class ItemToFluid : public FluidObject2
 {
 public:
 
-TreeNode * node_v_fluidunitsperdiscrete;
+TreeNode* node_v_fluidunitsperdiscrete;
 #define v_fluidunitsperdiscrete node_v_fluidunitsperdiscrete->safedatafloat()[0]
-TreeNode * node_v_chunksize;
+TreeNode* node_v_chunksize;
 #define v_chunksize node_v_chunksize->safedatafloat()[0]
-TreeNode * node_v_recycle;
+TreeNode* node_v_recycle;
 #define v_recycle node_v_recycle->safedatafloat()[0]
-TreeNode * node_v_initialproductid;
+TreeNode* node_v_initialproductid;
 #define v_initialproductid node_v_initialproductid->safedatafloat()[0]
-TreeNode * node_v_adjustoutputrates;
-TreeNode * node_v_emptytrigger;
-TreeNode * node_v_fulltrigger;
+TreeNode* node_v_adjustoutputrates;
+TreeNode* node_v_emptytrigger;
+TreeNode* node_v_fulltrigger;
 
 // c++ member functions
 
@@ -7600,24 +7822,23 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidToItem
-
-class FluidToItem : public FluidObject2 
+class FluidToItem : public FluidObject2
 {
 public:
 
-TreeNode * node_v_flowitemclass;
+TreeNode* node_v_flowitemclass;
 #define v_flowitemclass node_v_flowitemclass->safedatafloat()[0]
-TreeNode * node_v_flowitemname;
-TreeNode * node_v_flowitemtype;
+TreeNode* node_v_flowitemname;
+TreeNode* node_v_flowitemtype;
 #define v_flowitemtype node_v_flowitemtype->safedatafloat()[0]
-TreeNode * node_v_fluidunitsperdiscrete;
+TreeNode* node_v_fluidunitsperdiscrete;
 #define v_fluidunitsperdiscrete node_v_fluidunitsperdiscrete->safedatafloat()[0]
-TreeNode * node_v_chunksize;
+TreeNode* node_v_chunksize;
 #define v_chunksize node_v_chunksize->safedatafloat()[0]
-TreeNode * node_v_creationtrigger;
-TreeNode * node_v_flowitembin;
+TreeNode* node_v_creationtrigger;
+TreeNode* node_v_flowitembin;
 #define v_flowitembin node_v_flowitembin->safedatafloat()[0]
-TreeNode * node_v_adjustinputrates;
+TreeNode* node_v_adjustinputrates;
 
 // c++ member functions
 
@@ -7643,7 +7864,6 @@ FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
 
 
 // c++ attributes
-
 treenode flowitemtocreate;
 
 int itemsmade;
@@ -7657,89 +7877,88 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // FluidConveyor
-
-class FluidConveyor : public FluidObject 
+class FluidConveyor : public FluidObject
 {
 public:
 
-TreeNode * node_v_numberofslices;
+TreeNode* node_v_numberofslices;
 #define v_numberofslices node_v_numberofslices->safedatafloat()[0]
-TreeNode * node_v_slicewidth;
+TreeNode* node_v_slicewidth;
 #define v_slicewidth node_v_slicewidth->safedatafloat()[0]
-TreeNode * node_v_outputwidth;
+TreeNode* node_v_outputwidth;
 #define v_outputwidth node_v_outputwidth->safedatafloat()[0]
-TreeNode * node_v_centerlineoffset;
+TreeNode* node_v_centerlineoffset;
 #define v_centerlineoffset node_v_centerlineoffset->safedatafloat()[0]
-TreeNode * node_v_sidewallheight;
+TreeNode* node_v_sidewallheight;
 #define v_sidewallheight node_v_sidewallheight->safedatafloat()[0]
-TreeNode * node_v_legheight;
+TreeNode* node_v_legheight;
 #define v_legheight node_v_legheight->safedatafloat()[0]
-TreeNode * node_v_layout_aux;
+TreeNode* node_v_layout_aux;
 #define v_layout_aux node_v_layout_aux->safedatafloat()[0]
-TreeNode * node_v_previouslayout;
+TreeNode* node_v_previouslayout;
 #define v_previouslayout node_v_previouslayout->safedatafloat()[0]
-TreeNode * node_v_materialcolor;
+TreeNode* node_v_materialcolor;
 #define v_materialcolor node_v_materialcolor->safedatafloat()[0]
-TreeNode * node_v_direction_default;
+TreeNode* node_v_direction_default;
 #define v_direction_default node_v_direction_default->safedatafloat()[0]
-TreeNode * node_v_direction_current;
+TreeNode* node_v_direction_current;
 #define v_direction_current node_v_direction_current->safedatafloat()[0]
-TreeNode * node_v_direction_target;
+TreeNode* node_v_direction_target;
 #define v_direction_target node_v_direction_target->safedatafloat()[0]
-TreeNode * node_v_speed_default;
+TreeNode* node_v_speed_default;
 #define v_speed_default node_v_speed_default->safedatafloat()[0]
-TreeNode * node_v_speed_current;
+TreeNode* node_v_speed_current;
 #define v_speed_current node_v_speed_current->safedatafloat()[0]
-TreeNode * node_v_speed_target;
+TreeNode* node_v_speed_target;
 #define v_speed_target node_v_speed_target->safedatafloat()[0]
-TreeNode * node_v_acceleration_default;
+TreeNode* node_v_acceleration_default;
 #define v_acceleration_default node_v_acceleration_default->safedatafloat()[0]
-TreeNode * node_v_acceleration_current;
+TreeNode* node_v_acceleration_current;
 #define v_acceleration_current node_v_acceleration_current->safedatafloat()[0]
-TreeNode * node_v_angleofrepose;
+TreeNode* node_v_angleofrepose;
 #define v_angleofrepose node_v_angleofrepose->safedatafloat()[0]
-TreeNode * node_v_reposerate;
+TreeNode* node_v_reposerate;
 #define v_reposerate node_v_reposerate->safedatafloat()[0]
-TreeNode * node_v_reposeend;
+TreeNode* node_v_reposeend;
 #define v_reposeend node_v_reposeend->safedatafloat()[0]
-TreeNode * node_v_maxsliceheightdifference;
+TreeNode* node_v_maxsliceheightdifference;
 #define v_maxsliceheightdifference node_v_maxsliceheightdifference->safedatafloat()[0]
-TreeNode * node_v_endslicefraction;
+TreeNode* node_v_endslicefraction;
 #define v_endslicefraction node_v_endslicefraction->safedatafloat()[0]
-TreeNode * node_v_fallingslices;
+TreeNode* node_v_fallingslices;
 #define v_fallingslices node_v_fallingslices->safedatafloat()[0]
-TreeNode * node_v_slicesrotated;
+TreeNode* node_v_slicesrotated;
 #define v_slicesrotated node_v_slicesrotated->safedatafloat()[0]
-TreeNode * node_v_allowspillage;
+TreeNode* node_v_allowspillage;
 #define v_allowspillage node_v_allowspillage->safedatafloat()[0]
-TreeNode * node_v_spillage;
+TreeNode* node_v_spillage;
 #define v_spillage node_v_spillage->safedatafloat()[0]
-TreeNode * node_v_lastspillageamount;
+TreeNode* node_v_lastspillageamount;
 #define v_lastspillageamount node_v_lastspillageamount->safedatafloat()[0]
-TreeNode * node_v_inputs;
+TreeNode* node_v_inputs;
 #define v_inputs node_v_inputs->safedatafloat()[0]
-TreeNode * node_v_outputs;
+TreeNode* node_v_outputs;
 #define v_outputs node_v_outputs->safedatafloat()[0]
-TreeNode * node_v_outputs_aux;
+TreeNode* node_v_outputs_aux;
 #define v_outputs_aux node_v_outputs_aux->safedatafloat()[0]
-TreeNode * node_v_sensors;
+TreeNode* node_v_sensors;
 #define v_sensors node_v_sensors->safedatafloat()[0]
-TreeNode * node_v_conveyorcontent;
+TreeNode* node_v_conveyorcontent;
 #define v_conveyorcontent node_v_conveyorcontent->safedatafloat()[0]
-TreeNode * node_v_conveyorinfo;
+TreeNode* node_v_conveyorinfo;
 #define v_conveyorinfo node_v_conveyorinfo->safedatafloat()[0]
-TreeNode * node_v_stats;
+TreeNode* node_v_stats;
 #define v_stats node_v_stats->safedatafloat()[0]
-TreeNode * node_v_lowmarktrigger;
-TreeNode * node_v_midmarktrigger;
-TreeNode * node_v_highmarktrigger;
-TreeNode * node_v_emptytrigger;
-TreeNode * node_v_fulltrigger;
-TreeNode * node_v_initialcontent;
+TreeNode* node_v_lowmarktrigger;
+TreeNode* node_v_midmarktrigger;
+TreeNode* node_v_highmarktrigger;
+TreeNode* node_v_emptytrigger;
+TreeNode* node_v_fulltrigger;
+TreeNode* node_v_initialcontent;
 #define v_initialcontent node_v_initialcontent->safedatafloat()[0]
-TreeNode * node_v_initialproductid;
+TreeNode* node_v_initialproductid;
 #define v_initialproductid node_v_initialproductid->safedatafloat()[0]
-TreeNode * node_v_maxcontent;
+TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
 
 // c++ member functions
@@ -7791,42 +8010,41 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // LineController
-
-class LineController : public TaskExecuter 
+class LineController : public TaskExecuter
 {
 public:
 
-TreeNode * node_v_productdata;
+TreeNode* node_v_productdata;
 #define v_productdata node_v_productdata->safedatafloat()[0]
-TreeNode * node_v_changeover;
+TreeNode* node_v_changeover;
 #define v_changeover node_v_changeover->safedatafloat()[0]
-TreeNode * node_v_clearcheck;
+TreeNode* node_v_clearcheck;
 #define v_clearcheck node_v_clearcheck->safedatafloat()[0]
-TreeNode * node_v_startjobtrigger;
-TreeNode * node_v_cleartrigger;
-TreeNode * node_v_startjob;
-TreeNode * node_v_finishjob;
-TreeNode * node_v_curprodtype;
+TreeNode* node_v_startjobtrigger;
+TreeNode* node_v_cleartrigger;
+TreeNode* node_v_startjob;
+TreeNode* node_v_finishjob;
+TreeNode* node_v_curprodtype;
 #define v_curprodtype node_v_curprodtype->safedatafloat()[0]
-TreeNode * node_v_target;
+TreeNode* node_v_target;
 #define v_target node_v_target->safedatafloat()[0]
-TreeNode * node_v_starttime;
+TreeNode* node_v_starttime;
 #define v_starttime node_v_starttime->safedatafloat()[0]
-TreeNode * node_v_totaloutput;
+TreeNode* node_v_totaloutput;
 #define v_totaloutput node_v_totaloutput->safedatafloat()[0]
-TreeNode * node_v_netoutput;
+TreeNode* node_v_netoutput;
 #define v_netoutput node_v_netoutput->safedatafloat()[0]
-TreeNode * node_v_members;
+TreeNode* node_v_members;
 #define v_members node_v_members->safedatafloat()[0]
-TreeNode * node_v_visibleconnections;
+TreeNode* node_v_visibleconnections;
 #define v_visibleconnections node_v_visibleconnections->safedatafloat()[0]
-TreeNode * node_v_cleaning;
+TreeNode* node_v_cleaning;
 #define v_cleaning node_v_cleaning->safedatafloat()[0]
-TreeNode * node_v_targetreachedtrigger;
-TreeNode * node_v_changeovercompletetrigger;
-TreeNode * node_v_forceclearout;
+TreeNode* node_v_targetreachedtrigger;
+TreeNode* node_v_changeovercompletetrigger;
+TreeNode* node_v_forceclearout;
 #define v_forceclearout node_v_forceclearout->safedatafloat()[0]
-TreeNode * node_v_clearouttime;
+TreeNode* node_v_clearouttime;
 #define v_clearouttime node_v_clearouttime->safedatafloat()[0]
 
 // c++ member functions
@@ -7874,20 +8092,19 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // SystemController
-
-class SystemController : public Dispatcher 
+class SystemController : public Dispatcher
 {
 public:
 
-TreeNode * node_v_masterschedule;
+TreeNode* node_v_masterschedule;
 #define v_masterschedule node_v_masterschedule->safedatafloat()[0]
-TreeNode * node_v_inactivetasks;
+TreeNode* node_v_inactivetasks;
 #define v_inactivetasks node_v_inactivetasks->safedatafloat()[0]
-TreeNode * node_v_lineavailabletrigger;
-TreeNode * node_v_starttimetrigger;
-TreeNode * node_v_productcolors;
+TreeNode* node_v_lineavailabletrigger;
+TreeNode* node_v_starttimetrigger;
+TreeNode* node_v_productcolors;
 #define v_productcolors node_v_productcolors->safedatafloat()[0]
-TreeNode * node_v_drawindicators;
+TreeNode* node_v_drawindicators;
 #define v_drawindicators node_v_drawindicators->safedatafloat()[0]
 
 // c++ member functions
@@ -7921,15 +8138,14 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // ScoreCard
-
-class ScoreCard : public FlexSimObject 
+class ScoreCard : public FlexSimObject
 {
 public:
 
-TreeNode * node_v_title;
-TreeNode * node_v_values;
+TreeNode* node_v_title;
+TreeNode* node_v_values;
 #define v_values node_v_values->safedatafloat()[0]
-TreeNode * node_v_textsize;
+TreeNode* node_v_textsize;
 #define v_textsize node_v_textsize->safedatafloat()[0]
 
 // c++ member functions
@@ -7945,28 +8161,27 @@ FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
 // Report
-
-class Report  : public ObjectDataType 
+class Report : public ObjectDataType
 {
 public:
 
-TreeNode * node_v_starttime;
+TreeNode* node_v_starttime;
 #define v_starttime node_v_starttime->safedatafloat()[0]
-TreeNode * node_v_endtime;
+TreeNode* node_v_endtime;
 #define v_endtime node_v_endtime->safedatafloat()[0]
-TreeNode * node_v_interval;
+TreeNode* node_v_interval;
 #define v_interval node_v_interval->safedatafloat()[0]
-TreeNode * node_v_columns;
+TreeNode* node_v_columns;
 #define v_columns node_v_columns->safedatafloat()[0]
-TreeNode * node_v_data;
+TreeNode* node_v_data;
 #define v_data node_v_data->safedatafloat()[0]
-TreeNode * node_v_width;
+TreeNode* node_v_width;
 #define v_width node_v_width->safedatafloat()[0]
-TreeNode * node_v_height;
+TreeNode* node_v_height;
 #define v_height node_v_height->safedatafloat()[0]
-TreeNode * node_v_cellwidth;
+TreeNode* node_v_cellwidth;
 #define v_cellwidth node_v_cellwidth->safedatafloat()[0]
-TreeNode * node_v_cellheight;
+TreeNode* node_v_cellheight;
 #define v_cellheight node_v_cellheight->safedatafloat()[0]
 
 // c++ member functions

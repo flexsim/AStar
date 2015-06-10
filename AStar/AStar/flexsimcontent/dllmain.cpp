@@ -50,7 +50,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 
 int bindflexsimfunctions()
 {
-	flexSimModule = GetModuleHandle(0);
+	flexSimModule = GetModuleHandle("flexsim.dll");
 	_getflexsimexportedfunction getflexsimexportedfunction = (_getflexsimexportedfunction)GetProcAddress(flexSimModule, "getexportedfunction");
 
 	if (!getflexsimexportedfunction)

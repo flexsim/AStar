@@ -141,7 +141,11 @@ THE SOFTWARE.
 	typedef int          (*__partype)(int index, CallPoint * callpoint);
 	#endif
 	typedef double       (*__parval)(int index, CallPoint * callpoint);
+	typedef treenode       (*__parnode)(int index, CallPoint * callpoint);
+	typedef const char*  (*___parstr)(int index, CallPoint * callpoint);
+	typedef Variant     (*__param)(int index, CallPoint * callpoint);
 	typedef int          (*_activateview)(treenode xx);
+	typedef HWND         (*_activedocumentview)();
 	typedef int          (*_activeview)();
 	typedef double       (*_add)(double n1, double n2);
 	typedef int          (*_addbundleentryalias1)(treenode x);
@@ -162,7 +166,6 @@ THE SOFTWARE.
 	typedef double       (*_and)(double, double);
 	typedef treenode     (*_anode)(double x);
 	typedef double       (*_anum)(char * x);
-	typedef double       (*_applicationcommandalias)(char* commandname, n10argsinterface);
 	typedef double       (*_applyeditstonode)(treenode view, treenode obj);
 	typedef int          (*_applylinks)(treenode view, int reverse);
 	typedef int          (*_applyshapefactors)(treenode);
@@ -296,11 +299,9 @@ THE SOFTWARE.
 	typedef int          (*_cppgettoken)(treenode thetext, int index, ByteBlock * resultblock);
 	typedef int          (*_cppsettitletoken)(treenode thetext, int index, ByteBlock * resultblock, char * newtext);
 	typedef int          (*_cppsettoken)(treenode thetext, int index, ByteBlock * resultblock, char * newtext);
-#if _MSC_VER >= 1600
 	typedef std::function<Variant ()> QueryCallback;
 	typedef int          (*_cpp_queryalias)(const char* queryStr, QueryCallback& p1,  QueryCallback& p2, QueryCallback& p3,  QueryCallback& p4,
 									QueryCallback& p5,  QueryCallback& p6, QueryCallback& p7,  QueryCallback& p8, QueryCallback& p9);
-#endif
 	typedef treenode     (*_createcoordinatedtasksequence)(treenode dispatcher);
 	typedef treenode     (*_createcopyalias)(treenode classobject, treenode instancecontainer, int samename, int inobject, int cached, int replace);
 	typedef treenode     (*_createcoupling)(treenode container1, treenode container2);
@@ -391,7 +392,6 @@ THE SOFTWARE.
 	typedef double       (*_drawflattext)(char * text);
 	typedef double       (*_drawfont)(double f);
 	typedef double       (*_drawline)(treenode viewnode, double x, double y, double z, double x2, double y2, double z2, double red, double green, double blue);
-	typedef double       (*_drawobject)(treenode windownode, int shape, int texture);
 	typedef void         (*_drawobjectpart)(treenode viewobj, treenode object, int part);
 	typedef double       (*_drawpie)(treenode viewnode, double x, double y, double z, double x2, double y2, double z2, double startangle, double endangle, double red, double green, double blue);
 	typedef double       (*_drawquad)(treenode windownode, double x1, double y1, double z1, double x2, double y2, double z2, double x3, double y3, double z3, double x4, double y4, double z4, double red, double green, double blue);
@@ -474,12 +474,12 @@ THE SOFTWARE.
 	typedef double       (*_extremevalue1aalias)( double locate, double scale, int stream);
 	typedef double       (*_extremevalue1balias)( double locate, double scale, int stream);
 	typedef double       (*_factorial)(double n1);
-	typedef size_t       (*_familycreate)(treenode familycontainer, char * name);
-	typedef size_t       (*_familydelete)(treenode familycontainer, char * name);
+	typedef int          (*_familycreate)(treenode familycontainer, char * name);
+	typedef int          (*_familydelete)(treenode familycontainer, char * name);
 	typedef treenode     (*_familymember)(treenode familycontainer, char * name, int index);
-	typedef size_t       (*_familymemberadd)(treenode familycontainer, char * name,treenode node);
-	typedef size_t       (*_familymemberdel)(treenode familycontainer, char * name,treenode node);
-	typedef size_t       (*_familymemberqty)(treenode familycontainer, char * name);
+	typedef int          (*_familymemberadd)(treenode familycontainer, char * name,treenode node);
+	typedef int          (*_familymemberdel)(treenode familycontainer, char * name,treenode node);
+	typedef int          (*_familymemberqty)(treenode familycontainer, char * name);
 	typedef double       (*_fastspline)(treenode spline, double p);
 	typedef double       (*_fastsplineall)(treenode start, double res);
 	typedef double       (*_fastsplineupdate)(treenode spline, double res);
@@ -503,6 +503,7 @@ THE SOFTWARE.
 	typedef double       (*_fillwithatts)(treenode object, int attgroup);
 	typedef treenode     (*_findnode)(treenode head, char* nodename);
 	typedef treenode     (*_findownerobject)(treenode);
+	typedef treenode     (*_findundorecordbyid)(treenode, int uniqueid);
 	typedef void         (*_finishundorecord)(TreeNode* view, int uniqueid);
 	typedef treenode     (*_first)(treenode);
 	typedef treenode     (*_flowitembin)();
@@ -549,6 +550,7 @@ THE SOFTWARE.
 	typedef treenode     (*_getcorefailsafelink)();
 	typedef double       (*_getcreationtime)(treenode object);
 	typedef HDC          (*_getcurrentscenedc)();
+	typedef treenode     (*_getcurrentundorecord)(treenode view);
 	typedef double       (*_getcurtask)(treenode tasksequence);
 	typedef double       (*_getdatastat_alias1)(int stat, treenode dataset1, treenode dataset2, double p1, double p2, double p3);
 	typedef double       (*_getdatastat_alias2)(int stat, int nrSamples, double* samples, double p1, double p2, double p3);
@@ -608,8 +610,8 @@ THE SOFTWARE.
 	typedef double       (*_getquerycolcount)();
 	typedef int          (*_getquerymatchcount)();
 	typedef int          (*_getquerymatchtablerow)(char* tableName, int matchRow);
-	typedef double       (*_getqueryvaluealias1)(int row, int col);
-	typedef double       (*_getqueryvaluealias2)(int row, const char* colName);
+	typedef Variant       (*_getqueryvaluealias1)(int row, int col);
+	typedef Variant       (*_getqueryvaluealias2)(int row, const char* colName);
 	typedef double       (*_getrank)(treenode);
 	typedef int          (*_getrunstate)();
 	typedef FlexSimValue (*_getsdtvalue)(treenode sdtNode, const char* valName);
@@ -635,6 +637,7 @@ THE SOFTWARE.
 	typedef double       (*_gettextureindex)(char * thename);
 	typedef double       (*_gettotalnroftasks)(treenode tasksequence);
 	typedef double       (*_gettreedrawpositionalias)(treenode object, treenode roottree, int* cury, int increment);
+	typedef int          (*_getundorecordid)(treenode undorecord);
 	typedef treenode     (*_getvarnodeimport)(treenode object, char *varname);
 	typedef double       (*_getvarnumalias)(treenode object, char *varname);
 	typedef HWND         (*_getviewhwnd)(treenode view, int wndtype);
@@ -794,14 +797,14 @@ THE SOFTWARE.
 	typedef double       (*_negbinomialalias)( int    s,      double p  , int stream);
 	typedef treenode     (*_netnodefromrank)(int netnoderank);
 	typedef treenode     (*_next)(treenode node);
-	typedef void         (*_nextforobjectselectionset)(treenode* curnode, treenode topnode);
-	typedef void         (*_nextforobjecttreeunder)(treenode* curnode, treenode topnode);
+	typedef treenode     (*_nextforobjectselectionset)(treenode curnode, treenode topnode);
+	typedef treenode     (*_nextforobjecttreeunder)(treenode curnode, treenode topnode);
 	typedef treenode     (*_nodeadddata)(treenode target, int type);
 	typedef treenode     (*_nodealias)(char *path,treenode from);
 	typedef int          (*_nodealloc)(treenode curnode, unsigned int size);
 	typedef double       (*_nodebreak)(treenode attnode);
 	typedef treenode     (*_nodedeldata)(treenode target);
-	typedef double       (*_nodefromwindow)(unsigned int x);
+	typedef treenode     (*_nodefromwindow)(HWND x);
 	typedef double       (*_nodefunctionasevent)(treenode thenode, FLEXSIMINTERFACE);
 	typedef treenode     (*_nodefunctionlistenalias)(treenode theNode, treenode relayNode, int flags, n10argsinterface);
 	typedef treenode     (*_nodeinsertafter)(treenode target);
@@ -920,6 +923,7 @@ THE SOFTWARE.
 	typedef double       (*_redirectconsole)(int console, treenode newwindow);
 	typedef double       (*_redirectconsole)(int console, treenode newwindow);
 	typedef double       (*_redirectnetworktraveler)(treenode traveler, treenode newdest);
+	typedef int          (*_redo)(treenode view);
 	typedef int          (*_refreshcommand)(treenode commandnode, int structure);
 	typedef int          (*_refreshcommandlist)();
 	typedef int          (*_refreshglobalvariables)();
@@ -987,7 +991,6 @@ THE SOFTWARE.
 	typedef double       (*_searchdata_s)(treenode start, char * pattern, int replication);
 	typedef treenode     (*_searchfornode)(char* searchstr, treenode rootnode, int nth, int searchobjects);
 	typedef double       (*_searchname)(treenode start, char * pattern);
-	typedef double       (*_selectedobjectalias)(treenode target, int reset);
 	typedef double       (*_selectedx)(treenode target);
 	typedef double       (*_selectedy)(treenode target);
 	typedef double       (*_selectedz)(treenode target);
@@ -1167,6 +1170,7 @@ THE SOFTWARE.
 	#if _MSC_VER < 1800
 	typedef double       (*_trunc)(double n1);
 	#endif
+	typedef int          (*_undo)(treenode view);
 	typedef int          (*_undos)(int state, int set);
 	typedef double       (*_uniformalias)( double a,      double b , int stream);
 	typedef treenode     (*_up)(treenode node);
@@ -1178,6 +1182,7 @@ THE SOFTWARE.
 	typedef double       (*_updatestate_alias2)(treenode obj, int profilenr);
 	typedef void         (*_updateundorecord)(TreeNode* view, int uniqueid, int updatetype, double p1, double p2);
 	typedef double       (*_uselisteners)(double x);
+	typedef char*		 (*_userdatadir_cstr)();
 	typedef double       (*_userfunction_n)(treenode node, int index, n30argsinterface);
 	typedef double       (*_userfunction_s)(treenode node, char * name, n30argsinterface);
 	typedef double       (*_userinput)(treenode variable, char* prompt);
@@ -1192,7 +1197,8 @@ THE SOFTWARE.
 	typedef double       (*_vectorprojectz)(treenode origin,double xposition, double yposition, double zposition, treenode ontoobject);
 	typedef double       (*_viewdist)(treenode v, treenode ob);
 	typedef treenode     (*_views)();
-	typedef double       (*_viewtofile)(treenode theview, char* s);
+	typedef double       (*_viewtofile_alias1)(treenode theview, char* s);
+	typedef double       (*_viewtofile_alias2)(treenode theview, char* s, int w, int h);
 	typedef double       (*_webcommandalias)(char* commandname, n10argsinterface);
 	typedef double       (*_weibullalias)( double locate, double scale, double shape, int stream);
 	typedef HWND         (*_windowfromnode)(treenode x);
@@ -1240,11 +1246,10 @@ THE SOFTWARE.
 		typedef treenode (*_nodedetachsimpledata)(treenode target);
 		typedef void     (*_sdtappendtodisplaystr)(const char* text);
 		typedef char*    (*_sdttostring)(SimpleDataType* sdt, int verbose);
-		typedef double&  (*_sdtgetcurvalue)();
+		typedef Variant&  (*_sdtgetcurvalue)();
 		typedef char*    (*_sdtgetcurvaluename)();
-		typedef int&     (*_sdtgetcurvaluetype)();
-		typedef void     (*_sdtsetvalue)(SimpleDataType* sdt, const char* valName, double toVal);
-		typedef double   (*_sdtgetvalue)(SimpleDataType* sdt, const char* valName);
+		typedef void     (*_sdtsetvalue)(SimpleDataType* sdt, const char* valName, Variant toVal);
+		typedef Variant   (*_sdtgetvalue)(SimpleDataType* sdt, const char* valName);
 		typedef char*    (*_couplingtostring)(CouplingDataType* sdt, int verbose);
 		typedef void     (*_flexsimeventbind)(FlexSimEvent* e);
 		typedef void     (*_flexsimeventexecute)(FlexSimEvent* e);
@@ -1272,13 +1277,8 @@ THE SOFTWARE.
 		typedef unsigned int (*_indexedmesh_addindex)(IndexedMesh* m, unsigned int index);
 		typedef void (*_indexedmesh_draw)(IndexedMesh* m, int drawMode, int count, int start);
 		typedef void (*_indexedmesh_cleanupindexbuffer)(IndexedMesh* m, bool isDestructor);
-		
-		typedef void (*_sql_buildquery)(TreeNode* queryNode, char* query);
-		typedef int (*_sql_doquery)(TreeNode* queryNode, bool continueQuery);
-		typedef int (*_sql_continuequery)(TreeNode* queryNode);
-		typedef void(*_sql_setdelegate)(SqlDelegate* d);
 
-		typedef double(*_fglInfo)(int op, treenode view);
+		typedef Variant(*_fglInfo)(int op, treenode view);
 		
 	#else
 		typedef void (*_flexsimfree)(void*);
@@ -1302,7 +1302,11 @@ DECLARE_FLEXSIM_FUNCTION_1(_mpt)
 DECLARE_FLEXSIM_FUNCTION_1(_partype)
 #endif
 DECLARE_FLEXSIM_FUNCTION_1(_parval)
+DECLARE_FLEXSIM_FUNCTION_1(_parnode)
+DECLARE_FLEXSIM_FUNCTION_1(__parstr)
+DECLARE_FLEXSIM_FUNCTION_1(_param)
 DECLARE_FLEXSIM_FUNCTION_1(activateview)
+DECLARE_FLEXSIM_FUNCTION_1(activedocumentview)
 DECLARE_FLEXSIM_FUNCTION_1(activeview)
 DECLARE_FLEXSIM_FUNCTION_3(addbundleentryalias1, "?addbundleentry@@YAHPAVTreeNode@@@Z","?addbundleentry@@YAHPEAVTreeNode@@@Z");
 DECLARE_FLEXSIM_FUNCTION_2(addbundleentryalias2, "addbundleentry");
@@ -1318,7 +1322,6 @@ DECLARE_FLEXSIM_FUNCTION_2(addtoeventtypelegendalias1,"addtoeventtypelegend")
 DECLARE_FLEXSIM_FUNCTION_3(addtoeventtypelegendalias2,"?addtoeventtypelegend@@YAXPADHH0@Z","?addtoeventtypelegend@@YAXPEADHH0@Z")
 DECLARE_FLEXSIM_FUNCTION_2(addviewtextalias, "addviewtext")
 DECLARE_FLEXSIM_FUNCTION_2(aggregateundorecordsalias, "aggregateundorecords")
-DECLARE_FLEXSIM_FUNCTION_2(applicationcommandalias, "applicationcommand")
 DECLARE_FLEXSIM_FUNCTION_1(applyeditstonode)
 DECLARE_FLEXSIM_FUNCTION_1(applylinks)
 DECLARE_FLEXSIM_FUNCTION_1(applyshapefactors)
@@ -1495,7 +1498,6 @@ DECLARE_FLEXSIM_FUNCTION_1(drawdisk)
 DECLARE_FLEXSIM_FUNCTION_1(drawflattext)
 DECLARE_FLEXSIM_FUNCTION_1(drawfont)
 DECLARE_FLEXSIM_FUNCTION_1(drawline)
-DECLARE_FLEXSIM_FUNCTION_1(drawobject)
 DECLARE_FLEXSIM_FUNCTION_1(drawobjectpart)
 DECLARE_FLEXSIM_FUNCTION_1(drawpie)
 DECLARE_FLEXSIM_FUNCTION_1(drawquad)
@@ -1593,6 +1595,7 @@ DECLARE_FLEXSIM_FUNCTION_2(fileopenalias, "fileopen")
 DECLARE_FLEXSIM_FUNCTION_1(fillwithatts)
 DECLARE_FLEXSIM_FUNCTION_1(findnode)
 DECLARE_FLEXSIM_FUNCTION_1(findownerobject)
+DECLARE_FLEXSIM_FUNCTION_1(findundorecordbyid)
 DECLARE_FLEXSIM_FUNCTION_1(finishundorecord)
 DECLARE_FLEXSIM_FUNCTION_1(first)
 DECLARE_FLEXSIM_FUNCTION_1(flowitembin)
@@ -1635,6 +1638,7 @@ DECLARE_FLEXSIM_FUNCTION_1(getcolorcomponent)
 DECLARE_FLEXSIM_FUNCTION_1(getcorefailsafelink)
 DECLARE_FLEXSIM_FUNCTION_1(getcreationtime)
 DECLARE_FLEXSIM_FUNCTION_1(getcurrentscenedc)
+DECLARE_FLEXSIM_FUNCTION_1(getcurrentundorecord)
 DECLARE_FLEXSIM_FUNCTION_2(getdatastat_alias1, "getdatastat")
 DECLARE_FLEXSIM_FUNCTION_3(getdatastat_alias2, "?getdatastat@@YANHHPANNNN@Z", "?getdatastat@@YANHHPEANNNN@Z")
 DECLARE_FLEXSIM_FUNCTION_1(getdatatype)
@@ -1669,8 +1673,8 @@ DECLARE_FLEXSIM_FUNCTION_1(getproperty)
 DECLARE_FLEXSIM_FUNCTION_1(getquerycolcount)
 DECLARE_FLEXSIM_FUNCTION_1(getquerymatchcount)
 DECLARE_FLEXSIM_FUNCTION_1(getquerymatchtablerow)
-DECLARE_FLEXSIM_FUNCTION_2(getqueryvaluealias1, "getqueryvalue")
-DECLARE_FLEXSIM_FUNCTION_3(getqueryvaluealias2,  "?getqueryvalue@@YANHPADPA_N@Z", "?getqueryvalue@@YANHPEADPEA_N@Z")
+DECLARE_FLEXSIM_FUNCTION_3(getqueryvaluealias1, "?getqueryvalue@@YA?AVVariant@@HH@Z", "?getqueryvalue@@YA?AVVariant@@HH@Z")
+DECLARE_FLEXSIM_FUNCTION_3(getqueryvaluealias2,  "?getqueryvalue@@YA?AVVariant@@HPAD@Z", "?getqueryvalue@@YA?AVVariant@@HPEAD@Z")
 DECLARE_FLEXSIM_FUNCTION_1(getrank)
 DECLARE_FLEXSIM_FUNCTION_1(getrunstate)
 DECLARE_FLEXSIM_FUNCTION_1(getsdtvalue)
@@ -1682,6 +1686,7 @@ DECLARE_FLEXSIM_FUNCTION_3(getstatenum_alias2, "?getstatenum@@YANPAVTreeNode@@H@
 DECLARE_FLEXSIM_FUNCTION_1(getsystemmetric)
 DECLARE_FLEXSIM_FUNCTION_2(gettablenumalias, "gettablenum");
 DECLARE_FLEXSIM_FUNCTION_1(gettextureindex)
+DECLARE_FLEXSIM_FUNCTION_1(getundorecordid)
 DECLARE_FLEXSIM_FUNCTION_2(getvarnodeimport,"getvarnode")
 DECLARE_FLEXSIM_FUNCTION_2(getvarnumalias, "getvarnum")
 DECLARE_FLEXSIM_FUNCTION_1(getviewhwnd)
@@ -1812,13 +1817,13 @@ DECLARE_FLEXSIM_FUNCTION_1(nametomodelpath)
 DECLARE_FLEXSIM_FUNCTION_2(negbinomialalias, "negbinomial")
 DECLARE_FLEXSIM_FUNCTION_1(next)
 DECLARE_FLEXSIM_FUNCTION_1(nextforobjectselectionset)
-DECLARE_FLEXSIM_FUNCTION_1(nextforobjecttreeunder)
+DECLARE_FLEXSIM_FUNCTION_3(nextforobjecttreeunder, "?nextforobjecttreeunder@@YAPAVTreeNode@@PAV1@0@Z", "?nextforobjecttreeunder@@YAPEAVTreeNode@@PEAV1@0@Z")
 DECLARE_FLEXSIM_FUNCTION_1(nodeadddata)
 DECLARE_FLEXSIM_FUNCTION_2(nodealias, "node")
 DECLARE_FLEXSIM_FUNCTION_1(nodealloc)
 DECLARE_FLEXSIM_FUNCTION_1(nodebreak)
 DECLARE_FLEXSIM_FUNCTION_1(nodedeldata)
-DECLARE_FLEXSIM_FUNCTION_1(nodefromwindow)
+DECLARE_FLEXSIM_FUNCTION_3(nodefromwindow, "?nodefromwindow@@YAPAVTreeNode@@PAUHWND__@@@Z", "?nodefromwindow@@YAPEAVTreeNode@@PEAUHWND__@@@Z")
 DECLARE_FLEXSIM_FUNCTION_1(nodefunctionasevent)
 DECLARE_FLEXSIM_FUNCTION_2(nodefunctionlistenalias, "nodefunctionlisten")
 DECLARE_FLEXSIM_FUNCTION_1(nodeinsertafter)
@@ -1943,7 +1948,6 @@ DECLARE_FLEXSIM_FUNCTION_1(searchdata_n)
 DECLARE_FLEXSIM_FUNCTION_1(searchdata_s)
 DECLARE_FLEXSIM_FUNCTION_1(searchfornode)
 DECLARE_FLEXSIM_FUNCTION_1(searchname)
-DECLARE_FLEXSIM_FUNCTION_2(selectedobjectalias, "selectedobject")
 DECLARE_FLEXSIM_FUNCTION_1(selectedx)
 DECLARE_FLEXSIM_FUNCTION_1(selectedy)
 DECLARE_FLEXSIM_FUNCTION_1(selectedz)
@@ -2110,6 +2114,7 @@ DECLARE_FLEXSIM_FUNCTION_3(updatestate_alias2, "?updatestate@@YANPAVTreeNode@@H@
 DECLARE_FLEXSIM_FUNCTION_1(updateundorecord)
 DECLARE_FLEXSIM_FUNCTION_1(uselisteners)
 DECLARE_FLEXSIM_FUNCTION_1(userinput)
+DECLARE_FLEXSIM_FUNCTION_1(userdatadir_cstr)
 DECLARE_FLEXSIM_FUNCTION_2(validatenamealias, "validatename")
 DECLARE_FLEXSIM_FUNCTION_1(validlink)
 DECLARE_FLEXSIM_FUNCTION_1(valuetohistogram)
@@ -2119,7 +2124,8 @@ DECLARE_FLEXSIM_FUNCTION_1(vectorprojecty)
 DECLARE_FLEXSIM_FUNCTION_1(vectorprojectz)
 DECLARE_FLEXSIM_FUNCTION_1(viewdist)
 DECLARE_FLEXSIM_FUNCTION_1(views)
-DECLARE_FLEXSIM_FUNCTION_1(viewtofile)
+DECLARE_FLEXSIM_FUNCTION_2(viewtofile_alias1, "viewtofile")
+DECLARE_FLEXSIM_FUNCTION_3(viewtofile_alias2, "?viewtofile@@YANPAVTreeNode@@PADHH@Z", "?viewtofile@@YANPEAVTreeNode@@PEADHH@Z")
 DECLARE_FLEXSIM_FUNCTION_2(webcommandalias, "webcommand")
 DECLARE_FLEXSIM_FUNCTION_2(weibullalias, "weibull")
 DECLARE_FLEXSIM_FUNCTION_1(windowfromnode)
@@ -2220,7 +2226,7 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(odtinitialize)
 	DECLARE_FLEXSIM_FUNCTION_3(odtbindvariablebynamealias1, "?odtbindvariablebyname@@YAXPAVObjectDataType@@PBDAAN@Z","?odtbindvariablebyname@@YAXPEAVObjectDataType@@PEBDAEAN@Z")
  	DECLARE_FLEXSIM_FUNCTION_3(odtbindvariablebynamealias2, "?odtbindvariablebyname@@YAXPAVObjectDataType@@PBDAAVByteBlock@@@Z","?odtbindvariablebyname@@YAXPEAVObjectDataType@@PEBDAEAVByteBlock@@@Z")
-	DECLARE_FLEXSIM_FUNCTION_3(odtbindvariablebynamealias3, "?odtbindvariablebyname@@YAXPAVObjectDataType@@PBDAAV?$SafeRef@VTreeNode@@@@@Z","?odtbindvariablebyname@@YAXPEAVObjectDataType@@PEBDAEAV?$SafeRef@VTreeNode@@@@@Z")
+	DECLARE_FLEXSIM_FUNCTION_3(odtbindvariablebynamealias3, "?odtbindvariablebyname@@YAXPAVObjectDataType@@PBDAAVNodeRef@@@Z", "?odtbindvariablebyname@@YAXPEAVObjectDataType@@PEBDAEAVNodeRef@@@Z")
 	DECLARE_FLEXSIM_FUNCTION_3(odtbindvariablebynamealias4, "?odtbindvariablebyname@@YAXPAVObjectDataType@@PBDAAPAVTreeNode@@@Z","?odtbindvariablebyname@@YAXPEAVObjectDataType@@PEBDAEAPEAVTreeNode@@@Z")
 	DECLARE_FLEXSIM_FUNCTION_1(outobjectinfo)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtappendtodisplaystr)
@@ -2238,7 +2244,6 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtgetbindtree)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtgetcurvalue)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtgetcurvaluename)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtgetcurvaluetype)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtgetvalue)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtsetvalue)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtisdisplayverbose)
@@ -2265,10 +2270,6 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_addindex)
 	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_draw)
 	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_cleanupindexbuffer)
-	DECLARE_FLEXSIM_FUNCTION_1(sql_buildquery)
-	DECLARE_FLEXSIM_FUNCTION_1(sql_doquery)
-	DECLARE_FLEXSIM_FUNCTION_1(sql_continuequery)
-	DECLARE_FLEXSIM_FUNCTION_1(sql_setdelegate)
 	DECLARE_FLEXSIM_FUNCTION_1(fglInfo)
 
 

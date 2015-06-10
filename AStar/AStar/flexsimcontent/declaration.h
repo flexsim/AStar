@@ -270,7 +270,7 @@ inline string getvarstr(treenode object, char *varname){return getnodestr(var_s(
 inline string getvarstr(treenode object, int varrank){return getnodestr(var(object,varrank));}
 inline double getvarnum(treenode object, char* varname){return getnodenum(var_s(object,varname));}
 inline double getvarnum(treenode object, int varrank){return getnodenum(var(object,varrank));}
-inline double setvarstr(treenode object, string varname, string val){return setvarstralias(object, (char*)varname.c_str(), (char*)varname.c_str());}
+inline double setvarstr(treenode object, string varname, string val){ return setvarstralias(object, (char*)varname.c_str(), (char*)val.c_str()); }
 inline double setvarstr(treenode object, int varrank, string val){setnodestr(var(object,varrank), val);return 0;}
 inline double setvarnum(treenode object, string varname, double val){return setvarnumalias(object,(char*)varname.c_str(),val);}
 inline double setvarnum(treenode object, int varrank, double val){setnodenum(var(object,varrank), val);return 0;}
@@ -371,7 +371,7 @@ inline treenode  createinstance(treenode CLASSNODE, treenode  CONTAINERNODE, int
 	{return createinstancealias(CLASSNODE,CONTAINERNODE,nocreatemessage);}
 
 inline size_t maintenance(int command, double state = 0, char *info = 0){return maintenancealias(command, state, info);}
-inline int EX(char *T, char * M = 0, int showsystemconsole = 0){return EXalias(T,M,showsystemconsole);}
+inline int EX(const char *T, const char * M = 0, int showsystemconsole = 0){return EXalias((char*)T,(char*)M,showsystemconsole);}
 inline double destroyeventsofobject(treenode object, double simtime, int code = 0, char* data = NULL,  treenode involvedobject = NULL)
 	{return destroyeventsofobjectalias2(object, simtime, code, data, involvedobject);}
 inline double destroyeventsofobject(treenode object){return destroyeventsofobjectalias1(object);}
@@ -398,7 +398,7 @@ inline treenode createcopy(treenode classobject, treenode instancecontainer, int
 	{return createcopyalias(classobject, instancecontainer, samename, inobject, cached, replace);}
 inline double getkinematics(treenode infonode, unsigned short type, int index = -1, double updatetime = -1.0)
 	{return getkinematicsalias(infonode, type, index, updatetime);}
-inline double selectedobject(treenode target, int reset = 0){return selectedobjectalias(target, reset);}
+engine_export treenode selectedobject(treenode target, int reset = 0);
 
 inline double addkinematic(treenode infonode,double _x, double _y, double _z, 
 		double maxspeed, double acc = 0, double dec = 0, 
@@ -547,8 +547,6 @@ inline double cempirical( char *tablename, int stream=0){return cempiricalalias(
 
 inline double dempirical(char *tablename, int stream = 0){ return dempiricalalias(tablename, stream); }
 
-inline double applicationcommand(char* commandname, n10argsdefaultinterface){return applicationcommandalias(commandname, n10args);}
-
 inline double webcommand(char* commandname, n10argsdefaultinterface){return webcommandalias(commandname, n10args);}
 
 inline int showhtmlhelp(string path){return showhtmlhelpalias((char*)path.c_str());}
@@ -678,14 +676,15 @@ inline treenode assertvariable(treenode object,char *name, int datatype = 0){ret
 inline treenode assertlabel(treenode object,char *name, int datatype = 0){return assertlabelalias(object, name, datatype);}
 inline treenode assertsubnode(treenode node,char *name, int datatype = 0){return assertsubnodealias(node, name, datatype);}
 inline double exportdataset(treenode p1, char * table, int format, char* wrOption = "w"){return exportdatasetalias(p1, table, format, wrOption);}
-inline int aggregateundorecords(TreeNode* view, char* description, int id1, int id2, int id3 = 0, int id4 = 0, int id5 = 0, int id6 = 0, int id7 = 0, int id8 = 0);
+inline int aggregateundorecords(TreeNode* view, char* description, int id1, int id2, int id3 = 0, int id4 = 0, int id5 = 0, int id6 = 0, int id7 = 0, int id8 = 0)
+{ return aggregateundorecordsalias(view, description, id1, id2, id3, id4, id5, id6, id7, id8); }
 
 inline double colorarray(treenode involved, double val){return colorarrayalias1(involved, val);}
 inline void  colorarray(int val, double * destcolor){colorarrayalias2(val, destcolor);}
 
 inline void fglColor(float r, float g, float b, float a = 1.0f) {fglColorAlias(r, g, b, a);}
-// lambda's are only compatible with visual studio 2010+
-#if _MSC_VER >= 1600
+inline double viewtofile(treenode view, const char* file) {return viewtofile_alias1(view, (char*)file);}
+inline double viewtofile(treenode view, const char* file, int w, int h) {return viewtofile_alias2(view, (char*)file, w, h);}
 extern QueryCallback defQueryCallback;
 inline int cpp_query(const char* queryStr, QueryCallback& p1 = defQueryCallback,  QueryCallback& p2 = defQueryCallback, QueryCallback& p3 = defQueryCallback,  QueryCallback& p4 = defQueryCallback,
 									QueryCallback& p5 = defQueryCallback,  QueryCallback& p6 = defQueryCallback, QueryCallback& p7 = defQueryCallback,  QueryCallback& p8 = defQueryCallback, QueryCallback& p9 = defQueryCallback)
@@ -693,10 +692,9 @@ inline int cpp_query(const char* queryStr, QueryCallback& p1 = defQueryCallback,
 		return cpp_queryalias(queryStr, p1, p2, p3, p4, p5, p6, p7, p8, p9);
 }
 inline FlexSimValue $iter(int index) {return $iteralias(index);}
-#endif
-inline FlexSimValue getqueryvalue(int row, int col) {return getqueryvaluealias1(row, col);}
-inline FlexSimValue getqueryvalue(int row, const char* colName) {return getqueryvaluealias2(row, colName);}
-inline FlexSimValue getqueryvalue(int row, const std::string& colName) {return getqueryvaluealias2(row, colName.c_str());}
+inline Variant getqueryvalue(int row, int col) {return getqueryvaluealias1(row, col);}
+inline Variant getqueryvalue(int row, const char* colName) {return getqueryvaluealias2(row, colName);}
+inline Variant getqueryvalue(int row, const std::string& colName) {return getqueryvaluealias2(row, colName.c_str());}
 
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 	inline treenode createevent(FlexSimEvent* e){return createeventalias2(e);}
@@ -750,6 +748,7 @@ inline FlexSimValue getqueryvalue(int row, const std::string& colName) {return g
 	inline double getdatastat(int stat, treenode dataset, treenode unused, double p1, double p2, double p3){return getdatastat_alias1(stat, dataset, unused, p1, p2, p3);}
 #endif
 
+engine_export Variant applicationcommand(const char* cmd, n10varsdefaultinterface);
 
 engine_export Variant getlabel(treenode object, const char* labelName);
 inline Variant getlabel(treenode object, const string& labelName) { return getlabel(object, labelName.c_str()); }
@@ -761,10 +760,41 @@ inline void setlabel(treenode object, const string& labelName, Variant toVal) {r
 engine_export void setlabel(treenode object, int labelRank, Variant toVal);
 engine_export void setlabel(treenode object, Variant labelName, Variant toVal);
 
+engine_export Variant listpush(const char* listName, const Variant& involved);
+inline Variant listpush(const std::string& listName, const Variant& involved) {return listpush(listName.c_str(), involved);}
+engine_export Variant listpush(const char* listName, const Variant& involved, const Variant& partitionId, const Variant& p1 = Variant(), const Variant& p2 = Variant(),
+                                            const Variant& p3 = Variant(), const Variant& p4 = Variant(), const Variant& p5 = Variant(), const Variant& p6 = Variant(),
+                                            const Variant& p7 = Variant(), const Variant& p8 = Variant());
+inline Variant listpush(const std::string& listName, const Variant& involved, const Variant& partitionId, const Variant& p1 = Variant(), const Variant& p2 = Variant(),
+                                            const Variant& p3 = Variant(), const Variant& p4 = Variant(), const Variant& p5 = Variant(), const Variant& p6 = Variant(),
+                                            const Variant& p7 = Variant(), const Variant& p8 = Variant())
+					{ return listpush(listName.c_str(), involved, partitionId, p1, p2, p3, p4, p5, p6, p7, p8); }
 
+engine_export Variant listpush(treenode list, const Variant& involved);
+engine_export Variant listpush(treenode list, const Variant& involved, const Variant& partitionId, const Variant& p1 = Variant(), const Variant& p2 = Variant(),
+                                            const Variant& p3 = Variant(), const Variant& p4 = Variant(), const Variant& p5 = Variant(), const Variant& p6 = Variant(),
+                                            const Variant& p7 = Variant(), const Variant& p8 = Variant());
 
+engine_export void listaddlistener(treenode entry, treenode callbackNode, const Variant& p1 = Variant(), const Variant& p2 = Variant(), const Variant& p3 = Variant(), 
+	const Variant& p4 = Variant(), const Variant& p5 = Variant(), const Variant& p6 = Variant(), const Variant& p7 = Variant(), 
+	const Variant& p8 = Variant(), const Variant& p9 = Variant(), const Variant& p10 = Variant());
+engine_export treenode listbackorders(TreeNode* listNode, const Variant& partitionId = Variant());
+engine_export treenode listentries(TreeNode* listNode, const Variant& partitionId = Variant());
+engine_export Variant listpull(TreeNode* listNode, TreeNode* cachedQuery, int requestNum = 1, int requireNum = 1, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
+engine_export Variant listpull(TreeNode* listNode, const char* query, int requestNum = 1, int requireNum = 1, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
+engine_export Variant listpull(const char* listName, TreeNode* cachedQuery, int requestNum = 1, int requireNum = 1, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
+engine_export Variant listpull(const char* listName, const char* query, int requestNum = 1, int requireNum = 1, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
+engine_export treenode globallist(const char* listName);
+engine_export treenode globallist(int listRank);
+engine_export double drawobject(treenode windownode, int shape, int texture, int animation = 0);
+engine_export Variant getmodelunit(int querytype);
 
+#if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
+__declspec(dllimport) void sql_buildquery(TreeNode* queryNode, char* query, SqlDataSource* d);
+__declspec(dllimport) int sql_doquery(TreeNode* queryNode, bool doOrderby);
+__declspec(dllimport) void sql_sortresult(TreeNode* queryNode, SqlDataSource* d, int begin, int end);
+#endif
 
-
+inline char* _parstr(int index, CallPoint * callpoint) { return (char*)__parstr(index, callpoint); }
 
 #endif

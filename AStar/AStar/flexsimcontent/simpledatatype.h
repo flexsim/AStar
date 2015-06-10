@@ -1,6 +1,7 @@
 #pragma once
 #include "basicclasses.h"
 #include "basicmacros.h"
+#include "datatypes.h"
 #include "basicutils.h"
 
 // if i'm compiling the engine then I don't yet have access
@@ -8,6 +9,7 @@
 #ifdef FLEXSIM_ENGINE_COMPILE
 	extern "C" __declspec(dllexport) char* bbgetbuffer(treenode x);
 	extern "C" __declspec(dllexport) int bbsetsize(treenode x, int size);
+	extern "C" __declspec(dllexport) int bbgetsize(treenode x);
 	#include "commandlist.h"
 	#include "modelling.h"
 #endif
@@ -25,6 +27,7 @@ class SimpleDataType
 {
 	friend class TreeNode;
 	friend class CouplingDataType;
+	friend class TableView;
 private:
 
 	static int bindMode;
@@ -33,24 +36,31 @@ private:
 	static char* displayStrCopyPoint;
 	static bool displayVerbose;
 	static int detachAfterBind;
-	static FlexSimCVector<NodeRef> nodeList;
+	static std::vector<NodeRef> nodeList;
 	static void attachSDTDerivative(TreeNode* x);
 	static void bindSDTNode(TreeNode* x);
 	static void detachSDTDerivative(TreeNode* x);
-	static SimpleDataType* createSDTDerivativeFromName(char* name, TreeNode* holder);
+	static SimpleDataType* createSDTDerivativeFromName(const char* name, TreeNode* holder);
 	static TreeNode* s_getBindTree(TreeNode* x);
 	static TreeNode* s_assertBindTree(TreeNode* x);
-	static double curValue;
+	static Variant curValue;
 	static const char * curValueName;
-#define SDT_VALUE_NUMBER 1
-#define SDT_VALUE_STRING 2
-	static int curValueType;
 	TreeNode* assertBindTree();
 
 protected:
 
 public:
 	static void appendToDisplayStr(const char* text);
+	static void appendToDisplayStr(double val) { 
+		char buffer[100]; 
+		double absVal = val >= 0 ? val : -val;
+		if (absVal == 0.0 || (absVal > 0.000001 && absVal < 1000000000.0))
+			sprintf(buffer, "%f", val); 
+		else sprintf(buffer, "%e", val);
+		appendToDisplayStr(buffer);
+	}
+	static void appendToDisplayStr(int val) { char buffer[100]; sprintf(buffer, "%d", val); appendToDisplayStr(buffer); }
+	static void appendToDisplayStr(const std::string& str) { appendToDisplayStr(str.c_str()); }
 	static bool isDisplayVerbose();
 	static void bindNodeList(int doBindMode, bool detachReattach, int startIndex = 0);
 	static void clearAttsFromNodeList();
@@ -66,7 +76,7 @@ engine_private:
 	virtual TreeNode* getLabelNode(const char* labelName, bool assert) { return 0; }
 	virtual TreeNode* getLabelNode(int labelRank, bool assert) { return 0; }
 public:
-	virtual Variant evaluate(VariantParams& params) { return Variant(); }
+	virtual Variant evaluate(const VariantParams& params) { return holder; }
 	char* defaultToString(int verbose);
 	void* operator new (size_t size)
 	{
@@ -80,11 +90,10 @@ public:
 	}
 
 	static int getBindMode();
-	static double& getCurValue();
-	static int& getCurValueType();
+	static Variant& getCurValue();
 	static const char * getCurValueName();
-	double getValue(const char* name);
-	void setValue(const char* name, double value);
+	Variant getValue(const char* name);
+	void setValue(const char* name, Variant value);
 	TreeNode* bindByName(const char* name, int asSubNode, int dataType, int * added = 0);
 
 	void bindDoubleByName(const char* name, double& val, int asSubNode);
@@ -115,16 +124,19 @@ template<class ObjType>
 	#define bindFlexSimValue(name) bindFlexSimValueByName(#name, name)
 
 	template<class T>
-	void bindNumberByName(char* name, T& val)
+	void bindNumberByName(const char* name, T& val)
 	{
 		int bindMode = getBindMode();
 
 		switch (bindMode) {
 		case SDT_BIND_ON_DISPLAY: {
 			char tempStr[1000];
-			if(((double)(int)val) != ((double)val))
-				sprintf(tempStr, "%s: %lf%s", name, (double)val, isDisplayVerbose() ? "\r\n" : ", ");
-			else sprintf(tempStr, "%s: %d%s", name, (int)val, isDisplayVerbose() ? "\r\n" : ", ");
+			if (((double)(int)val) != ((double)val)) {
+				double absVal = fabs((double)val);
+				if (absVal < 1000000000000.0 && absVal > 0.00001)
+					sprintf(tempStr, "%s: %f%s", name, (double)val, isDisplayVerbose() ? "\r\n" : ", ");
+				else sprintf(tempStr, "%s: %e%s", name, (double)val, isDisplayVerbose() ? "\r\n" : ", ");
+			} else sprintf(tempStr, "%s: %d%s", name, (int)val, isDisplayVerbose() ? "\r\n" : ", ");
 			appendToDisplayStr(tempStr);
 			break;
 		}
@@ -140,13 +152,11 @@ template<class ObjType>
 
 		case SDT_BIND_SET_VALUE:
 			if (strcmp(name, getCurValueName()) == 0) {
-				getCurValueType() = SDT_VALUE_NUMBER;
-				val = (T)getCurValue();
+				val = (T)(double)getCurValue();
 			}
 			break;
 		case SDT_BIND_GET_VALUE:
 			if (strcmp(name, getCurValueName()) == 0) {
-				getCurValueType() = SDT_VALUE_NUMBER;
 				getCurValue() = (double)val;
 			}
 			break;
@@ -156,7 +166,7 @@ template<class ObjType>
 
 
 	template<class T>
-	void bindEnumByName(char* name, T& val)
+	void bindEnumByName(const char* name, T& val)
 	{
 		int bindMode = getBindMode();
 		int valAsInt = static_cast<int>(val);
@@ -167,7 +177,7 @@ template<class ObjType>
 	#define bindEnum(name) bindEnumByName(#name, name)
 
 	template<class Str>
-	void bindStringByName(char* name, Str& val)
+	void bindStringByName(const char* name, Str& val)
 	{
 		int bindMode = getBindMode();
 
@@ -190,14 +200,12 @@ template<class ObjType>
 
 		case SDT_BIND_SET_VALUE:
 			if (strcmp(name, getCurValueName()) == 0) {
-				getCurValueType() = SDT_VALUE_STRING;
-				val = (char*)doubletoptr(getCurValue());
+				val = getCurValue().c_str();
 			}
 			break;
 		case SDT_BIND_GET_VALUE:
 			if (strcmp(name, getCurValueName()) == 0) {
-				getCurValueType() = SDT_VALUE_STRING;
-				getCurValue() = ptrtodouble((void*)val.c_str());
+				getCurValue() = val.c_str();
 			}
 			break;
 		}
@@ -209,28 +217,37 @@ template<class ObjType>
 	#define bindByteBlock(name, asSubNode) bindByteBlockByName(#name, name, asSubNode)
 
 	template<class Type, class SizeType>
-	void bindLocalArrayByName(char* name, Type* val, SizeType nrElements)
+	void bindLocalArrayByName(const char* name, Type* val, SizeType numElements)
 	{
 		int bindMode = getBindMode();
 
 		switch (bindMode) {
-		// else continue into load/save
-		case SDT_BIND_ON_SAVE:
-		case SDT_BIND_ON_LOAD: {
-			TreeNode* theNode = bindByName(name, 0, DATA_BYTEBLOCK, 0);
-			if(bindMode == SDT_BIND_ON_SAVE) {
-				bbsetsize(theNode, nrElements * sizeof(Type));
-				memcpy(bbgetbuffer(theNode), val, nrElements * sizeof(Type));
+			// else continue into load/save
+			case SDT_BIND_ON_SAVE:
+			case SDT_BIND_ON_LOAD: {
+				TreeNode* theNode = bindByName(name, 0, DATA_BYTEBLOCK, 0);
+				if(bindMode == SDT_BIND_ON_SAVE) {
+					bbsetsize(theNode, (int)numElements * sizeof(Type));
+					memcpy(bbgetbuffer(theNode), val, numElements * sizeof(Type));
+				}
+				else memcpy(val, bbgetbuffer(theNode), numElements * sizeof(Type));
+				break;
 			}
-			else memcpy(val, bbgetbuffer(theNode), nrElements * sizeof(Type));
-			break;
+			case SDT_BIND_ON_DISPLAY:
+				appendToDisplayStr(name);
+				appendToDisplayStr(": ");
+				for (int i = 0; i < numElements; i++) {
+					StlValueBinder<Type>::Displayer(val + i);
+					appendToDisplayStr(" ");
+				}
+				if (isDisplayVerbose())
+					appendToDisplayStr("\r\n");
+				break;
 		}
-		}
-
 	}
 	#define bindLocalArray(name, nrBytes) bindLocalArrayByName(#name, name, nrBytes)
 
-	void bindLocalBufferByName(char* name, void* val, int nrBytes)
+	void bindLocalBufferByName(const char* name, void* val, int nrBytes)
 	{
 		int bindMode = getBindMode();
 
@@ -247,12 +264,11 @@ template<class ObjType>
 			break;
 		}
 		}
-
 	}
 	#define bindLocalBuffer(name, nrBytes) bindLocalBufferByName(#name, name, nrBytes)
 
 	template<class Type, class SizeType>
-	void bindHeapArrayByName(char* name, Type*& val, SizeType& nrElements)
+	void bindHeapArrayByName(const char* name, Type*& val, SizeType& numElements)
 	{
 		int bindMode = getBindMode();
 
@@ -262,28 +278,126 @@ template<class ObjType>
 		case SDT_BIND_ON_LOAD: {
 			TreeNode* theNode = bindByName(name, 0, DATA_BYTEBLOCK, 0);
 			if(bindMode == SDT_BIND_ON_SAVE) {
-				set(assertsubnode(theNode, "nrElements"), nrElements);
-				bbsetsize(theNode, nrElements * sizeof(Type));
-				memcpy(bbgetbuffer(theNode), val, nrElements * sizeof(Type));
+				bbsetsize(theNode, numElements * sizeof(Type));
+				memcpy(bbgetbuffer(theNode), val, numElements * sizeof(Type));
 			}
 			else {
-				nrElements = get(node("/nrElements", theNode));
-				val = new Type[nrElements];
-				memcpy(val, bbgetbuffer(theNode), nrElements * sizeof(Type));
+				numElements = bbgetsize(theNode) / sizeof(Type);
+				val = new Type[numElements];
+				memcpy(val, bbgetbuffer(theNode), numElements * sizeof(Type));
 			}
 			break;
 		}
 		}
 	}
-	#define bindHeapArray(name, nrElements) bindHeapArrayByName(#name, name, nrElements)
+	#define bindHeapArray(name, numElements) bindHeapArrayByName(#name, name, numElements)
+
+	private:
+	template<class Type>
+	void displayFlexSimArray(Type& val)
+	{
+		char buffer[100];
+		sprintf(buffer, "Array[%d]: {", (int)val.size());
+		appendToDisplayStr(buffer);
+		for (auto x = val.begin(); x != val.end(); x++) {
+			if (x != val.begin())
+				appendToDisplayStr(", ");
+			StlValueBinder<Type::ElementType>::Displayer(x);
+		}
+		appendToDisplayStr("}");
+	}
+
+	public:
+	// bind method for treenodearray and string array
+	template<class Type>
+	void bindFlexSimArrayByName(const char* name, Type& val)
+	{
+		int bindMode = getBindMode();
+		switch (bindMode) {
+			// else continue into load/save
+			case SDT_BIND_ON_SAVE: {
+				TreeNode* theNode = bindByName(name, 0, DATA_BYTEBLOCK, 0);
+				clearcontents(theNode);
+				for (auto x = val.begin(); x != val.end(); x++)
+					StlValueBinder<Type::ElementType>::Saver(nodeinsertinto(theNode), x);
+				break;
+			}
+			case SDT_BIND_ON_LOAD: {
+				TreeNode* theNode = bindByName(name, 0, DATA_BYTEBLOCK, 0);
+				int numElements = content(theNode);
+				val.resize(numElements);
+				for (int i = 1; i <= content(theNode); i++)
+					val[i] = StlValueBinder<Type::ElementType>::Loader(rank(theNode, i));
+				break;
+			}
+			case SDT_BIND_ON_DISPLAY: displayFlexSimArray(val); break;
+		}
+	}
+	// template specialization for doublearray and intarray
+	template<>
+	void bindFlexSimArrayByName <doublearray>
+		(const char* name, doublearray& val)
+	{
+		int bindMode = getBindMode();
+		switch (bindMode) {
+			// else continue into load/save
+			case SDT_BIND_ON_SAVE: bindLocalArrayByName(name, val.begin(), val.size()); break;
+			case SDT_BIND_ON_LOAD: {
+				TreeNode* theNode = bindByName(name, 0, DATA_BYTEBLOCK, 0);
+				size_t numElements = bbgetsize(theNode) / sizeof(double);
+				val.resize(numElements);
+				bindLocalArrayByName(name, val.begin(), numElements);
+				break;
+			}
+			case SDT_BIND_ON_DISPLAY: displayFlexSimArray(val); break;
+		}
+	}
+	template<>
+	void bindFlexSimArrayByName <intarray>
+		(const char* name, intarray& val)
+	{
+		int bindMode = getBindMode();
+		switch (bindMode) {
+			// else continue into load/save
+			case SDT_BIND_ON_SAVE: bindLocalArrayByName(name, val.begin(), val.size()); break;
+			case SDT_BIND_ON_LOAD: {
+				TreeNode* theNode = bindByName(name, 0, DATA_BYTEBLOCK, 0);
+				size_t numElements = bbgetsize(theNode) / sizeof(int);
+				val.resize(numElements);
+				bindLocalArrayByName(name, val.begin(), numElements);
+				break;
+			}
+			case SDT_BIND_ON_DISPLAY: displayFlexSimArray(val); break;
+		}
+	}
+
+	#define bindFlexSimArray(name) bindFlexSimArrayByName(#name, name)
 
 	void bindNodePtrByName(const char* name, TreeNode*& val);
 	void bindSubNodeByName(const char* name, TreeNode*& val, int dataType = 1);
 	void bindObjPtrByName(const char* name, SimpleDataType*& val);
+	engine_export void bindVariantByName(const char* name, Variant& var);
 
 #define bindSubNode(name, dataType) bindSubNodeByName(#name, name, dataType)
 #define bindNodePtr(name) bindNodePtrByName(#name, name)
 #define bindObjPtr(name) bindObjPtrByName(#name, (SimpleDataType*&)name)
+#define bindVariant(name) bindVariantByName(#name, name)
+
+	engine_export void bindSimpleDataMemberByName(const char* name, SimpleDataType* owner, SimpleDataType* member, bool shouldDisown);
+
+	template <class T = std::enable_if<std::is_base_of<SimpleDataType, T>::value>::type>
+	void bindSdtMemberByName(const char* name, SimpleDataType* owner, T& member)
+	{
+		bindSimpleDataMemberByName(name, owner, &member, true);
+	}
+
+	template <class T = std::enable_if<std::is_base_of<SimpleDataType, T>::value>::type>
+	void bindSdtMemberByName(const char* name, SimpleDataType* owner, T*& member)
+	{
+		bindSimpleDataMemberByName(name, owner, member, false);
+	}
+
+#define bindSdtMember(name) bindSdtMemberByName(#name, this, name)
 
 	TreeNode* getBindTree();
 
@@ -321,7 +435,7 @@ template<class ObjType>
 	class StlValueBinder<Type, typename std::enable_if<std::is_floating_point<Type>::value, void>::type> {
 	public:
 		static treenode Saver(treenode x, Type* toVal)
-			{return set(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
+			{return setnodenum(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
 		static Type Loader(treenode x)
 			{return (Type)get(x);}
 		static void Displayer(Type* x)
@@ -332,7 +446,7 @@ template<class ObjType>
 	class StlValueBinder<Type, typename std::enable_if<std::is_integral<Type>::value, void>::type> {
 	public:
 		static treenode Saver(treenode x, Type* toVal)
-			{return set(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
+			{return setnodenum(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
 		static Type Loader(treenode x)
 			{return (Type)get(x);}
 		static void Displayer(Type* x)
@@ -371,6 +485,28 @@ template<class ObjType>
 			if (objectexists(*x))
 				str = nodetomodelpath(*x, 2);
 			else if(*x == 0)
+				str = "NULL";
+			else str = "[Invalid Ptr]";
+			appendToDisplayStr(str.c_str());
+		}
+	};
+
+	template <> class StlValueBinder<NodeRef> {
+	public:
+		static treenode Saver(treenode x, NodeRef* toVal)
+		{
+			return nodepoint(nodeadddata(x, DATA_POINTERCOUPLING), *toVal);
+		}
+		static NodeRef Loader(treenode x)
+		{
+			return tonode(get(x));
+		}
+		static void Displayer(NodeRef* x)
+		{
+			std::string str;
+			if (objectexists(*x))
+				str = nodetomodelpath(*x, 2);
+			else if (!(*x))
 				str = "NULL";
 			else str = "[Invalid Ptr]";
 			appendToDisplayStr(str.c_str());
@@ -561,7 +697,7 @@ template<class ObjType>
 	static void bindNumberToNodeByName(char* name, NumberType & val, treenode x)
 	{
 		switch (getBindMode()) {
-		case SDT_BIND_ON_SAVE:set(assertsubnode(x, name, DATA_FLOAT), val); break;
+		case SDT_BIND_ON_SAVE:setnodenum(assertsubnode(x, name, DATA_FLOAT), val); break;
 		case SDT_BIND_ON_LOAD: val = get(node(name, x)); break;
 		}
 	}
@@ -569,10 +705,15 @@ template<class ObjType>
 };
 
 
-class SqlDelegate : public SimpleDataType
+/// <summary>	Defines an interface for interaction with FlexSim's SQL parser/evaluator. </summary>
+/// <remarks>	Sub-class implementations act as delegates to the parser,
+/// 			providing, first, mappings of table and column names to table and
+/// 			column id's, and second, an interface for retrieving values out of
+/// 			those tables.</remarks>
+class SqlDataSource : public SimpleDataType
 {
 
-/// <summary>	A macro that defines if a column as not found. Returned by the SqlDelegate::getColId() if it can find that column.</summary>
+/// <summary>	A macro that defines if a column as not found. Returned by the SqlDataSource::getColId() if it cannot find that column.</summary>
 #define SQL_COL_NOT_FOUND INT_MAX
 /// <summary>	"Not found" table is one that it tried to resolve but couldn't. </summary>
 #define SQL_TABLE_NOT_FOUND (INT_MAX - 2)
@@ -581,14 +722,51 @@ class SqlDelegate : public SimpleDataType
 #define SQL_NULL Variant()
 
 public:
+	/// <summary>	Returns true if the delegate can resolve column and table refs at parse time, otherwise false. </summary>
+	/// <remarks>	Default is true. If false, this means that references must be resolved at query time. This 
+	/// 			would only be useful if there is a mechanism by which you can parse and store a query beforehand,
+	/// 			and then run the query later, potentially multiple times. This could improve speed because
+	/// 			you're only parsing once and querying multiple times, instead parsing on each query. </remarks>
+	/// <returns>	true if it can resolve references at parse time, false if not. </returns>
 	virtual bool canResolveRefsAtParseTime() {return true;}
-	virtual int getColId(int tableId, const char* colName) = 0;
+
+	/// <summary>	Returns the column identifier of the column with the defined name in the defined table. </summary>
+	/// <remarks>	Anthony, 8/27/2014. </remarks>
+	/// <param name="tableId">	Identifier for the table. </param>
+	/// <param name="colName">	Name of the column. </param>
+	/// <returns>	The column identifier. </returns>
+	virtual int getColId(int tableId, const char* colName) { return SQL_COL_NOT_FOUND; }
+
+	/// <summary>	Enumerate column names of a table. </summary>
+	/// <remarks>	Anthony, 8/27/2014. </remarks>
+	/// <param name="tableId">	 This is used if the parser needs a full enumeration of the columns of a table,
+	/// 			specifically for a SELECT * clause. The sql parser will start with colNum = 0, and then
+	/// 			iteratively call this method, incrementing colNum each time, until the method returns 
+	/// 			SQL_COL_END. Each call should return the name of a column.</param>
+	/// <param name="colNum"> 	The 0-based column number. </param>
+	/// <returns>	Returns the name of a column, or SQL_COL_END. </returns>
 	virtual const char* enumerateColNames(int tableId, int colNum){return SQL_COL_END;}
+
+	/// <summary>	Retrieves a value out of a table. </summary>
+	/// <remarks>	Anthony, 8/27/2014. </remarks>
+	/// <param name="tableId">	Identifier for the table. </param>
+	/// <param name="row">	  	The row. </param>
+	/// <param name="colId">  	Identifier for the col. </param>
+	/// <returns>	The value. </returns>
 	virtual Variant getValue(int tableId, int row, int colId) {return SQL_NULL;}
 
+	/// <summary>	Gets a table's identifier. </summary>
+	/// <remarks>	Anthony, 8/27/2014. </remarks>
+	/// <param name="tableName">	Name of the table. </param>
+	/// <returns>	The table identifier. </returns>
 	virtual int getTableId(const char* tableName) {return 0;}
+
+	/// <summary>	Returns the number of rows in a table. </summary>
+	/// <remarks>	Anthony, 8/27/2014. </remarks>
+	/// <param name="tableId">	Identifier for the table. </param>
+	/// <returns>	The number of rows in the table. </returns>
 	virtual int getRowCount(int tableId) {return 0;}
 
-	virtual const char* getClassFactory() { return "SqlDelegate"; }
+	virtual const char* getClassFactory() { return "SqlDataSource"; }
 };
 

@@ -77,20 +77,16 @@ using std::string;
 	#endif
 
 #endif
+
+#include "datatypes.h"
+
 #ifndef FLEXSIM_TARGET_VERSION
 	#define FLEXSIM_TARGET_VERSION 9900
 #endif
 #define tonum(x) (ptrtodouble(x))
 
 // direct c++ parval
-#define parval(a) _parval(a,callPoint)
-#define partype(a) _partype(a,callPoint)
-#define parstr(a) ((char *) doubletoptr(parval(a)))
-#define parnode(a) ((treenode )doubletoptr(_parval(a,callPoint)))
-#define parqty() _parqty(callPoint)
 #define stringreturn(str) _stringreturn(str, callPoint)
-#define msgparam(a) parval(a+1)
-#define msgsendingobject parnode(1)
 
 #define ip ((size_t)edsdata((EventDataStruct *)input))
 #define eventdata ((char *)edsdata((EventDataStruct *)input))
@@ -104,6 +100,8 @@ using std::string;
 #define FLEXSIM_DEFINITION_PHASE 2
 #define FLEXSIM_BINDING_PHASE 3
 
+typedef Variant (*FSfptr)(CallPoint*);
+
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 	#define DECLARATIONTYPE FLEXSIM_DECLARATION_PHASE
 	#include "FlexsimFuncs.h"
@@ -113,9 +111,9 @@ using std::string;
 	#include "simpledatatype.h"
 	#include "objectdatatype.h"
 	#include "couplingdatatype.h"
-	#include "particledatatype.h"
 	#include "flexsimevent.h"
 	#include "mesh.h"
+	#include "List.h"
 
 	#if defined COMPILING_MODULE_DLL
 		#include "allobjects.h"
@@ -144,8 +142,6 @@ using std::string;
 		treenode Object;
 	};
 
-	#define c instance
-	#define i involved
 	#define mpt _mpt
 	#define mpd _mpd
 	#define mpf _mpf
@@ -166,7 +162,7 @@ using std::string;
 	                                double n21=0,double n22=0,double n23=0,double n24=0,double n25=0,double n26=0,double n27=0,double n28=0,double n29=0,double n30=0
 
 	#define FLEXSIMINTERFACE int code, treenode c, treenode theclass, void * input, void * output, treenode i, CallPoint * callPoint
-	#define FLEXSIMINTERFACEPARAMETERS code, instance, theclass, input, output, involved, callPoint
+	#define FLEXSIMINTERFACEPARAMETERS code, c, theclass, input, output, i, callPoint
 
 	// Constants
 

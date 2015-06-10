@@ -1,6 +1,6 @@
 
 
-// COPYRIGHT © 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
+// COPYRIGHT 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
 
 # ifndef byteblock_cld
 # define byteblock_cld
@@ -48,8 +48,9 @@ public:
 	void write(const char *source);
 	void write(const char *source, size_t intsize, bool nullterminate);
 	bool setSize(size_t);
-	unsigned int getSize();
+	unsigned int getSize() const;
 	char *getBuffer();
+	const char *getBuffer() const;
 	void append(const char *source);
 	ByteBlock& operator =(const char * c)
 		{ write(c); return *this; }
@@ -83,7 +84,7 @@ public:
 		bool save(std::ostream& stream);
 		bool load(std::istream& stream);
 		bool save(char*& destination);
-		bool load(char*& source);
+		bool load(const char*& source);
   
 
 		bool saveXML(MSXML2::IXMLDOMDocumentPtr doc, MSXML2::IXMLDOMElementPtr parentnode, bool isNameBB = false);
@@ -95,6 +96,10 @@ public:
 
 		bool parserSearchSubString(char *pattern, char *substitute, int rep); // return true when not at end; set substringcursor when done
 		bool parserSearchSubStringNotWholeWord(char *pattern, char *substitute, bool rep); // return true when not at end; set substringcursor when done
+
+
+		static size_t subStringCursor; // position  in block
+		void showErrorMsg(const char* msg);
 	#endif
 };
 #pragma pack()//restore packing to its default value
@@ -116,7 +121,7 @@ public:
 
 
 
-// COPYRIGHT © 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
+// COPYRIGHT 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
 
 
 

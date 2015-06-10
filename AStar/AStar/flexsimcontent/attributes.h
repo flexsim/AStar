@@ -1,6 +1,6 @@
 
 
-// COPYRIGHT © 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
+// COPYRIGHT 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
 
 // object containers
 DECLARE_ATTRIBUTE(0,behaviour,"Behaviour function lists container")
@@ -120,6 +120,6 @@ DECLARE_ATTRIBUTE(0,uniqueid,"A Unique ID number for a flowitem. Used by the Ful
 DECLARE_ATTRIBUTE(0,animationinfo,"An attribute containing animation information")
 DECLARE_ATTRIBUTE(0,resizeinfo,"An attribute containing sub-component resizing information")
 
-// COPYRIGHT © 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
+// COPYRIGHT 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
 
 

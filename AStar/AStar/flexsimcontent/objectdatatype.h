@@ -1,5 +1,5 @@
 
-// COPYRIGHT © 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
+// COPYRIGHT 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
 
 #ifndef objectdatatype_h
 #define objectdatatype_h
@@ -49,13 +49,6 @@ public:
 	size_t nrEntries;
 	double length;
 	unsigned int checkSum;
-};
-
-class odtfptr_
-{
-public:
-  odtfptr_(){};
-  int (* setmember) (ObjectDataType*, TreeNode *);         
 };
 
 /***** The following class is only defined because I want to explicitly fire code when I start***/
@@ -124,10 +117,6 @@ public:
 	class basetable;
 #endif
 
-  
-//extern odtfptr_ setmemberptr[140];
-
-int objectdatatype__setmemberfunctionpointerarray();
 
 class ObjectDataType : public SimpleDataType
 {
@@ -281,7 +270,7 @@ int odtsetmemberfunction##ODTMEMBERPREFIX##v(ObjectDataType * D,  TreeNode * P);
 
 
 
-// COPYRIGHT © 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
+// COPYRIGHT 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
 
 
 

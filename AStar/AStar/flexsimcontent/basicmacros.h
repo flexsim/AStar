@@ -56,6 +56,25 @@ void * input, void * output, TreeNode *i, CallPoint * callPoint
 
 #define n10args n1,n2,n3,n4,n5,n6,n7,n8,n9,n10
 
+#define n10varsdefaultinterface const Variant& n1 = Variant(), const Variant& n2 = Variant(), const Variant& n3 = Variant(), const Variant& n4 = Variant(), const Variant& n5 = Variant(), const Variant& n6 = Variant(), const Variant& n7 = Variant(), const Variant& n8 = Variant(), const Variant& n9 = Variant(), const Variant& n10 = Variant()
+#define n10varsinterface const Variant& n1, const Variant& n2, const Variant& n3, const Variant& n4, const Variant& n5, const Variant& n6, const Variant& n7, const Variant& n8, const Variant& n9, const Variant& n10
+
+#define n10vars n1, n2, n3, n4, n5, n6, n7, n8, n9, n10
+#define n10varslegacy n1.forceLegacyDouble(), n2.forceLegacyDouble(), n3.forceLegacyDouble(), n4.forceLegacyDouble(), n5.forceLegacyDouble(), n6.forceLegacyDouble(), n7.forceLegacyDouble(), n8.forceLegacyDouble(), n9.forceLegacyDouble(), n10.forceLegacyDouble()
+
+#define n30varsdefaultinterface const Variant& n1 = Variant(), const Variant& n2 = Variant(), const Variant& n3 = Variant(), const Variant& n4 = Variant(), const Variant& n5 = Variant(), const Variant& n6 = Variant(), const Variant& n7 = Variant(), const Variant& n8 = Variant(), const Variant& n9 = Variant(), const Variant& n10 = Variant(), \
+	const Variant& n11 = Variant(), const Variant& n12 = Variant(), const Variant& n13 = Variant(), const Variant& n14 = Variant(), const Variant& n15 = Variant(), const Variant& n16 = Variant(), const Variant& n17 = Variant(), const Variant& n18 = Variant(), const Variant& n19 = Variant(), const Variant& n20 = Variant(), \
+	const Variant& n21 = Variant(), const Variant& n22 = Variant(), const Variant& n23 = Variant(), const Variant& n24 = Variant(), const Variant& n25 = Variant(), const Variant& n26 = Variant(), const Variant& n27 = Variant(), const Variant& n28 = Variant(), const Variant& n29 = Variant(), const Variant& n30 = Variant()
+
+#define n30varsinterface const Variant& n1, const Variant& n2, const Variant& n3, const Variant& n4, const Variant& n5, const Variant& n6, const Variant& n7, const Variant& n8, const Variant& n9, const Variant& n10, \
+	const Variant& n11, const Variant& n12, const Variant& n13, const Variant& n14, const Variant& n15, const Variant& n16, const Variant& n17, const Variant& n18, const Variant& n19, const Variant& n20, \
+	const Variant& n21, const Variant& n22, const Variant& n23, const Variant& n24, const Variant& n25, const Variant& n26, const Variant& n27, const Variant& n28, const Variant& n29, const Variant& n30
+
+#define n30vars n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16, n17, n18, n19, n20, n21, n22, n23, n24, n25, n26, n27, n28, n29, n30
+#define n30varslegacy n1.forceLegacyDouble(), n2.forceLegacyDouble(), n3.forceLegacyDouble(), n4.forceLegacyDouble(), n5.forceLegacyDouble(), n6.forceLegacyDouble(), n7.forceLegacyDouble(), n8.forceLegacyDouble(), n9.forceLegacyDouble(), n10.forceLegacyDouble() \
+	n11.forceLegacyDouble(), n12.forceLegacyDouble(), n13.forceLegacyDouble(), n14.forceLegacyDouble(), n15.forceLegacyDouble(), n16.forceLegacyDouble(), n17.forceLegacyDouble(), n18.forceLegacyDouble(), n19.forceLegacyDouble(), n20.forceLegacyDouble(), \
+	n21.forceLegacyDouble(), n22.forceLegacyDouble(), n23.forceLegacyDouble(), n24.forceLegacyDouble(), n25.forceLegacyDouble(), n26.forceLegacyDouble(), n27.forceLegacyDouble(), n28.forceLegacyDouble(), n29.forceLegacyDouble(), n30.forceLegacyDouble()
+
 #define n30argsinterface double n1,double n2,double n3,double n4,double n5,double n6,double n7,double n8,double n9,double n10,\
   double n11,double n12,double n13,double n14,double n15,double n16,double n17,double n18,double n19,double n20,\
 double n21,double n22,double n23,double n24,double n25,double n26,double n27,double n28,double n29,double n30
@@ -73,6 +92,7 @@ n21,n22,n23,n24,n25,n26,n27,n28,n29,n30
 #define RETURN_TYPE_UNRESOLVED 0
 #define RETURN_TYPE_NUMBER 1
 #define RETURN_TYPE_STRING 2
+#define RETURN_TYPE_VARIANT 3
 
 #define TYPE_CHECK_NUMBER_BIT 0x1
 #define TYPE_CHECK_STRING_BIT 0x2
@@ -81,7 +101,7 @@ n21,n22,n23,n24,n25,n26,n27,n28,n29,n30
 
 #define CALLBACKPARAMS HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 
-#define SAFENODE &core->failsafelink
+#define SAFENODE &TreeNode::failSafeLink
 
 # define parametersinterface CallPoint * callpoint
 # define parameters callpoint
@@ -102,15 +122,14 @@ n21,n22,n23,n24,n25,n26,n27,n28,n29,n30
 #define GlobalFunctionStart try {
 #define GlobalFunctionEnd(functionname) } catch(...) {reportobjectfunctionexception(functionname, NULL, NULL, NULL); throw;} 
 
-#define iterate(a,b,c) for(int count=a;c>0?count<=b:count>=b;count+=c)
-#define forobjecttreeunder(topnode)\
-for(treenode a = first(topnode); validlink(a,""); nextforobjecttreeunder(&a, topnode))
-#define forobjectlayerunder(node)\
-for (treenode a = first(node);objectexists(a);a=next(a))
-#define forobjectsbefore(node)\
-for (treenode a = prev(node);objectexists(a) && getrank(a) >= 1;a=prev(a))
-#define forobjectsbehind(node)\
-for (treenode a = next(node);objectexists(a);a=next(a))
+#define forobjecttreeunder(__top__)\
+	for(treenode a = first(__top__); objectexists(a); a = nextforobjecttreeunder(a, __top__))
+#define forobjectlayerunder(__top__)\
+	for (treenode a = first(__top__); objectexists(a); a = next(a))
+#define forobjectsbefore(__node__)\
+	for (treenode a = prev(__node__); objectexists(a) && getrank(a) >= 1; a = prev(a))
+#define forobjectsbehind(__node__)\
+	for (treenode a = next(__node__); objectexists(a); a = next(a))
 #define forobjectselectionset(node)\
 for(treenode a = NULL, nextforobjectselectionset(&a, node); objectexists(a); nextforobjectselectionset(&a, node))
 
@@ -157,7 +176,7 @@ for(treenode a = NULL, nextforobjectselectionset(&a, node); objectexists(a); nex
 #define DATA_BYTEBLOCK 2
 #define DATA_POINTERCOUPLING 3
 #define DATA_OBJECT 4
-#define DATA_PARTICLE 5
+//#define DATA_PARTICLE 5
 #define DATA_BUNDLE 6
 #define DATA_SIMPLE 7
 
@@ -223,12 +242,14 @@ inline double ptrtodouble(void* x)
 	return (double)(size_t)x;
 }
 
-#ifdef FLEXSIM_ENGINE_COMPILE
-	#define engine_export __declspec(dllexport)
-	#define engine_private public
-#else
-	#define engine_export
-	#define engine_private private
+#ifndef engine_export
+	#ifdef FLEXSIM_ENGINE_COMPILE
+		#define engine_export __declspec(dllexport)
+		#define engine_private public
+	#else
+		#define engine_export
+		#define engine_private private
+	#endif
 #endif
 
 #if defined FLEXSIM_ENGINE_COMPILE || defined COMPILING_FLEXSIM_CONTENT

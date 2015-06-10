@@ -452,9 +452,12 @@ public:
 visible void mesh(treenode meshnode, unsigned int perVertexAttribs, unsigned int flags);
 visible int  meshaddvertex(treenode meshnode);
 visible void meshaddcustomvertexattrib(treenode meshnode, const char* name, int componentsPerVertex, GLenum type, bool isNormalized);
+void meshaddcustomvertexattrib_flexscript(treenode meshnode, const char* name, int componentsPerVertex, GLenum type, int isNormalized);
 visible void meshsetvertexattrib(treenode meshnode, unsigned int vertIndex, unsigned int attribId, float p1, float p2=0, float p3=0, float p4=0);
-visible void meshsetattrib(treenode meshnode, unsigned int attribId, float p1, float p2=0, float p3=0, float p4=0);
-visible void meshdraw(treenode meshnode, int drawMode, int offset, int count, int stride=0);
+void meshsetvertexattrib_flexscript(treenode meshnode, unsigned int vertIndex, unsigned int attribId, double p1, double p2, double p3, double p4);
+visible void meshsetattrib(treenode meshnode, unsigned int attribId, float p1, float p2 = 0, float p3 = 0, float p4 = 0);
+void meshsetattrib_flexscript(treenode meshnode, unsigned int attribId, double p1, double p2, double p3, double p4);
+visible void meshdraw(treenode meshnode, int drawMode, int offset, int count, int stride = 0);
 visible int meshaddindex(treenode meshnode, unsigned int index);
 visible double meshinfo(treenode meshnode, unsigned int type, unsigned int index=0, unsigned int param=0);
 
