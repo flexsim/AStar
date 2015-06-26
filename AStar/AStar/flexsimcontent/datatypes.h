@@ -563,14 +563,7 @@ public:
 		else return 0;
 	}
 	inline ObjType* get() const { return operator ObjType*(); }
-	void bind(TreeNode* x) { 
-		switch (SimpleDataType::getBindMode()) {
-		case 1: operator = (((TreeNode*)x->value)->objectAs(ObjType)); break;
-		case 2: x->value = NodeRef::get(); break;
-		case 4: SimpleDataType::appendToDisplayStr(nodetomodelpath(NodeRef::get(), 1)); break;
-		}
-		
-	}
+	void bind(TreeNode* x) { x->value = NodeRef::get(); }
 };
 
 
