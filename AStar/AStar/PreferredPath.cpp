@@ -295,7 +295,7 @@ void PreferredPath::addVertices(Mesh* barrierMesh, float z)
 #undef ROTATE_POINT
 }
 
-visible double PreferredPath_setWeight(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant PreferredPath_setWeight(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -311,7 +311,7 @@ visible double PreferredPath_setWeight(FLEXSIMINTERFACE)
 	return 0;
 }
 
-visible double PreferredPath_getWeight(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant PreferredPath_getWeight(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))

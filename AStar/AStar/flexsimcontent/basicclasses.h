@@ -35,7 +35,6 @@ template<class ElementType> class HashTable;
 class NodeRef;
 template<class ObjType> class ObjRef;
 class Bundle;
-class FlexSimValue;
 class UserWindowStyle;
 class Mesh;
 class IndexedMesh;

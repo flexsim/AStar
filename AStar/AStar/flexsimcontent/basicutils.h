@@ -7,46 +7,6 @@
 	#include <excpt.h>
 #endif
 
-#ifndef FLEXSIM_VALUE
-#define FLEXSIM_VALUE
-	class FlexSimValue
-	{
-	public:
-		double asDouble;
-		inline operator void*()const{return doubletoptr(asDouble);}
-		inline operator TreeNode*()const{return (TreeNode*)doubletoptr(asDouble);}
-		inline operator double()const{return asDouble;}
-		inline operator double&() {return asDouble;}
-		inline operator __int64()const{return (__int64)asDouble;}
-		inline operator int()const{return (int)asDouble;}
-		inline operator short()const{return (short)asDouble;}
-		inline operator char()const{return (char)asDouble;}
-		inline operator unsigned __int64()const{return (unsigned __int64)asDouble;}
-		inline operator unsigned int()const{return (unsigned int)asDouble;}
-		inline operator unsigned short()const{return (unsigned short)asDouble;}
-		inline operator unsigned char()const{return (unsigned char)asDouble;}
-		inline operator unsigned char*()const{return (unsigned char*)doubletoptr(asDouble);}
-		inline operator char*()const{return (char*)doubletoptr(asDouble);}
-		inline operator std::string&(){static std::string tempStr;if (asDouble <= 1000000) tempStr = ""; else tempStr = (char*)doubletoptr(asDouble); return tempStr;}
-		inline FlexSimValue(void* x) : asDouble(ptrtodouble(x)) {}
-		inline FlexSimValue(TreeNode* x) : asDouble(ptrtodouble(x)) {}
-		inline FlexSimValue(double x) : asDouble(x) {}
-		inline FlexSimValue(__int64 x) : asDouble((double)x) {}
-		inline FlexSimValue(int x) : asDouble((double)x) {}
-		inline FlexSimValue(short x) : asDouble((double)x) {}
-		inline FlexSimValue(char x) : asDouble((double)x) {}
-		inline FlexSimValue(unsigned __int64 x) : asDouble((double)x) {}
-		inline FlexSimValue(unsigned int x) : asDouble((double)x) {}
-		inline FlexSimValue(unsigned short x) : asDouble((double)x) {}
-		inline FlexSimValue(unsigned char x) : asDouble((double)x) {}
-		inline FlexSimValue(unsigned char* x) : asDouble((double)ptrtodouble(x)) {}
-		inline FlexSimValue(char* x) : asDouble((double)ptrtodouble(x)) {}
-		inline FlexSimValue(const char* x) : asDouble((double)ptrtodouble((char*)x)) {}
-		inline FlexSimValue(std::string& x) : asDouble((double)ptrtodouble((char*)x.c_str())) {}
-		inline FlexSimValue(const FlexSimValue& x) : asDouble(x.asDouble) {}
-	};
-#endif
-
 #undef COMPARE_NUMBER_TYPES
 #undef COMPARE_NUMBER
 
@@ -123,7 +83,7 @@
 #if _MSC_VER >= 1600
 
 template<class Test, class Return>
-FlexSimValue cpp_findmatch(size_t nr, Test test, Return returnFunc, bool reverse = false)
+Variant cpp_findmatch(size_t nr, Test test, Return returnFunc, bool reverse = false)
 {
 	size_t start, end;
 	if (reverse) {
@@ -149,7 +109,7 @@ size_t cpp_findmatch(size_t nr, Test test)
 }
 
 template<class Test, class Return>
-FlexSimValue cpp_findmatchintree(treenode top, Test test, Return returnFunc)
+Variant cpp_findmatchintree(treenode top, Test test, Return returnFunc)
 {
 	if (test(top))
 		return returnFunc(top);
@@ -270,16 +230,16 @@ void cpp_repeat(int nr, Do doIt)
 	PP_IIF(PP_EQUAL(2, VA_NARGS(__VA_ARGS__)), \
 		cpp_findmatchintree(VA_ARG_0(__VA_ARGS__), [&](treenode a) -> bool {return VA_ARG_1(__VA_ARGS__);}), \
 			cpp_findmatchtree(VA_ARG_0(__VA_ARGS__), [&](treenode a) -> bool {return VA_ARG_1(__VA_ARGS__);}, \
-						[&](treenode a) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}))
+						[&](treenode a) -> Variant {return VA_ARG_2(__VA_ARGS__);}))
 
 #define findmatch(...) \
 	PP_IIF(PP_EQUAL(2, VA_NARGS(__VA_ARGS__)), \
 		cpp_findmatch(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> bool {return VA_ARG_1(__VA_ARGS__);}), \
 		PP_IIF(PP_EQUAL(3, VA_NARGS(__VA_ARGS__)), \
 			cpp_findmatch(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> bool {return VA_ARG_1(__VA_ARGS__);}, \
-						[&](size_t count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}), \
+						[&](size_t count) -> Variant {return VA_ARG_2(__VA_ARGS__);}), \
 			cpp_findmatch(VA_ARG_0(__VA_ARGS__), [&](size_t count) -> bool {return VA_ARG_1(__VA_ARGS__);}, \
-						[&](size_t count) -> FlexSimValue {return VA_ARG_2(__VA_ARGS__);}, VA_ARG_3(__VA_ARGS__))))
+						[&](size_t count) -> Variant {return VA_ARG_2(__VA_ARGS__);}, VA_ARG_3(__VA_ARGS__))))
 
 
 #define findmax(...) \

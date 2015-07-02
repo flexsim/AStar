@@ -176,8 +176,8 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 		Barrier* barrier = &o(Barrier, secondary);
 
 		// is there a current barrier
-		if (objectexists(tonode(activeBarrier))) {
-			Barrier* b = &o(Barrier, tonode(activeBarrier));
+		if (objectexists(tonode((Variant)activeBarrier))) {
+			Barrier* b = &o(Barrier, tonode((Variant)activeBarrier));
 			// is the clicked barrier different than the current barrier
 			if (b != barrier) {
 				// then reset the current barrier to be "not active"
@@ -191,8 +191,8 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 		setDirty();
 		return barrier->onClick(view, (int)clickcode, cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
 	}
-	if (objectexists(tonode(activeBarrier))) {
-		Barrier* b = &o(Barrier, tonode(activeBarrier));
+	if (objectexists(tonode((Variant)activeBarrier))) {
+		Barrier* b = &o(Barrier, tonode((Variant)activeBarrier));
 		b->activePointIndex = 0;
 		b->isActive = 0;
 		setDirty();
@@ -1626,13 +1626,13 @@ void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 	}
 }
 
-visible double AStarNavigator_blockGridModelPos(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_blockGridModelPos(FLEXSIMINTERFACE)
 {
 	o(AStarNavigator, c).blockGridModelPos(Vec3(parval(1), parval(2), parval(3)));
 	return 0;
 }
 
-visible double AStarNavigator_setEditMode(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_setEditMode(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -1646,7 +1646,7 @@ visible double AStarNavigator_setEditMode(FLEXSIMINTERFACE)
 	return 0;
 }
 
-visible double AStarNavigator_addBarrier(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	int barrierType = (int)parval(5);
@@ -1669,7 +1669,7 @@ visible double AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	newBarrier->activePointIndex = 1;
 	newBarrier->isActive = 1;
 	if (objectexists(a->activeBarrier)) {
-		Barrier* activeBarrier = &o(Barrier, tonode(a->activeBarrier));
+		Barrier* activeBarrier = &o(Barrier, tonode((Variant)a->activeBarrier));
 		activeBarrier->isActive = 0;
 	}
 	TreeNode* newNode = newBarrier->holder;
@@ -1688,10 +1688,10 @@ visible double AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	a->activeBarrier = newNode;
 	a->setDirty();
 
-	return ptrtodouble(newNode);
+	return newNode;
 }
 
-visible double AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -1708,7 +1708,7 @@ visible double AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -1727,29 +1727,29 @@ visible double AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double AStarNavigator_onClick(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_onClick(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	if (objectexists(tonode(a->activeBarrier))) {
-		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
+	if (objectexists(tonode((Variant)a->activeBarrier))) {
+		Barrier* b = &o(Barrier, tonode((Variant)a->activeBarrier));
 		b->onClick(parnode(1), (int)parval(2), parval(3), parval(4));
 	}
 	return 1;
 }
 
-visible double AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	if (objectexists(tonode(a->activeBarrier))) {
-		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
+	if (objectexists(tonode((Variant)a->activeBarrier))) {
+		Barrier* b = &o(Barrier, tonode((Variant)a->activeBarrier));
 		b->onMouseMove(parval(1), parval(2), parval(3), parval(4));
 		a->setDirty();
 	}
@@ -1757,22 +1757,22 @@ visible double AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double AStarNavigator_getActiveBarrierMode(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_getActiveBarrierMode(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	if (objectexists(tonode(a->activeBarrier))) {
-		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
+	if (objectexists(tonode((Variant)a->activeBarrier))) {
+		Barrier* b = &o(Barrier, tonode((Variant)a->activeBarrier));
 		return b->mode;
 	}
 
 	return 1;
 }
 
-visible double AStarNavigator_setActiveBarrier(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_setActiveBarrier(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	TreeNode* barrierNode = parnode(1);
@@ -1782,8 +1782,8 @@ visible double AStarNavigator_setActiveBarrier(FLEXSIMINTERFACE)
 		return 0;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	if (objectexists(tonode(a->activeBarrier))) {
-		Barrier* b = &o(Barrier, tonode(a->activeBarrier));
+	if (objectexists(tonode((Variant)a->activeBarrier))) {
+		Barrier* b = &o(Barrier, tonode((Variant)a->activeBarrier));
 		b->activePointIndex = 0;
 		b->isActive = 0;
 	}
@@ -1794,7 +1794,7 @@ visible double AStarNavigator_setActiveBarrier(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -1805,7 +1805,7 @@ visible double AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double AStarNavigator_addMember(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_addMember(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	TreeNode* connectTo = parnode(1);
@@ -1817,7 +1817,7 @@ visible double AStarNavigator_addMember(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double AStarNavigator_removeMember(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_removeMember(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	TreeNode* disconnect = parnode(1);

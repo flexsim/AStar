@@ -178,6 +178,7 @@ public:
 	int bindstructure(TreeNode *, unsigned int flags);
   
 	int bind(TreeNode *, TreeNode **, char *);
+	virtual void bind() override { SimpleDataType::bind(); }
    
 	int datatostring(char *, int n);
   
@@ -227,11 +228,21 @@ public:
 	static ObjectDataType* createodtderivativefromclassatt(TreeNode* classatt);
 
 	ObjectDataType* checkCreateODTDerivative(TreeNode* classesAtt);
-	TreeNode* bindVariableNode(char* name);
-	void bindVariableByName(const char* name, double& val);
-	void bindVariableByName(const char* name, TreeNode*& val);
-	void bindVariableByName(const char* name, ByteBlock& val);
-	void bindVariableByName(const char* name, NodeRef& val);
+	engine_export TreeNode* bindVariableNode(char* name);
+	engine_export void bindVariableByName(const char* name, double& val);
+	engine_export void bindVariableByName(const char* name, TreeNode*& val);
+	engine_export void bindVariableByName(const char* name, ByteBlock& val);
+	engine_export void bindVariableByName(const char* name, NodeRef& val);
+private:
+	engine_export void bindVariableByName(const char* name, SimpleDataType* member, bool isCoupling);
+public:
+	template <class SDTClass>
+	typename std::enable_if<std::is_base_of<SimpleDataType, SDTClass>::value>::type
+		bindVariableByName(const char* name, SDTClass& val) { bindVariableByName(name, &val, false); }
+	template <class SDTClass>
+	typename std::enable_if<std::is_base_of<CouplingDataType, SDTClass>::value>::type
+		bindVariableByName(const char* name, SDTClass& val) { bindVariableByName(name, &val, true); }
+
 	#define bindVariable(x) bindVariableByName(#x, x)
 
 	engine_export virtual TreeNode* getObjectTree() override;

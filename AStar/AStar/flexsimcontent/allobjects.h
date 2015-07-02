@@ -250,7 +250,6 @@
 #define makearray(__size__) __size__
 #define partype(__a__) _partype(__a__,callPoint)
 #define msgparam(__a__) _param(__a__ + 1, callPoint)
-#define msgsendingobject parnode(1)
 #define param(__a__) _param(__a__, callPoint)
 #define parval(__a__) _parval(__a__, callPoint)
 #define parnode(__a__) _parnode(__a__, callPoint)
@@ -1639,6 +1638,7 @@
 #define VIEW_TYPE_3D 2
 #define VIEW_TYPE_GUI 4
 #define VIEW_TYPE_TABLE 5
+#define VIEW_TYPE_GRAPH 6
 #define VIEW_TYPE_SCRIPT 8
 #define VIEW_TYPE_BUTTON 100
 #define VIEW_TYPE_EDIT 101
@@ -1808,6 +1808,50 @@
 #define VREC_INTERPOLATE_LINEAR 1
 #define VREC_INTERPOLATE_COSINE 2
 
+
+#define AGV_MODE_STATE_NONE 0
+#define AGV_MODE_STATE_CLICKED 1
+#define AGV_MODE_STATE_DRAGGING 2
+#define AGV_MODE_STATE_CLICK_DOWN_2 3
+
+#define AGV_LISTEN_PRE_ARRIVAL 0x1
+#define AGV_LISTEN_ARRIVAL 0x2
+#define AGV_LISTEN_INTERMEDIATE_DEST 0x4
+#define AGV_LISTEN_FINAL_DEST 0x8
+#define AGV_LISTEN_ONCE 0x10
+#define CP_LISTEN_ONCE 0x10
+#define CP_LISTEN_ALLOCATED 0x20
+#define CP_LISTEN_DEALLOCATED 0x40
+#define CP_LISTEN_AVAILABLE 0x80
+#define CP_LISTEN_ENTRY 0x100
+#define CP_LISTEN_EXIT 0x200
+
+#define AGV_LISTENER_PARAM_TRIGGER -190394.890392
+#define AGV_LISTENER_PARAM_NODE -190395.890392
+#define CP_LISTENER_PARAM_TRIGGER -190394.890392
+#define CP_LISTENER_PARAM_NODE -190395.890392
+
+#define AGV_CURRENT_CP 1
+#define AGV_ORIGIN_CP 2
+#define AGV_INTERMEDIATE_DEST_CP 3
+#define AGV_DEST_CP 3
+#define AGV_FINAL_DEST_CP 4
+#define AGV_DEST 5
+#define AGV_CUR_TRAVEL_DIST 6
+#define AGV_BATTERY_LEVEL 7
+#define AGV_AMP_HOURS 8
+#define AGV_START_RECHARGE 9
+#define AGV_RECHARGE_TO_LEVEL 10
+#define AGV_ADD_ALLOC_POINT 11
+#define AGV_SET_ALLOC_POINT_DEALLOC_DIST 12
+#define AGV_SET_CAN_STOP_AT_ALLOC_POINT 13
+#define AGV_ATTACH_TRAILER 14
+#define AGV_DETACH_TRAILER 15
+
+#define REDIRECT_AND_WAIT 0
+#define REDIRECT_AS_FINAL 1
+#define REDIRECT_AND_CONTINUE_ON_ARRIVAL 2
+#define REDIRECT_AND_CONTINUE_ON_PRE_ARRIVAL 3
 
 
 // Include Header
@@ -2524,35 +2568,6 @@ class NetworkTravelMember : public CouplingDataType
 	int blockingState;
 };
 
-///////////////////////////////////////////////////////
-// Tracked Variable
-///////////////////////////////////////////////////////
-class TrackedVariable : public SimpleDataType
-{
-  public:
-	virtual const char* getClassFactory() { return "TrackedVariable"; }
-	virtual void bind();
-	
-	treenode data;
-	double isTimeWeighted;
-	double fullHistory;
-	double cumulative;
-	double cumulativeTime;
-	double minValue;
-	double maxValue;
-	double numEntries;
-	
-	FS_CONTENT_DLL_FUNC void reset();
-	FS_CONTENT_DLL_FUNC void resetStats(bool toZero);
-	FS_CONTENT_DLL_FUNC void set(double value);
-	
-	FS_CONTENT_DLL_FUNC double getAvg();
-	FS_CONTENT_DLL_FUNC double getMin();
-	FS_CONTENT_DLL_FUNC double getMax();
-	FS_CONTENT_DLL_FUNC double getCurrent();
-	FS_CONTENT_DLL_FUNC double getCount();
-};
-
 void searchhelpmanual(string searchStr, treenode destNode);
 
 ;
@@ -2654,7 +2669,7 @@ treenode* enumerateteam(treenode team, int * returnnrofoperators, int recursivec
 
 visible int evaluatepullcriteria(treenode fr, treenode item, int port, int bypassflags);
 
-visible double fglinfo(int op, treenode view);
+visible Variant fglinfo(int op, treenode view);
 
 treenode findnextclassvariable(treenode*curclass, treenode curvariable);
 
@@ -3065,6 +3080,8 @@ FS_CONTENT_DLL_FUNC virtual double onTransportOutComplete(treenode item, int por
 
 FS_CONTENT_DLL_FUNC virtual double onTransportInComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
 
+FS_CONTENT_DLL_FUNC virtual Variant parseStatisticString(string statString, int mode, Variant data);
+
 FS_CONTENT_DLL_FUNC double resetLabels();
 
 
@@ -3163,6 +3180,10 @@ FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
 FS_CONTENT_DLL_FUNC double getUpdatedTimeInState(int statenr);
 
 FS_CONTENT_DLL_FUNC static char* displayMessageData(int code, char* edata);
+
+FS_CONTENT_DLL_FUNC virtual Variant parseStatisticString(string statString, int mode, Variant data);
+
+FS_CONTENT_DLL_FUNC double calculateAvgContent();
 
 
 // c++ attributes
@@ -3389,6 +3410,8 @@ TreeNode* node_v_columns;
 #define v_columns node_v_columns->safedatafloat()[0]
 TreeNode* node_v_initonreset;
 #define v_initonreset node_v_initonreset->safedatafloat()[0]
+TreeNode* node_v_usebundles;
+#define v_usebundles node_v_usebundles->safedatafloat()[0]
 TreeNode* node_v_width;
 #define v_width node_v_width->safedatafloat()[0]
 TreeNode* node_v_height;
@@ -3590,32 +3613,6 @@ FS_CONTENT_DLL_FUNC static treenode getTENetNode(treenode membernode);
 
 FS_CONTENT_DLL_FUNC static NetworkNavigator* getInstance();
 
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
-// Avi
-class Avi : public ObjectDataType
-{
-public:
-
-TreeNode* node_v_starttime;
-#define v_starttime node_v_starttime->safedatafloat()[0]
-TreeNode* node_v_endtime;
-#define v_endtime node_v_endtime->safedatafloat()[0]
-TreeNode* node_v_framespersecond;
-#define v_framespersecond node_v_framespersecond->safedatafloat()[0]
-TreeNode* node_v_timebetweenframes;
-#define v_timebetweenframes node_v_timebetweenframes->safedatafloat()[0]
-TreeNode* node_v_aviname;
-TreeNode* node_v_makingavi;
-#define v_makingavi node_v_makingavi->safedatafloat()[0]
-TreeNode* node_v_flypath;
-#define v_flypath node_v_flypath->safedatafloat()[0]
 
 // System
 
@@ -5923,6 +5920,8 @@ bool baseMeshBuilt;
 double builtY;
 
 double builtZ;
+
+bool builtRelative;
 
 
 // System

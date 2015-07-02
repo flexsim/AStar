@@ -154,6 +154,7 @@ public:
 			: ListSqlDataSource(list), numRequested(numRequested), numRequired(numRequired), numFulfilled(numFulfilled),
 			puller(puller), partitionId(partitionId), flags(flags), originalDelegate(originalDelegate)
 		{
+			orderTime = time();
 			incrementalAllocation = !(flags & List::ALLOCATE_ALL_OR_NOTHING);
 			isOnPartition = (partitionId.type != VariantType::Null && partitionId != 0.0);
 		}
@@ -162,6 +163,7 @@ public:
 		int numFulfilled;
 		int numRequired;
 		int numRequested;
+		double orderTime;
 		Variant puller;
 		Variant partitionId;
 		bool isOnPartition;
@@ -184,14 +186,35 @@ public:
 		Variant getResult();
 	};
 
+	class ListStatisticSet : public StatisticSet
+	{
+	public:
+		Variant partitionId;
+
+		virtual const char* getClassFactory() override { return "ListStatisticSet"; }
+		virtual void bind() override { StatisticSet::bind(); bindVariant(partitionId); }
+	};
+
 	NodeListArray<Field>::SdtSubNodeType fields;
 	NodeListArray<Entry>::CouplingSdtSubNodeType entries;
 	NodeListArray<BackOrder>::SdtSubNodeType backOrders;
 	NodeListArray<>::SubNodeType backOrderPartitions;
 	NodeListArray<>::SubNodeType entryPartitions;
 	NodeListArray<Entry>::CouplingSdtSubNodeType removedEntries;
+	TreeNode* contentsOnReset;
 
-	ByteBlock listType;
+	NodeListArray<ListStatisticSet>::SdtSubNodeBindingType entryPartitionStatistics;
+	NodeListArray<ListStatisticSet>::SdtSubNodeBindingType backOrderPartitionStatistics;
+	
+	TreeNode* entryStatisticsNode;
+	StatisticSet* getEntryStatistics();
+
+	TreeNode* backOrderStatisticsNode;
+	StatisticSet* getBackOrderStatistics();
+
+	engine_export virtual Variant parseStatisticString(const string& statString, int mode, Variant data);
+
+	ByteBlock listType;	
 protected:
 	std::vector<int> staticFields;
 	std::vector<int> dynamicFields;
@@ -205,6 +228,12 @@ protected:
 		size_t operator() (const Variant& pullerKey);
 	};
 	typedef std::unordered_map<Variant, TreeNode*, PartitionHash> PartitionHashTable;
+	typedef std::unordered_map<Variant, ListStatisticSet*, PartitionHash> PartitionStatsTable;
+	
+	PartitionStatsTable entryStatsIndex;
+	PartitionStatsTable backOrderStatsIndex;
+	void removePartition(PartitionHashTable& hashTable, const Variant& partitionId);
+
 
 	ListSqlDataSource* defaultDataSource;
 	NodeListArray<ListSqlDataSource>::SdtSubNodeBindingType parsedQueries;
@@ -223,11 +252,11 @@ protected:
 	PartitionHashTable entryPartitionIndex;
 	PartitionHashTable backOrderPartitionIndex;
 	void buildPartitionIndex();
-	TreeNode* assertPartition(TreeNode* container, const Variant& puller, PartitionHashTable& hashTable);
+	TreeNode* assertPartition(TreeNode* container, const Variant& partitionId, PartitionHashTable& hashTable, TreeNode* statsContainer, PartitionStatsTable& statsTable);
 
 public:
 	static bool isVariantNonNull(const Variant& partitionId);
-	Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool removeEntries, bool incrementalAllocation, int numAdded, bool isPartitioned, bool getEntryNodes);
+	Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool removeEntries, bool incrementalAllocation, int numAdded, const Variant& partitionId, bool getEntryNodes);
 	TreeNode* getBackOrderList(const Variant& partitionId);
 	TreeNode* getEntryList(const Variant& partitionId);
 	virtual void bindVariables();
@@ -252,6 +281,7 @@ private:
 public:
 	engine_export Variant pull(const char* sqlQuery, int requestNum, int requireNum, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
 	engine_export Variant pull(TreeNode* cachedQuery, int requestNum, int requireNum, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
+	engine_export virtual void dumpStatisticSets(TreeNode* container);
 
 	engine_export void listenToEntry(treenode entry, treenode callback, const Variant& p1);
 };

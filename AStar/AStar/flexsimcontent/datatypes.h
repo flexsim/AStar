@@ -563,7 +563,14 @@ public:
 		else return 0;
 	}
 	inline ObjType* get() const { return operator ObjType*(); }
-	void bind(TreeNode* x) { x->value = NodeRef::get(); }
+	void bind(TreeNode* x) { 
+		switch (SimpleDataType::getBindMode()) {
+		case 1: operator = (((TreeNode*)x->value)->objectAs(ObjType)); break;
+		case 2: x->value = NodeRef::get(); break;
+		case 4: SimpleDataType::appendToDisplayStr(nodetomodelpath(NodeRef::get(), 1)); break;
+		}
+		
+	}
 };
 
 
@@ -1540,7 +1547,7 @@ public:
 
 	VariantParams(const CallPoint& cp);
 
-	void dumpToCallPoint(CallPoint& cp) const;
+	size_t getNumParams() const { return numParams; }
 
 private:
 	size_t numParams;
@@ -1714,7 +1721,7 @@ public:
 
 	static TreeNode* SubNodeCouplingGetter(treenode x)
 	{
-		treenode partner = x->datatype == DATA_POINTERCOUPLING ? x->dataascoupling->partner() : 0;
+		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner() : 0;
 		if (partner)
 			return up(partner);
 		return 0;
@@ -1724,7 +1731,7 @@ public:
 	{
 		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner() : 0;
 		if (partner)
-			return &o(T, up(partner));
+			return up(partner)->objectAs(T);
 		return 0;
 	}
 	static void SdtSubNodeCouplingAdder(treenode x, T* obj)
@@ -1737,7 +1744,7 @@ public:
 	{
 		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner() : 0;
 		if (partner)
-			return &o(T, up(up(partner)));
+			return up(up(partner))->objectAs(T);
 		return 0;
 	}
 

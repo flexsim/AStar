@@ -1,29 +1,27 @@
+#pragma once
 
-#ifndef basicmacros_h
-#define basicmacros_h
-
-// Exception macros
-//#define USE_X_EXCEPTIONS
-//#define USE_XX_EXCEPTIONS
-
-#ifdef USE_X_EXCEPTIONS
-#define XS try{
-#define XE }catch(...){throw 0;}
-#endif
-
-#ifdef USE_XX_EXCEPTIONS
-#define XXS try{
-#define XXE(m) }catch(...){EX(m,"");throw 0;}
-#endif
-
-#ifndef USE_X_EXCEPTIONS
-#define XS 
-#define XE 
-#endif
-
-#ifndef USE_XX_EXCEPTIONS
-#define XXS
-#define XXE(m) 
+#ifdef _DEBUG
+#	ifdef FLEXSIM_ENGINE_COMPILE
+#		ifndef EX_DEFINED
+#			define EX_DEFINED
+			extern "C" __declspec(dllexport) int EX(const char *T, const char * M, int showsystemconsole = 0);
+#		endif
+#	endif
+#	include <stdio.h>
+#	define XS try{
+#	define XE } catch(...){ \
+			char error[1024]; \
+			sprintf(error, "Exception in file %s, function %s at line %d, forwarding throw", __FILE__, __FUNCSIG__, __LINE__); \
+			EX("", error, 1); \
+			throw ; \
+		}
+#	define XXS try{
+#	define XXE(m) }catch(...){ EX(m,"", 1); throw;}
+#else
+#	define XS 
+#	define XE 
+#	define XXS
+#	define XXE(m) 
 #endif
 
 // Flexsim interface parameters
@@ -53,6 +51,17 @@ void * input, void * output, TreeNode *i, CallPoint * callPoint
 #define n10argsdefaultinterface double n1=0,double n2=0,double n3=0,double n4=0,double n5=0,double n6=0,double n7=0,double n8=0,double n9=0,double n10=0
 
 #define n10argsinterface double n1,double n2,double n3,double n4,double n5,double n6,double n7,double n8,double n9,double n10
+
+#define n10argstovarsconvert Variant::interpretLegacyDouble(n1), \
+	Variant::interpretLegacyDouble(n2), \
+	Variant::interpretLegacyDouble(n3), \
+	Variant::interpretLegacyDouble(n4), \
+	Variant::interpretLegacyDouble(n5), \
+	Variant::interpretLegacyDouble(n6), \
+	Variant::interpretLegacyDouble(n7), \
+	Variant::interpretLegacyDouble(n8), \
+	Variant::interpretLegacyDouble(n9), \
+	Variant::interpretLegacyDouble(n10) \
 
 #define n10args n1,n2,n3,n4,n5,n6,n7,n8,n9,n10
 
@@ -183,6 +192,7 @@ for(treenode a = NULL, nextforobjectselectionset(&a, node); objectexists(a); nex
 #define LISTENER_INFO_CODE 1
 #define LISTENER_INFO_ASSOCIATED 2
 #define LISTENER_INFO_COUPLING 3
+#define LISTENER_INFO_OVERRIDE_RETURN_VALUE 4
 
 // Constants
 #define KINEMATIC_X  0
@@ -281,5 +291,3 @@ Dest force_cast(Src src)
 	convertor.s = src;
 	return convertor.d;
 }
-
-#endif

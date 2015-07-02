@@ -337,7 +337,7 @@ bool Barrier::setPointCoords(int pointIndex, double x, double y)
 	return true;
 }
 
-visible double Barrier_setMode(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant Barrier_setMode(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -356,7 +356,7 @@ visible double Barrier_setMode(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double Barrier_addPoint(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant Barrier_addPoint(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -373,7 +373,7 @@ visible double Barrier_addPoint(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double Barrier_removePoint(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant Barrier_removePoint(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -390,7 +390,7 @@ visible double Barrier_removePoint(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double Barrier_swapPoints(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant Barrier_swapPoints(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -407,7 +407,7 @@ visible double Barrier_swapPoints(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double Barrier_setPointCoords(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant Barrier_setPointCoords(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -424,7 +424,7 @@ visible double Barrier_setPointCoords(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double Barrier_getPointCoord(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant Barrier_getPointCoord(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -450,7 +450,7 @@ visible double Barrier_getPointCoord(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double Barrier_getBarrierType(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant Barrier_getBarrierType(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -471,7 +471,7 @@ visible double Barrier_getBarrierType(FLEXSIMINTERFACE)
 	return 1;
 }
 
-visible double Barrier_setActiveIndex(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant Barrier_setActiveIndex(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))

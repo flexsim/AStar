@@ -87,47 +87,6 @@ THE SOFTWARE.
 #ifndef TYPEDEFS
 #define TYPEDEFS
 
-
-#ifndef FLEXSIM_VALUE
-#define FLEXSIM_VALUE
-	class FlexSimValue
-	{
-	public:
-		double asDouble;
-		inline operator void*()const{return doubletoptr(asDouble);}
-		inline operator TreeNode*()const{return (TreeNode*)doubletoptr(asDouble);}
-		inline operator double()const{return asDouble;}
-		inline operator double&() {return asDouble;}
-		inline operator __int64()const{return (__int64)asDouble;}
-		inline operator int()const{return (int)asDouble;}
-		inline operator short()const{return (short)asDouble;}
-		inline operator char()const{return (char)asDouble;}
-		inline operator unsigned __int64()const{return (unsigned __int64)asDouble;}
-		inline operator unsigned int()const{return (unsigned int)asDouble;}
-		inline operator unsigned short()const{return (unsigned short)asDouble;}
-		inline operator unsigned char()const{return (unsigned char)asDouble;}
-		inline operator unsigned char*()const{return (unsigned char*)doubletoptr(asDouble);}
-		inline operator char*()const{return (char*)doubletoptr(asDouble);}
-		inline operator std::string&(){static std::string tempStr;if (asDouble <= 1000000) tempStr = ""; else tempStr = (char*)doubletoptr(asDouble); return tempStr;}
-		inline FlexSimValue(void* x) : asDouble(ptrtodouble(x)) {}
-		inline FlexSimValue(TreeNode* x) : asDouble(ptrtodouble(x)) {}
-		inline FlexSimValue(double x) : asDouble(x) {}
-		inline FlexSimValue(__int64 x) : asDouble((double)x) {}
-		inline FlexSimValue(int x) : asDouble((double)x) {}
-		inline FlexSimValue(short x) : asDouble((double)x) {}
-		inline FlexSimValue(char x) : asDouble((double)x) {}
-		inline FlexSimValue(unsigned __int64 x) : asDouble((double)x) {}
-		inline FlexSimValue(unsigned int x) : asDouble((double)x) {}
-		inline FlexSimValue(unsigned short x) : asDouble((double)x) {}
-		inline FlexSimValue(unsigned char x) : asDouble((double)x) {}
-		inline FlexSimValue(unsigned char* x) : asDouble((double)ptrtodouble(x)) {}
-		inline FlexSimValue(char* x) : asDouble((double)ptrtodouble(x)) {}
-		inline FlexSimValue(const char* x) : asDouble((double)ptrtodouble((char*)x)) {}
-		inline FlexSimValue(std::string& x) : asDouble((double)ptrtodouble((char*)x.c_str())) {}
-		inline FlexSimValue(const FlexSimValue& x) : asDouble(x.asDouble) {}
-	};
-#endif
-	typedef double (*_$iteralias)(int index);
 	typedef treenode     (*attfunc)(treenode );
 	typedef int          (*__executefsfile)(char* s, int direct);
 	typedef double       (*__inheritcode)(CallPoint* callpoint);
@@ -148,9 +107,6 @@ THE SOFTWARE.
 	typedef HWND         (*_activedocumentview)();
 	typedef int          (*_activeview)();
 	typedef double       (*_add)(double n1, double n2);
-	typedef int          (*_addbundleentryalias1)(treenode x);
-	typedef int          (*_addbundleentryalias2)(treenode x, n10argsinterface);
-	typedef int          (*_addbundleentryalias3)(treenode x, n30argsinterface);
 	typedef int          (*_addbundlefieldalias)(treenode x, char* fieldname, int type, int maxstrsize);
 	typedef int          (*_addcommand)(treenode node, char *name, char * desc, char * par, char * examp, char * cppprefix, int group);
 	typedef int          (*_addfullhistorymoverecord)(unsigned int _id, double _time, treenode _origin, treenode _destination, double _itemtype);
@@ -356,7 +312,6 @@ THE SOFTWARE.
 	typedef void         (*_deactivatekinematics)(treenode infonode);
 	typedef double       (*_defaultdragconnection)(treenode fromobject, treenode toobject, char characterpressed);
 	typedef double       (*_degreestoradians)(double n);
-	typedef treenode     (*_delayednodefunctionalias)(treenode theNode, double timeOffset, n10argsinterface);
 	typedef double       (*_delayevents)(double dt);
 	typedef double       (*_delayeventsofobject)(treenode object,double dt);
 	typedef void         (*_deleteeds)(EventDataStruct* eds);
@@ -528,8 +483,6 @@ THE SOFTWARE.
 	typedef double       (*_freeoperators)(treenode dispatcher, treenode involved);
 	typedef int          (*_fscheckall)(treenode s);
 	typedef double       (*_ft)(double val);
-	typedef double       (*_function_n)(treenode node, int index, n30argsinterface);
-	typedef double       (*_function_s_alias)(treenode node, char * name, n30argsinterface);
 	typedef double       (*_gammaalias)( double locate, double scale, double shape, int stream);
 	typedef double       (*_ge)(double n1, double n2);
 	typedef unsigned int (*_generateuniqueid)();
@@ -542,8 +495,6 @@ THE SOFTWARE.
 	typedef int          (*_getbundlefieldtype)(treenode x, int fieldnr);
 	typedef int          (*_getbundlenrentries)(treenode x);
 	typedef int          (*_getbundlenrfields)(treenode x);
-	typedef double       (*_getbundlevaluealias1)(treenode x, int entrynr, char* fieldname);
-	typedef double       (*_getbundlevaluealias2)(treenode x, int entrynr, int fieldnr);
 	typedef double       (*_getchecked)(treenode view);
 	typedef double       (*_getcolorcomponent)(treenode object, double index);
 	typedef treenode     (*_getcoordinatedtasksequence)(treenode dispatcher, int tsrank);
@@ -614,7 +565,7 @@ THE SOFTWARE.
 	typedef Variant       (*_getqueryvaluealias2)(int row, const char* colName);
 	typedef double       (*_getrank)(treenode);
 	typedef int          (*_getrunstate)();
-	typedef FlexSimValue (*_getsdtvalue)(treenode sdtNode, const char* valName);
+	typedef Variant (*_getsdtvalue)(treenode sdtNode, const char* valName);
 	typedef double       (*_getshapeindex)(char * thename);
 	typedef int          (*_getshapenrframes)(int shapeindex);
 	typedef double       (*_getsoundindex)(char * thename);
@@ -658,7 +609,6 @@ THE SOFTWARE.
 	typedef double       (*_howmanycommands)();
 	typedef double       (*_hypergeometricalias)(int sample, int m, int n, int stream);
 	typedef double       (*_importdataset)(treenode, char * table, int format);
-	typedef double       (*_importednodefunction)(treenode node, n10argsinterface);
 	typedef double       (*_importtablealias)(treenode, char * table, int usetopgrey, int useleftgrey);
 	typedef double       (*_in)(double val);
 	typedef double       (*_inc)(treenode attnode, double value);
@@ -705,7 +655,6 @@ THE SOFTWARE.
 	typedef treenode     (*_library)();
 	typedef int          (*_license)();
 	typedef double       (*_listboxrefresh)(treenode thecombo);
-	typedef double       (*_listenerinfo)(int info);
 	typedef double       (*_listinlist)(n30argsinterface);
 	typedef double       (*_listmax)(n30argsinterface);
 	typedef double       (*_listmaximum)(n30argsinterface);
@@ -805,8 +754,6 @@ THE SOFTWARE.
 	typedef double       (*_nodebreak)(treenode attnode);
 	typedef treenode     (*_nodedeldata)(treenode target);
 	typedef treenode     (*_nodefromwindow)(HWND x);
-	typedef double       (*_nodefunctionasevent)(treenode thenode, FLEXSIMINTERFACE);
-	typedef treenode     (*_nodefunctionlistenalias)(treenode theNode, treenode relayNode, int flags, n10argsinterface);
 	typedef treenode     (*_nodeinsertafter)(treenode target);
 	typedef treenode     (*_nodeinsertinto)(treenode target);
 	typedef double       (*_nodejoin)(treenode attnode, treenode attnode2);
@@ -923,7 +870,6 @@ THE SOFTWARE.
 	typedef double       (*_redirectconsole)(int console, treenode newwindow);
 	typedef double       (*_redirectconsole)(int console, treenode newwindow);
 	typedef double       (*_redirectnetworktraveler)(treenode traveler, treenode newdest);
-	typedef int          (*_redo)(treenode view);
 	typedef int          (*_refreshcommand)(treenode commandnode, int structure);
 	typedef int          (*_refreshcommandlist)();
 	typedef int          (*_refreshglobalvariables)();
@@ -995,7 +941,6 @@ THE SOFTWARE.
 	typedef double       (*_selectedy)(treenode target);
 	typedef double       (*_selectedz)(treenode target);
 	typedef double       (*_senddelayedmessage)(treenode toobject, double delaytime, treenode fromobject, double par1, double par2, double par3);
-	typedef double       (*_sendmessagealias)(treenode node, treenode associated, n10argsinterface);
 	typedef int          (*_sendwindowmessage)(treenode view, int command, WPARAM wParam, LPARAM lParam);
 	typedef double       (*_serveraccept)(int sock);
 	typedef double       (*_servercloseconnection)(int sock);
@@ -1045,7 +990,7 @@ THE SOFTWARE.
 	typedef treenode     (*_setrank)(treenode, int);
 	typedef double       (*_setresetposition)(treenode obj);
 	typedef double       (*_setrot)(treenode involved, double rx, double ry, double rz);
-	typedef treenode     (*_setsdtvalue)(treenode sdtNode, const char* valName, FlexSimValue toVal);
+	typedef treenode     (*_setsdtvalue)(treenode sdtNode, const char* valName, Variant toVal);
 	typedef double       (*_setselectedobject)(treenode target, treenode newselected);
 	typedef double       (*_setsize)(treenode involved, double sx, double sy, double sz);
 	typedef int          (*_setstate_s)(treenode , char *);
@@ -1057,7 +1002,6 @@ THE SOFTWARE.
 	typedef double       (*_settablenumalias)(char * table, int row, int col, double value);
 	typedef double       (*_settablesizealias)(char* globaltablename,int nrows,int ncols, int type, int overwrite);
 	typedef double       (*_settablestr)(char * table, int row, int col, char * value);
-	typedef int          (*_setticker)(treenode x);
 	typedef double       (*_setvarnumalias)(treenode object, char *varname, double val);
 	typedef double       (*_setvarstralias)(treenode object, char *varname, char *val);
 	typedef double       (*_setviewtextalias)(treenode target, char *);
@@ -1137,6 +1081,7 @@ THE SOFTWARE.
 	typedef double       (*_switch_hideshape)(treenode node, int on);
 	typedef double       (*_switch_noselect)(treenode node, int on);
 	typedef double       (*_switch_preservecoupling)(treenode node, int on);
+	typedef double       (*_switch_orphancoupling)(treenode node, int on);
 	typedef double       (*_switch_protected)(treenode node, int on);
 	typedef double       (*_switch_selected)(treenode node, int on);
 	typedef double       (*_switch_showobject)(treenode node, int on);
@@ -1183,8 +1128,6 @@ THE SOFTWARE.
 	typedef void         (*_updateundorecord)(TreeNode* view, int uniqueid, int updatetype, double p1, double p2);
 	typedef double       (*_uselisteners)(double x);
 	typedef char*		 (*_userdatadir_cstr)();
-	typedef double       (*_userfunction_n)(treenode node, int index, n30argsinterface);
-	typedef double       (*_userfunction_s)(treenode node, char * name, n30argsinterface);
 	typedef double       (*_userinput)(treenode variable, char* prompt);
 	typedef double       (*_validatenamealias)(treenode current, int isview, treenode obj);
 	typedef int          (*_validlink)(treenode , char *);
@@ -1232,7 +1175,6 @@ THE SOFTWARE.
 		typedef void     (*_odtbindvariablebynamealias3)(ObjectDataType* odt, const char* name, NodeRef& val);
 		typedef void     (*_odtbindvariablebynamealias4)(ObjectDataType* odt, const char* name, TreeNode*& val);
 		typedef treenode (*_sdtbindbyname)(SimpleDataType* sdt, const char* name, int asSubNode, int dataType, int * added);
-		typedef void     (*_sdtbindflexsimvaluebyname)(SimpleDataType* sdt, const char* name, double& val);
 		typedef void     (*_sdtbindnodeptrbyname)(SimpleDataType* sdt, const char* name, treenode& val);
 		typedef void     (*_sdtbindobjptrbyname)(SimpleDataType* sdt, const char* name, SimpleDataType*& val);
 		typedef void     (*_sdtbindsubnodebyname)(SimpleDataType* sdt, const char* name, treenode& val, int datatype);
@@ -1291,7 +1233,6 @@ THE SOFTWARE.
 #endif
 
 /*** FLEXSIM FUNCTIONS ***/
-DECLARE_FLEXSIM_FUNCTION_2($iteralias, "$iter")
 DECLARE_FLEXSIM_FUNCTION_1(_executefsfile)
 DECLARE_FLEXSIM_FUNCTION_1(_inheritcode)
 DECLARE_FLEXSIM_FUNCTION_1(_mpd)
@@ -1308,9 +1249,6 @@ DECLARE_FLEXSIM_FUNCTION_1(_param)
 DECLARE_FLEXSIM_FUNCTION_1(activateview)
 DECLARE_FLEXSIM_FUNCTION_1(activedocumentview)
 DECLARE_FLEXSIM_FUNCTION_1(activeview)
-DECLARE_FLEXSIM_FUNCTION_3(addbundleentryalias1, "?addbundleentry@@YAHPAVTreeNode@@@Z","?addbundleentry@@YAHPEAVTreeNode@@@Z");
-DECLARE_FLEXSIM_FUNCTION_2(addbundleentryalias2, "addbundleentry");
-DECLARE_FLEXSIM_FUNCTION_3(addbundleentryalias3, "?addbundleentry@@YAHPAVTreeNode@@NNNNNNNNNNNNNNNNNNNNNNNNNNNNNN@Z","?addbundleentry@@YAHPEAVTreeNode@@NNNNNNNNNNNNNNNNNNNNNNNNNNNNNN@Z");
 DECLARE_FLEXSIM_FUNCTION_2(addbundlefieldalias, "addbundlefield");
 DECLARE_FLEXSIM_FUNCTION_1(addcommand)
 DECLARE_FLEXSIM_FUNCTION_1(addfullhistorymoverecord)
@@ -1466,7 +1404,6 @@ DECLARE_FLEXSIM_FUNCTION_2(dbusernamealias, "dbusername")
 DECLARE_FLEXSIM_FUNCTION_1(dbviewtable)
 DECLARE_FLEXSIM_FUNCTION_1(deactivatekinematics)
 DECLARE_FLEXSIM_FUNCTION_1(degreestoradians)
-DECLARE_FLEXSIM_FUNCTION_2(delayednodefunctionalias, "delayednodefunction")
 DECLARE_FLEXSIM_FUNCTION_1(delayevents)
 DECLARE_FLEXSIM_FUNCTION_1(delayeventsofobject)
 DECLARE_FLEXSIM_FUNCTION_1(deleteeds)
@@ -1619,8 +1556,6 @@ DECLARE_FLEXSIM_FUNCTION_2(fpt_importedfunction, "fpt")
 DECLARE_FLEXSIM_FUNCTION_1(frac)
 DECLARE_FLEXSIM_FUNCTION_1(fscheckall)
 DECLARE_FLEXSIM_FUNCTION_1(ft)
-DECLARE_FLEXSIM_FUNCTION_1(function_n)
-DECLARE_FLEXSIM_FUNCTION_2(function_s_alias, "function_s")
 DECLARE_FLEXSIM_FUNCTION_2(gammaalias, "gamma")
 DECLARE_FLEXSIM_FUNCTION_1(generateuniqueid)
 DECLARE_FLEXSIM_FUNCTION_2(geometricalias, "geometric")
@@ -1631,8 +1566,6 @@ DECLARE_FLEXSIM_FUNCTION_1(getbundlefieldnr);
 DECLARE_FLEXSIM_FUNCTION_1(getbundlefieldtype);
 DECLARE_FLEXSIM_FUNCTION_1(getbundlenrentries);
 DECLARE_FLEXSIM_FUNCTION_1(getbundlenrfields);
-DECLARE_FLEXSIM_FUNCTION_2(getbundlevaluealias1, "getbundlevalue");
-DECLARE_FLEXSIM_FUNCTION_3(getbundlevaluealias2, "?getbundlevalue@@YANPAVTreeNode@@HH@Z","?getbundlevalue@@YANPEAVTreeNode@@HH@Z");
 DECLARE_FLEXSIM_FUNCTION_1(getchecked)
 DECLARE_FLEXSIM_FUNCTION_1(getcolorcomponent)
 DECLARE_FLEXSIM_FUNCTION_1(getcorefailsafelink)
@@ -1705,7 +1638,6 @@ DECLARE_FLEXSIM_FUNCTION_1(howmanyattributes)
 DECLARE_FLEXSIM_FUNCTION_1(howmanycommands)
 DECLARE_FLEXSIM_FUNCTION_2(hypergeometricalias, "hypergeometric")
 DECLARE_FLEXSIM_FUNCTION_1(importdataset)
-DECLARE_FLEXSIM_FUNCTION_2(importednodefunction, "nodefunction")
 DECLARE_FLEXSIM_FUNCTION_2(importtablealias, "importtable")
 DECLARE_FLEXSIM_FUNCTION_1(in)
 DECLARE_FLEXSIM_FUNCTION_1(inc)
@@ -1734,7 +1666,6 @@ DECLARE_FLEXSIM_FUNCTION_1(lastkeydown)
 DECLARE_FLEXSIM_FUNCTION_1(lastkeyup)
 DECLARE_FLEXSIM_FUNCTION_1(library)
 DECLARE_FLEXSIM_FUNCTION_1(listboxrefresh)
-DECLARE_FLEXSIM_FUNCTION_1(listenerinfo)
 DECLARE_FLEXSIM_FUNCTION_1(listinlist)
 DECLARE_FLEXSIM_FUNCTION_1(listmax)
 DECLARE_FLEXSIM_FUNCTION_1(listmaximum)
@@ -1824,8 +1755,6 @@ DECLARE_FLEXSIM_FUNCTION_1(nodealloc)
 DECLARE_FLEXSIM_FUNCTION_1(nodebreak)
 DECLARE_FLEXSIM_FUNCTION_1(nodedeldata)
 DECLARE_FLEXSIM_FUNCTION_3(nodefromwindow, "?nodefromwindow@@YAPAVTreeNode@@PAUHWND__@@@Z", "?nodefromwindow@@YAPEAVTreeNode@@PEAUHWND__@@@Z")
-DECLARE_FLEXSIM_FUNCTION_1(nodefunctionasevent)
-DECLARE_FLEXSIM_FUNCTION_2(nodefunctionlistenalias, "nodefunctionlisten")
 DECLARE_FLEXSIM_FUNCTION_1(nodeinsertafter)
 DECLARE_FLEXSIM_FUNCTION_1(nodeinsertinto)
 DECLARE_FLEXSIM_FUNCTION_1(nodejoin)
@@ -1951,7 +1880,6 @@ DECLARE_FLEXSIM_FUNCTION_1(searchname)
 DECLARE_FLEXSIM_FUNCTION_1(selectedx)
 DECLARE_FLEXSIM_FUNCTION_1(selectedy)
 DECLARE_FLEXSIM_FUNCTION_1(selectedz)
-DECLARE_FLEXSIM_FUNCTION_2(sendmessagealias, "sendmessage")
 DECLARE_FLEXSIM_FUNCTION_1(sendwindowmessage)
 DECLARE_FLEXSIM_FUNCTION_1(serveraccept)
 DECLARE_FLEXSIM_FUNCTION_1(servercloseconnection)
@@ -2002,7 +1930,6 @@ DECLARE_FLEXSIM_FUNCTION_3(setstatealias3, "?setstate@@YAHPAVTreeNode@@HPBD@Z","
 DECLARE_FLEXSIM_FUNCTION_3(setstatealias4, "?setstate@@YAHPAVTreeNode@@H0@Z","?setstate@@YAHPEAVTreeNode@@H0@Z")
 DECLARE_FLEXSIM_FUNCTION_2(settablenumalias, "settablenum");
 DECLARE_FLEXSIM_FUNCTION_2(settablesizealias, "settablesize");
-DECLARE_FLEXSIM_FUNCTION_1(setticker)
 DECLARE_FLEXSIM_FUNCTION_2(setvarnumalias, "setvarnum")
 DECLARE_FLEXSIM_FUNCTION_2(setvarstralias, "setvarstr")
 DECLARE_FLEXSIM_FUNCTION_2(setviewtextalias, "setviewtext")
@@ -2077,6 +2004,7 @@ DECLARE_FLEXSIM_FUNCTION_1(switch_hidelabel)
 DECLARE_FLEXSIM_FUNCTION_1(switch_hideshape)
 DECLARE_FLEXSIM_FUNCTION_1(switch_noselect)
 DECLARE_FLEXSIM_FUNCTION_1(switch_preservecoupling)
+DECLARE_FLEXSIM_FUNCTION_1(switch_orphancoupling)
 DECLARE_FLEXSIM_FUNCTION_1(switch_protected)
 DECLARE_FLEXSIM_FUNCTION_1(switch_selected)
 DECLARE_FLEXSIM_FUNCTION_1(switch_showobject)
@@ -2204,8 +2132,6 @@ DECLARE_FLEXSIM_FUNCTION_1(spaceglobal)
 DECLARE_FLEXSIM_FUNCTION_1(spaceobject)
 DECLARE_FLEXSIM_FUNCTION_1(sub)
 DECLARE_FLEXSIM_FUNCTION_1(undos)
-DECLARE_FLEXSIM_FUNCTION_1(userfunction_n)
-DECLARE_FLEXSIM_FUNCTION_1(userfunction_s)
 DECLARE_FLEXSIM_FUNCTION_1(var)
 DECLARE_FLEXSIM_FUNCTION_1(var_s)
 
@@ -2234,9 +2160,6 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindbyname)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbinddoublebyname)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindbyteblockbyname)
-#if FLEXSIM_TARGET_VERSION >= 710
-	DECLARE_FLEXSIM_FUNCTION_1(sdtbindflexsimvaluebyname)
-#endif
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindnodeptrbyname)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindnoderefbyname)
 	DECLARE_FLEXSIM_FUNCTION_1(sdtbindobjptrbyname)

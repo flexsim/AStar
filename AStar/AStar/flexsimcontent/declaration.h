@@ -134,12 +134,6 @@ inline void initkinematics(treenode infonode, double x, double y, double z, doub
 	{initkinematicsalias(infonode, x,y,z,rx,ry,rz,_managerotation,_relativelocs);}
 
 
-inline double nodefunction(treenode thenode, double p1=0, double p2=0, double p3=0, double p4=0, double p5=0, double p6=0, double p7=0, double p8=0, double p9=0, double p10=0)
-	{return importednodefunction(thenode, p1,p2,p3,p4,p5,p6,p7,p8,p9,p10);}
-inline treenode delayednodefunction(treenode theNode, double timeOffset, double p1=0, double p2=0, double p3=0, double p4=0, double p5=0, double p6=0, double p7=0, double p8=0, double p9=0, double p10=0)
-	{return delayednodefunctionalias(theNode, timeOffset, p1,p2,p3,p4,p5,p6,p7,p8,p9,p10);}
-inline treenode nodefunctionlisten(treenode theNode, treenode relayNode, int flags = 0, double p1=0, double p2=0, double p3=0, double p4=0, double p5=0, double p6=0, double p7=0, double p8=0, double p9=0, double p10=0)
-	{return nodefunctionlistenalias(theNode, relayNode, flags, p1,p2,p3,p4,p5,p6,p7,p8,p9,p10);}
 inline double dllstop(){return stop(0);}
 inline int dllmoveobject(treenode client, treenode destination){return moveobject(client, destination, 0);}
 
@@ -188,13 +182,12 @@ inline double stringtonum(string str)
 {
 	return stringtonumalias((char*)str.c_str());
 }
-inline TreeNode* tonode(FlexSimValue& x) { return (TreeNode*)x; }
 inline TreeNode* tonode(TreeNode* x) { return x; }
 inline TreeNode* tonode(size_t x) { return tonodealias1(x); }
 inline TreeNode* tonode(double x) { return tonodealias2(x); }
 inline TreeNode* tonode(char* x) { return tonodealias3(x); }
 inline TreeNode* tonode(void* x) { return tonodealias4(x); }
-inline double tonum(FlexSimValue& x) {return x.asDouble;}
+inline TreeNode* tonode(const Variant& x) { return Variant::interpretLegacyDouble(x.forceLegacyDouble()); }
 inline double tonum(double x) {return x;}
 inline double tonum(treenode x) {return ptrtodouble((void*)x);}
 inline double tonum(char* x) {return ptrtodouble((void*)x);}
@@ -342,13 +335,6 @@ inline int gettablecols(int table)
 {
 	return gettablecols(reftable(table));
 }
-
-inline double sendmessage(treenode node, treenode associated, double n1=0, double n2=0, double n3=0, double n4=0,
-	double n5=0, double n6=0, double n7=0, double n8=0, double n9=0, double n10=0)
-{
-	return sendmessagealias(node, associated, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10);
-}
-
 
 inline int makearray(int size){return size;}
 
@@ -644,22 +630,15 @@ inline int setstate(treenode obj, int statenr, treenode profile){return setstate
 
 inline int clearbundle(treenode x, int resetflags = 0){return clearbundlealias(x, resetflags);}
 inline int addbundlefield(treenode x, char* fieldname, int type, int maxstrsize = 0){return addbundlefieldalias(x, fieldname, type, maxstrsize);}
-inline int addbundleentry(treenode x){return addbundleentryalias1(x);}
-inline int addbundleentry(treenode x, double n1, double n2=0, double n3=0, double n4=0, 
-	double n5=0, double n6=0, double n7=0, double n8=0, double n9=0, double n10=0 )
-	{return addbundleentryalias2(x, n10args);}
-inline int addbundleentry(treenode x,
-	double n1   , double  n2  , double  n3  , double  n4  , double  n5  , double  n6  , double  n7  , double  n8  , double  n9  , double n10  ,
-	double n11  , double n12=0, double n13=0, double n14=0, double n15=0, double n16=0, double n17=0, double n18=0, double n19=0, double n20=0,
-	double n21=0, double n22=0, double n23=0, double n24=0, double n25=0, double n26=0, double n27=0, double n28=0, double n29=0, double n30=0)
-	{return addbundleentryalias3(x, n30args);}
 inline int setbundlevalue(treenode x, int entrynr, char* fieldname, double val){return setbundlevaluealias1(x, entrynr, fieldname, val);}
 inline int setbundlevalue(treenode x, int entrynr, int fieldnr, double val){return setbundlevaluealias2(x, entrynr, fieldnr, val);}
 inline int setbundlevalue(treenode x, int entrynr, char* fieldname, char* val){return setbundlevaluealias3(x, entrynr, fieldname, val);}
 inline int setbundlevalue(treenode x, int entrynr, int fieldnr, char* val){return setbundlevaluealias4(x, entrynr, fieldnr, val);}
 
-inline double getbundlevalue(treenode x, int entrynr, char* fieldname){return getbundlevaluealias1(x, entrynr, fieldname);}
-inline double getbundlevalue(treenode x, int entrynr, int fieldnr){return getbundlevaluealias2(x, entrynr, fieldnr);}
+engine_export Variant getbundlevalue(treenode x, int entrynr, char* fieldname);
+engine_export Variant getbundlevalue(treenode x, int entrynr, int fieldnr);
+
+engine_export Variant setticker(treenode x, double ticksPerSecond);
 
 inline double updatestate(treenode obj, int profilenr){return updatestate_alias2(obj, profilenr);}
 inline double updatestate(treenode obj){return updatestate_alias1(obj);}
@@ -668,8 +647,6 @@ inline double getstatenum(treenode obj){return getstatenum_alias1(obj);}
 
 inline void updateanimation(treenode object){updateanimationalias1(object);}
 inline void updateanimation(treenode object, double updatetime, int animnr = 0){updateanimationalias2(object, updatetime, animnr);}
-
-inline double function_s(treenode node, char * name, n30argsdefaultinterface){return function_s_alias(node, name, n30args);}
 
 inline treenode assertattribute(treenode object,char *name, int datatype){return assertattributealias(object, name, datatype);}
 inline treenode assertvariable(treenode object,char *name, int datatype = 0){return assertvariablealias(object, name, datatype);}
@@ -691,7 +668,7 @@ inline int cpp_query(const char* queryStr, QueryCallback& p1 = defQueryCallback,
 {
 		return cpp_queryalias(queryStr, p1, p2, p3, p4, p5, p6, p7, p8, p9);
 }
-inline FlexSimValue $iter(int index) {return $iteralias(index);}
+engine_export Variant $iter(int index);
 inline Variant getqueryvalue(int row, int col) {return getqueryvaluealias1(row, col);}
 inline Variant getqueryvalue(int row, const char* colName) {return getqueryvaluealias2(row, colName);}
 inline Variant getqueryvalue(int row, const std::string& colName) {return getqueryvaluealias2(row, colName.c_str());}
@@ -796,5 +773,26 @@ __declspec(dllimport) void sql_sortresult(TreeNode* queryNode, SqlDataSource* d,
 #endif
 
 inline char* _parstr(int index, CallPoint * callpoint) { return (char*)__parstr(index, callpoint); }
+visible int undo(treenode view = 0);
+visible int redo(treenode view = 0);
+engine_export Variant listenerinfo(int info, const Variant& p1 = Variant(), const Variant& p2 = Variant());
 
+engine_export treenode delayednodefunction(treenode theNode, double timeOffset, n10varsdefaultinterface);
+engine_export Variant nodefunction(treenode node, n10varsdefaultinterface);
+engine_export Variant nodefunctionasevent(treenode thenode, FLEXSIMINTERFACE);
+engine_export TreeNode* nodefunctionlisten(treenode theNode, treenode relayNode, int flags, n10varsdefaultinterface);
+engine_export Variant sendmessage(treenode node, treenode associated, n10varsdefaultinterface);
+engine_export Variant function_s(treenode node, const char * name, n10varsdefaultinterface);
+engine_export Variant function_n(treenode node, int index, n10varsdefaultinterface);
+engine_export Variant userfunction_s(treenode node, const char * name, n10varsdefaultinterface);
+engine_export Variant userfunction_n(treenode node, int index, n10varsdefaultinterface);
+engine_export int addbundleentry(treenode x);
+engine_export int addbundleentry(treenode x, const Variant& n1, const Variant& n2 = Variant(), const Variant& n3 = Variant(), const Variant& n4 = Variant(), const Variant& n5 = Variant(), 
+				const Variant& n6 = Variant(), const Variant& n7 = Variant(), const Variant& n8 = Variant(), const Variant& n9 = Variant(), const Variant& n10 = Variant());
+engine_export int addbundleentry(treenode x, const Variant& n1, const Variant& n2, const Variant& n3, const Variant& n4, const Variant& n5,
+	const Variant& n6, const Variant& n7, const Variant& n8, const Variant& n9, const Variant& n10, const Variant& n11,
+	const Variant& n12 = Variant(), const Variant& n13 = Variant(), const Variant& n14 = Variant(), const Variant& n15 = Variant(), const Variant& n16 = Variant(), const Variant& n17 = Variant(),
+	const Variant& n18 = Variant(), const Variant& n19 = Variant(), const Variant& n20 = Variant(), const Variant& n21 = Variant(), const Variant& n22 = Variant(), const Variant& n23 = Variant(), 
+	const Variant& n24 = Variant(), const Variant& n25 = Variant(), const Variant& n26 = Variant(), const Variant& n27 = Variant(), const Variant& n28 = Variant(), const Variant& n29 = Variant(), 
+	const Variant& n30 = Variant());
 #endif

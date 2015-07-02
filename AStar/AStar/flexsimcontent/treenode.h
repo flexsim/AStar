@@ -83,8 +83,8 @@ private:
 engine_private:
 	unsigned short parity;                        // (2 bytes)
 	BYTE datatype;                                // (1 byte)
+protected:
 	unsigned long long flags;                     // (8 bytes)
-private:
 	ByteBlock m_name;                               // (10 or 14 bytes)
 public:
 	TreeNode * ownerobjectcache;                  // (4 or 8 bytes)

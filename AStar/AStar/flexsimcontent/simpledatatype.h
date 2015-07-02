@@ -107,21 +107,25 @@ template<class ObjType>
 	}
 #define bindObjRef(name, asSubNode) bindObjRefByName(#name, name, asSubNode)
 
-	/// <summary>	Binds a FlexSimValue. Use this method if the name you want to bind by is
+	/// <summary>	Binds a double with "unknown" type. Use this method if the name you want to bind by is
 	/// 			different than the name of the member itself. Otherwise just use
-	/// 			bindFlexSimValue()</summary>
+	/// 			bindUnknownDouble()</summary>
 	/// <param name="name">	The name of the member. </param>
 	/// <param name="val"> 	[in,out] The value. </param>
-	void bindFlexSimValueByName(const char* name, double& val);
-	/// <summary>	Binds a FlexSimValue. Similar to bindDouble() or
+	engine_export void bindUnknownDoubleByName(const char* name, double& val);
+
+	/// <summary>	Binds a double with "unknown" type. Similar to bindDouble() or
 	///				bindNumber(), except this method will check if tonode(value)
 	///				is a valid node reference, and if so, it will save a coupling pointer
 	///				to the node instead of using number data, so the reference will
-	/// 			properly be saved/loaded.
-	/// 			Note: bindFlexSimValue is a macro that expands the parameter to a name/value 
-	/// 			pair for calling bindFlexSimValueByName. </summary>
+	/// 			properly be saved/loaded. 
+	/// 			
+	/// 			Note that this is mostly available for backwards compatibility. 
+	/// 			Going forward you should store such members as Variants and use bindVariant().
+	/// 			Note: bindUnknownDouble is a macro that expands the parameter to a name/value
+	/// 			pair for calling bindUnknownDoubleByName. </summary>
 	/// <param name="name">	The name of the member to bind. </param>
-	#define bindFlexSimValue(name) bindFlexSimValueByName(#name, name)
+	#define bindUnknownDouble(name) bindUnknownDoubleByName(#name, name)
 
 	template<class T>
 	void bindNumberByName(const char* name, T& val)
@@ -383,21 +387,15 @@ template<class ObjType>
 #define bindObjPtr(name) bindObjPtrByName(#name, (SimpleDataType*&)name)
 #define bindVariant(name) bindVariantByName(#name, name)
 
-	engine_export void bindSimpleDataMemberByName(const char* name, SimpleDataType* owner, SimpleDataType* member, bool shouldDisown);
+	engine_export void bindSimpleDataMemberByName(const char* name, SimpleDataType& member);
 
 	template <class T = std::enable_if<std::is_base_of<SimpleDataType, T>::value>::type>
-	void bindSdtMemberByName(const char* name, SimpleDataType* owner, T& member)
+	void bindSdtMemberByName(const char* name, T& member)
 	{
-		bindSimpleDataMemberByName(name, owner, &member, true);
+		bindSimpleDataMemberByName(name, member);
 	}
 
-	template <class T = std::enable_if<std::is_base_of<SimpleDataType, T>::value>::type>
-	void bindSdtMemberByName(const char* name, SimpleDataType* owner, T*& member)
-	{
-		bindSimpleDataMemberByName(name, owner, member, false);
-	}
-
-#define bindSdtMember(name) bindSdtMemberByName(#name, this, name)
+#define bindSdtMember(name) bindSdtMemberByName(#name, name)
 
 	TreeNode* getBindTree();
 
@@ -702,6 +700,15 @@ template<class ObjType>
 		}
 	}
 	#define bindNumberToNode(name, x) bindNumberToNodeByName(#name, name, x)
+
+
+	template <typename SubClass>
+	static void bindCallbackByName(char* name, Variant (SubClass::*callback)(FLEXSIMINTERFACE))
+	{
+		if (getBindMode() == SDT_BIND_GET_VALUE && strcmp(getCurValueName(), name) == 0)
+			getCurValue() = (double)(size_t)force_cast<void*>(callback);
+	}
+	#define bindCallback(name, classType) bindCallbackByName(#name, &classType::name)
 };
 
 
@@ -768,5 +775,92 @@ public:
 	virtual int getRowCount(int tableId) {return 0;}
 
 	virtual const char* getClassFactory() { return "SqlDataSource"; }
+};
+
+// 
+class ParseStatisticStringObj : public SimpleDataType
+{
+public:
+	const static int PSS_MODE_GET = 0; // default - get the value specified by the string
+	const static int PSS_MODE_ASSERT = 1; // make sure that the object will record the value
+	const static int PSS_MODE_ASSERT_FH = 2; // make sure that the object will record the full history
+	const static int PSS_MODE_GET_FH = 3; // get the bundle associated with the full history
+	const static int PSS_MODE_GET_TIMECOL = 4; // get the column in the history bundle with the time 
+	const static int PSS_MODE_GET_VALCOL = 5; // get the column in the history bundle with the values
+
+	virtual Variant parseStatisticString(const string& statString, int mode, Variant data) = 0;
+	engine_export Variant parseStatisticString(FLEXSIMINTERFACE);
+	virtual void bind() override { bindCallback(parseStatisticString, ParseStatisticStringObj); }
+};
+
+/// <summary>	Defines the TrackedVariable class. </summary>
+/// <remarks>	Tracked variables accept a sequence of values (one at a time)
+///				and provide methods to get the current, min, max, and avg. </remarks>
+class TrackedVariable : public ParseStatisticStringObj
+{
+	friend SimpleDataType* engine_createsdtderivative(char* classname, TreeNode* holder);
+
+public:
+	engine_export virtual const char* getClassFactory() { return "TrackedVariable"; }
+	engine_export virtual void bind();
+
+	treenode data;
+	double isTimeWeighted;
+	double fullHistory;
+	double cumulative;
+	double cumulativeTime;
+	double minValue;
+	double maxValue;
+	double numEntries;
+
+	engine_export virtual void reset();
+	engine_export virtual void resetStats();
+	engine_export virtual void set(double value);
+
+	engine_export double getAvg();
+	engine_export double getMin();
+	engine_export double getMax();
+	engine_export double getCurrent();
+	engine_export double getCount();
+
+	engine_export virtual Variant parseStatisticString(const string& quantity, int mode, Variant data) override;
+
+	engine_export TrackedVariable();
+	engine_export ~TrackedVariable() {}
+};
+
+/// <summary>	Defines the Statistic class, a set of TrackedVariables. </summary>
+/// <remarks>	The StatisticSet class optionally records content, input, output, and
+///				staytime, each as a tracked variable.</remarks>
+class StatisticSet : public ParseStatisticStringObj
+{
+	friend SimpleDataType* engine_createsdtderivative(char* classname, TreeNode* holder);
+
+public:
+	engine_export virtual const char* getClassFactory() { return "StatisticSet"; }
+	engine_export virtual void bind();
+
+	double recordContent;
+	double recordInput;
+	double recordOutput;
+	double recordStaytime;
+	double totalStaytime;
+
+	ObjRef<TrackedVariable> content;
+	ObjRef<TrackedVariable> input;
+	ObjRef<TrackedVariable> output;
+	ObjRef<TrackedVariable> staytime;
+
+	engine_export StatisticSet();
+
+	engine_export virtual void assertVariables();
+	engine_export virtual void reset();
+	engine_export virtual void resetStats();
+
+	engine_export virtual void updateEntryStats();
+	engine_export virtual void updateExitStats(double staytime);
+
+	engine_export virtual double getStatisticByString(const string& tvString, const string& quantity);
+	engine_export virtual Variant parseStatisticString(const string& quantity, int mode, Variant data) override;
 };
 
