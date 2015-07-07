@@ -1809,50 +1809,6 @@
 #define VREC_INTERPOLATE_COSINE 2
 
 
-#define AGV_MODE_STATE_NONE 0
-#define AGV_MODE_STATE_CLICKED 1
-#define AGV_MODE_STATE_DRAGGING 2
-#define AGV_MODE_STATE_CLICK_DOWN_2 3
-
-#define AGV_LISTEN_PRE_ARRIVAL 0x1
-#define AGV_LISTEN_ARRIVAL 0x2
-#define AGV_LISTEN_INTERMEDIATE_DEST 0x4
-#define AGV_LISTEN_FINAL_DEST 0x8
-#define AGV_LISTEN_ONCE 0x10
-#define CP_LISTEN_ONCE 0x10
-#define CP_LISTEN_ALLOCATED 0x20
-#define CP_LISTEN_DEALLOCATED 0x40
-#define CP_LISTEN_AVAILABLE 0x80
-#define CP_LISTEN_ENTRY 0x100
-#define CP_LISTEN_EXIT 0x200
-
-#define AGV_LISTENER_PARAM_TRIGGER -190394.890392
-#define AGV_LISTENER_PARAM_NODE -190395.890392
-#define CP_LISTENER_PARAM_TRIGGER -190394.890392
-#define CP_LISTENER_PARAM_NODE -190395.890392
-
-#define AGV_CURRENT_CP 1
-#define AGV_ORIGIN_CP 2
-#define AGV_INTERMEDIATE_DEST_CP 3
-#define AGV_DEST_CP 3
-#define AGV_FINAL_DEST_CP 4
-#define AGV_DEST 5
-#define AGV_CUR_TRAVEL_DIST 6
-#define AGV_BATTERY_LEVEL 7
-#define AGV_AMP_HOURS 8
-#define AGV_START_RECHARGE 9
-#define AGV_RECHARGE_TO_LEVEL 10
-#define AGV_ADD_ALLOC_POINT 11
-#define AGV_SET_ALLOC_POINT_DEALLOC_DIST 12
-#define AGV_SET_CAN_STOP_AT_ALLOC_POINT 13
-#define AGV_ATTACH_TRAILER 14
-#define AGV_DETACH_TRAILER 15
-
-#define REDIRECT_AND_WAIT 0
-#define REDIRECT_AS_FINAL 1
-#define REDIRECT_AND_CONTINUE_ON_ARRIVAL 2
-#define REDIRECT_AND_CONTINUE_ON_PRE_ARRIVAL 3
-
 
 // Include Header
 #include <float.h>
@@ -2073,6 +2029,36 @@ private:
 public:
 	treenode transportOutCompleteObject;
 	treenode transportInCompleteObject;
+};
+
+class PullIterator
+{
+public:
+	virtual TreeNode* getNext() = 0;
+	static PullIterator* s_customPullIterator;
+};
+
+class FifoPullIterator : public PullIterator
+{
+protected:
+	int numReleased;
+	int numChecked;
+	int curRank;
+	int totalContent;
+	int outPort;
+	TreeNode* frNodeBranch;
+public:
+	static FifoPullIterator fifoPullIterator;
+	virtual TreeNode* getNext() override;
+	void init(FixedResource*, int outPort);
+};
+
+class LifoPullIterator : public FifoPullIterator
+{
+public:
+	static LifoPullIterator lifoPullIterator;
+	virtual TreeNode* getNext() override;
+	void init(FixedResource*, int outPort);
 };
 
 struct conviteminfostruct : public SimpleDataType {
@@ -2719,6 +2705,8 @@ visible int getnextnetnodeoutport(int fromnn, int tonn);
 
 visible int getnextnetnode(int fromnn, int tonn);
 
+treenode getnextpullitem();
+
 visible double getnroftasks(treenode tasksequence);
 
 visible unsigned int getpreempt(treenode tasksequence);
@@ -2774,6 +2762,8 @@ Variant groupremovemember(treenode child, char* groupname);
 visible double holditem(treenode item);
 
 Variant inititem(treenode item);
+
+int initpull(treenode object, int outPort);
 
 visible int insertallocatetask(treenode tasksequence, treenode dispatcher, double priority, double preempt, int noblock DEFAULTZERO);
 
@@ -3324,6 +3314,8 @@ FS_CONTENT_DLL_FUNC double resumeTransportsIn(int trank DEFAULTZERO);
 FS_CONTENT_DLL_FUNC double saveStoppedTransportOut(treenode transporter);
 
 FS_CONTENT_DLL_FUNC double saveStoppedTransportIn(treenode transporter);
+
+FS_CONTENT_DLL_FUNC virtual PullIterator& initPull(int outPort);
 
 
 // c++ attributes

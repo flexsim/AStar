@@ -74,7 +74,7 @@
       <Directory Id="INSTALLDIR" Name="AStar" FileSource=".\">
         <?if $(var.Platform) = x86 ?>
 <!--Program GUIDs>
-<FlexSim="24982AC0-8C5D-492C-9026-88ADA3197660">
+<FlexSim="C8AFF23A-85A2-4CF8-ADC1-3138E6F63582">
 <FlexSimHC="A6B9A475-6762-41FA-A633-C782C49703A1">
 <FlexSimChinese="C1254ACE-8457-4D3D-99B1-6127DE171A4F">
 </Program GUIDs-->
@@ -83,7 +83,7 @@
           </Component>
         <?else?>
 <!--Program GUIDs>
-<FlexSim="13B0FE6A-695A-4E00-AA00-13CA0C52E16B">
+<FlexSim="6274FBCD-6775-4F99-BD57-9EC2E178CE5A">
 <FlexSimHC="F114356A-F14C-4330-9F19-479B1AE45548">
 <FlexSimChinese="0EAFECB3-5C84-4EAD-A5CA-61B64D7B766B">
 </Program GUIDs-->
@@ -92,7 +92,7 @@
           </Component>
         <?endif?>
 <!--Program GUIDs>
-<FlexSim="C51A90C5-07DA-4505-B86C-7FA9DB6F2906">
+<FlexSim="4DC47DAF-D4D6-444B-8CC1-3EA61551F60F">
 <FlexSimHC="24D9648F-B751-4BF6-8170-A56676C54883">
 <FlexSimChinese="A38C419D-1D8E-429D-BAD6-64978D42866C">
 </Program GUIDs-->
