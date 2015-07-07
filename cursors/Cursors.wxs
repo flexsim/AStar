@@ -5,7 +5,7 @@
   <WARNING>Manual changes to this file may cause incorrect behavior.</WARNING>
   <ParaffinFileVersion>2</ParaffinFileVersion>
   <GroupName>group_cursors</GroupName>
-  <Directory>FlexSimStable\modules\AStar\cursors\</Directory>
+  <Directory>.\</Directory>
   <DirAlias>$(var.ProjectDir)cursors\</DirAlias>
   <Win64></Win64>
   <Norecurse>false</Norecurse>
