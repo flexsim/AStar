@@ -16,7 +16,9 @@
     <Ext>.WXS</Ext>
     <Ext>.ORIG</Ext>
   </ExtensionExcludes>
-  <DirExcludes />
+  <DirExcludes>
+    <Dir>Admin</Dir>
+  </DirExcludes>
   <IncludeFiles />
   <RegExExcludes />
 </CommandLineOptions>-->
