@@ -176,8 +176,8 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 		Barrier* barrier = &o(Barrier, secondary);
 
 		// is there a current barrier
-		if (objectexists(tonode((Variant)activeBarrier))) {
-			Barrier* b = &o(Barrier, tonode((Variant)activeBarrier));
+		if (objectexists(activeBarrier)) {
+			Barrier* b = &o(Barrier, activeBarrier);
 			// is the clicked barrier different than the current barrier
 			if (b != barrier) {
 				// then reset the current barrier to be "not active"
@@ -191,8 +191,8 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 		setDirty();
 		return barrier->onClick(view, (int)clickcode, cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
 	}
-	if (objectexists(tonode((Variant)activeBarrier))) {
-		Barrier* b = &o(Barrier, tonode((Variant)activeBarrier));
+	if (objectexists(activeBarrier)) {
+		Barrier* b = &o(Barrier, activeBarrier);
 		b->activePointIndex = 0;
 		b->isActive = 0;
 		setDirty();
@@ -1605,8 +1605,8 @@ unsigned int AStarNavigator::getClassType()
 
 void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 {
-	int col = (modelPos.x - xOffset) / nodeWidth;
-	int row = (modelPos.y - yOffset) / nodeWidth;
+	int col = (int)(modelPos.x - xOffset) / nodeWidth;
+	int row = (int)(modelPos.y - yOffset) / nodeWidth;
 
 	if (col >= 0 && col < edgeTableXSize && row >= 0 && row < edgeTableYSize) {
 		AStarNode& node = DeRefEdgeTable(row, col);
@@ -1669,7 +1669,7 @@ ASTAR_FUNCTION Variant AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	newBarrier->activePointIndex = 1;
 	newBarrier->isActive = 1;
 	if (objectexists(a->activeBarrier)) {
-		Barrier* activeBarrier = &o(Barrier, tonode((Variant)a->activeBarrier));
+		Barrier* activeBarrier = &o(Barrier, a->activeBarrier);
 		activeBarrier->isActive = 0;
 	}
 	TreeNode* newNode = newBarrier->holder;
@@ -1734,8 +1734,8 @@ ASTAR_FUNCTION Variant AStarNavigator_onClick(FLEXSIMINTERFACE)
 		return 0;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	if (objectexists(tonode((Variant)a->activeBarrier))) {
-		Barrier* b = &o(Barrier, tonode((Variant)a->activeBarrier));
+	if (objectexists(a->activeBarrier)) {
+		Barrier* b = &o(Barrier, a->activeBarrier);
 		b->onClick(parnode(1), (int)parval(2), parval(3), parval(4));
 	}
 	return 1;
@@ -1748,8 +1748,8 @@ ASTAR_FUNCTION Variant AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
 		return 0;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	if (objectexists(tonode((Variant)a->activeBarrier))) {
-		Barrier* b = &o(Barrier, tonode((Variant)a->activeBarrier));
+	if (objectexists(a->activeBarrier)) {
+		Barrier* b = &o(Barrier, a->activeBarrier);
 		b->onMouseMove(parval(1), parval(2), parval(3), parval(4));
 		a->setDirty();
 	}
@@ -1764,8 +1764,8 @@ ASTAR_FUNCTION Variant AStarNavigator_getActiveBarrierMode(FLEXSIMINTERFACE)
 		return 0;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	if (objectexists(tonode((Variant)a->activeBarrier))) {
-		Barrier* b = &o(Barrier, tonode((Variant)a->activeBarrier));
+	if (objectexists(a->activeBarrier)) {
+		Barrier* b = &o(Barrier, a->activeBarrier);
 		return b->mode;
 	}
 
@@ -1782,8 +1782,8 @@ ASTAR_FUNCTION Variant AStarNavigator_setActiveBarrier(FLEXSIMINTERFACE)
 		return 0;
 
 	AStarNavigator* a = &o(AStarNavigator, navNode);
-	if (objectexists(tonode((Variant)a->activeBarrier))) {
-		Barrier* b = &o(Barrier, tonode((Variant)a->activeBarrier));
+	if (objectexists(a->activeBarrier)) {
+		Barrier* b = &o(Barrier, a->activeBarrier);
 		b->activePointIndex = 0;
 		b->isActive = 0;
 	}
