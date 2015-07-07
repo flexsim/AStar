@@ -26,7 +26,7 @@ public:
 	~CouplingDataType(){}
 	NodeRef& partner() { return *thePartner; }
 	const NodeRef& partner() const { return *thePartner; }
-	virtual char* toString(int verbose) override; 
+	engine_export virtual char* toString(int verbose) override; 
 	virtual Variant evaluate(const VariantParams& params) override { return partner().get(); }
 
 	union {

@@ -37,10 +37,10 @@ class FlexSimEvent : public CouplingDataType
 		}
 	}
 
-	virtual void execute();
+	engine_export virtual void execute();
 	virtual const char* getClassFactory(){return "FlexSimEvent";}
-	virtual void bind();
-	virtual void getDescription(char* toStr, size_t maxSize);
+	engine_export virtual void bind();
+	engine_export virtual void getDescription(char* toStr, size_t maxSize);
 protected:
 	CallPoint* getListenerCallPoint(){return (CallPoint*)*((void**)&(data[0]));}
 #ifdef FLEXSIM_ENGINE_COMPILE

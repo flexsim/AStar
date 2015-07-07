@@ -175,7 +175,7 @@ public:
 	int imageautoload(TreeNode * parentobject);
 	int soundautoload(TreeNode * parentobject);
   
-	int bindstructure(TreeNode *, unsigned int flags);
+	engine_export int bindstructure(TreeNode *, unsigned int flags);
   
 	int bind(TreeNode *, TreeNode **, char *);
 	virtual void bind() override { SimpleDataType::bind(); }

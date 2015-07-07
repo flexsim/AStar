@@ -4,6 +4,7 @@
 
 # ifndef byteblock_cld
 # define byteblock_cld
+#include "basicmacros.h"
 #include "basicclasses.h"
 #include <string>
 
@@ -11,74 +12,78 @@
 	#include "msxml3.h"
 #endif
 
-#pragma pack(1) //I do my own memory alignment and padding
+
 class ByteBlock
 { 
   //DATA MEMBERS ARE MANUALLY ALIGNED (NO PADDING)
 public:
 	char *block;                // (4 or 8 bytes)
 private:
-	unsigned int blocksize;     // (4 bytes)
-	unsigned short parity;      // (2 bytes)
+	unsigned int blockSize;     // (4 bytes)
+	unsigned int parity;      //  (4 bytes)
+	static const int LOCAL_BLOCK_SIZE = 24;
+	char localBlock[LOCAL_BLOCK_SIZE]; // (24 bytes)
+
+
+	inline bool setSizeInline(size_t);
+
+	void nullTerminate() { block[blockSize - 1] = 0; }
 public:
-	ByteBlock() : parity((unsigned short)(size_t)this), blocksize(1)
+	ByteBlock() : parity((unsigned int)(size_t)this), blockSize(1)
 	{
-		block = getStaticBlock();
+		block = localBlock;
+		localBlock[0] = 0;
 	}
 	// copy constructor
-	ByteBlock(ByteBlock& other) : parity((unsigned short)(size_t)this), blocksize(0), block(0)
+	ByteBlock(ByteBlock& other) : parity((unsigned int)(size_t)this), blockSize(0), block(localBlock)
 	{
-		write(other.block, other.blocksize, 0);
+		write(other.block, other.blockSize, false);
 	}
-	#if _MSC_VER >= 1600
-	// move constructor (only available with C++0x, i.e. VS 2010 +
-	ByteBlock(ByteBlock&& other) : parity((unsigned short)(size_t)this), blocksize(other.blocksize), block(other.block)
+	ByteBlock(ByteBlock&& other) : parity((unsigned int)(size_t)this), blockSize(other.blockSize), block(other.block)
 	{
-		other.block = 0;
-		other.blocksize = 0;
+		if (other.block == other.localBlock)
+			write(other.block, other.blockSize, false);
+		else {
+			blockSize = other.blockSize;
+			block = other.block;
+			other.block = other.localBlock;
+			other.blockSize = LOCAL_BLOCK_SIZE;
+		}
 	}
-	#endif
 	~ByteBlock()
 	{
 		parity = 0;
-		if (block && block!=getStaticBlock()) 
+		if (block && block != localBlock) 
 			flexsimfree(block);
 	}
-	static char* getStaticBlock();
-	void write(const char *source);
-	void write(const char *source, size_t intsize, bool nullterminate);
-	bool setSize(size_t);
-	unsigned int getSize() const;
-	char *getBuffer();
-	const char *getBuffer() const;
-	void append(const char *source);
+	engine_export void write(const char *source);
+	engine_export void write(const char *source, size_t intsize, bool nullterminate);
+	engine_export bool setSize(size_t);
+	engine_export unsigned int getSize() const;
+	engine_export char *getBuffer();
+	engine_export const char *getBuffer() const;
+	engine_export void append(const char *source);
+	engine_export void append(const char *source, size_t intsize, int nullterminate);
 	ByteBlock& operator =(const char * c)
 		{ write(c); return *this; }
 	ByteBlock& operator =(const std::string& c)
-		{ write(c.c_str()); return *this; }
+		{ write(c.c_str(), c.length() + 1, true); return *this; }
 	ByteBlock& operator +=(const char * c)
 		{ append(c); return *this; }
 	ByteBlock& operator +=(const std::string& c)
-		{ append(c.c_str()); return *this; }
+		{ append(c.c_str(), c.length(), true); return *this; }
 	ByteBlock& operator=(const ByteBlock& copyfrom)
-		{ write(copyfrom.block, copyfrom.blocksize, 0); return *this; }
+		{ write(copyfrom.block, copyfrom.blockSize, 0); return *this; }
 	operator char*()
 		{return getBuffer();}
 
 	#ifdef FLEXSIM_ENGINE_COMPILE
 		void* operator new(size_t size);
 		void operator delete(void* p);
-		inline bool checkParity(){return parity==(unsigned short)(size_t)this;}//true if valid
+		inline bool checkParity(){return parity==(unsigned int)(size_t)this;}//true if valid
   
 		void write(const char *source, size_t intsize);
-		void writeFast(const char *source);
 		void read(char *dest, size_t intsize);
-		void append(const char *source, size_t intsize, int nullterminate);
-  
-  
-		static char staticBlock[1];
-  
-		void nullTerminate();
  
 		size_t getSaveSize();
 		bool save(std::ostream& stream);

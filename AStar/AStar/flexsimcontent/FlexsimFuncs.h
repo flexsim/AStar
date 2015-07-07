@@ -144,7 +144,6 @@ THE SOFTWARE.
 	typedef double       (*_backupfile)(char *f);
 	typedef char*        (*_bbgetbuffer)(treenode thenode);
 	typedef int          (*_bbgetsize)(treenode thenode);
-	typedef char*        (*_bbgetstaticblock)();
 	typedef int          (*_bbsetsize)(treenode thenode, int size);
 	typedef treenode     (*_bcgetitemkinematics)(treenode conveyor,  treenode item, int kinematictype);
 	typedef double       (*_bcgetitemposition)(treenode conveyor,  treenode item);
@@ -667,12 +666,10 @@ THE SOFTWARE.
 	typedef treenode     (*_lladd)(treenode x, treenode toadd);
 	typedef void         (*_lladddata)(treenode owner, int datatype);
 	typedef treenode     (*_llbranch)(treenode thenode);
-	typedef void         (*_llcleanup)(treenode x);
 	typedef void         (*_lldelete)(treenode x);
 	typedef treenode     (*_llfind)(treenode x, char* name);
 	typedef int          (*_llgetallocsize)();
 	typedef void*        (*_llgetdata)(treenode node);
-	typedef void         (*_llinitialize)(treenode);
 	typedef double       (*_llinsert)(treenode node, treenode container, treenode newTreeNode);
 	typedef treenode     (*_llinsertbranch)(treenode x);
 	typedef double       (*_llinsertinto)(treenode node, treenode container, treenode newTreeNode);
@@ -931,8 +928,6 @@ THE SOFTWARE.
 	typedef double       (*_savetree)(treenode tree, char * extension, char * extensiondesc, char *path);
 	typedef int          (*_scaleeventsofobject)(treenode object, double scalefactor, double eventtime, int code);
 	typedef double       (*_scalekinematicstotime)(treenode kinematics, int kinematicnr, double totime);
-	typedef int          (*_sdtgetbindmode)();
-	typedef int          (*_sdtisdisplayverbose)();
 	typedef double       (*_searchdata_n)(treenode start, double value);
 	typedef double       (*_searchdata_s)(treenode start, char * pattern, int replication);
 	typedef treenode     (*_searchfornode)(char* searchstr, treenode rootnode, int nth, int searchobjects);
@@ -1167,58 +1162,10 @@ THE SOFTWARE.
 		typedef FSfptr   (*_getcorecommandfunction)(int index);
 		typedef portinfo (*_inobjectinfo)(treenode, int);
 		typedef portinfo (*_outobjectinfo)(treenode, int);
-		typedef void     (*_odtcleanup)(ObjectDataType* x);
-		typedef void     (*_odtinitialize)(ObjectDataType*);
-		typedef int      (*_odtbindstructure)(ObjectDataType*, treenode, unsigned int);
-		typedef void     (*_odtbindvariablebynamealias1)(ObjectDataType* odt, const char* name, double& val);
-		typedef void     (*_odtbindvariablebynamealias2)(ObjectDataType* odt, const char* name, ByteBlock& val);
-		typedef void     (*_odtbindvariablebynamealias3)(ObjectDataType* odt, const char* name, NodeRef& val);
-		typedef void     (*_odtbindvariablebynamealias4)(ObjectDataType* odt, const char* name, TreeNode*& val);
-		typedef treenode (*_sdtbindbyname)(SimpleDataType* sdt, const char* name, int asSubNode, int dataType, int * added);
-		typedef void     (*_sdtbindnodeptrbyname)(SimpleDataType* sdt, const char* name, treenode& val);
-		typedef void     (*_sdtbindobjptrbyname)(SimpleDataType* sdt, const char* name, SimpleDataType*& val);
-		typedef void     (*_sdtbindsubnodebyname)(SimpleDataType* sdt, const char* name, treenode& val, int datatype);
-		typedef void     (*_sdtbinddoublebyname)(SimpleDataType* sdt, const char* name, double& val, int asSubNode);
-		typedef void     (*_sdtbindbyteblockbyname)(SimpleDataType* sdt, const char* name, ByteBlock& val, int asSubNode);
-		typedef void     (*_sdtbindnoderefbyname)(SimpleDataType* sdt, const char* name, NodeRef& val, int asSubNode);
-		typedef void     (*_sdtbind)(SimpleDataType* sdt, int bindMode);
-		typedef treenode (*_sdtgetbindtree)(SimpleDataType* sdt);
 		typedef treenode (*_nodeaddsimpledata)(treenode x, SimpleDataType* sdt, int bind);
 		typedef treenode (*_nodeaddcouplingdata)(treenode x, CouplingDataType* sdt, int bind);
 		typedef treenode (*_nodedetachsimpledata)(treenode target);
-		typedef void     (*_sdtappendtodisplaystr)(const char* text);
-		typedef char*    (*_sdttostring)(SimpleDataType* sdt, int verbose);
-		typedef Variant&  (*_sdtgetcurvalue)();
-		typedef char*    (*_sdtgetcurvaluename)();
-		typedef void     (*_sdtsetvalue)(SimpleDataType* sdt, const char* valName, Variant toVal);
-		typedef Variant   (*_sdtgetvalue)(SimpleDataType* sdt, const char* valName);
-		typedef char*    (*_couplingtostring)(CouplingDataType* sdt, int verbose);
-		typedef void     (*_flexsimeventbind)(FlexSimEvent* e);
-		typedef void     (*_flexsimeventexecute)(FlexSimEvent* e);
-		typedef void     (*_flexsimeventgetdescription)(FlexSimEvent* e, char* toStr, size_t maxSize);
 		typedef treenode (*_createeventalias2)(FlexSimEvent* e);
-		typedef void (*_byteblock_write1)(ByteBlock* x, const char *source);
-		typedef void (*_byteblock_write2)(ByteBlock* x, const char *source, long unsigned intsize, int nullterminate);
-		typedef void (*_byteblock_append)(ByteBlock* x, const char *source);
-		typedef bool (*_byteblock_setsize)(ByteBlock* x, long unsigned int size);
-		typedef unsigned int (*_byteblock_getsize)(ByteBlock* x);
-		typedef char* (*_byteblock_getbuffer)(ByteBlock* x);
-
-		typedef  void (*_mesh_bind)(Mesh* m);
-		typedef  void (*_mesh_init)(Mesh* m, unsigned int nrVerts, unsigned int perVertFlags, unsigned int generalFlags);
-		typedef  void (*_mesh_cleanup)(Mesh* m, bool isDestructor);
-		typedef  void(*_mesh_definevertexattribs)(Mesh* m, unsigned int attribId, float* verts);
-		typedef  unsigned int(*_mesh_addcustomvertexattrib)(Mesh* m, const char* name, int componentsPerVertex, GLenum type, bool isNormalized);
-		typedef  unsigned int (*_mesh_setvertexattrib)(Mesh* m, int vertIndex, unsigned int attribId, float* vert);
-		typedef  void (*_mesh_setmeshattrib)(Mesh* m, unsigned int attribId, float* vert);
-		typedef  int (*_mesh_addvertex)(Mesh* m);
-		typedef  void (*_mesh_draw)(Mesh* m, int drawMode, int vertOffset, int vertCount, int vertStride);
-
-		typedef void (*_indexedmesh_bind)(IndexedMesh* m);
-		typedef void (*_indexedmesh_defineindexbuffer)(IndexedMesh* m, int nr, unsigned int * buffer);
-		typedef unsigned int (*_indexedmesh_addindex)(IndexedMesh* m, unsigned int index);
-		typedef void (*_indexedmesh_draw)(IndexedMesh* m, int drawMode, int count, int start);
-		typedef void (*_indexedmesh_cleanupindexbuffer)(IndexedMesh* m, bool isDestructor);
 
 		typedef Variant(*_fglInfo)(int op, treenode view);
 		
@@ -1678,7 +1625,6 @@ DECLARE_FLEXSIM_FUNCTION_1(listsum)
 DECLARE_FLEXSIM_FUNCTION_1(lladd)
 DECLARE_FLEXSIM_FUNCTION_1(lladddata)
 DECLARE_FLEXSIM_FUNCTION_1(llbranch)
-DECLARE_FLEXSIM_FUNCTION_1(llcleanup)
 DECLARE_FLEXSIM_FUNCTION_1(lldelete)
 DECLARE_FLEXSIM_FUNCTION_1(llfind)
 DECLARE_FLEXSIM_FUNCTION_1(llgetallocsize)
@@ -1872,7 +1818,6 @@ DECLARE_FLEXSIM_FUNCTION_2(runspeedalias, "runspeed")
 DECLARE_FLEXSIM_FUNCTION_1(savetree)
 DECLARE_FLEXSIM_FUNCTION_1(scaleeventsofobject)
 DECLARE_FLEXSIM_FUNCTION_1(scalekinematicstotime)
-DECLARE_FLEXSIM_FUNCTION_1(sdtgetbindmode)
 DECLARE_FLEXSIM_FUNCTION_1(searchdata_n)
 DECLARE_FLEXSIM_FUNCTION_1(searchdata_s)
 DECLARE_FLEXSIM_FUNCTION_1(searchfornode)
@@ -2137,62 +2082,13 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 
 /*** FUNCTIONS ONLY REQUIRED FOR CONTENT DLL ***/
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
-	DECLARE_FLEXSIM_FUNCTION_1(bbgetstaticblock)
-	DECLARE_FLEXSIM_FUNCTION_1(flexsimeventbind)
-	DECLARE_FLEXSIM_FUNCTION_1(flexsimeventexecute)
-	DECLARE_FLEXSIM_FUNCTION_1(flexsimeventgetdescription)
 	DECLARE_FLEXSIM_FUNCTION_1(getcorecommandfunction)
 	DECLARE_FLEXSIM_FUNCTION_1(inobjectinfo)
-	DECLARE_FLEXSIM_FUNCTION_1(llinitialize)
 	DECLARE_FLEXSIM_FUNCTION_1(nodeaddcouplingdata)
 	DECLARE_FLEXSIM_FUNCTION_1(nodeaddsimpledata)
 	DECLARE_FLEXSIM_FUNCTION_1(nodedetachsimpledata)
-	DECLARE_FLEXSIM_FUNCTION_1(odtbindstructure)
-	DECLARE_FLEXSIM_FUNCTION_1(odtcleanup)
-	DECLARE_FLEXSIM_FUNCTION_1(odtinitialize)
-	DECLARE_FLEXSIM_FUNCTION_3(odtbindvariablebynamealias1, "?odtbindvariablebyname@@YAXPAVObjectDataType@@PBDAAN@Z","?odtbindvariablebyname@@YAXPEAVObjectDataType@@PEBDAEAN@Z")
- 	DECLARE_FLEXSIM_FUNCTION_3(odtbindvariablebynamealias2, "?odtbindvariablebyname@@YAXPAVObjectDataType@@PBDAAVByteBlock@@@Z","?odtbindvariablebyname@@YAXPEAVObjectDataType@@PEBDAEAVByteBlock@@@Z")
-	DECLARE_FLEXSIM_FUNCTION_3(odtbindvariablebynamealias3, "?odtbindvariablebyname@@YAXPAVObjectDataType@@PBDAAVNodeRef@@@Z", "?odtbindvariablebyname@@YAXPEAVObjectDataType@@PEBDAEAVNodeRef@@@Z")
-	DECLARE_FLEXSIM_FUNCTION_3(odtbindvariablebynamealias4, "?odtbindvariablebyname@@YAXPAVObjectDataType@@PBDAAPAVTreeNode@@@Z","?odtbindvariablebyname@@YAXPEAVObjectDataType@@PEBDAEAPEAVTreeNode@@@Z")
 	DECLARE_FLEXSIM_FUNCTION_1(outobjectinfo)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtappendtodisplaystr)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtbind)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtbindbyname)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtbinddoublebyname)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtbindbyteblockbyname)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtbindnodeptrbyname)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtbindnoderefbyname)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtbindobjptrbyname)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtbindsubnodebyname)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtgetbindtree)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtgetcurvalue)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtgetcurvaluename)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtgetvalue)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtsetvalue)
-	DECLARE_FLEXSIM_FUNCTION_1(sdtisdisplayverbose)
-	DECLARE_FLEXSIM_FUNCTION_1(sdttostring)
-	DECLARE_FLEXSIM_FUNCTION_1(couplingtostring)
 	DECLARE_FLEXSIM_FUNCTION_3(createeventalias2, "?createevent@@YAPAVTreeNode@@PAVFlexSimEvent@@@Z", "?createevent@@YAPEAVTreeNode@@PEAVFlexSimEvent@@@Z")
-	DECLARE_FLEXSIM_FUNCTION_1(byteblock_write1)
-	DECLARE_FLEXSIM_FUNCTION_1(byteblock_write2)
-	DECLARE_FLEXSIM_FUNCTION_1(byteblock_append)
-	DECLARE_FLEXSIM_FUNCTION_1(byteblock_setsize)
-	DECLARE_FLEXSIM_FUNCTION_1(byteblock_getsize)
-	DECLARE_FLEXSIM_FUNCTION_1(byteblock_getbuffer)
-	DECLARE_FLEXSIM_FUNCTION_1(mesh_bind)
-	DECLARE_FLEXSIM_FUNCTION_1(mesh_init)
-	DECLARE_FLEXSIM_FUNCTION_1(mesh_cleanup)
-	DECLARE_FLEXSIM_FUNCTION_1(mesh_definevertexattribs)
-	DECLARE_FLEXSIM_FUNCTION_1(mesh_addcustomvertexattrib)
-	DECLARE_FLEXSIM_FUNCTION_1(mesh_setvertexattrib)
-	DECLARE_FLEXSIM_FUNCTION_1(mesh_setmeshattrib)
-	DECLARE_FLEXSIM_FUNCTION_1(mesh_addvertex)
-	DECLARE_FLEXSIM_FUNCTION_1(mesh_draw)
-	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_bind)
-	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_defineindexbuffer)
-	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_addindex)
-	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_draw)
-	DECLARE_FLEXSIM_FUNCTION_1(indexedmesh_cleanupindexbuffer)
 	DECLARE_FLEXSIM_FUNCTION_1(fglInfo)
 
 

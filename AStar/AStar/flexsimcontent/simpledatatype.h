@@ -41,16 +41,16 @@ private:
 	static void bindSDTNode(TreeNode* x);
 	static void detachSDTDerivative(TreeNode* x);
 	static SimpleDataType* createSDTDerivativeFromName(const char* name, TreeNode* holder);
-	static TreeNode* s_getBindTree(TreeNode* x);
-	static TreeNode* s_assertBindTree(TreeNode* x);
+	engine_export static TreeNode* s_getBindTree(TreeNode* x);
+	engine_export static TreeNode* s_assertBindTree(TreeNode* x);
 	static Variant curValue;
 	static const char * curValueName;
-	TreeNode* assertBindTree();
+	engine_export TreeNode* assertBindTree();
 
 protected:
 
 public:
-	static void appendToDisplayStr(const char* text);
+	engine_export static void appendToDisplayStr(const char* text);
 	static void appendToDisplayStr(double val) { 
 		char buffer[100]; 
 		double absVal = val >= 0 ? val : -val;
@@ -61,16 +61,16 @@ public:
 	}
 	static void appendToDisplayStr(int val) { char buffer[100]; sprintf(buffer, "%d", val); appendToDisplayStr(buffer); }
 	static void appendToDisplayStr(const std::string& str) { appendToDisplayStr(str.c_str()); }
-	static bool isDisplayVerbose();
-	static void bindNodeList(int doBindMode, bool detachReattach, int startIndex = 0);
+	engine_export static bool isDisplayVerbose();
+	engine_export static void bindNodeList(int doBindMode, bool detachReattach, int startIndex = 0);
 	static void clearAttsFromNodeList();
 	TreeNode* holder;
 	SimpleDataType() : holder(0) {}
 	virtual ~SimpleDataType(){}
 	virtual const char* getClassFactory(){return 0;}
 	virtual void bind(){}
-	void bind(int bindMode);
-	virtual char* toString(int verbose);
+	engine_export void bind(int bindMode);
+	engine_export virtual char* toString(int verbose);
 engine_private:
 	virtual TreeNode* getObjectTree() { return 0; }
 	virtual TreeNode* getLabelNode(const char* labelName, bool assert) { return 0; }
@@ -89,16 +89,16 @@ public:
 		flexsimfree(p);
 	}
 
-	static int getBindMode();
-	static Variant& getCurValue();
-	static const char * getCurValueName();
-	Variant getValue(const char* name);
-	void setValue(const char* name, Variant value);
-	TreeNode* bindByName(const char* name, int asSubNode, int dataType, int * added = 0);
+	engine_export static int getBindMode();
+	engine_export static Variant& getCurValue();
+	engine_export static const char * getCurValueName();
+	engine_export Variant getValue(const char* name);
+	engine_export void setValue(const char* name, Variant value);
+	engine_export TreeNode* bindByName(const char* name, int asSubNode, int dataType, int * added = 0);
 
-	void bindDoubleByName(const char* name, double& val, int asSubNode);
+	engine_export void bindDoubleByName(const char* name, double& val, int asSubNode);
 #define bindDouble(name, asSubNode) bindDoubleByName(#name, name, asSubNode)
-	void bindNodeRefByName(const char* name, NodeRef& val, int asSubNode);
+	engine_export void bindNodeRefByName(const char* name, NodeRef& val, int asSubNode);
 #define bindNodeRef(name, asSubNode) bindNodeRefByName(#name, name, asSubNode)
 template<class ObjType>
 	void bindObjRefByName(const char* name, ObjRef<ObjType>& val, int asSubNode)
@@ -217,7 +217,7 @@ template<class ObjType>
 	}
 	#define bindString(name) bindStringByName(#name, name)
 
-	void bindByteBlockByName(const char* name, ByteBlock& val, int asSubNode);
+	engine_export void bindByteBlockByName(const char* name, ByteBlock& val, int asSubNode);
 	#define bindByteBlock(name, asSubNode) bindByteBlockByName(#name, name, asSubNode)
 
 	template<class Type, class SizeType>
@@ -377,9 +377,9 @@ template<class ObjType>
 
 	#define bindFlexSimArray(name) bindFlexSimArrayByName(#name, name)
 
-	void bindNodePtrByName(const char* name, TreeNode*& val);
-	void bindSubNodeByName(const char* name, TreeNode*& val, int dataType = 1);
-	void bindObjPtrByName(const char* name, SimpleDataType*& val);
+	engine_export void bindNodePtrByName(const char* name, TreeNode*& val);
+	engine_export void bindSubNodeByName(const char* name, TreeNode*& val, int dataType = 1);
+	engine_export void bindObjPtrByName(const char* name, SimpleDataType*& val);
 	engine_export void bindVariantByName(const char* name, Variant& var);
 
 #define bindSubNode(name, dataType) bindSubNodeByName(#name, name, dataType)
@@ -397,7 +397,7 @@ template<class ObjType>
 
 #define bindSdtMember(name) bindSdtMemberByName(#name, name)
 
-	TreeNode* getBindTree();
+	engine_export TreeNode* getBindTree();
 
 	// now for some stl stuff
 	

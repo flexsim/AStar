@@ -20,7 +20,6 @@ class TreeNode;
 	#define VALIDLINKFAST(x) (x!=&TreeNode::failSafeLink && !IsBadReadPtr(x,sizeof(TreeNode)) && x->checkParity())
 #endif
 
-#pragma pack(1)
 class TreeNode
 {
 public:
@@ -82,13 +81,13 @@ private:
 	//DATA MEMBERS ARE MANUALLY ALIGNED (NO PADDING)
 engine_private:
 	unsigned short parity;                        // (2 bytes)
-	BYTE datatype;                                // (1 byte)
+	unsigned short datatype;                      // (2 bytes)
 protected:
 	unsigned long long flags;                     // (8 bytes)
-	ByteBlock m_name;                               // (10 or 14 bytes)
+	ByteBlock m_name;                             // (12 or 16 bytes)
 public:
 	TreeNode * ownerobjectcache;                  // (4 or 8 bytes)
-	void* dupedMember; // (4 or 8 bytes)
+	void* dupedMember;                            // (4 or 8 bytes)
 	HashTable<TreeNode*> * listhash;              // (4 or 8 bytes)
 	int arraysize;                                // (4 bytes)
 	TreeNode * parent;                            // (4 or 8 bytes)
@@ -112,8 +111,8 @@ public:
 	~TreeNode() { cleanup(); }
 	engine_export void initialize();
 	engine_export int cleanup();
-	double * safedatafloat();
-	ByteBlock * safedatabyteblock();
+	engine_export double * safedatafloat();
+	engine_export ByteBlock * safedatabyteblock();
 	#ifdef COMPILING_FLEXSIM_CONTENT
 		// do not use this method. It is for backwards compatibility
 		void __addUnknownData(void* theData) { datatype = 0; data = theData; }
