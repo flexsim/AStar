@@ -759,7 +759,7 @@ the outside 8 nodes.
 	vectorproject(model(), xStart, yStart, 0, up(traveler), outputVector);
 	xStart = outputVector[0];
 	yStart = outputVector[1];
-	initkinematics(kinematics, xStart, yStart, 0, 0,0,0, 1, 0);
+	initkinematics(kinematics, xStart, yStart, te->b_spatialz, 0, 0, 0, (int)te->v_modifyrotation, 0);
 	endTime = time();
 
 	AStarSearchEntry e, laste;
@@ -1605,8 +1605,8 @@ unsigned int AStarNavigator::getClassType()
 
 void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 {
-	int col = (modelPos.x - xOffset) / nodeWidth;
-	int row = (modelPos.y - yOffset) / nodeWidth;
+	int col = (int)((modelPos.x - xOffset) / nodeWidth);
+	int row = (int)((modelPos.y - yOffset) / nodeWidth);
 
 	if (col >= 0 && col < edgeTableXSize && row >= 0 && row < edgeTableYSize) {
 		AStarNode& node = DeRefEdgeTable(row, col);
