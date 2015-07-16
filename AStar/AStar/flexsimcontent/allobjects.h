@@ -1516,6 +1516,10 @@
 #define CURRENT_MILLISECOND 63
 #define CURRENT_MILLISECOND_OF_SECOND 64
 
+#define START_TIME_STR 71
+#define CURRENT_TIME_STR 72
+#define STOP_TIME_STR 73
+
 // Constants group: FLUID CONVEYOR
 #define FLUID_CONVEYOR_DIRECTION_FORWARD  1
 #define FLUID_CONVEYOR_DIRECTION_REVERSE  2
@@ -2655,7 +2659,7 @@ treenode* enumerateteam(treenode team, int * returnnrofoperators, int recursivec
 
 visible int evaluatepullcriteria(treenode fr, treenode item, int port, int bypassflags);
 
-visible Variant fglinfo(int op, treenode view);
+__declspec(dllexport) Variant fglinfo(int op, treenode view);
 
 treenode findnextclassvariable(treenode*curclass, treenode curvariable);
 
@@ -3024,7 +3028,7 @@ FS_CONTENT_DLL_FUNC virtual double onInOpen(int port);
 
 FS_CONTENT_DLL_FUNC virtual double onClick(treenode view, int code);
 
-FS_CONTENT_DLL_FUNC virtual double onMessage(treenode fromobject, double par1, double par2, double par3);
+FS_CONTENT_DLL_FUNC virtual Variant onMessage(treenode fromobject, const Variant& par1, const Variant& par2, const Variant& par3);
 
 FS_CONTENT_DLL_FUNC virtual double onReset();
 
@@ -3070,7 +3074,7 @@ FS_CONTENT_DLL_FUNC virtual double onTransportOutComplete(treenode item, int por
 
 FS_CONTENT_DLL_FUNC virtual double onTransportInComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
 
-FS_CONTENT_DLL_FUNC virtual Variant parseStatisticString(string statString, int mode, Variant data);
+FS_CONTENT_DLL_FUNC virtual Variant parseStatisticString(const string& statString, int mode, const Variant& data);
 
 FS_CONTENT_DLL_FUNC double resetLabels();
 
@@ -3123,7 +3127,7 @@ FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
 
 FS_CONTENT_DLL_FUNC virtual double onKeyedClick(treenode view, int code, char key);
 
-FS_CONTENT_DLL_FUNC virtual double onMessage(treenode fromobject, double par1, double par2, double par3);
+FS_CONTENT_DLL_FUNC virtual Variant onMessage(treenode fromobject, const Variant& par1, const Variant& par2, const Variant& par3);
 
 FS_CONTENT_DLL_FUNC virtual double onReset();
 
@@ -3402,8 +3406,6 @@ TreeNode* node_v_columns;
 #define v_columns node_v_columns->safedatafloat()[0]
 TreeNode* node_v_initonreset;
 #define v_initonreset node_v_initonreset->safedatafloat()[0]
-TreeNode* node_v_usebundles;
-#define v_usebundles node_v_usebundles->safedatafloat()[0]
 TreeNode* node_v_width;
 #define v_width node_v_width->safedatafloat()[0]
 TreeNode* node_v_height;
@@ -4288,7 +4290,7 @@ public:
 
 FS_CONTENT_DLL_FUNC virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double onMessage(treenode from, double p1, double p2, double p3);
+FS_CONTENT_DLL_FUNC virtual Variant onMessage(treenode from, const Variant& p1, const Variant& p2, const Variant& p3);
 
 FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
@@ -4624,6 +4626,164 @@ FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
 FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
 
 FS_CONTENT_DLL_FUNC treenode addGroup(int groupRank);
+
+
+// System
+
+FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// StringStatChart
+class StringStatChart : public StatisticObject
+{
+public:
+
+TreeNode* node_v_objects;
+#define v_objects node_v_objects->safedatafloat()[0]
+TreeNode* node_v_colors;
+#define v_colors node_v_colors->safedatafloat()[0]
+TreeNode* node_v_charttype;
+#define v_charttype node_v_charttype->safedatafloat()[0]
+TreeNode* node_v_usecollecttime;
+#define v_usecollecttime node_v_usecollecttime->safedatafloat()[0]
+TreeNode* node_v_mincollecttime;
+#define v_mincollecttime node_v_mincollecttime->safedatafloat()[0]
+TreeNode* node_v_maxcollecttime;
+#define v_maxcollecttime node_v_maxcollecttime->safedatafloat()[0]
+TreeNode* node_v_collecthistory;
+#define v_collecthistory node_v_collecthistory->safedatafloat()[0]
+TreeNode* node_v_filtermintime;
+#define v_filtermintime node_v_filtermintime->safedatafloat()[0]
+TreeNode* node_v_filtermaxtime;
+#define v_filtermaxtime node_v_filtermaxtime->safedatafloat()[0]
+TreeNode* node_v_filterednow;
+#define v_filterednow node_v_filterednow->safedatafloat()[0]
+TreeNode* node_v_timeinterval;
+#define v_timeinterval node_v_timeinterval->safedatafloat()[0]
+TreeNode* node_v_showlegend;
+#define v_showlegend node_v_showlegend->safedatafloat()[0]
+TreeNode* node_v_fontsize;
+#define v_fontsize node_v_fontsize->safedatafloat()[0]
+TreeNode* node_v_barsize;
+#define v_barsize node_v_barsize->safedatafloat()[0]
+TreeNode* node_v_precision;
+#define v_precision node_v_precision->safedatafloat()[0]
+TreeNode* node_v_stacked;
+#define v_stacked node_v_stacked->safedatafloat()[0]
+TreeNode* node_v_statistics;
+#define v_statistics node_v_statistics->safedatafloat()[0]
+TreeNode* node_v_data;
+TreeNode* node_v_basedata;
+TreeNode* node_v_timedata;
+TreeNode* node_v_colordata;
+TreeNode* node_v_validdata;
+#define v_validdata node_v_validdata->safedatafloat()[0]
+TreeNode* node_v_useprofilenr;
+#define v_useprofilenr node_v_useprofilenr->safedatafloat()[0]
+TreeNode* node_v_generallisten;
+#define v_generallisten node_v_generallisten->safedatafloat()[0]
+TreeNode* node_v_aggregatelisten;
+#define v_aggregatelisten node_v_aggregatelisten->safedatafloat()[0]
+TreeNode* node_v_systemwarmuptime;
+#define v_systemwarmuptime node_v_systemwarmuptime->safedatafloat()[0]
+TreeNode* node_v_timescale;
+#define v_timescale node_v_timescale->safedatafloat()[0]
+TreeNode* node_v_xaxistitle;
+TreeNode* node_v_yaxistitle;
+
+// c++ member functions
+
+FS_CONTENT_DLL_FUNC virtual double onReset();
+
+FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+
+FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+
+FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode  view);
+
+FS_CONTENT_DLL_FUNC virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
+
+FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
+
+FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+
+FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+
+FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+
+FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
+
+FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+
+FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
+
+FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+
+FS_CONTENT_DLL_FUNC int initializeObjects();
+
+FS_CONTENT_DLL_FUNC int getMaxGroupNameWidth();
+
+FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
+
+FS_CONTENT_DLL_FUNC int initializeObjectMember(treenode membernode, treenode bundlenode, int listen DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC int initializeAggregateMember(treenode groupnode);
+
+FS_CONTENT_DLL_FUNC treenode getNextMemberNode(treenode membernode);
+
+FS_CONTENT_DLL_FUNC int updateAllStats();
+
+FS_CONTENT_DLL_FUNC int updateMemberStats(treenode membernode, int entrynr);
+
+FS_CONTENT_DLL_FUNC double updateTimeStats();
+
+FS_CONTENT_DLL_FUNC double calculateAvgContent(treenode obj, treenode statnode, int savingbase DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC double calculateAvgStayTime(treenode obj, treenode statnode);
+
+FS_CONTENT_DLL_FUNC int saveBaseStats(treenode membernode, int entrynr);
+
+FS_CONTENT_DLL_FUNC int filterAllByTime(treenode view);
+
+FS_CONTENT_DLL_FUNC int filterByTime(treenode membernode, int entrynr);
+
+FS_CONTENT_DLL_FUNC int unfilterAll(treenode graph);
+
+FS_CONTENT_DLL_FUNC double getTotalTime();
+
+FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+
+FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
+
+FS_CONTENT_DLL_FUNC treenode onChangeObjectSet();
+
+FS_CONTENT_DLL_FUNC int countNrInGroup(treenode objnode);
+
+FS_CONTENT_DLL_FUNC treenode getMember(int nr);
+
+FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
+
+FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+
+FS_CONTENT_DLL_FUNC treenode addGroup(int groupRank);
+
+FS_CONTENT_DLL_FUNC string buildStatisticString(int statRank);
+
+FS_CONTENT_DLL_FUNC string buildInitializeString(int statRank);
+
+FS_CONTENT_DLL_FUNC Variant getDataId(int statRank);
+
+FS_CONTENT_DLL_FUNC string getFieldName(int statRank);
 
 
 // System
@@ -8044,7 +8204,7 @@ FS_CONTENT_DLL_FUNC virtual double onReset();
 
 FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual double onMessage(treenode fromobject, double par1, double par2, double par3);
+FS_CONTENT_DLL_FUNC virtual Variant onMessage(treenode fromobject, const Variant& par1, const Variant& par2, const Variant& par3);
 
 FS_CONTENT_DLL_FUNC double onDraw(treenode view);
 
