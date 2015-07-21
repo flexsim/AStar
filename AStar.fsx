@@ -669,7 +669,7 @@ iterate(1, content(tabcontrol), 1){
          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>spatialy</name><data>00000000403c0000</data></node>
          <node f="42" dt="1"><name>spatialsx</name><data>0000000040755000</data></node>
-         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040360000</data></node>
          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/BottomButtons</data></node>
         </data></node>
@@ -1044,7 +1044,7 @@ forobjectsbehind (c)
           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
           <node f="42" dt="1"><name>spatialy</name><data>0000000040310000</data></node>
           <node f="42" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>00000000404c8000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>00000000404e0000</data></node>
           <node f="42"><name>items</name>
            <node f="40"><name></name></node>
            <node f="42"><name>All Members</name></node>
@@ -1062,7 +1062,7 @@ forobjectsbehind (c)
           <node f="40"><name>object</name></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040530000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>000000004053c000</data></node>
           <node f="42" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42" dt="2"><name>OnPress</name><data>treenode list = node("../MembersList", c);
@@ -1764,7 +1764,7 @@ switch (filter) {
 listboxrefresh(c);
 
 string name = getname(rank(items(c), get(itemcurrent(c))));
-treenode barrierNode;
+treenode barrierNode = 0;
 for (int i = 1; i &lt;= content(barriers); i++) {
 	if (comparetext(getname(rank(barriers, i)), name)) {
 		barrierNode = rank(barriers, i);
@@ -2588,7 +2588,7 @@ applylinks(parent);</data></node>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404b0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404b8000</data></node>
     <node f="42" dt="2"><name>after</name><data>ThreeDView</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>

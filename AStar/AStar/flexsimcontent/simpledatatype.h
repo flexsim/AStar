@@ -787,8 +787,11 @@ public:
 	const static int PSS_MODE_GET_FH = 3; // get the bundle associated with the full history
 	const static int PSS_MODE_GET_TIMECOL = 4; // get the column in the history bundle with the time 
 	const static int PSS_MODE_GET_VALCOL = 5; // get the column in the history bundle with the values
+	const static int PSS_MODE_QUERY_ANY = 6; // get whether or not this object can parse statistic strings
+	// Note: PSS_MODE_QUERY allows any object with this method to confirm that it has this interface,
+	// without changing its inheritance hierarchy.
 
-	virtual Variant parseStatisticString(const string& statString, int mode, Variant data) = 0;
+	virtual Variant parseStatisticString(const string& statString, int mode, const Variant& data) = 0;
 	engine_export Variant parseStatisticString(FLEXSIMINTERFACE);
 	virtual void bind() override { bindCallback(parseStatisticString, ParseStatisticStringObj); }
 };
@@ -823,7 +826,7 @@ public:
 	engine_export double getCurrent();
 	engine_export double getCount();
 
-	engine_export virtual Variant parseStatisticString(const string& quantity, int mode, Variant data) override;
+	engine_export virtual Variant parseStatisticString(const string& statString, int mode, const Variant& data) override;
 
 	engine_export TrackedVariable();
 	engine_export ~TrackedVariable() {}
@@ -861,6 +864,6 @@ public:
 	engine_export virtual void updateExitStats(double staytime);
 
 	engine_export virtual double getStatisticByString(const string& tvString, const string& quantity);
-	engine_export virtual Variant parseStatisticString(const string& quantity, int mode, Variant data) override;
+	engine_export virtual Variant parseStatisticString(const string& statString, int mode, const Variant& data) override;
 };
 

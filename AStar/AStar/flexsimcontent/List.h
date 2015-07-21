@@ -4,6 +4,7 @@
 #include "objectdatatype.h"
 #include "couplingdatatype.h"
 #include "byteblock.h"
+#include "flexsimevent.h"
 #include <unordered_map>
 
 
@@ -145,6 +146,13 @@ public:
 		int curEntryRow = 0;
 	};
 
+	struct EntryRange {
+		EntryRange() {}
+		EntryRange(int begin, int end) : begin(begin), end(end) {}
+		int begin;
+		int end;
+	};
+
 	class BackOrder : public ListSqlDataSource
 	{
 	public:
@@ -169,9 +177,9 @@ public:
 		bool isOnPartition;
 		int flags;
 		bool incrementalAllocation;
-		int numAddedEntries = 0;
+		EntryRange range;
 		ListSqlDataSource* originalDelegate;
-		bool checkFulfill(int& numAdded);
+		bool checkFulfill(EntryRange& range);
 		virtual int getRowCount(int tableId) override;
 		virtual Variant getValue(int tableId, int row, int colId) override;
 		CallbackInfoWrapper callbackInfo;
@@ -179,11 +187,14 @@ public:
 
 	struct PushResult
 	{
+		PushResult() {}
+		PushResult(const Variant& val) { addToResult(returnVal); }
+		PushResult(PushResult&& other) : returnVal(std::move(other.returnVal)), returnArray(std::move(other.returnArray)) {  }
 		Variant returnVal;
 		std::unique_ptr<std::vector<Variant>> returnArray;
 		int numResults = 0;
-		void addToResult(const Variant& puller);
 		Variant getResult();
+		void addToResult(const Variant& puller);
 	};
 
 	class ListStatisticSet : public StatisticSet
@@ -195,8 +206,10 @@ public:
 		virtual void bind() override { StatisticSet::bind(); bindVariant(partitionId); }
 	};
 
+	typedef NodeListArray<Entry>::CouplingSdtSubNodeType EntryList;
+
 	NodeListArray<Field>::SdtSubNodeType fields;
-	NodeListArray<Entry>::CouplingSdtSubNodeType entries;
+	EntryList entries;
 	NodeListArray<BackOrder>::SdtSubNodeType backOrders;
 	NodeListArray<>::SubNodeType backOrderPartitions;
 	NodeListArray<>::SubNodeType entryPartitions;
@@ -256,10 +269,32 @@ protected:
 
 public:
 	static bool isVariantNonNull(const Variant& partitionId);
-	Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool removeEntries, bool incrementalAllocation, int numAdded, const Variant& partitionId, bool getEntryNodes);
+
+	/// <summary>	Gets the result from a pull query and, if needed, removes the pulled entries. </summary>
+	/// <remarks>	This is called by a pull operation if valid results are pulled, and from the 
+	/// 			back order fulfillment mechanism. </remarks>
+	/// <param name="numMatches">				Number of matches previously returned from an sql query. </param>
+	/// <param name="q">						The SqlQuery to retrieve the result from. </param>
+	/// <param name="puller">					The puller. </param>
+	/// <param name="removeEntries">			true if result entries should be removed. </param>
+	/// <param name="range">					[in,out] The range of entries that were queried. </param>
+	/// <param name="partitionId">				Partition ID. </param>
+	/// <param name="getEntryNodes">			If true, the result will get the entry nodes instead of their associated values. </param>
+	/// <param name="innerRange">				[in,out] An optional inner range. This is used 
+	/// 										for all-or-nothing back order fulfillment. When this type of back order tries to be 
+	/// 										fulfilled, it will set the normal range to the full range of entries because it needs
+	/// 										to query the full list again. However, it also needs to track how the "incremental
+	/// 										range" was changed so that the incremental range integrity will be preserved when 
+	/// 										fulfilling multiple back orders. So it passes the incremental range as an "innerRange",
+	/// 										the getResult() will properly update innerRange if entries from within that innerRange
+	/// 										are removed.</param>
+	/// <returns>	The result. </returns>
+	Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool removeEntries, EntryRange& range, const Variant& partitionId, bool getEntryNodes, EntryRange* innerRange = nullptr);
+
 	TreeNode* getBackOrderList(const Variant& partitionId);
 	TreeNode* getEntryList(const Variant& partitionId);
 	virtual void bindVariables();
+	//virtual void bind() override;
 	virtual void onReset();
 	virtual int getFieldId(const char* fieldName);
 	virtual Variant getEntryValue(int entryIndex, int fieldId);
@@ -276,6 +311,7 @@ private:
 	ListSqlDataSource* processQuery(const char* sqlQuery, int flags, TreeNode* parsedContainer, bool isBackOrderQuery);
 	inline Variant pull(SqlQuery* q, int requestNum, int requireNum, const Variant& puller, const Variant& partitionId, int flags);
 	inline Variant pullBackOrders(SqlQuery* q, int requestNum, const Variant& value, const Variant& partitionId, int flags);
+	PushResult matchEntriesToBackOrders(EntryList& entries, EntryRange range, const Variant& partitionId);
 	Variant pullBackOrders(const char* sqlQuery, int requestNum, const Variant& value, const Variant& partitionId, int flags);
 	Variant pullBackOrders(TreeNode* cachedQuery, int requestNum, const Variant& value, const Variant& partitionId, int flags);
 public:
@@ -284,6 +320,39 @@ public:
 	engine_export virtual void dumpStatisticSets(TreeNode* container);
 
 	engine_export void listenToEntry(treenode entry, treenode callback, const Variant& p1);
+
+
+public:
+	class BackOrderListener : public SimpleDataType
+	{
+	public:
+		virtual const char* getClassFactory() override { return "ListBackOrderListener"; }
+		void onEventFired(TreeNode* entryOrBackOrder);
+		List* list;
+		static const int PULLER_BASED = 1;
+		static const int VALUE_BASED = 2;
+		static const int GLOBAL = 3;
+		double listenerType;
+		virtual void bind() override;
+	};
+	class BackOrderListenerEvent : public FlexSimEvent
+	{
+	public:
+		BackOrderListenerEvent() : FlexSimEvent() {};
+		BackOrderListenerEvent(BackOrderListener* listener) : FlexSimEvent(nullptr, 0.0, listener->holder, 0, nullptr) {};
+		virtual const char* getClassFactory() override { return "ListBackOrderListenerEvent"; }
+		virtual void execute() override { involved->objectAs(BackOrderListener)->onEventFired(up(partner())); }
+	};
+	NodeListArray<BackOrderListener>::SdtSubNodeType backOrderListeners;
+	NodeListArray<BackOrderListener>::ObjPtrType valueBackOrderListeners;
+	NodeListArray<BackOrderListener>::ObjPtrType pullerBackOrderListeners;
+
+	void reevaluateBackOrder(BackOrder* backOrder);
+	void reevaluateBackOrders(Entry* entry);
+	void reevaluateBackOrders();
+	//BackOrderListener* addBackOrderListener(int type);
+	//Variant addBackOrderListener(FLEXSIMINTERFACE) { return addBackOrderListener((int)_param(1, callPoint))->holder; }
+
 };
 
 #ifdef FLEXSIM_ENGINE_COMPILE
