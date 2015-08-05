@@ -171,13 +171,13 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\AStarNavigator.h" />
-    <ClInclude Include="..\..\include\Barrier.h" />
-    <ClInclude Include="..\..\include\Divider.h" />
-    <ClInclude Include="..\..\include\macros.h" />
-    <ClInclude Include="..\..\include\OneWayDivider.h" />
-    <ClInclude Include="..\..\include\Point.h" />
-    <ClInclude Include="..\..\include\PreferredPath.h" />
+    <ClInclude Include="AStarNavigator.h" />
+    <ClInclude Include="Barrier.h" />
+    <ClInclude Include="Divider.h" />
+    <ClInclude Include="macros.h" />
+    <ClInclude Include="OneWayDivider.h" />
+    <ClInclude Include="Point.h" />
+    <ClInclude Include="PreferredPath.h" />
     <ClInclude Include="AStar.h" />
     <ClInclude Include="flexsimcontent\all.h" />
     <ClInclude Include="flexsimcontent\allobjects.h" />
