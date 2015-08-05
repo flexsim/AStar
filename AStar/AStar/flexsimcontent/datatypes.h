@@ -1712,7 +1712,7 @@ public:
 
 	static TreeNode* StoredAttCouplingGetter(treenode x)
 	{
-		treenode partner = x->dataascoupling ? x->dataascoupling->partner() : 0;
+		treenode partner = x->dataascoupling ? x->dataascoupling->partner().get() : 0;
 		if (partner)
 			return ownerobject(partner);
 		return 0;
@@ -1721,7 +1721,7 @@ public:
 
 	static TreeNode* SubNodeCouplingGetter(treenode x)
 	{
-		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner() : 0;
+		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner().get() : 0;
 		if (partner)
 			return up(partner);
 		return 0;
@@ -1729,7 +1729,7 @@ public:
 	static void SubNodeCouplingAdder(treenode x, TreeNode* obj) { nodejoin(x, nodeadddata(nodeinsertinto(obj), DATA_POINTERCOUPLING)); }
 	static T* SdtSubNodeCouplingGetter(treenode x)
 	{
-		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner() : 0;
+		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner().get() : 0;
 		if (partner)
 			return up(partner)->objectAs(T);
 		return 0;
@@ -1742,7 +1742,7 @@ public:
 
 	static T* SdtSubSubNodeCouplingGetter(treenode x)
 	{
-		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner() : 0;
+		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner().get() : 0;
 		if (partner)
 			return up(up(partner))->objectAs(T);
 		return 0;
@@ -1767,7 +1767,7 @@ public:
 
 	static T* ObjPtrGetter(treenode x)
 	{
-		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->object<CouplingDataType>()->partner() : 0;
+		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->object<CouplingDataType>()->partner().get() : 0;
 		if (partner)
 			return &o(T, partner);
 		return 0;
@@ -1785,7 +1785,7 @@ public:
 
 	static T* ObjCouplingGetter(treenode x)
 	{
-		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->object<CouplingDataType>()->partner() : 0;
+		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->object<CouplingDataType>()->partner().get() : 0;
 		if (partner)
 			return &o(T, ownerobject(partner));
 		return 0;

@@ -817,7 +817,7 @@ public:
 	double numEntries;
 
 	engine_export virtual void reset();
-	engine_export virtual void resetStats();
+	engine_export virtual void reset(double value);
 	engine_export virtual void set(double value);
 
 	engine_export double getAvg();

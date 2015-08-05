@@ -38,12 +38,16 @@ public:
 		static const int PARAM_NUM_REQUIRED_STILL = -496432587;
 		static const int PARAM_NUM_REQUESTED_STILL = -496432588;
 		void bind(SimpleDataType* entry);
-		void evaluate(Variant allocated, int numRequiredStill, int numRequestedStill);
+		void evaluate();
 		treenode callbackNode;
 		int allocatedParam;
 		int numRequiredParam;
 		int numRequestedParam;
 		Variant params[10];
+		Variant allocated;
+		int numRequiredStill;
+		int numRequestedStill;
+		void setEvaluationInfo(Variant allocated, int numRequiredStill, int numRequestedStill);
 	};
 	class CallbackInfoWrapper
 	{
@@ -65,15 +69,17 @@ public:
 		friend class List;
 		friend class ListViewDataSource;
 	public:
-		Entry(size_t numFields);
+		Entry(size_t numFields, const Variant& value);
 		Entry() {}
 		CallbackInfoWrapper callbackInfo;
+		bool getEntryNodes = false;
 	private:
 		virtual const char* getClassFactory() { return "ListEntry"; }
 		virtual void bind();
 		std::vector<Variant> staticFields;
 		double pushTime;
 		Variant value;
+		bool hasListeners = false;
 	};
 
 	class Field : public SimpleDataType
@@ -111,6 +117,8 @@ public:
 		virtual const char* getClassFactory() override { return "ListPushArgumentField"; }
 		virtual Variant evaluateOnAdd(Entry* entry, const VariantParams& params) override;
 	};
+
+	class Partition;
 	class ListSqlDataSource : public SqlDataSource
 	{
 	public:
@@ -127,6 +135,7 @@ public:
 
 		TreeNode* curPuller = 0;
 		List* list;
+		Partition* partition;
 		TreeNode* sqlParse = 0;
 		std::vector<std::string> labelNames;
 		void assertSQLParse();
@@ -158,13 +167,13 @@ public:
 	public:
 		BackOrder() {}
 		BackOrder(List* list, int numRequested, int numRequired, int numFulfilled,
-			const Variant& puller, const Variant& partitionId, int flags, ListSqlDataSource* originalDelegate)
+			const Variant& puller, Partition* partition, int flags, ListSqlDataSource* originalDelegate)
 			: ListSqlDataSource(list), numRequested(numRequested), numRequired(numRequired), numFulfilled(numFulfilled),
-			puller(puller), partitionId(partitionId), flags(flags), originalDelegate(originalDelegate)
+			puller(puller), flags(flags), originalDelegate(originalDelegate)
 		{
 			orderTime = time();
 			incrementalAllocation = !(flags & List::ALLOCATE_ALL_OR_NOTHING);
-			isOnPartition = (partitionId.type != VariantType::Null && partitionId != 0.0);
+			this->partition = partition;
 		}
 		virtual const char* getClassFactory() override { return "ListBackOrder"; }
 		virtual void bind() override;
@@ -173,8 +182,6 @@ public:
 		int numRequested;
 		double orderTime;
 		Variant puller;
-		Variant partitionId;
-		bool isOnPartition;
 		int flags;
 		bool incrementalAllocation;
 		EntryRange range;
@@ -195,30 +202,14 @@ public:
 		int numResults = 0;
 		Variant getResult();
 		void addToResult(const Variant& puller);
-	};
-
-	class ListStatisticSet : public StatisticSet
-	{
-	public:
-		Variant partitionId;
-
-		virtual const char* getClassFactory() override { return "ListStatisticSet"; }
-		virtual void bind() override { StatisticSet::bind(); bindVariant(partitionId); }
-	};
+	};	
 
 	typedef NodeListArray<Entry>::CouplingSdtSubNodeType EntryList;
 
 	NodeListArray<Field>::SdtSubNodeType fields;
-	EntryList entries;
-	NodeListArray<BackOrder>::SdtSubNodeType backOrders;
-	NodeListArray<>::SubNodeType backOrderPartitions;
-	NodeListArray<>::SubNodeType entryPartitions;
 	NodeListArray<Entry>::CouplingSdtSubNodeType removedEntries;
 	TreeNode* contentsOnReset;
-
-	NodeListArray<ListStatisticSet>::SdtSubNodeBindingType entryPartitionStatistics;
-	NodeListArray<ListStatisticSet>::SdtSubNodeBindingType backOrderPartitionStatistics;
-	
+		
 	TreeNode* entryStatisticsNode;
 	StatisticSet* getEntryStatistics();
 
@@ -232,6 +223,7 @@ protected:
 	std::vector<int> staticFields;
 	std::vector<int> dynamicFields;
 	void cacheFieldIndices();
+	void cacheBackOrderIndices();
 	Variant push(const VariantParams& params);
 	static Variant curPuller;
 
@@ -240,16 +232,71 @@ protected:
 	public:
 		size_t operator() (const Variant& pullerKey);
 	};
-	typedef std::unordered_map<Variant, TreeNode*, PartitionHash> PartitionHashTable;
-	typedef std::unordered_map<Variant, ListStatisticSet*, PartitionHash> PartitionStatsTable;
-	
-	PartitionStatsTable entryStatsIndex;
-	PartitionStatsTable backOrderStatsIndex;
-	void removePartition(PartitionHashTable& hashTable, const Variant& partitionId);
 
+	class VariantKeyEqual
+	{
+	public:
+		bool operator() (const Variant& a, const Variant& b);
+	};
+
+public:
+	class Partition : public SimpleDataType
+	{
+	public:
+		Partition() {}
+		Partition(Variant partitionId, List* list) : id(partitionId), list(list) {}
+
+		std::unordered_map<Variant, Entry*, PartitionHash, VariantKeyEqual> entryMap;
+		std::unordered_map<Variant, BackOrder*, PartitionHash, VariantKeyEqual> backOrderMap;
+
+		NodeListArray<BackOrder>::SdtSubNodeBindingType backOrders;
+		NodeListArray<Entry>::SdtSubNodeBindingType entries;
+
+		Variant id;
+		List* list;
+
+		StatisticSet backOrderStatistics;
+		StatisticSet entryStatistics;
+
+		NodeListArray<BackOrder>::SdtSubNodeType backOrderCallbacks;
+		NodeListArray<Entry>::SdtSubNodeType entryCallbacks;
+
+		virtual void bind() override;
+		virtual const char* getClassFactory() override { return "ListPartition"; }
+
+		Variant pull(SqlQuery* q, int requestNum, int requireNum, const Variant& puller, int flags);
+		Variant pullBackOrders(SqlQuery* q, int requestNum, const Variant& value, int flags);
+		Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool shouldRemoveEntries,
+			EntryRange& range, bool getEntryNodes, EntryRange* innerRange = nullptr);
+
+		Variant push(const VariantParams& params);
+		PushResult matchEntriesToBackOrders(EntryRange range);
+		virtual Variant getEntryValue(int entryIndex, int fieldId);
+
+		Entry* addEntry(Entry* entry, const VariantParams& params);
+		void removeEntry(Entry* entry, bool getEntryNodes);
+		BackOrder* addBackOrder(BackOrder* backOrder, SqlQuery* q);
+		void removeBackOrder(BackOrder* backOrder);
+
+		bool isEmpty() { return entries.size() == 0 && backOrders.size() == 0; };
+	};
+
+	NodeListArray<Partition>::SdtSubNodeBindingType partitions;
+	NodeListArray<Partition>::SdtSubNodeBindingType deadPartitions;
+	std::unordered_map<Variant, Partition*, PartitionHash, VariantKeyEqual> partitionMap;
+	
+	double uniqueValues;
+	double uniquePullers;
+	
+	Partition* assertPartition(const Variant& partitionId);
+	void removePartition(Partition& partition);
+	void endPartitionOperation(Partition& partition);
 
 	ListSqlDataSource* defaultDataSource;
 	NodeListArray<ListSqlDataSource>::SdtSubNodeBindingType parsedQueries;
+	NodeListArray<ListBackOrderSqlDataSource>::SdtSubNodeBindingType parsedBackOrderQueries;
+	std::unordered_map<const char*, ListSqlDataSource*, CharStrHash, CharStrEquals> backOrderQueryCache;
+	
 	/// <summary>	boolean whether the list should cache queries. </summary>
 	double cacheQueries;
 	std::unordered_map<const char*, ListSqlDataSource*, CharStrHash, CharStrEquals> queryCache;
@@ -258,14 +305,8 @@ protected:
 	ListBackOrderSqlDataSource* defaultBackOrderDataSource;
 	ListBackOrderSqlDataSource* backOrderQueueStrategyDataSource;
 	TreeNode* backOrderQueueStrategyDataSourceNode;
-	NodeListArray<ListBackOrderSqlDataSource>::SdtSubNodeBindingType parsedBackOrderQueries;
-	std::unordered_map<const char*, ListSqlDataSource*, CharStrHash, CharStrEquals> backOrderQueryCache;
 
 	void buildQueryCache();
-	PartitionHashTable entryPartitionIndex;
-	PartitionHashTable backOrderPartitionIndex;
-	void buildPartitionIndex();
-	TreeNode* assertPartition(TreeNode* container, const Variant& partitionId, PartitionHashTable& hashTable, TreeNode* statsContainer, PartitionStatsTable& statsTable);
 
 public:
 	static bool isVariantNonNull(const Variant& partitionId);
@@ -290,14 +331,13 @@ public:
 	/// 										are removed.</param>
 	/// <returns>	The result. </returns>
 	Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool removeEntries, EntryRange& range, const Variant& partitionId, bool getEntryNodes, EntryRange* innerRange = nullptr);
-
+	
 	TreeNode* getBackOrderList(const Variant& partitionId);
 	TreeNode* getEntryList(const Variant& partitionId);
+	int getTotalBackOrders();
 	virtual void bindVariables();
-	//virtual void bind() override;
 	virtual void onReset();
 	virtual int getFieldId(const char* fieldName);
-	virtual Variant getEntryValue(int entryIndex, int fieldId);
 	virtual const char* enumerateColNames(int colNum);
 	engine_export Variant push(const Variant& involved);
 	engine_export Variant push(const Variant& involved, const Variant& partitionId);
@@ -311,7 +351,6 @@ private:
 	ListSqlDataSource* processQuery(const char* sqlQuery, int flags, TreeNode* parsedContainer, bool isBackOrderQuery);
 	inline Variant pull(SqlQuery* q, int requestNum, int requireNum, const Variant& puller, const Variant& partitionId, int flags);
 	inline Variant pullBackOrders(SqlQuery* q, int requestNum, const Variant& value, const Variant& partitionId, int flags);
-	PushResult matchEntriesToBackOrders(EntryList& entries, EntryRange range, const Variant& partitionId);
 	Variant pullBackOrders(const char* sqlQuery, int requestNum, const Variant& value, const Variant& partitionId, int flags);
 	Variant pullBackOrders(TreeNode* cachedQuery, int requestNum, const Variant& value, const Variant& partitionId, int flags);
 public:
@@ -323,36 +362,74 @@ public:
 
 
 public:
-	class BackOrderListener : public SimpleDataType
-	{
-	public:
-		virtual const char* getClassFactory() override { return "ListBackOrderListener"; }
-		void onEventFired(TreeNode* entryOrBackOrder);
-		List* list;
-		static const int PULLER_BASED = 1;
-		static const int VALUE_BASED = 2;
-		static const int GLOBAL = 3;
-		double listenerType;
-		virtual void bind() override;
-	};
+	class BackOrderListener;
 	class BackOrderListenerEvent : public FlexSimEvent
 	{
 	public:
-		BackOrderListenerEvent() : FlexSimEvent() {};
-		BackOrderListenerEvent(BackOrderListener* listener) : FlexSimEvent(nullptr, 0.0, listener->holder, 0, nullptr) {};
+		BackOrderListenerEvent() : FlexSimEvent() {}
+		BackOrderListenerEvent(List* list, double eventCode): 
+			list(list), listenerType(BackOrderListener::GLOBAL), isEventQueueEvent(false),
+			FlexSimEvent(nullptr, 0.0, nullptr, (int)eventCode, nullptr) {}
+		BackOrderListenerEvent(List* list, Entry* entry, double eventCode, bool isEventQueueEvent) : 
+			list(list), listenerType(BackOrderListener::VALUE_BASED), isEventQueueEvent(isEventQueueEvent),
+			FlexSimEvent(isEventQueueEvent ? list->holder : nullptr, isEventQueueEvent ? ::time() : 0.0, entry->holder, (int)eventCode, nullptr) {}
+		BackOrderListenerEvent(List* list, BackOrder* backOrder, double eventCode, bool isEventQueueEvent): 
+			list(list), listenerType(BackOrderListener::PULLER_BASED), isEventQueueEvent(isEventQueueEvent),
+			FlexSimEvent(isEventQueueEvent ? list->holder : nullptr, isEventQueueEvent ? ::time() : 0.0, backOrder->holder, (int)eventCode, nullptr) {}
+		BackOrderListenerEvent(List* list, double time, BackOrderListener* timeIntervalListener): 
+			list(list),	listenerType(BackOrderListener::TIME_INTERVAL), timeIntervalListener(timeIntervalListener), 
+			FlexSimEvent(list->holder, time, nullptr, 0, nullptr), isEventQueueEvent(false) {}
+
 		virtual const char* getClassFactory() override { return "ListBackOrderListenerEvent"; }
-		virtual void execute() override { involved->objectAs(BackOrderListener)->onEventFired(up(partner())); }
+		virtual void execute() override;
+		virtual void bind() override;
+		int listenerType;
+		List* list;
+		BackOrderListener* timeIntervalListener = nullptr;
+		bool executingNow = false;
+		bool isEventQueueEvent;
 	};
+	class BackOrderListener : public SimpleDataType
+	{
+	public:
+		BackOrderListener() {}
+		BackOrderListener(int theListenerType) { listenerType = theListenerType; }
+		virtual const char* getClassFactory() override { return "ListBackOrderListener"; }
+		List* list;
+		double eventType;
+		treenode expression;
+		double isCustom;
+		NodeRef focus;
+		static const int PULLER_BASED = 1;
+		static const int VALUE_BASED = 2;
+		static const int GLOBAL = 3;
+		static const int TIME_INTERVAL = 4;
+		double listenerType;
+		ObjRef<BackOrderListenerEvent> timeIntervalEvent;
+		virtual void bind() override;
+		void createNextTimeIntervalEvent();
+	};
+	ListBackOrderSqlDataSource* defaultBackOrderListener;
 	NodeListArray<BackOrderListener>::SdtSubNodeType backOrderListeners;
 	NodeListArray<BackOrderListener>::ObjPtrType valueBackOrderListeners;
 	NodeListArray<BackOrderListener>::ObjPtrType pullerBackOrderListeners;
+	NodeListArray<BackOrderListener>::ObjPtrType globalBackOrderListeners;
+	NodeListArray<BackOrderListener>::ObjPtrType timeIntervalBackOrderListeners;
+	treenode globalListenerPointers;
+
+	void addValueListeners(Entry* entry);
+	void addPullerListeners(BackOrder* backOrder);
+	void addGlobalListeners();
+	void addTimeIntervalListeners();
+
+	void removeGlobalListeners();
+	void removeTimeIntervalListeners();
 
 	void reevaluateBackOrder(BackOrder* backOrder);
 	void reevaluateBackOrders(Entry* entry);
 	void reevaluateBackOrders();
-	//BackOrderListener* addBackOrderListener(int type);
-	//Variant addBackOrderListener(FLEXSIMINTERFACE) { return addBackOrderListener((int)_param(1, callPoint))->holder; }
 
+	int getEngineEventCode(int eventType);
 };
 
 #ifdef FLEXSIM_ENGINE_COMPILE

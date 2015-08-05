@@ -27,6 +27,24 @@ public:
 		perMeshAmbient[3] = perMeshDiffuse[3] = perMeshSpecular[3] = perMeshEmissive[3] = 1.0f;
 	}
 	~Mesh() {cleanup(true);}
+	Mesh(const Mesh& other) : lastShaderProgram(other.lastShaderProgram), numVerts(other.numVerts), vertByteStride(other.vertByteStride),
+		texCoordOffset(other.texCoordOffset),  normalOffset(other.normalOffset), colorOffset(other.colorOffset),
+		flags(other.flags), perMeshAttribs(other.perMeshAttribs), perVertexAttribs(other.perVertexAttribs),
+		vbo(0), vao(0), maxBufferSize(other.maxBufferSize), isDirty(true)
+	{
+		holder = 0;
+
+		vertBuffer = new unsigned char[other.maxBufferSize];
+		memcpy(vertBuffer, other.vertBuffer, other.maxBufferSize);
+
+		if (other.customVertexAttribs) {
+			customVertexAttribs = new std::vector<CustomVertexAttrib*>(other.customVertexAttribs->size());
+			for (size_t i = 0; i < other.customVertexAttribs->size(); ++i)
+				(*customVertexAttribs)[i] = new CustomVertexAttrib(*((*other.customVertexAttribs)[i]));
+		} else customVertexAttribs = 0;
+
+		memcpy(allStatics, other.allStatics, STATIC_BLOCK_SIZE);
+	}
 
 protected:
 	Mesh(int flags) : lastShaderProgram(0), numVerts(0), vertByteStride(0), flags(flags), perMeshAttribs(0), perVertexAttribs(0),
@@ -320,6 +338,13 @@ class IndexedMesh : public Mesh
 public:
 	IndexedMesh() : Mesh(MESH_INDEXED), numIndices(0), maxIndexBufferSize(0), indexBuffer(0), indexVBO(0), storageType(0), elementSize(sizeof(unsigned int)){}
 	~IndexedMesh()  {cleanupIndexBuffer(true);}
+	IndexedMesh(const IndexedMesh& other) : Mesh(other), numIndices(other.numIndices), maxIndexBufferSize(other.maxIndexBufferSize),
+		indexVBO(0), storageType(other.storageType), elementSize(other.elementSize)
+	{
+		indexBuffer = new GLuint[maxIndexBufferSize * elementSize / sizeof(GLuint)];
+		memcpy(indexBuffer, other.indexBuffer, maxIndexBufferSize * elementSize);
+	}
+
 	virtual const char* getClassFactory() {return "IndexedMesh";}
 	engine_export virtual void bind();
 
@@ -383,6 +408,15 @@ class InstancedMesh : public IndexedMesh
 public:
 	InstancedMesh() : IndexedMesh(), instancedVertBuffer(0), instancedAttribs(0), maxInstancedBufferSize(0), instancedVertByteStride(0) {}
 	~InstancedMesh() { cleanupInstancedVerts(); }
+	InstancedMesh(const InstancedMesh& other) : IndexedMesh(other), maxInstancedBufferSize(other.maxInstancedBufferSize), 
+		instancedVertByteStride(other.instancedVertByteStride), numInstancedVerts(other.numInstancedVerts)
+	{
+		instancedVertBuffer = new unsigned char[other.maxInstancedBufferSize];
+		memcpy(instancedVertBuffer, other.instancedVertBuffer, other.maxInstancedBufferSize);
+
+		//TODO: copy instancedAttribs from other
+	}
+
 	virtual void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0) override
 	{
 		cleanupInstancedVerts();

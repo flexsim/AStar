@@ -1,12 +1,13 @@
 #pragma once
 
-#ifdef _DEBUG
-#	ifdef FLEXSIM_ENGINE_COMPILE
-#		ifndef EX_DEFINED
-#			define EX_DEFINED
-			extern "C" __declspec(dllexport) int EX(const char *T, const char * M, int showsystemconsole = 0);
-#		endif
+#ifdef FLEXSIM_ENGINE_COMPILE
+#	ifndef EX_DEFINED
+#		define EX_DEFINED
+		extern "C" __declspec(dllexport) int EX(const char *T, const char * M, int showsystemconsole = 0);
 #	endif
+#endif
+
+#ifdef _DEBUG
 #	include <stdio.h>
 #	define XS try{
 #	define XE } catch(...){ \
