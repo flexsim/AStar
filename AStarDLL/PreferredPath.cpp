@@ -301,11 +301,11 @@ ASTAR_FUNCTION Variant PreferredPath_setWeight(FLEXSIMINTERFACE)
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
-	TreeNode* pathNode = parnode(1);
+	TreeNode* pathNode = param(1);
 	
 	try {
-		PreferredPath* path = &o(PreferredPath, pathNode);
-		path->pathWeight = parval(2);
+		PreferredPath* path = pathNode->objectAs(PreferredPath);
+		path->pathWeight = param(2);
 	} catch (...) {;}
 
 	return 0;
@@ -317,9 +317,9 @@ ASTAR_FUNCTION Variant PreferredPath_getWeight(FLEXSIMINTERFACE)
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
-	TreeNode* pathNode = parnode(1);
+	TreeNode* pathNode = param(1);
 	try {
-		PreferredPath* path = &o(PreferredPath, pathNode);
+		PreferredPath* path = pathNode->objectAs(PreferredPath);
 		return path->pathWeight;
 	} catch (...) {;}
 	return 0;

@@ -343,13 +343,11 @@ ASTAR_FUNCTION Variant Barrier_setMode(FLEXSIMINTERFACE)
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
-	TreeNode* barNode = parnode(1);
-
-
+	TreeNode* barNode = param(1);
 
 	try {
-		Barrier* b = &o(Barrier, barNode);
-		b->mode = (int)parnode(2);
+		Barrier* b = barNode->objectAs(Barrier);
+		b->mode = (int)param(2);
 	} catch (...) {
 		return 0;
 	}
@@ -362,11 +360,11 @@ ASTAR_FUNCTION Variant Barrier_addPoint(FLEXSIMINTERFACE)
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
-	TreeNode* barNode = parnode(1);
+	TreeNode* barNode = param(1);
 
 	try {
-		Barrier* b = &o(Barrier, barNode);
-		b->addPoint(parval(2), parval(3));
+		Barrier* b = barNode->objectAs(Barrier);
+		b->addPoint(param(2), param(3));
 	} catch (...) {
 		return 0;
 	}
@@ -379,11 +377,11 @@ ASTAR_FUNCTION Variant Barrier_removePoint(FLEXSIMINTERFACE)
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
-	TreeNode* barNode = parnode(1);
+	TreeNode* barNode = param(1);
 
 	try {
-		Barrier* b = &o(Barrier, barNode);
-		b->removePoint((int)parval(2));
+		Barrier* b = barNode->objectAs(Barrier);
+		b->removePoint((int)param(2));
 	} catch (...) {
 		return 0;
 	}
@@ -396,11 +394,11 @@ ASTAR_FUNCTION Variant Barrier_swapPoints(FLEXSIMINTERFACE)
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
-	TreeNode* barNode = parnode(1);
+	TreeNode* barNode = param(1);
 
 	try {
-		Barrier* b = &o(Barrier, barNode);
-		b->swapPoints((int)parval(2), (int)parval(3));
+		Barrier* b = barNode->objectAs(Barrier);
+		b->swapPoints((int)param(2), (int)param(3));
 	} catch (...) {
 		return 0;
 	}
@@ -413,11 +411,11 @@ ASTAR_FUNCTION Variant Barrier_setPointCoords(FLEXSIMINTERFACE)
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
-	TreeNode* barNode = parnode(1);
+	TreeNode* barNode = param(1);
 
 	try {
-		Barrier* b = &o(Barrier, barNode);
-		b->setPointCoords((int)parval(2), parval(3), parval(4));
+		Barrier* b = barNode->objectAs(Barrier);
+		b->setPointCoords((int)param(2), param(3), param(4));
 	} catch (...) {
 		return 0;
 	}
@@ -430,21 +428,21 @@ ASTAR_FUNCTION Variant Barrier_getPointCoord(FLEXSIMINTERFACE)
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
-	TreeNode* barNode = parnode(1);
+	TreeNode* barNode = param(1);
 	double x = 0;
 	double y = 0;
 
 	try {
-		Barrier* b = &o(Barrier, barNode);
-		b->getPointCoords((int)parval(2), x, y);
+		Barrier* b = barNode->objectAs(Barrier);
+		b->getPointCoords((int)param(2), x, y);
 	} catch (...) {
 		return 0;
 	}
 
-	if ((int)parval(3) == POINT_X)
+	if ((int)param(3) == POINT_X)
 		return x;
 
-	if ((int)parval(3) == POINT_Y)
+	if ((int)param(3) == POINT_Y)
 		return y;
 
 	return 1;
@@ -456,14 +454,14 @@ ASTAR_FUNCTION Variant Barrier_getBarrierType(FLEXSIMINTERFACE)
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
-	TreeNode* barNode = parnode(1);
-	TreeNode* resultNode = parnode(2);
+	TreeNode* barNode = param(1);
+	TreeNode* resultNode = param(2);
 
 	if (!validlink(resultNode, ""))
 		return 0;
 
 	try {
-		Barrier* b = &o(Barrier, barNode);
+		Barrier* b = barNode->objectAs(Barrier);
 		sets(resultNode, b->getClassFactory());
 	} catch (...) {
 		return 0;
@@ -477,11 +475,11 @@ ASTAR_FUNCTION Variant Barrier_setActiveIndex(FLEXSIMINTERFACE)
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
 
-	TreeNode* barNode = parnode(1);
+	TreeNode* barNode = param(1);
 
 	try {
-		Barrier* b = &o(Barrier, barNode);
-		b->activePointIndex = (int)parval(2);
+		Barrier* b = barNode->objectAs(Barrier);
+		b->activePointIndex = (int)param(2);
 	} catch (...) {
 		return 0;
 	}
