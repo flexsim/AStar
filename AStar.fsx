@@ -1764,7 +1764,7 @@ switch (filter) {
 listboxrefresh(c);
 
 string name = getname(rank(items(c), get(itemcurrent(c))));
-treenode barrierNode = 0;
+treenode barrierNode;
 for (int i = 1; i &lt;= content(barriers); i++) {
 	if (comparetext(getname(rank(barriers, i)), name)) {
 		barrierNode = rank(barriers, i);

@@ -189,8 +189,8 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 		}
 
 		for (int i = 0; i < pointList.size(); i++) {
-			applicationcommand("addundotracking", tonum(view), tonum(node("x", pointList[i]->holder)));
-			applicationcommand("addundotracking", tonum(view), tonum(node("y", pointList[i]->holder)));
+			applicationcommand("addundotracking", view, node("x", pointList[i]->holder));
+			applicationcommand("addundotracking", view, node("y", pointList[i]->holder));
 		}
 
 		double xmin, ymin, xmax, ymax;
