@@ -28,42 +28,6 @@ public:
 	static const int COL_ID_REQUIRED = INT_MAX - 4;
 	List() : defaultDataSource(0), backOrderQueueStrategyDataSource(0), defaultBackOrderDataSource(0) {}
 
-	class CallbackInfo
-	{
-	public:
-		CallbackInfo() {}
-		CallbackInfo(treenode callbackNode, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5,
-			const Variant& p6, const Variant& p7, const Variant& p8, const Variant& p9, const Variant& p10);
-		static const int PARAM_ALLOCATED = -496432586;
-		static const int PARAM_NUM_REQUIRED_STILL = -496432587;
-		static const int PARAM_NUM_REQUESTED_STILL = -496432588;
-		void bind(SimpleDataType* entry);
-		void evaluate();
-		treenode callbackNode;
-		int allocatedParam;
-		int numRequiredParam;
-		int numRequestedParam;
-		Variant params[10];
-		Variant allocated;
-		int numRequiredStill;
-		int numRequestedStill;
-		void setEvaluationInfo(Variant allocated, int numRequiredStill, int numRequestedStill);
-	};
-	class CallbackInfoWrapper
-	{
-	public:
-		CallbackInfoWrapper() {}
-		~CallbackInfoWrapper() { if (info) info->~CallbackInfo(); }
-		void bind(SimpleDataType* entry);
-		CallbackInfo* info = 0;
-		// I want to have callbackInfo part of this class, but without the
-		// requirement of calling new to get it, and without requiring
-		// it to initialize members on every entry constructor call, so I define
-		// a properly size buffer and initialize it when it is needed
-		char extraCallbackInfoBuffer[sizeof(CallbackInfo)];
-		void setListener(treenode callbackNode, const Variant& p1 = Variant(), const Variant& p2 = Variant(), const Variant& p3 = Variant(), const Variant& p4 = Variant(), const Variant& p5 = Variant(), 
-			const Variant& p6 = Variant(), const Variant& p7 = Variant(), const Variant& p8 = Variant(), const Variant& p9 = Variant(), const Variant& p10 = Variant());
-	};
 	class Entry : public CouplingDataType
 	{
 		friend class List;
@@ -71,7 +35,6 @@ public:
 	public:
 		Entry(size_t numFields, const Variant& value);
 		Entry() {}
-		CallbackInfoWrapper callbackInfo;
 		bool getEntryNodes = false;
 	private:
 		virtual const char* getClassFactory() { return "ListEntry"; }
@@ -80,8 +43,12 @@ public:
 		double pushTime;
 		Variant value;
 		bool hasListeners = false;
+		const Variant* puller = nullptr;
+		TreeNode* onPull = nullptr;
+		virtual void bindEvents() override;
 	};
 
+	class LabelField;
 	class Field : public SimpleDataType
 	{
 		friend class List;
@@ -93,6 +60,7 @@ public:
 		virtual Variant evaluateOnAdd(Entry* entry, const VariantParams& params) { return Variant(); }
 		virtual Variant evaluateOnQuery(Entry* entry, const Variant& requester) { return Variant(); }
 		virtual bool needsPuller() { return false; }
+		virtual LabelField* toLabelField() { return nullptr; }
 	};
 
 	class LabelField : public Field
@@ -100,6 +68,7 @@ public:
 		virtual const char* getClassFactory() override { return "ListLabelField"; }
 		virtual Variant evaluateOnAdd(Entry* entry, const VariantParams& params) override;
 		virtual Variant evaluateOnQuery(Entry* entry, const Variant& requester) override;
+		virtual LabelField* toLabelField() { return this; }
 	};
 	class ExpressionField : public Field
 	{
@@ -132,13 +101,16 @@ public:
 		virtual Variant getValue(int tableId, int row, int colId) override;
 		virtual int getTableId(const char* tableName) override;
 		virtual int getRowCount(int tableId) override;
+		virtual void getOverflowTrackableValue(int row, int colId, TreeNode** outLabelNode, Variant** outVarRef);
 
 		TreeNode* curPuller = 0;
 		List* list;
 		Partition* partition;
 		TreeNode* sqlParse = 0;
+		bool queryHasSelectStatement = false;
 		std::vector<std::string> labelNames;
 		void assertSQLParse();
+		void setQuery(SqlQuery* q);
 		static const int VALUE_TABLE = 0;
 		static const int PULLER_TABLE = 1;
 	};
@@ -166,7 +138,7 @@ public:
 	{
 	public:
 		BackOrder() {}
-		BackOrder(List* list, int numRequested, int numRequired, int numFulfilled,
+		BackOrder(List* list, double numRequested, double numRequired, double numFulfilled,
 			const Variant& puller, Partition* partition, int flags, ListSqlDataSource* originalDelegate)
 			: ListSqlDataSource(list), numRequested(numRequested), numRequired(numRequired), numFulfilled(numFulfilled),
 			puller(puller), flags(flags), originalDelegate(originalDelegate)
@@ -177,19 +149,28 @@ public:
 		}
 		virtual const char* getClassFactory() override { return "ListBackOrder"; }
 		virtual void bind() override;
-		int numFulfilled;
-		int numRequired;
-		int numRequested;
+		double numFulfilled;
+		double numRequired;
+		double numRequested;
+		double lastFulfillQty = 0.0;
 		double orderTime;
 		Variant puller;
 		int flags;
 		bool incrementalAllocation;
 		EntryRange range;
 		ListSqlDataSource* originalDelegate;
-		bool checkFulfill(EntryRange& range);
+		enum class Fulfillment {
+			None,
+			Partial,
+			Full
+		};
+		Fulfillment checkFulfill(EntryRange& range);
 		virtual int getRowCount(int tableId) override;
 		virtual Variant getValue(int tableId, int row, int colId) override;
-		CallbackInfoWrapper callbackInfo;
+		virtual void getOverflowTrackableValue(int row, int colId, TreeNode** outLabelNode, Variant** outVarRef) override;
+		TreeNode* onFulfill = nullptr;
+		virtual void bindEvents() override;
+		Variant value;
 	};
 
 	struct PushResult
@@ -209,14 +190,6 @@ public:
 	NodeListArray<Field>::SdtSubNodeType fields;
 	NodeListArray<Entry>::CouplingSdtSubNodeType removedEntries;
 	TreeNode* contentsOnReset;
-		
-	TreeNode* entryStatisticsNode;
-	StatisticSet* getEntryStatistics();
-
-	TreeNode* backOrderStatisticsNode;
-	StatisticSet* getBackOrderStatistics();
-
-	engine_export virtual Variant parseStatisticString(const string& statString, int mode, Variant data);
 
 	ByteBlock listType;	
 protected:
@@ -240,45 +213,86 @@ protected:
 	};
 
 public:
+	// Events
+	TreeNode* onPush = nullptr;
+	TreeNode* onPull = nullptr;
+
 	class Partition : public SimpleDataType
 	{
 	public:
 		Partition() {}
-		Partition(Variant partitionId, List* list) : id(partitionId), list(list) {}
+		Partition(Variant partitionID, List* list) : id(partitionID), list(list) {}
 
 		std::unordered_map<Variant, Entry*, PartitionHash, VariantKeyEqual> entryMap;
 		std::unordered_map<Variant, BackOrder*, PartitionHash, VariantKeyEqual> backOrderMap;
 
 		NodeListArray<BackOrder>::SdtSubNodeBindingType backOrders;
-		NodeListArray<Entry>::SdtSubNodeBindingType entries;
+		NodeListArray<Entry>::CouplingSdtSubNodeBindingType entries;
 
 		Variant id;
 		List* list;
 
-		StatisticSet backOrderStatistics;
-		StatisticSet entryStatistics;
+		std::vector<BackOrder*> backOrderCallbacks;
+		NodeListArray<BackOrder>::SdtSubNodeType backOrdersToRemove;
+		NodeListArray<Entry>::SdtSubNodeType entriesToRemove;
+		/// <summary>	The overflow entry. This is only valid if there is a select clause in the 
+		/// 			pull query. If there is an entry it is pulled but not removed (there is leftover
+		/// 			then this pointer will be set so it can call its onPull. </summary>
+		Entry* overflowEntry = nullptr;
 
-		NodeListArray<BackOrder>::SdtSubNodeType backOrderCallbacks;
-		NodeListArray<Entry>::SdtSubNodeType entryCallbacks;
-
-		virtual void bind() override;
+		engine_export virtual void bind() override;
 		virtual const char* getClassFactory() override { return "ListPartition"; }
 
-		Variant pull(SqlQuery* q, int requestNum, int requireNum, const Variant& puller, int flags);
-		Variant pullBackOrders(SqlQuery* q, int requestNum, const Variant& value, int flags);
+		Variant pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, int flags);
+		Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, int flags);
+		double calculateFulfillQty(int queryMatchIndex, SqlQuery* q, TreeNode** outLabelRef, Variant** outVarRef);
+		/// <summary>	Gets the result from the last pull query. </summary>
+		/// <remarks>	Returns either a scalar value or an array, depending on what the query is. Also,
+		/// 			this will remove the entries that are fulfilled. </remarks>
+		/// <param name="numMatches">		  	Number of matching entries in the last pull query. </param>
+		/// <param name="q">				  	[in] The SqlQuery* to process. </param>
+		/// <param name="puller">			  	The puller. </param>
+		/// <param name="shouldRemoveEntries">	true if should remove entries. </param>
+		/// <param name="range">			  	[in, out] The entry range that is currently active. </param>
+		/// <param name="getEntryNodes">	  	true if you want to return the entry nodes instead of just
+		/// 									the values of the entries. </param>
+		/// <param name="fulfillQty">		  	[out] The fulfill qty. This is calculated within getResult(), and returned. </param>
+		/// <param name="maxFulfillQty">	  	The maximum fulfill qty. Mostly needed for pull queries with a select 
+		/// 									statement. Here the request num is a potentially continuous value, and
+		/// 									the fulfill qty is incremented as it traverses the result, until it
+		/// 									reaches the maximum fulfill qty.</param>
+		/// <param name="innerRange">		  	[in,out] (Optional) If non-null, (Optional) the inner range.
+		/// 									range. </param>
+		/// <returns>	The result. </returns>
 		Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool shouldRemoveEntries,
-			EntryRange& range, bool getEntryNodes, EntryRange* innerRange = nullptr);
+			EntryRange& range, bool getEntryNodes, double& fulfillQty, double maxFulfillQty, EntryRange* innerRange = nullptr);
 
 		Variant push(const VariantParams& params);
 		PushResult matchEntriesToBackOrders(EntryRange range);
-		virtual Variant getEntryValue(int entryIndex, int fieldId);
+		engine_export virtual Variant getEntryValue(int entryIndex, int fieldId);
 
 		Entry* addEntry(Entry* entry, const VariantParams& params);
-		void removeEntry(Entry* entry, bool getEntryNodes);
+		void removeEntry(Entry* entry, bool getEntryNodes, bool fireOnPull);
 		BackOrder* addBackOrder(BackOrder* backOrder, SqlQuery* q);
-		void removeBackOrder(BackOrder* backOrder);
+		void removeBackOrder(BackOrder* backOrder, bool fireOnFulfill);
 
 		bool isEmpty() { return entries.size() == 0 && backOrders.size() == 0; };
+
+		engine_export virtual void bindEvents() override;
+		std::pair<int, int> getListLevels() { return { entries.size(), backOrders.size() }; }
+		double getCurListLevel() { return entries.size(); }
+		double getCurBackOrderLevel() { return backOrders.size(); }
+
+		engine_export virtual void bindStatistics() override;
+		TreeNode* content = nullptr;
+		TreeNode* input = nullptr;
+		TreeNode* output = nullptr;
+		TreeNode* staytime = nullptr;
+
+		TreeNode* backOrderContent = nullptr;
+		TreeNode* backOrderInput = nullptr;
+		TreeNode* backOrderOutput = nullptr;
+		TreeNode* backOrderStaytime = nullptr;
 	};
 
 	NodeListArray<Partition>::SdtSubNodeBindingType partitions;
@@ -288,9 +302,9 @@ public:
 	double uniqueValues;
 	double uniquePullers;
 	
-	Partition* assertPartition(const Variant& partitionId);
+	Partition* assertPartition(const Variant& partitionID);
 	void removePartition(Partition& partition);
-	void endPartitionOperation(Partition& partition);
+	void endPartitionOperation(Partition& partition, std::pair<int, int>& previousLevels);
 
 	ListSqlDataSource* defaultDataSource;
 	NodeListArray<ListSqlDataSource>::SdtSubNodeBindingType parsedQueries;
@@ -309,7 +323,7 @@ public:
 	void buildQueryCache();
 
 public:
-	static bool isVariantNonNull(const Variant& partitionId);
+	static bool isVariantNonNull(const Variant& partitionID);
 
 	/// <summary>	Gets the result from a pull query and, if needed, removes the pulled entries. </summary>
 	/// <remarks>	This is called by a pull operation if valid results are pulled, and from the 
@@ -319,7 +333,7 @@ public:
 	/// <param name="puller">					The puller. </param>
 	/// <param name="removeEntries">			true if result entries should be removed. </param>
 	/// <param name="range">					[in,out] The range of entries that were queried. </param>
-	/// <param name="partitionId">				Partition ID. </param>
+	/// <param name="partitionID">				Partition ID. </param>
 	/// <param name="getEntryNodes">			If true, the result will get the entry nodes instead of their associated values. </param>
 	/// <param name="innerRange">				[in,out] An optional inner range. This is used 
 	/// 										for all-or-nothing back order fulfillment. When this type of back order tries to be 
@@ -330,33 +344,37 @@ public:
 	/// 										the getResult() will properly update innerRange if entries from within that innerRange
 	/// 										are removed.</param>
 	/// <returns>	The result. </returns>
-	Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool removeEntries, EntryRange& range, const Variant& partitionId, bool getEntryNodes, EntryRange* innerRange = nullptr);
+	Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool removeEntries, EntryRange& range, const Variant& partitionID, bool getEntryNodes, EntryRange* innerRange = nullptr);
 	
-	TreeNode* getBackOrderList(const Variant& partitionId);
-	TreeNode* getEntryList(const Variant& partitionId);
+	TreeNode* getBackOrderList(const Variant& partitionID);
+	TreeNode* getEntryList(const Variant& partitionID);
 	int getTotalBackOrders();
-	virtual void bindVariables();
-	virtual void onReset();
-	virtual int getFieldId(const char* fieldName);
-	virtual const char* enumerateColNames(int colNum);
+	engine_export virtual void bindVariables() override;
+	engine_export virtual void bindEvents() override;
+	engine_export virtual void bindStatistics() override;
+	engine_export TreeNode* getPartitionNode(const Variant& partitionID);
+	engine_export TreeNode* partitionResolver(const Variant& partitionID);
+	engine_export int getPartitionPossibilities(TreeNode* dest, const Variant& p1, const Variant& p2);
+	engine_export virtual void onReset();
+	engine_export virtual int getFieldId(const char* fieldName);
+	engine_export virtual const char* enumerateColNames(int colNum);
 	engine_export Variant push(const Variant& involved);
-	engine_export Variant push(const Variant& involved, const Variant& partitionId);
-	engine_export Variant push(const Variant& involved, const Variant& partitionId, const Variant& p1);
-	engine_export Variant push(const Variant& involved, const Variant& partitionId, const Variant& p1, const Variant& p2);
-	engine_export Variant push(const Variant& involved, const Variant& partitionId, const Variant& p1, const Variant& p2, const Variant& p3);
-	engine_export Variant push(const Variant& involved, const Variant& partitionId, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5 = Variant(), const Variant& p6 = Variant(),
+	engine_export Variant push(const Variant& involved, const Variant& partitionID);
+	engine_export Variant push(const Variant& involved, const Variant& partitionID, const Variant& p1);
+	engine_export Variant push(const Variant& involved, const Variant& partitionID, const Variant& p1, const Variant& p2);
+	engine_export Variant push(const Variant& involved, const Variant& partitionID, const Variant& p1, const Variant& p2, const Variant& p3);
+	engine_export Variant push(const Variant& involved, const Variant& partitionID, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5 = Variant(), const Variant& p6 = Variant(),
 		const Variant& p7 = Variant(), const Variant& p8 = Variant());
 
 private:
 	ListSqlDataSource* processQuery(const char* sqlQuery, int flags, TreeNode* parsedContainer, bool isBackOrderQuery);
-	inline Variant pull(SqlQuery* q, int requestNum, int requireNum, const Variant& puller, const Variant& partitionId, int flags);
-	inline Variant pullBackOrders(SqlQuery* q, int requestNum, const Variant& value, const Variant& partitionId, int flags);
-	Variant pullBackOrders(const char* sqlQuery, int requestNum, const Variant& value, const Variant& partitionId, int flags);
-	Variant pullBackOrders(TreeNode* cachedQuery, int requestNum, const Variant& value, const Variant& partitionId, int flags);
+	inline Variant pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, const Variant& partitionID, int flags);
+	inline Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, const Variant& partitionID, int flags);
+	Variant pullBackOrders(const char* sqlQuery, double requestNum, const Variant& value, const Variant& partitionID, int flags);
+	Variant pullBackOrders(TreeNode* cachedQuery, double requestNum, const Variant& value, const Variant& partitionID, int flags);
 public:
-	engine_export Variant pull(const char* sqlQuery, int requestNum, int requireNum, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
-	engine_export Variant pull(TreeNode* cachedQuery, int requestNum, int requireNum, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
-	engine_export virtual void dumpStatisticSets(TreeNode* container);
+	engine_export Variant pull(const char* sqlQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
+	engine_export Variant pull(TreeNode* cachedQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
 
 	engine_export void listenToEntry(treenode entry, treenode callback, const Variant& p1);
 
@@ -396,9 +414,8 @@ public:
 		BackOrderListener(int theListenerType) { listenerType = theListenerType; }
 		virtual const char* getClassFactory() override { return "ListBackOrderListener"; }
 		List* list;
-		double eventType;
-		treenode expression;
-		double isCustom;
+		treenode focusExpression;
+		treenode eventExpression;
 		NodeRef focus;
 		static const int PULLER_BASED = 1;
 		static const int VALUE_BASED = 2;
@@ -429,25 +446,32 @@ public:
 	void reevaluateBackOrders(Entry* entry);
 	void reevaluateBackOrders();
 
-	int getEngineEventCode(int eventType);
+	static bool hasSelectStatement(SqlQuery* q);
+	engine_export virtual TreeNode* getEventInfoObject(const char* eventTitle) override;
+
+	/// <summary>	Manually removes the given node, whether it is an entry or a back order. </summary>
+	/// <remarks>	Anthony.johnson, 9/28/2015. </remarks>
+	/// <param name="node">	[in,out] If non-null, the node to remove. </param>
+	engine_export static void remove(TreeNode* node);
 };
 
 #ifdef FLEXSIM_ENGINE_COMPILE
 engine_export Variant listpush(const char* listName, const Variant& involved);
 engine_export Variant listpush(treenode list, const Variant& involved);
-engine_export Variant listpush(const char* listName, const Variant& involved, const Variant& partitionId, const Variant& p1, const Variant& p2,
+engine_export Variant listpush(const char* listName, const Variant& involved, const Variant& partitionID, const Variant& p1, const Variant& p2,
                                             const Variant& p3, const Variant& p4, const Variant& p5, const Variant& p6,
                                             const Variant& p7, const Variant& p8);
 engine_export Variant listpush(treenode list, const Variant& involved);
-engine_export Variant listpush(treenode list, const Variant& involved, const Variant& partitionId, const Variant& p1, const Variant& p2,
+engine_export Variant listpush(treenode list, const Variant& involved, const Variant& partitionID, const Variant& p1, const Variant& p2,
                                             const Variant& p3, const Variant& p4, const Variant& p5, const Variant& p6,
                                             const Variant& p7, const Variant& p8);
-engine_export void listaddlistener(treenode entry, treenode callbackNode, const Variant& p1 = Variant(), const Variant& p2 = Variant(), const Variant& p3 = Variant(), const Variant& p4 = Variant(), const Variant& p5 = Variant(),
-	const Variant& p6 = Variant(), const Variant& p7 = Variant(), const Variant& p8 = Variant(), const Variant& p9 = Variant(), const Variant& p10 = Variant());
-engine_export treenode listbackorders(TreeNode* listNode, const Variant& partitionId);
-engine_export treenode listentries(TreeNode* listNode, const Variant& partitionId);
-engine_export Variant listpull(TreeNode* listNode, TreeNode* cachedQuery, int requestNum = 1, int requireNum = 1, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
-engine_export Variant listpull(TreeNode* listNode, const char* query, int requestNum = 1, int requireNum = 1, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
-engine_export Variant listpull(const char* listName, TreeNode* cachedQuery, int requestNum = 1, int requireNum = 1, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
-engine_export Variant listpull(const char* listName, const char* query, int requestNum = 1, int requireNum = 1, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
+engine_export treenode listbackorders(TreeNode* listNode, const Variant& partitionID);
+engine_export treenode listentries(TreeNode* listNode, const Variant& partitionID);
+engine_export Variant listpull(TreeNode* listNode, TreeNode* cachedQuery, double requestNum = 1, double requireNum = 1, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
+engine_export Variant listpull(TreeNode* listNode, const char* query, double requestNum = 1, double requireNum = 1, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
+engine_export Variant listpull(const char* listName, TreeNode* cachedQuery, double requestNum = 1, double requireNum = 1, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
+engine_export Variant listpull(const char* listName, const char* query, double requestNum = 1, double requireNum = 1, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
+
+engine_export void listremove(TreeNode* entryOrBackOrderNode);
+
 #endif

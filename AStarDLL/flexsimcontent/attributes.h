@@ -47,6 +47,7 @@ DECLARE_ATTRIBUTE(0,OnStateChange,"Function node executed when object state chan
 DECLARE_ATTRIBUTE(1,OnDrag,"Node function executed on object drag out from an icongrid, or when moving/resizing")
 
 // object stats
+DECLARE_ATTRIBUTE(0,stats, "Parent node that holds various stats")
 DECLARE_ATTRIBUTE(0,state_current,"Current state index")
 DECLARE_ATTRIBUTE(0,state_since,"Time of last state update")
 DECLARE_ATTRIBUTE(0,state_profile,"Cumulative state durations container")

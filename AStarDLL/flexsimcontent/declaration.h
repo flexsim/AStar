@@ -725,6 +725,8 @@ inline Variant getqueryvalue(int row, const std::string& colName) {return getque
 	inline double getdatastat(int stat, treenode dataset, treenode unused, double p1, double p2, double p3){return getdatastat_alias1(stat, dataset, unused, p1, p2, p3);}
 #endif
 
+engine_export double getstat(TreeNode* obj, const char* statName, int flag, const Variant& p1, const Variant& p2, const Variant& p3);
+
 engine_export Variant applicationcommand(const char* cmd, n10varsdefaultinterface);
 
 engine_export Variant getlabel(treenode object, const char* labelName);
@@ -761,6 +763,7 @@ engine_export Variant listpull(TreeNode* listNode, TreeNode* cachedQuery, int re
 engine_export Variant listpull(TreeNode* listNode, const char* query, int requestNum = 1, int requireNum = 1, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
 engine_export Variant listpull(const char* listName, TreeNode* cachedQuery, int requestNum = 1, int requireNum = 1, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
 engine_export Variant listpull(const char* listName, const char* query, int requestNum = 1, int requireNum = 1, const Variant& puller = Variant(), const Variant& partitionId = Variant(), int flags = 0);
+engine_export void listremove(TreeNode* entryOrBackOrder);
 engine_export treenode globallist(const char* listName);
 engine_export treenode globallist(int listRank);
 engine_export double drawobject(treenode windownode, int shape, int texture, int animation = 0);
@@ -776,6 +779,8 @@ inline char* _parstr(int index, CallPoint * callpoint) { return (char*)__parstr(
 visible int undo(treenode view = 0);
 visible int redo(treenode view = 0);
 engine_export Variant listenerinfo(int info, const Variant& p1 = Variant(), const Variant& p2 = Variant());
+
+visible int gettableviewselection(treenode view, int cell);
 
 engine_export treenode delayednodefunction(treenode theNode, double timeOffset, n10varsdefaultinterface);
 engine_export Variant nodefunction(treenode node, n10varsdefaultinterface);
@@ -795,4 +800,9 @@ engine_export int addbundleentry(treenode x, const Variant& n1, const Variant& n
 	const Variant& n18 = Variant(), const Variant& n19 = Variant(), const Variant& n20 = Variant(), const Variant& n21 = Variant(), const Variant& n22 = Variant(), const Variant& n23 = Variant(), 
 	const Variant& n24 = Variant(), const Variant& n25 = Variant(), const Variant& n26 = Variant(), const Variant& n27 = Variant(), const Variant& n28 = Variant(), const Variant& n29 = Variant(), 
 	const Variant& n30 = Variant());
+
+engine_export int __eventcode__(CallPoint*);
+engine_export Variant __eventdata__(CallPoint*);
+engine_export Variant __i__(CallPoint*);
+engine_export Variant __c__(CallPoint*);
 #endif

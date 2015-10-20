@@ -292,3 +292,4 @@ Dest force_cast(Src src)
 	convertor.s = src;
 	return convertor.d;
 }
+

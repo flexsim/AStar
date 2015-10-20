@@ -51,4 +51,46 @@ private:
 #endif
 };
 
+
+class ValueChangeListener : public FlexSimEvent
+{
+public:
+	enum ChangeRule {
+		Change = 0,
+		Increase = 1,
+		Decrease = 2,
+		ArriveAtValue = 3,
+		IncreaseToValue = 4,
+		DecreaseToValue = 5,
+		IncreaseToOrThroughValue = 6,
+		DecreaseToOrThroughValue = 7,
+		FirstIncrease = 8,
+		FirstDecrease = 9
+	};
+	ValueChangeListener() {}
+	void setFirstOldOldValue()
+	{
+		if (changeRule == FirstIncrease)
+			oldOldValue = DBL_MAX;
+		else if (changeRule == FirstDecrease)
+			oldOldValue = -DBL_MAX;
+	}
+	ValueChangeListener(ChangeRule changeRule, double changeValue) : changeRule(changeRule), changeValue(changeValue)
+	{
+		setFirstOldOldValue();
+	}
+	ValueChangeListener(ChangeRule changeRule) : changeRule(changeRule), changeValue(0.0)
+	{
+		setFirstOldOldValue();
+	}
+
+	ChangeRule changeRule;
+	double changeValue;
+	double oldOldValue = 0;
+	engine_export virtual void bind() override;
+	virtual void onChangeRuleMet(const Variant& newValue, const Variant& oldValue) {}
+	engine_export virtual void execute() override;
+	engine_export static bool isRuleMetForInitialValue(ChangeRule changeRule, double changeValue, double initialValue);
+};
+
 #endif

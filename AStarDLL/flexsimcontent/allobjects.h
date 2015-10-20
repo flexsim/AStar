@@ -3507,6 +3507,8 @@ FS_CONTENT_DLL_FUNC virtual treenode addMember(TaskExecuter* te);
 
 FS_CONTENT_DLL_FUNC virtual treenode addCopiedMember(TaskExecuter* te, TaskExecuter* original);
 
+FS_CONTENT_DLL_FUNC virtual void bindTEEvents(TaskExecuter* te);
+
 
 // System
 
@@ -3767,11 +3769,15 @@ TreeNode* node_v_active;
 
 // c++ member functions
 
+FS_CONTENT_DLL_FUNC double getMetric(int metric, string sout, treenode seq, string slay);
+
 FS_CONTENT_DLL_FUNC double getMetric(int metric, string sout, string sseq, string slay);
 
-FS_CONTENT_DLL_FUNC double getMetric(int metric, string sout, string sseq);
+FS_CONTENT_DLL_FUNC double getMetric(int metric, string sout);
 
 FS_CONTENT_DLL_FUNC double getMetric(int metric);
+
+FS_CONTENT_DLL_FUNC treenode resolveSequence(treenode seqSubNode);
 
 
 // System
@@ -5647,6 +5653,10 @@ FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
 FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
+
+
+// c++ attributes
+bool movingItemsNow = false;;
 
 
 // System

@@ -227,27 +227,24 @@ public:
 	static TreeNode* findclassbyname(TreeNode* object, char* fullclassname);
 	static ObjectDataType* createodtderivativefromclassatt(TreeNode* classatt);
 
+	static const int ODT_BIND_STATE_VARIABLE = 0x1;
 	ObjectDataType* checkCreateODTDerivative(TreeNode* classesAtt);
-	engine_export TreeNode* bindVariableNode(char* name);
-	engine_export void bindVariableByName(const char* name, double& val);
-	engine_export void bindVariableByName(const char* name, TreeNode*& val);
-	engine_export void bindVariableByName(const char* name, ByteBlock& val);
-	engine_export void bindVariableByName(const char* name, NodeRef& val);
-private:
-	engine_export void bindVariableByName(const char* name, SimpleDataType* member, bool isCoupling);
+	engine_export TreeNode* bindVariableNode(char* name, bool isStateVariable);
+	engine_export void bindVariableByName(const char* name, double& val, int flags = 0);
+	engine_export void bindVariableByName(const char* name, TreeNode*& val, int flags = 0);
+	engine_export void bindVariableByName(const char* name, ByteBlock& val, int flags = 0);
+	engine_export void bindVariableByName(const char* name, NodeRef& val, int flags = 0);
 public:
-	template <class SDTClass>
-	typename std::enable_if<std::is_base_of<SimpleDataType, SDTClass>::value>::type
-		bindVariableByName(const char* name, SDTClass& val) { bindVariableByName(name, &val, false); }
-	template <class SDTClass>
-	typename std::enable_if<std::is_base_of<CouplingDataType, SDTClass>::value>::type
-		bindVariableByName(const char* name, SDTClass& val) { bindVariableByName(name, &val, true); }
 
 	#define bindVariable(x) bindVariableByName(#x, x)
+	#define bindStateVariable(x) bindVariableByName(#x, x, ODT_BIND_STATE_VARIABLE)
 
 	engine_export virtual TreeNode* getObjectTree() override;
 	engine_export virtual TreeNode* getLabelNode(const char* labelName, bool assert) override;
 	engine_export virtual TreeNode* getLabelNode(int labelRank, bool assert) override;
+
+	engine_export virtual void bindEvents() override;
+	engine_export virtual TreeNode* getEventInfoObject(const char* eventTitle) override;
 };
 
 int bindattributestree(ObjectDataType *, TreeNode * client);
