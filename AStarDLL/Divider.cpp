@@ -257,8 +257,8 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 		// If the click is on a node, make that the active node
 		int clickedIndex = -1;
 		for (int i = 0; i < pointList.size(); i++) {
-			applicationcommand("addundotracking", tonum(view), tonum(node("x", pointList[i]->holder)));
-			applicationcommand("addundotracking", tonum(view), tonum(node("y", pointList[i]->holder)));
+			applicationcommand("addundotracking", view, node("x", pointList[i]->holder));
+			applicationcommand("addundotracking", view, node("y", pointList[i]->holder));
 
 			double pointX = pointList[i]->x;
 			double pointY = pointList[i]->y;

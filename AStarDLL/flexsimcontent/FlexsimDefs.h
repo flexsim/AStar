@@ -48,8 +48,6 @@ using std::string;
 	extern double (*_parval)(int, CallPoint *);
 
 
-	#define inheritcode _inheritcode(callPoint)
-
 	#define cellrc cellrowcolumn
 	#define mpt(x) _mpt(x)
 	#define mpd(x) _mpd(x)
@@ -87,6 +85,7 @@ using std::string;
 
 // direct c++ parval
 #define stringreturn(str) _stringreturn(str, callPoint)
+#define msgsendingobject parnode(1)
 
 #define ip ((size_t)edsdata((EventDataStruct *)input))
 #define eventdata ((char *)edsdata((EventDataStruct *)input))
@@ -740,6 +739,8 @@ typedef Variant (*FSfptr)(CallPoint*);
 	#define PARAM_TYPE_NUMBER 1
 	#define PARAM_TYPE_NODE 2
 	#define PARAM_TYPE_STRING 3
+	
+	#define nullvar Variant()
 
 	#if !defined COMPILING_FLEXSIM_CONTENT && !defined COMPILING_MODULE_DLL
 		extern void* (*flexsimmalloc) (size_t);

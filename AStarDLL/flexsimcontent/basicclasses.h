@@ -11,6 +11,8 @@ class EventDataStruct;
 class TreeWin;
 class ObjectDataType;
 class SimpleDataType;
+class EventBinding;
+class StatisticBinding;
 class MoveTableChunk;
 struct MoveRecord;
 struct StateRecord;

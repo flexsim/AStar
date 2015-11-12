@@ -1069,7 +1069,7 @@ void AStarNavigator::buildEdgeTable()
 
 	for (int i = 0; i < objectBarrierList.size(); i++) {
 		TreeNode* theObj = objectBarrierList[i]->holder;
-		if (function_s(theObj, "customizeAStarGrid", tonum(holder), nodeWidth))
+		if (function_s(theObj, "customizeAStarGrid", holder, nodeWidth))
 			continue;
 		
 		Vec2 objMin(FLT_MAX, FLT_MAX), objMax(-FLT_MAX, -FLT_MAX);

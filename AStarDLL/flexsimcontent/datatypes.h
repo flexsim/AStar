@@ -623,8 +623,17 @@ public:
 			theArray()->push_back(val);
 	}
 	void pop() { theArray()->pop_back(); }
-	
-	ArrayType clone(const ArrayType& original)
+	ArrayType& append(const ArrayType& val)
+	{
+		size_t startSize = size();
+		size_t valSize = val.size();
+		resize(startSize + val.size());
+		for (int i = 1; i <= valSize; i++)
+			operator[](i + startSize) = val[i];
+		return *this;
+	}
+
+	static ArrayType clone(const ArrayType& original)
 	{ 
 		ArrayType copy(original.size());
 		if (copy.size() > 0) {
@@ -633,6 +642,18 @@ public:
 		}
 		return copy;
 	}
+	ArrayType clone()
+	{
+		return clone(*this);
+	}
+
+	ArrayType concat(const ArrayType& val)
+	{
+		ArrayType copy = clone();
+		copy.append(val);
+		return copy;
+	}
+
 	iterator begin() { return theArray()->data() + 1; } 
 	iterator end() { return theArray()->data() + 1 + size(); } 
 
@@ -1036,6 +1057,7 @@ public:
 		case VariantType::IntArray: return (int)asIntArray().size();
 		case VariantType::DoubleArray: return (int)asDoubleArray().size();
 		case VariantType::TreeNodeArray: return (int)asTreeNodeArray().size();
+		case VariantType::Null: return 0;
 		default: return 1;
 		}
 	}
@@ -1119,9 +1141,15 @@ public:
 	}
 	bool operator == (const Variant& other) const
 	{
-		if (type != other.type)
-			return false;
+		if (type != other.type) {
+			if ((type == VariantType::Number || type == VariantType::TreeNode) 
+					&& (other.type == VariantType::Number || other.type == VariantType::TreeNode))
+				return forceLegacyDouble() == 0 && other.forceLegacyDouble() == 0;
+			else return false;
+		}
+
 		switch (type) {
+		case VariantType::Null: return true;
 		case VariantType::Number: return asNumber == other.asNumber;
 		case VariantType::String: return strcmp(asString().c_str(), other.asString().c_str()) == 0;
 		case VariantType::TreeNode: return asTreeNode() == other.asTreeNode();
@@ -1394,6 +1422,10 @@ public:
 			case VariantType::Number: return asNumber;
 			case VariantType::TreeNode: return ptrtodouble(asTreeNode().get());
 			case VariantType::String: return ptrtodouble((void*)asString().c_str());
+			case VariantType::DoubleArray: return asDoubleArray().size() > 0 ? asDoubleArray()[1] : 0.0;
+			case VariantType::TreeNodeArray: return asTreeNodeArray().size() > 0 ? ptrtodouble(asTreeNodeArray()[1]) : 0.0;
+			case VariantType::IntArray: return asIntArray().size() > 0 ? asIntArray()[1] : 0.0;
+			case VariantType::StringArray: return asStringArray().size() > 0 ? ptrtodouble((void*)asStringArray()[1].c_str()) : 0.0;
 			default: return 0;
 		}
 	}

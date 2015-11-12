@@ -14,7 +14,6 @@
 	#include "modelling.h"
 #endif
 
-
 #define SDT_BIND_NONE 0
 #define SDT_BIND_ON_LOAD 1
 #define SDT_BIND_ON_SAVE 2
@@ -27,6 +26,7 @@ class SimpleDataType
 {
 	friend class TreeNode;
 	friend class CouplingDataType;
+	friend class ObjectDataType;
 	friend class TableView;
 private:
 
@@ -36,7 +36,6 @@ private:
 	static char* displayStrCopyPoint;
 	static bool displayVerbose;
 	static int detachAfterBind;
-	static std::vector<NodeRef> nodeList;
 	static void attachSDTDerivative(TreeNode* x);
 	static void bindSDTNode(TreeNode* x);
 	static void detachSDTDerivative(TreeNode* x);
@@ -46,6 +45,7 @@ private:
 	static Variant curValue;
 	static const char * curValueName;
 	engine_export TreeNode* assertBindTree();
+	static std::vector<NodeRef> nodeList;
 
 protected:
 
@@ -62,13 +62,13 @@ public:
 	static void appendToDisplayStr(int val) { char buffer[100]; sprintf(buffer, "%d", val); appendToDisplayStr(buffer); }
 	static void appendToDisplayStr(const std::string& str) { appendToDisplayStr(str.c_str()); }
 	engine_export static bool isDisplayVerbose();
-	engine_export static void bindNodeList(int doBindMode, bool detachReattach, int startIndex = 0);
-	static void clearAttsFromNodeList();
+	engine_export static void bindNodeList(int doBindMode, bool detachReattach, int startIndex = 0, std::vector<NodeRef>* list = nullptr);
+	static void clearAttsFromNodeList(std::vector<NodeRef>* list = nullptr);
 	TreeNode* holder;
 	SimpleDataType() : holder(0) {}
 	virtual ~SimpleDataType(){}
 	virtual const char* getClassFactory(){return 0;}
-	virtual void bind(){}
+	engine_export virtual void bind();
 	engine_export void bind(int bindMode);
 	engine_export virtual char* toString(int verbose);
 engine_private:
@@ -90,6 +90,7 @@ public:
 	}
 
 	engine_export static int getBindMode();
+	static void setBindMode(int toMode);
 	engine_export static Variant& getCurValue();
 	engine_export static const char * getCurValueName();
 	engine_export Variant getValue(const char* name);
@@ -709,6 +710,406 @@ template<class ObjType>
 			getCurValue() = (double)(size_t)force_cast<void*>(callback);
 	}
 	#define bindCallback(name, classType) bindCallbackByName(#name, &classType::name)
+
+	
+	/** @name Event Binding
+	*	Methods associated with enumerating and subscribing to events
+	*/
+	//@{
+	public:
+	virtual void bindEvents() {}
+	virtual TreeNode* getEventInfoObject(const char* eventTitle) { return nullptr; }
+
+	static const int EVENT_INFO_PARAMS = 0x1;
+	static const int EVENT_INFO_DEFAULT_CODE = 0x2;
+	static const int EVENT_INFO_CATEGORY = 0x3;
+	static const int EVENT_INFO_LOCALIZED_TITLE = 0x4;
+	static const int EVENT_INFO_REQUIREMENTS = 0x5;
+	engine_export virtual Variant getEventInfo(const char* eventTitle, int info);
+	engine_export virtual Variant getEventInfo(FLEXSIMINTERFACE);
+
+	static const int BIND_EVENT_ENUMERATE = 1;
+	static const int BIND_EVENT_ASSERT = 2;
+	static const int BIND_EVENT_ON_LOAD = 3;
+	static const int BIND_EVENT_FILL_BINDING_ENTRY = 4;
+
+	// flags and op codes for flagging extended functionality as well as retrieving data associated with
+	// that functionality
+	static const int EVENT_TYPE_MASK = 0x7;
+	static const int EVENT_TYPE_DEFAULT = 0x1;
+	static const int EVENT_TYPE_VALUE_GETTER = 0x2;
+	static const int EVENT_TYPE_VALUE_NOTIFIER = 0x4;
+
+	/// <summary>	A flag to not allow the event binding to a node based on the byte offset from the sdt memory pointer.</summary>
+	static const int EVENT_DO_NOT_BIND_BYTE_OFFSET = 0x100;
+	static const int EVENT_ATTRIBUTE = 0x200;
+	static const int EVENT_NO_DEFAULT_CODE = 0x400;
+	static const int EVENT_RELAYED = 0x800;
+	static const int EVENT_STAT = 0x1000;
+
+	static const int EVENT_REQUIREMENTS = 0x30000; // the mask around all requirments flags
+	static const int EVENT_REQUIREMENTS_BIT_SHIFT = 16; // shift the requirements masked value 16 bits to get the number of requirements
+	static const int EVENT_1_REQUIREMENT = 0x10000;
+	static const int EVENT_2_REQUIREMENTS = 0x20000;
+	static const int EVENT_3_REQUIREMENTS = 0x30000;
+	static int getNumRequirementsFromFlags(int flags) 
+	{ 
+		return (flags & SimpleDataType::EVENT_REQUIREMENTS) >> SimpleDataType::EVENT_REQUIREMENTS_BIT_SHIFT; 
+	}
+
+	engine_export static int getBindEventMode();
+
+	typedef TreeNode*(SimpleDataType::*EventNodeResolver) ();
+	typedef TreeNode*(SimpleDataType::*EventNodeResolver1) (const Variant& p1);
+	typedef TreeNode*(SimpleDataType::*EventNodeResolver2) (const Variant& p1, const Variant& p2);
+	typedef TreeNode*(SimpleDataType::*EventNodeResolver3) (const Variant& p1, const Variant& p2, const Variant& p3);
+
+	typedef double(SimpleDataType::*CurValueResolver) ();
+	typedef double(SimpleDataType::*CurValueResolver1) (const Variant& p1);
+	typedef double(SimpleDataType::*CurValueResolver2) (const Variant& p1, const Variant& p2);
+	typedef double(SimpleDataType::*CurValueResolver3) (const Variant& p1, const Variant& p2, const Variant& p3);
+
+	class EventBindingEntry
+	{
+	public:
+		EventBindingEntry() : flags(0), resolver(nullptr), node(nullptr)
+		{}
+		EventBindingEntry(SimpleDataType* sdt, const char* nodeName, TreeNode*& node, const char* eventTitle, long long flags, 
+				EventNodeResolver resolver, CurValueResolver valueResolver) :
+			nodeName(nodeName ? nodeName : ""), 
+			node(&node), 
+			eventTitle(eventTitle ? eventTitle : ""), 
+			flags(flags | s_bindEventFlags), 
+			resolver(resolver), 
+			valueResolver(valueResolver)
+		{
+			if (!(flags & EVENT_DO_NOT_BIND_BYTE_OFFSET))
+				nodeByteOffset = (char*)(void*)(&node) - (char*)(void*)sdt;
+			if (this->flags & EVENT_REQUIREMENTS)
+				this->node = nullptr;
+		}
+		/// <summary>	Future use: when a TE binds events, he's going to forward bindEvents to his navigator, which makes it
+		/// 			so nodeByteOffset can't be used (the events aren't members of the TE class, but on something like AGVData). </summary>
+		static int s_bindEventFlags;
+		std::string nodeName;
+		std::string eventTitle;
+		long long flags;
+		int nodeByteOffset = 0;
+		TreeNode** node;
+		EventNodeResolver resolver;
+		CurValueResolver valueResolver;
+		int numForwardsContained = 0;
+	};
+
+	private:
+	engine_export void bindEventByNameEx(const char* nodeName, TreeNode*& node, const char* eventTitle, int flags = 0, EventNodeResolver resolver = nullptr, CurValueResolver valueResolver = nullptr);
+	engine_export void bindRelayedClassEventsEx(const char* prefix, int flags, EventNodeResolver resolver, SimpleDataType* sdt);
+	public:
+	template <class ResolverCallbackType = nullptr_t, class ValueResolverCallbackType = nullptr_t>
+	void bindEventByName(const char* nodeName, TreeNode*& node, const char* eventTitle, int flags = 0, 
+		ResolverCallbackType resolver = nullptr, ValueResolverCallbackType valueResolver = nullptr)
+	{
+		bindEventByNameEx(nodeName, node, eventTitle, flags, force_cast<EventNodeResolver>(resolver), force_cast<CurValueResolver>(valueResolver));
+	}
+	#define bindEvent(name, ...) bindEventByName("on" #name, on##name, "On" #name, __VA_ARGS__)
+
+	template <class ResolverCallbackType = nullptr_t, class ValueResolverCallbackType = nullptr_t>
+	void bindEventWithRequirement(const char* eventTitle, int flags, ResolverCallbackType resolver, ValueResolverCallbackType valueResolver)
+	{
+		TreeNode* x;
+		bindEventByNameEx("", x, eventTitle, flags, force_cast<EventNodeResolver>(resolver), force_cast<CurValueResolver>(valueResolver));
+	}
+
+
+	template <class RelayToClass, class ResolverCallbackType = nullptr_t>
+	void bindRelayedClassEvents(const char* prefix, int flags, ResolverCallbackType resolver)
+	{
+		switch (getBindEventMode()) {
+			case BIND_EVENT_ENUMERATE: 
+			case BIND_EVENT_FILL_BINDING_ENTRY:
+			{
+				RelayToClass relayToClass;
+				bindRelayedClassEventsEx(prefix, flags, force_cast<EventNodeResolver>(resolver), &relayToClass);
+				break;
+			}
+		}
+	}
+
+	engine_export void bindStatisticsAsEvents();
+
+	void bindEventsOnLoad();
+
+	engine_export void enumerateEvents(TreeNode* destNode, bool asEventBinding);
+	engine_export void enumerateEvents(EventBinding* dest);
+	engine_export Variant enumerateEvents(FLEXSIMINTERFACE);
+
+	engine_export TreeNode* assertEvent(const char* eventTitle);
+	engine_export TreeNode* assertEvent(EventBinding* enumeration);
+	engine_export TreeNode* assertEvent(const char* eventTitle, const Variant& p1, const Variant& p2 = Variant(), const Variant& p3 = Variant(), int* outFlags = nullptr);
+	engine_export TreeNode* assertEvent(EventBinding* enumeration, const Variant& p1, const Variant& p2 = Variant(), const Variant& p3 = Variant());
+	engine_export Variant assertEvent(FLEXSIMINTERFACE);
+	engine_export TreeNode* assertEventNode(const char* eventTitle, TreeNode*& node);
+	
+	engine_export double getEventCurValue(EventBinding* binding);
+	engine_export double getEventCurValue(EventBinding* binding, const Variant& p1, const Variant& p2 = Variant(), const Variant& p3 = Variant());
+	engine_export double getEventCurValue(const char* eventTitle);
+	engine_export double getEventCurValue(const char* eventTitle, const Variant& p1, const Variant& p2 = Variant(), const Variant& p3 = Variant());
+
+
+#define FIRE_SDT_EVENT(node, ...) if (node) { node->evaluate(__VA_ARGS__); }
+#define FIRE_SDT_EVENT_VALUE_GETTER(node, ...) (node ? node->evaluate(__VA_ARGS__) : Variant())
+#define FIRE_SDT_EVENT_VALUE_CHANGE(node, newValue, oldValue) {if (node && newValue != oldValue) { node->evaluate(newValue, oldValue); }}
+
+	private:
+	/// <summary>	Makes sure that the enumeration is properly filled. </summary>
+	/// <remarks>	Anthony.johnson, 8/14/2015. </remarks>
+	/// <param name="enumeration">	[in,out] The enumeration. </param>
+	bool assertValidEventBindingData(EventBinding* enumeration);
+	TreeNode* SimpleDataType::assertRelayedEvent(EventBindingEntry& entry, const Variant& p1, const Variant& p2, const Variant& p3);
+	TreeNode* assertEvent(EventBindingEntry& entry);
+	TreeNode* assertEvent(EventBindingEntry& entry, const Variant& p1, const Variant& p2, const Variant& p3);
+	double getEventCurValue(EventBindingEntry& entry);
+	double getEventCurValue(EventBindingEntry& entry, const Variant& p1, const Variant& p2, const Variant& p3);
+	static int s_bindEventMode;
+	static EventBinding* s_eventBinding;
+	static const char* s_assertEventTitle;
+	static TreeNode* s_assertedEvent;
+	static EventBindingEntry* s_eventBindingEntry;
+	static std::string s_forwardingPrefix;
+	static EventNodeResolver s_relayedEventResolver;
+	TreeNode* getEventNode(const char* nodeName, const char* eventTitle, int flags, bool assert);
+	//@}
+
+	/** @name Statistic Binding
+	*	Methods associated with enumerating and subscribing to statistics
+	*/
+	//@{
+	public:
+	virtual void bindStatistics() {}
+
+	static const int BIND_STAT_ENUMERATE = 1;
+	static const int BIND_STAT_ASSERT = 2;
+	static const int BIND_STAT_ON_LOAD = 3;
+	static const int BIND_STAT_FILL_BINDING_ENTRY = 4;
+	static const int BIND_STAT_ON_RUNWARM = 5;
+	static const int BIND_STAT_ON_BIND_EVENTS = 6;
+	static const int BIND_STAT_ENUMERATE_REQUIREMENT_POSSIBILITIES = 7;
+
+	// flags and op codes for flagging extended functionality as well as retrieving data associated with
+	// that functionality
+	static const int STAT_TYPE_MASK = 0x7;
+	static const int STAT_TYPE_LEVEL = 0x1; // the default, level stats change by delta
+	static const int STAT_TYPE_INCREMENTAL = 0x2; // input, output can only be incremented; max, min, and avg are pointless
+	static const int STAT_TYPE_STREAM = 0x3; // staytime is a stream of unrelated values; current value is less important
+
+	static const int STAT_RELAYED = 0x100;
+	static const int STAT_TIME_WEIGHTED = 0x200;
+	static const int STAT_NOT_EVENT = 0x400;
+
+	static const int STAT_REQUIREMENTS = 0x30000; // the mask around all requirments flags
+	static const int STAT_REQUIREMENTS_BIT_SHIFT = 16; // shift the requirements masked value 16 bits to get the number of requirements
+	static const int STAT_1_REQUIREMENT = 0x10000;
+	static const int STAT_2_REQUIREMENTS = 0x20000;
+	static const int STAT_3_REQUIREMENTS = 0x30000;
+	static int getNumStatRequirementsFromFlags(int flags)
+	{
+		return (flags & SimpleDataType::STAT_REQUIREMENTS) >> SimpleDataType::STAT_REQUIREMENTS_BIT_SHIFT;
+	}
+
+	// These constants deal with the meaningful derivative values
+	static const int STAT_DERIVE_CUR = 0x1;
+	static const int STAT_DERIVE_MIN = 0x2;
+	static const int STAT_DERIVE_MAX = 0x4;
+	static const int STAT_DERIVE_AVG = 0x8;
+
+	engine_export static int getStatDerivativesFromFlags(int flags);
+
+	engine_export static int getBindStatisticMode();
+
+	typedef TreeNode*(SimpleDataType::*StatNodeResolver1) (const Variant& p1);
+	typedef TreeNode*(SimpleDataType::*StatNodeResolver2) (const Variant& p1, const Variant& p2);
+	typedef TreeNode*(SimpleDataType::*StatNodeResolver3) (const Variant& p1, const Variant& p2, const Variant& p3);
+	
+	static const int STAT_ENUM_REQS_INVALID = 0;
+	static const int STAT_ENUM_REQS_STATIC = 1;
+	static const int STAT_ENUM_REQS_DYNAMIC = 2;
+	typedef int(SimpleDataType::*StatRequirementEnumerator) (TreeNode* dest, const Variant& p1, const Variant& p2);
+	
+
+	class StatisticBindingEntry
+	{
+	public:
+		static int s_bindStatFlags;
+		std::string statName;
+		std::string nodeName;
+		int flags;
+		int nodeByteOffset = 0;
+		TreeNode** node;
+		StatNodeResolver1 resolver;
+		int numForwardsContained = 0;
+
+		StatisticBindingEntry() : flags(0), resolver(nullptr), node(nullptr)
+		{}
+		StatisticBindingEntry(SimpleDataType* sdt, const char* nodeName, TreeNode*& node, const char* statName, int flags, StatNodeResolver1 resolver)
+			: nodeName(nodeName ? nodeName : "")
+			, statName(statName ? statName : "")
+			, node(&node)
+			, flags(flags | s_bindStatFlags)
+			, resolver(resolver)
+		{
+			if (flags & STAT_REQUIREMENTS)
+				node = nullptr;
+			nodeByteOffset = (char*)(void*)(&node) - (char*)(void*)sdt;
+		}
+	};
+
+	private:
+	engine_export void bindStatisticByNameEx(const char* nodeName, TreeNode*& node, const char* statName, int flags = 0, StatNodeResolver1 resolver = nullptr);
+	engine_export void bindRelayedClassStatisticsEx(const char* prefix, int flags, StatNodeResolver1 resolver, StatRequirementEnumerator enumerator, SimpleDataType* sdt);
+	public:
+	template <class ResolverCallbackType = nullptr_t>
+	void bindStatisticByName(const char* nodeName, TreeNode*& node, const char* statName, int flags = 0, ResolverCallbackType resolver = nullptr)
+	{
+		bindStatisticByNameEx(nodeName, node, statName, flags, force_cast<StatNodeResolver1>(resolver));
+	}
+	#define bindStatistic(name, ...) \
+		bindStatisticByName(#name, name, #name, __VA_ARGS__);
+
+	template <class ResolverCallbackType = nullptr_t>
+	void bindStatisticWithRequirement(const char* statTitle, int flags, ResolverCallbackType resolver)
+	{
+		TreeNode* x;
+		bindStatisticByNameEx("", x, statTitle, flags, force_cast<StatNodeResolver1>(resolver));
+	}
+
+
+	template <class RelayToClass, class ResolverCallbackType = nullptr_t, class EnumeratorCallbackType = nullptr_t>
+	void bindRelayedClassStatistics(const char* prefix, int flags, ResolverCallbackType resolver, EnumeratorCallbackType enumerator = nullptr)
+	{
+		switch (getBindStatisticMode()) {
+		case BIND_STAT_ENUMERATE:
+		case BIND_STAT_FILL_BINDING_ENTRY:
+		case BIND_STAT_ENUMERATE_REQUIREMENT_POSSIBILITIES: {
+			RelayToClass relayToClass;
+			bindRelayedClassStatisticsEx(prefix, flags, force_cast<StatNodeResolver1>(resolver), force_cast<StatRequirementEnumerator>(enumerator), &relayToClass);
+			break;
+		}
+		}
+	}
+
+	void bindStatisticsOnLoad();
+
+	engine_export void enumerateStatistics(TreeNode* destNode, bool asStatisticBinding);
+	engine_export void enumerateStatistics(StatisticBinding* dest);
+	engine_export Variant enumerateStatistics(FLEXSIMINTERFACE);
+
+	engine_export TreeNode* assertStatistic(const char* statTitle);
+	engine_export TreeNode* assertStatistic(StatisticBinding* enumeration);
+	engine_export TreeNode* assertStatistic(const char* statTitle, const Variant& p1, const Variant& p2 = Variant(), const Variant& p3 = Variant(), int* outFlags = nullptr);
+	engine_export TreeNode* assertStatistic(StatisticBinding* enumeration, const Variant& p1, const Variant& p2 = Variant(), const Variant& p3 = Variant());
+	engine_export Variant assertStatistic(FLEXSIMINTERFACE);
+	engine_export TreeNode* assertStatisticNode(const char* statTitle, TreeNode*& node);
+
+	engine_export int enumerateRequirementPossibilities(const char* statTitle, TreeNode* destNode, const Variant& p1 = Variant(), const Variant& p2 = Variant());
+	engine_export Variant enumerateRequirementPossibilities(FLEXSIMINTERFACE);
+
+#define UPDATE_SDT_STAT(node, newValue) if (node) { node->objectAs(TrackedVariable)->set(newValue); }
+#define UPDATE_SDT_STAT_DELTA(node, delta) if (node) {\
+	TrackedVariable* tv = node->objectAs(TrackedVariable);\
+	tv->set(tv->getCurrent() + delta); }
+#define UPDATE_SDT_STAT_INCREMENTAL(node) UPDATE_SDT_STAT_DELTA(node, 1)
+
+	private:
+	/// <summary>	Makes sure that the enumeration is properly filled. </summary>
+	/// <remarks>	Anthony.johnson, 8/14/2015. </remarks>
+	/// <param name="enumeration">	[in,out] The enumeration. </param>
+	bool assertStatisticBinding(StatisticBinding* enumeration);
+	TreeNode* assertStatistic(StatisticBindingEntry& entry);
+	TreeNode* assertStatistic(StatisticBindingEntry& entry, const Variant& p1, const Variant& p2, const Variant& p3);
+	static int s_bindStatisticMode;
+	static StatisticBinding* s_statBinding;
+	static const char* s_assertStatisticName;
+	static TreeNode* s_assertedStatistic;
+	static StatisticBindingEntry* s_statBindingEntry;
+	static std::string s_forwardingStatPrefix;
+	static std::string s_statAsEventPrefix;
+	static StatNodeResolver1 s_relayedStatResolver;
+	static StatRequirementEnumerator s_requirementEnumerator;
+	static SimpleDataType* s_enumerateObject;
+	static const char* s_enumerateReqsName;
+	static TreeNode* s_enumerateReqsNode;
+	static Variant s_requirement1;
+	static Variant s_requirement2;
+	static int s_enumerateReqsResult;
+	TreeNode* getStatisticNode(const char* nodeName, int flags, bool assert);
+	//@}
+};
+
+/// <summary>	Event binding. Stores enumerated events and saves binding information for later use.  </summary>
+/// <remarks>	Allows a "client" object to get an enumeration of an object's available events once, 
+/// 			and then bind to a specific event without having to call bindEvents()
+/// 			each time. This can be especially helpful at simulation run time if you don't want
+/// 			to have to call bindEvents() over and over again each time you want to get the node
+/// 			associated with an event. This method is much faster using a method that repeatedly 
+/// 			calls bindEvents().
+/// 			Here's how you work with it.
+/// 			
+/// 			// at model building time, or on reset
+/// 			sdt->enumerateEvents(destNode, true); // this will populate the EventBinding with all the needed data
+/// 			EventBinding* binding = destNode->objectAs(EventBinding);
+/// 			binding->select("OnEntry"); // this selects the given event
+/// 			
+/// 			... later, during simulation run
+/// 			treenode eventNode = sdt->assertEvent(binding); // will get the node associated with the event, without calling bindEvents().
+/// 			
+/// 			... also, you can switch to another sdt of the same class. Note that it MUST be of the same 
+/// 			class, or else all hell will break loose.
+/// 			treenode newEventNode = newSDT->assertEvent(binding);
+/// 			</remarks>
+class EventBinding : public SimpleDataType
+{
+public:
+	virtual const char* getClassFactory() override { return "EventBinding"; }
+	engine_export virtual void bind() override;
+	ObjRef<SimpleDataType> object;
+	int selected = -1;
+	bool isSelectionValid() { return selected >= 0 && selected < events.size(); }
+	void* virtualTable = nullptr;
+	ByteBlock selectedEventTitle;
+	/// <summary>	Selects the given event. This can be used in conjunction with SimpleDataType::assertEvent(EventBinding*, ...). 
+	/// 			Instead of </summary>
+	/// <remarks>	Anthony.johnson, 8/15/2015. </remarks>
+	/// <param name="eventTitle">	The event title. </param>
+	engine_export void select(const char* eventTitle);
+	/// <summary>	Selects the given sdt, rebinding its event entries based on that sdt. </summary>
+	/// <remarks>	This will rebind event node pointers. If there is a currently selected event, then
+	/// 			for speed reasons it will only rebind that event's node. </remarks>
+	/// <param name="sdt">	[in,out] If non-null, the sdt. </param>
+	engine_export void select(SimpleDataType* sdt);
+	std::vector<SimpleDataType::EventBindingEntry> events;
+	const EventBindingEntry& getSelectedEntry() { return events[selected]; }
+};
+
+class StatisticBinding : public SimpleDataType
+{
+public:
+	virtual const char* getClassFactory() override { return "StatisticBinding"; }
+	engine_export virtual void bind() override;
+	ObjRef<SimpleDataType> object;
+	int selected = -1;
+	void* virtualTable = nullptr;
+	ByteBlock selectedStatisticTitle;
+	/// <summary>	Selects the given statsitic. This can be used in conjunction with SimpleDataType::assertStatistic(StatisticBinding*, ...). 
+	/// 			Instead of </summary>
+	/// <remarks>	Anthony.johnson, 8/15/2015. </remarks>
+	/// <param name="statName">	The statistic name. </param>
+	engine_export void select(const char* statName);
+	/// <summary>	Selects the given sdt, rebinding its stat entries based on that sdt. </summary>
+	/// <remarks>	This will rebind stat node pointers. If there is a currently selected stat, then
+	/// 			for speed reasons it will only rebind that stat's node. </remarks>
+	/// <param name="sdt">	[in,out] If non-null, the sdt. </param>
+	engine_export void select(SimpleDataType* sdt);
+	std::vector<SimpleDataType::StatisticBindingEntry> statistics;
 };
 
 
@@ -777,35 +1178,17 @@ public:
 	virtual const char* getClassFactory() { return "SqlDataSource"; }
 };
 
-// 
-class ParseStatisticStringObj : public SimpleDataType
-{
-public:
-	const static int PSS_MODE_GET = 0; // default - get the value specified by the string
-	const static int PSS_MODE_ASSERT = 1; // make sure that the object will record the value
-	const static int PSS_MODE_ASSERT_FH = 2; // make sure that the object will record the full history
-	const static int PSS_MODE_GET_FH = 3; // get the bundle associated with the full history
-	const static int PSS_MODE_GET_TIMECOL = 4; // get the column in the history bundle with the time 
-	const static int PSS_MODE_GET_VALCOL = 5; // get the column in the history bundle with the values
-	const static int PSS_MODE_QUERY_ANY = 6; // get whether or not this object can parse statistic strings
-	// Note: PSS_MODE_QUERY allows any object with this method to confirm that it has this interface,
-	// without changing its inheritance hierarchy.
-
-	virtual Variant parseStatisticString(const string& statString, int mode, const Variant& data) = 0;
-	engine_export Variant parseStatisticString(FLEXSIMINTERFACE);
-	virtual void bind() override { bindCallback(parseStatisticString, ParseStatisticStringObj); }
-};
-
 /// <summary>	Defines the TrackedVariable class. </summary>
 /// <remarks>	Tracked variables accept a sequence of values (one at a time)
 ///				and provide methods to get the current, min, max, and avg. </remarks>
-class TrackedVariable : public ParseStatisticStringObj
+class TrackedVariable : public SimpleDataType
 {
 	friend SimpleDataType* engine_createsdtderivative(char* classname, TreeNode* holder);
 
 public:
-	engine_export virtual const char* getClassFactory() { return "TrackedVariable"; }
-	engine_export virtual void bind();
+	engine_export virtual const char* getClassFactory() override { return "TrackedVariable"; }
+	engine_export virtual void bind() override;
+	engine_export virtual char* toString(int verbose) override;
 
 	treenode data;
 	double isTimeWeighted;
@@ -815,10 +1198,12 @@ public:
 	double minValue;
 	double maxValue;
 	double numEntries;
+	treenode onChange = nullptr;
 
 	engine_export virtual void reset();
 	engine_export virtual void reset(double value);
 	engine_export virtual void set(double value);
+	engine_export virtual void bindEvents() override;
 
 	engine_export double getAvg();
 	engine_export double getMin();
@@ -826,44 +1211,7 @@ public:
 	engine_export double getCurrent();
 	engine_export double getCount();
 
-	engine_export virtual Variant parseStatisticString(const string& statString, int mode, const Variant& data) override;
-
 	engine_export TrackedVariable();
 	engine_export ~TrackedVariable() {}
-};
-
-/// <summary>	Defines the Statistic class, a set of TrackedVariables. </summary>
-/// <remarks>	The StatisticSet class optionally records content, input, output, and
-///				staytime, each as a tracked variable.</remarks>
-class StatisticSet : public ParseStatisticStringObj
-{
-	friend SimpleDataType* engine_createsdtderivative(char* classname, TreeNode* holder);
-
-public:
-	engine_export virtual const char* getClassFactory() { return "StatisticSet"; }
-	engine_export virtual void bind();
-
-	double recordContent;
-	double recordInput;
-	double recordOutput;
-	double recordStaytime;
-	double totalStaytime;
-
-	ObjRef<TrackedVariable> content;
-	ObjRef<TrackedVariable> input;
-	ObjRef<TrackedVariable> output;
-	ObjRef<TrackedVariable> staytime;
-
-	engine_export StatisticSet();
-
-	engine_export virtual void assertVariables();
-	engine_export virtual void reset();
-	engine_export virtual void resetStats();
-
-	engine_export virtual void updateEntryStats();
-	engine_export virtual void updateExitStats(double staytime);
-
-	engine_export virtual double getStatisticByString(const string& tvString, const string& quantity);
-	engine_export virtual Variant parseStatisticString(const string& statString, int mode, const Variant& data) override;
 };
 
