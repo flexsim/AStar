@@ -14,6 +14,7 @@ class TreeNode;
 #ifdef FLEXSIM_ENGINE_COMPILE
 	#include <stack>
 	#include <map>
+	#include <list>
 	#define IN_TREENODE_H
 	#include "treenodemacros.h"
 	visible int validlink(TreeNode *, char *);

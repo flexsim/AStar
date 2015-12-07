@@ -951,7 +951,6 @@ THE SOFTWARE.
 	typedef int          (*_setbundlevaluealias4)(treenode x, int entrynr, int fieldnr, char* val);
 	typedef double       (*_setcameradirection)(treenode view, double x, double y, double z, double rx, double ry, double rz);
 	typedef double       (*_setcameravolume)(treenode view,double w, double h, double nearc, double farc, double mag, double fov, double orthopers, double firstperson);
-	typedef double       (*_setcenter)(treenode node, double x, double y, double z);
 	typedef double       (*_setchecked)(treenode view, int checked);
 	typedef double       (*_setcollisioncheck)(treenode collisionobj, double val,double interval);
 	typedef double       (*_setcolor)(treenode involved, double red, double green, double blue);
@@ -968,7 +967,6 @@ THE SOFTWARE.
 	typedef double       (*_setitemvar)(treenode item, int index, double val);
 	typedef void         (*_setkinematicsrotoffset)(treenode infonode, double _rx, double _ry, double _rz);
 	typedef double       (*_setlabelnum)(treenode object, char* labelname, double value);
-	typedef double       (*_setloc)(treenode node, double x, double y, double z);
 	typedef double       (*_setmessageloopsleep)(double a, double b);
 	typedef treenode     (*_setname_alias)(treenode node, char* name);
 	typedef treenode     (*_setnodenum)(treenode attnode, double value);
@@ -1612,6 +1610,7 @@ DECLARE_FLEXSIM_FUNCTION_1(lastkey)
 DECLARE_FLEXSIM_FUNCTION_1(lastkeydown)
 DECLARE_FLEXSIM_FUNCTION_1(lastkeyup)
 DECLARE_FLEXSIM_FUNCTION_1(library)
+DECLARE_FLEXSIM_FUNCTION_1(license)
 DECLARE_FLEXSIM_FUNCTION_1(listboxrefresh)
 DECLARE_FLEXSIM_FUNCTION_1(listinlist)
 DECLARE_FLEXSIM_FUNCTION_1(listmax)
@@ -1840,7 +1839,6 @@ DECLARE_FLEXSIM_FUNCTION_3(setbundlevaluealias3, "?setbundlevalue@@YAHPAVTreeNod
 DECLARE_FLEXSIM_FUNCTION_3(setbundlevaluealias4, "?setbundlevalue@@YAHPAVTreeNode@@HHPAD@Z","?setbundlevalue@@YAHPEAVTreeNode@@HHPEAD@Z");
 DECLARE_FLEXSIM_FUNCTION_1(setcameradirection)
 DECLARE_FLEXSIM_FUNCTION_1(setcameravolume)
-DECLARE_FLEXSIM_FUNCTION_1(setcenter)
 DECLARE_FLEXSIM_FUNCTION_1(setchecked)
 DECLARE_FLEXSIM_FUNCTION_1(setcolor)
 DECLARE_FLEXSIM_FUNCTION_1(setcursor)
@@ -1851,7 +1849,6 @@ DECLARE_FLEXSIM_FUNCTION_1(setdropcoordsmanual)
 DECLARE_FLEXSIM_FUNCTION_1(setframe)
 DECLARE_FLEXSIM_FUNCTION_1(setitemtype)
 DECLARE_FLEXSIM_FUNCTION_1(setkinematicsrotoffset)
-DECLARE_FLEXSIM_FUNCTION_1(setloc)
 DECLARE_FLEXSIM_FUNCTION_1(setmessageloopsleep)
 DECLARE_FLEXSIM_FUNCTION_2(setname_alias, "setname")
 DECLARE_FLEXSIM_FUNCTION_1(setnodenum)
@@ -2037,9 +2034,7 @@ DECLARE_FLEXSIM_FUNCTION_1(cppgettitletoken)
 DECLARE_FLEXSIM_FUNCTION_1(cppgettoken)
 DECLARE_FLEXSIM_FUNCTION_1(cppsettitletoken)
 DECLARE_FLEXSIM_FUNCTION_1(cppsettoken)
-#if _MSC_VER >= 1600
 DECLARE_FLEXSIM_FUNCTION_2(cpp_queryalias, "cpp_query")
-#endif
 DECLARE_FLEXSIM_FUNCTION_1(dbwritechanges)
 DECLARE_FLEXSIM_FUNCTION_1(divide)
 DECLARE_FLEXSIM_FUNCTION_1(drawrect)
@@ -2158,7 +2153,6 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(insertmultiallocatetask)
 	DECLARE_FLEXSIM_FUNCTION_1(insertsynctask)
 	DECLARE_FLEXSIM_FUNCTION_1(isedgeforward)
-	DECLARE_FLEXSIM_FUNCTION_1(license)
 	DECLARE_FLEXSIM_FUNCTION_1(movetasksequence)
 	DECLARE_FLEXSIM_FUNCTION_1(netnodefromrank)
 	DECLARE_FLEXSIM_FUNCTION_1(opennodeedge)

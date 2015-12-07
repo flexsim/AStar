@@ -1578,6 +1578,7 @@ public:
 	             { params[0] = &p1; params[1] = &p2; params[2] = &p3; params[3] = &p4; params[4] = &p5; params[5] = &p6; params[6] = &p7; params[7] = &p8; params[8] = &p9; params[9] = &p10; params[10] = &p11; params[11] = &p12; params[12] = &p13; params[13] = &p14; params[14] = &p15; params[15] = &p16; params[16] = &p17; params[17] = &p18; params[18] = &p19; params[19] = &p20; }
 
 	VariantParams(const CallPoint& cp);
+	VariantParams(const std::vector<Variant>& v);
 
 	size_t getNumParams() const { return numParams; }
 

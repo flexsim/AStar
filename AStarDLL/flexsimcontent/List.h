@@ -97,6 +97,7 @@ public:
 		virtual void bind() override;
 		virtual int getColId(int tableId, const char* colName) override;
 		void reset();
+		void onModelReset();
 		virtual const char* enumerateColNames(int tableId, int colNum) override;
 		virtual Variant getValue(int tableId, int row, int colId) override;
 		virtual int getTableId(const char* tableName) override;
@@ -345,6 +346,18 @@ public:
 	/// 										are removed.</param>
 	/// <returns>	The result. </returns>
 	Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool removeEntries, EntryRange& range, const Variant& partitionID, bool getEntryNodes, EntryRange* innerRange = nullptr);
+
+
+	// statistics
+	TreeNode* content = nullptr;
+	TreeNode* input = nullptr;
+	TreeNode* output = nullptr;
+	TreeNode* staytime = nullptr;
+
+	TreeNode* backOrderContent = nullptr;
+	TreeNode* backOrderInput = nullptr;
+	TreeNode* backOrderOutput = nullptr;
+	TreeNode* backOrderStaytime = nullptr;
 	
 	TreeNode* getBackOrderList(const Variant& partitionID);
 	TreeNode* getEntryList(const Variant& partitionID);
@@ -433,6 +446,8 @@ public:
 	NodeListArray<BackOrderListener>::ObjPtrType globalBackOrderListeners;
 	NodeListArray<BackOrderListener>::ObjPtrType timeIntervalBackOrderListeners;
 	treenode globalListenerPointers;
+
+	double keepEmptyPartitions = 0;
 
 	void addValueListeners(Entry* entry);
 	void addPullerListeners(BackOrder* backOrder);

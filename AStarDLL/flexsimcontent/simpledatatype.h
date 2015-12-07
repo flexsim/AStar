@@ -940,8 +940,8 @@ template<class ObjType>
 	{
 	public:
 		static int s_bindStatFlags;
-		std::string statName;
-		std::string nodeName;
+		ByteBlock statName;
+		ByteBlock nodeName;
 		int flags;
 		int nodeByteOffset = 0;
 		TreeNode** node;
@@ -951,12 +951,16 @@ template<class ObjType>
 		StatisticBindingEntry() : flags(0), resolver(nullptr), node(nullptr)
 		{}
 		StatisticBindingEntry(SimpleDataType* sdt, const char* nodeName, TreeNode*& node, const char* statName, int flags, StatNodeResolver1 resolver)
-			: nodeName(nodeName ? nodeName : "")
-			, statName(statName ? statName : "")
-			, node(&node)
+			: node(&node)
 			, flags(flags | s_bindStatFlags)
 			, resolver(resolver)
 		{
+			if (nodeName)
+				this->nodeName.write(nodeName);
+
+			if (statName)
+				this->statName.write(statName);
+
 			if (flags & STAT_REQUIREMENTS)
 				node = nullptr;
 			nodeByteOffset = (char*)(void*)(&node) - (char*)(void*)sdt;
@@ -1092,6 +1096,9 @@ public:
 
 class StatisticBinding : public SimpleDataType
 {
+private:
+	std::vector<SimpleDataType::StatisticBindingEntry> statistics;
+
 public:
 	virtual const char* getClassFactory() override { return "StatisticBinding"; }
 	engine_export virtual void bind() override;
@@ -1109,7 +1116,13 @@ public:
 	/// 			for speed reasons it will only rebind that stat's node. </remarks>
 	/// <param name="sdt">	[in,out] If non-null, the sdt. </param>
 	engine_export void select(SimpleDataType* sdt);
-	std::vector<SimpleDataType::StatisticBindingEntry> statistics;
+	
+	void addStatistic(StatisticBindingEntry& newEntry);
+	engine_export StatisticBindingEntry& getSelectedEntry();
+	void clearStatistics();
+
+	engine_export StatisticBindingEntry* begin();
+	engine_export StatisticBindingEntry* end();
 };
 
 
