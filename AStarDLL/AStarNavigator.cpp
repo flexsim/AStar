@@ -120,8 +120,11 @@ double AStarNavigator::onDraw(TreeNode* view)
 	fglDisable(GL_TEXTURE_2D);
 	fglDisable(GL_LIGHTING);
 	
+	double loc[3];
+	vectorproject(holder, 0, 0, 0, model(), loc);
+
 	fglScale(1.0/b_spatialsx, 1.0/b_spatialsy, 1.0/b_spatialsz);
-	fglTranslate(-b_spatialx, -b_spatialy, -b_spatialz);
+	fglTranslate(-loc[0], -loc[1], -loc[2]);
 
 	if (!pickingmode) {
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
