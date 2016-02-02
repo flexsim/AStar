@@ -43,8 +43,9 @@ public:
 		int save(char*& destination);
 		int load(const char*& source);
 
-		int savexml(MSXML2::IXMLDOMDocumentPtr doc, MSXML2::IXMLDOMElementPtr parentnode);
-		int loadXML(MSXML2::IXMLDOMNodePtr datanode);
+		int saveXML(std::ostream& doc);
+		int loadXML(std::istream& doc);
+
 		void pointerizeXML(TreeNode* topNode);
 	#endif
 };

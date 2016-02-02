@@ -805,4 +805,8 @@ engine_export int __eventcode__(CallPoint*);
 engine_export Variant __eventdata__(CallPoint*);
 engine_export Variant __i__(CallPoint*);
 engine_export Variant __c__(CallPoint*);
+
+visible TreeNode* setcenter(TreeNode*, double, double, double);
+visible TreeNode* setloc(TreeNode*, double, double, double);
+engine_export TreeNode* setloc(TreeNode*, double, double, double, double, double, double);
 #endif

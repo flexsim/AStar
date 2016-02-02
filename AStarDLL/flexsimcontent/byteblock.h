@@ -35,7 +35,7 @@ public:
 		localBlock[0] = 0;
 	}
 	// copy constructor
-	ByteBlock(ByteBlock& other) : parity((unsigned int)(size_t)this), blockSize(0), block(localBlock)
+	ByteBlock(const ByteBlock& other) : parity((unsigned int)(size_t)this), blockSize(0), block(localBlock)
 	{
 		write(other.block, other.blockSize, false);
 	}
@@ -52,6 +52,7 @@ public:
 	}
 	~ByteBlock()
 	{
+		if (!checkParity()) return;
 		parity = 0;
 		if (block && block != localBlock) 
 			flexsimfree(block);
@@ -76,11 +77,11 @@ public:
 		{ write(copyfrom.block, copyfrom.blockSize, 0); return *this; }
 	operator char*()
 		{return getBuffer();}
+	inline bool checkParity(){return parity==(unsigned int)(size_t)this;}//true if valid
 
 	#ifdef FLEXSIM_ENGINE_COMPILE
 		void* operator new(size_t size);
 		void operator delete(void* p);
-		inline bool checkParity(){return parity==(unsigned int)(size_t)this;}//true if valid
   
 		void write(const char *source, size_t intsize);
 		void read(char *dest, size_t intsize);
@@ -90,11 +91,10 @@ public:
 		bool load(std::istream& stream);
 		bool save(char*& destination);
 		bool load(const char*& source);
-  
 
-		bool saveXML(MSXML2::IXMLDOMDocumentPtr doc, MSXML2::IXMLDOMElementPtr parentnode, bool isNameBB = false);
-		bool loadXML(MSXML2::IXMLDOMNodePtr parentnode);
-  
+
+		bool saveXML(std::ostream& doc, const char* elementName, bool isNameBB = false);
+		bool loadXML(std::istream& doc);
 
 		void replaceSubString(ptrdiff_t preposition, size_t position, char *substitute);
 		bool searchSubString(char *pattern, char *substitute, bool rep); // return true when not at end; set substringcursor when done
