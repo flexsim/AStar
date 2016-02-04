@@ -96,6 +96,34 @@ treenode view = param(1);
          <node f="40"><name></name></node></node>
         <node f="42"><name>cppvariables</name></node>
        </node>
+       <node f="42"><name>stats</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="7"><name>state_current</name><data/>
+         <node f="40"><name></name></node>
+         <node f="42" dt="6"><name>profile</name><data f="1">
+          <fields>
+           <field name="state" bytesize="36" type="3"/>
+           <field name="time" bytesize="8" type="1"/>
+           <field name="active" bytesize="4" type="2"/>
+          </fields>
+          <entry><ed>none</ed><ed>0000000000000000</ed><ed>0</ed></entry>
+          <entry><ed>idle</ed><ed>0000000000000000</ed><ed>0</ed></entry>
+          <entry><ed>processing</ed><ed>0000000000000000</ed><ed>0</ed></entry>
+          <entry><ed>busy</ed><ed>0000000000000000</ed><ed>0</ed></entry>
+          <entry><ed>blocked</ed><ed>0000000000000000</ed><ed>1</ed></entry>
+          <entry><ed>generating</ed><ed>0000000000000000</ed><ed>1</ed></entry>
+          <entry><ed>empty</ed><ed>0000000000000000</ed><ed>0</ed></entry>
+          <entry><ed>collecting</ed><ed>0000000000000000</ed><ed>0</ed></entry>
+          <entry><ed>releasing</ed><ed>0000000000000000</ed><ed>0</ed></entry>
+          <entry><ed>waiting for operator</ed><ed>0000000000000000</ed><ed>0</ed></entry>
+          <entry><ed>waiting for transporter</ed><ed>0000000000000000</ed><ed>1</ed></entry></data></node>
+         <node f="42" dt="2"><name>sdt::attributetree</name><data>TrackedVariable</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>type</name><data>0000000040080000</data></node>
+          <node f="42" dt="1"><name>curValue</name><data>0000000000000000</data></node>
+         </node>
+        </node>
+       </node>
        <node f="42"><name>visual</name>
         <node f="40"><name></name></node>
         <node f="42"><name>color</name>
@@ -140,28 +168,6 @@ treenode view = param(1);
         <node f="42" dt="1"><name>offsetry</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>offsetrz</name><data>0000000000000000</data></node>
        </node>
-       <node f="42"><name>stats</name>
-        <node f="40"><name></name></node>
-        <node f="42"><name>state</name>
-         <node f="40"><name></name></node>
-         <node f="42" dt="1"><name>state_current</name><data>000000003ff00000</data></node>
-         <node f="42" dt="1"><name>state_since</name><data>0000000000000000</data></node>
-         <node f="42" dt="2"><name>state_profile</name><data>State</data>
-          <node f="40"><name></name></node>
-          <node f="42" dt="1"><name>idle</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>processing</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>busy</name><data>0000000000000000</data></node>
-          <node f="200042" dt="1"><name>blocked</name><data>0000000000000000</data></node>
-          <node f="200042" dt="1"><name>generating</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>empty</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>collecting</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>releasing</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>waiting for operator</name><data>0000000000000000</data></node>
-          <node f="200042" dt="1"><name>waiting for transporter</name><data>0000000000000000</data></node>
-         </node>
-         <node f="42"><name>state_graph</name></node>
-        </node>
-       </node>
        <node f="42"><name>objectinfo</name>
         <node f="40"><name></name></node>
         <node f="42"><name>info1</name></node>
@@ -200,7 +206,7 @@ treenode view = param(1);
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/4/1/data/AStar/LibraryGroup/Preferred Path</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~4/1/data/AStar/LibraryGroup/Preferred Path</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -2646,12 +2652,6 @@ applylinks(parent);</data></node>
         <node f="42" dt="2"><name>tab_AStar_Barriers</name><data>#Barriers</data></node>
        </node>
        <node f="42" dt="2"><name>title</name><data>AStar Module Reference</data></node>
-      </data>
-       <node f="40"><name></name></node></node>
-      <node f="42" dt="4"><name>Release Notes</name><data>
-       <node f="40"><name></name></node>
-       <node f="42" dt="2"><name>viewfocus</name><data>modules\AStar\help\ReleaseNotes.html</data></node>
-       <node f="42" dt="2"><name>title</name><data>AStar Module Release Notes</data></node>
       </data>
        <node f="40"><name></name></node></node>
      </node>
