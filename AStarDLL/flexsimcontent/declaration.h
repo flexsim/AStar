@@ -725,7 +725,7 @@ inline Variant getqueryvalue(int row, const std::string& colName) {return getque
 	inline double getdatastat(int stat, treenode dataset, treenode unused, double p1, double p2, double p3){return getdatastat_alias1(stat, dataset, unused, p1, p2, p3);}
 #endif
 
-engine_export double getstat(TreeNode* obj, const char* statName, int flag, const Variant& p1, const Variant& p2, const Variant& p3);
+engine_export double getstat(TreeNode* obj, const char* statName, int flag, const Variant& p1 = Variant(), const Variant& p2 = Variant(), const Variant& p3 = Variant());
 
 engine_export Variant applicationcommand(const char* cmd, n10varsdefaultinterface);
 
@@ -809,4 +809,15 @@ engine_export Variant __c__(CallPoint*);
 visible TreeNode* setcenter(TreeNode*, double, double, double);
 visible TreeNode* setloc(TreeNode*, double, double, double);
 engine_export TreeNode* setloc(TreeNode*, double, double, double, double, double, double);
+
+visible char* excelrangeread(char *name, int row, int col);
+engine_export int excelrangeread(treenode target, int row1, int col1, int row2, int col2, unsigned char flags = 0);
+
+visible int excelrangewrite(char* name, char* value, int row, int col);
+engine_export int excelrangewrite(treenode source, int row, int col, unsigned char flags = 0);
+
+engine_export treenode trackedvariable(const char* listName);
+inline treenode trackedvariable(const std::string& str) { return trackedvariable(str.c_str()); }
+engine_export treenode inittrackedvariable(treenode theNode, int type, double startValue, int useHistory, int useProfile);
+
 #endif

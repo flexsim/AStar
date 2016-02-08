@@ -1534,7 +1534,6 @@ class VariantParams
 public:
 	engine_export const Variant& getParam(size_t paramNum) const;
 
-#ifdef FLEXSIM_ENGINE_COMPILE
 	VariantParams() : numParams(0) {}
 	VariantParams(const Variant& p1) : numParams(1) 
 	             { params[0] = &p1; }
@@ -1601,8 +1600,6 @@ private:
 			const Variant& p16, const Variant& p17, const Variant& p18, const Variant& p19, const Variant& p20)
 		{ new (this) VariantParams(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20); }
 
-
-#endif
 };
 
 

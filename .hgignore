@@ -1,0 +1,23 @@
+syntax: glob
+AStarDLL/Debug
+AStarDLL/Release
+AStarDLL/x64
+AStarDLL/Win32
+AStarDLL/AStar.sdf
+AStarDLL/AStar.opensdf
+AStar_x86.ilk
+AStar_x86.dll
+AStar.t
+AStar.lib
+AStar.exp
+AStar.dll
+AStar.pdb
+AStarDLL/AStar.v12.suo
+AStarDLL/AStar.v11.suo
+AStarInstaller.v12.suo
+AStar.ilk
+bin
+obj
+*.msm
+*.rej
+*.orig

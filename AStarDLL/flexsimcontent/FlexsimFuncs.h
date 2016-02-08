@@ -402,13 +402,12 @@ THE SOFTWARE.
 	typedef double       (*_excelmacro)(char * m);
 	typedef double       (*_excelopenalias)(char * a);
 	typedef int          (*_excelquit)();
-	typedef char*        (*_excelrangeread)(char *name, int row, int col);
 	typedef double       (*_excelrangereadnum)(char* name, int row, int col);
-	typedef char*        (*_excelrangereadstr)(char* name, int row, int col);
-	typedef int          (*_excelrangewrite)(char *name, char *value, int row, int col);
+	typedef char*        (*_excelrangereadstr)(char* name, int row, int col);	
 	typedef double       (*_excelrangewritenum)(char* name, int row, int col, double val);
 	typedef double       (*_excelrangewritestr)(char* name, int row, int col, char* val);
 	typedef char*        (*_excelread)(int Row, int Col, char rowchar, char colchar);
+	typedef Variant		 (*_excelreadcell)(int row, int col);
 	typedef double       (*_excelreadnum)(int row, int col);
 	typedef char*        (*_excelreadstr)(int row, int col);
 	typedef int          (*_excelsave)(char *name);
@@ -534,8 +533,6 @@ THE SOFTWARE.
 	typedef double       (*_getmodelunitnum)(int querytype);
 	typedef char*        (*_getmodelunitstr_cstr)(int querytype);
 	typedef int          (*_getmodulelicense)(int module, int * version, int * subversion);
-	typedef MoveRecord* (*_getmoverecord)(int recordnum);
-	typedef double       (*_getmoverecordvalue) (MoveRecord *record,int val);
 	typedef treenode     (*_getnetnode)(treenode object, int index);
 	typedef treenode     (*_getnetnodespline)(treenode netnode, int outport);
 	typedef double       (*_getnetworkdistance)(int fromnn, int tonn);
@@ -570,8 +567,6 @@ THE SOFTWARE.
 	typedef double       (*_getsoundindex)(char * thename);
 	typedef double       (*_getstatenum_alias1)(treenode object);
 	typedef double       (*_getstatenum_alias2)(treenode object, int profilenr);
-	typedef StateRecord* (*_getstaterecord)(int recordnum);
-	typedef double       (*_getstaterecordvalue)(StateRecord *record,int val);
 	typedef int          (*_getsystemmetric)(int metric, HWND win);
 	typedef treenode     (*_gettablecell)(char* globaltablename, int row, int column);
 	typedef int          (*_gettablecols)(char* globaltablename);
@@ -2042,8 +2037,6 @@ DECLARE_FLEXSIM_FUNCTION_1(eq)
 DECLARE_FLEXSIM_FUNCTION_1(excelexportnode)
 DECLARE_FLEXSIM_FUNCTION_3(excelimportnodealias1, "?excelimportnode@@YANPAVTreeNode@@HHHH@Z","?excelimportnode@@YANPEAVTreeNode@@HHHH@Z")
 DECLARE_FLEXSIM_FUNCTION_2(excelimportnodealias2, "excelimportnode")
-DECLARE_FLEXSIM_FUNCTION_1(excelrangeread)
-DECLARE_FLEXSIM_FUNCTION_1(excelrangewrite)
 DECLARE_FLEXSIM_FUNCTION_1(excelread)
 DECLARE_FLEXSIM_FUNCTION_1(excelwrite)
 DECLARE_FLEXSIM_FUNCTION_1(ge)

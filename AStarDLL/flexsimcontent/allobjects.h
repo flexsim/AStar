@@ -15,21 +15,13 @@
 #define FS_CONTENT_DLL_FUNC __declspec(dllimport)
 #endif
 #define node_b_behaviour Nb_behaviour
-#define b_behaviour Nb_behaviour->safedatafloat()[0]
 #define node_b_cppfunctions Nb_cppfunctions
-#define b_cppfunctions Nb_cppfunctions->safedatafloat()[0]
 #define node_b_cppvariables Nb_cppvariables
-#define b_cppvariables Nb_cppvariables->safedatafloat()[0]
 #define node_b_eventfunctions Nb_eventfunctions
-#define b_eventfunctions Nb_eventfunctions->safedatafloat()[0]
 #define node_b_userfunctions Nb_userfunctions
-#define b_userfunctions Nb_userfunctions->safedatafloat()[0]
 #define node_b_classes Nb_classes
-#define b_classes Nb_classes->safedatafloat()[0]
 #define node_b_superclasses Nb_superclasses
-#define b_superclasses Nb_superclasses->safedatafloat()[0]
 #define node_b_connections Nb_connections
-#define b_connections Nb_connections->safedatafloat()[0]
 #define node_b_connectionsin Nb_connectionsin
 #define b_connectionsin Nb_connectionsin->safedatafloat()[0]
 #define node_b_connectionsout Nb_connectionsout
@@ -39,75 +31,40 @@
 #define node_b_itemtype Nb_itemtype
 #define b_itemtype Nb_itemtype->safedatafloat()[0]
 #define node_b_labels Nb_labels
-#define b_labels Nb_labels->safedatafloat()[0]
 #define node_b_variables Nb_variables
-#define b_variables Nb_variables->safedatafloat()[0]
 #define node_b_listeners Nb_listeners
-#define b_listeners Nb_listeners->safedatafloat()[0]
 #define node_b_OnReset Nb_OnReset
-#define b_OnReset Nb_OnReset->safedatafloat()[0]
 #define node_b_OnMessage Nb_OnMessage
-#define b_OnMessage Nb_OnMessage->safedatafloat()[0]
 #define node_b_OnTimerEvent Nb_OnTimerEvent
-#define b_OnTimerEvent Nb_OnTimerEvent->safedatafloat()[0]
 #define node_b_OnDraw Nb_OnDraw
-#define b_OnDraw Nb_OnDraw->safedatafloat()[0]
 #define node_b_OnPreDraw Nb_OnPreDraw
-#define b_OnPreDraw Nb_OnPreDraw->safedatafloat()[0]
 #define node_b_OnDrawPlanar Nb_OnDrawPlanar
-#define b_OnDrawPlanar Nb_OnDrawPlanar->safedatafloat()[0]
 #define node_b_OnPreDrawPlanar Nb_OnPreDrawPlanar
-#define b_OnPreDrawPlanar Nb_OnPreDrawPlanar->safedatafloat()[0]
 #define node_b_OnInOpen Nb_OnInOpen
-#define b_OnInOpen Nb_OnInOpen->safedatafloat()[0]
 #define node_b_OnOutOpen Nb_OnOutOpen
-#define b_OnOutOpen Nb_OnOutOpen->safedatafloat()[0]
 #define node_b_OnReceive Nb_OnReceive
-#define b_OnReceive Nb_OnReceive->safedatafloat()[0]
 #define node_b_OnSend Nb_OnSend
-#define b_OnSend Nb_OnSend->safedatafloat()[0]
 #define node_b_OnEntering Nb_OnEntering
-#define b_OnEntering Nb_OnEntering->safedatafloat()[0]
 #define node_b_OnExiting Nb_OnExiting
-#define b_OnExiting Nb_OnExiting->safedatafloat()[0]
 #define node_b_OnCompile Nb_OnCompile
-#define b_OnCompile Nb_OnCompile->safedatafloat()[0]
 #define node_b_OnCreate Nb_OnCreate
-#define b_OnCreate Nb_OnCreate->safedatafloat()[0]
 #define node_b_OnDestroy Nb_OnDestroy
-#define b_OnDestroy Nb_OnDestroy->safedatafloat()[0]
 #define node_b_OnUndo Nb_OnUndo
-#define b_OnUndo Nb_OnUndo->safedatafloat()[0]
 #define node_b_OnClick Nb_OnClick
-#define b_OnClick Nb_OnClick->safedatafloat()[0]
 #define node_b_OnRunStart Nb_OnRunStart
-#define b_OnRunStart Nb_OnRunStart->safedatafloat()[0]
 #define node_b_OnRunWarm Nb_OnRunWarm
-#define b_OnRunWarm Nb_OnRunWarm->safedatafloat()[0]
 #define node_b_OnRunEnd Nb_OnRunEnd
-#define b_OnRunEnd Nb_OnRunEnd->safedatafloat()[0]
 #define node_b_OnListen Nb_OnListen
-#define b_OnListen Nb_OnListen->safedatafloat()[0]
 #define node_b_OnPreListen Nb_OnPreListen
-#define b_OnPreListen Nb_OnPreListen->safedatafloat()[0]
 #define node_b_OnStateChange Nb_OnStateChange
-#define b_OnStateChange Nb_OnStateChange->safedatafloat()[0]
 #define node_b_OnDrag Nb_OnDrag
-#define b_OnDrag Nb_OnDrag->safedatafloat()[0]
 #define node_b_stats Nb_stats
-#define b_stats Nb_stats->safedatafloat()[0]
 #define node_b_state_current Nb_state_current
-#define b_state_current Nb_state_current->safedatafloat()[0]
 #define node_b_state_since Nb_state_since
-#define b_state_since Nb_state_since->safedatafloat()[0]
 #define node_b_state_profile Nb_state_profile
-#define b_state_profile Nb_state_profile->safedatafloat()[0]
 #define node_b_state_profiles Nb_state_profiles
-#define b_state_profiles Nb_state_profiles->safedatafloat()[0]
 #define node_b_stats_content Nb_stats_content
-#define b_stats_content Nb_stats_content->safedatafloat()[0]
 #define node_b_stats_staytime Nb_stats_staytime
-#define b_stats_staytime Nb_stats_staytime->safedatafloat()[0]
 #define node_b_stats_contentmin Nb_stats_contentmin
 #define b_stats_contentmin Nb_stats_contentmin->safedatafloat()[0]
 #define node_b_stats_contentmax Nb_stats_contentmax
@@ -119,35 +76,25 @@
 #define node_b_stats_contentsince Nb_stats_contentsince
 #define b_stats_contentsince Nb_stats_contentsince->safedatafloat()[0]
 #define node_b_stats_contentgraph Nb_stats_contentgraph
-#define b_stats_contentgraph Nb_stats_contentgraph->safedatafloat()[0]
 #define node_b_stats_contentgraphmaxpoints Nb_stats_contentgraphmaxpoints
 #define b_stats_contentgraphmaxpoints Nb_stats_contentgraphmaxpoints->safedatafloat()[0]
 #define node_b_stats_staytimemin Nb_stats_staytimemin
-#define b_stats_staytimemin Nb_stats_staytimemin->safedatafloat()[0]
 #define node_b_stats_staytimemax Nb_stats_staytimemax
-#define b_stats_staytimemax Nb_stats_staytimemax->safedatafloat()[0]
 #define node_b_stats_staytimeavg Nb_stats_staytimeavg
-#define b_stats_staytimeavg Nb_stats_staytimeavg->safedatafloat()[0]
 #define node_b_stats_staytimeupdates Nb_stats_staytimeupdates
-#define b_stats_staytimeupdates Nb_stats_staytimeupdates->safedatafloat()[0]
 #define node_b_stats_staytimesince Nb_stats_staytimesince
-#define b_stats_staytimesince Nb_stats_staytimesince->safedatafloat()[0]
 #define node_b_stats_staytimegraph Nb_stats_staytimegraph
-#define b_stats_staytimegraph Nb_stats_staytimegraph->safedatafloat()[0]
 #define node_b_stats_staytimegraphmaxpoints Nb_stats_staytimegraphmaxpoints
-#define b_stats_staytimegraphmaxpoints Nb_stats_staytimegraphmaxpoints->safedatafloat()[0]
 #define node_b_stats_staytimehisto Nb_stats_staytimehisto
-#define b_stats_staytimehisto Nb_stats_staytimehisto->safedatafloat()[0]
 #define node_b_stats_throughput Nb_stats_throughput
-#define b_stats_throughput Nb_stats_throughput->safedatafloat()[0]
 #define node_b_stats_lastmovetime Nb_stats_lastmovetime
 #define b_stats_lastmovetime Nb_stats_lastmovetime->safedatafloat()[0]
 #define node_b_stats_creationtime Nb_stats_creationtime
 #define b_stats_creationtime Nb_stats_creationtime->safedatafloat()[0]
 #define node_b_stats_input Nb_stats_input
-#define b_stats_input Nb_stats_input->safedatafloat()[0]
 #define node_b_stats_output Nb_stats_output
-#define b_stats_output Nb_stats_output->safedatafloat()[0]
+#define node_b_stream Nb_stream
+#define b_stream Nb_stream->safedatafloat()[0]
 #define node_b_spatialx Nb_spatialx
 #define b_spatialx Nb_spatialx->safedatafloat()[0]
 #define node_b_spatialy Nb_spatialy
@@ -185,45 +132,33 @@
 #define node_b_offsetsz Nb_offsetsz
 #define b_offsetsz Nb_offsetsz->safedatafloat()[0]
 #define node_b_color Nb_color
-#define b_color Nb_color->safedatafloat()[0]
 #define node_b_centroid Nb_centroid
 #define b_centroid Nb_centroid->safedatafloat()[0]
 #define node_b_drawflags Nb_drawflags
 #define b_drawflags Nb_drawflags->safedatafloat()[0]
 #define node_b_imageobject Nb_imageobject
-#define b_imageobject Nb_imageobject->safedatafloat()[0]
 #define node_b_imageindexobject Nb_imageindexobject
 #define b_imageindexobject Nb_imageindexobject->safedatafloat()[0]
 #define node_b_imagebase Nb_imagebase
-#define b_imagebase Nb_imagebase->safedatafloat()[0]
 #define node_b_imageindexbase Nb_imageindexbase
 #define b_imageindexbase Nb_imageindexbase->safedatafloat()[0]
 #define node_b_shape Nb_shape
-#define b_shape Nb_shape->safedatafloat()[0]
 #define node_b_shapeindex Nb_shapeindex
 #define b_shapeindex Nb_shapeindex->safedatafloat()[0]
 #define node_b_drawsurrogate Nb_drawsurrogate
-#define b_drawsurrogate Nb_drawsurrogate->safedatafloat()[0]
 #define node_b_sound Nb_sound
-#define b_sound Nb_sound->safedatafloat()[0]
 #define node_b_soundindex Nb_soundindex
 #define b_soundindex Nb_soundindex->safedatafloat()[0]
 #define node_b_guifocus Nb_guifocus
-#define b_guifocus Nb_guifocus->safedatafloat()[0]
 #define node_b_guifocusclass Nb_guifocusclass
-#define b_guifocusclass Nb_guifocusclass->safedatafloat()[0]
 #define node_b_stored Nb_stored
-#define b_stored Nb_stored->safedatafloat()[0]
 #define node_b_objectinfo Nb_objectinfo
-#define b_objectinfo Nb_objectinfo->safedatafloat()[0]
 #define node_b_frame Nb_frame
 #define b_frame Nb_frame->safedatafloat()[0]
 #define node_b_uniqueid Nb_uniqueid
 #define b_uniqueid Nb_uniqueid->safedatafloat()[0]
 #define node_b_animationinfo Nb_animationinfo
-#define b_animationinfo Nb_animationinfo->safedatafloat()[0]
 #define node_b_resizeinfo Nb_resizeinfo
-#define b_resizeinfo Nb_resizeinfo->safedatafloat()[0]
 
 
 // Constants
@@ -311,6 +246,14 @@
 #define EVENT_DP_CLEAR_BACK_SPACE  41
 #define EVENT_REPEAT  42
 #define EVENT_FIREEVENT  43
+
+//Excel flags
+#define EXCEL_DATA_AUTOMATIC 0x01
+#define EXCEL_DATA_STRING 0x02
+#define EXCEL_DATA_NUMBER 0x04
+#define EXCEL_DATE_AS_NUM 0x08
+#define EXCEL_USE_COLUMNHEADERS 0x20
+#define EXCEL_USE_ROWHEADERS 0x40
 
 // Constants group: TASKTYPE
 #define TASKTYPE_LOAD  1
@@ -1725,6 +1668,7 @@
 #define STAT_CONF_INTERVAL_HALF_WIDTH 2
 #define STAT_MIN 3
 #define STAT_MAX 4
+#define STAT_TIME_AT_VALUE 5
 #define STAT_VARIANCE 5
 #define STAT_STD_DEV 6
 #define STAT_SUM 7
@@ -1908,6 +1852,7 @@
 #define STAT_TYPE_LEVEL 0x1 
 #define STAT_TYPE_INCREMENTAL 0x2
 #define STAT_TYPE_STREAM 0x3
+#define STAT_TYPE_DISCRETE 0x4
 
 #define STAT_RELAYED 0x100
 #define STAT_TIME_WEIGHTED 0x200
@@ -2140,6 +2085,7 @@ public:
 	virtual void bind();
 	void reset();
 private:
+	FixedResource* curFR;
 	int state;
 	int sendto;
 	double vars[3];
@@ -2693,7 +2639,7 @@ visible double  bcsetdirection(treenode conveyor, int direction);
 
 visible double bcsetitemconveystate(treenode conveyor, treenode item, double startpoint, double startspeed, double destspeed, double accdec);
 
-Variant calloperator(treenode dispatcher, treenode origin, treenode involved, double priority, int preempt);
+visible int calloperator(treenode dispatcher, treenode origin, treenode involved, double priority, int preempt);
 
 visible double changeconveyorspeed(treenode conveyor, double newspeed);
 
@@ -2879,7 +2825,7 @@ Variant groupremovemember(treenode child, char* groupname);
 
 visible double holditem(treenode item);
 
-Variant inititem(treenode item);
+visible int inititem(treenode item);
 
 int initpull(treenode object, int outPort);
 
@@ -3194,6 +3140,12 @@ FS_CONTENT_DLL_FUNC static treenode s_getEventInfoObject(treenode holder, const 
 
 FS_CONTENT_DLL_FUNC double resetLabels();
 
+FS_CONTENT_DLL_FUNC virtual void bindEvents();
+
+FS_CONTENT_DLL_FUNC virtual void bindStatistics();
+
+FS_CONTENT_DLL_FUNC treenode stateProfileResolver(const Variant& p1);
+
 
 // System
 
@@ -3251,9 +3203,13 @@ FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate, int id, double prio
 
 FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
+FS_CONTENT_DLL_FUNC virtual void onInitialStop();
+
 FS_CONTENT_DLL_FUNC virtual double resumeObject(int id, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double resumeObject();
+
+FS_CONTENT_DLL_FUNC virtual void onFinalResume();
 
 FS_CONTENT_DLL_FUNC double resetVariables();
 
@@ -3287,11 +3243,7 @@ FS_CONTENT_DLL_FUNC double moveToResetPosition();
 
 FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
 
-FS_CONTENT_DLL_FUNC double getUpdatedTimeInState(int statenr);
-
 FS_CONTENT_DLL_FUNC static char* displayMessageData(int code, char* edata);
-
-FS_CONTENT_DLL_FUNC double calculateAvgContent();
 
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
@@ -3393,7 +3345,7 @@ FS_CONTENT_DLL_FUNC double resetVariables();
 
 FS_CONTENT_DLL_FUNC static inline FRItemInfo* getItemInfo(treenode flowitem);
 
-FS_CONTENT_DLL_FUNC static int initItem(treenode flowitem);
+FS_CONTENT_DLL_FUNC int initItem(treenode flowitem);
 
 FS_CONTENT_DLL_FUNC static int setItemVar(treenode flowitem, int varnum, double val);
 
@@ -3402,6 +3354,8 @@ FS_CONTENT_DLL_FUNC static double getItemVar(treenode flowitem, int varnum);
 FS_CONTENT_DLL_FUNC static int setItemInvolved(treenode flowitem, treenode involved);
 
 FS_CONTENT_DLL_FUNC static treenode getItemInvolved(treenode flowitem);
+
+FS_CONTENT_DLL_FUNC static FixedResource* getItemCurFR(treenode flowitem);
 
 FS_CONTENT_DLL_FUNC double holdItem(treenode flowitem);
 
@@ -3490,6 +3444,8 @@ FS_CONTENT_DLL_FUNC treenode createTravelMemberNode(TaskExecuter* involvedtaskex
 FS_CONTENT_DLL_FUNC virtual double abortTravel(treenode traveler, treenode newts);
 
 FS_CONTENT_DLL_FUNC virtual double updateLocations();
+
+FS_CONTENT_DLL_FUNC virtual double updateLocations(TaskExecuter* te);
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
@@ -3673,6 +3629,8 @@ TreeNode* node_v_nrtofirstnode;
 #define v_nrtofirstnode node_v_nrtofirstnode->safedatafloat()[0]
 TreeNode* node_v_modified;
 #define v_modified node_v_modified->safedatafloat()[0]
+TreeNode* node_v_nodesize;
+#define v_nodesize node_v_nodesize->safedatafloat()[0]
 TreeNode* node_v_arrowsize;
 #define v_arrowsize node_v_arrowsize->safedatafloat()[0]
 TreeNode* node_v_connecting;
@@ -4471,6 +4429,16 @@ FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
 
 FS_CONTENT_DLL_FUNC int checkDestroy();
 
+FS_CONTENT_DLL_FUNC treenode getStateProfile(treenode object, int profileNum);
+
+FS_CONTENT_DLL_FUNC double getStateTime(treenode profile, int state);
+
+FS_CONTENT_DLL_FUNC int getStateUsed(treenode profile, int state);
+
+FS_CONTENT_DLL_FUNC string getStateName(treenode profile, int stateNum);
+
+FS_CONTENT_DLL_FUNC int getNumStates(treenode profile);
+
 
 // System
 
@@ -4601,10 +4569,6 @@ FS_CONTENT_DLL_FUNC double getTotalTime();
 FS_CONTENT_DLL_FUNC double setProperties(treenode view);
 
 FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
-
-FS_CONTENT_DLL_FUNC treenode getStateProfile(treenode object);
-
-FS_CONTENT_DLL_FUNC double getStateSince(treenode object);
 
 FS_CONTENT_DLL_FUNC treenode refreshUtilizedStates();
 
@@ -4999,8 +4963,6 @@ FS_CONTENT_DLL_FUNC double setProperties(treenode view);
 
 FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
 
-FS_CONTENT_DLL_FUNC treenode getStateProfile(treenode object);
-
 FS_CONTENT_DLL_FUNC treenode refreshStates();
 
 FS_CONTENT_DLL_FUNC virtual treenode onChangeObjectSet();
@@ -5104,6 +5066,8 @@ TreeNode* node_v_yaxistitle;
 
 // c++ member functions
 
+FS_CONTENT_DLL_FUNC virtual double onReset();
+
 FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
 
 FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
@@ -5137,6 +5101,8 @@ FS_CONTENT_DLL_FUNC double initializeData(treenode view);
 FS_CONTENT_DLL_FUNC double updateData(treenode view);
 
 FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newNode);
+
+FS_CONTENT_DLL_FUNC treenode addMember(treenode object, const Variant& stat);
 
 
 // System
@@ -5327,7 +5293,7 @@ FS_CONTENT_DLL_FUNC double resetVariables();
 
 FS_CONTENT_DLL_FUNC virtual double generateItem(double curitemtype, const string& itemname, double rownumber);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
 
 FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
 
@@ -5505,6 +5471,8 @@ FS_CONTENT_DLL_FUNC virtual double releaseProcessOperators( treenode item);
 FS_CONTENT_DLL_FUNC virtual double processorEvents(double code, treenode involved, char * datastr);
 
 FS_CONTENT_DLL_FUNC virtual double updateLocations();
+
+FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
@@ -5708,7 +5676,7 @@ FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datas
 
 FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
 
 FS_CONTENT_DLL_FUNC double resetVariables();
 
@@ -7047,8 +7015,6 @@ TreeNode* node_v_lastupdatetime;
 #define v_lastupdatetime node_v_lastupdatetime->safedatafloat()[0]
 TreeNode* node_v_entrytrigger;
 TreeNode* node_v_arrivaltrigger;
-TreeNode* node_v_drawsize;
-#define v_drawsize node_v_drawsize->safedatafloat()[0]
 TreeNode* node_v_clicked;
 #define v_clicked node_v_clicked->safedatafloat()[0]
 TreeNode* node_v_sideoffset;
@@ -7192,7 +7158,7 @@ Mesh mesh;
 
 Mesh arrowMesh;
 
-int meshCheckSum;
+double meshCheckSum;
 
 NodeListArray<NetNodeEdge>::CouplingSdtSubNodeType edges;
 
@@ -8069,6 +8035,8 @@ TreeNode* node_v_outputwidth;
 #define v_outputwidth node_v_outputwidth->safedatafloat()[0]
 TreeNode* node_v_centerlineoffset;
 #define v_centerlineoffset node_v_centerlineoffset->safedatafloat()[0]
+TreeNode* node_v_stats;
+#define v_stats node_v_stats->safedatafloat()[0]
 TreeNode* node_v_sidewallheight;
 #define v_sidewallheight node_v_sidewallheight->safedatafloat()[0]
 TreeNode* node_v_legheight;
@@ -8127,8 +8095,6 @@ TreeNode* node_v_conveyorcontent;
 #define v_conveyorcontent node_v_conveyorcontent->safedatafloat()[0]
 TreeNode* node_v_conveyorinfo;
 #define v_conveyorinfo node_v_conveyorinfo->safedatafloat()[0]
-TreeNode* node_v_stats;
-#define v_stats node_v_stats->safedatafloat()[0]
 TreeNode* node_v_lowmarktrigger;
 TreeNode* node_v_midmarktrigger;
 TreeNode* node_v_highmarktrigger;

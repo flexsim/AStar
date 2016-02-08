@@ -31,7 +31,7 @@
       <ComponentRef Id="comp_DD4D094F678F4049A71E098DDFBA1B8C" />
       <ComponentRef Id="comp_5C38210AD23446E190165C28BE68CD85" />
     </ComponentGroup>
-    <DirectoryRef Id="INSTALLDIR">
+    <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_A176FC447D6648E183B977CAB8113C08" Name="bitmaps">
 <!--Program GUIDs>
 <FlexSim="2A1D0470-0704-48A7-A0E3-58AEDFE26978">

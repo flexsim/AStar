@@ -52,7 +52,7 @@
       <ComponentRef Id="comp_8AD887E521614EBFB72C69DFC08FE3E9" />
       <ComponentRef Id="comp_E0EEA57B1CFC4673B58DCE444414BAC3" />
     </ComponentGroup>
-    <DirectoryRef Id="INSTALLDIR">
+    <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_566993C68F0047A888C8E7ECB02D078D" Name="help">
 <!--Program GUIDs>
 <FlexSim="88D6D7CD-B9C4-440B-85D8-BAC5AC93C316">

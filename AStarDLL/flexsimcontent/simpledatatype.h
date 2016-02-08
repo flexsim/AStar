@@ -50,6 +50,7 @@ private:
 protected:
 
 public:
+	virtual CouplingDataType* toCoupling() { return nullptr; }
 	engine_export static void appendToDisplayStr(const char* text);
 	static void appendToDisplayStr(double val) { 
 		char buffer[100]; 
@@ -482,7 +483,7 @@ template<class ObjType>
 		{
 			std::string str;
 			if (objectexists(*x))
-				str = nodetomodelpath(*x, 2);
+				str = nodetomodelpath(*x, 1);
 			else if(*x == 0)
 				str = "NULL";
 			else str = "[Invalid Ptr]";
@@ -504,7 +505,7 @@ template<class ObjType>
 		{
 			std::string str;
 			if (objectexists(*x))
-				str = nodetomodelpath(*x, 2);
+				str = nodetomodelpath(*x, 1);
 			else if (!(*x))
 				str = "NULL";
 			else str = "[Invalid Ptr]";
@@ -901,9 +902,9 @@ template<class ObjType>
 	static const int STAT_TYPE_LEVEL = 0x1; // the default, level stats change by delta
 	static const int STAT_TYPE_INCREMENTAL = 0x2; // input, output can only be incremented; max, min, and avg are pointless
 	static const int STAT_TYPE_STREAM = 0x3; // staytime is a stream of unrelated values; current value is less important
+	static const int STAT_TYPE_DISCRETE = 0x4; // discrete is a set of discrete values that don't relate mathematically, i.e. state
 
 	static const int STAT_RELAYED = 0x100;
-	static const int STAT_TIME_WEIGHTED = 0x200;
 	static const int STAT_NOT_EVENT = 0x400;
 
 	static const int STAT_REQUIREMENTS = 0x30000; // the mask around all requirments flags
@@ -950,20 +951,20 @@ template<class ObjType>
 
 		StatisticBindingEntry() : flags(0), resolver(nullptr), node(nullptr)
 		{}
-		StatisticBindingEntry(SimpleDataType* sdt, const char* nodeName, TreeNode*& node, const char* statName, int flags, StatNodeResolver1 resolver)
-			: node(&node)
-			, flags(flags | s_bindStatFlags)
-			, resolver(resolver)
+		StatisticBindingEntry(SimpleDataType* sdt, const char* _nodeName, TreeNode*& _node, const char* _statName, int _flags, StatNodeResolver1 _resolver)
+			: node(&_node)
+			, flags(_flags | s_bindStatFlags)
+			, resolver(_resolver)
 		{
-			if (nodeName)
-				this->nodeName.write(nodeName);
+			if (_nodeName)
+				nodeName.write(_nodeName);
 
-			if (statName)
-				this->statName.write(statName);
+			if (_statName)
+				statName.write(_statName);
 
 			if (flags & STAT_REQUIREMENTS)
 				node = nullptr;
-			nodeByteOffset = (char*)(void*)(&node) - (char*)(void*)sdt;
+			nodeByteOffset = (char*)(void*)(&_node) - (char*)(void*)sdt;
 		}
 	};
 
@@ -1022,6 +1023,20 @@ template<class ObjType>
 	TrackedVariable* tv = node->objectAs(TrackedVariable);\
 	tv->set(tv->getCurrent() + delta); }
 #define UPDATE_SDT_STAT_INCREMENTAL(node) UPDATE_SDT_STAT_DELTA(node, 1)
+#define RESET_SDT_STAT(node, ...) if (node) {node->objectAs(TrackedVariable)->reset(__VA_ARGS__);}
+
+	/// <summary>	Sets the SDT's primary value. </summary>
+	/// <remarks>	 This is used to allow a user to use
+	/// 			setlabel() or some other mechanism to set the value on a node. Child 
+	/// 			classes should override this if they want setlabel() to set a value on 
+	/// 			the node without removing/adding new data.</remarks>
+	/// <param name="val">	The value. </param>
+	/// <returns>	true if it succeeds, false if it cannot set its primary value to the given value. </returns>
+	virtual bool setPrimaryValue(const Variant& val) { return false; }
+	virtual Variant getPrimaryValue() { 
+		VariantParams params;
+		return evaluate(params);
+	}
 
 	private:
 	/// <summary>	Makes sure that the enumeration is properly filled. </summary>
@@ -1046,6 +1061,7 @@ template<class ObjType>
 	static Variant s_requirement2;
 	static int s_enumerateReqsResult;
 	TreeNode* getStatisticNode(const char* nodeName, int flags, bool assert);
+
 	//@}
 };
 
@@ -1104,6 +1120,7 @@ public:
 	engine_export virtual void bind() override;
 	ObjRef<SimpleDataType> object;
 	int selected = -1;
+	bool isSelectionValid() { return selected >= 0 && selected < statistics.size(); }
 	void* virtualTable = nullptr;
 	ByteBlock selectedStatisticTitle;
 	/// <summary>	Selects the given statsitic. This can be used in conjunction with SimpleDataType::assertStatistic(StatisticBinding*, ...). 
@@ -1196,35 +1213,63 @@ public:
 ///				and provide methods to get the current, min, max, and avg. </remarks>
 class TrackedVariable : public SimpleDataType
 {
-	friend SimpleDataType* engine_createsdtderivative(char* classname, TreeNode* holder);
+private:
 
+	static const int HISTORY_FIELD_TIME = 0;
+	static const int HISTORY_FIELD_VALUE = 1;
+	void assertHistory();
+	void resetHistory();
+	void deassertHistory();
+	void deassertProfile();
+	TrackedVariable();
+	double curValue;
 public:
 	engine_export virtual const char* getClassFactory() override { return "TrackedVariable"; }
 	engine_export virtual void bind() override;
 	engine_export virtual char* toString(int verbose) override;
 
-	treenode data;
-	double isTimeWeighted;
-	double fullHistory;
+	treenode history = nullptr;
+	int type = SimpleDataType::STAT_TYPE_LEVEL;
 	double cumulative;
 	double cumulativeTime;
 	double minValue;
 	double maxValue;
 	double numEntries;
+	double lastSetTime;
+	treenode profile = nullptr;
 	treenode onChange = nullptr;
 
 	engine_export virtual void reset();
 	engine_export virtual void reset(double value);
+	engine_export virtual void reset(double value, int type);
 	engine_export virtual void set(double value);
 	engine_export virtual void bindEvents() override;
+	engine_export virtual void bindStatistics() override;
 
 	engine_export double getAvg();
 	engine_export double getMin();
 	engine_export double getMax();
 	engine_export double getCurrent();
 	engine_export double getCount();
+	engine_export double getTotalTimeAt(const Variant& state);
+	Variant getTotalTimeAt(FLEXSIMINTERFACE);
+	static const int PROFILE_FIELD_NAME = 0;
+	static const int PROFILE_FIELD_TIME = 1;
+	static const int PROFILE_FIELD_ACTIVE = 2;
+	engine_export void assertProfile(int toStateRank, TreeNode* guide, bool persist);
+	engine_export bool hasProfile(int toStateRank);
 
-	engine_export TrackedVariable();
+	engine_export virtual bool setPrimaryValue(const Variant& val) override;
+	virtual Variant getPrimaryValue() override { return curValue; }
+	virtual Variant evaluate(const VariantParams& params) override { return curValue; }
+
+	engine_export static TrackedVariable* create();
+	engine_export void addSubscriber(bool needsHistory, bool needsProfile, bool persist);
+	Variant addSubscriber(FLEXSIMINTERFACE);
+private:
+	void countDownSubscribers();
 	engine_export ~TrackedVariable() {}
+	int needsHistoryCountDown = 0;
+	int needsProfileCountDown = 0;
 };
 

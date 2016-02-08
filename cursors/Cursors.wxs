@@ -27,7 +27,7 @@
       <ComponentRef Id="comp_C82608410D1D4A1D988DDA13240FFA14" />
       <ComponentRef Id="comp_EB62955DB0274573A2155A9309CAC80E" />
     </ComponentGroup>
-    <DirectoryRef Id="INSTALLDIR">
+    <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_DE6E5CC9103849C6858D6AB4125EF93C" Name="cursors">
 <!--Program GUIDs>
 <FlexSim="C18B0BD4-3E79-4405-86D5-ADD00366A2A5">
