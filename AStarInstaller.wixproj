@@ -54,7 +54,7 @@
   </PropertyGroup>
   <Import Project="$(WixTargetsPath)" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(ProjectDir)$(OutDir)AStar.msm" "$(ProjectDir)../../wix/bin/AStar.msm"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(ProjectDir)$(OutDir)AStar.msm" "$(ProjectDir)../../wix/AStar.msm"</PostBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
