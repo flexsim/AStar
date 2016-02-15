@@ -900,9 +900,13 @@ template<class ObjType>
 	// that functionality
 	static const int STAT_TYPE_MASK = 0x7;
 	static const int STAT_TYPE_LEVEL = 0x1; // the default, level stats change by delta
-	static const int STAT_TYPE_INCREMENTAL = 0x2; // input, output can only be incremented; max, min, and avg are pointless
-	static const int STAT_TYPE_STREAM = 0x3; // staytime is a stream of unrelated values; current value is less important
-	static const int STAT_TYPE_DISCRETE = 0x4; // discrete is a set of discrete values that don't relate mathematically, i.e. state
+	static const int STAT_TYPE_CUMULATIVE = 0x2; // input, output can only be incremented; max, min, and avg are pointless
+	static const int STAT_TYPE_TIME_SERIES = 0x3; // staytime is a stream of unrelated values; current value is less important
+	static const int STAT_TYPE_CATEGORICAL = 0x4; // discrete is a set of discrete values that don't relate mathematically, i.e. state
+
+	static const int STAT_USE_HISTORY = 0x10;
+	static const int STAT_USE_PROFILE = 0x20;
+	static const int STAT_IGNORE_WARMUP = 0x40;
 
 	static const int STAT_RELAYED = 0x100;
 	static const int STAT_NOT_EVENT = 0x400;
@@ -1022,7 +1026,7 @@ template<class ObjType>
 #define UPDATE_SDT_STAT_DELTA(node, delta) if (node) {\
 	TrackedVariable* tv = node->objectAs(TrackedVariable);\
 	tv->set(tv->getCurrent() + delta); }
-#define UPDATE_SDT_STAT_INCREMENTAL(node) UPDATE_SDT_STAT_DELTA(node, 1)
+#define UPDATE_SDT_STAT_CUMULATIVE(node) UPDATE_SDT_STAT_DELTA(node, 1)
 #define RESET_SDT_STAT(node, ...) if (node) {node->objectAs(TrackedVariable)->reset(__VA_ARGS__);}
 
 	/// <summary>	Sets the SDT's primary value. </summary>
@@ -1224,6 +1228,7 @@ private:
 	TrackedVariable();
 	double curValue;
 public:
+
 	engine_export virtual const char* getClassFactory() override { return "TrackedVariable"; }
 	engine_export virtual void bind() override;
 	engine_export virtual char* toString(int verbose) override;
@@ -1238,6 +1243,7 @@ public:
 	double lastSetTime;
 	treenode profile = nullptr;
 	treenode onChange = nullptr;
+	double flags = 0;
 
 	engine_export virtual void reset();
 	engine_export virtual void reset(double value);

@@ -1850,9 +1850,9 @@
 
 #define STAT_TYPE_MASK 0x7
 #define STAT_TYPE_LEVEL 0x1 
-#define STAT_TYPE_INCREMENTAL 0x2
-#define STAT_TYPE_STREAM 0x3
-#define STAT_TYPE_DISCRETE 0x4
+#define STAT_TYPE_CUMULATIVE 0x2
+#define STAT_TYPE_TIME_SERIES 0x3
+#define STAT_TYPE_CATEGORICAL 0x4
 
 #define STAT_RELAYED 0x100
 #define STAT_TIME_WEIGHTED 0x200
@@ -1871,6 +1871,17 @@
 #define STAT_ENUM_REQS_INVALID 0
 #define STAT_ENUM_REQS_STATIC 1
 #define STAT_ENUM_REQS_DYNAMIC 2
+
+#define STAT_USE_HISTORY 0x10
+#define STAT_USE_PROFILE 0x20
+#define STAT_IGNORE_WARMUP 0x40
+
+#define XL_DATETIME 1
+#define FS_DATETIME 2
+#define MODEL_TIME 3
+#define DATE_STR 4
+#define TIME_STR 5
+#define DATETIME_STR 6
 
 
 // Include Header
@@ -5585,6 +5596,8 @@ FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
 
 // c++ attributes
 bool blockRecursiveReceive;
+
+bool internalMove;
 
 
 // System

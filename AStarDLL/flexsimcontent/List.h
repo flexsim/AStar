@@ -285,7 +285,7 @@ public:
 			EntryRange& range, bool getEntryNodes, double& fulfillQty, double maxFulfillQty, EntryRange* innerRange = nullptr);
 
 		Variant push(const VariantParams& params);
-		PushResult matchEntriesToBackOrders(EntryRange range);
+		PushResult matchEntriesToBackOrders(EntryRange& range);
 		engine_export virtual Variant getEntryValue(int entryIndex, int fieldId);
 
 		Entry* addEntry(Entry* entry, const VariantParams& params);
@@ -398,12 +398,27 @@ public:
 		const Variant& p7 = Variant(), const Variant& p8 = Variant());
 
 private:
+	int lastPushMarker;
 	ListSqlDataSource* processQuery(const char* sqlQuery, int flags, TreeNode* parsedContainer, bool isBackOrderQuery);
 	inline Variant pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, const Variant& partitionID, int flags);
 	inline Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, const Variant& partitionID, int flags);
 	Variant pullBackOrders(const char* sqlQuery, double requestNum, const Variant& value, const Variant& partitionID, int flags);
 	Variant pullBackOrders(TreeNode* cachedQuery, double requestNum, const Variant& value, const Variant& partitionID, int flags);
 public:
+	/// <summary>	Gets the last push marker. </summary>
+	/// <remarks>	This returns the index relating to the list content BEFORE the last push was performed. This is 
+	/// 			similar to getting the content of the relevant partition before pushing, and then comparing it 
+	/// 			to the content after the push (to see if all pushed values were fulfilled or not), 
+	/// 			except that if there are back orders that are pulling all-or-nothing, the push may fulfill other 
+	/// 			entries without completely fulfilling the
+	/// 			value(s) that were pushed, in which case recording the content before is invalid because entries 
+	/// 			ranked before the pushed entries were removed as part of the push. getLastPushMarker() resolves this
+	/// 			because it gives you an accurate dividing point between the existing entries and the newly pushed 
+	/// 			entries (it is updated properly if entries before the dividing point are fulfilled as part of the push).  
+	/// 			Thus, if after a push, getLastPushMarker() is less than the content of the partition, that means there
+	/// 			are pushed entries that have not been completely fulfilled.</remarks>
+	/// <returns>	The last push marker. </returns>
+	engine_export int getLastPushMarker() { return lastPushMarker; }
 	engine_export Variant pull(const char* sqlQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
 	engine_export Variant pull(TreeNode* cachedQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
 

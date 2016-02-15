@@ -58,7 +58,8 @@ inline int moveobject(treenode client, treenode destination, int port, int recei
 inline treenode label(treenode obj, int labelrank){return rank(labels(obj), labelrank);}
 inline treenode addlabel(treenode obj, string labelname, double value = 0){return addlabel_importedfunction(obj, (char*)labelname.c_str(), value);}
 inline treenode addlabel(treenode obj, string labelname, string value){treenode label = addlabel_importedfunction(obj, (char*)labelname.c_str(), 0);nodeadddata(label, DATA_BYTEBLOCK);sets(label, value);return label;}
-inline treenode label(treenode object, string labelname){string path = concat("/",labelname); return node((char*)(path.c_str()), labels(object));}
+visible treenode label(treenode object, const char* labelname);
+inline treenode label(treenode object, string labelname){return label(object, labelname.c_str());}
 inline double getlabelnum(treenode object, int labelrank){return get(rank(labels(object), labelrank));}
 inline double getlabelnum(treenode object, string labelname){string path = concat("/",labelname); return getnodenum(node((char*)(path.c_str()), labels(object)));}
 inline string getlabelstr(treenode object, int labelrank){return gets(rank(labels(object), labelrank));}
@@ -768,6 +769,7 @@ engine_export treenode globallist(const char* listName);
 engine_export treenode globallist(int listRank);
 engine_export double drawobject(treenode windownode, int shape, int texture, int animation = 0);
 engine_export Variant getmodelunit(int querytype);
+engine_export Variant convert(const Variant& value, const Variant& from, const Variant& to);
 
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 __declspec(dllimport) void sql_buildquery(TreeNode* queryNode, char* query, SqlDataSource* d);
