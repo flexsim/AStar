@@ -8,7 +8,7 @@
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040400000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000403f0000</data></node>
     <node f="42" dt="2"><name>after</name><data>dynamo</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -120,6 +120,7 @@ treenode view = param(1);
          <node f="42" dt="2"><name>sdt::attributetree</name><data>TrackedVariable</data>
           <node f="40"><name></name></node>
           <node f="42" dt="1"><name>type</name><data>0000000040080000</data></node>
+          <node f="42" dt="1"><name>flags</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>curValue</name><data>0000000000000000</data></node>
          </node>
         </node>
@@ -179,20 +180,6 @@ treenode view = param(1);
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/LibraryIconGrid/GroupIconGrid&gt;variables/visibilityLists/base/list</data>
-   <node f="40"><name></name></node>
-   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
-    <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040140000</data></node>
-    <node f="42" dt="2"><name>after</name><data>Travel Networks</data></node>
-    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
-    <node f="42"><name>data</name>
-     <node f="40"><name></name></node>
-     <node f="42" dt="2"><name>AStar</name><data>VIEW:/modules/AStar/LibraryGroup</data>
-      <node f="40"><name></name></node></node>
-    </node>
-   </node>
-  </node>
   <node f="42" dt="2"><name>add</name><data>MAIN:/project/exec/globals/editmodes</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
@@ -206,7 +193,7 @@ treenode view = param(1);
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~4/1/data/AStar/LibraryGroup/Preferred Path</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Preferred Path</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -2711,6 +2698,24 @@ inserttask(ts,TASKTYPE_TRAVEL,outobject(current, port),NULL);
 inserttask(ts,TASKTYPE_FRUNLOAD,item,outobject(current,port),opipno(current,port));
 dispatchtasksequence(ts);
 return 0;</data></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/LibraryIconGrid/GroupIconGrid&gt;variables/visibilityLists/base/list</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040180000</data></node>
+    <node f="42" dt="2"><name>after</name><data>Visual</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42" dt="4"><name>AStar</name><data>
+      <node f="40"><name></name></node>
+      <node f="42" dt="2"><name>viewfocus</name><data>VIEW:/modules/AStar/LibraryGroup</data></node>
+      <node f="42" dt="1"><name>picturealignleft</name><data>0000000040360000</data></node>
+      <node f="42" dt="1"><name>expanded</name><data>0000000000000000</data></node>
+     </data></node>
     </node>
    </node>
   </node>
