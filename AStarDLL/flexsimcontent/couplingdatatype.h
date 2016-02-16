@@ -28,6 +28,8 @@ public:
 	const NodeRef& partner() const { return *thePartner; }
 	engine_export virtual char* toString(int verbose) override; 
 	virtual Variant evaluate(const VariantParams& params) override { return partner().get(); }
+	virtual Variant getPrimaryValue() override { return partner().get(); }
+	virtual CouplingDataType* toCoupling() override { return this; }
 
 	union {
 		size_t partnerserialnumber;

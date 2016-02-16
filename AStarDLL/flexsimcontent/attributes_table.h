@@ -1,6 +1,6 @@
 
 
-// COPYRIGHT © 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
+// COPYRIGHT 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
 
 
 // view spatial 
@@ -23,14 +23,7 @@ DECLARE_ATTRIBUTE(0,viewbackgroundcolor,"Contains red, green and blue nodes spec
 DECLARE_ATTRIBUTE(0,viewconnectioncolor,"Contains red, green and blue nodes specifying connection color")
 DECLARE_ATTRIBUTE(0,viewlabelcolor,"Contains red, green and blue nodes specifying label color")
 
-DECLARE_ATTRIBUTE(0,viewlights,"Containe for view lights nodes")
-DECLARE_ATTRIBUTE(0,viewlightx,"Light position x")
-DECLARE_ATTRIBUTE(0,viewlighty,"Light position ys")
-DECLARE_ATTRIBUTE(0,viewlightz,"Light position zs")
-DECLARE_ATTRIBUTE(0,viewlightr,"Light red color component")
-DECLARE_ATTRIBUTE(0,viewlightg,"Light green color component")
-DECLARE_ATTRIBUTE(0,viewlightb,"Light blue color component")
-DECLARE_ATTRIBUTE(0,viewlightaspos,"Light as directional or point: 0=directional 1=point")
+DECLARE_ATTRIBUTE(0,viewlights,"Container for view lights nodes")
 
 DECLARE_ATTRIBUTE(1,gridlinewidth,"Grid line wdth")
 DECLARE_ATTRIBUTE(1,gridlinecolor,"Grid line color")
@@ -204,5 +197,5 @@ DECLARE_ATTRIBUTE(0,title,"Descriptive title")
 
 DECLARE_ATTRIBUTE(0,packedmedia,"contains used media files")
 
-// COPYRIGHT © 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
+// COPYRIGHT 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
 

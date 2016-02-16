@@ -55,8 +55,15 @@ public:
 		friend class ListViewDataSource;
 	public:
 		engine_export virtual void bind() override;
+		engine_export virtual void bindStatistics() override;
+		engine_export void bindEvents() override { bindStatisticsAsEvents(); }
+		void reset(List* list);
 		double isDynamic;
 		double staticIndex;
+		bool shouldTrackTotal(List* list) { return !isDynamic && list->trackStaticFieldTotals; }
+		TreeNode* total = nullptr;
+		TreeNode* totalInput = nullptr;
+		TreeNode* totalOutput = nullptr;
 		virtual Variant evaluateOnAdd(Entry* entry, const VariantParams& params) { return Variant(); }
 		virtual Variant evaluateOnQuery(Entry* entry, const Variant& requester) { return Variant(); }
 		virtual bool needsPuller() { return false; }
@@ -87,6 +94,13 @@ public:
 		virtual Variant evaluateOnAdd(Entry* entry, const VariantParams& params) override;
 	};
 
+	struct OverflowTrackableValue
+	{
+		TreeNode* labelNode = nullptr;
+		Variant* varRef = nullptr;
+		Field* fieldRef = nullptr;
+	};
+
 	class Partition;
 	class ListSqlDataSource : public SqlDataSource
 	{
@@ -102,7 +116,7 @@ public:
 		virtual Variant getValue(int tableId, int row, int colId) override;
 		virtual int getTableId(const char* tableName) override;
 		virtual int getRowCount(int tableId) override;
-		virtual void getOverflowTrackableValue(int row, int colId, TreeNode** outLabelNode, Variant** outVarRef);
+		virtual OverflowTrackableValue getOverflowTrackableValue(int row, int colId);
 
 		TreeNode* curPuller = 0;
 		List* list;
@@ -168,7 +182,7 @@ public:
 		Fulfillment checkFulfill(EntryRange& range);
 		virtual int getRowCount(int tableId) override;
 		virtual Variant getValue(int tableId, int row, int colId) override;
-		virtual void getOverflowTrackableValue(int row, int colId, TreeNode** outLabelNode, Variant** outVarRef) override;
+		virtual OverflowTrackableValue getOverflowTrackableValue(int row, int colId) override;
 		TreeNode* onFulfill = nullptr;
 		virtual void bindEvents() override;
 		Variant value;
@@ -184,11 +198,13 @@ public:
 		int numResults = 0;
 		Variant getResult();
 		void addToResult(const Variant& puller);
-	};	
+	};
 
 	typedef NodeListArray<Entry>::CouplingSdtSubNodeType EntryList;
 
 	NodeListArray<Field>::SdtSubNodeType fields;
+	double numTrackingFields;
+	double trackStaticFieldTotals;
 	NodeListArray<Entry>::CouplingSdtSubNodeType removedEntries;
 	TreeNode* contentsOnReset;
 
@@ -246,7 +262,7 @@ public:
 
 		Variant pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, int flags);
 		Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, int flags);
-		double calculateFulfillQty(int queryMatchIndex, SqlQuery* q, TreeNode** outLabelRef, Variant** outVarRef);
+		double calculateFulfillQty(int queryMatchIndex, SqlQuery* q, OverflowTrackableValue* tracker);
 		/// <summary>	Gets the result from the last pull query. </summary>
 		/// <remarks>	Returns either a scalar value or an array, depending on what the query is. Also,
 		/// 			this will remove the entries that are fulfilled. </remarks>
@@ -269,7 +285,7 @@ public:
 			EntryRange& range, bool getEntryNodes, double& fulfillQty, double maxFulfillQty, EntryRange* innerRange = nullptr);
 
 		Variant push(const VariantParams& params);
-		PushResult matchEntriesToBackOrders(EntryRange range);
+		PushResult matchEntriesToBackOrders(EntryRange& range);
 		engine_export virtual Variant getEntryValue(int entryIndex, int fieldId);
 
 		Entry* addEntry(Entry* entry, const VariantParams& params);
@@ -368,6 +384,8 @@ public:
 	engine_export TreeNode* getPartitionNode(const Variant& partitionID);
 	engine_export TreeNode* partitionResolver(const Variant& partitionID);
 	engine_export int getPartitionPossibilities(TreeNode* dest, const Variant& p1, const Variant& p2);
+	engine_export TreeNode* fieldResolver(const Variant& fieldID);
+	engine_export int getFieldPossibilities(TreeNode* dest, const Variant& p1, const Variant& p2);
 	engine_export virtual void onReset();
 	engine_export virtual int getFieldId(const char* fieldName);
 	engine_export virtual const char* enumerateColNames(int colNum);
@@ -380,12 +398,27 @@ public:
 		const Variant& p7 = Variant(), const Variant& p8 = Variant());
 
 private:
+	int lastPushMarker;
 	ListSqlDataSource* processQuery(const char* sqlQuery, int flags, TreeNode* parsedContainer, bool isBackOrderQuery);
 	inline Variant pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, const Variant& partitionID, int flags);
 	inline Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, const Variant& partitionID, int flags);
 	Variant pullBackOrders(const char* sqlQuery, double requestNum, const Variant& value, const Variant& partitionID, int flags);
 	Variant pullBackOrders(TreeNode* cachedQuery, double requestNum, const Variant& value, const Variant& partitionID, int flags);
 public:
+	/// <summary>	Gets the last push marker. </summary>
+	/// <remarks>	This returns the index relating to the list content BEFORE the last push was performed. This is 
+	/// 			similar to getting the content of the relevant partition before pushing, and then comparing it 
+	/// 			to the content after the push (to see if all pushed values were fulfilled or not), 
+	/// 			except that if there are back orders that are pulling all-or-nothing, the push may fulfill other 
+	/// 			entries without completely fulfilling the
+	/// 			value(s) that were pushed, in which case recording the content before is invalid because entries 
+	/// 			ranked before the pushed entries were removed as part of the push. getLastPushMarker() resolves this
+	/// 			because it gives you an accurate dividing point between the existing entries and the newly pushed 
+	/// 			entries (it is updated properly if entries before the dividing point are fulfilled as part of the push).  
+	/// 			Thus, if after a push, getLastPushMarker() is less than the content of the partition, that means there
+	/// 			are pushed entries that have not been completely fulfilled.</remarks>
+	/// <returns>	The last push marker. </returns>
+	engine_export int getLastPushMarker() { return lastPushMarker; }
 	engine_export Variant pull(const char* sqlQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
 	engine_export Variant pull(TreeNode* cachedQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
 
