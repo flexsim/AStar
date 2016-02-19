@@ -10,7 +10,6 @@ This class is the base class for an AStar barrier object.
 
 struct AStarNode;
 struct AStarNodeExtraData;
-class Mesh;
 
 class Barrier :
 	public SimpleDataType
