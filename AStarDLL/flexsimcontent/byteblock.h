@@ -12,6 +12,8 @@
 	#include "msxml3.h"
 #endif
 
+namespace FlexSim 
+{
 
 class ByteBlock
 { 
@@ -107,7 +109,7 @@ public:
 		void showErrorMsg(const char* msg);
 	#endif
 };
-#pragma pack()//restore packing to its default value
+}
 
 # endif
 

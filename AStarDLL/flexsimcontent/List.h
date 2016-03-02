@@ -7,7 +7,8 @@
 #include "flexsimevent.h"
 #include <unordered_map>
 
-
+namespace FlexSim
+{
 class List : public ObjectDataType
 {
 	friend SimpleDataType* engine_createsdtderivative(char* classname, TreeNode* holder);
@@ -31,7 +32,7 @@ public:
 	class Entry : public CouplingDataType
 	{
 		friend class List;
-		friend class ListViewDataSource;
+		friend class ::ListViewDataSource;
 	public:
 		Entry(size_t numFields, const Variant& value);
 		Entry() {}
@@ -52,7 +53,7 @@ public:
 	class Field : public SimpleDataType
 	{
 		friend class List;
-		friend class ListViewDataSource;
+		friend class ::ListViewDataSource;
 	public:
 		engine_export virtual void bind() override;
 		engine_export virtual void bindStatistics() override;
@@ -109,12 +110,13 @@ public:
 		ListSqlDataSource(List* list) : list(list) {}
 		virtual const char* getClassFactory() override { return "ListSqlDataSource"; }
 		virtual void bind() override;
-		virtual int getColId(int tableId, const char* colName) override;
+		virtual int getColID(int tableId, const char* colName, int& flags) override;
 		void reset();
 		void onModelReset();
 		virtual const char* enumerateColNames(int tableId, int colNum) override;
 		virtual Variant getValue(int tableId, int row, int colId) override;
-		virtual int getTableId(const char* tableName) override;
+		virtual bool setValue(int tableId, int row, int colId, const Variant& toValue) override;
+		virtual int getTableID(const char* tableName) override;
 		virtual int getRowCount(int tableId) override;
 		virtual OverflowTrackableValue getOverflowTrackableValue(int row, int colId);
 
@@ -136,7 +138,7 @@ public:
 		ListBackOrderSqlDataSource(List* list) : ListSqlDataSource(list) {}
 		virtual const char* getClassFactory() override { return "ListBackOrderSqlDataSource"; }
 		virtual void bind() override;
-		virtual int getColId(int tableId, const char* colName) override;
+		virtual int getColID(int tableId, const char* colName, int& flags) override;
 		virtual Variant getValue(int tableId, int row, int colId) override;
 		virtual int getRowCount(int tableId) override;
 		int curEntryRow = 0;
@@ -261,7 +263,7 @@ public:
 		virtual const char* getClassFactory() override { return "ListPartition"; }
 
 		Variant pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, int flags);
-		Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, int flags);
+		Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, int flags, EntryRange* range = nullptr);
 		double calculateFulfillQty(int queryMatchIndex, SqlQuery* q, OverflowTrackableValue* tracker);
 		/// <summary>	Gets the result from the last pull query. </summary>
 		/// <remarks>	Returns either a scalar value or an array, depending on what the query is. Also,
@@ -436,10 +438,10 @@ public:
 			FlexSimEvent(nullptr, 0.0, nullptr, (int)eventCode, nullptr) {}
 		BackOrderListenerEvent(List* list, Entry* entry, double eventCode, bool isEventQueueEvent) : 
 			list(list), listenerType(BackOrderListener::VALUE_BASED), isEventQueueEvent(isEventQueueEvent),
-			FlexSimEvent(isEventQueueEvent ? list->holder : nullptr, isEventQueueEvent ? ::time() : 0.0, entry->holder, (int)eventCode, nullptr) {}
+			FlexSimEvent(isEventQueueEvent ? list->holder : nullptr, isEventQueueEvent ? ::FlexSim::time() : 0.0, entry->holder, (int)eventCode, nullptr) {}
 		BackOrderListenerEvent(List* list, BackOrder* backOrder, double eventCode, bool isEventQueueEvent): 
 			list(list), listenerType(BackOrderListener::PULLER_BASED), isEventQueueEvent(isEventQueueEvent),
-			FlexSimEvent(isEventQueueEvent ? list->holder : nullptr, isEventQueueEvent ? ::time() : 0.0, backOrder->holder, (int)eventCode, nullptr) {}
+			FlexSimEvent(isEventQueueEvent ? list->holder : nullptr, isEventQueueEvent ? ::FlexSim::time() : 0.0, backOrder->holder, (int)eventCode, nullptr) {}
 		BackOrderListenerEvent(List* list, double time, BackOrderListener* timeIntervalListener): 
 			list(list),	listenerType(BackOrderListener::TIME_INTERVAL), timeIntervalListener(timeIntervalListener), 
 			FlexSimEvent(list->holder, time, nullptr, 0, nullptr), isEventQueueEvent(false) {}
@@ -504,6 +506,7 @@ public:
 };
 
 #ifdef FLEXSIM_ENGINE_COMPILE
+
 engine_export Variant listpush(const char* listName, const Variant& involved);
 engine_export Variant listpush(treenode list, const Variant& involved);
 engine_export Variant listpush(const char* listName, const Variant& involved, const Variant& partitionID, const Variant& p1, const Variant& p2,
@@ -522,4 +525,7 @@ engine_export Variant listpull(const char* listName, const char* query, double r
 
 engine_export void listremove(TreeNode* entryOrBackOrderNode);
 
+
 #endif
+
+}

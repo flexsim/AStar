@@ -4,7 +4,6 @@
 #include "basicmacros.h"
 #include "basicclasses.h"
 #include "datatypes.h"
-class TreeNode;
 
 #if defined FLEXSIM_ENGINE_COMPILE || defined COMPILING_MODULE_DLL || defined COMPILING_FLEXSIM_CONTENT
 #define FULL_TREENODE_DEF
@@ -17,9 +16,11 @@ class TreeNode;
 	#include <list>
 	#define IN_TREENODE_H
 	#include "treenodemacros.h"
-	visible int validlink(TreeNode *, char *);
+	visible int validlink(FlexSim::TreeNode *, char *);
 	#define VALIDLINKFAST(x) (x!=&TreeNode::failSafeLink && !IsBadReadPtr(x,sizeof(TreeNode)) && x->checkParity())
 #endif
+
+namespace FlexSim {
 
 class TreeNode
 {
@@ -166,6 +167,7 @@ private:
 };
 #pragma pack()
 
+}
 
 #ifdef FLEXSIM_ENGINE_COMPILE
 	#undef IN_TREENODE_H

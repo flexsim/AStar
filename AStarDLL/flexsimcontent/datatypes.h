@@ -14,17 +14,19 @@
 
 #endif
 
-class TreeNode;
-class CallPoint;
 namespace Compiler {
 	struct AbstractSyntaxTree;
 	struct CompilerHelpers;
 	struct ASTDeclareLocalVar;
 	struct ClassInfo;
 }
-extern int cpt(const char* );
-extern int cpd(int );
+extern int cpt(const char*);
+extern int cpd(int);
 extern int cpr();
+
+namespace FlexSim
+{
+
 enum class VariantType : unsigned char
 {
 	Null = 0,
@@ -59,10 +61,10 @@ class FlexSimPrivateTypes
 {
 	template <class, VariantType>
 	friend class FlexSimArray;
-	friend class Variant;
-	friend class TreeNode;
-	friend class SimpleDataType;
-	friend class NodeRef;
+	friend class ::FlexSim::Variant;
+	friend class ::FlexSim::TreeNode;
+	friend class ::FlexSim::SimpleDataType;
+	friend class ::FlexSim::NodeRef;
 	friend struct Compiler::AbstractSyntaxTree;
 	friend struct Compiler::CompilerHelpers;
 	friend struct Compiler::ASTDeclareLocalVar;
@@ -88,7 +90,7 @@ public:
 		void operator delete (void* p) { flexsimfree(p); }
 		void operator delete [](void* p) { flexsimfree(p); }
 	};
-private:
+public:
 	// union member classes: a method to get around Visual Studio's non-compliance with
 	// c++11: declare a super-class that has all the same data but no constructors, and 
 	// use that super class as the member of the union, then down-cast as needed to get
@@ -878,6 +880,25 @@ public:
 	{
 		::new (&asStringArray()) stringarray(val);
 	}
+
+	engine_export class Hash
+	{
+	public:
+		size_t operator() (const Variant& pullerKey);
+	};
+
+	engine_export class KeyEqual
+	{
+	public:
+		typedef Variant value_type;
+		bool operator() (const Variant& a, const Variant& b);
+	};
+	engine_export class Less
+	{
+	public:
+		typedef Variant value_type;
+		bool operator() (const Variant& a, const Variant& b) { return a < b;};
+	};
 private:
 	Variant(const char* val, unsigned char flags) : type(VariantType::String), flags(flags), reserved(0)
 	{
@@ -1603,6 +1624,201 @@ private:
 };
 
 
+class VariantLValue {
+	enum {
+		None,
+		AsVariant,
+		AsDouble,
+		AsInt,
+		AsString,
+		AsTreeNode,
+		AsNodeRef,
+		AsFSString
+	} type;
+	union {
+		Variant* asVariant;
+		double* asDouble;
+		int* asInt;
+		std::string* asString;
+		FlexSimPrivateTypes::String* asFSString;
+		TreeNode** asTreeNode;
+		NodeRef* asNodeRef;
+	};
+public:
+	VariantLValue() : type(None), asVariant(nullptr) {}
+	VariantLValue(VariantLValue& other) : type(other.type), asVariant(other.asVariant) {}
+	VariantLValue(Variant& v) : type(AsVariant), asVariant(&v) {}
+	VariantLValue(double& val) : type(AsDouble), asDouble(&val) {}
+	VariantLValue(int& val) : type(AsInt), asInt(&val) {}
+	VariantLValue(std::string& val) : type(AsString), asString(&val) {}
+	VariantLValue(FlexSimPrivateTypes::String& val) : type(AsFSString), asFSString(&val) {}
+	VariantLValue(TreeNode*& val) : type(AsTreeNode), asTreeNode(&val) {}
+	VariantLValue(NodeRef& val) : type(AsNodeRef), asNodeRef(&val) {}
+
+	operator ::FlexSim::Variant() const
+	{
+		switch (type) {
+			case AsVariant: return *asVariant;
+			case AsDouble: return *asDouble;
+			case AsInt: return *asInt;
+			case AsString: return *asString;
+			case AsFSString: return *asFSString;
+			case AsTreeNode: return *asTreeNode;
+			case AsNodeRef: return (TreeNode*)*asNodeRef;
+		}
+		return ::FlexSim::Variant();
+	}
+
+	#define DEFINE_LVAL_NUMBER_CAST_OP(ToType) \
+	operator ToType() const \
+	{ \
+		switch (type) { \
+			case AsVariant: return (ToType)*asVariant; \
+			case AsDouble: return (ToType)*asDouble; \
+			case AsInt: return (ToType)*asInt; \
+		} \
+		return (ToType)0; \
+	}
+
+	DEFINE_LVAL_NUMBER_CAST_OP(double)
+	DEFINE_LVAL_NUMBER_CAST_OP(int)
+	DEFINE_LVAL_NUMBER_CAST_OP(size_t)
+	DEFINE_LVAL_NUMBER_CAST_OP(short)
+
+	operator std::string() const
+	{
+		switch (type) {
+			case AsVariant: return (std::string)*asVariant;
+			case AsString: return *asString;
+			case AsFSString: return *asFSString;
+		}
+		return "";
+	}
+	operator TreeNode*() const
+	{
+		switch (type) {
+			case AsTreeNode: return *asTreeNode;
+			case AsNodeRef: return *asNodeRef;
+		}
+		return nullptr;
+	}
+
+	VariantLValue& operator = (double toVal)
+	{
+		switch (type) {
+			case AsVariant: *asVariant = toVal; break;
+			case AsDouble: *asDouble = (double)toVal; break;
+			case AsInt: *asInt = (int)toVal; break;
+		}
+		return *this;
+	}
+	VariantLValue& operator = (int toVal)
+	{
+		switch (type) {
+			case AsVariant: *asVariant = toVal; break;
+			case AsDouble: *asDouble = (double)toVal; break;
+			case AsInt: *asInt = (int)toVal; break;
+		}
+		return *this;
+	}
+	VariantLValue& operator = (std::string& toVal)
+	{
+		switch (type) {
+			case AsVariant: *asVariant = toVal; break;
+			case AsString: *asString = toVal; break;
+			case AsFSString: *asFSString = toVal; break;
+		}
+		return *this;
+	}
+	VariantLValue& operator = (FlexSimPrivateTypes::String& toVal)
+	{
+		switch (type) {
+			case AsVariant: *asVariant = toVal; break;
+			case AsString: *asString = toVal; break;
+			case AsFSString: *asFSString = toVal; break;
+		}
+		return *this;
+	}
+	VariantLValue& operator = (TreeNode* toVal)
+	{
+		switch (type) {
+			case AsVariant: *asVariant = toVal; break;
+			case AsTreeNode: *asTreeNode = toVal; break;
+			case AsNodeRef: *asTreeNode = toVal; break;
+		}
+		return *this;
+	}
+	VariantLValue& operator = (NodeRef& toVal)
+	{
+		switch (type) {
+			case AsVariant: *asVariant = toVal; break;
+			case AsTreeNode: *asTreeNode = toVal; break;
+			case AsNodeRef: *asTreeNode = toVal; break;
+		}
+		return *this;
+	}
+
+};
+
+/*
+inline Variant Variant::operator [](int index)
+{
+	switch (type) {
+		case VariantType::StringArray: return asStringArray()[index];
+		case VariantType::IntArray: return asIntArray()[index];
+		case VariantType::DoubleArray: return asDoubleArray()[index];
+		case VariantType::TreeNodeArray: return asTreeNodeArray()[index];
+		default: return *this;
+	}
+}
+
+
+Variant::Variant(const VariantLValue& other)
+{
+	::new (this) Variant(other.operator Variant());
+}
+*/
+
+#define DEFINE_LVAL_EQUAL_COMPARISONS_LEFT(PassedClass, ConvertToClass) \
+inline bool operator == (PassedClass left, const VariantLValue& right) { return left == (ConvertToClass)right; } \
+inline bool operator != (PassedClass left, const VariantLValue& right) { return left != (ConvertToClass)right; } 
+
+#define DEFINE_LVAL_EQUAL_COMPARISONS_RIGHT(PassedClass, ConvertToClass) \
+inline bool operator == (const VariantLValue& left, PassedClass right) { return (ConvertToClass)left == right; } \
+inline bool operator != (const VariantLValue& left, PassedClass right) { return (ConvertToClass)left != right; } 
+
+
+#define DEFINE_LVAL_EQUAL_COMPARISONS(PassedClass, ConvertToClass) \
+DEFINE_LVAL_EQUAL_COMPARISONS_LEFT(PassedClass, ConvertToClass) \
+DEFINE_LVAL_EQUAL_COMPARISONS_RIGHT(PassedClass, ConvertToClass) 
+
+#define DEFINE_LVAL_COMPARISONS_LEFT(PassedClass, ConvertToClass) \
+DEFINE_LVAL_EQUAL_COMPARISONS_LEFT(PassedClass, ConvertToClass) \
+inline bool operator > (PassedClass left, const VariantLValue& right) { return left > (ConvertToClass)right; } \
+inline bool operator >= (PassedClass left, const VariantLValue& right) { return left >= (ConvertToClass)right; } \
+inline bool operator < (PassedClass left, const VariantLValue& right) { return left < (ConvertToClass)right; } \
+inline bool operator <= (PassedClass left, const VariantLValue& right) { return left <= (ConvertToClass)right; } 
+
+#define DEFINE_LVAL_COMPARISONS_RIGHT(PassedClass, ConvertToClass) \
+DEFINE_LVAL_EQUAL_COMPARISONS_RIGHT(PassedClass, ConvertToClass) \
+inline bool operator > (const VariantLValue& left, PassedClass right) { return (ConvertToClass)left > right; } \
+inline bool operator >= (const VariantLValue& left, PassedClass right) { return (ConvertToClass)left >= right; } \
+inline bool operator < (const VariantLValue& left, PassedClass right) { return (ConvertToClass)left < right; } \
+inline bool operator <= (const VariantLValue& left, PassedClass right) { return (ConvertToClass)left <= right; } 
+
+#define DEFINE_LVAL_COMPARISONS(PassedClass, ConvertToClass) \
+DEFINE_LVAL_COMPARISONS_LEFT(PassedClass, ConvertToClass) \
+DEFINE_LVAL_COMPARISONS_RIGHT(PassedClass, ConvertToClass) 
+
+DEFINE_LVAL_COMPARISONS(const Variant&, Variant)
+DEFINE_LVAL_COMPARISONS(double, double)
+DEFINE_LVAL_COMPARISONS(int, int)
+DEFINE_LVAL_EQUAL_COMPARISONS(std::string, std::string)
+DEFINE_LVAL_EQUAL_COMPARISONS(TreeNode*, TreeNode*)
+DEFINE_LVAL_EQUAL_COMPARISONS(const NodeRef&, TreeNode*)
+DEFINE_LVAL_COMPARISONS_LEFT(const VariantLValue&, Variant)
+
+
 #ifdef FLEXSIM_ENGINE_COMPILE
 #undef flexsimmalloc
 #undef flexsimfree
@@ -2064,3 +2280,9 @@ struct portinfo
 	short portopen;
 	short metaopen;
 };
+
+}
+
+#ifndef NO_AUTO_USE_FLEXSIM_NAMESPACE
+using namespace FlexSim;
+#endif

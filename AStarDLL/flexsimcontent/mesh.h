@@ -7,6 +7,8 @@
 	#include <fstream>
 #endif
 
+namespace FlexSim {
+
 /// <summary>	A class encapsulating data and functionality for drawing geometry in OpenGL.</summary>
 /// <remarks>	The mesh class, and its accompanying mesh api in flexscript, replace the old immediate-mode
 /// 			OpenGL rendering using glBegin() and glEnd(). To use the mesh class you initialize the mesh
@@ -475,6 +477,7 @@ public:
 	void instancedDrawRenderMode(int drawMode, int instanceOffset, int numInstances, int instanceStride);
 };
 
+
 #define MESH_PER_VERTEX_ATTRIBS 1
 #define MESH_PER_MESH_ATTRIBS 2
 #define MESH_FLAGS 3
@@ -494,5 +497,6 @@ void meshsetattrib_flexscript(treenode meshnode, unsigned int attribId, double p
 visible void meshdraw(treenode meshnode, int drawMode, int offset, int count, int stride = 0);
 visible int meshaddindex(treenode meshnode, unsigned int index);
 visible double meshinfo(treenode meshnode, unsigned int type, unsigned int index=0, unsigned int param=0);
-
 #endif
+
+}

@@ -1,6 +1,7 @@
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
 
+namespace FlexSim {
 template< class elementtype>
 class HashTable
 {
@@ -388,5 +389,5 @@ public:
 			return ismember(key, &temp);
 		}
 };
-
+}
 #endif

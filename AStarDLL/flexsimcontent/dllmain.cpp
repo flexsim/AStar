@@ -47,6 +47,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #define DECLARATIONTYPE FLEXSIM_DEFINITION_PHASE 
 #include "FlexsimFuncs.h"
 
+namespace FlexSim {
 
 int bindflexsimfunctions()
 {
@@ -88,4 +89,6 @@ int bindflexsimfunctions()
 #else
 	return true;
 #endif
+}
+
 }

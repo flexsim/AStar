@@ -4,6 +4,8 @@
 #include "couplingdatatype.h"
 #include "treenode.h"
 
+namespace FlexSim {
+
 class FlexSimEvent : public CouplingDataType
 {
 	public:
@@ -92,5 +94,7 @@ public:
 	engine_export virtual void execute() override;
 	engine_export static bool isRuleMetForInitialValue(ChangeRule changeRule, double changeValue, double initialValue);
 };
+
+}
 
 #endif

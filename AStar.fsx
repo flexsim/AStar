@@ -8,7 +8,7 @@
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040400000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000403f0000</data></node>
     <node f="42" dt="2"><name>after</name><data>dynamo</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -120,6 +120,7 @@ treenode view = param(1);
          <node f="42" dt="2"><name>sdt::attributetree</name><data>TrackedVariable</data>
           <node f="40"><name></name></node>
           <node f="42" dt="1"><name>type</name><data>0000000040080000</data></node>
+          <node f="42" dt="1"><name>flags</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>curValue</name><data>0000000000000000</data></node>
          </node>
         </node>

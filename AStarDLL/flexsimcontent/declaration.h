@@ -24,6 +24,8 @@ THE SOFTWARE.
 #ifndef DECLARATION_H
 #define DECLARATION_H
 
+namespace FlexSim {
+
 int bindflexsimfunctions();
 
 // The following are special types of definition. Add your own special function definitions
@@ -192,7 +194,7 @@ inline TreeNode* tonode(const Variant& x) { return Variant::interpretLegacyDoubl
 inline double tonum(double x) {return x;}
 inline double tonum(treenode x) {return ptrtodouble((void*)x);}
 inline double tonum(char* x) {return ptrtodouble((void*)x);}
-inline double tonum(std::string& x) {return ptrtodouble((void*)x.c_str());}
+inline double tonum(std::string& x) { return ptrtodouble((void*)x.c_str()); }
 inline string stringcopy(string str1, int start, int len)
 {
   char *buffer=new char[len+5];
@@ -574,10 +576,12 @@ inline double draginfo(int op, double val = 0){return draginfoalias(op, val);}
 inline char* stringtoken(char* token, char* delimit){return stringtokenalias(token, delimit);}
 inline char* stringtoken(char* token, string delimit){return stringtokenalias(token, (char*)delimit.c_str());}
 inline char* stringtoken(string token, string delimit){return stringtokenalias((char*)token.c_str(), (char*)delimit.c_str());}
-#if _MSC_VER < 1800
-inline double round(double n1){return roundalias1(n1);}
-#endif
 inline double round(double n1, int precision){return roundalias2(n1, precision);}
+#if _MSC_VER < 1800
+inline double round(double n1) { return roundalia1(n1); }
+#else
+using std::round;
+#endif
 
 inline double clientconnect(int skt, string hostname, int port){return clientconnectalias(skt, (char*)hostname.c_str(), port);}
 inline double clientconnect(int skt, char* hostname, int port){return clientconnectalias(skt, hostname, port);}
@@ -621,8 +625,8 @@ inline int stringsearch(char* str, char* substr, int startpos, int flags){return
 inline int stringsearch(string& str, string& substr, int startpos){return stringsearchalias1((char*)str.c_str(), (char*)substr.c_str(), startpos);}
 inline int stringsearch(string& str, string& substr, int startpos, int flags){return stringsearchalias2((char*)str.c_str(), (char*)substr.c_str(), startpos, flags);}
 inline double runspeed(double n1, double n2 = 0){return runspeedalias(n1,n2);}
-inline int fabs(int val){return (int)fabs((double)val);}
-inline int isclasstype(treenode obj, int classtype){return isclasstypealias1(obj, classtype);}
+inline int fabs(int val){return (int)std::fabs((double)val);}
+inline int isclasstype(treenode obj, int classtype) { return isclasstypealias1(obj, classtype); }
 inline int isclasstype(treenode obj, char* classtype){return isclasstypealias2(obj, classtype);}
 inline int setstate(treenode obj, int statenr){return setstatealias1(obj, statenr);}
 inline int setstate(treenode obj, int statenr, int profilenr){return setstatealias2(obj, statenr, profilenr);}
@@ -821,5 +825,9 @@ engine_export int excelrangewrite(treenode source, int row, int col, unsigned ch
 engine_export treenode trackedvariable(const char* listName);
 inline treenode trackedvariable(const std::string& str) { return trackedvariable(str.c_str()); }
 engine_export treenode inittrackedvariable(treenode theNode, int type, double startValue, int useHistory, int useProfile);
+
+visible double rotationproject(treenode originSpace, double rx, double ry, double rz, treenode ontoSpace, double* rotationsOut);
+
+}
 
 #endif

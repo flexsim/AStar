@@ -12,6 +12,8 @@
 #include "basicutils.h"
 #include "simpledatatype.h"
 
+namespace FlexSim {
+
 class CouplingDataType : public SimpleDataType
 {
 private:
@@ -51,6 +53,7 @@ public:
 		void pointerizeXML(TreeNode* topNode);
 	#endif
 };
+}
 
 // COPYRIGHT 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
 

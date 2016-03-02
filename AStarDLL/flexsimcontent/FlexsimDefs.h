@@ -54,6 +54,7 @@ using std::string;
 	#define mpr(x) _mpr(x)
 	#define mpf(x) _mpf(x)
 #else
+namespace FlexSim {
 	class TreeNode;
 	typedef TreeNode* treenode;
 	class ByteBlock;
@@ -73,7 +74,7 @@ using std::string;
 			return (double)(size_t)x;
 		}
 	#endif
-
+}
 #endif
 
 #include "datatypes.h"
@@ -81,7 +82,6 @@ using std::string;
 #ifndef FLEXSIM_TARGET_VERSION
 	#define FLEXSIM_TARGET_VERSION 9900
 #endif
-#define tonum(x) (ptrtodouble(x))
 
 // direct c++ parval
 #define stringreturn(str) _stringreturn(str, callPoint)
@@ -122,24 +122,6 @@ typedef Variant (*FSfptr)(CallPoint*);
 
 	#define visible extern "C" __declspec(dllexport)
 	typedef char* (*customdisplayfunction)(treenode, int);
-
-	struct MoveRecord
-	{
-		unsigned int RecordID;
-		unsigned int ItemID;
-		double Time;
-		treenode Origin;
-		treenode Destination;
-		double ItemType;
-	};
-
-	struct StateRecord
-	{
-		unsigned int RecordID;
-		double Time;
-		unsigned char State;
-		treenode Object;
-	};
 
 	#define mpt _mpt
 	#define mpd _mpd
@@ -743,12 +725,12 @@ typedef Variant (*FSfptr)(CallPoint*);
 	#define nullvar Variant()
 
 	#if !defined COMPILING_FLEXSIM_CONTENT && !defined COMPILING_MODULE_DLL
+	namespace FlexSim {
 		extern void* (*flexsimmalloc) (size_t);
 		extern void(*flexsimfree) (void*);
-		#include "basicmacros.h"
+	}
+	#include "basicmacros.h"
 	#endif
-
-	#include "datatypes.h"
 
 	#define DECLARATIONTYPE FLEXSIM_DECLARATION_PHASE
 	#include "FlexsimFuncs.h"
