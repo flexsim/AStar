@@ -4,22 +4,24 @@
 #ifndef objectdatatype_h
 #define objectdatatype_h
 
-//class TreeNode; 
-
 #include "byteblock.h"
 #include "treenode.h"
 #include "hashtable.h"
 #include "simpledatatype.h"
 #define ODT ObjectDataType
 
-#define CLASS_NAME_SEPARATOR ':'
-
-class ObjectDataType;
-class portcache;
-
 #ifdef FLEXSIM_ENGINE_COMPILE
 #include "glm.h"
 #endif
+
+#define CLASS_NAME_SEPARATOR ':'
+
+class portcache;
+
+namespace FlexSim {
+
+class ObjectDataType;
+
 
 class SplineCache
 {
@@ -247,18 +249,19 @@ public:
 	engine_export virtual TreeNode* getEventInfoObject(const char* eventTitle) override;
 };
 
-int bindattributestree(ObjectDataType *, TreeNode * client);
 
 // declare the list of allocator functions: one per attribute
 
 
+}
+
 #define ODT_SETMEMBERFUNC_H(v,ODTMEMBERPREFIX) \
-int odtsetmemberfunction##ODTMEMBERPREFIX##v(ObjectDataType * D,  TreeNode * P);
-    
+int odtsetmemberfunction##ODTMEMBERPREFIX##v(FlexSim::ObjectDataType * D,  FlexSim::TreeNode * P);
 #define DECLARE_ATTRIBUTE(ATTRIBUTE_DEFAULT,ATTRIBUTE_NAME, ...) ODT_SETMEMBERFUNC_H(ATTRIBUTE_NAME,b_)
 #include "attributes.h"
 #undef DECLARE_ATTRIBUTE
 
+int bindattributestree(ObjectDataType *, TreeNode * client);
 
 
 #endif

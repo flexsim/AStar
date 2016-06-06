@@ -1,18 +1,42 @@
 #pragma once
+
+namespace FlexSim {
 class TreeNode;
 typedef TreeNode* treenode;
 class ByteBlock;
 class CouplingDataType;
-class AviPlayer;
 class CallPoint;
-class Kinematic;
 class FlexSimEvent;
-class EventDataStruct;
-class TreeWin;
 class ObjectDataType;
 class SimpleDataType;
+class TrackedVariable;
 class EventBinding;
 class StatisticBinding;
+class Mesh;
+class IndexedMesh;
+class NodeRef;
+template<class ObjType> class ObjRef;
+class Bundle;
+template<class ElementType> class FlexSimCVector;
+template<class ElementType> class HashTable;
+class SqlDataSource;
+class SqlQuery;
+class Variant;
+class VariantParams;
+class VariantLValue;
+class List;
+typedef char* (*customdisplayfunction)(TreeNode*, int);
+class SplineCache;
+class TableViewDataSource;
+class BundleViewDataSource;
+class ListViewDataSource;
+class UndoRecord;
+}
+
+class AviPlayer;
+class Kinematic;
+class EventDataStruct;
+class TreeWin;
 class ScenePositionCache;
 class PortDrawCache;
 class Cuboid;
@@ -20,24 +44,12 @@ class FRECT;
 class ViewPoint;
 class VisualFeatureTag;
 class VisualFeatureTagList;
-class UndoRecord;
 class PortRecord;
 class SplinePoint;
-class SplineCache;
 class FlexSimWebBrowser;
 class ExperimentChildManager;
-typedef char* (*customdisplayfunction)(TreeNode*, int);
 class ConsoleWin;
-template<class ElementType> class FlexSimCVector;
-template<class ElementType> class HashTable;
-class NodeRef;
-template<class ObjType> class ObjRef;
-class Bundle;
 class UserWindowStyle;
-class Mesh;
-class IndexedMesh;
-class SqlDataSource;
-class SqlQuery;
 class FlexScriptCode;
 class CppCode;
 namespace Compiler {
@@ -48,18 +60,18 @@ namespace Compiler {
 	struct ClassInfo;
 	struct FlexScriptLambda;
 };
-class Variant;
-class VariantParams;
 class TableView;
-class TableViewDataSource;
-class BundleViewDataSource;
-class List;
+
 
 #pragma push_macro("engine_export")
 #ifdef FLEXSIM_ENGINE_COMPILE
 #define engine_export __declspec(dllexport)
 #else
 #define engine_export __declspec(dllimport)
+#endif
+
+#ifndef NO_AUTO_USE_FLEXSIM_NAMESPACE
+using namespace FlexSim;
 #endif
 
 extern "C" engine_export void* flexsimmalloc(size_t);

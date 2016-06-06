@@ -1,18 +1,19 @@
 #pragma once
+#include <unordered_map>
 #include "basicclasses.h"
 #include "basicmacros.h"
 #include "datatypes.h"
 #include "basicutils.h"
-
 // if i'm compiling the engine then I don't yet have access
 // to some of the commands I need, so include the right files
 #ifdef FLEXSIM_ENGINE_COMPILE
-	extern "C" __declspec(dllexport) char* bbgetbuffer(treenode x);
-	extern "C" __declspec(dllexport) int bbsetsize(treenode x, int size);
-	extern "C" __declspec(dllexport) int bbgetsize(treenode x);
 	#include "commandlist.h"
 	#include "modelling.h"
+	extern "C" __declspec(dllexport) char* bbgetbuffer(FlexSim::treenode x);
+	extern "C" __declspec(dllexport) int bbsetsize(FlexSim::treenode x, int size);
+	extern "C" __declspec(dllexport) int bbgetsize(FlexSim::treenode x);
 #endif
+namespace FlexSim {
 
 #define SDT_BIND_NONE 0
 #define SDT_BIND_ON_LOAD 1
@@ -51,6 +52,7 @@ protected:
 
 public:
 	virtual CouplingDataType* toCoupling() { return nullptr; }
+	virtual TrackedVariable* toTrackedVariable() { return nullptr; }
 	engine_export static void appendToDisplayStr(const char* text);
 	static void appendToDisplayStr(double val) { 
 		char buffer[100]; 
@@ -138,7 +140,7 @@ template<class ObjType>
 		case SDT_BIND_ON_DISPLAY: {
 			char tempStr[1000];
 			if (((double)(int)val) != ((double)val)) {
-				double absVal = fabs((double)val);
+				double absVal = std::fabs((double)val);
 				if (absVal < 1000000000000.0 && absVal > 0.00001)
 					sprintf(tempStr, "%s: %f%s", name, (double)val, isDisplayVerbose() ? "\r\n" : ", ");
 				else sprintf(tempStr, "%s: %e%s", name, (double)val, isDisplayVerbose() ? "\r\n" : ", ");
@@ -973,13 +975,13 @@ template<class ObjType>
 	};
 
 	private:
-	engine_export void bindStatisticByNameEx(const char* nodeName, TreeNode*& node, const char* statName, int flags = 0, StatNodeResolver1 resolver = nullptr);
+	engine_export void bindStatisticByNameEx(const char* nodeName, TreeNode*& node, const char* statName, int flags = 0, StatNodeResolver1 resolver = nullptr, StatRequirementEnumerator enumerator = nullptr);
 	engine_export void bindRelayedClassStatisticsEx(const char* prefix, int flags, StatNodeResolver1 resolver, StatRequirementEnumerator enumerator, SimpleDataType* sdt);
 	public:
-	template <class ResolverCallbackType = nullptr_t>
-	void bindStatisticByName(const char* nodeName, TreeNode*& node, const char* statName, int flags = 0, ResolverCallbackType resolver = nullptr)
+	template <class ResolverCallbackType = nullptr_t, class EnumeratorCallbackType = nullptr_t>
+	void bindStatisticByName(const char* nodeName, TreeNode*& node, const char* statName, int flags = 0, ResolverCallbackType resolver = nullptr, EnumeratorCallbackType enumerator = nullptr)
 	{
-		bindStatisticByNameEx(nodeName, node, statName, flags, force_cast<StatNodeResolver1>(resolver));
+		bindStatisticByNameEx(nodeName, node, statName, flags, force_cast<StatNodeResolver1>(resolver), force_cast<StatRequirementEnumerator>(enumerator));
 	}
 	#define bindStatistic(name, ...) \
 		bindStatisticByName(#name, name, #name, __VA_ARGS__);
@@ -1155,7 +1157,7 @@ public:
 class SqlDataSource : public SimpleDataType
 {
 
-/// <summary>	A macro that defines if a column as not found. Returned by the SqlDataSource::getColId() if it cannot find that column.</summary>
+/// <summary>	A macro that defines if a column as not found. Returned by the SqlDataSource::getColID() if it cannot find that column.</summary>
 #define SQL_COL_NOT_FOUND INT_MAX
 /// <summary>	"Not found" table is one that it tried to resolve but couldn't. </summary>
 #define SQL_TABLE_NOT_FOUND (INT_MAX - 2)
@@ -1172,12 +1174,16 @@ public:
 	/// <returns>	true if it can resolve references at parse time, false if not. </returns>
 	virtual bool canResolveRefsAtParseTime() {return true;}
 
-	/// <summary>	Returns the column identifier of the column with the defined name in the defined table. </summary>
+	static const int COL_INDEXED = 0x1; // tells the execution engine that the data source has an quick lookup index for values.
+	static const int COL_DYNAMIC = 0x2; // signal to the sql execution engine that it should perhaps be cached because it may change on each execution
+	/// <summary>	Returns the column identifier of the column with the defined name in the defined
+	/// 			table. </summary>
 	/// <remarks>	Anthony, 8/27/2014. </remarks>
-	/// <param name="tableId">	Identifier for the table. </param>
-	/// <param name="colName">	Name of the column. </param>
+	/// <param name="tableId"> 	Identifier for the table. </param>
+	/// <param name="colName"> 	Name of the column. </param>
+	/// <param name="colFlags">	[out] The col flags. </param>
 	/// <returns>	The column identifier. </returns>
-	virtual int getColId(int tableId, const char* colName) { return SQL_COL_NOT_FOUND; }
+	virtual int getColID(int tableId, const char* colName, int& colFlags) { return SQL_COL_NOT_FOUND; }
 
 	/// <summary>	Enumerate column names of a table. </summary>
 	/// <remarks>	Anthony, 8/27/2014. </remarks>
@@ -1197,17 +1203,28 @@ public:
 	/// <returns>	The value. </returns>
 	virtual Variant getValue(int tableId, int row, int colId) {return SQL_NULL;}
 
+	/// <summary>	Sets a value. </summary>
+	/// <remarks>	Anthony.johnson, 2/25/2016. </remarks>
+	/// <param name="tableId">	Identifier for the table. </param>
+	/// <param name="row">	  	The row. </param>
+	/// <param name="colId">  	Identifier for the col. </param>
+	/// <param name="toVal">  	to value. </param>
+	/// <returns>	true if it succeeds, false if it fails. </returns>
+	virtual bool setValue(int tableId, int row, int colId, const Variant& toVal) { return false; }
+
 	/// <summary>	Gets a table's identifier. </summary>
 	/// <remarks>	Anthony, 8/27/2014. </remarks>
 	/// <param name="tableName">	Name of the table. </param>
 	/// <returns>	The table identifier. </returns>
-	virtual int getTableId(const char* tableName) {return 0;}
+	virtual int getTableID(const char* tableName) {return 0;}
 
 	/// <summary>	Returns the number of rows in a table. </summary>
 	/// <remarks>	Anthony, 8/27/2014. </remarks>
 	/// <param name="tableId">	Identifier for the table. </param>
 	/// <returns>	The number of rows in the table. </returns>
-	virtual int getRowCount(int tableId) {return 0;}
+	virtual int getRowCount(int tableID) {return 0;}
+
+	virtual int getNextIndexedRow(int tableID, int colID, const Variant& value, int lastRow = -1) { return -1; }
 
 	virtual const char* getClassFactory() { return "SqlDataSource"; }
 };
@@ -1221,6 +1238,7 @@ private:
 
 	static const int HISTORY_FIELD_TIME = 0;
 	static const int HISTORY_FIELD_VALUE = 1;
+	static bool updateStateMap;
 	void assertHistory();
 	void resetHistory();
 	void deassertHistory();
@@ -1229,6 +1247,7 @@ private:
 	double curValue;
 public:
 
+	virtual TrackedVariable* toTrackedVariable() override { return this; }
 	engine_export virtual const char* getClassFactory() override { return "TrackedVariable"; }
 	engine_export virtual void bind() override;
 	engine_export virtual char* toString(int verbose) override;
@@ -1245,10 +1264,13 @@ public:
 	treenode onChange = nullptr;
 	double flags = 0;
 
+	std::unordered_map<std::string, int> stateMap;
+
 	engine_export virtual void reset();
 	engine_export virtual void reset(double value);
 	engine_export virtual void reset(double value, int type);
 	engine_export virtual void set(double value);
+	engine_export virtual void set(const Variant& value);
 	engine_export virtual void bindEvents() override;
 	engine_export virtual void bindStatistics() override;
 
@@ -1279,3 +1301,4 @@ private:
 	int needsProfileCountDown = 0;
 };
 
+}

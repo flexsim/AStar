@@ -1883,6 +1883,10 @@
 #define TIME_STR 5
 #define DATETIME_STR 6
 
+namespace FlexSim {
+
+}
+
 
 // Include Header
 #include <float.h>
@@ -1890,7 +1894,6 @@
 // The following #defines can be changed to customize the connection controls.
 // The following keys are already in use and should NOT be used here : A, Q, S, W, O, T, N, P, X
 //#include ".\include\eventstruct.h"
-typedef treenode treenode;
 
 #define INOUT_KEY1 'J'
 #define INOUT_KEY2 'U'
@@ -1901,6 +1904,8 @@ typedef treenode treenode;
 #define DEFAULTNULL = 0x0
 #define DEFAULTONE = 1
 #define DEFAULTPARAM(val) = val
+
+namespace FlexSim {
 
 class FlexSimEventHandler;
 
@@ -2628,11 +2633,15 @@ class NetworkTravelMember : public CouplingDataType
 	NodeRef reqNode;
 	int blockingState;
 };
-
 void searchhelpmanual(string searchStr, treenode destNode);
+
+}
+
 
 ;
 
+
+namespace FlexSim {
 
 
 // Global Functions
@@ -3156,6 +3165,10 @@ FS_CONTENT_DLL_FUNC virtual void bindEvents();
 FS_CONTENT_DLL_FUNC virtual void bindStatistics();
 
 FS_CONTENT_DLL_FUNC treenode stateProfileResolver(const Variant& p1);
+
+FS_CONTENT_DLL_FUNC int enumerateLabels(treenode destNode, const Variant& p1, const Variant& p2);
+
+FS_CONTENT_DLL_FUNC treenode resolveLabel(const Variant& p1);
 
 
 // System
@@ -4656,8 +4669,11 @@ TreeNode* node_v_aggregatelisten;
 #define v_aggregatelisten node_v_aggregatelisten->safedatafloat()[0]
 TreeNode* node_v_systemwarmuptime;
 #define v_systemwarmuptime node_v_systemwarmuptime->safedatafloat()[0]
-TreeNode* node_v_timescale;
-#define v_timescale node_v_timescale->safedatafloat()[0]
+TreeNode* node_v_timemultiple;
+#define v_timemultiple node_v_timemultiple->safedatafloat()[0]
+TreeNode* node_v_datamultiple;
+#define v_datamultiple node_v_datamultiple->safedatafloat()[0]
+TreeNode* node_v_datavaluetype;
 TreeNode* node_v_xaxistitle;
 TreeNode* node_v_yaxistitle;
 
@@ -5070,8 +5086,11 @@ TreeNode* node_v_nrbuckets;
 TreeNode* node_v_normalize;
 #define v_normalize node_v_normalize->safedatafloat()[0]
 TreeNode* node_v_colordata;
-TreeNode* node_v_timescale;
-#define v_timescale node_v_timescale->safedatafloat()[0]
+TreeNode* node_v_timemultiple;
+#define v_timemultiple node_v_timemultiple->safedatafloat()[0]
+TreeNode* node_v_datamultiple;
+#define v_datamultiple node_v_datamultiple->safedatafloat()[0]
+TreeNode* node_v_datavaluetype;
 TreeNode* node_v_xaxistitle;
 TreeNode* node_v_yaxistitle;
 
@@ -8354,6 +8373,8 @@ FS_CONTENT_DLL_FUNC virtual void bindVariables();
 
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
+
+}
 
 #endif
 

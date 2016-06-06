@@ -1,4 +1,6 @@
-	
+
+namespace FlexSim {
+
 string unboundFunctions;
 
 void handleunboundfunction()
@@ -33,3 +35,5 @@ void* defaultgetflexsimexportedfunction(char* functionname)
 QueryCallback defQueryCallback([]() -> Variant {return 0;});
 
 #endif
+
+}
