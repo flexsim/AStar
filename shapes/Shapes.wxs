@@ -15,6 +15,8 @@
   <ExtensionExcludes>
     <Ext>.WXS</Ext>
     <Ext>.ORIG</Ext>
+	<Ext>.LOG</Ext>
+	<Ext>.TXT</Ext>
   </ExtensionExcludes>
   <DirExcludes />
   <IncludeFiles />
@@ -27,7 +29,7 @@
     <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_D9E43B6D92F743ECB6336CEC62236199" Name="shapes">
 <!--Program GUIDs>
-<FlexSim="E0F27C7F-9842-422B-8245-F67946CD1D84">
+<FlexSim="59F1DE78-CB28-4400-84D1-C47349BC7F36">
 <FlexSimHC="5EE24498-1596-43DD-8711-3984A46D0B74">
 <FlexSimChinese="D4B1DFD4-9C96-4428-AE1E-647410F4A5EE">
 </Program GUIDs-->
