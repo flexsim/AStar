@@ -722,6 +722,9 @@ the outside 8 nodes.
 #undef CHECK_EXPAND_OPEN_SET_DIAGONAL
 #undef CHECK_EXPAND_OPEN_SET
 
+		// remake the start pointer (totalSet may reallocate due to push_back)
+		start = totalSet.data();
+
 		if (!final)  {
 			final = &(totalSet[closestIndex]);
 		}
