@@ -1,5 +1,7 @@
 #pragma once
+#if defined FLEXSIM_ENGINE_COMPILE || defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 #include "basicclasses.h"
+#endif
 #include "basicmacros.h"
 #include "datatypes.h"
 #include <string>
@@ -7,6 +9,8 @@
 	#include <excpt.h>
 #endif
 
+
+namespace FlexSim {
 #undef COMPARE_NUMBER_TYPES
 #undef COMPARE_NUMBER
 
@@ -343,3 +347,4 @@ void cpp_repeat(int nr, Do doIt)
 
 #endif
 
+}

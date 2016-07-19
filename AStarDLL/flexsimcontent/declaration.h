@@ -255,13 +255,15 @@ inline int avistart(string s, treenode winnode, double fps, double uc){return av
 inline string pdir(){return (string)pdir_cstr();}
 inline string cdir(){return (string)cdir_cstr();}
 inline string modeldir() {return (string)modeldir_cstr();}
+inline string userdatadir() {return (string)userdatadir_cstr();}
 inline string currentfile() {return (string)currentfile_cstr();}
 inline int pt(string s){return pt_importedfunction((char*)s.c_str());}
 inline int fpt(string s){return fpt_importedfunction((char*)s.c_str());}
 inline double excelwritestr(int row, int col, string data){return excelwritestr_importedfunction(row, col, (char*)data.c_str());}
 inline char * filebrowse(string ext, string desc, string path){return filebrowse_importedfunction((char*)ext.c_str(), (char*)desc.c_str(), (char*)path.c_str());}
 inline string getmodelunitstr(int querytype){return (string)getmodelunitstr_cstr(querytype);}
-inline string getstatestr(treenode object){return getname(rank(state_profile(object),(int)getnodenum(state_current(object))));}
+engine_export const char* getstatestr_cstr(treenode object);
+inline string getstatestr(treenode object){return getstatestr_cstr(object);}
 inline string getvarstr(treenode object, char *varname){return getnodestr(var_s(object,varname));}
 inline string getvarstr(treenode object, int varrank){return getnodestr(var(object,varrank));}
 inline double getvarnum(treenode object, char* varname){return getnodenum(var_s(object,varname));}
@@ -549,6 +551,7 @@ inline void logevent(int _eventcode, treenode object = NULL, treenode involved =
 inline void logevent(char * name, treenode object = NULL, treenode involved = NULL, double p1 = 0, double p2 = 0, double p3 = 0, double p4 = 0){logeventalias2(name,object,involved,p1,p2,p3,p4);}
 
 inline double fileopen(char * filename, char * mode = NULL){return fileopenalias(filename, mode);}
+inline string filereadline() {return (string)filereadline_cstr();}
 inline double setviewtext(treenode target, string text){return setviewtextalias(target, (char*) text.c_str());}
 inline double addviewtext(treenode target, string text){return addviewtextalias(target, (char*) text.c_str());}
 inline int dbsqlquery(string query, int flags = 0){return dbsqlqueryalias((char*)query.c_str(), flags);}
@@ -625,6 +628,7 @@ inline int stringsearch(char* str, char* substr, int startpos, int flags){return
 inline int stringsearch(string& str, string& substr, int startpos){return stringsearchalias1((char*)str.c_str(), (char*)substr.c_str(), startpos);}
 inline int stringsearch(string& str, string& substr, int startpos, int flags){return stringsearchalias2((char*)str.c_str(), (char*)substr.c_str(), startpos, flags);}
 inline double runspeed(double n1, double n2 = 0){return runspeedalias(n1,n2);}
+using std::fabs;
 inline int fabs(int val){return (int)std::fabs((double)val);}
 inline int isclasstype(treenode obj, int classtype) { return isclasstypealias1(obj, classtype); }
 inline int isclasstype(treenode obj, char* classtype){return isclasstypealias2(obj, classtype);}
@@ -688,7 +692,6 @@ inline Variant getqueryvalue(int row, const std::string& colName) {return getque
 	inline double   releaseitem(treenode station, int port){return releaseitem_alias2(station,port);}
 	inline double   releaseitem(treenode station){return releaseitem_alias1(station);}
 	inline double   gettreedrawposition(treenode object, treenode roottree, int* cury = NULL, int increment = 0){return gettreedrawpositionalias(object,roottree,cury,increment);}
-	inline double   applicationcommand(string commandname, n10argsdefaultinterface){return applicationcommandalias((char*)(commandname.c_str()), n10args);}
 	inline double   validatename(treenode current, int isview = 0, treenode obj = NULL){return validatenamealias(current,isview,obj);}
 	inline int      insertdeallocatetask(treenode tasksequence, int executerkey, int noblock = 0){return insertdeallocatetaskalias(tasksequence,executerkey,noblock);}
 	inline treenode inserttask(treenode tasksequence,  unsigned int  type, treenode involved1, treenode involved2 , double var1 , double var2 , double var3 , double var4){return inserttaskalias(tasksequence,type,involved1,involved2,var1,var2,var3,var4);}
@@ -824,7 +827,7 @@ engine_export int excelrangewrite(treenode source, int row, int col, unsigned ch
 
 engine_export treenode trackedvariable(const char* listName);
 inline treenode trackedvariable(const std::string& str) { return trackedvariable(str.c_str()); }
-engine_export treenode inittrackedvariable(treenode theNode, int type, double startValue, int useHistory, int useProfile);
+engine_export treenode inittrackedvariable(treenode theNode, int type, double startValue, int flags);
 
 visible double rotationproject(treenode originSpace, double rx, double ry, double rz, treenode ontoSpace, double* rotationsOut);
 

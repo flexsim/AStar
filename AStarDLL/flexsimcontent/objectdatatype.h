@@ -150,8 +150,6 @@ public:
 	TreeNode objecttree;
 
 	ScenePositionCache* sceneCache;
-
-	//int setmemberfunctionpointerarray();
   
 	portcache * theportcache;
 
@@ -251,9 +249,7 @@ public:
 
 
 // declare the list of allocator functions: one per attribute
-
-
-}
+int bindattributestree(ObjectDataType *, TreeNode * client);
 
 #define ODT_SETMEMBERFUNC_H(v,ODTMEMBERPREFIX) \
 int odtsetmemberfunction##ODTMEMBERPREFIX##v(FlexSim::ObjectDataType * D,  FlexSim::TreeNode * P);
@@ -261,7 +257,7 @@ int odtsetmemberfunction##ODTMEMBERPREFIX##v(FlexSim::ObjectDataType * D,  FlexS
 #include "attributes.h"
 #undef DECLARE_ATTRIBUTE
 
-int bindattributestree(ObjectDataType *, TreeNode * client);
+}
 
 
 #endif

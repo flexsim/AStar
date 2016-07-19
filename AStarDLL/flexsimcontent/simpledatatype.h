@@ -735,6 +735,7 @@ template<class ObjType>
 	static const int BIND_EVENT_ASSERT = 2;
 	static const int BIND_EVENT_ON_LOAD = 3;
 	static const int BIND_EVENT_FILL_BINDING_ENTRY = 4;
+	static const int BIND_EVENT_GET_INFO_OBJECT = 5;
 
 	// flags and op codes for flagging extended functionality as well as retrieving data associated with
 	// that functionality
@@ -830,6 +831,7 @@ template<class ObjType>
 		switch (getBindEventMode()) {
 			case BIND_EVENT_ENUMERATE: 
 			case BIND_EVENT_FILL_BINDING_ENTRY:
+			case BIND_EVENT_GET_INFO_OBJECT:
 			{
 				RelayToClass relayToClass;
 				bindRelayedClassEventsEx(prefix, flags, force_cast<EventNodeResolver>(resolver), &relayToClass);
@@ -847,8 +849,10 @@ template<class ObjType>
 	engine_export Variant enumerateEvents(FLEXSIMINTERFACE);
 
 	engine_export TreeNode* assertEvent(const char* eventTitle);
+	static bool s_assertEventCode;
 	engine_export TreeNode* assertEvent(EventBinding* enumeration);
 	engine_export TreeNode* assertEvent(const char* eventTitle, const Variant& p1, const Variant& p2 = Variant(), const Variant& p3 = Variant(), int* outFlags = nullptr);
+	engine_export TreeNode* assertEventWithCode(const char* eventTitle, const Variant& p1 = Variant(), const Variant& p2 = Variant(), const Variant& p3 = Variant(), int* outFlags = nullptr);
 	engine_export TreeNode* assertEvent(EventBinding* enumeration, const Variant& p1, const Variant& p2 = Variant(), const Variant& p3 = Variant());
 	engine_export Variant assertEvent(FLEXSIMINTERFACE);
 	engine_export TreeNode* assertEventNode(const char* eventTitle, TreeNode*& node);
@@ -862,6 +866,7 @@ template<class ObjType>
 #define FIRE_SDT_EVENT(node, ...) if (node) { node->evaluate(__VA_ARGS__); }
 #define FIRE_SDT_EVENT_VALUE_GETTER(node, ...) (node ? node->evaluate(__VA_ARGS__) : Variant())
 #define FIRE_SDT_EVENT_VALUE_CHANGE(node, newValue, oldValue) {if (node && newValue != oldValue) { node->evaluate(newValue, oldValue); }}
+#define FIRE_SDT_EVENT_VALUE_CHANGE_KINETIC(node, newValue, oldValue) {if (node) { node->evaluate(newValue, oldValue); }}
 
 	private:
 	/// <summary>	Makes sure that the enumeration is properly filled. </summary>
@@ -875,8 +880,8 @@ template<class ObjType>
 	double getEventCurValue(EventBindingEntry& entry, const Variant& p1, const Variant& p2, const Variant& p3);
 	static int s_bindEventMode;
 	static EventBinding* s_eventBinding;
-	static const char* s_assertEventTitle;
-	static TreeNode* s_assertedEvent;
+	static const char* s_bindEventTitle;
+	static TreeNode* s_boundEventNode;
 	static EventBindingEntry* s_eventBindingEntry;
 	static std::string s_forwardingPrefix;
 	static EventNodeResolver s_relayedEventResolver;
@@ -905,6 +910,7 @@ template<class ObjType>
 	static const int STAT_TYPE_CUMULATIVE = 0x2; // input, output can only be incremented; max, min, and avg are pointless
 	static const int STAT_TYPE_TIME_SERIES = 0x3; // staytime is a stream of unrelated values; current value is less important
 	static const int STAT_TYPE_CATEGORICAL = 0x4; // discrete is a set of discrete values that don't relate mathematically, i.e. state
+	static const int STAT_TYPE_KINETIC_LEVEL = 0x5; // a "moving" level, i.e. you set it to a level and a rate, and the rate causes it to change.
 
 	static const int STAT_USE_HISTORY = 0x10;
 	static const int STAT_USE_PROFILE = 0x20;
@@ -940,6 +946,7 @@ template<class ObjType>
 	static const int STAT_ENUM_REQS_INVALID = 0;
 	static const int STAT_ENUM_REQS_STATIC = 1;
 	static const int STAT_ENUM_REQS_DYNAMIC = 2;
+	static const int STAT_ENUM_REQS_IGNORED = 3;
 	typedef int(SimpleDataType::*StatRequirementEnumerator) (TreeNode* dest, const Variant& p1, const Variant& p2);
 	
 
@@ -1029,7 +1036,9 @@ template<class ObjType>
 	TrackedVariable* tv = node->objectAs(TrackedVariable);\
 	tv->set(tv->getCurrent() + delta); }
 #define UPDATE_SDT_STAT_CUMULATIVE(node) UPDATE_SDT_STAT_DELTA(node, 1)
+#define UPDATE_SDT_STAT_KINETIC(node, newValue, newRate) if (node) {node->objectAs(TrackedVariable)->set(newValue, newRate);}
 #define RESET_SDT_STAT(node, ...) if (node) {node->objectAs(TrackedVariable)->reset(__VA_ARGS__);}
+#define SET_SDT_STAT_KINETIC_BOUNDS(node, lower, upper) if (node) {node->objectAs(TrackedVariable)->setBounds(lower, upper);}
 
 	/// <summary>	Sets the SDT's primary value. </summary>
 	/// <remarks>	 This is used to allow a user to use
@@ -1226,7 +1235,7 @@ public:
 
 	virtual int getNextIndexedRow(int tableID, int colID, const Variant& value, int lastRow = -1) { return -1; }
 
-	virtual const char* getClassFactory() { return "SqlDataSource"; }
+	virtual const char* getClassFactory() override { return "SqlDataSource"; }
 };
 
 /// <summary>	Defines the TrackedVariable class. </summary>
@@ -1238,7 +1247,6 @@ private:
 
 	static const int HISTORY_FIELD_TIME = 0;
 	static const int HISTORY_FIELD_VALUE = 1;
-	static bool updateStateMap;
 	void assertHistory();
 	void resetHistory();
 	void deassertHistory();
@@ -1263,14 +1271,32 @@ public:
 	treenode profile = nullptr;
 	treenode onChange = nullptr;
 	double flags = 0;
+	double lowerBound = -DBL_MAX;
+	double upperBound = DBL_MAX;
+	double rate = 0.0;
 
-	std::unordered_map<std::string, int> stateMap;
+	bool useCachedTime = false;
+	double cachedTime = 0.0;
 
-	engine_export virtual void reset();
-	engine_export virtual void reset(double value);
-	engine_export virtual void reset(double value, int type);
-	engine_export virtual void set(double value);
-	engine_export virtual void set(const Variant& value);
+	engine_export void reset();
+	engine_export void reset(double value);
+	engine_export void reset(double value, int type);
+	engine_export void set(double value);
+	// TODO: implement proper acc/dec for kinetic levels
+	//engine_export void set(double value, double toRate, double toAcc);
+	engine_export void set(double value, double toRate);
+	engine_export void set(const Variant& value);
+
+	engine_export void setAtTime(double value, double curTime);
+	engine_export void setAtTime(double value, double toRate, double curTime);
+	engine_export void setAtTime(const Variant& value, double curTime);
+
+	engine_export void setBounds(double lower, double upper) { lowerBound = lower; upperBound = upper; }
+private:
+	void updateKineticCumulative(double endUndboundedValue, double timeAtCurrent);
+public:
+
+
 	engine_export virtual void bindEvents() override;
 	engine_export virtual void bindStatistics() override;
 
@@ -1278,6 +1304,17 @@ public:
 	engine_export double getMin();
 	engine_export double getMax();
 	engine_export double getCurrent();
+
+	/// <summary>	Gets the arrival time for a given value, or -1 if never. </summary>
+	/// <remarks>	This is only applicable for kinetic level variables </remarks>
+	/// <param name="atValue">	The target value. </param>
+	/// <returns>	The time that the variable will arrive at the target value, or -1 if never. </returns>
+	engine_export double getArrivalTime(double atValue);
+	engine_export double getCurrentRate();
+
+private:
+	double getCurrentIgnoringBounds();
+public:
 	engine_export double getCount();
 	engine_export double getTotalTimeAt(const Variant& state);
 	Variant getTotalTimeAt(FLEXSIMINTERFACE);
@@ -1288,8 +1325,8 @@ public:
 	engine_export bool hasProfile(int toStateRank);
 
 	engine_export virtual bool setPrimaryValue(const Variant& val) override;
-	virtual Variant getPrimaryValue() override { return curValue; }
-	virtual Variant evaluate(const VariantParams& params) override { return curValue; }
+	virtual Variant getPrimaryValue() override { return getCurrent(); }
+	virtual Variant evaluate(const VariantParams& params) override { return getCurrent(); }
 
 	engine_export static TrackedVariable* create();
 	engine_export void addSubscriber(bool needsHistory, bool needsProfile, bool persist);

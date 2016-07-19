@@ -258,7 +258,7 @@ inline double ptrtodouble(void* x)
 		#define engine_export __declspec(dllexport)
 		#define engine_private public
 	#else
-		#define engine_export
+		#define engine_export __declspec(dllimport)
 		#define engine_private private
 	#endif
 #endif

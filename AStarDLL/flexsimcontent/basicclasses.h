@@ -33,7 +33,7 @@ class ListViewDataSource;
 class UndoRecord;
 }
 
-class AviPlayer;
+//class AviPlayer;
 class Kinematic;
 class EventDataStruct;
 class TreeWin;
@@ -52,14 +52,6 @@ class ConsoleWin;
 class UserWindowStyle;
 class FlexScriptCode;
 class CppCode;
-namespace Compiler {
-	struct ASTNodeVector;
-	struct AbstractSyntaxTree;
-	struct ASTNode;
-	struct CommandInfoStruct;
-	struct ClassInfo;
-	struct FlexScriptLambda;
-};
 class TableView;
 
 

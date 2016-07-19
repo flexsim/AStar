@@ -36,7 +36,8 @@ enum class VariantType : unsigned char
 	IntArray = 4,
 	DoubleArray = 5,
 	TreeNodeArray = 6,
-	StringArray = 7
+	StringArray = 7,
+	Pointer = 8
 };
 
 enum class WarningType : int
@@ -735,6 +736,7 @@ private:
 		// union x86/x64 bytes = 12/24
 		FlexSimPrivateTypes::NodeRefUnionMember asTreeNodeUnionMember; // 12/24 bytes
 		double asNumber; // 8 bytes
+		void* asPointer; // 4/8 bytes
 		FlexSimPrivateTypes::StringUnionMember asStringUnionMember; // 8/16 bytes 
 
 		FlexSimArray<>::IntArrayUnionMember asIntArrayUnionMember; // 4/8 bytes
@@ -796,6 +798,7 @@ public:
 			case VariantType::DoubleArray: ::new (&asDoubleArray()) doublearray(copyFrom.asDoubleArray()); break;
 			case VariantType::TreeNodeArray: ::new (&asTreeNodeArray()) treenodearray(copyFrom.asTreeNodeArray()); break;
 			case VariantType::StringArray: ::new (&asStringArray()) stringarray(copyFrom.asStringArray()); break;
+			case VariantType::Pointer: asPointer = copyFrom.asPointer; break;
 			default: asNumber = 0; break;
 		}
 	}
@@ -825,6 +828,7 @@ public:
 				::new (&asStringArray()) stringarray(std::move(from.asStringArray()));  
 				from.asStringArray().~stringarray(); 
 				break;
+			case VariantType::Pointer: asPointer = from.asPointer; break;
 			default: asNumber = 0; break;
 		}
 		from.type = VariantType::Null;
@@ -842,7 +846,7 @@ public:
 	Variant(__int64 val) :			type(VariantType::Number), asNumber((double)val), flags(0), reserved(0) {}
 	Variant(double val) :			type(VariantType::Number), asNumber((double)val), flags(0), reserved(0) {}
 	Variant(float val) :			type(VariantType::Number), asNumber((double)val), flags(0), reserved(0) {}
-
+	explicit Variant(void* val) :	type(VariantType::Pointer), asPointer(val), flags(0), reserved(0) {}
 
 	Variant(TreeNode* val) : type(VariantType::TreeNode), flags(0), reserved(0) 
 	{
@@ -860,6 +864,7 @@ public:
 	{
 		::new (&asString()) FlexSimPrivateTypes::String(val);
 	}
+	engine_export Variant(const wchar_t * val);
 	Variant(const FlexSimPrivateTypes::String& val) : type(VariantType::String), flags(0), reserved(0)
 	{
 		::new (&asString()) FlexSimPrivateTypes::String(val);
@@ -881,19 +886,19 @@ public:
 		::new (&asStringArray()) stringarray(val);
 	}
 
-	engine_export class Hash
+	class engine_export Hash
 	{
 	public:
 		size_t operator() (const Variant& pullerKey);
 	};
 
-	engine_export class KeyEqual
+	class engine_export KeyEqual
 	{
 	public:
 		typedef Variant value_type;
 		bool operator() (const Variant& a, const Variant& b);
 	};
-	engine_export class Less
+	class engine_export Less
 	{
 	public:
 		typedef Variant value_type;
@@ -907,7 +912,7 @@ private:
 	void cleanup()
 	{
 		switch (type) {
-			case VariantType::Null: case VariantType::Number:
+			case VariantType::Null: case VariantType::Number: case VariantType::Pointer:
 				break;
 			case VariantType::String: 
 				if (!(flags & WEAK_STR))
@@ -965,6 +970,7 @@ public:
 	DEFINE_ASSIGNMENT_OPERATOR(const doublearray&)
 	DEFINE_ASSIGNMENT_OPERATOR(const treenodearray&)
 	DEFINE_ASSIGNMENT_OPERATOR(const stringarray&)
+	DEFINE_ASSIGNMENT_OPERATOR(void*)
 
 #pragma endregion Contains assignment operators for every VariantType and other Variants
 
@@ -1070,6 +1076,13 @@ public:
 			default: return stringarray(0);
 		}
 	}
+	explicit operator void*() const
+	{
+		switch (type) {
+		case VariantType::Pointer: return asPointer;
+		default: return 0;
+		}
+	}
 
 	int size() const
 	{
@@ -1099,6 +1112,7 @@ public:
 		switch (type) {
 		case VariantType::Number: return asNumber != 0.0;
 		case VariantType::TreeNode: return asTreeNode().get() != nullptr;
+		case VariantType::Pointer: return asPointer != nullptr;
 		case VariantType::Null: return false;
 		default: return true;
 		}
@@ -1174,6 +1188,7 @@ public:
 		case VariantType::Number: return asNumber == other.asNumber;
 		case VariantType::String: return strcmp(asString().c_str(), other.asString().c_str()) == 0;
 		case VariantType::TreeNode: return asTreeNode() == other.asTreeNode();
+		case VariantType::Pointer: return asPointer == other.asPointer;
 		//case VariantType::IntArray: return asIntArray().begin() == other.asIntArray().begin();
 		//case VariantType::DoubleArray: return asDoubleArray().begin() == other.asDoubleArray().begin();
 		//case VariantType::StringArray: return asStringArray().begin() == other.asStringArray().begin();
@@ -1204,6 +1219,14 @@ public:
 		if (type == VariantType::Number)
 			return operator int() | other;
 		return 0;
+	}
+	bool operator == (void* other) const
+	{
+		return operator void*() == other;
+	}
+	bool operator != (void* other) const
+	{
+		return operator void*() != other;
 	}
 
 #pragma endregion Variant compared to Variant
@@ -1447,6 +1470,7 @@ public:
 			case VariantType::TreeNodeArray: return asTreeNodeArray().size() > 0 ? ptrtodouble(asTreeNodeArray()[1]) : 0.0;
 			case VariantType::IntArray: return asIntArray().size() > 0 ? asIntArray()[1] : 0.0;
 			case VariantType::StringArray: return asStringArray().size() > 0 ? ptrtodouble((void*)asStringArray()[1].c_str()) : 0.0;
+			case VariantType::Pointer: return (double)(size_t)asPointer;
 			default: return 0;
 		}
 	}
@@ -1457,7 +1481,10 @@ public:
 	const char* getWeakStr() const { return (type == VariantType::String && (flags & WEAK_STR)) ? asString().c_str() : 0; }
 	const char* c_str() const { return (type == VariantType::String) ? asString().c_str() : ""; }
 
-	std::string toString() const;
+private:
+	std::string toStringInternal() const;
+public:
+	engine_export const char* toString() const;
 };
 
 #pragma region number comparisons
@@ -1777,7 +1804,7 @@ Variant::Variant(const VariantLValue& other)
 {
 	::new (this) Variant(other.operator Variant());
 }
-*/
+
 
 #define DEFINE_LVAL_EQUAL_COMPARISONS_LEFT(PassedClass, ConvertToClass) \
 inline bool operator == (PassedClass left, const VariantLValue& right) { return left == (ConvertToClass)right; } \
@@ -1818,6 +1845,7 @@ DEFINE_LVAL_EQUAL_COMPARISONS(TreeNode*, TreeNode*)
 DEFINE_LVAL_EQUAL_COMPARISONS(const NodeRef&, TreeNode*)
 DEFINE_LVAL_COMPARISONS_LEFT(const VariantLValue&, Variant)
 
+*/
 
 #ifdef FLEXSIM_ENGINE_COMPILE
 #undef flexsimmalloc

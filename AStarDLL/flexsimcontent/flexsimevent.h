@@ -89,7 +89,26 @@ public:
 	ChangeRule changeRule;
 	double changeValue;
 	double oldOldValue = 0;
+	double lastRate = 0;
+	class KineticLevelCrossEvent : public FlexSimEvent
+	{
+	public:
+		virtual const char* getClassFactory() override { return "KineticLevelCrossEvent"; }
+		KineticLevelCrossEvent(ValueChangeListener* listener, double time) : FlexSimEvent(listener->holder, time, nullptr, 0) {}
+		KineticLevelCrossEvent() : FlexSimEvent() {}
+		virtual void execute() override { partner()->objectAs(ValueChangeListener)->onKineticLevelCrossed(); }
+	};
+	FlexSimEvent* kineticLevelCrossEvent = nullptr;
+	TrackedVariable* variable = nullptr;
 	engine_export virtual void bind() override;
+	engine_export void init();
+	engine_export void onKineticLevelCrossed();
+private:
+	/// <summary>	Initializes the kinetic level listening. </summary>
+	/// <remarks>	Anthony.johnson, 3/2/2016. </remarks>
+	/// <returns>	true if it should call onChangeRuleMet immediately. </returns>
+	bool initKineticLevelListening(double newValue);
+public:
 	virtual void onChangeRuleMet(const Variant& newValue, const Variant& oldValue) {}
 	engine_export virtual void execute() override;
 	engine_export static bool isRuleMetForInitialValue(ChangeRule changeRule, double changeValue, double initialValue);
