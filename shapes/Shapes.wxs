@@ -15,8 +15,8 @@
   <ExtensionExcludes>
     <Ext>.WXS</Ext>
     <Ext>.ORIG</Ext>
-	<Ext>.LOG</Ext>
-	<Ext>.TXT</Ext>
+    <Ext>.LOG</Ext>
+    <Ext>.TXT</Ext>
   </ExtensionExcludes>
   <DirExcludes />
   <IncludeFiles />
