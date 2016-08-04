@@ -453,6 +453,7 @@ namespace FlexSim {
 	typedef double       (*_fileclose)();
 	typedef int          (*_fileexistsalias)(char *);
 	typedef double       (*_fileopenalias)(char * filename, char * mode);
+	typedef char*		 (*_filereadline_cstr)();
 	typedef double       (*_fillwithatts)(treenode object, int attgroup);
 	typedef treenode     (*_findnode)(treenode head, char* nodename);
 	typedef treenode     (*_findownerobject)(treenode);
@@ -491,6 +492,10 @@ namespace FlexSim {
 	typedef const char*  (*_getbundlefieldname)(treenode x, int fieldnr);
 	typedef int          (*_getbundlefieldnr)(treenode x, char* fieldname);
 	typedef int          (*_getbundlefieldtype)(treenode x, int fieldnr);
+	typedef Variant      (*_getbundleindexentriesalias1)(treenode x, int fieldNr, double val);
+	typedef Variant      (*_getbundleindexentriesalias2)(treenode x, int fieldNr, const char* val);
+	typedef Variant      (*_getbundleindexentriesalias3)(treenode x, const char* fieldName, const char* val);
+	typedef Variant      (*_getbundleindexentriesalias4)(treenode x, const char* fieldName, double val);
 	typedef int          (*_getbundlenrentries)(treenode x);
 	typedef int          (*_getbundlenrfields)(treenode x);
 	typedef double       (*_getchecked)(treenode view);
@@ -1169,6 +1174,9 @@ namespace FlexSim {
 }
 #endif
 
+#if DECLARATIONTYPE != FLEXSIM_BINDING_PHASE
+namespace FlexSim {
+#endif
 /*** FLEXSIM FUNCTIONS ***/
 DECLARE_FLEXSIM_FUNCTION_1(_executefsfile)
 DECLARE_FLEXSIM_FUNCTION_1(_inheritcode)
@@ -1466,6 +1474,7 @@ DECLARE_FLEXSIM_FUNCTION_2(filebrowse_importedfunction, "filebrowse")
 DECLARE_FLEXSIM_FUNCTION_1(fileclose)
 DECLARE_FLEXSIM_FUNCTION_2(fileexistsalias, "fileexists")
 DECLARE_FLEXSIM_FUNCTION_2(fileopenalias, "fileopen")
+DECLARE_FLEXSIM_FUNCTION_1(filereadline_cstr)
 DECLARE_FLEXSIM_FUNCTION_1(fillwithatts)
 DECLARE_FLEXSIM_FUNCTION_1(findnode)
 DECLARE_FLEXSIM_FUNCTION_1(findownerobject)
@@ -1501,6 +1510,10 @@ DECLARE_FLEXSIM_FUNCTION_1(getapplicationtitle)
 DECLARE_FLEXSIM_FUNCTION_1(getbundlefieldname);
 DECLARE_FLEXSIM_FUNCTION_1(getbundlefieldnr);
 DECLARE_FLEXSIM_FUNCTION_1(getbundlefieldtype);
+DECLARE_FLEXSIM_FUNCTION_3(getbundleindexentriesalias1, "?getbundleindexentries@FlexSim@@YA?AVVariant@1@PAVTreeNode@1@HN@Z", "?getbundleindexentries@FlexSim@@YA?AVVariant@1@PEAVTreeNode@1@HN@Z");
+DECLARE_FLEXSIM_FUNCTION_3(getbundleindexentriesalias2, "?getbundleindexentries@FlexSim@@YA?AVVariant@1@PAVTreeNode@1@HPBD@Z", "?getbundleindexentries@FlexSim@@YA?AVVariant@1@PEAVTreeNode@1@HPEBD@Z");
+DECLARE_FLEXSIM_FUNCTION_3(getbundleindexentriesalias3, "?getbundleindexentries@FlexSim@@YA?AVVariant@1@PAVTreeNode@1@PBD1@Z", "?getbundleindexentries@FlexSim@@YA?AVVariant@1@PEAVTreeNode@1@PEBD1@Z");
+DECLARE_FLEXSIM_FUNCTION_3(getbundleindexentriesalias4, "?getbundleindexentries@FlexSim@@YA?AVVariant@1@PAVTreeNode@1@PBDN@Z", "?getbundleindexentries@FlexSim@@YA?AVVariant@1@PEAVTreeNode@1@PEBDN@Z");
 DECLARE_FLEXSIM_FUNCTION_1(getbundlenrentries);
 DECLARE_FLEXSIM_FUNCTION_1(getbundlenrfields);
 DECLARE_FLEXSIM_FUNCTION_1(getchecked)
@@ -2113,8 +2126,6 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(getitemstate)
 	DECLARE_FLEXSIM_FUNCTION_1(getitemvar)
 	DECLARE_FLEXSIM_FUNCTION_1(getmodulelicense)
-	DECLARE_FLEXSIM_FUNCTION_1(getmoverecord)
-	DECLARE_FLEXSIM_FUNCTION_1(getmoverecordvalue)
 	DECLARE_FLEXSIM_FUNCTION_1(getnetnode)
 	DECLARE_FLEXSIM_FUNCTION_1(getnetnodespline)
 	DECLARE_FLEXSIM_FUNCTION_1(getnetworkdistance)
@@ -2127,8 +2138,6 @@ DECLARE_FLEXSIM_FUNCTION_1(var_s)
 	DECLARE_FLEXSIM_FUNCTION_1(getobjvarfastpointeroffset)
 	DECLARE_FLEXSIM_FUNCTION_1(getpreempt)
 	DECLARE_FLEXSIM_FUNCTION_1(getpriority)
-	DECLARE_FLEXSIM_FUNCTION_1(getstaterecord)
-	DECLARE_FLEXSIM_FUNCTION_1(getstaterecordvalue)
 	DECLARE_FLEXSIM_FUNCTION_1(gettaskinvolved)
 	DECLARE_FLEXSIM_FUNCTION_1(gettasksequence)
 	DECLARE_FLEXSIM_FUNCTION_1(gettasksequencequeue)
@@ -2447,6 +2456,10 @@ DECLARE_FLEXSIM_ATTRIBUTE(viewwindowsource)
 DECLARE_FLEXSIM_ATTRIBUTE(viewwindowtype)
 DECLARE_FLEXSIM_ATTRIBUTE(windowtitle)
 DECLARE_FLEXSIM_ATTRIBUTE(wordwrap)
+
+#if DECLARATIONTYPE != FLEXSIM_BINDING_PHASE
+}
+#endif
 
 #if DECLARATIONTYPE == FLEXSIM_DECLARATION_PHASE
 	#include "declaration.h"

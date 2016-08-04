@@ -42,17 +42,18 @@ using std::string;
 
 	#include "basicclasses.h"
 	#include "basicmacros.h"
-	#include "basicutils.h"
 	#include "treenode.h"
 
-	extern double (*_parval)(int, CallPoint *);
-
+	namespace FlexSim {
+	extern double(*_parval)(int, CallPoint *);
+	}
 
 	#define cellrc cellrowcolumn
 	#define mpt(x) _mpt(x)
 	#define mpd(x) _mpd(x)
 	#define mpr(x) _mpr(x)
 	#define mpf(x) _mpf(x)
+
 #else
 namespace FlexSim {
 	class TreeNode;
@@ -62,18 +63,15 @@ namespace FlexSim {
 	class EventDataStruct;
 	typedef EventDataStruct eventdatastruct;
 
-	extern double (*_parval)(int, CallPoint *);
+	extern double(*_parval)(int, CallPoint *);
 
-	#if COMPILING_FLEXSIM_CONTENT || COMPILING_MODULE_DLL
-		inline void * doubletoptr(double x)
-		{
-			return (void*)(size_t)x;
-		}
-		inline double ptrtodouble(void* x)
-		{
-			return (double)(size_t)x;
-		}
-	#endif
+	extern void* (*flexsimmalloc)(size_t);
+	extern void(*flexsimfree)(void*);
+	#define parnode(__a__) _parnode(__a__, callPoint)
+	#define parval(__a__) _parval(__a__, callPoint)
+	#define parstr(__a__) _parstr(__a__, callPoint)
+	#include "basicmacros.h"
+	#include "basicutils.h"
 }
 #endif
 
@@ -99,7 +97,9 @@ namespace FlexSim {
 #define FLEXSIM_DEFINITION_PHASE 2
 #define FLEXSIM_BINDING_PHASE 3
 
+namespace FlexSim {
 typedef Variant (*FSfptr)(CallPoint*);
+}
 
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 	#define DECLARATIONTYPE FLEXSIM_DECLARATION_PHASE
@@ -121,7 +121,9 @@ typedef Variant (*FSfptr)(CallPoint*);
 #else
 
 	#define visible extern "C" __declspec(dllexport)
+	namespace FlexSim {
 	typedef char* (*customdisplayfunction)(treenode, int);
+	}
 
 	#define mpt _mpt
 	#define mpd _mpd

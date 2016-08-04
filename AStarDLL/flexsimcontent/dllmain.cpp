@@ -36,6 +36,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
                        LPVOID lpReserved
 					 )
 {
+	using namespace FlexSim;
 	if(ul_reason_for_call == DLL_PROCESS_ATTACH)
 		return bindflexsimfunctions();
 	else return 1;

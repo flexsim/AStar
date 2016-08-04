@@ -22,6 +22,7 @@ public:
 	static const int DO_NOT_BACK_ORDER = 0x10;
 	static const int PULL_BACK_ORDERS = 0x20;
 	static const int DO_NOT_FULFILL = 0x40;
+	static const int RETURN_BACK_ORDER_IF_NOT_FULFILL = 0x80;
 
 	static const int COL_ID_VALUE = INT_MAX - 1;
 	static const int COL_ID_PULLER = INT_MAX - 2;
@@ -32,7 +33,7 @@ public:
 	class Entry : public CouplingDataType
 	{
 		friend class List;
-		friend class ::ListViewDataSource;
+		friend class ListViewDataSource;
 	public:
 		Entry(size_t numFields, const Variant& value);
 		Entry() {}
@@ -53,7 +54,7 @@ public:
 	class Field : public SimpleDataType
 	{
 		friend class List;
-		friend class ::ListViewDataSource;
+		friend class FlexSim::ListViewDataSource;
 	public:
 		engine_export virtual void bind() override;
 		engine_export virtual void bindStatistics() override;
@@ -236,6 +237,17 @@ public:
 	TreeNode* onPush = nullptr;
 	TreeNode* onPull = nullptr;
 
+	class BackOrderFulfillEvent : public FlexSimEvent
+	{
+	public:
+		BackOrderFulfillEvent() {}
+		BackOrderFulfillEvent(Partition* partition, Entry* entry, const Variant& pushedVal);
+		virtual const char* getClassFactory() override { return "ListBackOrderFulfillEvent"; }
+		virtual void execute() override;
+		virtual void bind() override;
+		Variant pushedVal;
+	};
+
 	class Partition : public SimpleDataType
 	{
 	public:
@@ -287,6 +299,7 @@ public:
 			EntryRange& range, bool getEntryNodes, double& fulfillQty, double maxFulfillQty, EntryRange* innerRange = nullptr);
 
 		Variant push(const VariantParams& params);
+		Variant processPushedEntries(EntryRange& range, const Variant& involvedVal);
 		PushResult matchEntriesToBackOrders(EntryRange& range);
 		engine_export virtual Variant getEntryValue(int entryIndex, int fieldId);
 
@@ -312,6 +325,8 @@ public:
 		TreeNode* backOrderInput = nullptr;
 		TreeNode* backOrderOutput = nullptr;
 		TreeNode* backOrderStaytime = nullptr;
+
+		ObjRef<FlexSimEvent> backOrderFulfillEvent;
 	};
 
 	NodeListArray<Partition>::SdtSubNodeBindingType partitions;
@@ -340,6 +355,7 @@ public:
 	TreeNode* backOrderQueueStrategyDataSourceNode;
 
 	void buildQueryCache();
+	void buildPartitionMap();
 
 public:
 	static bool isVariantNonNull(const Variant& partitionID);
@@ -398,6 +414,13 @@ public:
 	engine_export Variant push(const Variant& involved, const Variant& partitionID, const Variant& p1, const Variant& p2, const Variant& p3);
 	engine_export Variant push(const Variant& involved, const Variant& partitionID, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5 = Variant(), const Variant& p6 = Variant(),
 		const Variant& p7 = Variant(), const Variant& p8 = Variant());
+	/// <summary>	Gets the entry for the given value. </summary>
+	/// <remarks>	If the list is set to Unique Values Only, then values pushed to the list may not
+	///				result in new entries to the list. This method uses the list's internal map to quickly
+	///				find the entry that's associated with the given value.
+	///				If Unique Values Only is set to false this method will return null.</remarks>
+	/// <returns>	Entry node. </returns>
+	engine_export TreeNode* entryForValue(const Variant& value, const Variant& partitionID);
 
 private:
 	int lastPushMarker;
@@ -423,7 +446,13 @@ public:
 	engine_export int getLastPushMarker() { return lastPushMarker; }
 	engine_export Variant pull(const char* sqlQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
 	engine_export Variant pull(TreeNode* cachedQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
-
+	/// <summary>	Gets the back order for the given puller. </summary>
+	/// <remarks>	If the list is set to Unique Pullers Only, then back orders may have multiple
+	///				pullers associated with them. This method uses the list's internal map to quickly
+	///				find the back order that's associated with the given puller.
+	///				If Unique Pullers Only is set to false this method will return null.</remarks>
+	/// <returns>	Back order node. </returns>
+	engine_export TreeNode* backOrderForPuller(const Variant& puller, const Variant& partitionID);
 	engine_export void listenToEntry(treenode entry, treenode callback, const Variant& p1);
 
 
@@ -483,6 +512,7 @@ public:
 	treenode globalListenerPointers;
 
 	double keepEmptyPartitions = 0;
+	double allowMultiplePushes = 0;
 
 	void addValueListeners(Entry* entry);
 	void addPullerListeners(BackOrder* backOrder);

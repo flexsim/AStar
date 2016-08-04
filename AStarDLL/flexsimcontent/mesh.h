@@ -174,6 +174,8 @@ protected:
 #define MESH_INDEXED 0x4
 #define MESH_FORCE_CLEANUP 0x8
 #define MESH_NO_POSITION 0x10
+#define MESH_FORCE_CLEANUP_FULL 0x20
+
 // MESH_IN_MEMORY: (not implemented, just an idea at this point) means the mesh is not bound to the tree, 
 // which means it can delete its buffers once copied into the open gl objects
 #define MESH_IN_MEMORY 0x8

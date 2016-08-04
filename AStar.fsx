@@ -771,20 +771,16 @@ repaintall();</data></node>
          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
          <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/surroundDepth</data></node>
          <node f="42" dt="2"><name>tooltip</name><data>Specify how many nodes will appear around the outside of the AStar area.</data></node>
+         <node f="42" dt="1"><name>rangemin</name><data>000000003ff00000</data></node>
          <node f="42"><name>variables</name>
           <node f="40"><name></name></node>
-          <node f="42" dt="2"><name>valuetype</name><data>distance</data></node>
           <node f="42" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
           <node f="42" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
           <node f="42" dt="1"><name>step</name><data>000000003ff00000</data></node>
           <node f="42" dt="1"><name>conversion</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>coefficient</name><data>000000003ff00000</data></node>
           <node f="42" dt="1"><name>exponent</name><data>000000003ff00000</data></node>
-          <node f="442" dt="2"><name>OnKillFocus</name><data>treenode parent = ownerobject(c);
-if (stringtonum(getviewtext(node("/EditValue", parent))) &lt; 1) {
-	setviewtext(node("/EditValue", parent), "1.00");
-	set(node("&gt;objectfocus+", parent), 1);
-}</data></node>
+          <node f="42" dt="1"><name>precision</name><data>0000000000000000</data></node>
          </node>
         </data>
          <node f="40"><name></name></node></node>
@@ -874,6 +870,7 @@ forobjectsbehind (c)
           <node f="42"><name>style</name>
            <node f="40"><name></name></node>
            <node f="42"><name>ES_READONLY</name></node>
+           <node f="42" dt="1"><name>FS_PRECISION</name><data>0000000000000000</data></node>
           </node>
          </data></node>
          <node f="42" dt="4"><name>Path Requests</name><data>
@@ -897,6 +894,7 @@ forobjectsbehind (c)
           <node f="42"><name>style</name>
            <node f="40"><name></name></node>
            <node f="42"><name>ES_READONLY</name></node>
+           <node f="42" dt="1"><name>FS_PRECISION</name><data>0000000000000000</data></node>
           </node>
          </data></node>
          <node f="42" dt="4"><name>Cached Paths Used</name><data>
@@ -920,6 +918,7 @@ forobjectsbehind (c)
           <node f="42"><name>style</name>
            <node f="40"><name></name></node>
            <node f="42"><name>ES_READONLY</name></node>
+           <node f="42" dt="1"><name>FS_PRECISION</name><data>0000000000000000</data></node>
           </node>
          </data></node>
          <node f="42" dt="4"><name>Utilization</name><data>
@@ -2720,7 +2719,7 @@ return 0;</data></node>
    </node>
   </node>
  </node>
- <node f="42" dt="2"><name>release</name><data>16.1</data></node>
+ <node f="42" dt="2"><name>release</name><data>16.2</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
- <node f="42" dt="2"><name>flexsim release</name><data>16.1</data></node>
+ <node f="42" dt="2"><name>flexsim release</name><data>16.2</data></node>
 </node></flexsim-tree>
