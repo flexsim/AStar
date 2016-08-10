@@ -25,12 +25,8 @@ THE SOFTWARE.
 #define FLEXSIMDEFS_H
 
 #include <windows.h>
-#ifdef COMPILING_FLEXSIM_CONTENT
-	#include "glee.h"
-#endif
-
-#include <gl/gl.h>
-#include <gl/glu.h>
+#include "glew.h"
+#include "wglew.h"
 #include <string>
 #include <math.h>
 

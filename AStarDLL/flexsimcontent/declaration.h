@@ -831,6 +831,8 @@ engine_export treenode inittrackedvariable(treenode theNode, int type, double st
 
 visible double rotationproject(treenode originSpace, double rx, double ry, double rz, treenode ontoSpace, double* rotationsOut);
 
+engine_export int getsystemmetric(int metric, HWND win);
+
 }
 
 #endif

@@ -456,6 +456,21 @@ public:
 	engine_export void listenToEntry(treenode entry, treenode callback, const Variant& p1);
 
 
+private:
+	class DestroyPartitionEvent : public FlexSimEvent
+	{
+	public:
+		DestroyPartitionEvent() : FlexSimEvent() {}
+		DestroyPartitionEvent(Partition* partition) :
+			partition(partition), FlexSimEvent(nullptr, 0.0, nullptr, 0, nullptr) {}
+
+		virtual const char* getClassFactory() override { return "DestroyPartitionEvent"; }
+		virtual void execute() override;
+		virtual void bind() override;
+
+		Partition* partition;
+	};
+
 public:
 	class BackOrderListener;
 	class BackOrderListenerEvent : public FlexSimEvent
@@ -513,6 +528,7 @@ public:
 
 	double keepEmptyPartitions = 0;
 	double allowMultiplePushes = 0;
+	double reevaluateAllValues = 0;
 
 	void addValueListeners(Entry* entry);
 	void addPullerListeners(BackOrder* backOrder);

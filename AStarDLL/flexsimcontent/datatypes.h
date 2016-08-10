@@ -509,10 +509,12 @@ public:
 	bool operator ==(const NodeRef& other) const { return ref == other.ref; }
 	bool operator ==(TreeNode* other) const { return ref == other; }
 	bool operator ==(NodeRef& other) const { return ref == other.ref; }
+	bool operator ==(nullptr_t null) const { return ref == nullptr; }
 	bool operator !=(const TreeNode* other) const { return ref != other; }
 	bool operator !=(const NodeRef& other) const { return ref != other.ref; }
 	bool operator !=(TreeNode* other) const { return ref != other; }
 	bool operator !=(NodeRef& other) const { return ref != other.ref; }
+	bool operator !=(nullptr_t null) const { return ref != nullptr; }
 	operator TreeNode*() const { return ref; }
 	TreeNode* get() const { return ref; }
 	TreeNode* operator ->() const { return ref; }

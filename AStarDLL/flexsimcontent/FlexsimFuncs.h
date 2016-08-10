@@ -572,7 +572,6 @@ namespace FlexSim {
 	typedef double       (*_getsoundindex)(char * thename);
 	typedef double       (*_getstatenum_alias1)(treenode object);
 	typedef double       (*_getstatenum_alias2)(treenode object, int profilenr);
-	typedef int          (*_getsystemmetric)(int metric, HWND win);
 	typedef treenode     (*_gettablecell)(char* globaltablename, int row, int column);
 	typedef int          (*_gettablecols)(char* globaltablename);
 	typedef double       (*_gettablenumalias)(char * table, int row, int col);
@@ -1566,7 +1565,6 @@ DECLARE_FLEXSIM_FUNCTION_1(getshapenrframes)
 DECLARE_FLEXSIM_FUNCTION_1(getsoundindex)
 DECLARE_FLEXSIM_FUNCTION_2(getstatenum_alias1, "getstatenum")
 DECLARE_FLEXSIM_FUNCTION_3(getstatenum_alias2, "?getstatenum@FlexSim@@YANPAVTreeNode@1@H@Z","?getstatenum@FlexSim@@YANPEAVTreeNode@1@H@Z")
-DECLARE_FLEXSIM_FUNCTION_1(getsystemmetric)
 DECLARE_FLEXSIM_FUNCTION_2(gettablenumalias, "gettablenum");
 DECLARE_FLEXSIM_FUNCTION_1(gettextureindex)
 DECLARE_FLEXSIM_FUNCTION_1(getundorecordid)
