@@ -131,7 +131,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 			drawGrid(0.01f);
 
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
-			boundsMesh.draw(GL_QUADS);
+			boundsMesh.draw(GL_TRIANGLES);
 
 		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
 			barrierMesh.draw(GL_TRIANGLES);
@@ -162,7 +162,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS) {
 			setpickingdrawfocus(view, holder, PICK_TYPE_BOUNDS);
-			boundsMesh.draw(GL_QUADS);
+			boundsMesh.draw(GL_TRIANGLES);
 		}
 	}
 	fglEnable(GL_TEXTURE_2D);
@@ -1245,6 +1245,8 @@ void AStarNavigator::buildBoundsMesh()
 #define ADD_PLAIN_QUAD(p1, p2, p3, p4)\
 	ADD_VERTEX(p1);\
 	ADD_VERTEX(p2);\
+	ADD_VERTEX(p3);\
+	ADD_VERTEX(p1);\
 	ADD_VERTEX(p3);\
 	ADD_VERTEX(p4);
 

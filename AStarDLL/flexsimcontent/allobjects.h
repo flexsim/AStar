@@ -2619,7 +2619,7 @@ public:
 	double blockedLength;
 	int arrowMeshIndex;
 	int splinePointIndex;
-	static const int arrowNrVerts = 8;
+	static const int arrowNrVerts = 12;
 	
 	FS_CONTENT_DLL_FUNC NetNodeEdge* getEdgePartner();
 	FS_CONTENT_DLL_FUNC NetworkNode* getNetNodePartner();
@@ -5647,6 +5647,8 @@ FS_CONTENT_DLL_FUNC double buildFullMeshes();
 FS_CONTENT_DLL_FUNC double buildFlatCellMesh();
 
 FS_CONTENT_DLL_FUNC double buildBasicMesh();
+
+FS_CONTENT_DLL_FUNC double buildLineMesh();
 
 FS_CONTENT_DLL_FUNC double refreshTable();
 
