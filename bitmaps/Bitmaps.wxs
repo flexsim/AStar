@@ -34,7 +34,7 @@
     <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_A176FC447D6648E183B977CAB8113C08" Name="bitmaps">
 <!--Program GUIDs>
-<FlexSim="EB2E37C4-FE2C-49B1-8332-E4273111D4D8">
+<FlexSim="7339524A-A22D-4300-8428-6D377291E06D">
 <FlexSimHC="B90F3036-0B0D-421F-9C14-CBCE4CD10C08">
 <FlexSimChinese="3C93B42B-4587-4D64-B7D9-73DABE3A21AF">
 </Program GUIDs-->
@@ -42,7 +42,7 @@
           <File Id="file_4D3D7C9B5E164C3F892856DC590C18E8" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\astar.bmp" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="7495739B-901A-4D65-B75D-F7D8C029D121">
+<FlexSim="28468CC2-55DA-4078-B11A-7663AA790206">
 <FlexSimHC="7A97C531-BDEA-496F-992C-F88949FF8229">
 <FlexSimChinese="DAC83BDA-9026-41BC-9FA4-5FBDE02507B6">
 </Program GUIDs-->
@@ -50,7 +50,7 @@
           <File Id="file_B4C185D5AB01442A80D3DB3AFC67040B" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\astarnavigator.ico" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="740DDF54-5AFD-43AB-BE7E-E9FCA98C7D93">
+<FlexSim="50434E69-681A-460F-839A-1BA5A21563F1">
 <FlexSimHC="95B2AC57-E7A8-4DA7-906D-96D4FEB46EFF">
 <FlexSimChinese="810E28CB-89AF-47C1-98E4-8DCC6F38B91C">
 </Program GUIDs-->
@@ -58,7 +58,7 @@
           <File Id="file_9125D7FD69E54A33A3958564E96122A4" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\astarnavigator.png" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="52865B84-86B4-4D68-8487-1C95EFC1B5FB">
+<FlexSim="869338CE-ADF4-4198-B7FC-C34A55AE8E09">
 <FlexSimHC="4A1B121C-9398-452D-A126-637B0447B498">
 <FlexSimChinese="B49699B5-14BF-4C6D-9B6F-820ABC7DEADA">
 </Program GUIDs-->
@@ -66,7 +66,7 @@
           <File Id="file_8315A4F873D3451AACE2C731B95E125C" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\astarnavigatorsmall.png" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="50CD31DC-E2AB-4472-962F-EB5FACD67274">
+<FlexSim="5649416B-9F8A-4E3B-B497-788B38ACDA2E">
 <FlexSimHC="2B2C1560-DE53-4238-9A69-2014765CE7F5">
 <FlexSimChinese="266A86A7-393E-4068-8864-2B5FDEEF58AC">
 </Program GUIDs-->
@@ -74,7 +74,7 @@
           <File Id="file_26196AE85BB34757B56A6B5AA96ED5EF" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\divider.bmp" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="AA093986-06A4-4C7A-AC95-98972D360B21">
+<FlexSim="011E0F80-E990-4F10-B8BB-A6694B26455A">
 <FlexSimHC="900CE111-417C-427D-A94C-281B877E30A7">
 <FlexSimChinese="ADA4506D-C677-4E3A-AB79-215C3450DF7D">
 </Program GUIDs-->
@@ -82,7 +82,7 @@
           <File Id="file_156F2EF385894907BA7B982155DB07F9" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\onewaydivider.bmp" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="AE75D353-EC94-4CAA-BB27-985E395DED91">
+<FlexSim="B8E00B3A-953B-44A6-81AE-C783FE1B8AD9">
 <FlexSimHC="4E5B4023-B8C3-4872-93EA-6BA846F28D04">
 <FlexSimChinese="4D8B3FA2-9E3A-4178-938C-9897343918FF">
 </Program GUIDs-->
@@ -90,7 +90,7 @@
           <File Id="file_D221EBB9B9E446068CA2B520F8C78755" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\preferredpath.bmp" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="62897DAC-3DC3-4AD2-9742-584636C429C4">
+<FlexSim="A70B07F9-E545-4042-9331-DB7798019648">
 <FlexSimHC="6A78947C-9E5E-40DC-8C9A-D959805F563C">
 <FlexSimChinese="73A6615B-8FBB-4578-B36D-ED825A6CEBD8">
 </Program GUIDs-->
