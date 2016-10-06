@@ -931,8 +931,16 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 
 double AStarNavigator::abortTravel(TreeNode* traveler, TreeNode* newTS)
 {
-	//fsnode* mycoupling = tonode(get(first(o(TaskExecuter, traveler).node_v_navigator)));
-	//destroyeventsofobject(holder, -1, EVENT_A_STAR_END_TRAVEL, NULL, mycoupling);
+	TaskExecuter* te = traveler->objectAs(TaskExecuter);
+	TreeNode* teCoupling = tonode(get(first(te->node_v_navigator)));
+	destroyeventsofobject(holder, -1, EVENT_A_STAR_END_TRAVEL, NULL, teCoupling);
+
+	TreeNode* kinematics = te->node_v_kinematics;
+	updatekinematics(kinematics, traveler, time());
+	te->b_spatialx -= 0.5*te->b_spatialsx;
+	te->b_spatialy += 0.5*te->b_spatialsy;
+	transfernode(teCoupling, node_v_travelmembers);
+
 	return 0;
 }
 
