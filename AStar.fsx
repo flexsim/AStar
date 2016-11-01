@@ -41,10 +41,10 @@
         <node f="42" dt="1"><name>pathCount</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>requestCount</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>cacheUseCount</name><data>0000000000000000</data></node>
-        <node f="42" dt="2"><name>messagetrigger</name><data>treenode current = ownerobject(c);
+        <node f="42" dt="2"><name>messagetrigger</name><data>Object current = ownerobject(c);
 </data>
          <node f="40"><name></name></node></node>
-        <node f="42" dt="2"><name>ondrawtrigger</name><data>treenode current = ownerobject(c);
+        <node f="42" dt="2"><name>ondrawtrigger</name><data>Object current = ownerobject(c);
 treenode view = param(1);
 
 // If this function returns a true, the default draw code of the object will not be executed.
@@ -56,7 +56,7 @@ treenode view = param(1);
         <node f="42" dt="1"><name>statebeforestop</name><data>0000000000000000</data></node>
         <node f="42"><name>collisionspheres</name></node>
         <node f="42"><name>collisionobjects</name></node>
-        <node f="42" dt="2"><name>resettrigger</name><data>treenode current = ownerobject(c);
+        <node f="42" dt="2"><name>resettrigger</name><data>Object current = ownerobject(c);
 </data></node>
         <node f="42" dt="1"><name>savedstate</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>resetposition</name><data>0000000000000000</data></node>
