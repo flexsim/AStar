@@ -2656,8 +2656,8 @@ applylinks(parent);</data></node>
      <node f="42" dt="2"><name>AStar: Task Executer as Flowitem</name><data>/**AStar: Task Executer as Flowitem*/
 /**\nMove the item into the model, then connect it to the AStar Navigator. Then tell it to travel to the destination and unload itself into the object. Note: this will only work for flow items created from the TaskExecuterFlowItem in the flow item bin.*/
 
-doublearray absloc = makearray(3);
-doublearray absrot = makearray(3);
+Array absloc = Array(3);
+Array absrot = Array(3);
 // find out the location of the item relative to the model.
 updatelocations(current);
 absloc[1] = vectorprojectx(item, 0.5*xsize(item),-0.5*ysize(item),0, model());
