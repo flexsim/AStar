@@ -2693,8 +2693,8 @@ if (objectexists(aStar)) {
 
 // create a task sequence to travel to the destination location and unload itself into the object.
 treenode ts = createemptytasksequence(item,0,0);
-inserttask(ts,TASKTYPE_TRAVEL,outobject(current, port),NULL);
-inserttask(ts,TASKTYPE_FRUNLOAD,item,outobject(current,port),opipno(current,port));
+inserttask(ts,TASKTYPE_TRAVEL,current.outObjects[port],NULL);
+inserttask(ts,TASKTYPE_FRUNLOAD,item,current.outObjects[port],opipno(current,port));
 dispatchtasksequence(ts);
 return 0;</data></node>
     </node>
