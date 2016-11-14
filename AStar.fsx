@@ -509,30 +509,7 @@ nodepoint(objectfocus(c), 0);</data></node>
       <node f="40"><name></name></node>
       <node f="42"><name>LibraryGroup</name>
        <node f="40"><name></name></node>
-       <node f="42" dt="4"><name>AStarNavigator</name><data>
-        <node f="40"><name></name></node>
-        <node f="42"><name>visual</name>
-         <node f="40"><name></name></node>
-         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\astarnavigatorsmall.png</data></node>
-        </node>
-        <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObject = param(1);
-double x = param(2);
-double y = param(3);
-double z = param(4);
-treenode view = param(5);
-
-if (objectexists(node("AStarNavigator", model)))
-	return 0;
-
-treenode asn = createinstance(node("astar/1", library()), model());
-setname(asn, "AStarNavigator");
-set(spatialx(asn), x);
-set(spatialy(asn), y);
-set(spatialz(asn), z);
-return asn;
-</data></node>
-       </data></node>
-       <node f="42" dt="4"><name>Barrier</name><data>
+       <node f="10000042" dt="4"><name>Barrier</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Barrier")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
