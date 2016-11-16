@@ -189,6 +189,9 @@ public:
 	virtual double onDestroy(TreeNode* view) override;
 	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed) override;
 	virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed) override;
+	virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
+
+	double calculateNavigateToLoc(TreeNode* traveler, double* destLoc, double endSpeed, bool queryDist = false);
 
 	virtual double updateLocations() override;
 	virtual double abortTravel(TreeNode* traveler, TreeNode* newts) override;
