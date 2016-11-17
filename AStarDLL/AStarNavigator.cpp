@@ -126,9 +126,10 @@ double AStarNavigator::onDraw(TreeNode* view)
 	fglScale(1.0/b_spatialsx, 1.0/b_spatialsy, 1.0/b_spatialsz);
 	fglTranslate(-loc[0], -loc[1], -loc[2]);
 
+	double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 	if (!pickingmode) {
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
-			drawGrid(0.01f);
+			drawGrid(0.01f / lengthMultiple);
 
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
 			boundsMesh.draw(GL_QUADS);
@@ -137,14 +138,14 @@ double AStarNavigator::onDraw(TreeNode* view)
 			barrierMesh.draw(GL_TRIANGLES);
 
 		if (drawMode & ASTAR_DRAW_MODE_TRAFFIC)
-			drawTraffic(0.015f, view);
+			drawTraffic(0.015f / lengthMultiple, view);
 
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
-			drawMembers(0.02f);
+			drawMembers(0.02f / lengthMultiple);
 	} else {
 
 		if (drawMode && ASTAR_DRAW_MODE_TRAFFIC) {
-			drawTraffic(0.02f, view);
+			drawTraffic(0.02f / lengthMultiple, view);
 		}
 
 		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
@@ -1265,7 +1266,7 @@ void AStarNavigator::buildBoundsMesh()
 	float borderWidth = nodeWidth;
 
 	float midBW = 0.4 * borderWidth;
-	float z = 0.1f;
+	float z = 0.1f / getmodelunit(LENGTH_MULTIPLE);
 	float bottomLeft[3] = {savedXOffset * nodeWidth, savedYOffset * nodeWidth, z};
 	float topRight[3] = {bottomLeft[0] + width, bottomLeft[1] + height, z};
 	float topLeft[3] = {bottomLeft[0], topRight[1], z};
@@ -1314,7 +1315,7 @@ void AStarNavigator::buildBarrierMesh()
 	barrierMesh.setMeshAttrib(MESH_NORMAL, up);
 	for (int i = 0; i < barrierList.size(); i++) {
 		barrierList[i]->nodeWidth = nodeWidth;
-		barrierList[i]->addVertices(&barrierMesh, 0.1f);
+		barrierList[i]->addVertices(&barrierMesh, 0.1f / getmodelunit(LENGTH_MULTIPLE));
 	}
 }
 
