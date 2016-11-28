@@ -126,9 +126,10 @@ double AStarNavigator::onDraw(TreeNode* view)
 	fglScale(1.0/b_spatialsx, 1.0/b_spatialsy, 1.0/b_spatialsz);
 	fglTranslate(-loc[0], -loc[1], -loc[2]);
 
+	double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 	if (!pickingmode) {
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
-			drawGrid(0.01f);
+			drawGrid(0.01f / lengthMultiple);
 
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
 			boundsMesh.draw(GL_TRIANGLES);
@@ -137,14 +138,14 @@ double AStarNavigator::onDraw(TreeNode* view)
 			barrierMesh.draw(GL_TRIANGLES);
 
 		if (drawMode & ASTAR_DRAW_MODE_TRAFFIC)
-			drawTraffic(0.015f, view);
+			drawTraffic(0.015f / lengthMultiple, view);
 
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
-			drawMembers(0.02f);
+			drawMembers(0.02f / lengthMultiple);
 	} else {
 
 		if (drawMode && ASTAR_DRAW_MODE_TRAFFIC) {
-			drawTraffic(0.02f, view);
+			drawTraffic(0.02f / lengthMultiple, view);
 		}
 
 		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
@@ -363,10 +364,20 @@ double AStarNavigator::navigateToLoc(treenode traveler, double* destLoc, double 
 		msg("AStar Error", "No barriers found.\nThere must be at least one barrier associated with the AStar Navigator.", 1);
 		return 0;
 	}
-	if (content(traveler))
-		setstate(traveler, STATE_TRAVEL_LOADED);
-	else
-		setstate(traveler, STATE_TRAVEL_EMPTY);
+
+	return calculateNavigateToLoc(traveler, destLoc, endSpeed);
+}
+
+double AStarNavigator::calculateNavigateToLoc(TreeNode* traveler, double* destLoc, double endSpeed, bool queryDist)
+{
+	//If this method is being called to get the distance from the TE to the destination, don't set
+	//anything on the TE
+	if (!queryDist) {
+		if (content(traveler))
+			setstate(traveler, STATE_TRAVEL_LOADED);
+		else
+			setstate(traveler, STATE_TRAVEL_EMPTY);
+	}
 
 	double centerx = 0.5 * xsize(traveler);
 	double centery = 0.5 * ysize(traveler);
@@ -382,11 +393,14 @@ double AStarNavigator::navigateToLoc(treenode traveler, double* destLoc, double 
 	desty = y;
 
 	TaskExecuter* te = traveler->objectAs(TaskExecuter);
-	TreeNode* coupling = tonode(get(first(te->node_v_navigator)));
-	while(content(coupling) < 1) 
-		nodeinsertinto(coupling);
-	TreeNode* idList = first(coupling);
-	// TODO: figure out idLists
+	TreeNode* coupling;
+	if (!queryDist) {
+		coupling = tonode(get(first(te->node_v_navigator)));
+		while (content(coupling) < 1)
+			nodeinsertinto(coupling);
+		//TreeNode* idList = first(coupling);
+		// TODO: figure out idLists
+	}
 	
 	// get the x/y location of the bottom left corner of my grid
 	col0x = (xOffset + 0.5) * nodeWidth;
@@ -414,7 +428,7 @@ double AStarNavigator::navigateToLoc(treenode traveler, double* destLoc, double 
 	// Figure out if this path is in the cache
 	bool shouldUseCache = false;
 	AStarPathID p;
-	if (cachePaths) {
+	if (cachePaths && !queryDist) {
 		requestCount++;
 		p.startRow = rowstart;
 		p.startCol = colstart;
@@ -761,7 +775,10 @@ the outside 8 nodes.
 
 	int nrNodes = backwardsList.size();
 
-	kinematics = te->node_v_kinematics;
+	if (!queryDist)
+		kinematics = te->node_v_kinematics;
+	else
+		kinematics = nodeinsertinto(te->node_v_kinematics);
 	vectorproject(model(), xStart, yStart, 0, up(traveler), outputVector);
 	xStart = outputVector[0];
 	yStart = outputVector[1];
@@ -777,36 +794,40 @@ the outside 8 nodes.
 		endTime = addkinematic(kinematics, nextX, nextY, 0,
 			te->v_maxspeed, 0,0,0,0,endTime, KINEMATIC_TRAVEL);
 
-		double totalTravelDist = sqrt(sqr(nextX) + sqr(nextY));
-		te->v_totaltraveldist += totalTravelDist;
+		if (!queryDist) {
+			double totalTravelDist = sqrt(sqr(nextX) + sqr(nextY));
+			te->v_totaltraveldist += totalTravelDist;
 
-		AStarNodeExtraData* extra;
-		auto extraIter = edgeTableExtraData.find(e.colRow);
-		if (extraIter == edgeTableExtraData.end()) {
-			extra = &(edgeTableExtraData[e.colRow]);
-			memset(extra, 0, sizeof(AStarNodeExtraData));
-			extra->colRow = e.colRow;
-			DeRefEdgeTable(e.row, e.col).noExtraData = 0;
-		} else {
-			extra = &extraIter->second;
-		}
-		unsigned int* involvedextra;
-		if (e.row > laste.row) {
-			if(e.col > laste.col) involvedextra = &extra->nrFromDownLeft;
-			else if(e.col < laste.col) involvedextra = &extra->nrFromDownRight;
-			else involvedextra = &extra->nrFromDown;
-		}
-		else if(e.row < laste.row)
-		{
-			if(e.col > laste.col) involvedextra = &extra->nrFromUpLeft;
-			else if(e.col < laste.col) involvedextra = &extra->nrFromUpRight;
-			else involvedextra = &extra->nrFromUp;
-		}
-		else if(e.col > laste.col) involvedextra = &extra->nrFromLeft;
-		else involvedextra = &extra->nrFromRight;
+		
+			//Traffic info
+			AStarNodeExtraData* extra;
+			auto extraIter = edgeTableExtraData.find(e.colRow);
+			if (extraIter == edgeTableExtraData.end()) {
+				extra = &(edgeTableExtraData[e.colRow]);
+				memset(extra, 0, sizeof(AStarNodeExtraData));
+				extra->colRow = e.colRow;
+				DeRefEdgeTable(e.row, e.col).noExtraData = 0;
+			} else {
+				extra = &extraIter->second;
+			}
+			unsigned int* involvedextra;
+			if (e.row > laste.row) {
+				if(e.col > laste.col) involvedextra = &extra->nrFromDownLeft;
+				else if(e.col < laste.col) involvedextra = &extra->nrFromDownRight;
+				else involvedextra = &extra->nrFromDown;
+			}
+			else if(e.row < laste.row)
+			{
+				if(e.col > laste.col) involvedextra = &extra->nrFromUpLeft;
+				else if(e.col < laste.col) involvedextra = &extra->nrFromUpRight;
+				else involvedextra = &extra->nrFromUp;
+			}
+			else if(e.col > laste.col) involvedextra = &extra->nrFromLeft;
+			else involvedextra = &extra->nrFromRight;
 
-		involvedextra[0]++;
-		if(involvedextra[0] > maxTraveled) maxTraveled = involvedextra[0];
+			involvedextra[0]++;
+			if(involvedextra[0] > maxTraveled) maxTraveled = involvedextra[0];
+		}
 
 		laste.colRow = e.colRow;
 	}
@@ -819,10 +840,27 @@ the outside 8 nodes.
 		n->open = true;
 	}
 
-	transfernode(coupling, node_v_activetravelmembers);
-	createevent(holder, endTime - time(), EVENT_A_STAR_END_TRAVEL, "End Travel", coupling);
+	if (!queryDist) {
+		transfernode(coupling, node_v_activetravelmembers);
+		createevent(holder, endTime - time(), EVENT_A_STAR_END_TRAVEL, "End Travel", coupling);
+	}
 
 	return 0;
+}
+
+double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination)
+{
+	updatelocations(taskexecuter->holder);
+
+	double loc[3];
+	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), loc);
+
+	calculateNavigateToLoc(taskexecuter->holder, loc, 0, true);
+
+	TreeNode* kinematics = first(taskexecuter->node_v_kinematics);
+	double distance = getkinematics(kinematics, KINEMATIC_ENDDIST);
+	destroyobject(kinematics);
+	return distance;
 }
 
 void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest, bool setStartEntry)
@@ -1228,7 +1266,7 @@ void AStarNavigator::buildBoundsMesh()
 	float borderWidth = nodeWidth;
 
 	float midBW = 0.4 * borderWidth;
-	float z = 0.1f;
+	float z = 0.1f / getmodelunit(LENGTH_MULTIPLE);
 	float bottomLeft[3] = {savedXOffset * nodeWidth, savedYOffset * nodeWidth, z};
 	float topRight[3] = {bottomLeft[0] + width, bottomLeft[1] + height, z};
 	float topLeft[3] = {bottomLeft[0], topRight[1], z};
@@ -1279,7 +1317,7 @@ void AStarNavigator::buildBarrierMesh()
 	barrierMesh.setMeshAttrib(MESH_NORMAL, up);
 	for (int i = 0; i < barrierList.size(); i++) {
 		barrierList[i]->nodeWidth = nodeWidth;
-		barrierList[i]->addVertices(&barrierMesh, 0.1f);
+		barrierList[i]->addVertices(&barrierMesh, 0.1f / getmodelunit(LENGTH_MULTIPLE));
 	}
 }
 

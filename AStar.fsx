@@ -240,8 +240,8 @@ if (!objectexists(activeNavigator))
 applicationcommand("assertmoduledependency", "AStar");
 nodepoint(getvarnode(c, "activeNavigator"), activeNavigator);
 
-int mouseX = cursorinfo(i, 2, 1, 1);
-int mouseY = cursorinfo(i, 2, 2, 1);
+double mouseX = cursorinfo(i, 2, 1, 1);
+double mouseY = cursorinfo(i, 2, 2, 1);
 setvarnum(c, "lastMouseX", cursorinfo(i, 1, 1, 1));
 setvarnum(c, "lastMouseY", cursorinfo(i, 1, 2, 1));
 setvarnum(c, "lastModelX", mouseX);
