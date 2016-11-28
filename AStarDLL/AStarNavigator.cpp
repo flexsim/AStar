@@ -858,7 +858,7 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 	calculateNavigateToLoc(taskexecuter->holder, loc, 0, true);
 
 	TreeNode* kinematics = first(taskexecuter->node_v_kinematics);
-	double distance = getkinematics(kinematics, KINEMATIC_ENDDIST);
+	double distance = getkinematics(kinematics, KINEMATIC_TOTALDIST);
 	destroyobject(kinematics);
 	return distance;
 }
