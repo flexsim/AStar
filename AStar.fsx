@@ -41,10 +41,10 @@
         <node f="42" dt="1"><name>pathCount</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>requestCount</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>cacheUseCount</name><data>0000000000000000</data></node>
-        <node f="42" dt="2"><name>messagetrigger</name><data>treenode current = ownerobject(c);
+        <node f="42" dt="2"><name>messagetrigger</name><data>Object current = ownerobject(c);
 </data>
          <node f="40"><name></name></node></node>
-        <node f="42" dt="2"><name>ondrawtrigger</name><data>treenode current = ownerobject(c);
+        <node f="42" dt="2"><name>ondrawtrigger</name><data>Object current = ownerobject(c);
 treenode view = param(1);
 
 // If this function returns a true, the default draw code of the object will not be executed.
@@ -56,7 +56,7 @@ treenode view = param(1);
         <node f="42" dt="1"><name>statebeforestop</name><data>0000000000000000</data></node>
         <node f="42"><name>collisionspheres</name></node>
         <node f="42"><name>collisionobjects</name></node>
-        <node f="42" dt="2"><name>resettrigger</name><data>treenode current = ownerobject(c);
+        <node f="42" dt="2"><name>resettrigger</name><data>Object current = ownerobject(c);
 </data></node>
         <node f="42" dt="1"><name>savedstate</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>resetposition</name><data>0000000000000000</data></node>
@@ -240,8 +240,8 @@ if (!objectexists(activeNavigator))
 applicationcommand("assertmoduledependency", "AStar");
 nodepoint(getvarnode(c, "activeNavigator"), activeNavigator);
 
-int mouseX = cursorinfo(i, 2, 1, 1);
-int mouseY = cursorinfo(i, 2, 2, 1);
+double mouseX = cursorinfo(i, 2, 1, 1);
+double mouseY = cursorinfo(i, 2, 2, 1);
 setvarnum(c, "lastMouseX", cursorinfo(i, 1, 1, 1));
 setvarnum(c, "lastMouseY", cursorinfo(i, 1, 2, 1));
 setvarnum(c, "lastModelX", mouseX);
@@ -2656,8 +2656,8 @@ applylinks(parent);</data></node>
      <node f="42" dt="2"><name>AStar: Task Executer as Flowitem</name><data>/**AStar: Task Executer as Flowitem*/
 /**\nMove the item into the model, then connect it to the AStar Navigator. Then tell it to travel to the destination and unload itself into the object. Note: this will only work for flow items created from the TaskExecuterFlowItem in the flow item bin.*/
 
-doublearray absloc = makearray(3);
-doublearray absrot = makearray(3);
+Array absloc = Array(3);
+Array absrot = Array(3);
 // find out the location of the item relative to the model.
 updatelocations(current);
 absloc[1] = vectorprojectx(item, 0.5*xsize(item),-0.5*ysize(item),0, model());
@@ -2693,8 +2693,8 @@ if (objectexists(aStar)) {
 
 // create a task sequence to travel to the destination location and unload itself into the object.
 treenode ts = createemptytasksequence(item,0,0);
-inserttask(ts,TASKTYPE_TRAVEL,outobject(current, port),NULL);
-inserttask(ts,TASKTYPE_FRUNLOAD,item,outobject(current,port),opipno(current,port));
+inserttask(ts,TASKTYPE_TRAVEL,current.outObjects[port],NULL);
+inserttask(ts,TASKTYPE_FRUNLOAD,item,current.outObjects[port],opipno(current,port));
 dispatchtasksequence(ts);
 return 0;</data></node>
     </node>
@@ -2719,7 +2719,7 @@ return 0;</data></node>
    </node>
   </node>
  </node>
- <node f="42" dt="2"><name>release</name><data>16.2</data></node>
+ <node f="42" dt="2"><name>release</name><data>17.0</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
- <node f="42" dt="2"><name>flexsim release</name><data>16.2</data></node>
+ <node f="42" dt="2"><name>flexsim release</name><data>17.0</data></node>
 </node></flexsim-tree>
