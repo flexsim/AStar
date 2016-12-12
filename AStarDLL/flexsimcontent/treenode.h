@@ -33,13 +33,46 @@ public:
 
 	// name
 	engine_export FlexSimPrivateTypes::String __getName();
-	engine_export TreeNode* __setName(const FlexSimPrivateTypes::String&);
+	engine_export void __setName(const FlexSimPrivateTypes::String&);
 	__declspec(property(get = __getName, put = __setName)) FlexSimPrivateTypes::String name;
 
 	// dataType
 	engine_export int __getDataType();
-	engine_export TreeNode* __setDataType(int);
+	engine_export void __setDataType(int);
 	__declspec(property(get = __getDataType, put = __setDataType)) int dataType;
+
+	// rank
+	engine_export int __getRank();
+	engine_export void __setRank(int);
+	__declspec(property(get = __getRank, put = __setRank)) int rank;
+
+	// first
+	engine_export TreeNode* __getFirst();
+	engine_export void __setFirst(TreeNode*);
+	__declspec(property(get = __getFirst, put = __setFirst)) TreeNode* first;
+
+	// last
+	engine_export TreeNode* __getLast();
+	engine_export void __setLast(TreeNode*);
+	__declspec(property(get = __getLast, put = __setLast)) TreeNode* last;
+
+	// up
+	engine_export TreeNode* __getUp();
+	engine_export void __setUp(TreeNode*);
+	__declspec(property(get = __getUp, put = __setUp)) TreeNode* up;
+
+	// prev
+	engine_export TreeNode* __getPrev();
+	__declspec(property(get = __getPrev)) TreeNode* prev;
+
+	// next
+	engine_export TreeNode* __getNext();
+	__declspec(property(get = __getNext)) TreeNode* next;
+
+	// size
+	engine_export int __getNumSubnodes();
+	engine_export void __setNumSubnodes(int);
+	__declspec(property(get = __getNumSubnodes, put = __setNumSubnodes)) int numSubnodes;
 
 	// evaluate
 	engine_export Variant evaluate(const VariantParams& params);
@@ -64,7 +97,15 @@ public:
 	engine_export Variant evaluate(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant& );
 	engine_export Variant evaluate(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant& );
 	engine_export Variant evaluate(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
-	
+
+	engine_export TreeNode* subnode(const char* name, int assert = 0);
+	engine_export TreeNode* subnode(int rank, int assert = 0);
+
+	engine_export TreeNode* label(const char* name, int assert = 0);
+	engine_export TreeNode* label(int rank, int assert = 0);
+
+	engine_export void destroy();
+
 	// object data
 	template <class T>
 	T* object() const { return (T*)data; }

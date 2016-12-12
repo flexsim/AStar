@@ -73,7 +73,12 @@ public:
 	virtual const char* getClassFactory(){return 0;}
 	engine_export virtual void bind();
 	engine_export void bind(int bindMode);
-	engine_export virtual char* toString(int verbose);
+	static const int DISPLAY_TREE = 0;
+	static const int DISPLAY_VERBOSE_TREE = 0x1;
+	static const int DISPLAY_TABLE_CELL = 0x2;
+	static const int DISPLAY_LIST = 0x4;
+	static const int DISPLAY_DEBUGGER = 0x8;
+	engine_export virtual char* toString(int displayFlags);
 engine_private:
 	virtual TreeNode* getObjectTree() { return 0; }
 	virtual TreeNode* getLabelNode(const char* labelName, bool assert) { return 0; }
@@ -336,43 +341,6 @@ template<class ObjType>
 				val.resize(numElements);
 				for (int i = 1; i <= content(theNode); i++)
 					val[i] = StlValueBinder<Type::ElementType>::Loader(rank(theNode, i));
-				break;
-			}
-			case SDT_BIND_ON_DISPLAY: displayFlexSimArray(val); break;
-		}
-	}
-	// template specialization for doublearray and intarray
-	template<>
-	void bindFlexSimArrayByName <doublearray>
-		(const char* name, doublearray& val)
-	{
-		int bindMode = getBindMode();
-		switch (bindMode) {
-			// else continue into load/save
-			case SDT_BIND_ON_SAVE: bindLocalArrayByName(name, val.begin(), val.size()); break;
-			case SDT_BIND_ON_LOAD: {
-				TreeNode* theNode = bindByName(name, 0, DATA_BYTEBLOCK, 0);
-				size_t numElements = bbgetsize(theNode) / sizeof(double);
-				val.resize(numElements);
-				bindLocalArrayByName(name, val.begin(), numElements);
-				break;
-			}
-			case SDT_BIND_ON_DISPLAY: displayFlexSimArray(val); break;
-		}
-	}
-	template<>
-	void bindFlexSimArrayByName <intarray>
-		(const char* name, intarray& val)
-	{
-		int bindMode = getBindMode();
-		switch (bindMode) {
-			// else continue into load/save
-			case SDT_BIND_ON_SAVE: bindLocalArrayByName(name, val.begin(), val.size()); break;
-			case SDT_BIND_ON_LOAD: {
-				TreeNode* theNode = bindByName(name, 0, DATA_BYTEBLOCK, 0);
-				size_t numElements = bbgetsize(theNode) / sizeof(int);
-				val.resize(numElements);
-				bindLocalArrayByName(name, val.begin(), numElements);
 				break;
 			}
 			case SDT_BIND_ON_DISPLAY: displayFlexSimArray(val); break;
@@ -1078,6 +1046,146 @@ template<class ObjType>
 	TreeNode* getStatisticNode(const char* nodeName, int flags, bool assert);
 
 	//@}
+
+	/** @name Interface Binding
+	*	Methods associated with enumerating what methods and operators are available to flexscript
+	*/
+	//@{
+	public:
+	virtual bool isClassType(const char* className) { return false; }
+	virtual void bindInterface() {}
+	private:
+	engine_export void bindMethodByName(const char* name, void* callback, const char* signature, int flags = 0);
+	public:
+	template<class Callback>
+	void bindMethodByName(const char* name, typename std::enable_if<std::is_member_function_pointer<Callback>::value, Callback>::type callback, const char* signature, int flags = 0)
+	{
+		bindMethodByName(name, force_cast<void*>(callback), signature, flags);
+	}
+
+#define bindMethod(method, className, signature, ...) bindMethodByName<decltype(&className::method)>(#method, &className::method, signature, __VA_ARGS__)
+
+	private:
+	engine_export void bindPropertyByName(const char* name, PropertyBinding* newProperty);
+	
+	public:
+	template <class Type>
+	void bindTypedPropertyByName(const char* name, const char* typeName, void* getter, void* setter) 
+	{
+		bindPropertyByName(name, new TypedPropertyBinding<Type>(typeName, getter, setter));
+	}
+#define bindTypedProperty(member, type, getter, setter) bindTypedPropertyByName<type>(#member, #type, force_cast<void*>(getter), force_cast<void*>(setter))
+
+	void bindPropertyByName(const char* name, void* getter, void* setter)
+	{
+		bindPropertyByName(name, new PropertyBinding(getter, setter));
+	}
+#define bindProperty(member, getter, setter) bindPropertyByName(#member, force_cast<void*>(getter), force_cast<void*>(setter))
+
+	private:
+	engine_export void bindDynamicPropertyPrivate(PropertyBinding* dynamicPropertyBinding);
+	public:
+	template<class Getter, class Setter>
+	void bindDynamicPropertyByType(
+		typename std::enable_if<std::is_member_function_pointer<Getter>::value, Getter>::type propertyGetter,
+		typename std::enable_if<std::is_member_function_pointer<Setter>::value, Setter>::type propertySetter
+		) {
+		bindDynamicPropertyPrivate(new PropertyBinding(propertyGetter, propertySetter));
+	}
+#define bindDynamicProperty(getter, setter) bindDynamicPropertyByType<decltype(getter), decltype(setter)>(getter, setter);
+
+	private:
+	engine_export void bindNodeListArrayClassPrivate(void** data);
+
+	public:
+	template <class NLA>
+	void bindNodeListArrayClassByName(const char* interfaceName, const char* elementName, bool readOnly = false)
+	{
+		class NLAHelper : public NLA
+		{
+		public:
+			void construct(NLA& other) { ::new(this)NLA(other); }
+		};
+
+		auto bracketOp = (NLA::ElementType*(NLA::*)(int) const)&NLA::operator[];
+		auto copyConstructor = (void(NLA::*)(NLA& other))&NLAHelper::construct;
+		auto copyAssigner = (NLA&(NLA::*)(const NLA& other))&NLA::operator=;
+
+		void* data[] = {
+			(void*)interfaceName,
+			(void*)elementName,
+			force_cast<void*>(&NLA::size),
+			force_cast<void*>(bracketOp),
+			force_cast<void*>(&NLA::toArray),
+			force_cast<void*>(copyConstructor),
+			force_cast<void*>(copyAssigner),
+			readOnly ? nullptr : force_cast<void*>(&NLA::push),
+			readOnly ? nullptr : force_cast<void*>(&NLA::pop),
+			readOnly ? nullptr : force_cast<void*>(&NLA::shift),
+			readOnly ? nullptr : force_cast<void*>(&NLA::unshift),
+		};
+		bindNodeListArrayClassPrivate(data);
+	}
+#define bindNodeListArrayAsClass(Class, Element) bindNodeListArrayClassByName<Class>(#Class, #Element)
+#define bindNodeListArrayAsReadOnlyClass(Class, Element) bindNodeListArrayClassByName<Class>(#Class, #Element, true)
+
+	private:
+		engine_export void bindCastOperatorPrivate(const char* castClass, void* funcPtr, bool classOrPointer);
+	public:
+		template <class Type, class ToType>
+		void bindCastOperatorByName(const char* castClass, ToType(Type::*funcPtr)(), bool classOrPointer)
+		{
+			bindCastOperatorPrivate(castClass, force_cast<void*>(funcPtr), classOrPointer);
+		}
+#define bindCastOperator(to, caster, classOrPointer) bindCastOperatorByName(#to, caster, classOrPointer)
+
+	private:
+		engine_export void bindBracketOperatorPrivate(const char* returnType, void* operatorPtr, bool intElseString, bool ptrElseClass);
+	public:
+		template <typename ReturnType, typename Type>
+		void bindBracketOperatorByName(const char* returnTypeName, ReturnType(Type::* operatorPtr)(int)) {
+			if (std::is_pointer<ReturnType>::value)
+				bindBracketOperatorPrivate(returnTypeName, force_cast<void*>(operatorPtr), true, true);
+			else
+				bindBracketOperatorPrivate(returnTypeName, force_cast<void*>(operatorPtr), true, false);
+		}
+		template <typename ReturnType, typename Type>
+		void bindBracketOperatorByName(const char* returnTypeName, ReturnType(Type::* operatorPtr)(const char*)) {
+			if (std::is_pointer<ReturnType>::value)
+				bindBracketOperatorPrivate(returnTypeName, force_cast<void*>(operatorPtr), false, true);
+			else
+				bindBracketOperatorPrivate(returnTypeName, force_cast<void*>(operatorPtr), false, false);
+		}
+#define bindBracketOperator(ReturnType, Class, Arg) \
+	bindBracketOperatorByName(#ReturnType, (ReturnType(Class::*)(Arg))&Class::operator [])
+
+	private:
+		engine_export void bindCopyConstructorPrivate(void* copyConstructor);
+		engine_export void bindCopyAssignerPrivate(void* copyAssigner);
+
+	public:
+		template <class Type> // for const copy constructor
+		void bindCopyConstructor(void(Type::*construct)(const Type&)) { bindCopyConstructorPrivate(force_cast<void*>(construct)); }
+		template <class Type> // for non-const copy constructor
+		void bindCopyConstructor(void(Type::*construct)(Type&)) { bindCopyConstructorPrivate(force_cast<void*>(construct)); }
+
+		template <class Type> // for const copy assigner
+		void bindCopyAssigner(Type&(Type::*assigner)(const Type&)) { bindCopyAssignerPrivate(force_cast<void*>(assigner)); }
+		template <class Type> // for non-const copy assigner
+		void bindCopyAssigner(Type&(Type::*assigner)(Type&)) { bindCopyAssignerPrivate(force_cast<void*>(assigner)); }
+
+	private:
+		engine_export void bindClassByNamePrivate(const char* className, void* instance, void* method, size_t size);
+	public:
+		template <class ClassType>
+		void bindClassByName(const char* className, ClassType* type) {
+			bindClassByNamePrivate(className, type, force_cast<void*>(&ClassType::bind), sizeof(ClassType));
+		}
+#define bindClass(ClassType) { ClassType instance; bindClassByName(#ClassType, &instance); }
+
+	public:
+		engine_export void bindDocumentationXMLPath(const char* path);
+	//@}
 };
 
 /// <summary>	Event binding. Stores enumerated events and saves binding information for later use.  </summary>
@@ -1317,6 +1425,7 @@ private:
 public:
 	engine_export double getCount();
 	engine_export double getTotalTimeAt(const Variant& state);
+	engine_export int getNumCategories();
 	Variant getTotalTimeAt(FLEXSIMINTERFACE);
 	static const int PROFILE_FIELD_NAME = 0;
 	static const int PROFILE_FIELD_TIME = 1;

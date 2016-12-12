@@ -125,7 +125,7 @@ public:
 		List* list;
 		Partition* partition;
 		TreeNode* sqlParse = 0;
-		bool queryHasSelectStatement = false;
+		bool queryUsesSelectQty = false;
 		std::vector<std::string> labelNames;
 		void assertSQLParse();
 		void setQuery(SqlQuery* q);
@@ -276,7 +276,7 @@ public:
 
 		Variant pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, int flags);
 		Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, int flags, EntryRange* range = nullptr);
-		double calculateFulfillQty(int queryMatchIndex, SqlQuery* q, OverflowTrackableValue* tracker);
+		Variant calculateSelectClauseValue(int queryMatchIndex, int selectClauseRank, SqlQuery* q, List::OverflowTrackableValue* tracker);
 		/// <summary>	Gets the result from the last pull query. </summary>
 		/// <remarks>	Returns either a scalar value or an array, depending on what the query is. Also,
 		/// 			this will remove the entries that are fulfilled. </remarks>
@@ -296,7 +296,7 @@ public:
 		/// 									range. </param>
 		/// <returns>	The result. </returns>
 		Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool shouldRemoveEntries,
-			EntryRange& range, bool getEntryNodes, double& fulfillQty, double maxFulfillQty, EntryRange* innerRange = nullptr);
+			EntryRange& range, bool getEntryNodes, double& fulfillQty, double maxFulfillQty, EntryRange* innerRange = nullptr, bool isFirstFulfillment = true);
 
 		Variant push(const VariantParams& params);
 		Variant processPushedEntries(EntryRange& range, const Variant& involvedVal);
@@ -327,6 +327,8 @@ public:
 		TreeNode* backOrderStaytime = nullptr;
 
 		ObjRef<FlexSimEvent> backOrderFulfillEvent;
+
+		void assignSelectLabelsToPuller(TreeNode* puller, SqlQuery* q, int queryMatchIndex, bool reset, double qtyRatio = 1.0);
 	};
 
 	NodeListArray<Partition>::SdtSubNodeBindingType partitions;
@@ -461,14 +463,10 @@ private:
 	{
 	public:
 		DestroyPartitionEvent() : FlexSimEvent() {}
-		DestroyPartitionEvent(Partition* partition) :
-			partition(partition), FlexSimEvent(nullptr, 0.0, nullptr, 0, nullptr) {}
+		DestroyPartitionEvent(Partition* partition);
 
 		virtual const char* getClassFactory() override { return "DestroyPartitionEvent"; }
 		virtual void execute() override;
-		virtual void bind() override;
-
-		Partition* partition;
 	};
 
 public:
