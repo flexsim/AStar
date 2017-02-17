@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<flexsim-tree version="2" treetype="tree">
+<flexsim-tree version="3" treetype="tree">
 <node f="42"><name>AStar</name>
  <node f="40"><name></name></node>
  <node f="42"><name>installdata</name>
