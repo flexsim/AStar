@@ -31,6 +31,15 @@ class TableViewDataSource;
 class BundleViewDataSource;
 class ListViewDataSource;
 class UndoRecord;
+class DebuggerUIDelegate;
+class DebugInstance;
+class FlexScriptCode;
+class CppCode;
+class FlexScriptDebugInstance;
+struct PropertyBinding;
+struct Property; 
+struct SelfBoundProperty;
+
 }
 
 //class AviPlayer;
@@ -50,8 +59,6 @@ class FlexSimWebBrowser;
 class ExperimentChildManager;
 class ConsoleWin;
 class UserWindowStyle;
-class FlexScriptCode;
-class CppCode;
 class TableView;
 
 

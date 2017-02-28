@@ -1153,7 +1153,7 @@ namespace FlexSim {
 	typedef double       (*_zsize)(treenode obj);
 
 	#if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
-		typedef FSfptr   (*_getcorecommandfunction)(int index);
+		typedef treenode   (*_getcorecommandfunction)(int index);
 		typedef portinfo (*_inobjectinfo)(treenode, int);
 		typedef portinfo (*_outobjectinfo)(treenode, int);
 		typedef treenode (*_nodeaddsimpledata)(treenode x, SimpleDataType* sdt, int bind);

@@ -93,10 +93,6 @@ namespace FlexSim {
 #define FLEXSIM_DEFINITION_PHASE 2
 #define FLEXSIM_BINDING_PHASE 3
 
-namespace FlexSim {
-typedef Variant (*FSfptr)(CallPoint*);
-}
-
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 	#define DECLARATIONTYPE FLEXSIM_DECLARATION_PHASE
 	#include "FlexsimFuncs.h"

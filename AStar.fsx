@@ -2622,6 +2622,7 @@ applylinks(parent);</data></node>
        <node f="40"><name></name></node>
        <node f="42" dt="2"><name>viewfocus</name><data>modules\AStar\help\Concepts.html</data></node>
        <node f="42" dt="2"><name>title</name><data>AStar Module Concepts</data></node>
+       <node f="42" dt="2"><name>uniqueid</name><data>AStarObjects</data></node>
       </data>
        <node f="40"><name></name></node></node>
       <node f="42" dt="4"><name>Example</name><data>

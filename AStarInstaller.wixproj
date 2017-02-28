@@ -19,12 +19,14 @@
     <DefineConstants>Debug</DefineConstants>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
+    <SuppressIces>ICE03</SuppressIces>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
+    <SuppressIces>ICE03</SuppressIces>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AStar.wxs" />
@@ -45,12 +47,14 @@
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
+    <SuppressIces>ICE03</SuppressIces>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
+    <SuppressIces>ICE03</SuppressIces>
   </PropertyGroup>
   <Import Project="$(WixTargetsPath)" />
   <PropertyGroup>

@@ -245,6 +245,34 @@ public:
 
 	engine_export virtual void bindEvents() override;
 	engine_export virtual TreeNode* getEventInfoObject(const char* eventTitle) override;
+
+	engine_export virtual void bindInterface() override;
+	Vec3 __getCentroid();
+	Vec3 getLocation(double xFactor, double yFactor, double zFactor);
+	Vec3 getLocation(const Vec3& factors);
+	ObjectDataType& setLocation(double x, double y, double z);
+	ObjectDataType& setLocation(double x, double y, double z, double xFactor, double yFactor, double zFactor);
+	ObjectDataType& setRotation(double x, double y, double z);
+	ObjectDataType& setSize(double x, double y, double z);
+
+	Vec3& __getLocation();
+	Vec3& __getRotation();
+	Vec3& __getSize();
+
+	__declspec(property(get = __getLocation)) Vec3& location;
+	__declspec(property(get = __getRotation)) Vec3& rotation;
+	__declspec(property(get = __getSize)) Vec3& size;
+
+	Color& __getColor();
+	// making color into a property creates name collisions with the color() attribute command
+	// so for now I'm leaving this out.
+	//__declspec(property(get = __getColor)) Color& color;
+
+	void setLabelProperty(const char* name, unsigned nameHash, const Variant& val);
+	Variant getLabelProperty(const char* name, unsigned nameHash, bool dieHard);
+
+
+	TreeNode* findAttribute(const char* path);
 };
 
 
