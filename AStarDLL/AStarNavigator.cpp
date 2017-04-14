@@ -731,7 +731,13 @@ the outside 8 nodes.
 	vectorproject(model(), xStart, yStart, 0, up(traveler), outputVector);
 	xStart = outputVector[0];
 	yStart = outputVector[1];
-	initkinematics(kinematics, xStart, yStart, te->b_spatialz, 0, 0, 0, (int)te->v_modifyrotation, 0);
+	int kinFlags = 0;
+	if (te->node_v_modifyrotation) {
+		kinFlags |= KINEMATIC_MANAGE_ROTATIONS;
+		if (!te->canRotateOnIncline())
+			kinFlags |= KINEMATIC_NO_INCLINE_ROTATION;
+	}
+	initkinematics(kinematics, xStart, yStart, te->b_spatialz, 0, 0, 0, kinFlags, 0);
 	endTime = time();
 
 	AStarPathEntry e, laste;
