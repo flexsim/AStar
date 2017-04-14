@@ -27,12 +27,12 @@ void PreferredPath::bind(void)
 	bindDouble(pathWeight, 0);
 }
 
-void PreferredPath::addPassagesToTable(AStarNode* edgeTable, 
-						  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
-						  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
+void PreferredPath::addPassagesToTable(AStarNavigator* nav)
 {
 	double x = pointList[0]->x;
 	double y = pointList[0]->y;
+	double c0 = nav->gridOrigin.x;
+	double r0 = nav->gridOrigin.y;
 
 	// here I assume the row/column number represents the tile of the row and column
 	int col = (int)round((x - c0) / nodeWidth);
@@ -82,33 +82,23 @@ void PreferredPath::addPassagesToTable(AStarNode* edgeTable,
 		// under the line
 		while(currCol != nextCol || currRow != nextRow) {
 
-			AStarSearchEntry e;
-			e.col = currCol;
-			e.row = currRow;
-			AStarNodeExtraData * extra;
-			auto extraIter = extraData->find(e.colRow);
-			AStarNode& node = DeRefEdgeTable(e.row, e.col);
-			if(extraIter == extraData->end()) {
-				extra = &((*extraData)[e.colRow]);
-				memset(extra, 0, sizeof(AStarNodeExtraData));
-				extra->colRow = e.colRow;
-				node.noExtraData = 0;
-			} else {
-				extra = &(extraIter->second);
-			}
+			AStarCell cell(currCol, currRow);
+			AStarNode* node = nav->getNode(cell);
+			AStarNodeExtraData * extra = nav->assertExtraData(cell);
+			
 			extra->bonusRight = (char)maxof(-128,minof(127, extra->bonusRight + horizontalWeight));
 			extra->bonusLeft = (char)maxof(-128,minof(127, extra->bonusLeft - horizontalWeight));
 			extra->bonusUp = (char)maxof(-128,minof(127, extra->bonusUp + verticalWeight));
 			extra->bonusDown = (char)maxof(-128,minof(127, extra->bonusDown - verticalWeight));
 
 			if (dx > 0)
-				node.canGoRight = true;
+				node->canGoRight = true;
 			if (dx < 0)
-				node.canGoLeft = true;
+				node->canGoLeft = true;
 			if (dy > 0)
-				node.canGoUp = true;
+				node->canGoUp = true;
 			if (dy < 0)
-				node.canGoDown = true;
+				node->canGoDown = true;
 
 			// the way that I essentially move along the line
 			// is at each grid point, I do a test step horizontally, 
@@ -145,154 +135,7 @@ void PreferredPath::addPassagesToTable(AStarNode* edgeTable,
 
 void PreferredPath::addVertices(Mesh* barrierMesh, float z)
 {
-	float dark[4] = {0.4f, 0.4f, 0.4f, 1.0f};
-	float light[4] = {0.0, 1.0f, 0.0f, 1.0f};
-	float highlight[4] = {0.3f, 0.3f, 0.3f, 1.0f};
-	if (isActive) {
-		dark[0] += 0.2f;
-		dark[1] += 0.2f;
-		dark[2] += 0.2f;
-		light[0] += 0.2f;
-		light[2] += 0.2f;
-	}
-	nrVerts = 0;
-	meshOffset = barrierMesh->numVerts;
-
-	// Add circles at each node
-	const float TWO_PI = 2 * 3.1415926536f;
-	int numSides = 20;
-	float radius = nodeWidth * 0.3;
-	float dTheta = TWO_PI / numSides;
-
-	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = {pointList[i]->x, pointList[i]->y, z};
-
-		// For each side, draw a triangle
-		for (int j = 0; j < numSides - 1; j++) {
-			float theta = j * dTheta;
-			float x = radius * cos(theta) + center[0];
-			float y = radius * sin(theta) + center[1];
-			float x2 = radius * cos(theta + dTheta) + center[0];
-			float y2 = radius * sin(theta + dTheta) + center[1];
-			
-			float pos1[3] = {x, y, z};
-			float pos2[3] = {x2, y2, z};
-
-#define ABV(pos, color, activeColor) {\
-			int vertName = barrierMesh->addVertex();\
-			nrVerts++;\
-			if (i == activePointIndex)\
-				barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, activeColor);\
-			else\
-				barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, color);\
-			barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
-		}
-
-			ABV(center, dark, highlight);
-			ABV(pos1, dark, highlight);
-			ABV(pos2, dark, highlight);
-
-		}
-
-		// Draw the last triangle using first and last coords
-		float lastTheta = (numSides - 1) * dTheta;
-		float pos2[3] = {radius + center[0], center[1], z};
-		float pos1[3] = {radius * cos(lastTheta) + center[0], radius * sin(lastTheta) + center[1], z};
-		ABV(center, dark, highlight);
-		ABV(pos1, dark, highlight);
-		ABV(pos2, dark, highlight);
-	}
-#undef ABV
-
-	// Draw a series of triangles
-	float maxTriangleWidth = nodeWidth;
-	float distToRect = 0.4 * nodeWidth;
-	float distToCorner = sqrt(distToRect * distToRect + radius * radius);
-	float height = 2 * radius;
-	dTheta = atan2(radius, distToRect);
-	for (int i = 0; i < pointList.size() - 1; i++) {
-		Point* point = pointList[i];
-		Point* next = pointList[i + 1];
-
-		float dx = next->x - point->x;
-		float dy = next->y - point->y;
-		float theta = atan2(dy, dx);
-		
-		float length = sqrt(dx * dx + dy * dy) - 2 * distToRect;
-		if (length <= 0)
-			continue;
-		
-		float sinTheta = sin(theta);
-		float cosTheta = cos(theta);
-		// Find how many will fit, and stretch them to fit.
-		int numTriangles = (int)(length / maxTriangleWidth);
-		if (numTriangles < 1) {
-			numTriangles = 1;
-		}
-		float triangleWidth = length / numTriangles;
-		float tw = triangleWidth;
-		
-		// Use the bottomleft corner of the rectangle to get every other corner
-		float bottomLeft[3] = {distToCorner * cos(theta - dTheta) + point->x, 
-			distToCorner * sin(theta - dTheta) + point->y, z};
-
-		float topLeft[3] = {bottomLeft[0] - height * sinTheta, 
-			bottomLeft[1] + height * cosTheta, z};
-
-		float pos0[3] = {0.0f, 0.0f, z};
-		float pos1[3] = {0.0f, 0.0f, z};
-		float pos2[3] = {0.0f, 0.0f, z};
-
-		for (int j = 0; j < numTriangles; j++) {
-
-#define ROTATE_POINT(rx, ry, x, y) \
-	rx = x * cosTheta - y * sinTheta;\
-	ry = x * sinTheta + y * cosTheta;
-
-#define ABV(pos, color)  {\
-	int vertName = barrierMesh->addVertex();\
-	nrVerts++;\
-	barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, color);\
-	barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
-}
-
-#define ABT(pos1, pos2, pos3, dark, green) ABV(pos1, green) ABV(pos2, dark) ABV(pos3, dark)
-
-
-			float triangleTipX = (j + 1) * tw;
-			float triangleTipY = height / 2.0;
-			float triangleTopX = j * tw;
-			float triangleTopY = height;
-			float triangleBottomX = triangleTopX;
-			float triangleBottomY = 0;
-
-			float rtX, rtY;
-
-			ROTATE_POINT(rtX, rtY, triangleTipX, triangleTipY);
-			triangleTipX = rtX + bottomLeft[0];
-			triangleTipY = rtY + bottomLeft[1];
-
-			ROTATE_POINT(rtX, rtY, triangleTopX, triangleTopY);
-			triangleTopX = rtX + bottomLeft[0];
-			triangleTopY = rtY + bottomLeft[1];
-
-			ROTATE_POINT(rtX, rtY, triangleBottomX, triangleBottomY);
-			triangleBottomX = rtX + bottomLeft[0];
-			triangleBottomY = rtY + bottomLeft[1];
-
-			pos0[0] = triangleTipX;
-			pos0[1] = triangleTipY;
-			pos1[0] = triangleTopX;
-			pos1[1] = triangleTopY;
-			pos2[0] = triangleBottomX;
-			pos2[1] = triangleBottomY;
-
-			ABT(pos0, pos1, pos2, dark, light);
-		}
-	}
-#undef ABT
-#undef ABV
-#undef ROTATE_POINT
+	addPathVertices(barrierMesh, z, Vec4f(0.0f, 1.0f, 0.0f, 1.0f));
 }
 
 ASTAR_FUNCTION Variant PreferredPath_setWeight(FLEXSIMINTERFACE)

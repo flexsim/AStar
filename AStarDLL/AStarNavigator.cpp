@@ -3,10 +3,35 @@
 #include "OneWayDivider.h"
 #include "PreferredPath.h"
 #include "macros.h"
+#include "Bridge.h"
 
 #include <sstream>
 
+int AStarNode::rowInc[] = 
+{
+	0, // right
+	0, // left
+	1, // up
+	-1 // down
+};
+int AStarNode::colInc[]
+{
+	1, // right
+	-1, // left
+	0, // up
+	0 // down
+};
+#define TRAVEL_UP 0x1
+#define TRAVEL_DOWN 0x2
+#define TRAVEL_RIGHT 0x4
+#define TRAVEL_LEFT 0x8
+#define TRAVEL_FAR_UP 0x10
+#define TRAVEL_FAR_DOWN 0x20
+#define TRAVEL_FAR_RIGHT 0x40
+#define TRAVEL_FAR_LEFT 0x80
+
 unsigned int AStarNavigator::editMode = 0;
+
 
 AStarNavigator::AStarNavigator()
 	: edgeTable(NULL)
@@ -226,6 +251,7 @@ double AStarNavigator::onDrag(TreeNode* view)
 	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
 	double dx = draginfo(DRAG_INFO_DX);
 	double dy = draginfo(DRAG_INFO_DY);
+	double dz = draginfo(DRAG_INFO_DZ);
 
 	// Move all attached barriers
 	if (pickType == PICK_TYPE_BOUNDS) {
@@ -268,7 +294,7 @@ double AStarNavigator::onDrag(TreeNode* view)
 
 	if (objectexists(secondary)) {
 		Barrier* barrier = secondary->objectAs(Barrier);
-		barrier->onMouseMove(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), dx, dy);
+		barrier->onMouseMove(Vec3(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), 0), Vec3(dx, dy, dz));
 		setDirty();
 		return 1;
 	} 
@@ -365,10 +391,74 @@ double AStarNavigator::navigateToLoc(treenode traveler, double* destLoc, double 
 		return 0;
 	}
 
-	return calculateNavigateToLoc(traveler, destLoc, endSpeed);
+	return calculateRoute(traveler, destLoc, endSpeed);
 }
 
-double AStarNavigator::calculateNavigateToLoc(TreeNode* traveler, double* destLoc, double endSpeed, bool queryDist)
+
+
+
+AStarSearchEntry* AStarNavigator::checkExpandOpenSet(AStarNode* node, AStarSearchEntry* entryIn, Direction direction, 
+	int travelVal, double dist, double bonusMod, AStarNodeExtraData* extraData)
+{
+	if (node->canGo(direction)) {
+		int theCol = entryIn->cell.col + AStarNode::colInc[direction];
+		int theRow = entryIn->cell.row + AStarNode::rowInc[direction];
+		double distance = dist;
+		if (extraData && extraData->getBonus(direction) != 0) {
+			distance *= 1.0 - (bonusMod * (double)(int)extraData->getBonus(direction)) / 127;
+		}
+		return expandOpenSet(theRow, theCol, distance, travelVal);
+	}
+	return nullptr;
+}
+
+AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(AStarNode* node, AStarSearchEntry* entryIn,
+	Direction dir1, Direction dir2, int travelVal, double dist, AStarNodeExtraData* extraData)
+{
+	if (!node->canGo(dir1) || !node->canGo(dir2))
+		return nullptr;
+	AStarCell cell;
+	AStarSearchEntry* e1 = nullptr;
+	cell.row = entryIn->cell.row + AStarNode::rowInc[dir1];
+	cell.col = entryIn->cell.col;
+	if (getNode(cell)->canGo(dir2)) {
+		auto iter = entryHash.find(cell.colRow);
+		if (iter != entryHash.end()) {
+			AStarSearchEntry* vert = &totalSet[iter->second];
+			AStarNode* vertNode = &DeRefEdgeTable(vert->cell.row, vert->cell.col);
+			e1 = checkExpandOpenSet(vertNode, vert, dir2, travelVal, dist, ROOT2_DIV2, extraData);
+		}
+	}
+	if (e1 == nullptr) {
+		cell.row = entryIn->cell.row;
+		cell.col = entryIn->cell.col + AStarNode::colInc[dir2];
+		if (getNode(cell)->canGo(dir1)) {
+			auto iter = entryHash.find(cell.colRow);
+			if (iter != entryHash.end()) {
+				AStarSearchEntry* hrz = &totalSet[iter->second];
+				AStarNode* hrzNode = &DeRefEdgeTable(hrz->cell.row, hrz->cell.col);
+				e1 = checkExpandOpenSet(hrzNode, hrz, dir1, travelVal, dist, ROOT2_DIV2, extraData);
+			}
+		}
+	}
+
+	if (e1 && deepSearch) {
+		AStarNode* n1 = &DeRefEdgeTable(e1->cell.row, e1->cell.col);
+		AStarSearchEntry e1StackCopy = *e1;
+
+		checkExpandOpenSet(n1, (&e1StackCopy), dir1, 
+			(travelVal | ((travelVal & TRAVEL_UP) ? TRAVEL_FAR_UP : TRAVEL_FAR_DOWN)), 
+			ROOT5_DIVROOT2 * dist, ROOT5_DIV5, extraData);
+		
+		checkExpandOpenSet(n1, (&e1StackCopy), dir2, 
+			(travelVal | ((travelVal & TRAVEL_RIGHT) ? TRAVEL_FAR_RIGHT : TRAVEL_FAR_LEFT)), 
+			ROOT5_DIVROOT2 * dist, ROOT5_DIV5, extraData);
+	}
+	return e1;
+}
+
+
+double AStarNavigator::calculateRoute(TreeNode* traveler, double* tempDestLoc, double endSpeed, bool queryDist)
 {
 	//If this method is being called to get the distance from the TE to the destination, don't set
 	//anything on the TE
@@ -387,10 +477,10 @@ double AStarNavigator::calculateNavigateToLoc(TreeNode* traveler, double* destLo
 	xStart = outputVector[0];
 	yStart = outputVector[1];
 	
-	double x = destLoc[0];
-	double y = destLoc[1];
-	destx = x;
-	desty = y;
+	double x = tempDestLoc[0];
+	double y = tempDestLoc[1];
+	destLoc.x = x;
+	destLoc.y = y;
 
 	TaskExecuter* te = traveler->objectAs(TaskExecuter);
 	TreeNode* coupling;
@@ -403,37 +493,24 @@ double AStarNavigator::calculateNavigateToLoc(TreeNode* traveler, double* destLo
 	}
 	
 	// get the x/y location of the bottom left corner of my grid
-	col0x = (xOffset + 0.5) * nodeWidth;
-	row0y = (yOffset + 0.5) * nodeWidth;
+	gridOrigin.x = (xOffset + 0.5) * nodeWidth;
+	gridOrigin.y = (yOffset + 0.5) * nodeWidth;
 
-	// figure out the column and row that the traveler is starting from
-	int colstart = (int)round((xStart - col0x) / nodeWidth);	
-	colstart = max(0, colstart); 
-	colstart = min(edgeTableXSize - 1, colstart);
-	int rowstart = (int)round((yStart - row0y) / nodeWidth);	
-	rowstart = max(0, rowstart); 
-	rowstart = min(edgeTableYSize - 1, rowstart);
-
-	// figure out the column and row that the traveler is going to
-	int coldest = (int)round((x - col0x) / nodeWidth);	
-	coldest = max(0, coldest); 
-	coldest = min(edgeTableXSize - 1, coldest);
-	int rowdest = (int)round((y - row0y) / nodeWidth);	
-	rowdest = max(0, rowdest); 
-	rowdest = min(edgeTableYSize - 1, rowdest);
+	AStarCell startCell = getCellFromLoc(Vec2(xStart, yStart));
+	AStarCell destCell = getCellFromLoc(destLoc);
 
 	// This will either be generated by the search, or looked up by the cache
-	std::vector<unsigned int> backwardsList;
+	std::vector<AStarPathEntry> backwardsList;
 
 	// Figure out if this path is in the cache
 	bool shouldUseCache = false;
 	AStarPathID p;
 	if (cachePaths && !queryDist) {
 		requestCount++;
-		p.startRow = rowstart;
-		p.startCol = colstart;
-		p.endRow = rowdest;
-		p.endCol = coldest;
+		p.startRow = startCell.row;
+		p.startCol = startCell.col;
+		p.endRow = destCell.row;
+		p.endCol = destCell.col;
 	
 		auto e = pathCache.find(p.id);
 		if (e != pathCache.end())
@@ -442,12 +519,12 @@ double AStarNavigator::calculateNavigateToLoc(TreeNode* traveler, double* destLo
 
 	if (!shouldUseCache) {
 		// set xStart/yStart to the center of the start grid point
-		xStart = col0x + colstart * nodeWidth;
-		yStart = row0y + rowstart * nodeWidth;
+		xStart = gridOrigin.x + startCell.col * nodeWidth;
+		yStart = gridOrigin.y + startCell.row * nodeWidth;
 
 		// set x/y to the cetner of the dest grid point
-		x = col0x + coldest * nodeWidth;
-		y = row0y + rowdest * nodeWidth;
+		x = gridOrigin.x + destCell.col * nodeWidth;
+		y = gridOrigin.y + destCell.row * nodeWidth;
 
 		// total set includes all resolved and open nodes in the graph
 		totalSet.clear();
@@ -460,30 +537,46 @@ double AStarNavigator::calculateNavigateToLoc(TreeNode* traveler, double* destLo
 		// add the first node to the "open set"
 		totalSet.push_back(AStarSearchEntry());
 		AStarSearchEntry* start = &totalSet.back();
-		start->col = colstart;
-		start->row = rowstart;
+		start->cell.col = startCell.col;
+		start->cell.row = startCell.row;
 
 		// Set the desination outside a barrier if necessary
 		if (ignoreDestBarrier) {
 			AStarSearchEntry validDest;
-			validDest.row = rowdest;
-			validDest.col = coldest;
+			validDest.cell.row = destCell.row;
+			validDest.cell.col = destCell.col;
 
-			searchBarrier(&validDest, te, rowstart, colstart);
-			coldest = validDest.col;
-			rowdest = validDest.row;
-			x = col0x + coldest * nodeWidth;
-			y = row0y + rowdest * nodeWidth;
+			searchBarrier(&validDest, te, startCell.row, startCell.col);
+			destCell.col = validDest.cell.col;
+			destCell.row = validDest.cell.row;
+			x = gridOrigin.x + destCell.col * nodeWidth;
+			y = gridOrigin.y + destCell.row * nodeWidth;
 		}
 
 		// Get out of a barrier if necessary
-		searchBarrier(start, te, rowdest, coldest, true);
+		searchBarrier(start, te, destCell.row, destCell.col, true);
 
 		start->g = 0;
 		start->h = (1.0 - maxPathWeight) * sqrt(sqr(x-xStart)+sqr(y-yStart));
+		start->f = start->g + start->h;
 		start->previous = ~0;
 		start->closed = 0;
-		entryHash[start->colRow] = 0;
+
+		start->travelFromPrevious = 0;
+
+		double zRot = fmod(zrot(traveler), 360);
+		if (zRot < 0) zRot += 360;
+
+		if (zRot < 80 || zRot > 280)
+			start->travelFromPrevious |= TRAVEL_RIGHT;
+		else if (zRot < 260 && zRot > 100)
+			start->travelFromPrevious |= TRAVEL_LEFT;
+		if (zRot < 170 && zRot > 10)
+			start->travelFromPrevious |= TRAVEL_UP;
+		else if (zRot < 350 && zRot > 190)
+			start->travelFromPrevious |= TRAVEL_DOWN;
+
+		entryHash[start->cell.colRow] = 0;
 
 		// the open set stores:
 		// 1. the index into totalset that references the AStarSearchEntry that i'm going to resolve
@@ -498,7 +591,8 @@ double AStarNavigator::calculateNavigateToLoc(TreeNode* traveler, double* destLo
 		
 		int size;
 		while ((size = openSetHeap.size()) > 0) {
-			HeapEntry he(0.0f, 0); AStarSearchEntry * entry = NULL;
+			HeapEntry heapEntry(0.0f, 0); 
+			AStarSearchEntry * entry = NULL;
 			// here I pop off an entry from the heap.
 			// the trick is that some entries may have changed their g value
 			// in the mean time, so I need to throw away entries if they are 
@@ -506,146 +600,36 @@ double AStarNavigator::calculateNavigateToLoc(TreeNode* traveler, double* destLo
 			// entry's current f value). In this case, the entry will already 
 			// have been closed.
 			do {
-				he = openSetHeap.top();
+				heapEntry = openSetHeap.top();
 				openSetHeap.pop();
-				entry = &(totalSet[he.totalSetIndex]);
+				entry = &(totalSet[heapEntry.totalSetIndex]);
 			} while(entry->closed && openSetHeap.size() > 0);
 
 			if (!entry) break;
 
-			shortestIndex = he.totalSetIndex;
+			shortestIndex = heapEntry.totalSetIndex;
 			shortest = *entry;
 			if (shortest.h < closestSoFar) {
 				closestSoFar = shortest.h;
-				closestIndex = he.totalSetIndex;
+				closestIndex = heapEntry.totalSetIndex;
 			}
 			// close the node
 			shortest.closed = 1;
-			n = &(DeRefEdgeTable(shortest.row, shortest.col));
+			n = &(DeRefEdgeTable(shortest.cell.row, shortest.cell.col));
 			n->open = false;
 
 			// if I am at the destination, then break out of the solve loop
-			if (shortest.col == coldest && shortest.row == rowdest) {
+			if (shortest.cell.col == destCell.col && shortest.cell.row == destCell.row) {
 				final = &shortest;
 				break;
 			}
-
-			expandableUp = 0;
-			expandableRight = 0;
-			expandableDown = 0;
-			expandableLeft = 0;
-
-			#define TRAVEL_UP 0x1
-			#define TRAVEL_DOWN 0x2
-			#define TRAVEL_RIGHT 0x4
-			#define TRAVEL_LEFT 0x8
-			#define TRAVEL_FAR_UP 0x10
-			#define TRAVEL_FAR_DOWN 0x20
-			#define TRAVEL_FAR_RIGHT 0x40
-			#define TRAVEL_FAR_LEFT 0x80
 
 			// travelFromPrevious is used to figure out the direction he's currently
 			// going because if there are multiple path solutions with the same 
 			// total distance, then I want to give priority to those solutions that
 			// keep him traveling in the same direction, i.e. make him turn the fewest
 			// times
-			travelFromPrevious = 0;
-			// if the node I'm resolving is not the first node in the set ...
-			if (shortest.previous != ~0) {
-				AStarSearchEntry& lastEntry = totalSet[shortest.previous];
-
-				if (deepSearch) {
-					int colDiff = lastEntry.col - shortest.col;
-					if (colDiff < -1) {
-						travelFromPrevious |= TRAVEL_FAR_RIGHT;
-					} else if (colDiff < 0) {
-						travelFromPrevious |= TRAVEL_RIGHT;
-					} else if (colDiff > 1) {
-						travelFromPrevious |= TRAVEL_FAR_LEFT;
-					} else if (colDiff) {
-						travelFromPrevious |= TRAVEL_LEFT;
-					}
-
-					int rowDiff = lastEntry.row - shortest.row;
-					if (rowDiff < -1) {
-						travelFromPrevious |= TRAVEL_FAR_UP;
-					} else if (rowDiff < 0) {
-						travelFromPrevious |= TRAVEL_UP;
-					} else if (rowDiff > 1) {
-						travelFromPrevious |= TRAVEL_FAR_DOWN;
-					} else if (rowDiff) {
-						travelFromPrevious |= TRAVEL_DOWN;
-					}
-				} else {
-					// then see if he's travel right or left ...
-					if(lastEntry.col < shortest.col) travelFromPrevious |= TRAVEL_RIGHT;
-					else if(lastEntry.col > shortest.col) travelFromPrevious |= TRAVEL_LEFT;
-					// and see if he's traveling up or down
-					if(lastEntry.row < shortest.row) travelFromPrevious |= TRAVEL_UP;
-					else if(lastEntry.row > shortest.row) travelFromPrevious |= TRAVEL_DOWN;
-				}
-			}
-
-
-#define CHECK_EXPAND_OPEN_SET(node, entryIn, entryOut, direction, boundaryCondition, rowInc, colInc, travelVal, dist, bonusMod)\
-	if(node->canGo##direction && boundaryCondition){\
-		int theCol = entryIn->col + colInc;\
-		int theRow = entryIn->row + rowInc;\
-		double distance = dist;\
-		if(!node->noExtraData) {\
-			auto e = edgeTableExtraData.find(entryIn->colRow);\
-			if (e != edgeTableExtraData.end() && e->second.bonus##direction)\
-			distance *= 1.0 - (bonusMod * e->second.bonus##direction)/127;\
-		}\
-		entryOut = expandOpenSet(theRow, theCol, distance, travelVal);\
-	} else {\
-		entryOut = NULL;\
-	}
-
-#define CHECK_EXPAND_OPEN_SET_DIAGONAL(node, entryIn, entryOut, dir1, dir2, condition1, condition2, rowInc, colInc, travelVal, dist) {\
-	AStarSearchEntry finder;\
-	if (node->canGo##dir1) {\
-		finder.row = entryIn->row + rowInc;\
-		finder.col = entryIn->col;\
-		auto iter = entryHash.find(finder.colRow);\
-		if (iter != entryHash.end()) {\
-			AStarSearchEntry* vert = &totalSet[iter->second];\
-			AStarNode* vertNode = &DeRefEdgeTable(vert->row, vert->col);\
-			CHECK_EXPAND_OPEN_SET(vertNode, vert, entryOut, dir2,\
-				(condition1 && condition2), 0, colInc, (travelVal | travelVal << 4), dist, ROOT2_DIV2);\
-		}\
-	}\
-	\
-	if (!entryOut && node->canGo##dir2) {\
-		finder.row = entryIn->row;\
-		finder.col = entryIn->col + colInc;\
-		auto iter = entryHash.find(finder.colRow);\
-		if (iter != entryHash.end()) {\
-			AStarSearchEntry* hrz = &totalSet[iter->second];\
-			AStarNode* hrzNode = &DeRefEdgeTable(hrz->row, hrz->col);\
-			CHECK_EXPAND_OPEN_SET(hrzNode, hrz, entryOut, dir1,\
-				(condition1 && condition2), rowInc, 0, travelVal, dist, ROOT2_DIV2);\
-		}\
-	}\
-}
-
-#define CHECK_EXPAND_OPEN_SET_DEEP(node, dir1, dir2, condition1, condition2, rowInc, colInc, travelVal, dist) {\
-	AStarSearchEntry* e1 = NULL;\
-	CHECK_EXPAND_OPEN_SET_DIAGONAL(node, (&shortest), e1, dir1, dir2, condition1, condition2, rowInc, colInc, travelVal, dist);\
-	if (e1) {\
-		AStarNode* n1 = &DeRefEdgeTable(e1->row, e1->col);\
-		AStarSearchEntry e1StackCopy = *e1;\
-		CHECK_EXPAND_OPEN_SET(n1, (&e1StackCopy), e1, dir1, \
-			(condition1 + rowInc && condition2), rowInc, 0, \
-			(travelVal | ((travelVal & TRAVEL_UP) ? TRAVEL_FAR_UP : TRAVEL_FAR_DOWN)), \
-			ROOT5_DIVROOT2 * dist, ROOT5_DIV5);\
-		\
-		CHECK_EXPAND_OPEN_SET(n1, (&e1StackCopy), e1, dir2, \
-			(condition1 && condition2 + colInc), 0, colInc, \
-			(travelVal | ((travelVal & TRAVEL_RIGHT) ? TRAVEL_FAR_RIGHT : TRAVEL_FAR_LEFT)), \
-			ROOT5_DIVROOT2 * dist, ROOT5_DIV5);\
-	}\
-}
+			travelFromPrevious = shortest.travelFromPrevious;
 
 /*
 
@@ -669,72 +653,37 @@ the outside 8 nodes.
 +-----------------------------+	 
 
 */
-		
-		AStarSearchEntry* result = NULL;
-		CHECK_EXPAND_OPEN_SET(n, (&shortest), result, Up, shortest.row < edgeTableYSize - 1, 1, 0, TRAVEL_UP, 1.0, 1.0);
-		CHECK_EXPAND_OPEN_SET(n, (&shortest), result, Right, shortest.col < edgeTableXSize - 1, 0, 1, TRAVEL_RIGHT, 1.0, 1.0);
-		CHECK_EXPAND_OPEN_SET(n, (&shortest), result, Down, shortest.row > 0, -1, 0, TRAVEL_DOWN, 1.0, 1.0);
-		CHECK_EXPAND_OPEN_SET(n, (&shortest), result, Left, shortest.col > 0, 0, -1, TRAVEL_LEFT, 1.0, 1.0);
 
+			AStarNodeExtraData* extraData = nullptr;
+			if (!n->noExtraData) {
+				auto found = edgeTableExtraData.find(shortest.cell.colRow);
+				if (found != edgeTableExtraData.end())
+					extraData = &(found->second);
+			}
+			checkExpandOpenSet(n, (&shortest), Up, TRAVEL_UP, 1.0, 1.0, extraData);
+			checkExpandOpenSet(n, (&shortest), Right, TRAVEL_RIGHT, 1.0, 1.0, extraData);
+			checkExpandOpenSet(n, (&shortest), Down, TRAVEL_DOWN, 1.0, 1.0, extraData);
+			checkExpandOpenSet(n, (&shortest), Left, TRAVEL_LEFT, 1.0, 1.0, extraData);
 
-		if (deepSearch) {
+			checkExpandOpenSetDiagonal(n, (&shortest), Up, Right, TRAVEL_UP | TRAVEL_RIGHT, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(n, (&shortest), Up, Left, TRAVEL_UP | TRAVEL_LEFT, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(n, (&shortest), Down, Right, TRAVEL_DOWN | TRAVEL_RIGHT, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(n, (&shortest), Down, Left, TRAVEL_DOWN | TRAVEL_LEFT, ROOT2, extraData);
 
-			CHECK_EXPAND_OPEN_SET_DEEP(n, Up, Right, 
-				edgeTableYSize > shortest.row + 1,
-				edgeTableXSize > shortest.col + 1,
-				1, 1, TRAVEL_UP | TRAVEL_RIGHT, ROOT2
-			);
-
-			CHECK_EXPAND_OPEN_SET_DEEP(n, Up, Left, 
-				edgeTableYSize > shortest.row + 1,
-				0 < shortest.col,
-				1, -1, TRAVEL_UP | TRAVEL_LEFT, ROOT2
-			);
-
-			CHECK_EXPAND_OPEN_SET_DEEP(n, Down, Right, 
-				0 < shortest.row,
-				edgeTableXSize > shortest.col + 1,
-				-1, 1, TRAVEL_DOWN | TRAVEL_RIGHT, ROOT2
-			);
-
-			CHECK_EXPAND_OPEN_SET_DEEP(n, Down, Left, 
-				0 < shortest.row,
-				0 < shortest.col,
-				-1, -1, TRAVEL_DOWN | TRAVEL_LEFT, ROOT2
-			);
-
-		} else {
-			
-
-			CHECK_EXPAND_OPEN_SET_DIAGONAL(n, (&shortest), result, Up, Right, 
-				shortest.row < edgeTableYSize - 1,
-				shortest.col < edgeTableXSize - 1,
-				1, 1, TRAVEL_UP | TRAVEL_RIGHT, ROOT2
-			);
-
-			CHECK_EXPAND_OPEN_SET_DIAGONAL(n, (&shortest), result, Up, Left, 
-				shortest.row < edgeTableYSize - 1,
-				shortest.col > 0,
-				1, -1, TRAVEL_UP | TRAVEL_LEFT, ROOT2
-			);
-
-			CHECK_EXPAND_OPEN_SET_DIAGONAL(n, (&shortest), result, Down, Right, 
-				shortest.row > 0,
-				shortest.col < edgeTableXSize - 1,
-				-1, 1, TRAVEL_DOWN | TRAVEL_RIGHT, ROOT2
-			);
-
-			CHECK_EXPAND_OPEN_SET_DIAGONAL(n, (&shortest), result, Down, Left, 
-				shortest.row > 0,
-				shortest.col > 0,
-				-1, -1, TRAVEL_DOWN | TRAVEL_LEFT, ROOT2
-			);
-		}
-	} // End of the while loop
-
-#undef CHECK_EXPAND_OPEN_SET_DEEP
-#undef CHECK_EXPAND_OPEN_SET_DIAGONAL
-#undef CHECK_EXPAND_OPEN_SET
+			if (n->hasExtraData) {
+				auto e = edgeTableExtraData.find(shortest.cell.colRow);
+				if (e != edgeTableExtraData.end() && e->second.bridges.size() > 0) {
+					for (int i = 0; i < e->second.bridges.size(); i++) {
+						auto& entry = e->second.bridges[i];
+						double addedDist = entry.bridge->calculateDistance();
+						Point* endPoint = entry.isAtBridgeStart ? entry.bridge->pointList.back() : entry.bridge->pointList.front();
+						AStarCell endCell = getCellFromLoc(Vec2(endPoint->x, endPoint->y));
+						AStarNode* node = getNode(endCell);
+						expandOpenSet(endCell.row, endCell.col, addedDist / nodeWidth, 0, i);
+					}
+				}
+			}
+		} // End of the while loop
 
 		// remake the start pointer (totalSet may reallocate due to push_back)
 		start = totalSet.data();
@@ -744,7 +693,7 @@ the outside 8 nodes.
 		}
 
 		// Tack on the barrierStart if necessary
-		if (barrierStart.colRow != ~0) {
+		if (barrierStart.cell.colRow != ~0) {
 			// Add barrierStart to the totalSet
 			totalSet.push_back(barrierStart);
 
@@ -754,14 +703,15 @@ the outside 8 nodes.
 
 		unsigned int startPrevVal =  ~((unsigned int)0);
 		AStarSearchEntry* temp = final;
+		char prevBridgeIndex = -1;
 		while (1) {
-			backwardsList.push_back(temp->colRow);
-			if(temp->previous != startPrevVal)
+			backwardsList.push_back(AStarPathEntry(temp->cell, prevBridgeIndex));
+			if (temp->previous != startPrevVal) {
+				prevBridgeIndex = temp->prevBridgeIndex;
 				temp = &(totalSet[temp->previous]);
+			}
 			else break;
 		}
-
-		
 
 		if (cachePaths) {
 			pathCache[p.id] = backwardsList;
@@ -773,7 +723,6 @@ the outside 8 nodes.
 		cacheUseCount++;
 	}
 
-	int nrNodes = backwardsList.size();
 
 	if (!queryDist)
 		kinematics = te->node_v_kinematics;
@@ -785,58 +734,82 @@ the outside 8 nodes.
 	initkinematics(kinematics, xStart, yStart, te->b_spatialz, 0, 0, 0, (int)te->v_modifyrotation, 0);
 	endTime = time();
 
-	AStarSearchEntry e, laste;
-	laste.colRow = backwardsList[nrNodes - 1];
+	AStarPathEntry e, laste;
+	int nrNodes = backwardsList.size();
+	laste.cell = backwardsList[nrNodes - 1].cell;
 	for(int i = nrNodes - 2; i >= 0; i--) {
-		e.colRow = backwardsList[i];
-		double nextX = (e.col - laste.col)*nodeWidth;
-		double nextY = (e.row - laste.row)*nodeWidth;
-		endTime = addkinematic(kinematics, nextX, nextY, 0,
-			te->v_maxspeed, 0,0,0,0,endTime, KINEMATIC_TRAVEL);
+		e = backwardsList[i];
+		double totalTravelDist;
+		if (laste.bridgeIndex == -1) {
+			double nextX = (e.cell.col - laste.cell.col)*nodeWidth;
+			double nextY = (e.cell.row - laste.cell.row)*nodeWidth;
+			endTime = addkinematic(kinematics, nextX, nextY, 0,
+				te->v_maxspeed, 0, 0, 0, 0, endTime, KINEMATIC_TRAVEL);
+			totalTravelDist = sqrt(sqr(nextX) + sqr(nextY));
+		} else {
+			auto e = edgeTableExtraData.find(laste.cell.colRow);
+			AStarNodeExtraData::BridgeEntry& entry = e->second.bridges[laste.bridgeIndex];
+			totalTravelDist = entry.bridge->calculateDistance();
+			int begin, end, inc;
+			if (entry.isAtBridgeStart) {
+				begin = 0;
+				end = entry.bridge->pointList.size();
+				inc = 1;
+			} else {
+				begin = entry.bridge->pointList.size();
+				end = -1;
+				inc = -1;
+			}
+			Point* lastPoint = entry.bridge->pointList[begin];
+			double startZ = lastPoint->z;
+			for (int i = begin + inc; i != end; i += inc) {
+				Point* point = entry.bridge->pointList[i];
+				Vec3 diff(point->x - lastPoint->x, point->y - lastPoint->y, point->z - lastPoint->z);
+				endTime = addkinematic(kinematics, diff.x, diff.y, diff.z,
+					te->v_maxspeed, 0, 0, 0, 0, endTime, KINEMATIC_TRAVEL);
+				lastPoint = point;
+			}
+			double zDiff = lastPoint->z - startZ;
+			if (fabs(zDiff) > 0.001) {
+				addkinematic(kinematics, 0, 0, -zDiff,
+					te->v_maxspeed, 0, 0, 0, 0, endTime, KINEMATIC_TRAVEL);
+			}
+		}
 
 		if (!queryDist) {
-			double totalTravelDist = sqrt(sqr(nextX) + sqr(nextY));
 			te->v_totaltraveldist += totalTravelDist;
 
 		
 			//Traffic info
-			AStarNodeExtraData* extra;
-			auto extraIter = edgeTableExtraData.find(e.colRow);
-			if (extraIter == edgeTableExtraData.end()) {
-				extra = &(edgeTableExtraData[e.colRow]);
-				memset(extra, 0, sizeof(AStarNodeExtraData));
-				extra->colRow = e.colRow;
-				DeRefEdgeTable(e.row, e.col).noExtraData = 0;
-			} else {
-				extra = &extraIter->second;
-			}
+			AStarNodeExtraData* extra = assertExtraData(e.cell);
 			unsigned int* involvedextra;
-			if (e.row > laste.row) {
-				if(e.col > laste.col) involvedextra = &extra->nrFromDownLeft;
-				else if(e.col < laste.col) involvedextra = &extra->nrFromDownRight;
+			if (e.cell.row > laste.cell.row) {
+				if (e.cell.col > laste.cell.col) involvedextra = &extra->nrFromDownLeft;
+				else if (e.cell.col < laste.cell.col) involvedextra = &extra->nrFromDownRight;
 				else involvedextra = &extra->nrFromDown;
 			}
-			else if(e.row < laste.row)
+			else if (e.cell.row < laste.cell.row)
 			{
-				if(e.col > laste.col) involvedextra = &extra->nrFromUpLeft;
-				else if(e.col < laste.col) involvedextra = &extra->nrFromUpRight;
+				if (e.cell.col > laste.cell.col) involvedextra = &extra->nrFromUpLeft;
+				else if (e.cell.col < laste.cell.col) involvedextra = &extra->nrFromUpRight;
 				else involvedextra = &extra->nrFromUp;
 			}
-			else if(e.col > laste.col) involvedextra = &extra->nrFromLeft;
+			else if (e.cell.col > laste.cell.col) 
+				involvedextra = &extra->nrFromLeft;
 			else involvedextra = &extra->nrFromRight;
 
 			involvedextra[0]++;
 			if(involvedextra[0] > maxTraveled) maxTraveled = involvedextra[0];
 		}
 
-		laste.colRow = e.colRow;
+		laste = e;
 	}
 
 	int totalsetsize = totalSet.size();
 	for(int i = 0; i < totalsetsize; i++) {
 		AStarSearchEntry & e = totalSet[i];
-		AStarNode* n = &DeRefEdgeTable(e.row, e.col);
-		n->notInTotalSet = true;
+		AStarNode* n = &DeRefEdgeTable(e.cell.row, e.cell.col);
+		n->isInTotalSet = false;
 		n->open = true;
 	}
 
@@ -855,7 +828,7 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 	double loc[3];
 	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), loc);
 
-	calculateNavigateToLoc(taskexecuter->holder, loc, 0, true);
+	calculateRoute(taskexecuter->holder, loc, 0, true);
 
 	TreeNode* kinematics = first(taskexecuter->node_v_kinematics);
 	double distance = getkinematics(kinematics, KINEMATIC_TOTALDIST);
@@ -865,9 +838,9 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 
 void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest, bool setStartEntry)
 {
-	AStarNode* node = &DeRefEdgeTable(entry->row, entry->col);
-	int dy = rowDest - entry->row;
-	int dx = colDest - entry->col;
+	AStarNode* node = &DeRefEdgeTable(entry->cell.row, entry->cell.col);
+	int dy = rowDest - entry->cell.row;
+	int dx = colDest - entry->cell.col;
 
 	static const int up = 0;
 	static const int left = 1;
@@ -882,8 +855,8 @@ void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* travel
 	else if (dy < 0 && dy * dy > dx * dx)
 		startDir = down;
 
-	int currRow = entry->row;
-	int currCol = entry->col;
+	int currRow = entry->cell.row;
+	int currCol = entry->cell.col;
 	int currDir = (startDir + 3) % 4; // start one direction back 
 	int distance = 0;
 	int counter = 4; // counter is used to find the distance
@@ -892,54 +865,54 @@ void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* travel
 		currDir = (currDir + 1) % 4;
 		distance = (counter++) / 4;
 		switch (currDir) {
-		case 0: currRow = entry->row + distance; currCol = entry->col; break;
-		case 1: currCol = entry->col + distance; currRow = entry->row; break;
-		case 2: currRow = entry->row - distance; currCol = entry->col; break;
-		case 3: currCol = entry->col - distance; currRow = entry->row; break;
+		case 0: currRow = entry->cell.row + distance; currCol = entry->cell.col; break;
+		case 1: currCol = entry->cell.col + distance; currRow = entry->cell.row; break;
+		case 2: currRow = entry->cell.row - distance; currCol = entry->cell.col; break;
+		case 3: currCol = entry->cell.col - distance; currRow = entry->cell.row; break;
 		}
 
 		node = &DeRefEdgeTable(currRow, currCol);
 	}
 
 	if (setStartEntry) {
-		barrierStart.colRow = ~0;
+		barrierStart.cell.colRow = ~0;
 		barrierStart.previous = ~0;
-		if (entry->row != currRow || entry->col != currCol) {
-			barrierStart.row = entry->row;
-			barrierStart.col = entry->col;
+		if (entry->cell.row != currRow || entry->cell.col != currCol) {
+			barrierStart.cell.row = entry->cell.row;
+			barrierStart.cell.col = entry->cell.col;
 		} 
 	}
-	entry->row = currRow;
-	entry->col = currCol;
+	entry->cell.row = currRow;
+	entry->cell.col = currCol;
 }
 
-AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, int travelVal)
+AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, int travelVal, char bridgeIndex)
 {
 	AStarSearchEntry* entry = NULL;
 	int closed = 0;
 	int totalSetIndex;
 	AStarNode* n = &DeRefEdgeTable(r, c);
 	// is he already in the total set
-	if (!n->notInTotalSet) {
+	if (n->isInTotalSet) {
 		// if he's in the total set and he's closed, then abort
 		if (!n->open) {
 			return NULL;
 		}
 
 		AStarSearchEntry hashEntry;
-		hashEntry.row = r;
-		hashEntry.col = c;
-		totalSetIndex = entryHash[hashEntry.colRow];
+		hashEntry.cell.row = r;
+		hashEntry.cell.col = c;
+		totalSetIndex = entryHash[hashEntry.cell.colRow];
 		entry = &(totalSet[totalSetIndex]);
 	}
 	float newG = shortest.g + multiplier * nodeWidth;
 	/*  Check if the guy is changing directions. If so, I want to increase the distance so it will be a penalty to make turns*/ \
-	if(travelFromPrevious != travelVal) {
+	if(travelVal != travelFromPrevious) {
 		// add a small penalty if he's turning
-		newG += penalty * nodeWidth;
+		newG += directionChangePenalty * nodeWidth;
 		// if it's a right angle turn or more, then add more penalty
 		if((travelFromPrevious & travelVal) == 0)
-			newG += penalty * nodeWidth;
+			newG += directionChangePenalty * nodeWidth;
 	}
 	
 	if (!entry || newG < entry->g-0.01*nodeWidth) {
@@ -949,20 +922,22 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 			totalSetIndex = totalSet.size();
 			totalSet.push_back(AStarSearchEntry());
 			entry = &totalSet.back();
-			entry->col = c;
-			entry->row = r;
-			entryHash[entry->colRow] = totalSetIndex;
+			entry->cell.col = c;
+			entry->cell.row = r;
+			entryHash[entry->cell.colRow] = totalSetIndex;
 			// calculate the distance heuristic h
-			double diffx = destx - (col0x + entry->col * nodeWidth);
-			double diffy = desty - (row0y + entry->row * nodeWidth);
+			double diffx = destLoc.x - (gridOrigin.x + entry->cell.col * nodeWidth);
+			double diffy = destLoc.y - (gridOrigin.y + entry->cell.row * nodeWidth);
 			entry->h = (1.0 - maxPathWeight) * sqrt(diffx*diffx + diffy*diffy);
 			entry->closed = 0;
-			n->notInTotalSet = false;
+			n->isInTotalSet = true;
 		}
 		entry->g = newG;
 		entry->f = entry->g + entry->h;
 		openSetHeap.push(HeapEntry(entry->f, totalSetIndex));
 		entry->previous = shortestIndex;
+		entry->travelFromPrevious = travelVal;
+		entry->prevBridgeIndex = bridgeIndex;
 	}
 	return entry;
 }
@@ -1025,9 +1000,10 @@ void AStarNavigator::buildEdgeTable()
 	requestCount = 0;
 	cacheUseCount = 0;
 
-	penalty = 0.05;
+	directionChangePenalty = 0.05;
 	if (deepSearch)
-		penalty = 0.025;
+		directionChangePenalty = 0.025;
+
 
 	if (content(barriers) == 0 && objectBarrierList.size() == 0) {
 		if (edgeTable)
@@ -1103,6 +1079,8 @@ void AStarNavigator::buildEdgeTable()
 
 	double col0xloc = (xOffset + 0.5) * nodeWidth;
 	double row0yloc = (yOffset + 0.5) * nodeWidth;
+	gridOrigin.x = col0xloc;
+	gridOrigin.y = row0yloc;
 
 	// Create a new fully connected table
 	unsigned int tableSize = edgeTableYSize * edgeTableXSize;
@@ -1111,12 +1089,21 @@ void AStarNavigator::buildEdgeTable()
 	edgeTable = new AStarNode[tableSize];
 	memset(edgeTable, 0xFFFFFFFF, tableSize * sizeof(AStarNode));
 
+	for (int i = 0; i < edgeTableYSize; i++) {
+		getNode(i, 0)->canGoLeft = 0;
+		getNode(i, edgeTableXSize - 1)->canGoRight = 0;
+	}
+	for (int i = 0; i < edgeTableXSize; i++) {
+		getNode(0, i)->canGoDown = 0;
+		getNode(edgeTableYSize - 1, i)->canGoUp = 0;
+	}
+
 	// The maxPathWeight ensures that the estimated distance
 	// to the goal is not overestimated.
 	maxPathWeight = 0.0;
 	for(int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
-		barrier->addBarriersToTable(edgeTable, &edgeTableExtraData, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
+		barrier->addBarriersToTable(this);
 	}
 
 	for (int i = 0; i < objectBarrierList.size(); i++) {
@@ -1236,11 +1223,10 @@ void AStarNavigator::buildEdgeTable()
 
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
-		barrier->addPassagesToTable(edgeTable, &edgeTableExtraData, col0xloc, row0yloc, edgeTableXSize, edgeTableYSize);
-		if (comparetext(barrier->getClassFactory(), "AStar::PreferredPath")) {
-			PreferredPath* path = (PreferredPath*)barrier;
+		barrier->addPassagesToTable(this);
+		PreferredPath* path = barrier->toPreferredPath();
+		if (path)
 			maxPathWeight = max(path->pathWeight, maxPathWeight);
-		}
 	}
 
 	hasEdgeTable = 1;
@@ -1362,8 +1348,8 @@ void AStarNavigator::drawTraffic(float z, TreeNode* view)
 	trafficMesh.setMeshAttrib(MESH_DIFFUSE4, red);
 	for(auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
 		AStarNodeExtraData* e = &(iter->second);
-		double x = (col0x + (e->col) * nodeWidth);
-		double y = (row0y + (e->row) * nodeWidth);
+		double x = (gridOrigin.x + (e->col) * nodeWidth);
+		double y = (gridOrigin.y + (e->row) * nodeWidth);
 		
 		if (drawForPick) {
 			ABT(-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 1.0);
@@ -1574,11 +1560,11 @@ void AStarNavigator::drawGrid(float z)
 			int col = drawByRow ? i : j;
 			AStarNode* n = &DeRefEdgeTable(row, col);
 			AStarSearchEntry s;
-			s.col = col;
-			s.row = row;
+			s.cell.col = col;
+			s.cell.row = row;
 			AStarNodeExtraData* e = NULL;
 			if(!n->noExtraData)
-				e = &edgeTableExtraData[s.colRow];
+				e = &edgeTableExtraData[s.cell.colRow];
 			double x = (xOffset + col + 0.5) * nodeWidth;
 			double y = (yOffset + row + 0.5) * nodeWidth;
 
@@ -1627,7 +1613,7 @@ void AStarNavigator::drawGrid(float z)
 			ADD_GRID_LINE(Right, x, y, z, x + 0.25 * nodeWidth, y, z);
 			ADD_GRID_LINE(Left, x, y, z, x - 0.25 * nodeWidth, y, z);
 			
-			if(!n->notInTotalSet) {
+			if(n->isInTotalSet) {
 				mpt("Grid error at x ");mpd(j);mpt(" y ");mpd(i);mpr();
 				int newVertex1 = gridMesh.addVertex();
 				int newVertex2 = gridMesh.addVertex();
@@ -1651,6 +1637,18 @@ void AStarNavigator::setDirty()
 	isDirty = true;
 }
 
+AStarCell AStarNavigator::getCellFromLoc(const Vec2& modelLoc)
+{
+	// get the x/y location of the bottom left corner of my grid
+	AStarCell cell;
+	cell.col = (int)round((modelLoc.x - gridOrigin.x) / nodeWidth);
+	cell.col = max(0, cell.col);
+	cell.col = min(edgeTableXSize - 1, cell.col);
+	cell.row = (int)round((modelLoc.y - gridOrigin.y) / nodeWidth);
+	cell.row = max(0, cell.row);
+	cell.row = min(edgeTableYSize - 1, cell.row);
+	return cell;
+}
 
 unsigned int AStarNavigator::getClassType()
 {
@@ -1678,6 +1676,22 @@ void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 		if (row < edgeTableYSize - 1)
 			DeRefEdgeTable(row + 1, col).canGoDown = 0;
 	}
+}
+
+
+AStarNodeExtraData*  AStarNavigator::assertExtraData(const AStarCell& cell)
+{
+	AStarNodeExtraData* extra;
+	auto extraIter = edgeTableExtraData.find(cell.colRow);
+	if (extraIter == edgeTableExtraData.end()) {
+		AStarNode* node = getNode(cell);
+		extra = &(edgeTableExtraData[cell.colRow]);
+		extra->colRow = cell.colRow;
+		node->noExtraData = 0;
+	} else {
+		extra = &(extraIter->second);
+	}
+	return extra;
 }
 
 ASTAR_FUNCTION Variant AStarNavigator_blockGridModelPos(FLEXSIMINTERFACE)
@@ -1717,6 +1731,7 @@ ASTAR_FUNCTION Variant AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	case EDITMODE_DIVIDER: newBarrier = a->barrierList.add(new Divider); break;
 	case EDITMODE_ONE_WAY_DIVIDER: newBarrier = a->barrierList.add(new OneWayDivider); break;
 	case EDITMODE_PREFERRED_PATH: newBarrier = a->barrierList.add(new PreferredPath(a->defaultPathWeight)); break;
+	case EDITMODE_BRIDGE: newBarrier = a->barrierList.add(new Bridge); break;
 	}
 
 	newBarrier->init(a->nodeWidth, param(1), param(2), param(3), param(4));
@@ -1804,7 +1819,7 @@ ASTAR_FUNCTION Variant AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
 	AStarNavigator* a = navNode->objectAs(AStarNavigator);
 	if (objectexists(a->activeBarrier)) {
 		Barrier* b = a->activeBarrier->objectAs(Barrier);
-		b->onMouseMove(param(1), param(2), param(3), param(4));
+		b->onMouseMove(Vec3(param(1), param(2), 0), Vec3(param(3), param(4), 0));
 		a->setDirty();
 	}
 

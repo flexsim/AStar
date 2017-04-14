@@ -67,35 +67,39 @@ bool Barrier::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
 	return true;
 }
 
-void Barrier::addBarriersToTable(AStarNode* edgeTable, 
-						  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
-						  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
+void Barrier::addBarriersToTable(AStarNavigator* nav)
+	//AStarNode* edgeTable, 
+	//					  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
+	//					  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
 {
 	double xmin, ymin, xmax, ymax;
 	if (!getBoundingBox(xmin, ymin, xmax, ymax))
 		return;
+
+	double c0 = nav->gridOrigin.x;
+	double r0 = nav->gridOrigin.y;
 
 	int colleft = (int)round((xmin - c0) / nodeWidth);
 	int rowbottom = (int)round((ymin - r0) / nodeWidth);
 	int colright = (int)round((xmax - c0) / nodeWidth);
 	int rowtop = (int)round((ymax - r0) / nodeWidth);
 	for(int row = rowbottom; row <= rowtop; row++) {
-		AStarNode * left = &(DeRefEdgeTable(row, colleft-1));
+		AStarNode * left = nav->getNode(row, colleft-1);
 		left->canGoRight = 0;
-		AStarNode * right = &(DeRefEdgeTable(row, colright+1));
+		AStarNode * right = nav->getNode(row, colright + 1);
 		right->canGoLeft = 0;
 	}
 
 	for(int col = colleft; col <= colright; col++) {
-		AStarNode * top = &(DeRefEdgeTable(rowtop+1, col));
+		AStarNode * top = nav->getNode(rowtop + 1, col);
 		top->canGoDown = 0;
-		AStarNode * bottom = &(DeRefEdgeTable(rowbottom-1, col));
+		AStarNode * bottom = nav->getNode(rowbottom - 1, col);
 		bottom->canGoUp = 0;
 	}
 
 	for (int row = rowbottom; row <= rowtop; row++) {
 		for (int col = colleft; col <= colright; col++) {
-			AStarNode* theNode = &(DeRefEdgeTable(row, col));
+			AStarNode* theNode = nav->getNode(row, col);
 			theNode->canGoUp = 0;
 			theNode->canGoDown = 0;
 			theNode->canGoLeft = 0;
@@ -245,16 +249,16 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 	return 1;
 }
 
-double Barrier::onMouseMove(double x, double y, double dx, double dy)
+double Barrier::onMouseMove(const Vec3& pos, const Vec3& diff)
 {
 	if ((mode & BARRIER_MODE_POINT_EDIT) && activePointIndex < pointList.size()) {
 		Point* activePoint = pointList[(int)activePointIndex];
 
 		if (arrow <= 2) {
-			activePoint->x = x + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
+			activePoint->x = diff.x + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
 		}
 		if (arrow == 0 || arrow > 2) {
-			activePoint->y = y + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
+			activePoint->y = diff.y + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
 		}
 
 		Point* bottomLeft = pointList[0];
@@ -285,8 +289,8 @@ double Barrier::onMouseMove(double x, double y, double dx, double dy)
 			modeleditmode(0);
 		}
 		for (int i = 0; i < pointList.size(); i++) {
-			pointList[i]->x += dx;
-			pointList[i]->y += dy;
+			pointList[i]->x += diff.x;
+			pointList[i]->y += diff.y;
 		}
 	}
 
@@ -336,6 +340,168 @@ bool Barrier::setPointCoords(int pointIndex, double x, double y)
 	pointList[pointIndex]->y = y;
 	return true;
 }
+
+void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
+{
+	float dark[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	float light[4] = { color.r, color.g, color.b, color.a };
+	float highlight[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
+	if (isActive) {
+		dark[0] += 0.2f;
+		dark[1] += 0.2f;
+		dark[2] += 0.2f;
+		light[0] = min(1.0f, light[0] + 0.2f);
+		light[1] = min(1.0f, light[1] + 0.2f);
+		light[2] = min(1.0f, light[2] + 0.2f);
+	}
+	nrVerts = 0;
+	meshOffset = barrierMesh->numVerts;
+
+	// Add circles at each node
+	const float TWO_PI = 2 * 3.1415926536f;
+	int numSides = 20;
+	float radius = nodeWidth * 0.3;
+	float dTheta = TWO_PI / numSides;
+
+	bool isBridge = toBridge() ? true : false;
+
+	for (int i = 0; i < pointList.size(); i++) {
+		float center[3] = { pointList[i]->x, pointList[i]->y, isBridge ? pointList[i]->z : z };
+
+		// For each side, draw a triangle
+		for (int j = 0; j < numSides - 1; j++) {
+			float theta = j * dTheta;
+			float x = radius * cos(theta) + center[0];
+			float y = radius * sin(theta) + center[1];
+			float x2 = radius * cos(theta + dTheta) + center[0];
+			float y2 = radius * sin(theta + dTheta) + center[1];
+
+			float pos1[3] = { x, y, center[2] };
+			float pos2[3] = { x2, y2, center[2] };
+
+#define ABV(pos, color, activeColor) {\
+			int vertName = barrierMesh->addVertex();\
+			nrVerts++;\
+			if (i == activePointIndex)\
+				barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, activeColor);\
+				else\
+				barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, color);\
+			barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
+							}
+
+			ABV(center, dark, highlight);
+			ABV(pos1, dark, highlight);
+			ABV(pos2, dark, highlight);
+
+		}
+
+		// Draw the last triangle using first and last coords
+		float lastTheta = (numSides - 1) * dTheta;
+		float pos2[3] = { radius + center[0], center[1], center[2] };
+		float pos1[3] = { radius * cos(lastTheta) + center[0], radius * sin(lastTheta) + center[1], center[2] };
+		ABV(center, dark, highlight);
+		ABV(pos1, dark, highlight);
+		ABV(pos2, dark, highlight);
+	}
+#undef ABV
+
+	// Draw a series of triangles
+	float maxTriangleWidth = nodeWidth;
+	float distToRect = 0.4 * nodeWidth;
+	float distToCorner = sqrt(distToRect * distToRect + radius * radius);
+	float height = 2 * radius;
+	dTheta = atan2(radius, distToRect);
+	for (int i = 0; i < pointList.size() - 1; i++) {
+		Point* point = pointList[i];
+		Point* next = pointList[i + 1];
+
+		float dx = next->x - point->x;
+		float dy = next->y - point->y;
+		float dz = next->z - point->z;
+		float theta = atan2(dy, dx);
+
+		float length = sqrt(dx * dx + dy * dy) - 2 * distToRect;
+		if (length <= 0)
+			continue;
+
+		float sinTheta = sin(theta);
+		float cosTheta = cos(theta);
+		// Find how many will fit, and stretch them to fit.
+		int numTriangles = (int)(length / maxTriangleWidth);
+		if (numTriangles < 1) {
+			numTriangles = 1;
+		}
+		float triangleWidth = length / numTriangles;
+		float tw = triangleWidth;
+
+		float pointZ = isBridge ? point->z : z;
+
+		// Use the bottomleft corner of the rectangle to get every other corner
+		float bottomLeft[3] = { distToCorner * cos(theta - dTheta) + point->x,
+			distToCorner * sin(theta - dTheta) + point->y, pointZ };
+
+		float topLeft[3] = { bottomLeft[0] - height * sinTheta,
+			bottomLeft[1] + height * cosTheta, pointZ };
+
+		float pos0[3] = { 0.0f, 0.0f, pointZ };
+		float pos1[3] = { 0.0f, 0.0f, pointZ };
+		float pos2[3] = { 0.0f, 0.0f, pointZ };
+
+		for (int j = 0; j < numTriangles; j++) {
+
+#define ROTATE_POINT(rx, ry, x, y) \
+	rx = x * cosTheta - y * sinTheta;\
+	ry = x * sinTheta + y * cosTheta;
+
+#define ABV(pos, color)  {\
+	int vertName = barrierMesh->addVertex();\
+	nrVerts++;\
+	barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, color);\
+	barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
+			}
+
+#define ABT(pos1, pos2, pos3, dark, green) ABV(pos1, green) ABV(pos2, dark) ABV(pos3, dark)
+
+
+			float triangleTipX = (j + 1) * tw;
+			float triangleTipY = height / 2.0;
+			float triangleTopX = j * tw;
+			float triangleTopY = height;
+			float triangleBottomX = triangleTopX;
+			float triangleBottomY = 0;
+
+			float rtX, rtY;
+
+			ROTATE_POINT(rtX, rtY, triangleTipX, triangleTipY);
+			triangleTipX = rtX + bottomLeft[0];
+			triangleTipY = rtY + bottomLeft[1];
+
+			ROTATE_POINT(rtX, rtY, triangleTopX, triangleTopY);
+			triangleTopX = rtX + bottomLeft[0];
+			triangleTopY = rtY + bottomLeft[1];
+
+			ROTATE_POINT(rtX, rtY, triangleBottomX, triangleBottomY);
+			triangleBottomX = rtX + bottomLeft[0];
+			triangleBottomY = rtY + bottomLeft[1];
+
+			pos0[0] = triangleTipX;
+			pos0[1] = triangleTipY;
+			pos0[2] = point->z + dz * (j + 1) / numTriangles;
+			pos1[0] = triangleTopX;
+			pos1[1] = triangleTopY;
+			pos1[2] = point->z + dz * j / numTriangles;
+			pos2[0] = triangleBottomX;
+			pos2[1] = triangleBottomY;
+			pos2[2] = point->z + dz * j / numTriangles;
+
+			ABT(pos0, pos1, pos2, dark, light);
+		}
+	}
+#undef ABT
+#undef ABV
+#undef ROTATE_POINT
+}
+
 
 ASTAR_FUNCTION Variant Barrier_setMode(FLEXSIMINTERFACE)
 {

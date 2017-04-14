@@ -1,58 +1,91 @@
 #pragma once
 #include "FlexsimDefs.h"
-#include "allobjects.h"
-#include "hashtable.h"
+#include "AStarClasses.h"
 #include "basicutils.h"
 #include "Barrier.h"
 #include <vector>
 #include <unordered_map>
 #include <queue>
 
-struct AStarNode
+enum Direction {
+	Right = 0,
+	Left = 1,
+	Up = 2,
+	Down = 3
+};
+
+class AStarNode
 {
-	bool canGoRight:1;
-	bool canGoLeft:1;
-	bool canGoUp:1;
-	bool canGoDown:1;
-	bool noExtraData:1;
-	bool notInTotalSet:1;
-	bool open:1;
+public:
+	union {
+		struct {
+			bool canGoRight : 1;
+			bool canGoLeft : 1;
+			bool canGoUp : 1;
+			bool canGoDown : 1;
+			bool noExtraData : 1;
+			bool notInTotalSet : 1;
+			bool open : 1;
+		};
+		unsigned char value;
+	};
+	bool __extraData() { return !noExtraData; }
+	bool __inTotalSet() { return !notInTotalSet; }
+	void __setInTotalSet(bool toVal) { notInTotalSet = !toVal; }
+	__declspec(property(get = __extraData)) bool hasExtraData;
+	__declspec(property(get = __inTotalSet, put = __setInTotalSet)) bool isInTotalSet;
+	static int rowInc[];
+	static int colInc[];
+	bool canGo(Direction direction) { return ((0x1 << (int)direction) & value) != 0; }
 };
 
 struct AStarNodeExtraData
 {
+	AStarNodeExtraData() : colRow(0), bonusRight(0), bonusLeft(0), bonusUp(0), bonusDown(0) {}
 	union {
-		struct{
+		struct {
 			unsigned short col;
 			unsigned short row;
 		};
 		unsigned int colRow;
 	};
 
+	// Traffic tracking stats:
 	// straights
-	unsigned int nrFromUp;
-	unsigned int nrFromDown;
-	unsigned int nrFromLeft;
-	unsigned int nrFromRight;
+	unsigned int nrFromUp = 0;
+	unsigned int nrFromDown = 0;
+	unsigned int nrFromLeft = 0;
+	unsigned int nrFromRight = 0;
 	
 	// diagonals
-	unsigned int nrFromUpRight;
-	unsigned int nrFromDownRight;
-	unsigned int nrFromUpLeft;
-	unsigned int nrFromDownLeft;
+	unsigned int nrFromUpRight = 0;
+	unsigned int nrFromDownRight = 0;
+	unsigned int nrFromUpLeft = 0;
+	unsigned int nrFromDownLeft = 0;
 
-	char bonusUp;
-	char bonusDown;
-	char bonusRight;
-	char bonusLeft;
+	// preferred path weights
+	union {
+		struct {
+			char bonusRight;
+			char bonusLeft;
+			char bonusUp;
+			char bonusDown;
+		};
+		char bonus[4];
+	};
+	char getBonus(Direction direction) { return bonus[(int)direction]; }
+
+	struct BridgeEntry {
+		Bridge* bridge;
+		bool isAtBridgeStart;
+	};
+
+	std::vector<BridgeEntry> bridges;
 };
 
 #define DeRefEdgeTable(row, col) edgeTable[(row)*edgeTableXSize + col]
 
-struct AStarSearchEntry{
-	float f;
-	float g;
-	float h;
+struct AStarCell {
 	union{
 		struct{
 			unsigned short col;
@@ -60,7 +93,26 @@ struct AStarSearchEntry{
 		};
 		unsigned int colRow;
 	};
+	AStarCell() {}
+	AStarCell(unsigned short col, unsigned short row) : col(col), row(row) {}
+	AStarCell(unsigned int colRow) : colRow(colRow) {}
+};
+
+struct AStarPathEntry {
+	AStarPathEntry() : cell(0, 0), bridgeIndex(-1) {}
+	AStarPathEntry(AStarCell cell, char bridgeIndex) : cell(cell), bridgeIndex(bridgeIndex) {}
+	AStarCell cell;
+	char bridgeIndex;
+};
+
+struct AStarSearchEntry {
+	float f;
+	float g;
+	float h;
+	AStarCell cell;
 	unsigned int previous;
+	int travelFromPrevious;
+	char prevBridgeIndex;
 	bool closed;
 };
 
@@ -76,16 +128,14 @@ struct AStarPathID {
 	};
 };
 
-class AStarNavigator :
-	public Navigator
+class AStarNavigator : public Navigator
 {
 protected:
 	AStarNode* edgeTable;
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
 	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from colRow to index in totalSet
-	std::unordered_map<unsigned int, AStarNodeExtraData> edgeTableExtraData; // A mapping from colRow to an ExtraData object
-	std::unordered_map<unsigned __int64, std::vector<unsigned int> > pathCache;
+	std::unordered_map<unsigned __int64, std::vector<AStarPathEntry> > pathCache;
 
 	struct HeapEntry {
 		HeapEntry(float f, unsigned int totalSetIndex) : f(f), totalSetIndex(totalSetIndex) {}
@@ -103,15 +153,8 @@ protected:
 	// Temporary variables that are used as part of the search
 	AStarNode * n;
 	AStarSearchEntry shortest;
-	int expandableUp;
-	int expandableDown;
-	int expandableRight;
-	int expandableLeft;
 	int travelFromPrevious;
-	double col0x;
-	double row0y;
-	double destx;
-	double desty;
+	Vec2 destLoc;
 	double maxPathWeight;
 	int shortestIndex;
 	float closestSoFar;
@@ -122,15 +165,12 @@ protected:
 	double xStart;
 	double yStart;
 
-	// Current edgeTable status variables
-	int edgeTableXSize;
-	int edgeTableYSize;
 	int xOffset;
 	int yOffset;
 	float savedXOffset;
 	float savedYOffset;
 	int maxTraveled;
-	double penalty;
+	double directionChangePenalty;
 
 	// Drawing variables
 	Mesh boundsMesh;	
@@ -140,7 +180,7 @@ protected:
 	Mesh memberMesh;
 	bool isDirty;
 
-	inline AStarSearchEntry* expandOpenSet(int r, int c ,float multiplier, int travelVal);
+	inline AStarSearchEntry* expandOpenSet(int r, int c ,float multiplier, int travelVal, char bridgeIndex = -1);
 	void searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest, bool setStartEntry = false);
 	void buildEdgeTable();
 	void buildBoundsMesh();
@@ -150,6 +190,12 @@ protected:
 	void drawTraffic(float z, TreeNode* view);
 
 public:
+	Vec2 gridOrigin;
+	// Current edgeTable status variables
+	int edgeTableXSize;
+	int edgeTableYSize;
+	std::unordered_map<unsigned int, AStarNodeExtraData> edgeTableExtraData; // A mapping from colRow to an ExtraData object
+
 	static unsigned int editMode;
 	static AStarNavigator* globalASN;
 	double defaultPathWeight;
@@ -191,7 +237,11 @@ public:
 	virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed) override;
 	virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
 
-	double calculateNavigateToLoc(TreeNode* traveler, double* destLoc, double endSpeed, bool queryDist = false);
+	AStarSearchEntry* checkExpandOpenSet(AStarNode* node, AStarSearchEntry* entryIn, Direction direction, int travelVal, double dist, double bonusMod, AStarNodeExtraData* extraData);
+	AStarSearchEntry* checkExpandOpenSetDiagonal(AStarNode* node, AStarSearchEntry* entryIn,
+		Direction dir1, Direction dir2, int travelVal, double dist, AStarNodeExtraData* extraData);
+
+	double calculateRoute(TreeNode* traveler, double* destLoc, double endSpeed, bool queryDist = false);
 
 	virtual double updateLocations() override;
 	virtual double abortTravel(TreeNode* traveler, TreeNode* newts) override;
@@ -202,5 +252,10 @@ public:
 	void blockGridModelPos(const Vec3& modelPos);
 
 	void setDirty();
+
+	AStarCell getCellFromLoc(const Vec2& modelLoc);
+	AStarNode* getNode(const AStarCell& cell) { return &DeRefEdgeTable(cell.row, cell.col); }
+	AStarNode* getNode(int row, int col) { return &DeRefEdgeTable(row, col); }
+	AStarNodeExtraData* assertExtraData(const AStarCell& cell);
 };
 

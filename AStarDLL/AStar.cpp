@@ -5,6 +5,7 @@
 #include "Barrier.h"
 #include "AStarNavigator.h"
 #include "AStar.h"
+#include "Bridge.h"
 
 visible ObjectDataType* createodtderivative(char* classname)
 {
@@ -18,7 +19,8 @@ visible SimpleDataType* createsdtderivative(char* classname)
 	if(strcmp(classname, "OneWayDivider")==0) return new OneWayDivider;
 	if(strcmp(classname, "Divider")==0) return new Divider;
 	if(strcmp(classname, "Point")==0) return new Point;
-	if(strcmp(classname, "Barrier")==0) return new Barrier;
+	if (strcmp(classname, "Barrier") == 0) return new Barrier;
+	if (strcmp(classname, "Bridge") == 0) return new Bridge;
 	return NULL;
 }
 

@@ -171,8 +171,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AStarClasses.h" />
     <ClInclude Include="AStarNavigator.h" />
     <ClInclude Include="Barrier.h" />
+    <ClInclude Include="Bridge.h" />
     <ClInclude Include="Divider.h" />
     <ClInclude Include="macros.h" />
     <ClInclude Include="OneWayDivider.h" />
@@ -209,6 +211,7 @@
     <ClCompile Include="AStar.cpp" />
     <ClCompile Include="AStarNavigator.cpp" />
     <ClCompile Include="Barrier.cpp" />
+    <ClCompile Include="Bridge.cpp" />
     <ClCompile Include="Divider.cpp" />
     <ClCompile Include="flexsimcontent\dllmain.cpp" />
     <ClCompile Include="OneWayDivider.cpp" />

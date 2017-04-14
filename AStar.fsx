@@ -8,7 +8,7 @@
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403a0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000403b0000</data></node>
     <node f="42" dt="2"><name>after</name><data>dynamo</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -122,6 +122,7 @@ treenode view = param(1);
           <node f="42" dt="1"><name>type</name><data>0000000040080000</data></node>
           <node f="42" dt="1"><name>flags</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>curValue</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>startValue</name><data>0000000000000000</data></node>
          </node>
         </node>
        </node>
@@ -193,7 +194,7 @@ treenode view = param(1);
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Preferred Path</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Bridge</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -492,6 +493,36 @@ executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
 nodepoint(objectfocus(c), 0);</data></node>
        </node>
       </data></node>
+      <node f="42" dt="4"><name>AStar::Bridge</name><data>
+       <node f="40"><name></name></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>state</name><data>0000000000000000</data></node>
+        <node f="42" dt="2"><name>type</name><data>Clicker</data></node>
+        <node f="42" dt="2"><name>cursor</name><data>modules\AStar\cursors\bridgetool.cur</data></node>
+        <node f="42"><name>views</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>Spatial</name></node>
+        </node>
+        <node f="42" dt="2"><name>mode</name><data>EDITMODE_BRIDGE</data></node>
+       </node>
+       <node f="42"><name>eventfunctions</name>
+        <node f="40"><name></name></node>
+        <node f="442" dt="2"><name>OnClick</name><data>treenode handler = tonode(get(objectfocus(c)));
+executefsnode(OnClick(handler), handler, i, eventdata);
+</data></node>
+        <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
+executefsnode(OnMouseMove(handler), handler, i, eventdata);
+</data></node>
+        <node f="442" dt="2"><name>OnEntering</name><data>treenode handler = node("../AStar::Create", c);
+nodepoint(objectfocus(c), handler);
+setvarnum(handler, "mode", executestring(getvarstr(c, "mode")));
+executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
+        <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
+nodepoint(objectfocus(c), 0);</data></node>
+       </node>
+      </data></node>
      </node>
     </node>
    </node>
@@ -550,11 +581,17 @@ return asn;
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\onewaydivider.bmp</data></node>
        </data></node>
-       <node f="10000042" dt="4"><name>Preferred Path</name><data>
+       <node f="42" dt="4"><name>Preferred Path</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::PreferredPath")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
+       </data></node>
+       <node f="10000042" dt="4"><name>Bridge</name><data>
+        <node f="40"><name></name></node>
+        <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Bridge")</data></node>
+        <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
+        <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\bridge.bmp</data></node>
        </data></node>
       </node>
       <node f="42"><name>Pages</name>
@@ -2572,7 +2609,9 @@ applylinks(parent);</data></node>
      <node f="42" dt="2"><name>AStar</name><data>#define EDITMODE_PREFERRED_PATH 35
 #define EDITMODE_DIVIDER 36
 #define EDITMODE_ONE_WAY_DIVIDER 37
-#define EDITMODE_SOLID_BARRIER 38</data></node>
+#define EDITMODE_SOLID_BARRIER 38
+#define EDITMODE_BRIDGE 39
+</data></node>
     </node>
    </node>
   </node>

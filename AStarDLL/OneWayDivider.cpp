@@ -18,13 +18,12 @@ void OneWayDivider::bind(void)
 	Divider::bind();
 }
 
-void OneWayDivider::addBarriersToTable(AStarNode* edgeTable, 
-						  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
-						  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
+void OneWayDivider::addBarriersToTable(AStarNavigator* nav)
 {
 	double x = pointList[0]->x;
 	double y = pointList[0]->y;
-
+	double c0 = nav->gridOrigin.x;
+	double r0 = nav->gridOrigin.y;
 	// here I assume the row/column number represents the slot above / right of the
 	// corner I am working on 
 	int col = (int)round((x - c0) / nodeWidth);
@@ -97,9 +96,9 @@ void OneWayDivider::addBarriersToTable(AStarNode* edgeTable,
 
 				int modifyCol = min(nextCurrCol, currCol);
 				if(dx > 0)
-					DeRefEdgeTable(currRow, modifyCol).canGoDown = 0;
+					nav->getNode(currRow, modifyCol)->canGoDown = 0;
 				if(dx < 0)
-					DeRefEdgeTable(currRow-1, modifyCol).canGoUp = 0;
+					nav->getNode(currRow - 1, modifyCol)->canGoUp = 0;
 				
 			} else {
 				nextCurrCol = currCol;
@@ -107,9 +106,9 @@ void OneWayDivider::addBarriersToTable(AStarNode* edgeTable,
 				
 				int modifyRow = min(nextCurrRow, currRow);
 				if(dy < 0)
-					DeRefEdgeTable(modifyRow, currCol).canGoLeft = 0;
+					nav->getNode(modifyRow, currCol)->canGoLeft = 0;
 				if(dy > 0)
-					DeRefEdgeTable(modifyRow, currCol - 1).canGoRight = 0;
+					nav->getNode(modifyRow, currCol - 1)->canGoRight = 0;
 			}
 			
 			currCol = nextCurrCol;

@@ -22,6 +22,7 @@
 </CommandLineOptions>-->
   <Fragment>
     <ComponentGroup Id="group_cursors">
+      <ComponentRef Id="comp_F9C4998801D64BEC8024E312B35721E7" />
       <ComponentRef Id="comp_D5362E48995D4F00BB6E0B2987EDDB0C" />
       <ComponentRef Id="comp_8BA37A1CA489467D8AA0FF4A91547DBA" />
       <ComponentRef Id="comp_C82608410D1D4A1D988DDA13240FFA14" />
@@ -29,6 +30,14 @@
     </ComponentGroup>
     <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_DE6E5CC9103849C6858D6AB4125EF93C" Name="cursors">
+ <!--Program GUIDs>
+<FlexSim="F9C49988-01D6-4BEC-8024-E312B35721E7">
+<FlexSimHC="342A606F-6915-4682-B3FE-0967D43B2B9B">
+<FlexSimChinese="9D8D07FF-61B3-4894-93E9-BD314A69F3C1">
+</Program GUIDs-->
+        <Component Id="comp_F9C4998801D64BEC8024E312B35721E7" Guid="F9C49988-01D6-4BEC-8024-E312B35721E7">
+          <File Id="file_EC51B8F015A84670A89566285E67C9E8" KeyPath="yes" Source="$(var.ProjectDir)cursors\bridgetool.cur" />
+        </Component>
 <!--Program GUIDs>
 <FlexSim="B645B738-A3AA-491F-829F-230FD1FE9612">
 <FlexSimHC="042C73E6-4367-46F3-B831-18C33A39A97C">

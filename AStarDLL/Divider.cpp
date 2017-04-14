@@ -38,13 +38,16 @@ bool Divider::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
 
 	return true;
 }
-void Divider::addBarriersToTable(AStarNode* edgeTable, 
-						  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
-						  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
+void Divider::addBarriersToTable(AStarNavigator* nav)
+	//AStarNode* edgeTable, 
+	//					  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
+	//					  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
 {
 	double x = pointList[0]->x;
 	double y = pointList[0]->y;
 
+	double c0 = nav->gridOrigin.x;
+	double r0 = nav->gridOrigin.y;
 	// here I assume the row/column number represents the slot above / right of the
 	// corner I am working on 
 	int col = (int)round((x - c0) / nodeWidth);
@@ -115,16 +118,16 @@ void Divider::addBarriersToTable(AStarNode* edgeTable,
 				nextCurrRow = currRow;
 				
 				int modifyCol = min(nextCurrCol, currCol);
-				DeRefEdgeTable(currRow, modifyCol).canGoDown = 0;
-				DeRefEdgeTable(currRow-1, modifyCol).canGoUp = 0;
+				nav->getNode(currRow, modifyCol)->canGoDown = 0;
+				nav->getNode(currRow - 1, modifyCol)->canGoUp = 0;
 				
 			} else {
 				nextCurrCol = currCol;
 				nextCurrRow = testRow;
 				
 				int modifyRow = min(nextCurrRow, currRow);
-				DeRefEdgeTable(modifyRow, currCol).canGoLeft = 0;
-				DeRefEdgeTable(modifyRow, currCol - 1).canGoRight = 0;
+				nav->getNode(modifyRow, currCol)->canGoLeft = 0;
+				nav->getNode(modifyRow, currCol - 1)->canGoRight = 0;
 			}
 			
 			currCol = nextCurrCol;
@@ -309,19 +312,27 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 	return 0;
 }
 
-double Divider::onMouseMove(double x, double y, double dx, double dy)
+double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 {
 	if (mode & BARRIER_MODE_MOVE) {
 		for (int i = 0; i < pointList.size(); i++) {
-			pointList[i]->x += dx;
-			pointList[i]->y += dy;
+			pointList[i]->x += diff.x;
+			pointList[i]->y += diff.y;
+			if (toBridge())
+				pointList[i]->z += diff.z;
 		}
 	}
 
 	if (mode & BARRIER_MODE_POINT_EDIT) {
 		Point* activePoint = pointList[(int)activePointIndex];
-		activePoint->x = x;
-		activePoint->y = y;
+		if (toBridge() && (activePoint->z != 0 || diff.z != 0)) {
+			activePoint->x += diff.x;
+			activePoint->y += diff.y;
+			activePoint->z += diff.z;
+		} else {
+			activePoint->x = pos.x;
+			activePoint->y = pos.y;
+		}
 
 		double radius = nodeWidth * 0.6;
 		double x, y;
