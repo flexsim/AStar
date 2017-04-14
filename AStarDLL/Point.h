@@ -1,5 +1,8 @@
 #pragma once
 #include "FlexsimDefs.h"
+
+namespace AStar {
+
 class Point :
 	public SimpleDataType
 {
@@ -13,3 +16,4 @@ public:
 	virtual void bind(void);
 };
 
+}

@@ -9,11 +9,11 @@
       <UniqueIdentifier>{b811bd7c-4f23-43c5-8517-052ca5e08808}</UniqueIdentifier>
       <Extensions>h</Extensions>
     </Filter>
-    <Filter Include="Header Files\FlexsimContent">
-      <UniqueIdentifier>{b58f86ef-9c6f-41fd-8940-d96a69286225}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{d0fbe62b-7bff-437e-8e73-32e65ef8677e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FlexsimContent">
+      <UniqueIdentifier>{b58f86ef-9c6f-41fd-8940-d96a69286225}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -23,107 +23,110 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AStar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="flexsimcontent\all.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\allobjects.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\attributes.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\attributes_table.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\basicclasses.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\basicmacros.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\basicutils.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\byteblock.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\couplingdatatype.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\declaration.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\definition.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\FlexsimDefs.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\flexsimevent.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\FlexsimFuncs.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\hashtable.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\mesh.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\objectdatatype.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\particledatatype.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\simpledatatype.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\treenode.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\UserFuncs.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="flexsimcontent\stdafx.h">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="flexsimcontent\array.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AStarNavigator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Barrier.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Divider.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="macros.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OneWayDivider.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Point.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PreferredPath.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Bridge.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="AStar.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="AStarClasses.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AStarNavigator.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Barrier.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Bridge.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Divider.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="macros.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OneWayDivider.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Point.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PreferredPath.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Traveler.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AStarTypes.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -131,7 +134,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="flexsimcontent\dllmain.cpp">
-      <Filter>Header Files\FlexsimContent</Filter>
+      <Filter>FlexsimContent</Filter>
     </ClCompile>
     <ClCompile Include="AStarNavigator.cpp">
       <Filter>Source Files</Filter>
@@ -152,6 +155,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Bridge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Traveler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

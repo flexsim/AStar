@@ -1,6 +1,9 @@
 #include "PreferredPath.h"
 #include "AStarNavigator.h"
 
+
+namespace AStar {
+
 PreferredPath::PreferredPath()
 	: pathWeight(0.0)
 	, Divider()
@@ -137,6 +140,11 @@ void PreferredPath::addVertices(Mesh* barrierMesh, float z)
 {
 	addPathVertices(barrierMesh, z, Vec4f(0.0f, 1.0f, 0.0f, 1.0f));
 }
+
+
+}
+
+using namespace AStar;
 
 ASTAR_FUNCTION Variant PreferredPath_setWeight(FLEXSIMINTERFACE)
 {

@@ -5,6 +5,8 @@
 #include <vector>
 #include <unordered_map>
 
+namespace AStar {
+
 /* 
 This class is the base class for an AStar barrier object.
 */
@@ -78,3 +80,4 @@ public:
 	void addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color);
 };
 
+}

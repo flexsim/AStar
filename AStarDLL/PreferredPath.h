@@ -1,6 +1,9 @@
 #pragma once
 #include "FlexsimDefs.h"
 #include "Divider.h"
+
+namespace AStar {
+
 class PreferredPath : public Divider
 {
 public:
@@ -21,3 +24,4 @@ public:
 	virtual PreferredPath* toPreferredPath() override { return this; }
 };
 
+}

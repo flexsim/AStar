@@ -1,6 +1,9 @@
 #pragma once
 #include "FlexsimDefs.h"
 #include "Divider.h"
+
+namespace AStar {
+
 class Bridge : public Divider
 {
 public:
@@ -23,3 +26,4 @@ public:
 
 };
 
+}

@@ -2,6 +2,8 @@
 #include "AStarNavigator.h"
 #include "macros.h"
 
+namespace AStar {
+
 Barrier::Barrier()
 	: meshOffset(0)
 	, nrVerts(0)
@@ -501,6 +503,10 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 #undef ABV
 #undef ROTATE_POINT
 }
+
+}
+
+using namespace AStar;
 
 
 ASTAR_FUNCTION Variant Barrier_setMode(FLEXSIMINTERFACE)

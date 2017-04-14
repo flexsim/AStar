@@ -1,5 +1,6 @@
 #include "Point.h"
 
+namespace AStar {
 
 const char * Point::getClassFactory(void)
 {
@@ -14,4 +15,6 @@ void Point::bind(void)
 	bindDouble(x, 1);
 	bindDouble(y, 1);
 	bindDouble(z, 1);
+}
+
 }

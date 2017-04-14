@@ -2,6 +2,8 @@
 #include "macros.h"
 #include "AStarNavigator.h"
 
+namespace AStar {
+
 Divider::Divider()
 	: Barrier()
 {
@@ -373,4 +375,6 @@ double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 	}
 
 	return 0;
+}
+
 }

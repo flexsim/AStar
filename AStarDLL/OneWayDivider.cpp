@@ -1,6 +1,8 @@
 #include "OneWayDivider.h"
 #include "AStarNavigator.h"
 
+namespace AStar {
+
 OneWayDivider::OneWayDivider()
 	: Divider()
 {
@@ -288,4 +290,6 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 #undef ABT
 #undef ABV
 	}
+}
+
 }

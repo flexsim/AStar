@@ -2,6 +2,8 @@
 #include "AStarNavigator.h"
 #include "macros.h"
 
+namespace AStar {
+
 void Bridge::bind()
 {
 	__super::bind();
@@ -39,4 +41,5 @@ double Bridge::calculateDistance() const
 		total += sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
 	}
 	return total;
+}
 }

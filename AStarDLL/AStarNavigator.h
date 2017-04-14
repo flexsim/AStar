@@ -3,133 +3,17 @@
 #include "AStarClasses.h"
 #include "basicutils.h"
 #include "Barrier.h"
+#include "AStarTypes.h"
 #include <vector>
 #include <unordered_map>
 #include <queue>
+#include <forward_list>
 
-enum Direction {
-	Right = 0,
-	Left = 1,
-	Up = 2,
-	Down = 3
-};
-
-class AStarNode
-{
-public:
-	union {
-		struct {
-			bool canGoRight : 1;
-			bool canGoLeft : 1;
-			bool canGoUp : 1;
-			bool canGoDown : 1;
-			bool noExtraData : 1;
-			bool notInTotalSet : 1;
-			bool open : 1;
-		};
-		unsigned char value;
-	};
-	bool __extraData() { return !noExtraData; }
-	bool __inTotalSet() { return !notInTotalSet; }
-	void __setInTotalSet(bool toVal) { notInTotalSet = !toVal; }
-	__declspec(property(get = __extraData)) bool hasExtraData;
-	__declspec(property(get = __inTotalSet, put = __setInTotalSet)) bool isInTotalSet;
-	static int rowInc[];
-	static int colInc[];
-	bool canGo(Direction direction) { return ((0x1 << (int)direction) & value) != 0; }
-};
-
-struct AStarNodeExtraData
-{
-	AStarNodeExtraData() : colRow(0), bonusRight(0), bonusLeft(0), bonusUp(0), bonusDown(0) {}
-	union {
-		struct {
-			unsigned short col;
-			unsigned short row;
-		};
-		unsigned int colRow;
-	};
-
-	// Traffic tracking stats:
-	// straights
-	unsigned int nrFromUp = 0;
-	unsigned int nrFromDown = 0;
-	unsigned int nrFromLeft = 0;
-	unsigned int nrFromRight = 0;
-	
-	// diagonals
-	unsigned int nrFromUpRight = 0;
-	unsigned int nrFromDownRight = 0;
-	unsigned int nrFromUpLeft = 0;
-	unsigned int nrFromDownLeft = 0;
-
-	// preferred path weights
-	union {
-		struct {
-			char bonusRight;
-			char bonusLeft;
-			char bonusUp;
-			char bonusDown;
-		};
-		char bonus[4];
-	};
-	char getBonus(Direction direction) { return bonus[(int)direction]; }
-
-	struct BridgeEntry {
-		Bridge* bridge;
-		bool isAtBridgeStart;
-	};
-
-	std::vector<BridgeEntry> bridges;
-};
-
-#define DeRefEdgeTable(row, col) edgeTable[(row)*edgeTableXSize + col]
-
-struct AStarCell {
-	union{
-		struct{
-			unsigned short col;
-			unsigned short row;
-		};
-		unsigned int colRow;
-	};
-	AStarCell() {}
-	AStarCell(unsigned short col, unsigned short row) : col(col), row(row) {}
-	AStarCell(unsigned int colRow) : colRow(colRow) {}
-};
-
-struct AStarPathEntry {
-	AStarPathEntry() : cell(0, 0), bridgeIndex(-1) {}
-	AStarPathEntry(AStarCell cell, char bridgeIndex) : cell(cell), bridgeIndex(bridgeIndex) {}
-	AStarCell cell;
-	char bridgeIndex;
-};
-
-struct AStarSearchEntry {
-	float f;
-	float g;
-	float h;
-	AStarCell cell;
-	unsigned int previous;
-	int travelFromPrevious;
-	char prevBridgeIndex;
-	bool closed;
-};
-
-struct AStarPathID {
-	union {
-		struct {
-			unsigned short startCol;
-			unsigned short startRow;
-			unsigned short endCol;
-			unsigned short endRow;
-		};
-		unsigned __int64 id;
-	};
-};
+namespace AStar {
 
 class AStarNavigator : public Navigator
 {
+	friend class Traveler;
 protected:
 	AStarNode* edgeTable;
 
@@ -144,7 +28,7 @@ protected:
 	};
 	class HeapEntryCompare {
 	public:
-		bool operator()(HeapEntry& left, HeapEntry& right) {return left.f > right.f;}
+		bool operator()(HeapEntry& left, HeapEntry& right) { return left.f > right.f; }
 	};
 
 	// A heap of the open set; each value is tied to an index into the open set.
@@ -159,7 +43,6 @@ protected:
 	int shortestIndex;
 	float closestSoFar;
 	int closestIndex;
-	double endTime;
 	TreeNode* kinematics;
 	AStarSearchEntry barrierStart;
 	double xStart;
@@ -173,14 +56,14 @@ protected:
 	double directionChangePenalty;
 
 	// Drawing variables
-	Mesh boundsMesh;	
+	Mesh boundsMesh;
 	Mesh barrierMesh;
 	Mesh trafficMesh;
 	Mesh gridMesh;
 	Mesh memberMesh;
 	bool isDirty;
 
-	inline AStarSearchEntry* expandOpenSet(int r, int c ,float multiplier, int travelVal, char bridgeIndex = -1);
+	inline AStarSearchEntry* expandOpenSet(int r, int c, float multiplier, int travelVal, char bridgeIndex = -1);
 	void searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest, bool setStartEntry = false);
 	void buildEdgeTable();
 	void buildBoundsMesh();
@@ -211,21 +94,25 @@ public:
 	double cacheUseCount;
 
 	double hasEdgeTable;
-	
+
+	double doCollisionDetection;
+	double doCollisionAvoidance;
+	/// <summary>	A multiple of the te's "radius" that determines how big a te's "collision sphere" should be. </summary>
+	double collisionRadiusFactor;
+
 	TreeNode* barriers;
 	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
 	NodeRef activeBarrier;
-	
+
 	TreeNode* fixedResourceBarriers;
 	NodeListArray<ObjectDataType>::ObjStoredAttCouplingType objectBarrierList;
 
 	AStarNavigator();
 	~AStarNavigator();
-	
+
 	virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO) override;
 	virtual double onReset() override;
 	virtual double onRunWarm() override;
-	virtual double onTimerEvent(TreeNode* involved, int code, char *datastr) override;
 	virtual double onDraw(TreeNode* view) override;
 	virtual double onDrag(TreeNode* view) override;
 	virtual double onClick(TreeNode* view, int clickcode) override;
@@ -241,7 +128,7 @@ public:
 	AStarSearchEntry* checkExpandOpenSetDiagonal(AStarNode* node, AStarSearchEntry* entryIn,
 		Direction dir1, Direction dir2, int travelVal, double dist, AStarNodeExtraData* extraData);
 
-	double calculateRoute(TreeNode* traveler, double* destLoc, double endSpeed, bool queryDist = false);
+	TravelPath calculateRoute(TreeNode* traveler, double* destLoc, double endSpeed, bool doFullSearch = false);
 
 	virtual double updateLocations() override;
 	virtual double abortTravel(TreeNode* traveler, TreeNode* newts) override;
@@ -254,8 +141,17 @@ public:
 	void setDirty();
 
 	AStarCell getCellFromLoc(const Vec2& modelLoc);
+	Vec3 getLocFromCell(const AStarCell& cell) { return Vec3(gridOrigin.x + cell.col * nodeWidth, gridOrigin.y + cell.row * nodeWidth, 0.0);	}
 	AStarNode* getNode(const AStarCell& cell) { return &DeRefEdgeTable(cell.row, cell.col); }
 	AStarNode* getNode(int row, int col) { return &DeRefEdgeTable(row, col); }
 	AStarNodeExtraData* assertExtraData(const AStarCell& cell);
+
+
+	NodeListArray<Traveler>::CouplingSdtSubNodeType travelers;
+	std::list<Traveler*> activeTravelers;
+	void buildActiveTravelerList();
+
+	Traveler* getTraveler(TaskExecuter* te) { return tonode(get(first(te->node_v_navigator)))->objectAs(Traveler); }
 };
 
+}

@@ -1,6 +1,9 @@
 #pragma once
 #include "FlexsimDefs.h"
 #include "Divider.h"
+
+namespace AStar {
+
 class OneWayDivider :
 	public Divider
 {
@@ -15,3 +18,4 @@ public:
 	virtual void addVertices(Mesh* barrierMesh, float z) override;
 };
 
+}

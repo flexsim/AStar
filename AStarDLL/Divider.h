@@ -1,6 +1,9 @@
 #pragma once
 #include "FlexsimDefs.h"
 #include "Barrier.h"
+
+namespace AStar {
+
 class Divider :
 	public Barrier
 {
@@ -19,3 +22,4 @@ public:
 	virtual Divider* toDivider() override { return this; }
 };
 
+}
