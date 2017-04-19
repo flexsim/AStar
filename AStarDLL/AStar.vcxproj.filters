@@ -160,6 +160,9 @@
     <ClCompile Include="Traveler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AStarTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AStar.rc" />

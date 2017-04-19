@@ -77,7 +77,8 @@ public:
 	// Current edgeTable status variables
 	int edgeTableXSize;
 	int edgeTableYSize;
-	std::unordered_map<unsigned int, AStarNodeExtraData> edgeTableExtraData; // A mapping from colRow to an ExtraData object
+	TreeNode* extraDataNode;
+	std::unordered_map<unsigned int, AStarNodeExtraData*> edgeTableExtraData; // A mapping from colRow to an ExtraData object
 
 	static unsigned int editMode;
 	static AStarNavigator* globalASN;
@@ -86,6 +87,9 @@ public:
 	double surroundDepth;
 	double deepSearch;
 	double drawMode;
+	double shouldDrawAllocations;
+	void drawAllocations(float z);
+
 	double ignoreDestBarrier;
 
 	double cachePaths;
@@ -95,10 +99,7 @@ public:
 
 	double hasEdgeTable;
 
-	double doCollisionDetection;
 	double doCollisionAvoidance;
-	/// <summary>	A multiple of the te's "radius" that determines how big a te's "collision sphere" should be. </summary>
-	double collisionRadiusFactor;
 
 	TreeNode* barriers;
 	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
@@ -112,6 +113,7 @@ public:
 
 	virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO) override;
 	virtual double onReset() override;
+	virtual double onStartSimulation() override;
 	virtual double onRunWarm() override;
 	virtual double onDraw(TreeNode* view) override;
 	virtual double onDrag(TreeNode* view) override;
@@ -145,6 +147,7 @@ public:
 	AStarNode* getNode(const AStarCell& cell) { return &DeRefEdgeTable(cell.row, cell.col); }
 	AStarNode* getNode(int row, int col) { return &DeRefEdgeTable(row, col); }
 	AStarNodeExtraData* assertExtraData(const AStarCell& cell);
+	AStarNodeExtraData* getExtraData(const AStarCell& cell) { return edgeTableExtraData.find(cell.colRow)->second; }
 
 
 	NodeListArray<Traveler>::CouplingSdtSubNodeType travelers;

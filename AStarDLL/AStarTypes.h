@@ -1,6 +1,10 @@
 #pragma once
 #include "AStarClasses.h"
+#include "FlexsimDefs.h"
 #include <list>
+#include <vector>
+#include <deque>
+#include <set>
 
 namespace AStar {
 
@@ -9,6 +13,24 @@ enum Direction {
 	Left = 1,
 	Up = 2,
 	Down = 3
+};
+
+
+struct AStarCell {
+	union{
+		struct{
+			unsigned short col;
+			unsigned short row;
+		};
+		unsigned int colRow;
+	};
+	AStarCell() {}
+	AStarCell(unsigned short col, unsigned short row) : col(col), row(row) {}
+	AStarCell(unsigned int colRow) : colRow(colRow) {}
+	bool operator == (const AStarCell& other) const { return colRow == other.colRow; }
+	bool operator != (const AStarCell& other) const { return colRow != other.colRow; }
+	void bind(TreeNode* x, const char* prefix);
+	void bind(SimpleDataType* sdt, const char* prefix = "");
 };
 
 class AStarNode
@@ -36,25 +58,31 @@ public:
 	bool canGo(Direction direction) { return ((0x1 << (int)direction) & value) != 0; }
 };
 
-struct NodeTraversal
+struct NodeAllocation
 {
+	NodeAllocation() : traveler(nullptr), acquireTime(0.0), releaseTime(0.0) {}
+	NodeAllocation(Traveler* traveler, const AStarCell& cell, int travelPathIndex, double acquireTime, double releaseTime) :
+		traveler(traveler), cell(cell), travelPathIndex(travelPathIndex), acquireTime(acquireTime), releaseTime(releaseTime)
+	{}
 	Traveler* traveler;
-	double collisionStartTime;
-	double collisionEndTime;
+	AStarCell cell;
+	int travelPathIndex;
+	double acquireTime;
+	double releaseTime;
+	void extendReleaseTime(double toTime);
+	void bind(TreeNode* x);
 };
 
-typedef std::list<NodeTraversal>::iterator NodeTraversalIterator;
+typedef std::list<NodeAllocation> NodeAllocationList;
+typedef std::list<NodeAllocation>::iterator NodeAllocationIterator;
 
-struct AStarNodeExtraData
+struct AStarNodeExtraData : public SimpleDataType
 {
-	AStarNodeExtraData() : colRow(0), bonusRight(0), bonusLeft(0), bonusUp(0), bonusDown(0) {}
-	union {
-		struct {
-			unsigned short col;
-			unsigned short row;
-		};
-		unsigned int colRow;
-	};
+
+	AStarNodeExtraData() : cell(0, 0), bonusRight(0), bonusLeft(0), bonusUp(0), bonusDown(0) {}
+	virtual const char* getClassFactory() { return "AStar::NodeExtraData"; }
+	virtual void bind() override;
+	AStarCell cell;
 
 	// Traffic tracking stats:
 	// straights
@@ -89,27 +117,44 @@ struct AStarNodeExtraData
 	};
 
 	std::vector<BridgeEntry> bridges;
-	std::list<NodeTraversal> pendingTraversals;
+	NodeAllocationList allocations;
+	NodeAllocationList requests;
+	void removeAllocation(NodeAllocationIterator allocation);
+	void onRelease();
+
+	/// <summary>	Adds a request to 'blockingAlloc'. </summary>
+	/// <remarks>	Anthony.johnson, 4/17/2017. </remarks>
+	/// <param name="request">			[in,out] The request. </param>
+	/// <param name="blockingAlloc">	[in,out] The blocking allocate. </param>
+	/// <returns>	A NodeAllocationIterator. If the function was successful, this will be a valid 
+	/// 			iterator into requests. If the algorithm finds a cycle in the allocations, this 
+	/// 			will fail and return null.</returns>
+	NodeAllocation* addRequest(NodeAllocation& request, NodeAllocation& blockingAlloc, std::vector<Traveler*>* travelers = nullptr);
+
+	void checkCreateReleaseEvent();
+
+	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);
+
+	class ReleaseEvent : public FlexSimEvent
+	{
+	public:
+		ReleaseEvent() : FlexSimEvent() {}
+		ReleaseEvent(double time, Traveler* traveler, AStarCell& cell);
+		virtual const char* getClassFactory() override { return "AStar::AStarNodeExtraData::ReleaseEvent"; }
+		virtual void bind() override;
+		AStarCell cell;
+		virtual void execute() override;
+	};
+	ObjRef<ReleaseEvent> releaseEvent;
 };
 
 #define DeRefEdgeTable(row, col) edgeTable[(row)*edgeTableXSize + col]
 
-struct AStarCell {
-	union{
-		struct{
-			unsigned short col;
-			unsigned short row;
-		};
-		unsigned int colRow;
-	};
-	AStarCell() {}
-	AStarCell(unsigned short col, unsigned short row) : col(col), row(row) {}
-	AStarCell(unsigned int colRow) : colRow(colRow) {}
-};
 
 struct AStarPathEntry {
 	AStarPathEntry() : cell(0, 0), bridgeIndex(-1) {}
 	AStarPathEntry(AStarCell cell, char bridgeIndex) : cell(cell), bridgeIndex(bridgeIndex) {}
+	void bind(TreeNode* toNode);
 	AStarCell cell;
 	char bridgeIndex;
 };

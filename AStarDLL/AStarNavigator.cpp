@@ -61,6 +61,7 @@ void AStarNavigator::bindVariables(void)
 	Navigator::bindVariables();
 	bindVariable(defaultPathWeight);
 	bindVariable(drawMode);
+	bindVariable(shouldDrawAllocations);
 	bindVariable(nodeWidth);
 	bindVariable(surroundDepth);
 	bindVariable(deepSearch);
@@ -78,16 +79,17 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(requestCount);
 	bindVariable(cacheUseCount);
 
-	bindVariable(doCollisionDetection);
-	bindVariable(collisionRadiusFactor);
 	bindVariable(doCollisionAvoidance);
+
+	bindVariableByName("extraData", extraDataNode);
 
 	travelers.init(node_v_travelmembers);
 	if (travelers.size() > 0 && !isclasstype(first(travelers), "AStar::Traveler")) {
 		for (int i = 1; i <= travelers.size(); i++) {
 			treenode coupling = rank(travelers, i);
-			Traveler* traveler = travelers.add(new Traveler);
-			nodejoin(traveler->holder, nodeadddata(nodeinsertinto(up(tonode(get(coupling)))), DATATYPE_COUPLING));
+			treenode partner = tonode(get(coupling));
+			Traveler* traveler = travelers.add(new Traveler(this, partner->ownerObject->objectAs(TaskExecuter)));
+			nodejoin(traveler->holder, nodeadddata(nodeinsertinto(up(partner)), DATATYPE_COUPLING));
 			setrank(traveler->holder, coupling->rank);
 			destroyobject(coupling);
 		}
@@ -110,34 +112,49 @@ double AStarNavigator::onCreate(double dropx, double dropy, double dropz, int is
 double AStarNavigator::onReset()
 {
 	activeTravelers.clear();
-	for (int i = 0; i < travelers.size(); i++)
-		travelers[i]->onReset();
 
 	for (size_t i = 1; i <= content(node_v_travelmembers); i++) {
 		treenode teNode = ownerobject(tonode(get(rank(node_v_travelmembers, i))));
 		teNode->objectAs(TaskExecuter)->moveToResetPosition();
 	}
 
+	for (int i = 0; i < travelers.size(); i++)
+		travelers[i]->onReset();
+
+
+	SimulationStartEvent::addObject(this);
+
 	edgeTableExtraData.clear();
+	extraDataNode->subnodes.clear();
 	buildEdgeTable();
 	setDirty();
 	maxTraveled = 0;
 	return 0;
 }
 
+
+double AStarNavigator::onStartSimulation()
+{
+	for (int i = 0; i < travelers.size(); i++)
+		travelers[i]->onStartSimulation();
+	return 0;
+}
+
 double AStarNavigator::onRunWarm()
 {
 	for (auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
-		AStarNodeExtraData & extra = iter->second;
-		extra.nrFromUp = 0;
-		extra.nrFromDown = 0;
-		extra.nrFromLeft = 0;
-		extra.nrFromRight = 0;
+		AStarNodeExtraData* extra = iter->second;
+		extra->nrFromUp = 0;
+		extra->nrFromDown = 0;
+		extra->nrFromLeft = 0;
+		extra->nrFromRight = 0;
 
-		extra.nrFromUpLeft = 0;
-		extra.nrFromUpRight = 0;
-		extra.nrFromDownLeft = 0;
-		extra.nrFromDownRight = 0;
+		extra->nrFromUpLeft = 0;
+		extra->nrFromUpRight = 0;
+		extra->nrFromDownLeft = 0;
+		extra->nrFromDownRight = 0;
+
+		extra->numCollisions = 0;
 	}
 	return 0;
 }
@@ -189,6 +206,9 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
 			drawMembers(0.02f / lengthMultiple);
+
+		if (shouldDrawAllocations)
+			drawAllocations(0.02f / lengthMultiple);
 	} else {
 
 		if (drawMode && ASTAR_DRAW_MODE_TRAFFIC) {
@@ -343,6 +363,7 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 			Traveler* traveler = travelers.add(new Traveler);
 			clearcontents(navigatorNode);
 			nodejoin(traveler->holder, nodeadddata(nodeinsertinto(navigatorNode), DATATYPE_COUPLING));
+			traveler->onReset();
 			break;
 		}
 
@@ -670,7 +691,7 @@ the outside 8 nodes.
 		if (!n->noExtraData) {
 			auto found = edgeTableExtraData.find(shortest.cell.colRow);
 			if (found != edgeTableExtraData.end())
-				extraData = &(found->second);
+				extraData = found->second;
 		}
 		checkExpandOpenSet(n, (&shortest), Up, TRAVEL_UP, 1.0, 1.0, extraData);
 		checkExpandOpenSet(n, (&shortest), Right, TRAVEL_RIGHT, 1.0, 1.0, extraData);
@@ -684,9 +705,10 @@ the outside 8 nodes.
 
 		if (n->hasExtraData) {
 			auto e = edgeTableExtraData.find(shortest.cell.colRow);
-			if (e != edgeTableExtraData.end() && e->second.bridges.size() > 0) {
-				for (int i = 0; i < e->second.bridges.size(); i++) {
-					auto& entry = e->second.bridges[i];
+			AStarNodeExtraData* extra = e->second;
+			if (e != edgeTableExtraData.end() && extra->bridges.size() > 0) {
+				for (int i = 0; i < extra->bridges.size(); i++) {
+					auto& entry = extra->bridges[i];
 					double addedDist = entry.bridge->calculateDistance();
 					Point* endPoint = entry.isAtBridgeStart ? entry.bridge->pointList.back() : entry.bridge->pointList.front();
 					AStarCell endCell = getCellFromLoc(Vec2(endPoint->x, endPoint->y));
@@ -758,12 +780,10 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), loc);
 
 	TravelPath path = calculateRoute(taskexecuter->holder, loc, 0, true);
-	getTraveler(taskexecuter)->navigatePath(std::move(path), true);
+	Traveler* traveler = getTraveler(taskexecuter);
+	traveler->navigatePath(std::move(path), true);
 
-	TreeNode* kinematics = first(taskexecuter->node_v_kinematics);
-	double distance = getkinematics(kinematics, KINEMATIC_TOTALDIST);
-	destroyobject(kinematics);
-	return distance;
+	return getkinematics(traveler->distQueryKinematics, KINEMATIC_TOTALDIST);
 }
 
 void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest, bool setStartEntry)
@@ -1257,9 +1277,9 @@ void AStarNavigator::drawTraffic(float z, TreeNode* view)
 	trafficMesh.setMeshAttrib(MESH_NORMAL, up);
 	trafficMesh.setMeshAttrib(MESH_DIFFUSE4, red);
 	for(auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
-		AStarNodeExtraData* e = &(iter->second);
-		double x = (gridOrigin.x + (e->col) * nodeWidth);
-		double y = (gridOrigin.y + (e->row) * nodeWidth);
+		AStarNodeExtraData* e = iter->second;
+		double x = (gridOrigin.x + (e->cell.col) * nodeWidth);
+		double y = (gridOrigin.y + (e->cell.row) * nodeWidth);
 		
 		if (drawForPick) {
 			ABT(-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 1.0);
@@ -1369,7 +1389,7 @@ void AStarNavigator::drawMembers(float z)
 		Traveler * t = travelers[i];
 		if (t->isActive)
 			continue;
-		TreeNode* traveler = t->getTE()->holder;
+		TreeNode* traveler = t->te->holder;
 
 		double outputVector[3];
 		vectorproject(traveler, 0.5 * xsize(traveler), -0.5 * ysize(traveler), 0, model(), outputVector);
@@ -1408,7 +1428,7 @@ void AStarNavigator::drawMembers(float z)
 
 	for (auto i = activeTravelers.begin(); i != activeTravelers.end(); i++) {
 		Traveler* t = *i;
-		TreeNode* traveler = t->getTE()->holder;
+		TreeNode* traveler = t->te->holder;
 
 		double outputVector[3];
 		vectorproject(traveler, 0.5 * xsize(traveler), -0.5 * ysize(traveler), 0, model(), outputVector);
@@ -1473,8 +1493,8 @@ void AStarNavigator::drawGrid(float z)
 			s.cell.col = col;
 			s.cell.row = row;
 			AStarNodeExtraData* e = NULL;
-			if(!n->noExtraData)
-				e = &edgeTableExtraData[s.cell.colRow];
+			if(n->hasExtraData)
+				e = edgeTableExtraData[s.cell.colRow];
 			double x = (xOffset + col + 0.5) * nodeWidth;
 			double y = (yOffset + row + 0.5) * nodeWidth;
 
@@ -1542,6 +1562,55 @@ void AStarNavigator::drawGrid(float z)
 	gridMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_FORCE_CLEANUP);
 }
 
+
+void AStarNavigator::drawAllocations(float z)
+{
+	if (!shouldDrawAllocations || time() <= 0)
+		return;
+	Mesh allocMesh;
+	double diamondRadius = 0.2 * nodeWidth;
+	fglColor(0.8f, 0.5f, 0.0f, 1.0f);
+	Vec4f fullClr(0.8f, 0.4f, 0.0f, 1.0f);
+	Vec4f partialClr(0.8f, 0.4f, 0.0f, 0.4f);
+	// Draw the grid one row at a time, using the large dimension
+	
+	allocMesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE4, MESH_DYNAMIC_DRAW);
+	for (auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
+		AStarNodeExtraData& nodeData = *(iter->second);
+		if (nodeData.allocations.size() == 0)
+			continue;
+		auto currentAllocation = std::find_if(nodeData.allocations.begin(), nodeData.allocations.end(),
+			[](NodeAllocation& alloc) { return alloc.acquireTime <= time() && alloc.releaseTime >= time(); });
+		Vec4f& clr = (currentAllocation == nodeData.allocations.end()) ? partialClr : fullClr;
+
+		Vec3 centerPos = getLocFromCell(nodeData.cell);
+		int vert = allocMesh.addVertex();
+		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
+		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+		vert = allocMesh.addVertex();
+		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y + diamondRadius, z));
+		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+		vert = allocMesh.addVertex();
+		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, z));
+		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+		vert = allocMesh.addVertex();
+		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, z));
+		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+		vert = allocMesh.addVertex();
+		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y - diamondRadius, z));
+		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+		vert = allocMesh.addVertex();
+		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
+		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+	}
+	fglDisable(GL_LIGHTING);
+	fglDisable(GL_TEXTURE_2D);
+	allocMesh.draw(GL_TRIANGLES);
+	fglEnable(GL_LIGHTING);
+	fglEnable(GL_TEXTURE_2D);
+
+}
+
 void AStarNavigator::setDirty()
 {
 	isDirty = true;
@@ -1595,11 +1664,14 @@ AStarNodeExtraData*  AStarNavigator::assertExtraData(const AStarCell& cell)
 	auto extraIter = edgeTableExtraData.find(cell.colRow);
 	if (extraIter == edgeTableExtraData.end()) {
 		AStarNode* node = getNode(cell);
-		extra = &(edgeTableExtraData[cell.colRow]);
-		extra->colRow = cell.colRow;
+		treenode newNode = extraDataNode->subnodes.add();
+		extra = new AStarNodeExtraData;
+		newNode->addSimpleData(extra, false);
+		edgeTableExtraData[cell.colRow] = extra;
+		extra->cell = cell;
 		node->noExtraData = 0;
 	} else {
-		extra = &(extraIter->second);
+		extra = extraIter->second;
 	}
 	return extra;
 }

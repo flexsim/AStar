@@ -211,6 +211,7 @@
   <ItemGroup>
     <ClCompile Include="AStar.cpp" />
     <ClCompile Include="AStarNavigator.cpp" />
+    <ClCompile Include="AStarTypes.cpp" />
     <ClCompile Include="Barrier.cpp" />
     <ClCompile Include="Bridge.cpp" />
     <ClCompile Include="Divider.cpp" />
