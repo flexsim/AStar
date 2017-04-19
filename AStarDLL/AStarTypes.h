@@ -56,6 +56,7 @@ public:
 	static int rowInc[];
 	static int colInc[];
 	bool canGo(Direction direction) { return ((0x1 << (int)direction) & value) != 0; }
+	void setCanGo(Direction direction, bool toValue) { if (toValue) value |= (0x1 << (int)direction); else value &= ~(0x1 << (int)direction); }
 };
 
 struct NodeAllocation

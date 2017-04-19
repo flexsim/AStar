@@ -128,6 +128,9 @@
     <ClInclude Include="AStarTypes.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="TemporaryBarrier.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AStar.cpp">
@@ -161,6 +164,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AStarTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TemporaryBarrier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

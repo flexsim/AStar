@@ -215,6 +215,8 @@ void NodeAllocation::extendReleaseTime(double toTime)
 {
 	double oldReleaseTime = releaseTime;
 	releaseTime = toTime;
+	if (toTime <= oldReleaseTime)
+		return;
 	AStarNodeExtraData* nodeData = traveler->navigator->getExtraData(cell);
 	NodeAllocationIterator nextIter;
 	for (auto iter = nodeData->allocations.begin(); iter != nodeData->allocations.end(); iter = nextIter) {
@@ -227,6 +229,8 @@ void NodeAllocation::extendReleaseTime(double toTime)
 			NodeAllocation copy = alloc;
 			alloc.traveler->clearAllocations(std::find_if(alloc.traveler->allocations.begin(), alloc.traveler->allocations.end(), 
 				[&](NodeAllocationIterator& other) { return other->cell == nodeData->cell && other == iter; }));
+			if (alloc.traveler->arrivalEvent)
+				destroyevent(alloc.traveler->arrivalEvent->holder);
 			// this will cause him to create collision event
 			NodeAllocation* nullAlloc = copy.traveler->addAllocation(copy);
 			_ASSERTE(nullAlloc == nullptr);

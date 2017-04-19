@@ -15,6 +15,8 @@ public:
 	Traveler(AStarNavigator* nav, TaskExecuter* te) : navigator(nav), te(te) {}
 	Traveler() : navigator(nullptr), te(nullptr) {}
 
+	Vec3 destLoc;
+	double endSpeed;
 	bool isActive = false;
 	std::list<Traveler*>::iterator activeEntry;
 	TravelPath travelPath;
@@ -69,6 +71,8 @@ public:
 
 	class CollisionEvent;
 	void onCollide(CollisionEvent* event, Traveler* collidingWith);
+
+	bool navigateAroundDeadlock(std::vector<Traveler*>& deadlockList);
 	class CollisionEvent : public FlexSimEvent
 	{
 	public:
@@ -85,7 +89,7 @@ public:
 	};
 	ObjRef<CollisionEvent> collisionEvent;
 
-	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*> travelers);
+	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);
 
 };
 

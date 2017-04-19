@@ -436,8 +436,11 @@ double AStarNavigator::navigateToLoc(treenode traveler, double* destLoc, double 
 		return 0;
 	}
 
-	TravelPath path = calculateRoute(traveler, destLoc, endSpeed, false);
-	getTraveler(traveler->objectAs(TaskExecuter))->navigatePath(std::move(path), false);
+	Traveler* t = getTraveler(traveler->objectAs(TaskExecuter));
+	t->destLoc = Vec3(destLoc[0], destLoc[1], destLoc[2]);
+	t->endSpeed = endSpeed;
+	TravelPath path = calculateRoute(traveler, t->destLoc, endSpeed, false);
+	t->navigatePath(std::move(path), false);
 	return 0;
 }
 
@@ -776,11 +779,11 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 {
 	updatelocations(taskexecuter->holder);
 
-	double loc[3];
-	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), loc);
-
-	TravelPath path = calculateRoute(taskexecuter->holder, loc, 0, true);
 	Traveler* traveler = getTraveler(taskexecuter);
+	double destLoc[3];
+	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), destLoc);
+
+	TravelPath path = calculateRoute(taskexecuter->holder, destLoc, 0, true);
 	traveler->navigatePath(std::move(path), true);
 
 	return getkinematics(traveler->distQueryKinematics, KINEMATIC_TOTALDIST);
@@ -1568,6 +1571,7 @@ void AStarNavigator::drawAllocations(float z)
 	if (!shouldDrawAllocations || time() <= 0)
 		return;
 	Mesh allocMesh;
+	Mesh lineMesh;
 	double diamondRadius = 0.2 * nodeWidth;
 	fglColor(0.8f, 0.5f, 0.0f, 1.0f);
 	Vec4f fullClr(0.8f, 0.4f, 0.0f, 1.0f);
@@ -1575,13 +1579,15 @@ void AStarNavigator::drawAllocations(float z)
 	// Draw the grid one row at a time, using the large dimension
 	
 	allocMesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE4, MESH_DYNAMIC_DRAW);
+	lineMesh.init(0, MESH_POSITION, MESH_DYNAMIC_DRAW);
 	for (auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
 		AStarNodeExtraData& nodeData = *(iter->second);
 		if (nodeData.allocations.size() == 0)
 			continue;
 		auto currentAllocation = std::find_if(nodeData.allocations.begin(), nodeData.allocations.end(),
-			[](NodeAllocation& alloc) { return alloc.acquireTime <= time() && alloc.releaseTime >= time(); });
-		Vec4f& clr = (currentAllocation == nodeData.allocations.end()) ? partialClr : fullClr;
+			[](NodeAllocation& alloc) { return alloc.acquireTime <= time() && alloc.releaseTime > time(); });
+		bool isAllocCurrent = currentAllocation != nodeData.allocations.end();
+		Vec4f& clr = !isAllocCurrent ? partialClr : fullClr;
 
 		Vec3 centerPos = getLocFromCell(nodeData.cell);
 		int vert = allocMesh.addVertex();
@@ -1602,10 +1608,21 @@ void AStarNavigator::drawAllocations(float z)
 		vert = allocMesh.addVertex();
 		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
 		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+
+		if (isAllocCurrent) {
+			lineMesh.setVertexAttrib(lineMesh.addVertex(), MESH_POSITION, Vec3f(centerPos.x, centerPos.y, centerPos.z));
+			TaskExecuter* te = currentAllocation->traveler->te;
+			Vec3 topPos = te->getLocation(0.5, 0.5, 1.1);
+			if (te->holder->up != model())
+				topPos = topPos.project(te->holder->up, model());
+			lineMesh.setVertexAttrib(lineMesh.addVertex(), MESH_POSITION, Vec3f(topPos.x, topPos.y, topPos.z));
+		}
 	}
 	fglDisable(GL_LIGHTING);
 	fglDisable(GL_TEXTURE_2D);
 	allocMesh.draw(GL_TRIANGLES);
+	fglColor(0.0f, 0.0f, 1.0f, 1.0f);
+	lineMesh.draw(GL_LINES);
 	fglEnable(GL_LIGHTING);
 	fglEnable(GL_TEXTURE_2D);
 

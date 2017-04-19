@@ -52,8 +52,8 @@ void Divider::addBarriersToTable(AStarNavigator* nav)
 	double r0 = nav->gridOrigin.y;
 	// here I assume the row/column number represents the slot above / right of the
 	// corner I am working on 
-	int col = (int)round((x - c0) / nodeWidth);
-	int row = (int)round((y - r0) / nodeWidth);
+	int col = (int)round(((x - c0) / nodeWidth) + 0.5);
+	int row = (int)round(((y - r0) / nodeWidth) + 0.5);
 
 	double nextX, nextY;
 	int nextCol, nextRow;
@@ -64,8 +64,8 @@ void Divider::addBarriersToTable(AStarNavigator* nav)
 		nextY = pointList[i + 1]->y;
 
 		// calculate the column and row numbers for that point (again, above/right of the current corner)
-		nextCol = (int)round((nextX - c0) / nodeWidth);
-		nextRow = (int)round((nextY - r0) / nodeWidth);
+		nextCol = (int)round(((nextX - c0) / nodeWidth) + 0.5);
+		nextRow = (int)round(((nextY - r0) / nodeWidth) + 0.5);
 		if(nextX > c0 + col * nodeWidth) nextCol++;
 		if(nextY > r0 + row * nodeWidth) nextRow++;
 
