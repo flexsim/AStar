@@ -47,6 +47,7 @@ protected:
 	AStarSearchEntry barrierStart;
 	double xStart;
 	double yStart;
+	double interpolateRotations;
 
 	int xOffset;
 	int yOffset;

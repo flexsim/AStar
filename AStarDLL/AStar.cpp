@@ -26,8 +26,8 @@ visible SimpleDataType* createsdtderivative(char* classname)
 	if (strcmp(classname, "Bridge") == 0) return new Bridge;
 	if (strcmp(classname, "Traveler") == 0) return new Traveler;
 	if (strcmp(classname, "Traveler::ArrivalEvent") == 0) return new Traveler::ArrivalEvent;
-	if (strcmp(classname, "Traveler::CollisionEvent") == 0) return new Traveler::CollisionEvent;
-	if (strcmp(classname, "AStarNodeExtraData::ReleaseEvent") == 0) return new AStarNodeExtraData::ReleaseEvent;
+	if (strcmp(classname, "Traveler::BlockEvent") == 0) return new Traveler::BlockEvent;
+	if (strcmp(classname, "AStarNodeExtraData::ContinueEvent") == 0) return new AStarNodeExtraData::ContinueEvent;
 	if (strcmp(classname, "NodeExtraData") == 0) return new AStarNodeExtraData;
 	return NULL;
 }

@@ -121,7 +121,8 @@ struct AStarNodeExtraData : public SimpleDataType
 	NodeAllocationList allocations;
 	NodeAllocationList requests;
 	void removeAllocation(NodeAllocationIterator allocation);
-	void onRelease();
+	void onContinue();
+	void onReleaseTimeExtended(NodeAllocation& alloc, double oldReleaseTime);
 
 	/// <summary>	Adds a request to 'blockingAlloc'. </summary>
 	/// <remarks>	Anthony.johnson, 4/17/2017. </remarks>
@@ -132,21 +133,21 @@ struct AStarNodeExtraData : public SimpleDataType
 	/// 			will fail and return null.</returns>
 	NodeAllocation* addRequest(NodeAllocation& request, NodeAllocation& blockingAlloc, std::vector<Traveler*>* travelers = nullptr);
 
-	void checkCreateReleaseEvent();
+	void checkCreateContinueEvent();
 
 	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);
 
-	class ReleaseEvent : public FlexSimEvent
+	class ContinueEvent : public FlexSimEvent
 	{
 	public:
-		ReleaseEvent() : FlexSimEvent() {}
-		ReleaseEvent(double time, Traveler* traveler, AStarCell& cell);
-		virtual const char* getClassFactory() override { return "AStar::AStarNodeExtraData::ReleaseEvent"; }
+		ContinueEvent() : FlexSimEvent() {}
+		ContinueEvent(double time, Traveler* traveler, AStarCell& cell);
+		virtual const char* getClassFactory() override { return "AStar::AStarNodeExtraData::ContinueEvent"; }
 		virtual void bind() override;
 		AStarCell cell;
 		virtual void execute() override;
 	};
-	ObjRef<ReleaseEvent> releaseEvent;
+	ObjRef<ContinueEvent> continueEvent;
 };
 
 #define DeRefEdgeTable(row, col) edgeTable[(row)*edgeTableXSize + col]

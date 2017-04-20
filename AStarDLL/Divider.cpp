@@ -66,8 +66,6 @@ void Divider::addBarriersToTable(AStarNavigator* nav)
 		// calculate the column and row numbers for that point (again, above/right of the current corner)
 		nextCol = (int)round(((nextX - c0) / nodeWidth) + 0.5);
 		nextRow = (int)round(((nextY - r0) / nodeWidth) + 0.5);
-		if(nextX > c0 + col * nodeWidth) nextCol++;
-		if(nextY > r0 + row * nodeWidth) nextRow++;
 
 		// set dx and dy, the differences between the rows and columns
 		double dx = nextCol - col;

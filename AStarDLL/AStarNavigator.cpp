@@ -66,6 +66,7 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(surroundDepth);
 	bindVariable(deepSearch);
 	bindVariable(ignoreDestBarrier);
+	bindVariable(interpolateRotations);
 
 	bindVariable(barriers);
 	barrierList.init(barriers);
@@ -1610,12 +1611,17 @@ void AStarNavigator::drawAllocations(float z)
 		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
 
 		if (isAllocCurrent) {
-			lineMesh.setVertexAttrib(lineMesh.addVertex(), MESH_POSITION, Vec3f(centerPos.x, centerPos.y, centerPos.z));
-			TaskExecuter* te = currentAllocation->traveler->te;
-			Vec3 topPos = te->getLocation(0.5, 0.5, 1.1);
-			if (te->holder->up != model())
-				topPos = topPos.project(te->holder->up, model());
-			lineMesh.setVertexAttrib(lineMesh.addVertex(), MESH_POSITION, Vec3f(topPos.x, topPos.y, topPos.z));
+			while (currentAllocation != nodeData.allocations.end()) {
+				lineMesh.setVertexAttrib(lineMesh.addVertex(), MESH_POSITION, Vec3f(centerPos.x, centerPos.y, centerPos.z));
+				TaskExecuter* te = currentAllocation->traveler->te;
+				Vec3 topPos = te->getLocation(0.5, 0.5, 1.1);
+				if (te->holder->up != model())
+					topPos = topPos.project(te->holder->up, model());
+				lineMesh.setVertexAttrib(lineMesh.addVertex(), MESH_POSITION, Vec3f(topPos.x, topPos.y, topPos.z));
+				currentAllocation++;
+				currentAllocation = std::find_if(currentAllocation, nodeData.allocations.end(),
+					[](NodeAllocation& alloc) { return alloc.acquireTime <= time() && alloc.releaseTime > time(); });
+			}
 		}
 	}
 	fglDisable(GL_LIGHTING);

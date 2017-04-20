@@ -49,6 +49,7 @@ public:
 	void checkCreateCollisionEvent(NodeAllocation& allocation, AStarNodeExtraData* nodeData = nullptr);
 	static NodeAllocation* findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation);
 	void removeAllocation(TravelerAllocations::iterator iter);
+	void cullExpiredAllocations();
 	void clearAllocations();
 	void clearAllocationsUpTo(TravelerAllocations::iterator iter);
 	/// <summary>	Clears the allocations including and after fromPoint. </summary>
@@ -69,25 +70,29 @@ public:
 	ObjRef<ArrivalEvent> arrivalEvent;
 	treenode distQueryKinematics;
 
-	class CollisionEvent;
-	void onCollide(CollisionEvent* event, Traveler* collidingWith);
+	class BlockEvent;
+	void onBlock(BlockEvent* event, Traveler* collidingWith);
 
-	bool navigateAroundDeadlock(std::vector<Traveler*>& deadlockList);
-	class CollisionEvent : public FlexSimEvent
+	struct NavigationAttempt {
+		TravelPath path;
+		Traveler* traveler;
+		double penalty = DBL_MAX;
+	};
+	bool navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, NodeAllocation& deadlockCreatingRequest);
+	class BlockEvent : public FlexSimEvent
 	{
 	public:
-		CollisionEvent() : FlexSimEvent() {}
-		CollisionEvent(Traveler* collider, int colliderPathIndex, Traveler* collidingWith, int collidingWithPathIndex, const AStarCell& cell, double time) 
-			: FlexSimEvent(collider->holder, time, collidingWith->holder, cell.row * 100000 + cell.col), colliderPathIndex(colliderPathIndex), collidingWithPathIndex(collidingWithPathIndex), cell(cell)
+		BlockEvent() : FlexSimEvent() {}
+		BlockEvent(Traveler* collider, int colliderPathIndex, Traveler* collidingWith, const AStarCell& cell, double time) 
+			: FlexSimEvent(collider->holder, time, collidingWith->holder, cell.row * 100000 + cell.col), colliderPathIndex(colliderPathIndex), cell(cell)
 		{}
-		virtual const char* getClassFactory() override { return "AStar::Traveler::CollisionEvent"; }
+		virtual const char* getClassFactory() override { return "AStar::Traveler::BlockEvent"; }
 		virtual void bind() override;
-		virtual void execute() override { partner()->objectAs(Traveler)->onCollide(this, involved->objectAs(Traveler)); }
+		virtual void execute() override { partner()->objectAs(Traveler)->onBlock(this, involved->objectAs(Traveler)); }
 		int colliderPathIndex;
-		int collidingWithPathIndex;
 		AStarCell cell;
 	};
-	ObjRef<CollisionEvent> collisionEvent;
+	ObjRef<BlockEvent> blockEvent;
 
 	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);
 

@@ -123,7 +123,7 @@ void AStarNodeExtraData::bind()
 	
 	bindStlContainer(allocations);
 	bindStlContainer(requests);
-	bindObjRef(releaseEvent, false);
+	bindObjRef(continueEvent, false);
 }
 
 void AStarNodeExtraData::removeAllocation(NodeAllocationIterator allocIter)
@@ -131,13 +131,16 @@ void AStarNodeExtraData::removeAllocation(NodeAllocationIterator allocIter)
 	NodeAllocation alloc = *allocIter;
 	allocations.erase(allocIter);
 	double curTime = time();
-	if (alloc.acquireTime <= curTime && alloc.releaseTime >= curTime && requests.size() > 0)
-		onRelease();
+	if (alloc.acquireTime <= curTime && alloc.releaseTime > curTime && requests.size() > 0) {
+		if (continueEvent)
+			destroyevent(continueEvent->holder);
+		onContinue();
+	}
 }
 
-void AStarNodeExtraData::onRelease()
+void AStarNodeExtraData::onContinue()
 {
-	releaseEvent = nullptr;
+	continueEvent = nullptr;
 	if (requests.size() == 0)
 		return;
 	double curTime = time();
@@ -145,10 +148,44 @@ void AStarNodeExtraData::onRelease()
 		[&](NodeAllocation& alloc) {return alloc.acquireTime <= curTime && alloc.releaseTime > curTime; });
 	if (existingAllocation == allocations.end()) {
 		NodeAllocation topRequest = requests.front();
+		topRequest.traveler->request = nullptr;
 		requests.pop_front();
 		topRequest.traveler->navigatePath(topRequest.travelPathIndex - 1, false);
+		if (requests.size() > 0)
+			checkCreateContinueEvent();
 	} else {
-		checkCreateReleaseEvent();
+		checkCreateContinueEvent();
+	}
+}
+
+
+void AStarNodeExtraData::onReleaseTimeExtended(NodeAllocation& changedAlloc, double oldReleaseTime)
+{
+	NodeAllocationIterator nextIter;
+	for (auto iter = allocations.begin(); iter != allocations.end(); iter = nextIter) {
+		nextIter = iter;
+		nextIter++;
+		NodeAllocation& alloc = *iter;
+		if (&alloc == &changedAlloc)
+			continue;
+		if (alloc.acquireTime >= oldReleaseTime && alloc.acquireTime < changedAlloc.releaseTime) {
+			NodeAllocation copy = alloc;
+			auto found = std::find_if(alloc.traveler->allocations.begin(), alloc.traveler->allocations.end(),
+				[&](NodeAllocationIterator& other) { return other->cell == cell && other == iter; });
+			while (found - alloc.traveler->allocations.begin() > 1 && (*(found - 1))->acquireTime == alloc.acquireTime)
+				found--;
+			alloc.traveler->clearAllocations(found);
+			if (copy.traveler->arrivalEvent)
+				destroyevent(copy.traveler->arrivalEvent->holder);
+			// this will cause him to create collision event
+			NodeAllocation* nullAlloc = copy.traveler->addAllocation(copy);
+			_ASSERTE(nullAlloc == nullptr);
+		}
+	}
+
+	if (requests.size() > 0 && continueEvent && continueEvent == oldReleaseTime) {
+		destroyevent(continueEvent->holder);
+		continueEvent = createevent(new ContinueEvent(changedAlloc.releaseTime, requests.front().traveler, cell))->objectAs(ContinueEvent);
 	}
 }
 
@@ -158,7 +195,7 @@ NodeAllocation* AStarNodeExtraData::addRequest(NodeAllocation& request, NodeAllo
 	std::vector<Traveler*> travelers;
 	bool found = request.traveler->findDeadlockCycle(request.traveler, travelers);
 	if (!found) {
-		checkCreateReleaseEvent();
+		checkCreateContinueEvent();
 		return &requests.back();
 	} else {
 		requests.pop_back();
@@ -168,10 +205,10 @@ NodeAllocation* AStarNodeExtraData::addRequest(NodeAllocation& request, NodeAllo
 	}
 }
 
-void AStarNodeExtraData::checkCreateReleaseEvent()
+void AStarNodeExtraData::checkCreateContinueEvent()
 {
-	if (releaseEvent)
-		destroyevent(releaseEvent->holder);
+	if (continueEvent)
+		destroyevent(continueEvent->holder);
 	double releaseTime = 0;
 	double curTime = time();
 	for (NodeAllocation& alloc : allocations) {
@@ -180,7 +217,7 @@ void AStarNodeExtraData::checkCreateReleaseEvent()
 				releaseTime = alloc.releaseTime;
 	}
 	if (releaseTime < FLT_MAX)
-		releaseEvent = createevent(new ReleaseEvent(releaseTime, requests.front().traveler, cell))->objectAs(ReleaseEvent);
+		continueEvent = createevent(new ContinueEvent(releaseTime, requests.front().traveler, cell))->objectAs(ContinueEvent);
 
 }
 
@@ -197,17 +234,17 @@ bool AStarNodeExtraData::findDeadlockCycle(Traveler* start, std::vector<Traveler
 }
 
 
-void AStarNodeExtraData::ReleaseEvent::bind()
+void AStarNodeExtraData::ContinueEvent::bind()
 {
 	__super::bind();
 	bindNumber(cell.col);
 	bindNumber(cell.row);
 }
 
-AStarNodeExtraData::ReleaseEvent::ReleaseEvent(double time, Traveler* traveler, AStarCell& cell) : cell(cell), FlexSimEvent(traveler->holder, time, nullptr, cell.row * 100000 + cell.col) {}
-void AStarNodeExtraData::ReleaseEvent::execute()
+AStarNodeExtraData::ContinueEvent::ContinueEvent(double time, Traveler* traveler, AStarCell& cell) : cell(cell), FlexSimEvent(traveler->holder, time, nullptr, cell.row * 100000 + cell.col) {}
+void AStarNodeExtraData::ContinueEvent::execute()
 {
-	partner()->objectAs(Traveler)->navigator->getExtraData(cell)->onRelease();
+	partner()->objectAs(Traveler)->navigator->getExtraData(cell)->onContinue();
 }
 
 
@@ -218,25 +255,7 @@ void NodeAllocation::extendReleaseTime(double toTime)
 	if (toTime <= oldReleaseTime)
 		return;
 	AStarNodeExtraData* nodeData = traveler->navigator->getExtraData(cell);
-	NodeAllocationIterator nextIter;
-	for (auto iter = nodeData->allocations.begin(); iter != nodeData->allocations.end(); iter = nextIter) {
-		nextIter = iter;
-		nextIter++;
-		NodeAllocation& alloc = *iter;
-		if (&alloc == this)
-			continue;
-		if (alloc.acquireTime >= oldReleaseTime && alloc.acquireTime < releaseTime) {
-			NodeAllocation copy = alloc;
-			alloc.traveler->clearAllocations(std::find_if(alloc.traveler->allocations.begin(), alloc.traveler->allocations.end(), 
-				[&](NodeAllocationIterator& other) { return other->cell == nodeData->cell && other == iter; }));
-			if (alloc.traveler->arrivalEvent)
-				destroyevent(alloc.traveler->arrivalEvent->holder);
-			// this will cause him to create collision event
-			NodeAllocation* nullAlloc = copy.traveler->addAllocation(copy);
-			_ASSERTE(nullAlloc == nullptr);
-		}
-
-	}
+	nodeData->onReleaseTimeExtended(*this, oldReleaseTime);
 }
 
 }
