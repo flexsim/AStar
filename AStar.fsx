@@ -122,6 +122,7 @@ treenode view = param(1);
           <node f="42" dt="1"><name>type</name><data>0000000040080000</data></node>
           <node f="42" dt="1"><name>flags</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>curValue</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>startValue</name><data>0000000000000000</data></node>
          </node>
         </node>
        </node>
@@ -2720,7 +2721,7 @@ return 0;</data></node>
    </node>
   </node>
  </node>
- <node f="42" dt="2"><name>release</name><data>17.0</data></node>
+ <node f="42" dt="2"><name>release</name><data>17.1</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
- <node f="42" dt="2"><name>flexsim release</name><data>17.0</data></node>
+ <node f="42" dt="2"><name>flexsim release</name><data>17.1</data></node>
 </node></flexsim-tree>
