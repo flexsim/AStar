@@ -41,29 +41,9 @@
         <node f="42" dt="1"><name>pathCount</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>requestCount</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>cacheUseCount</name><data>0000000000000000</data></node>
-        <node f="42" dt="2"><name>messagetrigger</name><data>Object current = ownerobject(c);
-</data>
-         <node f="40"><name></name></node></node>
-        <node f="42" dt="2"><name>ondrawtrigger</name><data>Object current = ownerobject(c);
-treenode view = param(1);
-
-// If this function returns a true, the default draw code of the object will not be executed.
-</data></node>
-        <node f="42"><name>timetables</name></node>
-        <node f="42"><name>networknodes</name></node>
-        <node f="42" dt="1"><name>timeoflaststop</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>nrofstops</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>statebeforestop</name><data>0000000000000000</data></node>
-        <node f="42"><name>collisionspheres</name></node>
-        <node f="42"><name>collisionobjects</name></node>
-        <node f="42" dt="2"><name>resettrigger</name><data>Object current = ownerobject(c);
-</data></node>
-        <node f="42" dt="1"><name>savedstate</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>resetposition</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>doanimations</name><data>000000003ff00000</data></node>
-        <node f="42"><name>travelmembers</name></node>
-        <node f="42"><name>activetravelmembers</name></node>
-        <node f="42" dt="1"><name>lastupdatetime</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>enableCollisionAvoidance</name><data>000000003ff00000</data></node>
+        <node f="42" dt="1"><name>smoothRotations</name><data>000000003ff00000</data></node>
+        <node f="42" dt="1"><name>shouldDrawAllocations</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node>
@@ -194,7 +174,7 @@ treenode view = param(1);
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Bridge</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Divider</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -569,7 +549,7 @@ return asn;
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
        </data></node>
-       <node f="42" dt="4"><name>Divider</name><data>
+       <node f="10000042" dt="4"><name>Divider</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Divider")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -587,11 +567,10 @@ return asn;
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
        </data></node>
-       <node f="10000042" dt="4"><name>Bridge</name><data>
+       <node f="42" dt="4"><name>Bridge</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Bridge")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
-        <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\bridge.bmp</data></node>
        </data></node>
       </node>
       <node f="42"><name>Pages</name>
@@ -849,15 +828,37 @@ repaintall();</data></node>
          </node>
         </data>
          <node f="40"><name></name></node></node>
-        <node f="42" dt="4"><name>Deep Search</name><data>
+        <node f="42" dt="4"><name>Deep Search Routing</name><data>
          <node f="40"><name>object</name></node>
          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-         <node f="42" dt="1"><name>spatialx</name><data>00000000405e0000</data></node>
-         <node f="42" dt="1"><name>spatialy</name><data>0000000040590000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>00000000402a0000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>000000004062c000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
          <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/deepSearch</data></node>
          <node f="42" dt="2"><name>tooltip</name><data>Toggle deep search</data></node>
+        </data></node>
+        <node f="42" dt="4"><name>Collision Avoidance</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+         <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/enableCollisionAvoidance</data></node>
+         <node f="42" dt="2"><name>tooltip</name><data>If checked, travelers will allocate nodes in the travel grid as 
+part of their travel, preventing travelers from running 
+over each other.</data></node>
+        </data></node>
+        <node f="42" dt="4"><name>Smooth Rotations</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000040508000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+         <node f="42" dt="2"><name>tooltip</name><data></data></node>
+         <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/smoothRotations</data></node>
         </data></node>
         <node f="42" dt="4"><name>Paths</name><data>
          <node f="40"><name>object</name></node>
@@ -865,9 +866,9 @@ repaintall();</data></node>
          <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
          <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-         <node f="42" dt="1"><name>spatialy</name><data>0000000040618000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>00000000405b8000</data></node>
          <node f="42" dt="1"><name>spatialsx</name><data>00000000406b8000</data></node>
-         <node f="42" dt="1"><name>spatialsy</name><data>000000004062c000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040646000</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
          <node f="42" dt="2"><name>tooltip</name><data></data></node>
         </data>
@@ -998,10 +999,10 @@ forobjectsbehind (c)
          <node f="42" dt="2"><name>viewfocus</name><data>MAIN:/project/model</data></node>
          <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
-         <node f="42" dt="1"><name>spatialx</name><data>0000000040718000</data></node>
-         <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>00000000405f4000</data></node>
-         <node f="42" dt="1"><name>spatialsy</name><data>000000004061c000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>00000000406e0000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>00000000405b8000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>000000004060e000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040646000</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
          <node f="42" dt="2"><name>tooltip</name><data></data></node>
         </data>
@@ -1038,7 +1039,7 @@ forobjectsbehind (c)
           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040350000</data></node>
           <node f="42" dt="1"><name>spatialy</name><data>000000004054c000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42" dt="2"><name>tooltip</name><data></data></node>
          </data></node>
@@ -1051,6 +1052,16 @@ forobjectsbehind (c)
           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42" dt="2"><name>tooltip</name><data></data></node>
          </data></node>
+         <node f="42" dt="4"><name>Show Allocations</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000040350000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>00000000405f4000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/shouldDrawAllocations</data></node>
+         </data></node>
         </node>
         <node f="42" dt="4"><name>Members</name><data>
          <node f="40"><name>object</name></node>
@@ -1058,7 +1069,7 @@ forobjectsbehind (c)
          <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
          <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-         <node f="42" dt="1"><name>spatialy</name><data>000000004072c000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000040713000</data></node>
          <node f="42" dt="1"><name>spatialsx</name><data>00000000405f4000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>00000000405d4000</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
@@ -1077,8 +1088,7 @@ forobjectsbehind (c)
           <node f="42"><name>items</name>
            <node f="40"><name></name></node>
            <node f="42"><name>All Members</name></node>
-           <node f="42"><name>Active Members</name></node>
-           <node f="42"><name>Inactive Members</name></node>
+           <node f="42"><name>Traveler Members</name></node>
            <node f="42"><name>FR Members</name></node>
           </node>
           <node f="42" dt="1"><name>itemcurrent</name><data>000000003ff00000</data></node>
@@ -1259,20 +1269,15 @@ clearcontents(itms);
 
 switch (list) {
 	case 1: //ALL
-		nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/activetravelmembers", parent));
 		nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/travelmembers", parent));
 		nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/fixedResourceBarriers", parent));
 	break;
 	
-	case 2: //ACTIVE
-		nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/activetravelmembers", parent));
-	break;
-	
-	case 3: //INACTIVE
+	case 2: //Travelers
 		nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/travelmembers", parent));
 	break;
-	
-	case 4: //FR
+		
+	case 3: //FR
 		nodefunction(node("&gt;displaymembers", parent), node("@&gt;objectfocus+&gt;variables/fixedResourceBarriers", parent));
 	break;
 }
@@ -2755,6 +2760,33 @@ return 0;</data></node>
       <node f="42" dt="1"><name>picturealignleft</name><data>0000000040360000</data></node>
       <node f="42" dt="1"><name>expanded</name><data>0000000000000000</data></node>
      </data></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add</name><data>MAIN:/project/events/OnUpdateModel/Update to 17.2</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040080000</data></node>
+    <node f="42" dt="2"><name>after</name><data>update Groups</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>update AStar</name><data>treenode updaterootnode = param(1);
+double oldVersion = param(2);
+
+if (oldVersion &gt;= 17.2 || updaterootnode != model())
+	return 0;
+
+treenode nav = model().find("AStarNavigator");
+
+if (objectexists(nav)) {
+	setvarnum(nav, "enableCollisionAvoidance", 0);
+	return 1;
+}
+
+return 0;
+</data></node>
     </node>
    </node>
   </node>

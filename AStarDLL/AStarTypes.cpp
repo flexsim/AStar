@@ -134,14 +134,16 @@ void AStarNodeExtraData::removeAllocation(NodeAllocationIterator allocIter)
 	if (alloc.acquireTime <= curTime && alloc.releaseTime > curTime && requests.size() > 0) {
 		if (continueEvent)
 			destroyevent(continueEvent->holder);
-		onContinue();
+		onContinue(nullptr);
 	}
 }
 
-void AStarNodeExtraData::onContinue()
+void AStarNodeExtraData::onContinue(Traveler* blocker)
 {
 	continueEvent = nullptr;
 	if (requests.size() == 0)
+		return;
+	if (blocker && blocker->blockEvent && blocker->blockEvent->time <= time())
 		return;
 	double curTime = time();
 	auto existingAllocation = std::find_if(allocations.begin(), allocations.end(),
@@ -183,9 +185,9 @@ void AStarNodeExtraData::onReleaseTimeExtended(NodeAllocation& changedAlloc, dou
 		}
 	}
 
-	if (requests.size() > 0 && continueEvent && continueEvent == oldReleaseTime) {
+	if (requests.size() > 0 && continueEvent && continueEvent->time == std::nextafter(oldReleaseTime, FLT_MAX)) {
 		destroyevent(continueEvent->holder);
-		continueEvent = createevent(new ContinueEvent(changedAlloc.releaseTime, requests.front().traveler, cell))->objectAs(ContinueEvent);
+		continueEvent = createevent(new ContinueEvent(std::nextafter(changedAlloc.releaseTime, FLT_MAX), requests.front().traveler, changedAlloc.traveler, cell))->objectAs(ContinueEvent);
 	}
 }
 
@@ -211,13 +213,17 @@ void AStarNodeExtraData::checkCreateContinueEvent()
 		destroyevent(continueEvent->holder);
 	double releaseTime = 0;
 	double curTime = time();
+	Traveler* blocker = nullptr;
 	for (NodeAllocation& alloc : allocations) {
-		if (alloc.acquireTime <= curTime && alloc.releaseTime > curTime)
-			if (alloc.releaseTime > releaseTime)
+		if (alloc.acquireTime <= curTime && alloc.releaseTime > curTime) {
+			if (alloc.releaseTime > releaseTime) {
+				blocker = alloc.traveler;
 				releaseTime = alloc.releaseTime;
+			}
+		}
 	}
 	if (releaseTime < FLT_MAX)
-		continueEvent = createevent(new ContinueEvent(releaseTime, requests.front().traveler, cell))->objectAs(ContinueEvent);
+		continueEvent = createevent(new ContinueEvent(std::nextafter(max(releaseTime, time()), FLT_MAX), requests.front().traveler, blocker, cell))->objectAs(ContinueEvent);
 
 }
 
@@ -241,10 +247,10 @@ void AStarNodeExtraData::ContinueEvent::bind()
 	bindNumber(cell.row);
 }
 
-AStarNodeExtraData::ContinueEvent::ContinueEvent(double time, Traveler* traveler, AStarCell& cell) : cell(cell), FlexSimEvent(traveler->holder, time, nullptr, cell.row * 100000 + cell.col) {}
+AStarNodeExtraData::ContinueEvent::ContinueEvent(double time, Traveler* traveler, Traveler* blocker, AStarCell& cell) : cell(cell), FlexSimEvent(traveler->holder, time, blocker ? blocker->holder : nullptr, cell.row * 100000 + cell.col) {}
 void AStarNodeExtraData::ContinueEvent::execute()
 {
-	partner()->objectAs(Traveler)->navigator->getExtraData(cell)->onContinue();
+	partner()->objectAs(Traveler)->navigator->getExtraData(cell)->onContinue(involved ? involved->objectAs(Traveler) : nullptr);
 }
 
 

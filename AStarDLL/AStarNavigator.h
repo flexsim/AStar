@@ -47,7 +47,7 @@ protected:
 	AStarSearchEntry barrierStart;
 	double xStart;
 	double yStart;
-	double interpolateRotations;
+	double smoothRotations;
 
 	int xOffset;
 	int yOffset;
@@ -100,7 +100,7 @@ public:
 
 	double hasEdgeTable;
 
-	double doCollisionAvoidance;
+	double enableCollisionAvoidance;
 
 	TreeNode* barriers;
 	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
@@ -134,6 +134,7 @@ public:
 	TravelPath calculateRoute(TreeNode* traveler, double* destLoc, double endSpeed, bool doFullSearch = false);
 
 	virtual double updateLocations() override;
+	virtual double updateLocations(TaskExecuter* te) override;
 	virtual double abortTravel(TreeNode* traveler, TreeNode* newts) override;
 	virtual unsigned int getClassType() override;
 

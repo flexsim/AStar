@@ -53,7 +53,7 @@ void Traveler::onReset()
 
 void Traveler::onStartSimulation()
 {
-	if (navigator->doCollisionAvoidance) {
+	if (navigator->enableCollisionAvoidance) {
 		Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
 		AStarCell resetCell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
 		travelPath.clear();
@@ -90,7 +90,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 		startLoc = startLoc.project(model(), up(te->holder));
 
 	int kinFlags = 0;
-	double rotLerpSize = navigator->interpolateRotations;
+	double rotLerpSize = navigator->smoothRotations;
 	double rotLerpSpeed = 90 / (te->b_spatialsx * rotLerpSize / te->v_maxspeed);
 	if (te->node_v_modifyrotation) {
 		
@@ -105,19 +105,16 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 	AStarPathEntry e, laste;
 	int numNodes = travelPath.size();
 	laste.cell = travelPath[startAtPathIndex].cell;
-	bool doCollisionAvoidance = nav->doCollisionAvoidance;
+	bool enableCollisionAvoidance = nav->enableCollisionAvoidance;
 	double endTime = time();
 	double releaseTime = endTime;
 
 	int lastAllocationIndex;
 	cullExpiredAllocations();
-	if (doCollisionAvoidance) {
+	if (enableCollisionAvoidance) {
 		if (allocations.size() == 0 || (startAtPathIndex == 0 && travelPath.front().cell != allocations.front()->cell)) {
 			clearAllocations();
 			addAllocation(NodeAllocation(this, travelPath.front().cell, 0, time(), time()), true);
-		} else {
-			while (allocations.size() > 1 && allocations.front()->releaseTime <= time())
-				removeAllocation(allocations.begin());
 		}
 		lastAllocationIndex = 0;
 	}
@@ -138,9 +135,9 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 			if (rotLerpSize != 0) {
 				double nextRot = radianstodegrees(atan2(nextY, nextX));
 				double rotDiff = nextRot - lastRotation;
-				if (rotDiff > 180)
+				while (rotDiff > 180)
 					rotDiff -= 360;
-				else if (rotDiff < -180)
+				while (rotDiff < -180)
 					rotDiff += 360;
 
 				double timeToRot = rotDiff / rotLerpSpeed;
@@ -149,7 +146,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 				lastRotation = nextRot;
 			}
 
-			if (doCollisionAvoidance) {
+			if (enableCollisionAvoidance) {
 				double middleReleaseTime = 0.5 * (startTime + endTime);
 				NodeAllocation allocation(this, e.cell, i, startTime, middleReleaseTime);
 				NodeAllocation* success = &allocation;
@@ -201,7 +198,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 				}
 				allocation.cell = e.cell;
 				if (success) {
-					allocation.releaseTime = endTime;
+					allocation.releaseTime = std::nextafter(endTime, DBL_MAX);
 					success = addAllocation(allocation);
 					if (success)
 						lastAllocationIndex = allocations.size() - 1;
@@ -286,7 +283,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 			isActive = true;
 			activeEntry = nav->activeTravelers.begin();
 		}
-		if (didBlockPathIndex == -1)
+		if (didBlockPathIndex == -1 && !blockEvent && !isBlocked)
 			arrivalEvent = createevent(new ArrivalEvent(this, endTime))->objectAs(ArrivalEvent);
 	}
 
@@ -301,33 +298,36 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force)
 		NodeAllocation* collideWith = findCollision(nodeData, allocation);
 		if (collideWith) {
 			NodeAllocation* laterAllocation = allocation.acquireTime < collideWith->acquireTime ? collideWith : &allocation;
+			Traveler* laterTraveler = laterAllocation->traveler;
 			NodeAllocation* earlierAllocation = laterAllocation == collideWith ? &allocation : collideWith;
-			if (laterAllocation->traveler->blockEvent)
-				destroyevent(laterAllocation->traveler->blockEvent->holder);
+			Traveler* earlierTraveler = earlierAllocation->traveler;
 
-			BlockEvent* event = new BlockEvent(laterAllocation->traveler, laterAllocation->travelPathIndex,
-				earlierAllocation->traveler, allocation.cell, laterAllocation->acquireTime);
-			laterAllocation->traveler->blockEvent = createevent(event)->objectAs(BlockEvent);
+			if (laterTraveler->blockEvent)
+				destroyevent(laterTraveler->blockEvent->holder);
 
-			if (laterAllocation == &allocation)
-				return nullptr;
-			else {
+			double eventTime = std::nextafter(laterAllocation->acquireTime, -FLT_MAX);
+			BlockEvent* event = new BlockEvent(laterTraveler, laterAllocation->travelPathIndex, 
+				earlierTraveler, allocation.cell, max(time(), eventTime));
+			laterTraveler->blockEvent = createevent(event)->objectAs(BlockEvent);
+
+			if (laterAllocation != &allocation) {
 				// if the guy I'm colliding with is the later allocation, then I need to get rid of any events and 
 				// additional allocations that come after that guy's allocation, because he's going to be the 
 				// guy to stop, so subsequent allocations are invalid at the point when he stops.
-				Traveler* laterTraveler = laterAllocation->traveler;
 				auto iter = laterTraveler->find(laterAllocation);
 				while (iter - laterTraveler->allocations.begin() >= 2 && (*(iter - 1))->acquireTime == laterAllocation->acquireTime)
 					iter--;
 				laterTraveler->clearAllocations(iter);
 				if (laterTraveler->arrivalEvent)
 					destroyevent(laterTraveler->arrivalEvent->holder);
-			}
+			} else
+				return nullptr;
 		}
 	}
 
 	nodeData->allocations.push_front(allocation);
 	allocations.push_back(nodeData->allocations.begin());
+
 	return &(nodeData->allocations.front());
 }
 
@@ -404,15 +404,13 @@ Traveler::TravelerAllocations::iterator Traveler::find(NodeAllocation* alloc)
 	return std::find_if(allocations.begin(), allocations.end(), [&](NodeAllocationIterator& iter) { return &(*iter) == alloc; });
 }
 
-void Traveler::onBlock(BlockEvent* event, Traveler* collidingWith)
+void Traveler::onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell& cell)
 {
-	if (blockEvent == event)
-		blockEvent = nullptr;
 	bool shouldStop = true;
-	if (travelPath.size() <= event->colliderPathIndex)
+	if (travelPath.size() <= colliderPathIndex)
 		shouldStop = false;
 
-	AStarNodeExtraData* nodeData = navigator->getExtraData(event->cell);
+	AStarNodeExtraData* nodeData = navigator->getExtraData(cell);
 	auto foundAlloc = std::find_if(nodeData->allocations.begin(), nodeData->allocations.end(),
 		[&](NodeAllocation& alloc) { return alloc.traveler == collidingWith && alloc.acquireTime <= time() && alloc.releaseTime > time(); }
 		);
@@ -432,7 +430,7 @@ void Traveler::onBlock(BlockEvent* event, Traveler* collidingWith)
 		std::vector<Traveler*> deadlockList;
 
 		allocations.back()->extendReleaseTime(DBL_MAX);
-		NodeAllocation requestedAlloc(this, event->cell, event->colliderPathIndex, time(), FLT_MAX);
+		NodeAllocation requestedAlloc(this, cell, colliderPathIndex, time(), DBL_MAX);
 		request = nodeData->addRequest(requestedAlloc, *foundAlloc, &deadlockList);
 		isBlocked = true;
 		if (request == nullptr) {
@@ -440,7 +438,7 @@ void Traveler::onBlock(BlockEvent* event, Traveler* collidingWith)
 		}
 
 	} else {
-		navigatePath(event->colliderPathIndex - 1, false);
+		navigatePath(colliderPathIndex - 1, false);
 	}
 }
 
@@ -455,36 +453,39 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 
 	std::vector<NavigationAttempt> attempts;
 
+	auto applyTravelerAllocationsToBarrier = [&](Traveler* traveler, TemporaryBarrier& barrier) {
+		for (NodeAllocationIterator iter : traveler->allocations) {
+			if (iter->acquireTime <= curTime && iter->releaseTime > curTime) {
+				AStarCell cell = iter->cell;
+				barrier.addEntry(cell, noTravelNode);
+				auto checkAddEntry = [&](int colInc, int rowInc, Direction nullifyDirection) {
+					AStarCell offset(cell);
+					offset.col += colInc;
+					offset.row += rowInc;
+					if (offset.col >= 0 && offset.col < navigator->edgeTableXSize && offset.row >= 0 && offset.row < navigator->edgeTableYSize) {
+						AStarNode node = *navigator->getNode(offset);
+						node.setCanGo(nullifyDirection, false);
+						barrier.addEntry(offset, node);
+					}
+				};
+				checkAddEntry(-1, 0, Right);
+				checkAddEntry(1, 0, Left);
+				checkAddEntry(0, 1, Down);
+				checkAddEntry(0, -1, Up);
+			}
+		}
+	};
+
 	for (int i = 0; i < deadlockList.size(); i++) {
 		Traveler* traveler = deadlockList[i];
 		TemporaryBarrier barrier(navigator);
 		for (Traveler* other : navigator->activeTravelers) {
 			if (other == traveler || !other->isBlocked)
 				continue;
-		
-			for (NodeAllocationIterator iter : other->allocations) {
-				if (iter->acquireTime <= curTime && iter->releaseTime > curTime) {
-					AStarCell cell = iter->cell;
-					barrier.addEntry(cell, noTravelNode);
-					auto checkAddEntry = [&](int colInc, int rowInc, Direction nullifyDirection) {
-						AStarCell offset(cell);
-						offset.col += colInc;
-						offset.row += rowInc;
-						if (offset.col >= 0 && offset.col < navigator->edgeTableXSize && offset.row >= 0 && offset.row < navigator->edgeTableYSize) {
-							AStarNode node = *navigator->getNode(offset);
-							node.setCanGo(nullifyDirection, false);
-							barrier.addEntry(offset, node);
-						}
-					};
-					checkAddEntry(-1, 0, Right);
-					checkAddEntry(1, 0, Left);
-					checkAddEntry(0, 1, Down);
-					checkAddEntry(0, -1, Up);
-				}
-			}
+			applyTravelerAllocationsToBarrier(other, barrier);
 		}
 		barrier.apply();
-		TravelPath travelPath = navigator->calculateRoute(te->holder, destLoc, endSpeed, true);
+		TravelPath travelPath = navigator->calculateRoute(traveler->te->holder, destLoc, endSpeed, true);
 		barrier.unapply();
 
 		Vec2 diff(travelPath.back().cell.col - traveler->travelPath.back().cell.col, travelPath.back().cell.row - traveler->travelPath.back().cell.row);
@@ -510,7 +511,9 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 			navigator->getExtraData(attempt.traveler->request->cell)->requests.remove_if([&](NodeAllocation& alloc) { return &alloc == attempt.traveler->request; });
 			attempt.traveler->request = nullptr;
 		}
+		attempt.traveler->isNavigatingAroundDeadlock = true;
 		attempt.traveler->navigatePath(std::move(attempt.path), false);
+		attempt.traveler->isNavigatingAroundDeadlock = false;
 
 		if (!attempt.traveler->blockEvent || attempt.traveler->blockEvent->time > time()) {
 			bestTraveler = attempt.traveler;

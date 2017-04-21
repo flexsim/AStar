@@ -121,7 +121,7 @@ struct AStarNodeExtraData : public SimpleDataType
 	NodeAllocationList allocations;
 	NodeAllocationList requests;
 	void removeAllocation(NodeAllocationIterator allocation);
-	void onContinue();
+	void onContinue(Traveler* blocker);
 	void onReleaseTimeExtended(NodeAllocation& alloc, double oldReleaseTime);
 
 	/// <summary>	Adds a request to 'blockingAlloc'. </summary>
@@ -141,7 +141,7 @@ struct AStarNodeExtraData : public SimpleDataType
 	{
 	public:
 		ContinueEvent() : FlexSimEvent() {}
-		ContinueEvent(double time, Traveler* traveler, AStarCell& cell);
+		ContinueEvent(double time, Traveler* traveler, Traveler* blocker, AStarCell& cell);
 		virtual const char* getClassFactory() override { return "AStar::AStarNodeExtraData::ContinueEvent"; }
 		virtual void bind() override;
 		AStarCell cell;

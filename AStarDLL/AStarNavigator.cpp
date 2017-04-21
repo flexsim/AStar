@@ -66,7 +66,7 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(surroundDepth);
 	bindVariable(deepSearch);
 	bindVariable(ignoreDestBarrier);
-	bindVariable(interpolateRotations);
+	bindVariable(smoothRotations);
 
 	bindVariable(barriers);
 	barrierList.init(barriers);
@@ -80,7 +80,7 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(requestCount);
 	bindVariable(cacheUseCount);
 
-	bindVariable(doCollisionAvoidance);
+	bindVariable(enableCollisionAvoidance);
 
 	bindVariableByName("extraData", extraDataNode);
 
@@ -767,7 +767,7 @@ the outside 8 nodes.
 		travelPath[travelPath.size() - i - 1] = temp;
 	}
 
-	if (cachePaths) {
+	if (cachePaths && !doFullSearch) {
 		pathCache[p.id] = travelPath;
 		pathCount++;
 	}
@@ -920,6 +920,17 @@ double AStarNavigator::updateLocations()
 {
 	for (auto iter = activeTravelers.begin(); iter != activeTravelers.end(); iter++)
 		(*iter)->updateLocation();
+	return 0;
+}
+
+double AStarNavigator::updateLocations(TaskExecuter* te)
+{
+	if (!objectexists(te->activetask))
+		return 0;
+	
+	Traveler* traveler = getTraveler(te);
+	if (traveler->isActive)
+		traveler->updateLocation();
 	return 0;
 }
 

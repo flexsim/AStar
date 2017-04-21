@@ -70,14 +70,14 @@ public:
 	ObjRef<ArrivalEvent> arrivalEvent;
 	treenode distQueryKinematics;
 
-	class BlockEvent;
-	void onBlock(BlockEvent* event, Traveler* collidingWith);
+	void onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell& cell);
 
 	struct NavigationAttempt {
 		TravelPath path;
 		Traveler* traveler;
 		double penalty = DBL_MAX;
 	};
+	bool isNavigatingAroundDeadlock = false;
 	bool navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, NodeAllocation& deadlockCreatingRequest);
 	class BlockEvent : public FlexSimEvent
 	{
@@ -88,7 +88,13 @@ public:
 		{}
 		virtual const char* getClassFactory() override { return "AStar::Traveler::BlockEvent"; }
 		virtual void bind() override;
-		virtual void execute() override { partner()->objectAs(Traveler)->onBlock(this, involved->objectAs(Traveler)); }
+		virtual void execute() override
+		{
+			Traveler* t = partner()->objectAs(Traveler);
+			if (t->blockEvent == this)
+				t->blockEvent = nullptr;
+			t->onBlock(involved->objectAs(Traveler), colliderPathIndex, cell);
+		}
 		int colliderPathIndex;
 		AStarCell cell;
 	};
