@@ -99,6 +99,7 @@ public:
 		AStarCell cell;
 	};
 	ObjRef<BlockEvent> blockEvent;
+	double blockTime;
 
 	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);
 

@@ -85,20 +85,9 @@ struct AStarNodeExtraData : public SimpleDataType
 	virtual void bind() override;
 	AStarCell cell;
 
-	// Traffic tracking stats:
-	// straights
-	unsigned int nrFromUp = 0;
-	unsigned int nrFromDown = 0;
-	unsigned int nrFromLeft = 0;
-	unsigned int nrFromRight = 0;
-
-	// diagonals
-	unsigned int nrFromUpRight = 0;
-	unsigned int nrFromDownRight = 0;
-	unsigned int nrFromUpLeft = 0;
-	unsigned int nrFromDownLeft = 0;
-
-	unsigned int numCollisions = 0;
+	double totalTraversals = 0;
+	double totalBlockedTime = 0.0;
+	int totalBlocks = 0;
 
 	// preferred path weights
 	union {

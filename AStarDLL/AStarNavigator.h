@@ -53,13 +53,11 @@ protected:
 	int yOffset;
 	float savedXOffset;
 	float savedYOffset;
-	int maxTraveled;
 	double directionChangePenalty;
 
 	// Drawing variables
 	Mesh boundsMesh;
 	Mesh barrierMesh;
-	Mesh trafficMesh;
 	Mesh gridMesh;
 	Mesh memberMesh;
 	bool isDirty;
@@ -71,7 +69,13 @@ protected:
 	void buildBarrierMesh();
 	void drawMembers(float z);
 	void drawGrid(float z);
-	void drawTraffic(float z, TreeNode* view);
+
+	struct HeatMapColorEntry {
+		Vec4f color = Vec4f(0.0f, 0.0f, 0.0f, 0.0f);
+		AStarNodeExtraData* node = nullptr;
+		int vertIndex;
+	};
+	void drawHeatMap(float z, TreeNode* view);
 
 public:
 	Vec2 gridOrigin;
@@ -101,6 +105,12 @@ public:
 	double hasEdgeTable;
 
 	double enableCollisionAvoidance;
+
+	static const int HEAT_MAP_TRAVERSALS_PER_TIME = 1;
+	static const int HEAT_MAP_BLOCKAGE_TIME_PER_TRAVERSAL = 2;
+	static std::vector<Vec4f> heatMapColorProgression;
+	double heatMapMode;
+	double maxHeatFactor;
 
 	TreeNode* barriers;
 	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
@@ -157,6 +167,8 @@ public:
 	void buildActiveTravelerList();
 
 	Traveler* getTraveler(TaskExecuter* te) { return tonode(get(first(te->node_v_navigator)))->objectAs(Traveler); }
+
+	std::unique_ptr<unsigned int[]> heatMapBuffer;
 };
 
 }

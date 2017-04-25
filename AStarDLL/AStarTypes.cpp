@@ -100,18 +100,9 @@ void AStarNodeExtraData::bind()
 
 	// Traffic tracking stats:
 	// straights
-	bindNumber(nrFromUp);
-	bindNumber(nrFromDown);
-	bindNumber(nrFromLeft);
-	bindNumber(nrFromRight);
+	bindNumber(totalTraversals);
 
-	// diagonals
-	bindNumber(nrFromUpRight);
-	bindNumber(nrFromDownRight);
-	bindNumber(nrFromUpLeft);
-	bindNumber(nrFromDownLeft);
-
-	bindNumber(numCollisions);
+	bindNumber(totalBlockedTime);
 
 	bindNumber(bonusRight);
 	bindNumber(bonusLeft);
@@ -150,9 +141,17 @@ void AStarNodeExtraData::onContinue(Traveler* blocker)
 		[&](NodeAllocation& alloc) {return alloc.acquireTime <= curTime && alloc.releaseTime > curTime; });
 	if (existingAllocation == allocations.end()) {
 		NodeAllocation topRequest = requests.front();
-		topRequest.traveler->request = nullptr;
+		Traveler* traveler = topRequest.traveler;
+		traveler->request = nullptr;
 		requests.pop_front();
-		topRequest.traveler->navigatePath(topRequest.travelPathIndex - 1, false);
+		double blockedTime = time() - traveler->blockTime;
+		if (traveler->isBlocked && blockedTime > 0.001 * traveler->nodeWidth / traveler->te->v_maxspeed) {
+			AStarNodeExtraData* blockedCell = traveler->navigator->getExtraData(traveler->allocations.back()->cell);
+			blockedTime = min(blockedTime, statisticaltime());
+			blockedCell->totalBlockedTime += blockedTime;
+			blockedCell->totalBlocks++;
+		}
+		traveler->navigatePath(topRequest.travelPathIndex - 1, false);
 		if (requests.size() > 0)
 			checkCreateContinueEvent();
 	} else {

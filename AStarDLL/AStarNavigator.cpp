@@ -34,6 +34,14 @@ int AStarNode::colInc[]
 #define TRAVEL_FAR_LEFT 0x80
 
 unsigned int AStarNavigator::editMode = 0;
+std::vector<Vec4f> AStarNavigator::heatMapColorProgression =
+{
+	Vec4f(0.110f, 0.280f, 0.467f, 1.0f),
+	Vec4f(0.106f, 0.541f, 0.353f, 1.0f),
+	Vec4f(0.984f, 0.690f, 0.129f, 1.0f),
+	Vec4f(0.964f, 0.533f, 0.220f, 1.0f),
+	Vec4f(0.933f, 0.243f, 0.196f, 1.0f)
+};
 
 
 AStarNavigator::AStarNavigator()
@@ -82,6 +90,9 @@ void AStarNavigator::bindVariables(void)
 
 	bindVariable(enableCollisionAvoidance);
 
+	bindVariable(heatMapMode);
+	bindVariable(maxHeatFactor);
+
 	bindVariableByName("extraData", extraDataNode);
 
 	travelers.init(node_v_travelmembers);
@@ -112,6 +123,8 @@ double AStarNavigator::onCreate(double dropx, double dropy, double dropz, int is
 
 double AStarNavigator::onReset()
 {
+	heatMapBuffer.reset(nullptr);
+
 	activeTravelers.clear();
 
 	for (size_t i = 1; i <= content(node_v_travelmembers); i++) {
@@ -129,7 +142,6 @@ double AStarNavigator::onReset()
 	extraDataNode->subnodes.clear();
 	buildEdgeTable();
 	setDirty();
-	maxTraveled = 0;
 	return 0;
 }
 
@@ -145,17 +157,9 @@ double AStarNavigator::onRunWarm()
 {
 	for (auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
 		AStarNodeExtraData* extra = iter->second;
-		extra->nrFromUp = 0;
-		extra->nrFromDown = 0;
-		extra->nrFromLeft = 0;
-		extra->nrFromRight = 0;
-
-		extra->nrFromUpLeft = 0;
-		extra->nrFromUpRight = 0;
-		extra->nrFromDownLeft = 0;
-		extra->nrFromDownRight = 0;
-
-		extra->numCollisions = 0;
+		extra->totalTraversals = 0;
+		extra->totalBlockedTime = 0.0;
+		extra->totalBlocks = 0;
 	}
 	return 0;
 }
@@ -180,7 +184,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 	int pickingmode = getpickingmode(view);
 	int drawMode = (int)this->drawMode;
-	if(drawMode == 0) return 0;
+	if(drawMode == 0 && heatMapMode == 0 && shouldDrawAllocations == 0) return 0;
 
 	fglDisable(GL_TEXTURE_2D);
 	fglDisable(GL_LIGHTING);
@@ -202,8 +206,8 @@ double AStarNavigator::onDraw(TreeNode* view)
 		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
 			barrierMesh.draw(GL_TRIANGLES);
 
-		if (drawMode & ASTAR_DRAW_MODE_TRAFFIC)
-			drawTraffic(0.015f / lengthMultiple, view);
+		if (heatMapMode != 0)
+			drawHeatMap(0.015f / lengthMultiple, view);
 
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
 			drawMembers(0.02f / lengthMultiple);
@@ -211,10 +215,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 		if (shouldDrawAllocations)
 			drawAllocations(0.02f / lengthMultiple);
 	} else {
-
-		if (drawMode && ASTAR_DRAW_MODE_TRAFFIC) {
-			drawTraffic(0.02f / lengthMultiple, view);
-		}
 
 		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
 			for(int i = 0; i < barrierList.size(); i++) {
@@ -936,6 +936,7 @@ double AStarNavigator::updateLocations(TaskExecuter* te)
 
 void AStarNavigator::buildEdgeTable()
 {
+	heatMapBuffer.reset(nullptr);
 	// Determine the grid bounds
 	Vec2 min = Vec2(FLT_MAX,FLT_MAX);
 	Vec2 max = Vec2(-FLT_MAX,-FLT_MAX);
@@ -1252,100 +1253,115 @@ void AStarNavigator::buildBarrierMesh()
 	}
 }
 
-void AStarNavigator::drawTraffic(float z, TreeNode* view)
+void AStarNavigator::drawHeatMap(float z, TreeNode* view)
 {
-
-// These pick modes are from treewin.h
-#define SELECTIONMODE_MOUSEMOVE 10
-#define SELECTIONMODE_MOUSEDOWNLEFT 11
-
-	trafficMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, 0);
-
-	int pickMode = getpickingmode(view);
-	if (pickMode == SELECTIONMODE_MOUSEDOWNLEFT)
+	if (heatMapMode == 0 || statisticaltime() <= 0)
+		return;
+	if (maxHeatFactor <= 0)
 		return;
 
-	bool drawForPick = false;
-	if (pickMode == SELECTIONMODE_MOUSEMOVE) {
-		setpickingdrawfocus(view, holder, PICK_TYPE_HIGHLIGHT_INFO_TRAVEL_GRID);
-		drawForPick = true;
-	}
+	int pickMode = getpickingmode(view);
+	if (pickMode)
+		return;
 
-#define ABV(offsetX, offsetY, color) {\
-	int newVertex = trafficMesh.addVertex();\
-	float pos[3] = {x + (offsetX * nodeWidth), y + (offsetY * nodeWidth), z};\
-	trafficMesh.setVertexAttrib(newVertex, MESH_POSITION, pos);\
-	trafficMesh.setVertexAttrib(newVertex, MESH_DIFFUSE4, color);\
-	}\
+	int width = (edgeTableXSize + 2);
+	int height = (edgeTableYSize + 2);
+	int numPixels = width * height;
+	int bufferSize = 4 * numPixels;
 
+	if (!heatMapBuffer) {
+		heatMapBuffer = std::unique_ptr<unsigned int[]>(new unsigned int[numPixels]);
+		Vec4f baseColor = heatMapColorProgression[0];
+		int baseColorInt = (((int)(baseColor.a * 255)) << 24)
+			| (((int)(baseColor.b * 255)) << 16)
+			| (((int)(baseColor.g * 255)) << 8)
+			| (((int)(baseColor.r * 255)));
 
-#define ABT(ox1, oy1, ox2, oy2, ox3, oy3, alpha) \
-	red[3] = alpha;\
-	ABV(ox1, oy1, red);\
-	ABV(ox2, oy2, red);\
-	ABV(ox3, oy3, red);\
-
-	float up[3] = {0.0f, 0.0f, 1.0f};
-	float red[4] = {1.0, 0.0, 0.0, 1.0};
-	double ratio = 1.0;
-
-	trafficMesh.setMeshAttrib(MESH_NORMAL, up);
-	trafficMesh.setMeshAttrib(MESH_DIFFUSE4, red);
-	for(auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
-		AStarNodeExtraData* e = iter->second;
-		double x = (gridOrigin.x + (e->cell.col) * nodeWidth);
-		double y = (gridOrigin.y + (e->cell.row) * nodeWidth);
-		
-		if (drawForPick) {
-			ABT(-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 1.0);
-			ABT(0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 1.0);
-		
-		} else {
-			if (e->nrFromUp > 0) {
-				ratio = (double)e->nrFromUp / (double)maxTraveled;
-				ABT(0.0, 0.1, 0.15, 0.4, -0.15, 0.4, ratio);
-			}
-
-			if (e->nrFromDown > 0) {
-				ratio = (double)e->nrFromDown / (double)maxTraveled;
-				ABT(0.0, -0.1, -0.15, -0.4, 0.15, -0.4, ratio);
-			}
-
-			if (e->nrFromRight) {
-				ratio = (double)e->nrFromRight / (double)maxTraveled;
-				ABT(0.1, 0.0, 0.4, -0.15, 0.4, 0.15, ratio);
-			}
-
-			if (e->nrFromLeft > 0) {
-				ratio = (double)e->nrFromLeft / (double)maxTraveled;
-				ABT(-0.1, 0.0, -0.4, 0.15, -0.4, -0.15, ratio);
-			}
-
-			if (e->nrFromUpRight > 0) {
-				ratio = (double)e->nrFromUpRight / (double)maxTraveled;
-				ABT(0.1, 0.1, 0.4, 0.25, 0.25, 0.4, ratio);
-			}
-
-			if (e->nrFromDownRight > 0) {
-				ratio = (double)e->nrFromDownRight / (double)maxTraveled;
-				ABT(0.1, -0.1, 0.25, -0.4, 0.4, -0.25, ratio);
-			}
-
-			if (e->nrFromUpLeft > 0) {
-				ratio = (double)e->nrFromUpLeft / (double)maxTraveled;
-				ABT(-0.1, 0.1, -0.25, 0.4, -0.4, 0.25, ratio);
-			}
-
-			if (e->nrFromDownLeft) {
-				ratio = (double)e->nrFromDownLeft / (double)maxTraveled;
-				ABT(-0.1, -0.1, -0.4, -0.25, -0.25, -0.4, ratio);
+		unsigned int* buffer = heatMapBuffer.get();
+		memset(buffer, 0, width * 4);
+		memset(buffer + (height - 1) * width * 4, 0, width * 4);
+		for (int i = 1; i <= edgeTableYSize; i++) {
+			buffer[i * width] = 0;
+			buffer[(i + 1) * width - 1] = 0;
+			for (int j = 1; j <= edgeTableXSize; j++) {
+				buffer[i * width + j] = baseColorInt;
 			}
 		}
 	}
 
+	unsigned int* buffer = heatMapBuffer.get();
+	//memset(buffer, 0, bufferSize);
+	for (auto& node : edgeTableExtraData) {
+		AStarNodeExtraData* data = node.second;
+		if (data->totalTraversals <= 0)
+			continue;
+		double weight;
+		if (heatMapMode == HEAT_MAP_TRAVERSALS_PER_TIME) {
+			weight = (data->totalTraversals / statisticaltime());
+		} else {
+			weight = (data->totalBlockedTime / max(1, data->totalTraversals));
+		}
+		weight /= maxHeatFactor;
+		weight = max(0, weight);
+		weight = min(0.9999, weight);
+
+		double progressionFactor = (double)(heatMapColorProgression.size() - 1) * weight;
+		Vec4f lowColor = heatMapColorProgression[(int)floor(progressionFactor)];
+		Vec4f highColor = heatMapColorProgression[(int)ceil(progressionFactor)];
+		Vec4f lerpColor = lowColor + ((highColor - lowColor) * frac(progressionFactor));
+
+		buffer[(data->cell.row + 1) * width + data->cell.col + 1] =
+			(((int)(lerpColor.a * 255)) << 24)
+			| (((int)(lerpColor.b * 255)) << 16)
+			| (((int)(lerpColor.g * 255)) << 8)
+			| (((int)(lerpColor.r * 255)));
+	}
+
+
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glGenerateTextureMipMap(GL_TEXTURE_2D);
+	
+	Mesh trafficMesh;
+	trafficMesh.init(6, MESH_POSITION | MESH_TEX_COORD2, MESH_DYNAMIC_DRAW);
+	Vec3f verts[] = {
+		Vec3f(gridOrigin.x - 1.5 * nodeWidth, gridOrigin.y - 1.5 * nodeWidth, z),
+		Vec3f(gridOrigin.x - 1.5 * nodeWidth, gridOrigin.y + (edgeTableYSize + 0.5) * nodeWidth, z),
+		Vec3f(gridOrigin.x + (edgeTableXSize + 0.5) * nodeWidth, gridOrigin.y - 1.5 * nodeWidth, z),
+		Vec3f(gridOrigin.x - 1.5 * nodeWidth, gridOrigin.y + (edgeTableYSize + 0.5) * nodeWidth, z),
+		Vec3f(gridOrigin.x + (edgeTableXSize + 0.5) * nodeWidth, gridOrigin.y + (edgeTableYSize + 0.5) * nodeWidth, z),
+		Vec3f(gridOrigin.x + (edgeTableXSize + 0.5) * nodeWidth, gridOrigin.y - 1.5 * nodeWidth, z),
+	};
+
+	Vec2f texCoords[] = {
+		Vec2f(0.0, 0.0),
+		Vec2f(0.0, 1.0),
+		Vec2f(1.0, 0.0),
+		Vec2f(0.0, 1.0),
+		Vec2f(1.0, 1.0),
+		Vec2f(1.0, 0.0)
+	};
+
+	fglColor(1.0, 1.0, 1.0, 1.0);
+	fglEnable(GL_TEXTURE_2D);
+	fglDisable(GL_LIGHTING);
+
+	trafficMesh.defineVertexAttribs(MESH_POSITION, verts[0]);
+	trafficMesh.defineVertexAttribs(MESH_TEX_COORD2, texCoords[0]);
 	trafficMesh.draw(GL_TRIANGLES);
-#undef ABT
-#undef ABV
+
+	fglEnable(GL_LIGHTING);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDeleteTextures(1, &textureID);
+
 }
 
 void AStarNavigator::drawMembers(float z)

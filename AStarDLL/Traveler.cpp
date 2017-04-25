@@ -17,6 +17,7 @@ void Traveler::bind()
 	bindNumber(destLoc.y);
 	bindNumber(destLoc.z);
 	bindSubNode(distQueryKinematics, 0);
+	bindNumber(blockTime);
 	navigator = holder->ownerObject->objectAs(AStarNavigator);
 	te = partner()->ownerObject->objectAs(TaskExecuter);
 
@@ -43,6 +44,7 @@ void Traveler::onReset()
 	holder->name = te->holder->name;
 	isActive = false;
 	isBlocked = false;
+	blockTime = 0;
 	nodeWidth = navigator->nodeWidth;
 	allocations.clear();
 	Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
@@ -121,9 +123,14 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 
 	int didBlockPathIndex = -1;
 	double lastRotation = te->b_spatialrz;
+	AStarCell deepSearchMiddleCell1;
+	AStarCell deepSearchMiddleCell2;
+
 	for (int i = startAtPathIndex + 1; i < numNodes; i++) {
 		e = travelPath[i];
 		double totalTravelDist;
+		bool isVerticalDeepSearch = false;
+		bool isHorizontalDeepSearch = false;
 		if (laste.bridgeIndex == -1) {
 			int numSuccessfulAllocations = 0;
 			double nextX = (e.cell.col - laste.cell.col)*nodeWidth;
@@ -146,6 +153,9 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 				lastRotation = nextRot;
 			}
 
+			isVerticalDeepSearch = abs(e.cell.row - laste.cell.row) == 2;
+			isHorizontalDeepSearch = abs(e.cell.col - laste.cell.col) == 2;
+
 			if (enableCollisionAvoidance) {
 				double middleReleaseTime = 0.5 * (startTime + endTime);
 				NodeAllocation allocation(this, e.cell, i, startTime, middleReleaseTime);
@@ -153,24 +163,28 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 				// if it is a diagonal move, then I need to do additional allocations
 				if (e.cell.row != laste.cell.row && e.cell.col != laste.cell.col) {
 					// is it a deep vertical search step
-					if (abs(e.cell.row - laste.cell.row) == 2) {
+					if (isVerticalDeepSearch) {
 						allocation.cell.row = (e.cell.row + laste.cell.row) / 2;
 						allocation.cell.col = laste.cell.col;
+						deepSearchMiddleCell1 = allocation.cell;
 						success = addAllocation(allocation);
 						if (success) {
 							numSuccessfulAllocations++;
 							allocation.cell.col = e.cell.col;
+							deepSearchMiddleCell2 = allocation.cell;
 							success = addAllocation(allocation);
 							numSuccessfulAllocations += success ? 1 : 0;
 						}
 					} // is it a deep horizontal search step
-					else if (abs(e.cell.col - laste.cell.col) == 2) {
+					else if (isHorizontalDeepSearch) {
 						allocation.cell.col = (e.cell.col + laste.cell.col) / 2;
 						allocation.cell.row = laste.cell.row;
+						deepSearchMiddleCell1 = allocation.cell;
 						success = addAllocation(allocation);
 						if (success) {
 							numSuccessfulAllocations++;
 							allocation.cell.row = e.cell.row;
+							deepSearchMiddleCell2 = allocation.cell;
 							success = addAllocation(allocation);
 							numSuccessfulAllocations += success ? 1 : 0;
 						}
@@ -246,24 +260,12 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 		if (!isDistQueryOnly) {
 			te->v_totaltraveldist += totalTravelDist;
 
-
 			//Traffic info
-			AStarNodeExtraData* extra = nav->assertExtraData(e.cell);
-			unsigned int* involvedextra;
-			if (e.cell.row > laste.cell.row) {
-				if (e.cell.col > laste.cell.col) involvedextra = &extra->nrFromDownLeft;
-				else if (e.cell.col < laste.cell.col) involvedextra = &extra->nrFromDownRight;
-				else involvedextra = &extra->nrFromDown;
-			} else if (e.cell.row < laste.cell.row) {
-				if (e.cell.col > laste.cell.col) involvedextra = &extra->nrFromUpLeft;
-				else if (e.cell.col < laste.cell.col) involvedextra = &extra->nrFromUpRight;
-				else involvedextra = &extra->nrFromUp;
-			} else if (e.cell.col > laste.cell.col)
-				involvedextra = &extra->nrFromLeft;
-			else involvedextra = &extra->nrFromRight;
-
-			involvedextra[0]++;
-			if (involvedextra[0] > nav->maxTraveled) nav->maxTraveled = involvedextra[0];
+			nav->assertExtraData(e.cell)->totalTraversals++;
+			if (isVerticalDeepSearch || isHorizontalDeepSearch) {
+				nav->assertExtraData(deepSearchMiddleCell1)->totalTraversals += 0.5;
+				nav->assertExtraData(deepSearchMiddleCell2)->totalTraversals += 0.5;
+			}
 		}
 
 		laste = e;
@@ -426,6 +428,7 @@ void Traveler::onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell
 		initkinematics(te->node_v_kinematics, pos.x, pos.y, te->b_spatialz, 0.0, 0.0, 0.0, 1, 0);
 
 		setstate(te->holder, STATE_BLOCKED);
+		blockTime = time();
 
 		std::vector<Traveler*> deadlockList;
 
@@ -436,7 +439,6 @@ void Traveler::onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell
 		if (request == nullptr) {
 			navigateAroundDeadlock(deadlockList, requestedAlloc);
 		}
-
 	} else {
 		navigatePath(colliderPathIndex - 1, false);
 	}
