@@ -55,7 +55,7 @@ public:
 	/// <summary>	Clears the allocations including and after fromPoint. </summary>
 	/// <remarks>	Anthony.johnson, 4/17/2017. </remarks>
 	/// <param name="fromPoint">	from point. </param>
-	void clearAllocations(TravelerAllocations::iterator fromPoint);
+	void clearAllocations(TravelerAllocations::iterator fromPoint, bool decrementTraversal = false);
 	TravelerAllocations::iterator find(NodeAllocation* alloc);
 	void updateLocation();
 

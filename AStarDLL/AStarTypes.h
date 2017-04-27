@@ -62,7 +62,7 @@ public:
 struct NodeAllocation
 {
 	NodeAllocation() : traveler(nullptr), acquireTime(0.0), releaseTime(0.0) {}
-	NodeAllocation(Traveler* traveler, const AStarCell& cell, int travelPathIndex, double acquireTime, double releaseTime) :
+	NodeAllocation(Traveler* traveler, const AStarCell& cell, int travelPathIndex, double acquireTime, double releaseTime, double traversalWeight) :
 		traveler(traveler), cell(cell), travelPathIndex(travelPathIndex), acquireTime(acquireTime), releaseTime(releaseTime)
 	{}
 	Traveler* traveler;
@@ -70,6 +70,7 @@ struct NodeAllocation
 	int travelPathIndex;
 	double acquireTime;
 	double releaseTime;
+	double traversalWeight;
 	void extendReleaseTime(double toTime);
 	void bind(TreeNode* x);
 };

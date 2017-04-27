@@ -70,6 +70,13 @@ protected:
 	void drawMembers(float z);
 	void drawGrid(float z);
 
+	static const int HEAT_MAP_TRAVERSALS_PER_TIME = 1;
+	static const int HEAT_MAP_BLOCKAGE_TIME_PER_TRAVERSAL = 2;
+	static const int HEAT_MAP_BLOCKAGE_TIME_PERCENT = 3;
+	static std::vector<Vec4f> heatMapColorProgression;
+	double showHeatMap;
+	double heatMapMode;
+	double maxHeatValue;
 	struct HeatMapColorEntry {
 		Vec4f color = Vec4f(0.0f, 0.0f, 0.0f, 0.0f);
 		AStarNodeExtraData* node = nullptr;
@@ -92,7 +99,7 @@ public:
 	double surroundDepth;
 	double deepSearch;
 	double drawMode;
-	double shouldDrawAllocations;
+	double showAllocations;
 	void drawAllocations(float z);
 
 	double ignoreDestBarrier;
@@ -105,12 +112,6 @@ public:
 	double hasEdgeTable;
 
 	double enableCollisionAvoidance;
-
-	static const int HEAT_MAP_TRAVERSALS_PER_TIME = 1;
-	static const int HEAT_MAP_BLOCKAGE_TIME_PER_TRAVERSAL = 2;
-	static std::vector<Vec4f> heatMapColorProgression;
-	double heatMapMode;
-	double maxHeatFactor;
 
 	TreeNode* barriers;
 	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;

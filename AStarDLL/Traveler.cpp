@@ -60,7 +60,7 @@ void Traveler::onStartSimulation()
 		AStarCell resetCell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
 		travelPath.clear();
 		travelPath.push_back(AStarPathEntry(resetCell, -1));
-		addAllocation(NodeAllocation(this, resetCell, 0, 0.0, DBL_MAX), true);
+		addAllocation(NodeAllocation(this, resetCell, 0, 0.0, DBL_MAX, 1.0), true);
 	}
 }
 
@@ -116,7 +116,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 	if (enableCollisionAvoidance) {
 		if (allocations.size() == 0 || (startAtPathIndex == 0 && travelPath.front().cell != allocations.front()->cell)) {
 			clearAllocations();
-			addAllocation(NodeAllocation(this, travelPath.front().cell, 0, time(), time()), true);
+			addAllocation(NodeAllocation(this, travelPath.front().cell, 0, time(), time(), 1.0), true);
 		}
 		lastAllocationIndex = 0;
 	}
@@ -155,36 +155,28 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 
 			isVerticalDeepSearch = abs(e.cell.row - laste.cell.row) == 2;
 			isHorizontalDeepSearch = abs(e.cell.col - laste.cell.col) == 2;
+			if (isVerticalDeepSearch) {
+				deepSearchMiddleCell1 = AStarCell(laste.cell.col, (e.cell.row + laste.cell.row) / 2);
+				deepSearchMiddleCell2 = AStarCell(e.cell.col, deepSearchMiddleCell1.row);
+			} else if (isHorizontalDeepSearch) {
+				deepSearchMiddleCell1 = AStarCell((e.cell.col + laste.cell.col) / 2, laste.cell.row);
+				deepSearchMiddleCell2 = AStarCell(deepSearchMiddleCell1.col, e.cell.row);
+			}
 
 			if (enableCollisionAvoidance) {
 				double middleReleaseTime = 0.5 * (startTime + endTime);
-				NodeAllocation allocation(this, e.cell, i, startTime, middleReleaseTime);
+				NodeAllocation allocation(this, e.cell, i, startTime, middleReleaseTime, 1.0);
 				NodeAllocation* success = &allocation;
 				// if it is a diagonal move, then I need to do additional allocations
 				if (e.cell.row != laste.cell.row && e.cell.col != laste.cell.col) {
 					// is it a deep vertical search step
-					if (isVerticalDeepSearch) {
-						allocation.cell.row = (e.cell.row + laste.cell.row) / 2;
-						allocation.cell.col = laste.cell.col;
-						deepSearchMiddleCell1 = allocation.cell;
+					if (isVerticalDeepSearch || isHorizontalDeepSearch) {
+						allocation.cell = deepSearchMiddleCell1;
+						allocation.traversalWeight = 0.5;
 						success = addAllocation(allocation);
 						if (success) {
 							numSuccessfulAllocations++;
-							allocation.cell.col = e.cell.col;
-							deepSearchMiddleCell2 = allocation.cell;
-							success = addAllocation(allocation);
-							numSuccessfulAllocations += success ? 1 : 0;
-						}
-					} // is it a deep horizontal search step
-					else if (isHorizontalDeepSearch) {
-						allocation.cell.col = (e.cell.col + laste.cell.col) / 2;
-						allocation.cell.row = laste.cell.row;
-						deepSearchMiddleCell1 = allocation.cell;
-						success = addAllocation(allocation);
-						if (success) {
-							numSuccessfulAllocations++;
-							allocation.cell.row = e.cell.row;
-							deepSearchMiddleCell2 = allocation.cell;
+							allocation.cell= deepSearchMiddleCell2;
 							success = addAllocation(allocation);
 							numSuccessfulAllocations += success ? 1 : 0;
 						}
@@ -201,6 +193,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 							rightCell = AStarCell(max(e.cell.col, laste.cell.col), max(e.cell.row, laste.cell.row));
 						}
 						allocation.cell = leftCell;
+						allocation.traversalWeight = 0.0;
 						success = addAllocation(allocation);
 						if (success) {
 							numSuccessfulAllocations++;
@@ -392,12 +385,16 @@ void Traveler::clearAllocationsUpTo(TravelerAllocations::iterator iter)
 		removeAllocation(allocations.begin());
 }
 
-void Traveler::clearAllocations(TravelerAllocations::iterator fromPoint)
+void Traveler::clearAllocations(TravelerAllocations::iterator fromPoint, bool decrementTraversalStats)
 {
 	_ASSERTE(fromPoint != allocations.begin());
 	int numToRemove = allocations.end() - fromPoint;
-	for (int i = 0; i < numToRemove; i++)
-		removeAllocation(allocations.end() - 1);
+	for (int i = 0; i < numToRemove; i++) {
+		auto iter = allocations.end() - 1;
+		if (decrementTraversalStats)
+			navigator->getExtraData((*iter)->cell)->totalTraversals -= (*iter)->traversalWeight;
+		removeAllocation(iter);
+	}
 }
 
 
@@ -433,7 +430,7 @@ void Traveler::onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell
 		std::vector<Traveler*> deadlockList;
 
 		allocations.back()->extendReleaseTime(DBL_MAX);
-		NodeAllocation requestedAlloc(this, cell, colliderPathIndex, time(), DBL_MAX);
+		NodeAllocation requestedAlloc(this, cell, colliderPathIndex, time(), DBL_MAX, 0.0);
 		request = nodeData->addRequest(requestedAlloc, *foundAlloc, &deadlockList);
 		isBlocked = true;
 		if (request == nullptr) {

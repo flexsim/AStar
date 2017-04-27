@@ -51,18 +51,20 @@ void NodeAllocation::bind(TreeNode* x)
 			traveler = ((TreeNode*)(x->subnodes["traveler"]->value))->objectAs(Traveler);
 			acquireTime = x->subnodes["acquireTime"]->value;
 			releaseTime = x->subnodes["releaseTime"]->value;
+			traversalWeight = x->subnodes["traversalWeight"]->value;
 			travelPathIndex = x->subnodes["travelPathIndex"]->value;
 			break;
 		case SDT_BIND_ON_SAVE:
 			assertsubnode(x, "traveler")->value = traveler->holder;
 			assertsubnode(x, "acquireTime")->value = acquireTime;
 			assertsubnode(x, "releaseTime")->value = releaseTime;
+			assertsubnode(x, "traversalWeight")->value = traversalWeight;
 			assertsubnode(x, "travelPathIndex")->value = travelPathIndex;
 			break;
 		case SDT_BIND_ON_DISPLAY: {
 			char str[1024];
-			sprintf(str, "traveler: %s, acquireTime: %lf, releaseTime: %lf, travelPathIndex: %d", 
-				getname(traveler->holder).c_str(), acquireTime, releaseTime, (int)travelPathIndex);
+			sprintf(str, "traveler: %s, acquireTime: %lf, releaseTime: %lf, travelPathIndex: %d, traversalWeight: %lf", 
+				getname(traveler->holder).c_str(), acquireTime, releaseTime, (int)travelPathIndex, traversalWeight);
 			SimpleDataType::appendToDisplayStr(str);
 			break;
 		}
@@ -175,7 +177,7 @@ void AStarNodeExtraData::onReleaseTimeExtended(NodeAllocation& changedAlloc, dou
 				[&](NodeAllocationIterator& other) { return other->cell == cell && other == iter; });
 			while (found - alloc.traveler->allocations.begin() > 1 && (*(found - 1))->acquireTime == alloc.acquireTime)
 				found--;
-			alloc.traveler->clearAllocations(found);
+			alloc.traveler->clearAllocations(found, true);
 			if (copy.traveler->arrivalEvent)
 				destroyevent(copy.traveler->arrivalEvent->holder);
 			// this will cause him to create collision event

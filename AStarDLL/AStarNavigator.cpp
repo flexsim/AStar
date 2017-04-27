@@ -69,7 +69,7 @@ void AStarNavigator::bindVariables(void)
 	Navigator::bindVariables();
 	bindVariable(defaultPathWeight);
 	bindVariable(drawMode);
-	bindVariable(shouldDrawAllocations);
+	bindVariable(showAllocations);
 	bindVariable(nodeWidth);
 	bindVariable(surroundDepth);
 	bindVariable(deepSearch);
@@ -90,8 +90,9 @@ void AStarNavigator::bindVariables(void)
 
 	bindVariable(enableCollisionAvoidance);
 
+	bindVariable(showHeatMap);
 	bindVariable(heatMapMode);
-	bindVariable(maxHeatFactor);
+	bindVariable(maxHeatValue);
 
 	bindVariableByName("extraData", extraDataNode);
 
@@ -184,7 +185,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 	int pickingmode = getpickingmode(view);
 	int drawMode = (int)this->drawMode;
-	if(drawMode == 0 && heatMapMode == 0 && shouldDrawAllocations == 0) return 0;
+	if(drawMode == 0 && (showHeatMap == 0 || heatMapMode == 0) && showAllocations == 0) return 0;
 
 	fglDisable(GL_TEXTURE_2D);
 	fglDisable(GL_LIGHTING);
@@ -206,13 +207,13 @@ double AStarNavigator::onDraw(TreeNode* view)
 		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
 			barrierMesh.draw(GL_TRIANGLES);
 
-		if (heatMapMode != 0)
+		if (showHeatMap != 0 && heatMapMode != 0)
 			drawHeatMap(0.015f / lengthMultiple, view);
 
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
 			drawMembers(0.02f / lengthMultiple);
 
-		if (shouldDrawAllocations)
+		if (showAllocations)
 			drawAllocations(0.02f / lengthMultiple);
 	} else {
 
@@ -1257,7 +1258,7 @@ void AStarNavigator::drawHeatMap(float z, TreeNode* view)
 {
 	if (heatMapMode == 0 || statisticaltime() <= 0)
 		return;
-	if (maxHeatFactor <= 0)
+	if (maxHeatValue <= 0)
 		return;
 
 	int pickMode = getpickingmode(view);
@@ -1296,12 +1297,18 @@ void AStarNavigator::drawHeatMap(float z, TreeNode* view)
 		if (data->totalTraversals <= 0)
 			continue;
 		double weight;
-		if (heatMapMode == HEAT_MAP_TRAVERSALS_PER_TIME) {
-			weight = (data->totalTraversals / statisticaltime());
-		} else {
-			weight = (data->totalBlockedTime / max(1, data->totalTraversals));
+		switch ((int)heatMapMode) {
+			case HEAT_MAP_TRAVERSALS_PER_TIME: default:
+				weight = (data->totalTraversals / statisticaltime());
+				break;
+			case HEAT_MAP_BLOCKAGE_TIME_PER_TRAVERSAL: 
+				weight = (data->totalBlockedTime / max(1, data->totalTraversals));
+				break;
+			case HEAT_MAP_BLOCKAGE_TIME_PERCENT:
+				weight = 100.0 * data->totalBlockedTime / statisticaltime();
+				break;
 		}
-		weight /= maxHeatFactor;
+		weight /= maxHeatValue;
 		weight = max(0, weight);
 		weight = min(0.9999, weight);
 
@@ -1596,7 +1603,7 @@ void AStarNavigator::drawGrid(float z)
 
 void AStarNavigator::drawAllocations(float z)
 {
-	if (!shouldDrawAllocations || time() <= 0)
+	if (!showAllocations || time() <= 0)
 		return;
 	Mesh allocMesh;
 	Mesh lineMesh;
