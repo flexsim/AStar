@@ -264,10 +264,10 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 		laste = e;
 	}
 
-	// remove the first allocation if I was able to allocation ahead at least one
+	// remove the first allocation if I was able to allocate ahead at least one
 	// This will trigger other travelers who might be waiting for me to move on 
 	// from the current point I'm at.
-	if (numNodes > startAtPathIndex + 1) {
+	if (enableCollisionAvoidance && numNodes > startAtPathIndex + 1) {
 		if (didBlockPathIndex == -1 || didBlockPathIndex > startAtPathIndex + 1)
 			removeAllocation(allocations.begin());
 	}
@@ -282,7 +282,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 			arrivalEvent = createevent(new ArrivalEvent(this, endTime))->objectAs(ArrivalEvent);
 	}
 
-	_ASSERTE(allocations.size() > 0);
+	_ASSERTE(allocations.size() > 0 || !enableCollisionAvoidance);
 }
 
 NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force)
@@ -556,9 +556,11 @@ void Traveler::onArrival()
 	AStarPathEntry back = travelPath.back();
 	travelPath.clear();
 	travelPath.push_back(back);
-	if (allocations.size() > 1)
-		clearAllocationsUpTo(allocations.end() - 2);
-	allocations.front()->extendReleaseTime(DBL_MAX);
+	if (navigator->enableCollisionAvoidance) {
+		if (allocations.size() > 1)
+			clearAllocationsUpTo(allocations.end() - 2);
+		allocations.front()->extendReleaseTime(DBL_MAX);
+	}
 	te->onDestinationArrival(0);
 }
 
