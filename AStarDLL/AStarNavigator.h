@@ -170,6 +170,7 @@ public:
 	Traveler* getTraveler(TaskExecuter* te) { return tonode(get(first(te->node_v_navigator)))->objectAs(Traveler); }
 
 	std::unique_ptr<unsigned int[]> heatMapBuffer;
+	void dumpBlockageData(treenode destNode);
 };
 
 }

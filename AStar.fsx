@@ -74,6 +74,7 @@
          <node f="1000042" dt="2"><name>onMouseMove</name><data>dll:"module:AStar" func:"AStarNavigator_onMouseMove"</data></node>
          <node f="1000042" dt="2"><name>onClick</name><data>dll:"module:AStar" func:"AStarNavigator_onClick"</data></node>
          <node f="1000042" dt="2"><name>blockGridModelPos</name><data>dll:"module:AStar" func:"AStarNavigator_blockGridModelPos"</data></node>
+         <node f="1000042" dt="2"><name>dumpBlockageData</name><data>dll:"module:AStar" func:"AStarNavigator_dumpBlockageData"</data></node>
         </node>
         <node f="42"><name>cppfunctions</name>
          <node f="40"><name></name></node></node>

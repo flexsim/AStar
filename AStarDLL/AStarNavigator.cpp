@@ -1747,6 +1747,41 @@ void AStarNavigator::buildActiveTravelerList()
 }
 
 
+void AStarNavigator::dumpBlockageData(treenode destNode)
+{
+	destNode->dataType = DATATYPE_BUNDLE;
+	clearbundle(destNode);
+	addbundlefield(destNode, "GridX", BUNDLE_FIELD_TYPE_INT);
+	addbundlefield(destNode, "GridY", BUNDLE_FIELD_TYPE_INT);
+	addbundlefield(destNode, "ModelX", BUNDLE_FIELD_TYPE_DOUBLE);
+	addbundlefield(destNode, "ModelY", BUNDLE_FIELD_TYPE_DOUBLE);
+	addbundlefield(destNode, "TotalTraversals", BUNDLE_FIELD_TYPE_DOUBLE);
+	addbundlefield(destNode, "TotalBlocks", BUNDLE_FIELD_TYPE_INT);
+	addbundlefield(destNode, "TotalBlockedTime", BUNDLE_FIELD_TYPE_DOUBLE);
+
+	Table table = Table(destNode);
+
+	for (auto& entry : edgeTableExtraData) {
+		AStarNodeExtraData* data = entry.second;
+		table.addRow(0, 0);
+		table[Variant(table.numRows)][Variant("GridX")] = data->cell.col;
+		table[Variant(table.numRows)][Variant("GridY")] = data->cell.row;
+		Vec3 loc = getLocFromCell(data->cell);
+		table[Variant(table.numRows)][Variant("ModelX")] = loc.x;
+		table[Variant(table.numRows)][Variant("ModelY")] = loc.y;
+		table[Variant(table.numRows)][Variant("TotalTraversals")] = data->totalTraversals;
+		table[Variant(table.numRows)][Variant("TotalBlocks")] = data->totalBlocks;
+		table[Variant(table.numRows)][Variant("TotalBlockedTime")] = data->totalBlockedTime;
+	}
+}
+
+ASTAR_FUNCTION Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)
+{
+	c->objectAs(AStarNavigator)->dumpBlockageData(param(1));
+	return 0;
+}
+
+
 } // end AStar namespace
 
 using namespace AStar;
