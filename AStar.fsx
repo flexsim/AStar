@@ -2755,47 +2755,6 @@ applylinks(parent);</data></node>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>MAIN:/project/exec/globals/helpmanual/TableOfContents</data>
-   <node f="40"><name></name></node>
-   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
-    <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040340000</data></node>
-    <node f="42" dt="2"><name>after</name><data>Miscellaneous Concepts</data></node>
-    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
-    <node f="42"><name>data</name>
-     <node f="40"><name></name></node>
-     <node f="42" dt="4"><name>AStar</name><data>
-      <node f="40"><name></name></node>
-      <node f="42" dt="2"><name>title</name><data>AStar Module</data></node>
-     </data>
-      <node f="40"><name></name></node>
-      <node f="42" dt="4"><name>Concepts</name><data>
-       <node f="40"><name></name></node>
-       <node f="42" dt="2"><name>viewfocus</name><data>modules\AStar\help\Concepts.html</data></node>
-       <node f="42" dt="2"><name>title</name><data>AStar Module Concepts</data></node>
-       <node f="42" dt="2"><name>uniqueid</name><data>AStarObjects</data></node>
-      </data>
-       <node f="40"><name></name></node></node>
-      <node f="42" dt="4"><name>Example</name><data>
-       <node f="40"><name></name></node>
-       <node f="42" dt="2"><name>viewfocus</name><data>modules\AStar\help\Example.html</data></node>
-       <node f="42" dt="2"><name>title</name><data>AStar Module Example</data></node>
-      </data>
-       <node f="40"><name></name></node></node>
-      <node f="42" dt="4"><name>Reference</name><data>
-       <node f="40"><name></name></node>
-       <node f="42" dt="2"><name>viewfocus</name><data>modules\AStar\help\Reference.html</data></node>
-       <node f="42" dt="2"><name>uniqueid</name><data>tab_AStar</data>
-        <node f="40"><name></name></node>
-        <node f="42" dt="2"><name>tab_AStar_Barriers</name><data>#Barriers</data></node>
-       </node>
-       <node f="42" dt="2"><name>title</name><data>AStar Module Reference</data></node>
-      </data>
-       <node f="40"><name></name></node></node>
-     </node>
-    </node>
-   </node>
-  </node>
   <node f="42" dt="2"><name>add</name><data>VIEW:/picklists/transportrefpicklist</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
