@@ -147,11 +147,12 @@ void AStarNodeExtraData::onContinue(Traveler* blocker)
 		traveler->request = nullptr;
 		requests.pop_front();
 		double blockedTime = time() - traveler->blockTime;
-		if (traveler->isBlocked && blockedTime > 0.001 * traveler->nodeWidth / traveler->te->v_maxspeed) {
+		if (traveler->isBlocked && blockedTime > traveler->tinyTime) {
 			AStarNodeExtraData* blockedCell = traveler->navigator->getExtraData(traveler->allocations.back()->cell);
 			blockedTime = min(blockedTime, statisticaltime());
 			blockedCell->totalBlockedTime += blockedTime;
 			blockedCell->totalBlocks++;
+			FIRE_SDT_EVENT(traveler->onContinueTrigger, traveler->te->holder);
 		}
 		traveler->navigatePath(topRequest.travelPathIndex - 1, false);
 		if (requests.size() > 0)
@@ -199,13 +200,11 @@ NodeAllocation* AStarNodeExtraData::addRequest(NodeAllocation& request, NodeAllo
 	bool found = request.traveler->findDeadlockCycle(request.traveler, travelers);
 	if (!found) {
 		checkCreateContinueEvent();
-		return &requests.back();
 	} else {
-		requests.pop_back();
 		if (deadlockList)
 			*deadlockList = std::move(travelers);
-		return nullptr;
 	}
+	return &requests.back();
 }
 
 void AStarNodeExtraData::checkCreateContinueEvent()
@@ -263,6 +262,26 @@ void NodeAllocation::extendReleaseTime(double toTime)
 		return;
 	AStarNodeExtraData* nodeData = traveler->navigator->getExtraData(cell);
 	nodeData->onReleaseTimeExtended(*this, oldReleaseTime);
+}
+
+
+bool AllocationStep::isImmediatelyBlocked(Traveler* traveler)
+{
+	NodeAllocation allocation(traveler, toCell, 1, time(), std::nextafter(time(), FLT_MAX), 1.0);
+	NodeAllocation* collision;
+	if (isDiagonal) {
+		allocation.cell = intermediateCell1;
+		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell1), allocation))
+			return true;
+		allocation.cell = intermediateCell2;
+		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell2), allocation))
+			return true;
+	}
+	allocation.cell = toCell;
+	if (Traveler::findCollision(traveler->navigator->assertExtraData(toCell), allocation))
+		return true;
+	return false;
+
 }
 
 }

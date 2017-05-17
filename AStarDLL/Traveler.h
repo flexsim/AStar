@@ -12,6 +12,10 @@ class Traveler : public CouplingDataType
 public:
 	virtual const char* getClassFactory() override { return "AStar::Traveler"; }
 	virtual void bind() override;
+	virtual void bindEvents() override;
+
+	TreeNode* getEventInfoObject(const char* eventTitle) override;
+
 	Traveler(AStarNavigator* nav, TaskExecuter* te) : navigator(nav), te(te) {}
 	Traveler() : navigator(nullptr), te(nullptr) {}
 
@@ -24,13 +28,19 @@ public:
 	typedef std::deque<NodeAllocationIterator> TravelerAllocations;
 	TravelerAllocations allocations;
 	NodeAllocation* request;
+	int nextCollisionUpdateTravelIndex;
+	double nextCollisionUpdateEndTime;
 
 	AStarNavigator* navigator;
 	TaskExecuter* te;
 	bool isBlocked = false;
 	void onReset();
 	void onStartSimulation();
-	void navigatePath(int startAtPathIndex, bool isDistQueryOnly);
+	void onCollisionIntervalUpdate() {
+		if (!isBlocked && nextCollisionUpdateTravelIndex >= 0)
+			navigatePath(nextCollisionUpdateTravelIndex, false, true); 
+	}
+	void navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isCollisionUpdateInterval = false);
 	void navigatePath(TravelPath&& path, bool isDistQueryOnly)
 	{
 		travelPath = std::move(path);
@@ -77,7 +87,6 @@ public:
 		Traveler* traveler;
 		double penalty = DBL_MAX;
 	};
-	bool isNavigatingAroundDeadlock = false;
 	bool navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, NodeAllocation& deadlockCreatingRequest);
 	class BlockEvent : public FlexSimEvent
 	{
@@ -100,8 +109,13 @@ public:
 	};
 	ObjRef<BlockEvent> blockEvent;
 	double blockTime;
+	double tinyTime = 0.0;
 
 	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);
+
+	treenode onBlockTrigger = nullptr;
+	treenode onContinueTrigger = nullptr;
+	treenode onRerouteTrigger = nullptr;
 
 };
 

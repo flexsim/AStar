@@ -18,6 +18,8 @@ void Traveler::bind()
 	bindNumber(destLoc.z);
 	bindSubNode(distQueryKinematics, 0);
 	bindNumber(blockTime);
+	bindNumber(nextCollisionUpdateTravelIndex);
+	bindNumber(nextCollisionUpdateEndTime);
 	navigator = holder->ownerObject->objectAs(AStarNavigator);
 	te = partner()->ownerObject->objectAs(TaskExecuter);
 
@@ -30,6 +32,19 @@ void Traveler::bind()
 	}
 	//bindStlContainer(allocations);
 
+}
+
+
+void Traveler::bindEvents()
+{
+	bindEventByName("onBlock", onBlockTrigger, "OnBlock");
+	bindEventByName("onReroute", onRerouteTrigger, "OnReroute");
+	bindEventByName("onContinue", onContinueTrigger, "OnContinue");
+}
+
+TreeNode* Traveler::getEventInfoObject(const char* eventTitle)
+{
+	return node(eventTitle, node("MAIN:/project/exec/globals/DefaultEventInfo/AStarTraveler"));
 }
 
 void Traveler::BlockEvent::bind()
@@ -51,6 +66,9 @@ void Traveler::onReset()
 	AStarCell resetCell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
 	travelPath.clear();
 	travelPath.push_back(AStarPathEntry(resetCell, -1));
+	tinyTime = 0.001 * nodeWidth / te->v_maxspeed;
+	nextCollisionUpdateEndTime = 0.0;
+	nextCollisionUpdateTravelIndex = -1;
 }
 
 void Traveler::onStartSimulation()
@@ -64,9 +82,10 @@ void Traveler::onStartSimulation()
 	}
 }
 
-void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
+void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isCollisionUpdateInterval)
 {
 	AStarNavigator* nav = navigator;
+	nextCollisionUpdateTravelIndex = -1;
 
 	// Don't know why this was here. I'm commenting it out.
 	//if (!isDistQueryOnly) {
@@ -92,24 +111,31 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 		startLoc = startLoc.project(model(), up(te->holder));
 
 	int kinFlags = 0;
+	double endTime;
 	double rotLerpSize = navigator->smoothRotations;
 	double rotLerpSpeed = 90 / (te->b_spatialsx * rotLerpSize / te->v_maxspeed);
-	if (te->node_v_modifyrotation) {
-		
-		if (rotLerpSize == 0)
-			kinFlags |= KINEMATIC_MANAGE_ROTATIONS;
 
-		if (!te->canRotateOnIncline())
-			kinFlags |= KINEMATIC_NO_INCLINE_ROTATION;
+	if (!isCollisionUpdateInterval) {
+		endTime = time();
+		if (te->node_v_modifyrotation) {
+
+			if (rotLerpSize == 0)
+				kinFlags |= KINEMATIC_MANAGE_ROTATIONS;
+
+			if (!te->canRotateOnIncline())
+				kinFlags |= KINEMATIC_NO_INCLINE_ROTATION;
+		}
+		initkinematics(kinematics, startLoc.x, startLoc.y, te->b_spatialz, 0, 0, te->b_spatialrz, kinFlags, 0);
+	} else {
+		endTime = nextCollisionUpdateEndTime;
+		if (endTime > nav->nextCollisionUpdateTime)
+			return;
 	}
-	initkinematics(kinematics, startLoc.x, startLoc.y, te->b_spatialz, 0, 0, te->b_spatialrz, kinFlags, 0);
 
 	AStarPathEntry e, laste;
 	int numNodes = travelPath.size();
 	laste.cell = travelPath[startAtPathIndex].cell;
 	bool enableCollisionAvoidance = nav->enableCollisionAvoidance;
-	double endTime = time();
-	double releaseTime = endTime;
 
 	int lastAllocationIndex;
 	cullExpiredAllocations();
@@ -123,24 +149,22 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 
 	int didBlockPathIndex = -1;
 	double lastRotation = te->b_spatialrz;
-	AStarCell deepSearchMiddleCell1;
-	AStarCell deepSearchMiddleCell2;
 
-	for (int i = startAtPathIndex + 1; i < numNodes; i++) {
+	int i;
+	for (i = startAtPathIndex + 1; i < numNodes; i++) {
 		e = travelPath[i];
+		AllocationStep step(laste.cell, e.cell);
 		double totalTravelDist;
-		bool isVerticalDeepSearch = false;
-		bool isHorizontalDeepSearch = false;
 		if (laste.bridgeIndex == -1) {
 			int numSuccessfulAllocations = 0;
-			double nextX = (e.cell.col - laste.cell.col)*nodeWidth;
-			double nextY = (e.cell.row - laste.cell.row)*nodeWidth;
+			double diffX = (e.cell.col - laste.cell.col)*nodeWidth;
+			double diffY = (e.cell.row - laste.cell.row)*nodeWidth;
 			double startTime = endTime;
-			endTime = addkinematic(kinematics, nextX, nextY, 0,
+			endTime = addkinematic(kinematics, diffX, diffY, 0,
 				te->v_maxspeed, 0, 0, 0, 0, startTime, KINEMATIC_TRAVEL);
 
 			if (rotLerpSize != 0) {
-				double nextRot = radianstodegrees(atan2(nextY, nextX));
+				double nextRot = radianstodegrees(atan2(diffY, diffX));
 				double rotDiff = nextRot - lastRotation;
 				while (rotDiff > 180)
 					rotDiff -= 360;
@@ -153,54 +177,21 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 				lastRotation = nextRot;
 			}
 
-			isVerticalDeepSearch = abs(e.cell.row - laste.cell.row) == 2;
-			isHorizontalDeepSearch = abs(e.cell.col - laste.cell.col) == 2;
-			if (isVerticalDeepSearch) {
-				deepSearchMiddleCell1 = AStarCell(laste.cell.col, (e.cell.row + laste.cell.row) / 2);
-				deepSearchMiddleCell2 = AStarCell(e.cell.col, deepSearchMiddleCell1.row);
-			} else if (isHorizontalDeepSearch) {
-				deepSearchMiddleCell1 = AStarCell((e.cell.col + laste.cell.col) / 2, laste.cell.row);
-				deepSearchMiddleCell2 = AStarCell(deepSearchMiddleCell1.col, e.cell.row);
-			}
-
 			if (enableCollisionAvoidance) {
 				double middleReleaseTime = 0.5 * (startTime + endTime);
 				NodeAllocation allocation(this, e.cell, i, startTime, middleReleaseTime, 1.0);
 				NodeAllocation* success = &allocation;
 				// if it is a diagonal move, then I need to do additional allocations
-				if (e.cell.row != laste.cell.row && e.cell.col != laste.cell.col) {
+				if (step.isDiagonal) {
 					// is it a deep vertical search step
-					if (isVerticalDeepSearch || isHorizontalDeepSearch) {
-						allocation.cell = deepSearchMiddleCell1;
-						allocation.traversalWeight = 0.5;
+					allocation.traversalWeight = (step.isVerticalDeepSearch || step.isHorizontalDeepSearch) ? 0.5 : 0.0;
+					allocation.cell = step.intermediateCell1;
+					success = addAllocation(allocation);
+					if (success) {
+						numSuccessfulAllocations++;
+						allocation.cell = step.intermediateCell2;
 						success = addAllocation(allocation);
-						if (success) {
-							numSuccessfulAllocations++;
-							allocation.cell= deepSearchMiddleCell2;
-							success = addAllocation(allocation);
-							numSuccessfulAllocations += success ? 1 : 0;
-						}
-					} else {
-						AStarCell leftCell;
-						AStarCell rightCell;
-						if (sign(e.cell.col - laste.cell.col) == sign(e.cell.row - laste.cell.row)) {
-							// it's a "forward-slash diagonal"
-							leftCell = AStarCell(min(e.cell.col, laste.cell.col), max(e.cell.row, laste.cell.row));
-							rightCell = AStarCell(max(e.cell.col, laste.cell.col), min(e.cell.row, laste.cell.row));
-						} else {
-							// it's a "back-slash diagonal"
-							leftCell = AStarCell(min(e.cell.col, laste.cell.col), min(e.cell.row, laste.cell.row));
-							rightCell = AStarCell(max(e.cell.col, laste.cell.col), max(e.cell.row, laste.cell.row));
-						}
-						allocation.cell = leftCell;
-						allocation.traversalWeight = 0.0;
-						success = addAllocation(allocation);
-						if (success) {
-							numSuccessfulAllocations++;
-							allocation.cell = rightCell;
-							success = addAllocation(allocation);
-							numSuccessfulAllocations += success ? 1 : 0;
-						}
+						numSuccessfulAllocations += success ? 1 : 0;
 					}
 				}
 				allocation.cell = e.cell;
@@ -218,7 +209,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 					break;
 				}
 			}
-			totalTravelDist = sqrt(sqr(nextX) + sqr(nextY));
+			totalTravelDist = sqrt(sqr(diffX) + sqr(diffY));
 		} else {
 			// travel on a bridge
 			auto nodeData = nav->edgeTableExtraData.find(laste.cell.colRow);
@@ -255,10 +246,16 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 
 			//Traffic info
 			nav->assertExtraData(e.cell)->totalTraversals++;
-			if (isVerticalDeepSearch || isHorizontalDeepSearch) {
-				nav->assertExtraData(deepSearchMiddleCell1)->totalTraversals += 0.5;
-				nav->assertExtraData(deepSearchMiddleCell2)->totalTraversals += 0.5;
+			if (step.isVerticalDeepSearch || step.isHorizontalDeepSearch) {
+				nav->assertExtraData(step.intermediateCell1)->totalTraversals += 0.5;
+				nav->assertExtraData(step.intermediateCell2)->totalTraversals += 0.5;
 			}
+		}
+
+		if (enableCollisionAvoidance && endTime > nav->nextCollisionUpdateTime) {
+			nextCollisionUpdateTravelIndex = i;
+			nextCollisionUpdateEndTime = endTime;
+			break;
 		}
 
 		laste = e;
@@ -278,7 +275,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly)
 			isActive = true;
 			activeEntry = nav->activeTravelers.begin();
 		}
-		if (didBlockPathIndex == -1 && !blockEvent && !isBlocked)
+		if (didBlockPathIndex == -1 && !blockEvent && !isBlocked && i == numNodes)
 			arrivalEvent = createevent(new ArrivalEvent(this, endTime))->objectAs(ArrivalEvent);
 	}
 
@@ -432,8 +429,12 @@ void Traveler::onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell
 		allocations.back()->extendReleaseTime(DBL_MAX);
 		NodeAllocation requestedAlloc(this, cell, colliderPathIndex, time(), DBL_MAX, 0.0);
 		request = nodeData->addRequest(requestedAlloc, *foundAlloc, &deadlockList);
+		bool isDeadlock = deadlockList.size() > 0;
+		if (onBlockTrigger && (!nodeData->continueEvent || nodeData->continueEvent->time - time() > tinyTime)) {
+			FIRE_SDT_EVENT(onBlockTrigger, te->holder, isDeadlock);
+		}
 		isBlocked = true;
-		if (request == nullptr) {
+		if (isDeadlock) {
 			navigateAroundDeadlock(deadlockList, requestedAlloc);
 		}
 	} else {
@@ -447,6 +448,7 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 	double curTime = time();
 	double failedTargetDestinationPenaltyWeight = 3.0;
 	double extraRouteEntriesPenaltyWeight = 1.0;
+	double immediateBlockagePenaltyWeight = 500000;
 	AStarNode noTravelNode;
 	noTravelNode.value = 0;
 
@@ -487,8 +489,19 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 		TravelPath travelPath = navigator->calculateRoute(traveler->te->holder, destLoc, endSpeed, true);
 		barrier.unapply();
 
+		if (travelPath.size() == 0)
+			continue;
+
+		double penalty = 0.0;
+
+		if (travelPath.size() > 1) {
+			AllocationStep step(travelPath[0].cell, travelPath[1].cell);
+			if (step.isImmediatelyBlocked(traveler))
+				penalty += immediateBlockagePenaltyWeight;
+		}
+
 		Vec2 diff(travelPath.back().cell.col - traveler->travelPath.back().cell.col, travelPath.back().cell.row - traveler->travelPath.back().cell.row);
-		double penalty = failedTargetDestinationPenaltyWeight * sqrt(diff.x * diff.x + diff.y * diff.y);
+		penalty += failedTargetDestinationPenaltyWeight * sqrt(diff.x * diff.x + diff.y * diff.y);
 		int originalRemainingSteps = traveler->travelPath.size() - traveler->allocations.back()->travelPathIndex;
 		if (travelPath.size() > originalRemainingSteps)
 			penalty += extraRouteEntriesPenaltyWeight * (travelPath.size() - originalRemainingSteps);
@@ -499,32 +512,29 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 		attempts.back().traveler = traveler;
 	}
 
-	std::sort(attempts.begin(), attempts.end(), [](NavigationAttempt& left, NavigationAttempt& right) { return left.penalty < right.penalty; });
 
-	bool didNavigateMe = false;
-	Traveler* bestTraveler = nullptr;
-	for (auto& attempt : attempts) {
-		if (attempt.traveler == this)
-			didNavigateMe = true;
-		else if (attempt.traveler->request) {
-			navigator->getExtraData(attempt.traveler->request->cell)->requests.remove_if([&](NodeAllocation& alloc) { return &alloc == attempt.traveler->request; });
-			attempt.traveler->request = nullptr;
-		}
-		attempt.traveler->isNavigatingAroundDeadlock = true;
-		attempt.traveler->navigatePath(std::move(attempt.path), false);
-		attempt.traveler->isNavigatingAroundDeadlock = false;
-
-		if (!attempt.traveler->blockEvent || attempt.traveler->blockEvent->time > time()) {
-			bestTraveler = attempt.traveler;
-			break;
-		}
+	if (attempts.size() < 1) {
+		stop();
+		string message = "Unrecoverable AStar deadlock has been encountered. Deadlock members are: ";
+		for (Traveler* traveler : deadlockList)
+			message.append(traveler->te->holder->name).append(" ");
+		EX("", message.c_str(), 1);
+		return false;
 	}
 
-	if (!didNavigateMe) {
-		navigatePath(deadlockCreatingRequest.travelPathIndex - 1, false);
-	}
+	std::partial_sort(attempts.begin(), attempts.begin() + 1, attempts.end(), 
+		[](NavigationAttempt& left, NavigationAttempt& right) { 
+			return left.penalty < right.penalty; 
+		});
 
-	return bestTraveler && bestTraveler->travelPath.size() > 0;
+	NavigationAttempt& attempt = attempts[0];
+	navigator->getExtraData(attempt.traveler->request->cell)->requests.remove_if([&](NodeAllocation& alloc) { return &alloc == attempt.traveler->request; });
+	attempt.traveler->request = nullptr;
+	FIRE_SDT_EVENT(attempt.traveler->onRerouteTrigger, te->holder);
+	FIRE_SDT_EVENT(attempt.traveler->onContinueTrigger, te->holder);
+	attempt.traveler->navigatePath(std::move(attempt.path), false);
+
+	return true;
 }
 
 bool Traveler::findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers)

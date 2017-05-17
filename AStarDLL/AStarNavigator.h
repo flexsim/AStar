@@ -113,6 +113,18 @@ public:
 
 	double enableCollisionAvoidance;
 
+	double collisionUpdateIntervalFactor;
+	double collisionUpdateInterval;
+	double nextCollisionUpdateTime;
+	void onCollisionIntervalUpdate();
+	class CollisionIntervalUpdateEvent : public FlexSimEvent {
+	public:
+		virtual const char* getClassFactory() override { return "AStar::AStarNavigator::CollisionIntervalUpdateEvent"; }
+		CollisionIntervalUpdateEvent() : FlexSimEvent() {}
+		CollisionIntervalUpdateEvent(AStarNavigator* nav, double time) : FlexSimEvent(nav->holder, time, nullptr, 0) {}
+		virtual void execute() override { partner()->objectAs(AStarNavigator)->onCollisionIntervalUpdate(); }
+	};
+
 	TreeNode* barriers;
 	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
 	NodeRef activeBarrier;
@@ -150,6 +162,9 @@ public:
 	virtual unsigned int getClassType() override;
 
 	virtual void bindVariables(void) override;
+	virtual void bindTEEvents(TaskExecuter* te) override;
+	virtual void bindTEStatistics(TaskExecuter* te) override;
+	TreeNode* AStarNavigator::resolveTraveler();
 
 	void blockGridModelPos(const Vec3& modelPos);
 

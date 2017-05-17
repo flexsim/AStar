@@ -61,9 +61,9 @@ public:
 
 struct NodeAllocation
 {
-	NodeAllocation() : traveler(nullptr), acquireTime(0.0), releaseTime(0.0) {}
+	NodeAllocation() : traveler(nullptr), acquireTime(0.0), releaseTime(0.0), traversalWeight(0.0), travelPathIndex(0) {}
 	NodeAllocation(Traveler* traveler, const AStarCell& cell, int travelPathIndex, double acquireTime, double releaseTime, double traversalWeight) :
-		traveler(traveler), cell(cell), travelPathIndex(travelPathIndex), acquireTime(acquireTime), releaseTime(releaseTime)
+		traveler(traveler), cell(cell), travelPathIndex(travelPathIndex), acquireTime(acquireTime), releaseTime(releaseTime), traversalWeight(traversalWeight)
 	{}
 	Traveler* traveler;
 	AStarCell cell;
@@ -118,9 +118,7 @@ struct AStarNodeExtraData : public SimpleDataType
 	/// <remarks>	Anthony.johnson, 4/17/2017. </remarks>
 	/// <param name="request">			[in,out] The request. </param>
 	/// <param name="blockingAlloc">	[in,out] The blocking allocate. </param>
-	/// <returns>	A NodeAllocationIterator. If the function was successful, this will be a valid 
-	/// 			iterator into requests. If the algorithm finds a cycle in the allocations, this 
-	/// 			will fail and return null.</returns>
+	/// <returns>	The request that was added.</returns>
 	NodeAllocation* addRequest(NodeAllocation& request, NodeAllocation& blockingAlloc, std::vector<Traveler*>* travelers = nullptr);
 
 	void checkCreateContinueEvent();
@@ -174,6 +172,47 @@ struct AStarPathID {
 		};
 		unsigned __int64 id;
 	};
+};
+
+struct AllocationStep {
+	AllocationStep(const AStarCell& fromCell, const AStarCell& toCell) :
+		fromCell(fromCell), toCell(toCell) {
+
+		isDiagonal = toCell.row != fromCell.row && toCell.col != fromCell.col;
+		if (isDiagonal) {
+			isVerticalDeepSearch = abs(toCell.row - fromCell.row) == 2;
+			isHorizontalDeepSearch = abs(toCell.col - fromCell.col) == 2;
+			if (isVerticalDeepSearch) {
+				intermediateCell1 = AStarCell(fromCell.col, (toCell.row + fromCell.row) / 2);
+				intermediateCell2 = AStarCell(toCell.col, intermediateCell1.row);
+			} else if (isHorizontalDeepSearch) {
+				intermediateCell1 = AStarCell((toCell.col + fromCell.col) / 2, fromCell.row);
+				intermediateCell2 = AStarCell(intermediateCell1.col, toCell.row);
+			} else {
+				if (sign(toCell.col - fromCell.col) == sign(toCell.row - fromCell.row)) {
+					// it's a "forward-slash diagonal"
+					intermediateCell1 = AStarCell(min(toCell.col, fromCell.col), max(toCell.row, fromCell.row));
+					intermediateCell2 = AStarCell(max(toCell.col, fromCell.col), min(toCell.row, fromCell.row));
+				}
+				else {
+					// it's a "back-slash diagonal"
+					intermediateCell1 = AStarCell(min(toCell.col, fromCell.col), min(toCell.row, fromCell.row));
+					intermediateCell2 = AStarCell(max(toCell.col, fromCell.col), max(toCell.row, fromCell.row));
+				}
+
+			}
+		} else isVerticalDeepSearch = isHorizontalDeepSearch = false;
+
+	}
+	bool isVerticalDeepSearch;
+	bool isHorizontalDeepSearch;
+	bool isDiagonal;
+	AStarCell fromCell;
+	AStarCell toCell;
+	AStarCell intermediateCell1;
+	AStarCell intermediateCell2;
+
+	bool isImmediatelyBlocked(Traveler* traveler);
 };
 
 }

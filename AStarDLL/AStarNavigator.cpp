@@ -94,6 +94,10 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(heatMapMode);
 	bindVariable(maxHeatValue);
 
+	bindVariable(collisionUpdateIntervalFactor);
+	bindStateVariable(collisionUpdateInterval);
+	bindStateVariable(nextCollisionUpdateTime);
+
 	bindVariableByName("extraData", extraDataNode);
 
 	travelers.init(node_v_travelmembers);
@@ -110,6 +114,24 @@ void AStarNavigator::bindVariables(void)
 
 	if (time() > 0)
 		buildActiveTravelerList();
+}
+
+void AStarNavigator::bindTEEvents(TaskExecuter* te)
+{
+	te->bindRelayedClassEvents<Traveler>("AStar", 0, &AStarNavigator::resolveTraveler);
+}
+
+void AStarNavigator::bindTEStatistics(TaskExecuter* te)
+{
+
+}
+
+TreeNode* AStarNavigator::resolveTraveler()
+{
+	// this method is going to be called as a method on the TE
+	// so this is actually a pointer to a TaskExecuter
+	TaskExecuter* te = (TaskExecuter*)(void*)this;
+	return AStarNavigator::getTraveler(te)->holder;
 }
 
 double AStarNavigator::onCreate(double dropx, double dropy, double dropz, int iscopy)
@@ -133,8 +155,11 @@ double AStarNavigator::onReset()
 		teNode->objectAs(TaskExecuter)->moveToResetPosition();
 	}
 
-	for (int i = 0; i < travelers.size(); i++)
+	double sumSpeed = 0.0;
+	for (int i = 0; i < travelers.size(); i++) {
 		travelers[i]->onReset();
+		sumSpeed += travelers[i]->te->v_maxspeed;
+	}
 
 
 	SimulationStartEvent::addObject(this);
@@ -143,6 +168,9 @@ double AStarNavigator::onReset()
 	extraDataNode->subnodes.clear();
 	buildEdgeTable();
 	setDirty();
+
+	nextCollisionUpdateTime = DBL_MAX;
+	collisionUpdateInterval = DBL_MAX;
 	return 0;
 }
 
@@ -441,13 +469,32 @@ double AStarNavigator::navigateToLoc(treenode traveler, double* destLoc, double 
 	Traveler* t = getTraveler(traveler->objectAs(TaskExecuter));
 	t->destLoc = Vec3(destLoc[0], destLoc[1], destLoc[2]);
 	t->endSpeed = endSpeed;
+
+	if (activeTravelers.size() == 0 && collisionUpdateInterval < FLT_MAX && nextCollisionUpdateTime == DBL_MAX) {
+		nextCollisionUpdateTime = time() + collisionUpdateInterval;
+		createevent(new CollisionIntervalUpdateEvent(this, nextCollisionUpdateTime));
+	}
+
 	TravelPath path = calculateRoute(traveler, t->destLoc, endSpeed, false);
 	t->navigatePath(std::move(path), false);
 	return 0;
 }
 
 
+void AStarNavigator::onCollisionIntervalUpdate()
+{
+	if (activeTravelers.size() == 0) {
+		nextCollisionUpdateTime = DBL_MAX;
+		return;
+	}
 
+	nextCollisionUpdateTime = time() + collisionUpdateInterval;
+	for (Traveler* traveler : activeTravelers) {
+		traveler->onCollisionIntervalUpdate();
+	}
+
+	createevent(new CollisionIntervalUpdateEvent(this, nextCollisionUpdateTime));
+}
 
 AStarSearchEntry* AStarNavigator::checkExpandOpenSet(AStarNode* node, AStarSearchEntry* entryIn, Direction direction, 
 	int travelVal, double dist, double bonusMod, AStarNodeExtraData* extraData)
@@ -1761,8 +1808,23 @@ void AStarNavigator::dumpBlockageData(treenode destNode)
 
 	Table table = Table(destNode);
 
+	std::vector<AStarNodeExtraData*> allData;
+
 	for (auto& entry : edgeTableExtraData) {
-		AStarNodeExtraData* data = entry.second;
+		allData.push_back(entry.second);
+	}
+
+	std::sort(allData.begin(), allData.end(), [](AStarNodeExtraData* left, AStarNodeExtraData* right) -> bool {
+		if (left->cell.row < right->cell.row)
+			return true;
+		else if (left->cell.row > right->cell.row)
+			return false;
+		else if (left->cell.col <= right->cell.col)
+			return true;
+		else return false;
+	});
+
+	for (auto* data : allData) {
 		table.addRow(0, 0);
 		table[Variant(table.numRows)][Variant("GridX")] = data->cell.col;
 		table[Variant(table.numRows)][Variant("GridY")] = data->cell.row;

@@ -8,7 +8,7 @@
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403c0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000403b0000</data></node>
     <node f="42" dt="2"><name>after</name><data>dynamo</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -2853,6 +2853,72 @@ if (objectexists(nav)) {
 
 return 0;
 </data></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add</name><data>MAIN:/project/exec/globals/DefaultEventInfo</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040140000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AGVData</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStarTraveler</name>
+      <node f="40"><name></name></node>
+      <node f="42" dt="4"><name>OnBlock</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>params</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Current</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Current</data></node>
+          <node f="42" dt="2"><name>Name</name><data>current</data></node>
+          <node f="42" dt="2"><name>Type</name><data>Object</data></node>
+         </node>
+         <node f="42"><name>Needs Reroute</name>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Needs Reroute</data></node>
+          <node f="42" dt="2"><name>Name</name><data>needsReroute</data></node>
+          <node f="42" dt="2"><name>Type</name><data>int</data></node>
+         </node>
+        </node>
+       </node>
+      </data></node>
+      <node f="42" dt="4"><name>OnContinue</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>params</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Current</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Current</data></node>
+          <node f="42" dt="2"><name>Name</name><data>current</data></node>
+          <node f="42" dt="2"><name>Type</name><data>Object</data></node>
+         </node>
+        </node>
+       </node>
+      </data></node>
+      <node f="42" dt="4"><name>OnReroute</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>params</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Current</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Current</data></node>
+          <node f="42" dt="2"><name>Name</name><data>current</data></node>
+          <node f="42" dt="2"><name>Type</name><data>Object</data></node>
+         </node>
+        </node>
+       </node>
+      </data></node>
+     </node>
     </node>
    </node>
   </node>
