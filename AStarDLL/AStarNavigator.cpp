@@ -169,8 +169,15 @@ double AStarNavigator::onReset()
 	buildEdgeTable();
 	setDirty();
 
+	if (enableCollisionAvoidance && collisionUpdateIntervalFactor > 0 && travelers.size() > 0) {
+		double avgSpeed = sumSpeed / travelers.size();
+		double avgNodeMoveTime = nodeWidth / avgSpeed;
+		collisionUpdateInterval = collisionUpdateIntervalFactor * avgNodeMoveTime;
+	}
+	else {
+		collisionUpdateInterval = DBL_MAX;
+	}
 	nextCollisionUpdateTime = DBL_MAX;
-	collisionUpdateInterval = DBL_MAX;
 	return 0;
 }
 
@@ -453,33 +460,47 @@ double AStarNavigator::onDestroy(TreeNode* view)
 double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destination, double endSpeed)
 {
 	double loc[3];
-	vectorproject(destination, 0.5 * xsize(destination), -0.5 * ysize(destination), 0, model(), loc);
+	Vec3 size = destination->objectAs(ObjectDataType)->size;
+	vectorproject(destination, 0.5 * size.x, -0.5 * size.y, 0, model(), loc);
 
-	return navigateToLoc(traveler, loc, endSpeed);
+	Traveler* t = getTraveler(traveler->objectAs(TaskExecuter));
+	t->destThreshold = DestinationThreshold(destination, 0.9 * nodeWidth);
+	t->destNode = destination;
+	return navigateToLoc(t, loc, endSpeed);
 }
 
 
-double AStarNavigator::navigateToLoc(treenode traveler, double* destLoc, double endSpeed)
+double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double endSpeed)
 {
 	if (barrierList.size() == 0 && objectBarrierList.size() == 0) {
 		msg("AStar Error", "No barriers found.\nThere must be at least one barrier associated with the AStar Navigator.", 1);
 		return 0;
 	}
 
-	Traveler* t = getTraveler(traveler->objectAs(TaskExecuter));
-	t->destLoc = Vec3(destLoc[0], destLoc[1], destLoc[2]);
-	t->endSpeed = endSpeed;
+	traveler->destLoc = Vec3(destLoc[0], destLoc[1], destLoc[2]);
+	traveler->endSpeed = endSpeed;
 
 	if (activeTravelers.size() == 0 && collisionUpdateInterval < FLT_MAX && nextCollisionUpdateTime == DBL_MAX) {
 		nextCollisionUpdateTime = time() + collisionUpdateInterval;
 		createevent(new CollisionIntervalUpdateEvent(this, nextCollisionUpdateTime));
 	}
 
-	TravelPath path = calculateRoute(traveler, t->destLoc, endSpeed, false);
-	t->navigatePath(std::move(path), false);
+	TravelPath path = calculateRoute(traveler, traveler->destLoc, endSpeed, false);
+	traveler->navigatePath(std::move(path), false);
 	return 0;
 }
 
+
+
+double AStarNavigator::navigateToLoc(treenode traveler, double * destLoc, double endSpeed)
+{
+	Traveler* t = getTraveler(traveler->objectAs(TaskExecuter));
+	t->destThreshold = DestinationThreshold();
+	t->destNode = nullptr;
+	t->endSpeed = endSpeed;
+	navigateToLoc(t, destLoc, endSpeed);
+	return 0.0;
+}
 
 void AStarNavigator::onCollisionIntervalUpdate()
 {
@@ -557,9 +578,9 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(AStarNode* node, AS
 }
 
 
-TravelPath AStarNavigator::calculateRoute(TreeNode* travelerNode, double* tempDestLoc, double endSpeed, bool doFullSearch)
+TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLoc, double endSpeed, bool doFullSearch)
 {
-
+	TreeNode* travelerNode = traveler->te->holder;
 	double centerx = 0.5 * xsize(travelerNode);
 	double centery = 0.5 * ysize(travelerNode);
 
@@ -573,8 +594,7 @@ TravelPath AStarNavigator::calculateRoute(TreeNode* travelerNode, double* tempDe
 	destLoc.x = x;
 	destLoc.y = y;
 
-	TaskExecuter* te = travelerNode->objectAs(TaskExecuter);
-	Traveler* traveler = te->node_v_navigator->first->objectAs(CouplingDataType)->partner()->objectAs(Traveler);
+	TaskExecuter* te = traveler->te;
 	
 	// get the x/y location of the bottom left corner of my grid
 	gridOrigin.x = (xOffset + 0.5) * nodeWidth;
@@ -588,15 +608,16 @@ TravelPath AStarNavigator::calculateRoute(TreeNode* travelerNode, double* tempDe
 
 	// Figure out if this path is in the cache
 	bool shouldUseCache = false;
-	AStarPathID p;
+	CachedPathID p;
 	if (cachePaths && !doFullSearch) {
 		requestCount++;
 		p.startRow = startCell.row;
 		p.startCol = startCell.col;
 		p.endRow = destCell.row;
 		p.endCol = destCell.col;
+		p.destination = traveler->destNode;
 	
-		auto e = pathCache.find(p.id);
+		auto e = pathCache.find(p);
 		if (e != pathCache.end()) {
 			cacheUseCount++;
 			return e->second;
@@ -627,19 +648,13 @@ TravelPath AStarNavigator::calculateRoute(TreeNode* travelerNode, double* tempDe
 
 	// Set the desination outside a barrier if necessary
 	if (ignoreDestBarrier) {
-		AStarSearchEntry validDest;
-		validDest.cell.row = destCell.row;
-		validDest.cell.col = destCell.col;
+		AStarCell tempDestCell = destCell;
 
-		searchBarrier(&validDest, te, startCell.row, startCell.col);
-		destCell.col = validDest.cell.col;
-		destCell.row = validDest.cell.row;
-		x = gridOrigin.x + destCell.col * nodeWidth;
-		y = gridOrigin.y + destCell.row * nodeWidth;
+		checkGetOutOfBarrier(tempDestCell, te, startCell.row, startCell.col, &traveler->destThreshold, false);
 	}
 
 	// Get out of a barrier if necessary
-	searchBarrier(start, te, destCell.row, destCell.col, true);
+	checkGetOutOfBarrier(start->cell, te, destCell.row, destCell.col, nullptr, true);
 
 	start->g = 0;
 	start->h = (1.0 - maxPathWeight) * sqrt(sqr(x-xStart)+sqr(y-yStart));
@@ -704,7 +719,7 @@ TravelPath AStarNavigator::calculateRoute(TreeNode* travelerNode, double* tempDe
 		n->open = false;
 
 		// if I am at the destination, then break out of the solve loop
-		if (shortest.cell.col == destCell.col && shortest.cell.row == destCell.row) {
+		if ((shortest.cell.col == destCell.col && shortest.cell.row == destCell.row) || traveler->destThreshold.isWithinThreshold(shortest.cell, gridOrigin, destLoc, nodeWidth)) {
 			final = &shortest;
 			break;
 		}
@@ -815,8 +830,19 @@ the outside 8 nodes.
 		travelPath[travelPath.size() - i - 1] = temp;
 	}
 
+	double threshold = max(traveler->destThreshold.xAxisThreshold, traveler->destThreshold.yAxisThreshold);
+	if (threshold > 0) {
+		while (travelPath.size() > 1) {
+			Vec3 pos = getLocFromCell(travelPath[travelPath.size() - 2].cell);
+			Vec3 diff = pos - Vec3(traveler->destLoc.x, traveler->destLoc.y, 0);
+			if (diff.magnitude > threshold)
+				break;
+			travelPath.pop_back();
+		}
+	}
+
 	if (cachePaths && !doFullSearch) {
-		pathCache[p.id] = travelPath;
+		pathCache[p] = travelPath;
 		pathCount++;
 	}
 
@@ -832,17 +858,21 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 	double destLoc[3];
 	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), destLoc);
 
-	TravelPath path = calculateRoute(taskexecuter->holder, destLoc, 0, true);
+	DestinationThreshold saved = traveler->destThreshold;
+	traveler->destThreshold = DestinationThreshold(destination->holder, 0.9 * nodeWidth);
+	TravelPath path = calculateRoute(traveler, destLoc, 0, true);
+	traveler->destThreshold = saved;
 	traveler->navigatePath(std::move(path), true);
 
 	return getkinematics(traveler->distQueryKinematics, KINEMATIC_TOTALDIST);
 }
 
-void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest, bool setStartEntry)
+void AStarNavigator::checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold, bool setStartEntry)
 {
-	AStarNode* node = &DeRefEdgeTable(entry->cell.row, entry->cell.col);
-	int dy = rowDest - entry->cell.row;
-	int dx = colDest - entry->cell.col;
+	AStarNode* node = &DeRefEdgeTable(cell.row, cell.col);
+	int dy = rowDest - cell.row;
+	int dx = colDest - cell.col;
+	AStarCell originalCell(cell);
 
 	static const int up = 0;
 	static const int left = 1;
@@ -857,8 +887,8 @@ void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* travel
 	else if (dy < 0 && dy * dy > dx * dx)
 		startDir = down;
 
-	int currRow = entry->cell.row;
-	int currCol = entry->cell.col;
+	int currRow = cell.row;
+	int currCol = cell.col;
 	int currDir = (startDir + 3) % 4; // start one direction back 
 	int distance = 0;
 	int counter = 4; // counter is used to find the distance
@@ -867,10 +897,10 @@ void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* travel
 		currDir = (currDir + 1) % 4;
 		distance = (counter++) / 4;
 		switch (currDir) {
-		case 0: currRow = entry->cell.row + distance; currCol = entry->cell.col; break;
-		case 1: currCol = entry->cell.col + distance; currRow = entry->cell.row; break;
-		case 2: currRow = entry->cell.row - distance; currCol = entry->cell.col; break;
-		case 3: currCol = entry->cell.col - distance; currRow = entry->cell.row; break;
+		case 0: currRow = cell.row + distance; currCol = cell.col; break;
+		case 1: currCol = cell.col + distance; currRow = cell.row; break;
+		case 2: currRow = cell.row - distance; currCol = cell.col; break;
+		case 3: currCol = cell.col - distance; currRow = cell.row; break;
 		}
 
 		node = &DeRefEdgeTable(currRow, currCol);
@@ -879,13 +909,18 @@ void AStarNavigator::searchBarrier(AStarSearchEntry* entry, TaskExecuter* travel
 	if (setStartEntry) {
 		barrierStart.cell.colRow = ~0;
 		barrierStart.previous = ~0;
-		if (entry->cell.row != currRow || entry->cell.col != currCol) {
-			barrierStart.cell.row = entry->cell.row;
-			barrierStart.cell.col = entry->cell.col;
+		if (cell.row != currRow || cell.col != currCol) {
+			barrierStart.cell.row = cell.row;
+			barrierStart.cell.col = cell.col;
 		} 
 	}
-	entry->cell.row = currRow;
-	entry->cell.col = currCol;
+	cell.row = currRow;
+	cell.col = currCol;
+	if (threshold && cell != originalCell) {
+		double newRadius = nodeWidth * (0.9 + sqrt(sqr(cell.row - originalCell.row) + sqr(cell.col - originalCell.col)));
+		if (newRadius > threshold->anyThresholdRadius)
+			threshold->anyThresholdRadius = newRadius;
+	}
 }
 
 AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, int travelVal, char bridgeIndex)

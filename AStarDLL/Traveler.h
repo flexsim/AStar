@@ -21,6 +21,8 @@ public:
 
 	Vec3 destLoc;
 	double endSpeed;
+	DestinationThreshold destThreshold;
+	treenode destNode;
 	bool isActive = false;
 	std::list<Traveler*>::iterator activeEntry;
 	TravelPath travelPath;
@@ -30,10 +32,12 @@ public:
 	NodeAllocation* request;
 	int nextCollisionUpdateTravelIndex;
 	double nextCollisionUpdateEndTime;
+	
 
 	AStarNavigator* navigator;
 	TaskExecuter* te;
 	bool isBlocked = false;
+	bool needsContinueTrigger = false;
 	void onReset();
 	void onStartSimulation();
 	void onCollisionIntervalUpdate() {
@@ -92,8 +96,8 @@ public:
 	{
 	public:
 		BlockEvent() : FlexSimEvent() {}
-		BlockEvent(Traveler* collider, int colliderPathIndex, Traveler* collidingWith, const AStarCell& cell, double time) 
-			: FlexSimEvent(collider->holder, time, collidingWith->holder, cell.row * 100000 + cell.col), colliderPathIndex(colliderPathIndex), cell(cell)
+		BlockEvent(Traveler* collider, int colliderPathIndex, int intermediateAllocationIndex, Traveler* collidingWith, const AStarCell& cell, double time) 
+			: FlexSimEvent(collider->holder, time, collidingWith->holder, cell.row * 100000 + cell.col), colliderPathIndex(colliderPathIndex), intermediateAllocationIndex(intermediateAllocationIndex), cell(cell)
 		{}
 		virtual const char* getClassFactory() override { return "AStar::Traveler::BlockEvent"; }
 		virtual void bind() override;
@@ -104,7 +108,21 @@ public:
 				t->blockEvent = nullptr;
 			t->onBlock(involved->objectAs(Traveler), colliderPathIndex, cell);
 		}
+		bool operator < (const BlockEvent& other) {
+			if (time < other.time)
+				return true;
+			if (time > other.time)
+				return false;
+			if (colliderPathIndex < other.colliderPathIndex)
+				return true;
+			if (colliderPathIndex > other.colliderPathIndex)
+				return false;
+			if (intermediateAllocationIndex < other.intermediateAllocationIndex)
+				return true;
+			return false;
+		}
 		int colliderPathIndex;
+		int intermediateAllocationIndex;
 		AStarCell cell;
 	};
 	ObjRef<BlockEvent> blockEvent;

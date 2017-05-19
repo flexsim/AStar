@@ -152,7 +152,6 @@ void AStarNodeExtraData::onContinue(Traveler* blocker)
 			blockedTime = min(blockedTime, statisticaltime());
 			blockedCell->totalBlockedTime += blockedTime;
 			blockedCell->totalBlocks++;
-			FIRE_SDT_EVENT(traveler->onContinueTrigger, traveler->te->holder);
 		}
 		traveler->navigatePath(topRequest.travelPathIndex - 1, false);
 		if (requests.size() > 0)
@@ -267,7 +266,7 @@ void NodeAllocation::extendReleaseTime(double toTime)
 
 bool AllocationStep::isImmediatelyBlocked(Traveler* traveler)
 {
-	NodeAllocation allocation(traveler, toCell, 1, time(), std::nextafter(time(), FLT_MAX), 1.0);
+	NodeAllocation allocation(traveler, toCell, 1, 0, time(), std::nextafter(time(), FLT_MAX), 1.0);
 	NodeAllocation* collision;
 	if (isDiagonal) {
 		allocation.cell = intermediateCell1;
@@ -282,6 +281,45 @@ bool AllocationStep::isImmediatelyBlocked(Traveler* traveler)
 		return true;
 	return false;
 
+}
+
+DestinationThreshold::DestinationThreshold(treenode dest, double fudgeFactor)
+{
+	Vec3 size = dest->objectAs(ObjectDataType)->size;
+	xAxisThreshold = 0.5 * size.x + fudgeFactor;
+	yAxisThreshold = 0.5 * size.y + fudgeFactor;
+	rotation = dest->objectAs(ObjectDataType)->rotation.z;
+	while (dest->up != model()) {
+		dest = dest->up;
+		rotation += dest->objectAs(ObjectDataType)->rotation.z;
+	}
+	anyThresholdRadius = 0.0;
+}
+
+bool DestinationThreshold::isWithinThreshold(const AStarCell & cell, const Vec2& gridOrigin, const Vec2& destLoc, double nodeWidth)
+{
+	if (anyThresholdRadius <= 0 && xAxisThreshold <= 0 && yAxisThreshold <= 0)
+		return false;
+
+	Vec2 cellLoc(gridOrigin.x + cell.col *nodeWidth, gridOrigin.y + cell.row * nodeWidth);
+	Vec2 diff(destLoc - cellLoc);
+	if (anyThresholdRadius > 0 && anyThresholdRadius >= diff.getLength())
+		return true;
+
+	if (rotation != 0)
+		diff.rotate(-rotation);
+	if (xAxisThreshold >= fabs(diff.x) && yAxisThreshold >= fabs(diff.y))
+		return true;
+
+	return false;
+}
+
+void DestinationThreshold::bind(SimpleDataType * sdt, const char* prefix)
+{
+	sdt->bindNumberByName(string(prefix).append("xAxisThreshold").c_str(), xAxisThreshold);
+	sdt->bindNumberByName(string(prefix).append("yAxisThreshold").c_str(), yAxisThreshold);
+	sdt->bindNumberByName(string(prefix).append("rotation").c_str(), rotation);
+	sdt->bindNumberByName(string(prefix).append("anyThresholdRadius").c_str(), anyThresholdRadius);
 }
 
 }

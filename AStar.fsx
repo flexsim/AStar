@@ -47,6 +47,7 @@
         <node f="42" dt="1"><name>showHeatMap</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>heatMapMode</name><data>000000003ff00000</data></node>
         <node f="42" dt="1"><name>maxHeatValue</name><data>9999999a3fb99999</data></node>
+        <node f="42" dt="1"><name>collisionUpdateIntervalFactor</name><data>0000000040340000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node>
@@ -109,6 +110,8 @@
           <node f="42" dt="1"><name>startValue</name><data>0000000000000000</data></node>
          </node>
         </node>
+        <node f="42" dt="1"><name>collisionUpdateInterval</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>nextCollisionUpdateTime</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>visual</name>
         <node f="40"><name></name></node>

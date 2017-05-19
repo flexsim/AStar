@@ -19,7 +19,7 @@ protected:
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
 	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from colRow to index in totalSet
-	std::unordered_map<unsigned __int64, std::vector<AStarPathEntry> > pathCache;
+	std::unordered_map<CachedPathID, std::vector<AStarPathEntry>, CachedPathID::Hash > pathCache;
 
 	struct HeapEntry {
 		HeapEntry(float f, unsigned int totalSetIndex) : f(f), totalSetIndex(totalSetIndex) {}
@@ -63,7 +63,7 @@ protected:
 	bool isDirty;
 
 	inline AStarSearchEntry* expandOpenSet(int r, int c, float multiplier, int travelVal, char bridgeIndex = -1);
-	void searchBarrier(AStarSearchEntry* entry, TaskExecuter* traveler, int rowDest, int colDest, bool setStartEntry = false);
+	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold, bool setStartEntry);
 	void buildEdgeTable();
 	void buildBoundsMesh();
 	void buildBarrierMesh();
@@ -147,6 +147,7 @@ public:
 	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType) override;
 	virtual double onDestroy(TreeNode* view) override;
 	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed) override;
+	double navigateToLoc(Traveler* traveler, double* destLoc, double endSpeed);
 	virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed) override;
 	virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
 
@@ -154,7 +155,7 @@ public:
 	AStarSearchEntry* checkExpandOpenSetDiagonal(AStarNode* node, AStarSearchEntry* entryIn,
 		Direction dir1, Direction dir2, int travelVal, double dist, AStarNodeExtraData* extraData);
 
-	TravelPath calculateRoute(TreeNode* traveler, double* destLoc, double endSpeed, bool doFullSearch = false);
+	TravelPath calculateRoute(Traveler* traveler, double* destLoc, double endSpeed, bool doFullSearch = false);
 
 	virtual double updateLocations() override;
 	virtual double updateLocations(TaskExecuter* te) override;

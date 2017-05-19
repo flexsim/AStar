@@ -61,13 +61,14 @@ public:
 
 struct NodeAllocation
 {
-	NodeAllocation() : traveler(nullptr), acquireTime(0.0), releaseTime(0.0), traversalWeight(0.0), travelPathIndex(0) {}
-	NodeAllocation(Traveler* traveler, const AStarCell& cell, int travelPathIndex, double acquireTime, double releaseTime, double traversalWeight) :
-		traveler(traveler), cell(cell), travelPathIndex(travelPathIndex), acquireTime(acquireTime), releaseTime(releaseTime), traversalWeight(traversalWeight)
+	NodeAllocation() : traveler(nullptr), acquireTime(0.0), releaseTime(0.0), traversalWeight(0.0), travelPathIndex(0), intermediateAllocationIndex(0) {}
+	NodeAllocation(Traveler* traveler, const AStarCell& cell, int travelPathIndex, int intermediateAllocationIndex, double acquireTime, double releaseTime, double traversalWeight) :
+		traveler(traveler), cell(cell), travelPathIndex(travelPathIndex), intermediateAllocationIndex(intermediateAllocationIndex), acquireTime(acquireTime), releaseTime(releaseTime), traversalWeight(traversalWeight)
 	{}
 	Traveler* traveler;
 	AStarCell cell;
 	int travelPathIndex;
+	int intermediateAllocationIndex;
 	double acquireTime;
 	double releaseTime;
 	double traversalWeight;
@@ -162,7 +163,7 @@ struct AStarSearchEntry {
 	bool closed;
 };
 
-struct AStarPathID {
+struct CachedPathID {
 	union {
 		struct {
 			unsigned short startCol;
@@ -170,7 +171,23 @@ struct AStarPathID {
 			unsigned short endCol;
 			unsigned short endRow;
 		};
-		unsigned __int64 id;
+		struct {
+			unsigned int startID;
+			unsigned int endID;
+		};
+		unsigned long long gridID;
+	};
+	treenode destination;
+	bool operator == (const CachedPathID& other) const { return gridID == other.gridID && destination == other.destination; }
+	struct Hash {
+		size_t operator()(const CachedPathID& key) const
+		{	// hash _Keyval to size_t value by pseudorandomizing transform
+#ifdef _M_X64
+			return (size_t)key.gridID ^ (size_t)key.destination;
+#else
+			return key.startID ^ key.endID ^ (size_t)key.destination;
+#endif
+		}
 	};
 };
 
@@ -213,6 +230,18 @@ struct AllocationStep {
 	AStarCell intermediateCell2;
 
 	bool isImmediatelyBlocked(Traveler* traveler);
+};
+
+struct DestinationThreshold
+{
+	DestinationThreshold() : xAxisThreshold(0), yAxisThreshold(0), rotation(0), anyThresholdRadius(0) {}
+	DestinationThreshold(treenode dest, double fudgeFactor);
+	double xAxisThreshold;
+	double yAxisThreshold;
+	double rotation;
+	double anyThresholdRadius;
+	bool isWithinThreshold(const AStarCell& cell, const Vec2& gridOrigin, const Vec2& destLoc, double nodeWidth);
+	void bind(SimpleDataType* sdt, const char* prefix);
 };
 
 }
