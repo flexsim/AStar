@@ -127,8 +127,9 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 	double endTime;
 	double rotLerpSize = navigator->smoothRotations;
 	double rotLerpSpeed = 90 / (te->b_spatialsx * rotLerpSize / te->v_maxspeed);
-
+	double lastRotation;
 	if (!isCollisionUpdateInterval) {
+		lastRotation = te->b_spatialrz;
 		endTime = time();
 		if (te->node_v_modifyrotation) {
 
@@ -143,6 +144,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 		endTime = nextCollisionUpdateEndTime;
 		if (endTime > nav->nextCollisionUpdateTime)
 			return;
+		lastRotation = getkinematics(kinematics, KINEMATIC_RZ, 0, FLT_MAX);
 	}
 
 	AStarPathEntry e, laste;
@@ -161,7 +163,6 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 	}
 
 	int didBlockPathIndex = -1;
-	double lastRotation = te->b_spatialrz;
 
 	int i;
 	for (i = startAtPathIndex + 1; i < numNodes; i++) {

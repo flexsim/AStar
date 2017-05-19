@@ -464,7 +464,7 @@ double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destinatio
 	vectorproject(destination, 0.5 * size.x, -0.5 * size.y, 0, model(), loc);
 
 	Traveler* t = getTraveler(traveler->objectAs(TaskExecuter));
-	t->destThreshold = DestinationThreshold(destination, 0.9 * nodeWidth);
+	t->destThreshold = DestinationThreshold(destination, nodeWidth);
 	t->destNode = destination;
 	return navigateToLoc(t, loc, endSpeed);
 }
@@ -830,8 +830,9 @@ the outside 8 nodes.
 		travelPath[travelPath.size() - i - 1] = temp;
 	}
 
-	double threshold = max(traveler->destThreshold.xAxisThreshold, traveler->destThreshold.yAxisThreshold);
-	if (threshold > 0) {
+	if (traveler->destThreshold.xAxisThreshold > 0 || traveler->destThreshold.yAxisThreshold > 0) {
+		double threshold = sqrt(traveler->destThreshold.xAxisThreshold * traveler->destThreshold.xAxisThreshold 
+			+ traveler->destThreshold.yAxisThreshold * traveler->destThreshold.yAxisThreshold);
 		while (travelPath.size() > 1) {
 			Vec3 pos = getLocFromCell(travelPath[travelPath.size() - 2].cell);
 			Vec3 diff = pos - Vec3(traveler->destLoc.x, traveler->destLoc.y, 0);
