@@ -61,9 +61,9 @@ public:
 	/// <returns>	If it succeeds it will return the added allocation. If it fails 
 	/// 			(it can't add the allocation because that would cause allocation overlaps)
 	/// 			it will return nullptr and create a collision event. </returns>
-	NodeAllocation* addAllocation(NodeAllocation& allocation, bool force = false);
+	NodeAllocation* addAllocation(NodeAllocation& allocation, bool force, bool notifyPendingAllocations);
 	void checkCreateCollisionEvent(NodeAllocation& allocation, AStarNodeExtraData* nodeData = nullptr);
-	static NodeAllocation* findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation);
+	static NodeAllocation* findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs);
 	void removeAllocation(TravelerAllocations::iterator iter);
 	void cullExpiredAllocations();
 	void clearAllocations();
@@ -73,6 +73,7 @@ public:
 	/// <param name="fromPoint">	from point. </param>
 	void clearAllocations(TravelerAllocations::iterator fromPoint, bool decrementTraversal = false);
 	TravelerAllocations::iterator find(NodeAllocation* alloc);
+	void abortTravel(TreeNode* newTS);
 	void updateLocation();
 
 	class ArrivalEvent : public FlexSimEvent

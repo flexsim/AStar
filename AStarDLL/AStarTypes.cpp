@@ -157,7 +157,11 @@ void AStarNodeExtraData::fulfillTopRequest()
 	requests.pop_front();
 	double blockedTime = time() - traveler->lastBlockTime;
 	if (traveler->isBlocked && blockedTime > traveler->tinyTime) {
-		AStarNodeExtraData* blockedCell = traveler->navigator->getExtraData(traveler->allocations.back()->cell);
+		AStarCell cell;
+		if (traveler->allocations.size() > 0)
+			cell = traveler->allocations.back()->cell;
+		else cell = traveler->travelPath[topRequest.travelPathIndex - 1].cell;
+		AStarNodeExtraData* blockedCell = traveler->navigator->getExtraData(cell);
 		blockedTime = min(blockedTime, statisticaltime());
 		blockedCell->totalBlockedTime += blockedTime;
 		blockedCell->totalBlocks++;
@@ -187,7 +191,7 @@ void AStarNodeExtraData::onReleaseTimeExtended(NodeAllocation& changedAlloc, dou
 			if (copy.traveler->arrivalEvent)
 				destroyevent(copy.traveler->arrivalEvent->holder);
 			// this will cause him to create collision event
-			NodeAllocation* nullAlloc = copy.traveler->addAllocation(copy);
+			NodeAllocation* nullAlloc = copy.traveler->addAllocation(copy, false, true);
 			_ASSERTE(nullAlloc == nullptr);
 		}
 	}
@@ -239,6 +243,8 @@ bool AStarNodeExtraData::findDeadlockCycle(Traveler* start, std::vector<Traveler
 	for (NodeAllocation& request : requests) {
 		if (request.traveler == start)
 			return true;
+		if (std::find(travelers.begin(), travelers.end(), request.traveler) != travelers.end())
+			continue;
 		if (request.traveler->findDeadlockCycle(start, travelers))
 			return true;
 	}
@@ -277,14 +283,14 @@ bool AllocationStep::isImmediatelyBlocked(Traveler* traveler)
 	NodeAllocation* collision;
 	if (isDiagonal) {
 		allocation.cell = intermediateCell1;
-		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell1), allocation))
+		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell1), allocation, true))
 			return true;
 		allocation.cell = intermediateCell2;
-		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell2), allocation))
+		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell2), allocation, true))
 			return true;
 	}
 	allocation.cell = toCell;
-	if (Traveler::findCollision(traveler->navigator->assertExtraData(toCell), allocation))
+	if (Traveler::findCollision(traveler->navigator->assertExtraData(toCell), allocation, true))
 		return true;
 	return false;
 

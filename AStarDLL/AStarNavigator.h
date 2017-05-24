@@ -112,10 +112,11 @@ public:
 	double hasEdgeTable;
 
 	double enableCollisionAvoidance;
+	double ignoreInactiveMemberCollisions;
 
 	double collisionUpdateIntervalFactor;
 	double collisionUpdateInterval;
-	double nextCollisionUpdateTime;
+	double nextCollisionUpdateTime; 
 	void onCollisionIntervalUpdate();
 	class CollisionIntervalUpdateEvent : public FlexSimEvent {
 	public:

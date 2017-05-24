@@ -89,14 +89,17 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(cacheUseCount);
 
 	bindVariable(enableCollisionAvoidance);
+	bindVariable(ignoreInactiveMemberCollisions);
 
 	bindVariable(showHeatMap);
 	bindVariable(heatMapMode);
 	bindVariable(maxHeatValue);
 
 	bindVariable(collisionUpdateIntervalFactor);
+
 	bindStateVariable(collisionUpdateInterval);
 	bindStateVariable(nextCollisionUpdateTime);
+
 
 	bindVariableByName("extraData", extraDataNode, ODT_BIND_STATE_VARIABLE);
 
@@ -988,17 +991,9 @@ double AStarNavigator::abortTravel(TreeNode* travelerNode, TreeNode* newTS)
 	TreeNode* myCoupling = first(te->node_v_navigator);
 	TreeNode* teCoupling = tonode(get(myCoupling));
 	Traveler* traveler = myCoupling->objectAs(Traveler);
-	destroyeventsofobject(holder, -1, EVENT_A_STAR_END_TRAVEL, NULL, teCoupling);
-
-	TreeNode* kinematics = te->node_v_kinematics;
-	updatekinematics(kinematics, travelerNode, time());
-	te->b_spatialx -= 0.5*te->b_spatialsx;
-	te->b_spatialy += 0.5*te->b_spatialsy;
-	if (traveler->isActive) {
-		activeTravelers.erase(traveler->activeEntry);
-		traveler->isActive = false;
-	}
-
+	if (!traveler->isActive)
+		return 0;
+	traveler->abortTravel(newTS);
 	return 0;
 }
 
