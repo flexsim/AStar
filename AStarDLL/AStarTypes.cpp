@@ -142,23 +142,29 @@ void AStarNodeExtraData::onContinue(Traveler* blocker)
 	auto existingAllocation = std::find_if(allocations.begin(), allocations.end(),
 		[&](NodeAllocation& alloc) {return alloc.acquireTime <= curTime && alloc.releaseTime > curTime; });
 	if (existingAllocation == allocations.end()) {
-		NodeAllocation topRequest = requests.front();
-		Traveler* traveler = topRequest.traveler;
-		traveler->request = nullptr;
-		requests.pop_front();
-		double blockedTime = time() - traveler->blockTime;
-		if (traveler->isBlocked && blockedTime > traveler->tinyTime) {
-			AStarNodeExtraData* blockedCell = traveler->navigator->getExtraData(traveler->allocations.back()->cell);
-			blockedTime = min(blockedTime, statisticaltime());
-			blockedCell->totalBlockedTime += blockedTime;
-			blockedCell->totalBlocks++;
-		}
-		traveler->navigatePath(topRequest.travelPathIndex - 1, false);
-		if (requests.size() > 0)
-			checkCreateContinueEvent();
+		fulfillTopRequest();
 	} else {
 		checkCreateContinueEvent();
 	}
+}
+
+
+void AStarNodeExtraData::fulfillTopRequest()
+{
+	NodeAllocation topRequest = requests.front();
+	Traveler* traveler = topRequest.traveler;
+	traveler->request = nullptr;
+	requests.pop_front();
+	double blockedTime = time() - traveler->lastBlockTime;
+	if (traveler->isBlocked && blockedTime > traveler->tinyTime) {
+		AStarNodeExtraData* blockedCell = traveler->navigator->getExtraData(traveler->allocations.back()->cell);
+		blockedTime = min(blockedTime, statisticaltime());
+		blockedCell->totalBlockedTime += blockedTime;
+		blockedCell->totalBlocks++;
+	}
+	traveler->navigatePath(topRequest.travelPathIndex - 1, false);
+	if (requests.size() > 0)
+		checkCreateContinueEvent();
 }
 
 
@@ -188,7 +194,8 @@ void AStarNodeExtraData::onReleaseTimeExtended(NodeAllocation& changedAlloc, dou
 
 	if (requests.size() > 0 && continueEvent && continueEvent->time == std::nextafter(oldReleaseTime, FLT_MAX)) {
 		destroyevent(continueEvent->holder);
-		continueEvent = createevent(new ContinueEvent(std::nextafter(changedAlloc.releaseTime, FLT_MAX), requests.front().traveler, changedAlloc.traveler, cell))->objectAs(ContinueEvent);
+		if (changedAlloc.releaseTime < FLT_MAX)
+			continueEvent = createevent(new ContinueEvent(std::nextafter(changedAlloc.releaseTime, FLT_MAX), requests.front().traveler, changedAlloc.traveler, cell))->objectAs(ContinueEvent);
 	}
 }
 

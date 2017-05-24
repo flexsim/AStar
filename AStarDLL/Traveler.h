@@ -48,6 +48,8 @@ public:
 	void navigatePath(TravelPath&& path, bool isDistQueryOnly)
 	{
 		travelPath = std::move(path);
+		if (allocations.size() > 1)
+			clearAllocations(allocations.begin() + 1);
 		navigatePath(0, isDistQueryOnly);
 	}
 	void onArrival();
@@ -126,7 +128,7 @@ public:
 		AStarCell cell;
 	};
 	ObjRef<BlockEvent> blockEvent;
-	double blockTime;
+	double lastBlockTime;
 	double tinyTime = 0.0;
 
 	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);

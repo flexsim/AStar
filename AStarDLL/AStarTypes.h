@@ -113,6 +113,7 @@ struct AStarNodeExtraData : public SimpleDataType
 	NodeAllocationList requests;
 	void removeAllocation(NodeAllocationIterator allocation);
 	void onContinue(Traveler* blocker);
+	void fulfillTopRequest();
 	void onReleaseTimeExtended(NodeAllocation& alloc, double oldReleaseTime);
 
 	/// <summary>	Adds a request to 'blockingAlloc'. </summary>

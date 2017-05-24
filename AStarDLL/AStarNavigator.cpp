@@ -98,7 +98,7 @@ void AStarNavigator::bindVariables(void)
 	bindStateVariable(collisionUpdateInterval);
 	bindStateVariable(nextCollisionUpdateTime);
 
-	bindVariableByName("extraData", extraDataNode);
+	bindVariableByName("extraData", extraDataNode, ODT_BIND_STATE_VARIABLE);
 
 	travelers.init(node_v_travelmembers);
 	if (travelers.size() > 0 && !isclasstype(first(travelers), "AStar::Traveler")) {
@@ -387,7 +387,8 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 		return 0;
 
 	if (isclasstype(connectTo, CLASSTYPE_TASKEXECUTER)) {
-		TreeNode* navigatorNode = o(TaskExecuter, connectTo).node_v_navigator;
+		TaskExecuter* te = connectTo->objectAs(TaskExecuter);
+		TreeNode* navigatorNode = te->node_v_navigator;
 
 		switch(keyPressed & 0x7f) {
 		case 'A': {
@@ -400,6 +401,7 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 			Traveler* traveler = travelers.add(new Traveler);
 			clearcontents(navigatorNode);
 			nodejoin(traveler->holder, nodeadddata(nodeinsertinto(navigatorNode), DATATYPE_COUPLING));
+			te->v_useoffsets = OFFSET_BY_NAV_LOGIC;
 			traveler->onReset();
 			break;
 		}
