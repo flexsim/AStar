@@ -692,7 +692,7 @@ forobjectsbehind (node("/Paths/Cache Paths", up(c)))
 listboxrefresh(node("/Members/MemberChooser", up(c)));
 
 nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
-          <node f="42" dt="2"><name>helptopic</name><data>tab_AStar</data></node>
+          <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>Node Spacing</name><data>
@@ -1374,7 +1374,7 @@ function_s(editor, "refreshList");
 windowshow(windowfromnode(node("/Edit Table", parent)), 0);
 windowshow(windowfromnode(editor), 1);
 </data></node>
-          <node f="42" dt="2"><name>helptopic</name><data>tab_AStar_Barriers</data></node>
+          <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>editor view</name><data>
