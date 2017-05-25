@@ -29,7 +29,7 @@ public:
 	double nodeWidth;
 	typedef std::deque<NodeAllocationIterator> TravelerAllocations;
 	TravelerAllocations allocations;
-	NodeAllocation* request;
+	NodeAllocation* request = nullptr;
 	int nextCollisionUpdateTravelIndex;
 	double nextCollisionUpdateEndTime;
 	
@@ -48,8 +48,6 @@ public:
 	void navigatePath(TravelPath&& path, bool isDistQueryOnly)
 	{
 		travelPath = std::move(path);
-		if (allocations.size() > 1)
-			clearAllocations(allocations.begin() + 1);
 		navigatePath(0, isDistQueryOnly);
 	}
 	void onArrival();

@@ -72,6 +72,7 @@ struct NodeAllocation
 	double acquireTime;
 	double releaseTime;
 	double traversalWeight;
+	bool isMarkedForDeletion = false;
 	void extendReleaseTime(double toTime);
 	void bind(TreeNode* x);
 };
