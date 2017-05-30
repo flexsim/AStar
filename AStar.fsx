@@ -689,6 +689,10 @@ int gray = !get(node("@&gt;objectfocus+&gt;variables/cachePaths", c));
 forobjectsbehind (node("/Paths/Cache Paths", up(c)))
 	windowgray(windowfromnode(a), gray);
 
+gray = !get(node("@&gt;objectfocus+&gt;variables/enableCollisionAvoidance", c));
+
+windowgray(windowfromnode(node("/Ignore Inactive Members", up(c))), gray);
+
 listboxrefresh(node("/Members/MemberChooser", up(c)));
 
 nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
@@ -810,15 +814,29 @@ repaintall();</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/enableCollisionAvoidance</data></node>
+           <node f="42" dt="2"><name>OnPress</name><data>int gray = !getchecked(c);
+
+windowgray(windowfromnode(node("../Ignore Inactive Members", c)), gray);</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>If checked, travelers will allocate nodes in the travel grid as 
 part of their travel, preventing travelers from running 
 over each other.</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>Ignore Inactive Members</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000404a0000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040618000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/ignoreInactiveMemberCollisions</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>If checked, travelers will travel through nodes allocated to 
+other inactive travelers.</data></node>
           </data></node>
           <node f="42" dt="4"><name>Smooth Rotations</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000406de000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000404a0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040524000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
