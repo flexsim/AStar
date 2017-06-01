@@ -43,6 +43,8 @@ class FlexSimEvent : public CouplingDataType
 	virtual const char* getClassFactory(){return "FlexSimEvent";}
 	engine_export virtual void bind();
 	engine_export virtual void getDescription(char* toStr, size_t maxSize);
+	engine_export virtual void getEventDataDescription(char* toStr, size_t maxSize);
+
 protected:
 	CallPoint* getListenerCallPoint(){return (CallPoint*)*((void**)&(data[0]));}
 #ifdef FLEXSIM_ENGINE_COMPILE
@@ -53,7 +55,7 @@ private:
 #endif
 };
 
-
+#if !defined FLEXSIM_ENGINE_COMPILE || (defined FLEXSIM_EXECUTIVE && defined FLEXSIM_FLEXSCRIPT_CPP)
 class ValueChangeListener : public FlexSimEvent
 {
 public:
@@ -114,6 +116,6 @@ public:
 	engine_export static bool isRuleMetForInitialValue(ChangeRule changeRule, double changeValue, double initialValue);
 };
 
+#endif
 }
-
 #endif

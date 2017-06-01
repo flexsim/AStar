@@ -7,11 +7,6 @@
 #include "basicmacros.h"
 #include "basicclasses.h"
 #include <string>
-
-#ifdef FLEXSIM_ENGINE_COMPILE
-	#include "msxml3.h"
-#endif
-
 namespace FlexSim 
 {
 

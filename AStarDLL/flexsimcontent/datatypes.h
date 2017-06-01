@@ -385,7 +385,7 @@ public:
 			if (vectorSize >= bufferCapacity)
 				reserve(16 > bufferCapacity * 2 ? 16 : bufferCapacity * 2);
 			T& element = elements[vectorSize++];
-			::new (&element) T(n);
+			::new (&element) T(std::move(n));
 		}
 		void push_back(const T& n)
 		{
@@ -493,6 +493,8 @@ public:
 			vectorSize = n;
 		}
 		T* data() { return elements; }
+		T* begin() const { return elements; }
+		T* end() const { return elements + vectorSize; }
 		inline void clear() { resize(0); }
 		inline size_t size() const { return vectorSize; }
 	};
@@ -651,6 +653,7 @@ public:
 	bool operator !=(ObjType* other) const { return get() != other; }
 	bool operator !=(ObjRef<ObjType>& other) const { return get() != other.get(); }
 	ObjType* operator->() const { return get(); };
+	ObjType& operator *() const { return *(get()); }
 	inline operator ObjType*() const
 	{
 		TreeNode* x = NodeRef::get();
@@ -1024,6 +1027,7 @@ struct engine_export PropertyBinding : public FlexSimPrivateTypes::NewDelete
 	virtual void set(void* owner, const Variant& val) const;
 
 	static unsigned calculateNameHash(const char* name);
+	static unsigned getVersion(const char* version);
 
 	virtual bool isStatic() { return false; }
 };
@@ -1083,9 +1087,9 @@ struct engine_export Property
 	operator op (OperandType val) const { return ((OperandType)*this) op val; } \
 	template <class OperandType> \
 	typename std::enable_if<!std::is_fundamental<OperandType>::value && !std::is_pointer<OperandType>::value && !std::is_base_of<Property, OperandType>::value, OperandType>::type \
-	operator op (const OperandType& val) const { return ((OperandType)*this) op val; } \
+	operator op (const OperandType& val) const { return operator OperandType() op val; } \
 	template <class OperandType> \
-	typename std::enable_if<std::is_base_of<Property, OperandType>::value, OperandType>::type \
+	typename std::enable_if<std::is_base_of<Property, OperandType>::value, Variant>::type \
 	operator op (const OperandType& val) const { return operator Variant() op val.operator Variant(); } \
 
 	DEFINE_PROPERTY_MATH_OP(+)
@@ -1100,7 +1104,7 @@ struct engine_export Property
 	operator op (OperandType val) { operator = (((OperandType)*this) mathOp val); } \
 	template <class OperandType> \
 	typename std::enable_if<!std::is_fundamental<OperandType>::value && !std::is_pointer<OperandType>::value && !std::is_base_of<Property, OperandType>::value, void>::type \
-	operator op (const OperandType& val) { operator = (((OperandType)*this) mathOp val); } \
+	operator op (const OperandType& val) { operator = (operator OperandType() mathOp val); } \
 	template <class OperandType> \
 	typename std::enable_if<std::is_base_of<Property, OperandType>::value, void>::type \
 	operator op (const OperandType& val) { operator = (operator Variant() mathOp val.operator Variant()); } \
@@ -1211,6 +1215,9 @@ protected:
 		if (boundToNode)
 			applyToBoundNode();
 	}
+	
+	void displayArray();
+
 public:
 	engine_export void bind(TreeNode* x);
 
@@ -1298,20 +1305,20 @@ public:
 	class engine_export Hash
 	{
 	public:
-		size_t operator() (const Variant& pullerKey);
+		size_t operator() (const Variant& pullerKey) const;
 	};
 
 	class engine_export KeyEqual
 	{
 	public:
 		typedef Variant value_type;
-		bool operator() (const Variant& a, const Variant& b);
+		bool operator() (const Variant& a, const Variant& b) const;
 	};
 	class engine_export Less
 	{
 	public:
 		typedef Variant value_type;
-		bool operator() (const Variant& a, const Variant& b) { return a < b;};
+		bool operator() (const Variant& a, const Variant& b) const { return a < b;};
 	};
 private:
 	Variant(const char* val, unsigned char flags) : type(VariantType::String), flags(flags), reserved(0)
@@ -1389,7 +1396,7 @@ public:
 	DEFINE_ASSIGNMENT_OPERATOR(const Array&)
 	DEFINE_ASSIGNMENT_OPERATOR(void*)
 
-	Variant& operator =(const Property& other) { operator = ((Variant)other); return *this; }
+	Variant& operator =(const Property& other) { operator = (other.operator Variant()); return *this; }
 
 #pragma endregion Contains assignment operators for every VariantType and other Variants
 
@@ -1868,6 +1875,7 @@ public:
 	}
 	engine_export static Variant interpretLegacyDouble(double val);
 	engine_export static Variant interpretString(const char*);
+	engine_export static std::string dataToString(const Variant& value, int precision, int displayFlags);
 
 	// only return my pointer if it's a non-owned cstr, i.e. it won't
 	// go out of scope if I'm destructed.
@@ -1903,7 +1911,11 @@ public:
 		}
 		return *this;
 	}
-	bool is(const char* className);
+private:
+	engine_export bool is(const char* className, bool isImplicit);
+public:
+	bool is(const char* className) { return is(className, false); }
+	bool implicitIs(const char* className) { return is(className, true); }
 	protected:
 	engine_export void checkArrayTypeForMethod(const char* funcName);
 	public:
@@ -2120,6 +2132,12 @@ struct TypedPropertyBinding : public PropertyBinding
 {
 	template<class GetterType, class SetterType>
 	TypedPropertyBinding(const char* typeName, GetterType getter, SetterType setter, unsigned int version = 0) : PropertyBinding(getter, setter) { this->typeName = typeName; this->version = version; }
+	template<class GetterType, class SetterType>
+	TypedPropertyBinding(const char* typeName, GetterType getter, SetterType setter, const char* version) 
+		: TypedPropertyBinding(typeName, getter, setter) { 
+		this->version = getVersion(version);
+	}
+
 	virtual Variant get(void* owner) const override
 	{
 		typedef PropertyType(UnknownClass::*TypedGetter)();
@@ -2134,17 +2152,26 @@ struct TypedPropertyBinding : public PropertyBinding
 	}
 };
 
+// for types that cannot be converted to/from Variant, I don't override the set() 
+// get() methods
 template<class PropertyType>
 struct TypedPropertyBinding<PropertyType, typename std::enable_if<
 	std::is_compound<PropertyType>::value
 	&& !std::is_pointer<PropertyType>::value
+	&& !std::is_base_of<SimpleDataType, PropertyType>::value
 	&& (!std::is_convertible<PropertyType, Variant>::value
 		|| !std::is_convertible<Variant, PropertyType>::value), void>::type> : public PropertyBinding
 {
 	template<class GetterType, class SetterType>
 	TypedPropertyBinding(const char* typeName, GetterType getter, SetterType setter) : PropertyBinding(getter, setter) { this->typeName = typeName; }
+	template<class GetterType, class SetterType>
+	TypedPropertyBinding(const char* typeName, GetterType getter, SetterType setter, const char* version)
+		: TypedPropertyBinding(typeName, getter, setter) {
+		this->version = getVersion(version);
+	}
 };
 
+// for types that can be converted to/from Variant, I override set()/get() methods
 template<class PropertyType>
 struct TypedPropertyBinding<PropertyType, typename std::enable_if<
 	std::is_compound<PropertyType>::value
@@ -2156,6 +2183,11 @@ struct TypedPropertyBinding<PropertyType, typename std::enable_if<
 {
 	template<class GetterType, class SetterType>
 	TypedPropertyBinding(const char* typeName, GetterType getter, SetterType setter) : PropertyBinding(getter, setter) { this->typeName = typeName; }
+	template<class GetterType, class SetterType>
+	TypedPropertyBinding(const char* typeName, GetterType getter, SetterType setter, const char* version)
+		: TypedPropertyBinding(typeName, getter, setter) {
+		this->version = getVersion(version);
+	}
 	virtual Variant get(void* owner) const override
 	{
 		typedef PropertyType(UnknownClass::*TypedGetter)();
@@ -2168,6 +2200,65 @@ struct TypedPropertyBinding<PropertyType, typename std::enable_if<
 		TypedSetter typedSetter = force_cast<TypedSetter>(setter);
 		(((UnknownClass*)owner)->*typedSetter)(val);
 	}
+};
+
+// for sdt/odt types, I override set()/get() methods
+template<class PropertyType>
+struct TypedPropertyBinding<PropertyType, typename std::enable_if<
+	std::is_compound<PropertyType>::value
+	&& !std::is_pointer<PropertyType>::value
+	&& !std::is_reference<PropertyType>::value
+	&& std::is_base_of<SimpleDataType, PropertyType>::value, void>::type> : public PropertyBinding
+{
+	template<class GetterType, class SetterType>
+	TypedPropertyBinding(const char* typeName, GetterType getter, SetterType setter) : PropertyBinding(getter, setter) { this->typeName = typeName; }
+	template<class GetterType, class SetterType>
+	TypedPropertyBinding(const char* typeName, GetterType getter, SetterType setter, const char* version)
+		: TypedPropertyBinding(typeName, getter, setter) {
+		this->version = getVersion(version);
+	}
+	virtual Variant get(void* owner) const override
+	{
+		typedef PropertyType*(UnknownClass::*TypedGetter)();
+		TypedGetter typedGetter = force_cast<TypedGetter>(getter);
+		PropertyType* val = (((UnknownClass*)owner)->*typedGetter)();
+		return val ? val->holder : (TreeNode*)nullptr;
+	}
+	virtual void set(void* owner, const Variant& val) const override
+	{
+		typedef void*(UnknownClass::*TypedSetter)(PropertyType*);
+		TypedSetter typedSetter = force_cast<TypedSetter>(setter);
+		treenode valAsNode = val;
+		(((UnknownClass*)owner)->*typedSetter)(valAsNode ? valAsNode->object<PropertyType>() : nullptr);
+	}
+};
+
+template<>
+struct TypedPropertyBinding<const char*, void> : public PropertyBinding
+{
+	template<class GetterType, class SetterType>
+	TypedPropertyBinding(const char* typeName, GetterType getter, SetterType setter) : PropertyBinding(getter, setter) { this->typeName = typeName; }
+	
+	template<class GetterType, class SetterType>
+	TypedPropertyBinding(const char* typeName, GetterType getter, SetterType setter, const char* version)
+		: TypedPropertyBinding(typeName, getter, setter)
+	{
+		this->version = getVersion(version);
+	}
+	virtual Variant get(void* owner) const override
+	{
+		typedef const char*(UnknownClass::*TypedGetter)();
+		TypedGetter typedGetter = force_cast<TypedGetter>(getter);
+		const char* val = (((UnknownClass*)owner)->*typedGetter)();
+		return val;
+	}
+	virtual void set(void* owner, const Variant& val) const override
+	{
+		typedef void*(UnknownClass::*TypedSetter)(const char*);
+		TypedSetter typedSetter = force_cast<TypedSetter>(setter);
+		(((UnknownClass*)owner)->*typedSetter)(val.c_str());
+	}
+
 };
 
 template<class PropertyType, class Enable = void>
@@ -2204,7 +2295,7 @@ struct StaticTypedPropertyBinding<PropertyType, typename std::enable_if<
 class CharStrHash
 {
 public:
-	size_t operator ()(const char* str)
+	size_t operator ()(const char* str) const
 	{
 		size_t key = 0;
 		for (int i = 0; *str; i++)
@@ -2216,578 +2307,7 @@ public:
 class CharStrEquals
 {
 public:
-	bool operator() (const char* a, const char* b) { return strcmp(a, b) == 0; }
-};
-
-/// <summary> The NodeListArray class is 
-/// meant to allow you, in c++, to treat a list of nodes with coupling data just
-/// like a regular 0-based c++ array. So, instead of every time you have to do 
-/// something like NetworkNode* nn = &o(NetworkNode, ownerobject(tonode(get(rank(node_v_myNetNodes, i)))));
-/// you can just add the correct NodeListArray to your class, and do myNetNodes[i],
-/// and bam, it handles all the rest.</summary>
-/// 
-/// <remarks> There are different ways that a list of coupling nodes may be set up, so
-/// there are also several different types I've defined to represent these different
-/// types of node list arrays. For example, you may have a list of just one-way 
-/// pointers directly to the objects themselves. Or you may have a list of coupling nodes
-/// where the other side of the coupling is created in the "stored" attribute
-/// of the associated object, and so on. 
-/// 
-/// So, below are the basic defined ones that you can use out of the box. See the documentation of 
-/// each one for more information
-/// NodeListArray<YourClass>::ObjPtrType
-/// NodeListArray<YourClass>::CouplingSdtPtrType
-/// NodeListArray<YourClass>::ObjStoredAttCouplingType
-/// NodeListArray<YourClass, YourAdder>::ObjCouplingType
-/// NodeListArray<YourClass>::SdtSubNodeType
-/// NodeListArray<YourClass>::SdtSubNodeBindingType
-/// NodeListArray<YourClass>::CouplingSdtSubNodeType
-/// NodeListArray<YourClass>::CouplingSdtSubNodeBindingType
-/// NodeListArray<>::NodePtrType
-/// NodeListArray<>::StoredAttCouplingType
-/// NodeListArray<>::SubNodeCouplingType
-/// NodeListArray<YourClass>::SdtSubNodeCouplingType
-/// 
-/// 
-/// Also, usually you are going to initialize a NodeListArray in your bind()
-/// or bindVariables() method, depending on if you're an odt or an sdt. </remarks>
-
-static const int ZeroBasedRankOffset = 1;
-static const int OneBasedRankOffset = 0;
-template<class T = TreeNode, void(*Adder)(treenode x, T* obj) = nullptr, T* (*Getter)(treenode x) = nullptr, int rankOffset = 1>
-class NodeListArray
-{
-	TreeNode* parent;
-public:
-	typedef T ElementType;
-
-	NodeListArray() : parent(0) {}
-	NodeListArray(treenode parent) : parent(parent) {}
-	template <class OtherType>
-	NodeListArray(treenode parent, const OtherType& copyFrom) : parent(parent)
-	{
-		*this = copyFrom;
-	}
-	template <class OtherType>
-	NodeListArray(OtherType& copyFrom) : parent(copyFrom) {}
-	void init(treenode parent) { this->parent = parent; }
-
-	operator TreeNode*&() { return parent; }
-
-	template <class OtherType>
-	NodeListArray& operator = (const OtherType& copyFrom)
-	{
-		_ASSERTE(parent != 0)
-			clear();
-		for (int i = 1; i <= copyFrom.size(); i++)
-			add(copyFrom[i - OtherType::rankOffset]);
-		return *this;
-	}
-
-	int size() const { return content(parent); }
-	int __getLength() { return size(); }
-	__declspec(property(get = __getLength)) int length;
-
-	T* operator[](int index) const
-	{
-		_ASSERTE(index >= 1 - rankOffset && index <= size() - rankOffset);
-		treenode subNode = rank(parent, index + rankOffset);
-		return Getter(subNode);
-	}
-	T* operator[](const char* name) const
-	{
-		treenode x = node(name, parent);
-		if (objectexists(x))
-			return operator[](getrank(x) - rankOffset);
-		return NULL;
-	}
-	T* add(T* obj)
-	{
-		_ASSERTE(obj != 0);
-		treenode tmp = nodeadddata(nodeinsertinto(parent), DATA_POINTERCOUPLING);
-		Adder(tmp, obj);
-		return obj;
-	}
-
-	T* add(T* obj, int atIndex)
-	{
-		_ASSERTE(obj != 0 && atIndex < size() - rankOffset);
-		treenode tmp;
-		if (atIndex > 0)
-			tmp = nodeinsertafter(rank(parent, atIndex));
-		else tmp = setrank(nodeinsertinto(parent), 1);
-		nodeadddata(tmp, DATA_POINTERCOUPLING);
-		Adder(tmp, obj);
-		return obj;
-	}
-
-	void remove(int index)
-	{
-		_ASSERTE(index >= 1 - rankOffset && index <= size() - rankOffset);
-		destroynode(rank(parent, index + rankOffset));
-	}
-	void clear() { clearcontents(parent); }
-	void swap(int index1, int index2) { swapnoderanks(parent, index2 + rankOffset, index1 + rankOffset); }
-	void setRank(int fromIndex, int toIndex) { setrank(rank(parent, fromIndex + rankOffset), toIndex + rankOffset); }
-	int find(T* x) const
-	{
-		int tmpSize = size();
-		for (int i = 1; i <= tmpSize; i++)
-			if (operator[](i - rankOffset) == x)
-				return i - rankOffset;
-		return -1;
-	}
-private:
-	template<class T, class Enable = void>
-	struct ToNode
-	{
-		static TreeNode* get() { return nullptr; }
-	};
-	template<class T>
-	struct ToNode<T, typename std::enable_if<!std::is_same<T, TreeNode>::value>::type>
-	{
-		static TreeNode* get(T* x) { return x->holder; }
-	};
-	template<class T>
-	struct ToNode<T, typename std::enable_if<std::is_same<T, TreeNode>::value>::type>
-	{
-		static TreeNode* get(T* x) { return x; }
-	};
-public:
-
-	Array toArray()
-	{
-		Array values;
-		int tmpSize = size();
-		values.resize(tmpSize);
-		for (int i = 1; i <= tmpSize; i++)
-			values[i] = ToNode<T>::get(Getter(rank(parent, i)));
-
-		return values;
-	}
-
-
-	operator Array() { return toArray(); }
-
-	void push(T* obj) { add(obj); }
-	void pop() {if (!content(parent)) throw "pop() called on empty container";  destroyobject(last(parent)); }
-
-	void unshift(T* obj) { add(obj); setrank(last(parent), 1); }
-	void shift() { if (!content(parent)) throw "shift() called on empty container"; destroyobject(first(parent)); }
-
-	static TreeNode* NodePtrGetter(treenode x) { return tonode(get(x)); }
-	static void NodePtrAdder(treenode x, TreeNode* obj) { nodepoint(x, obj); }
-
-	static TreeNode* StoredAttCouplingGetter(treenode x)
-	{
-		treenode partner = x->dataascoupling ? x->dataascoupling->partner().get() : 0;
-		if (partner)
-			return ownerobject(partner);
-		return 0;
-	}
-	static void StoredAttCouplingAdder(treenode x, TreeNode* obj) { nodejoin(x, nodeadddata(nodeinsertinto(assertattribute(obj, "stored", 0)), DATA_POINTERCOUPLING)); }
-
-	static TreeNode* SubNodeCouplingGetter(treenode x)
-	{
-		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner().get() : 0;
-		if (partner)
-			return up(partner);
-		return 0;
-	}
-	static void SubNodeCouplingAdder(treenode x, TreeNode* obj) { nodejoin(x, nodeadddata(nodeinsertinto(obj), DATA_POINTERCOUPLING)); }
-	static T* SdtSubNodeCouplingGetter(treenode x)
-	{
-		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner().get() : 0;
-		if (partner)
-			return up(partner)->objectAs(T);
-		return 0;
-	}
-	static void SdtSubNodeCouplingAdder(treenode x, T* obj)
-	{
-		_ASSERTE(obj->holder != 0);
-		nodejoin(x, nodeadddata(nodeinsertinto(obj->holder), DATA_POINTERCOUPLING));
-	}
-
-	static T* SdtSubSubNodeCouplingGetter(treenode x)
-	{
-		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->objectAs(CouplingDataType)->partner().get() : 0;
-		if (partner)
-			return up(up(partner))->objectAs(T);
-		return 0;
-	}
-
-	template <TreeNode* (*ContainerGetter)(T* obj)>
-	static void CustomCouplingAdder(treenode x, T* obj)
-	{
-		_ASSERTE(obj->holder != 0);
-		nodejoin(x, nodeadddata(nodeinsertinto(ContainerGetter(obj)), DATA_POINTERCOUPLING));
-	}
-
-
-	static TreeNode* SubNodeGetter(treenode x) { return x; }
-	static void SubNodeAdder(treenode x, TreeNode* obj) {}
-	static T* SdtSubNodeGetter(treenode x) { return &o(T, x); }
-	static void SdtSubNodeAdder(treenode x, T* obj) { nodeaddsimpledata(x, obj, 0); }
-	static void SdtSubNodeBindingAdder(treenode x, T* obj) { nodeaddsimpledata(x, obj, 1); }
-	static void CouplingSdtSubNodeAdder(treenode x, T* obj) { nodeaddcouplingdata(x, obj, 0); }
-	static void CouplingSdtSubNodeBindingAdder(treenode x, T* obj) { nodeaddcouplingdata(x, obj, 1); }
-	static void ObjSubNodeAdder(treenode x, T* obj) { transfernode(obj->holder, up(x)); destroyobject(x); }
-
-	static T* ObjPtrGetter(treenode x)
-	{
-		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->object<CouplingDataType>()->partner().get() : 0;
-		if (partner)
-			return &o(T, partner);
-		return 0;
-	}
-	static void ObjPtrAdder(treenode x, T* obj)
-	{
-		_ASSERTE(obj->holder != 0);
-		nodepoint(x, obj->holder);
-	}
-	static void CouplingSdtPtrAdder(treenode x, T* obj)
-	{
-		_ASSERTE(obj->holder != 0);
-		nodejoin(x, obj->holder);
-	}
-
-	static T* ObjCouplingGetter(treenode x)
-	{
-		treenode partner = x->dataType == DATA_POINTERCOUPLING ? x->object<CouplingDataType>()->partner().get() : 0;
-		if (partner)
-			return &o(T, ownerobject(partner));
-		return 0;
-	}
-	static void ObjCouplingAdder(treenode x, T* obj)
-	{
-		_ASSERTE(obj->holder != 0);
-		nodejoin(x, nodeadddata(nodeinsertinto(assertattribute(obj->holder, "stored", 0)), DATA_POINTERCOUPLING));
-	}
-	static void PortAdder(treenode x, T* obj, treenode otherList)
-	{
-		nodeadddata(nodeinsertinto(x), DATA_FLOAT);
-		nodeadddata(nodeinsertinto(x), DATA_POINTERCOUPLING);
-		if (obj) {
-			treenode other = nodeadddata(nodeinsertinto(otherList), DATA_POINTERCOUPLING);
-			nodeadddata(nodeinsertinto(other), DATA_FLOAT);
-			nodeadddata(nodeinsertinto(other), DATA_POINTERCOUPLING);
-			nodejoin(x, other);
-		}
-	}
-	static void InPortAdder(treenode x, T* obj)
-	{
-		_ASSERTE(obj == nullptr || obj->holder != 0);
-		PortAdder(x, obj, obj ? connectionsin(obj->holder) : nullptr);
-	}
-	static void OutPortAdder(treenode x, T* obj)
-	{
-		_ASSERTE(obj == nullptr || obj->holder != 0);
-		PortAdder(x, obj, obj ? connectionsout(obj->holder) : nullptr);
-	}
-	static void CenterPortAdder(treenode x, T* obj)
-	{
-		_ASSERTE(obj == nullptr || obj->holder != 0);
-		PortAdder(x, obj, obj ? connectionscenter(obj->holder) : nullptr);
-	}
-
-
-	/*********************************************************************
-	OK, Here are the list of classes that this header file sets up for you.
-	**********************************************************************/
-
-	/*********************************************************************
-	NodeListArray<TheClass>::SubNodeType
-	This one represents a simple list of sub-nodes
-	**********************************************************************/
-	typedef NodeListArray<TreeNode, SubNodeAdder, SubNodeGetter, rankOffset> SubNodeType;
-
-	/*********************************************************************
-	NodeListArray<TheClass>::ObjPtrType
-	This one represents a list of direct one-way pointers to odt or sdt objects,
-	For example, you may do:
-	NodeListArray<NetworkNode>::ObjPtrType myNetNodes;
-	Then dereferencing myNetNodes[arrayIndex] will get you back a NetworkNode*
-	**********************************************************************/
-	typedef NodeListArray<T, ObjPtrAdder, ObjPtrGetter, rankOffset> ObjPtrType;
-
-	/*********************************************************************
-	NodeListArray<TheClass>::CouplingSdtPtrType
-	This one represents a list of two-way pointers to coupling sdt objects. It is like
-	ObjPtrType in that each item in the list is a coupling node that points to an
-	object, but it also assumes the other side of the reference is a coupling sdt, so
-	when adding, it will join the nodes together with a two-way pointer instead of just
-	a one-way pointer to the object. This is useful when you have coupling nodes where
-	one side of the coupling is your custom coupling class (you would use the
-	CouplingSdtSubNodeType for that side), and the other is just a vanilla coupling node
-	bound to that class. On the vanilla side, you would use CouplingSdtPtrType. Note that when
-	using this and adding connections to the list, you should add the
-	CouplingSdtSubNodeType first, then add the CouplingSdtPtrType (the vanilla side)
-	last to properly establish the connection.
-	**********************************************************************/
-	typedef NodeListArray<T, CouplingSdtPtrAdder, ObjPtrGetter, rankOffset> CouplingSdtPtrType;
-	typedef NodeListArray<T, CouplingSdtPtrAdder, ObjPtrGetter, OneBasedRankOffset> CouplingSdtPtrTypeOneBased;
-
-	/*********************************************************************
-	NodeListArray<TheClass>::ObjStoredAttCouplingType
-	This one represents a list of two-way couplings to odt objects. The other side of the
-	coupling will be stored in the "stored" attribute of each object.
-	NodeListArray<NetworkNode>::ObjStoredAttCouplingType myNetNodes;
-	myNetNodes[arrayIndex] will then retrieve a NetworkNode*
-	**********************************************************************/
-	typedef NodeListArray<T, ObjCouplingAdder, ObjCouplingGetter, rankOffset> ObjStoredAttCouplingType;
-
-	/*********************************************************************
-	NodeListArray<TheClass, YourAdder>::ObjCouplingType
-	This one represents a list of two-way couplings to odt objects. It's like
-	ObjStoredAttCouplingType except the other side of the
-	coupling is stored where you want it to be stored, so you have to add the adder yourself
-
-	NodeListArray<NetworkNode, myAddToNetNodesVar>::ObjCouplingType myNetNodes;
-	myNetNodes[arrayIndex] will then retrieve a NetworkNode*. Note you have to define
-	the function myAddToNetNodesVar, which in this example should look like this:
-	void myAddToNetNodesVar(treenode x, NetworkNode* y) {
-	nodejoin(x, nodeadddata(nodeinsertinto(y->node_v_backpointer), DATATYPE_COUPLING);
-	}
-
-	Or for simplicity, you can instead just define the container for adding on the other side of the coupling by using the
-	CustomCouplingAdder to do this:
-	class MyType {
-	static TreeNode* GetOtherContainer(OtherType* other) {return other->myTypeList;}
-	NodeListArray<OtherType, NodeListArray<OtherType>::CustomCouplingAdder<GetOtherContainer>>::SdtSubSubNodeType otherTypeList;
-	};
-	**********************************************************************/
-	typedef NodeListArray<T, Adder, ObjCouplingGetter, rankOffset> ObjCouplingType;
-
-	/*********************************************************************
-	NodeListArray<TheClass>::OutObjectType
-	This one represents a list of objects connected to an object's output ports (zero-based)
-	**********************************************************************/
-	typedef NodeListArray<T, InPortAdder, ObjCouplingGetter, rankOffset> OutObjectType;
-	typedef NodeListArray<T, InPortAdder, ObjCouplingGetter, OneBasedRankOffset> OutObjectTypeOneBased;
-
-	/*********************************************************************
-	NodeListArray<TheClass>::InObjectType
-	This one represents a list of objects connected to an object's input ports (zero-based)
-	**********************************************************************/
-	typedef NodeListArray<T, OutPortAdder, ObjCouplingGetter, rankOffset> InObjectType;
-	typedef NodeListArray<T, OutPortAdder, ObjCouplingGetter, OneBasedRankOffset> InObjectTypeOneBased;
-
-	/*********************************************************************
-	NodeListArray<TheClass>::CenterObjectType
-	This one represents a list of objects connected to an object's input ports (zero-based)
-	**********************************************************************/
-	typedef NodeListArray<T, CenterPortAdder, ObjCouplingGetter, rankOffset> CenterObjectType;
-	typedef NodeListArray<T, CenterPortAdder, ObjCouplingGetter, OneBasedRankOffset> CenterObjectTypeOneBased;
-
-	/*********************************************************************
-	NodeListArray<TheClass>::SdtSubNodeType
-	This one represents a straight list of sdt's.
-
-	NodeListArray<MySdt>::SdtSubNodeType mySdts;
-	myNetNodes[arrayIndex] will then retrieve the MySdt* stored directly in the given sub-node.
-	**********************************************************************/
-	typedef NodeListArray<T, SdtSubNodeAdder, SdtSubNodeGetter, rankOffset> SdtSubNodeType;
-	typedef NodeListArray<T, SdtSubNodeBindingAdder, SdtSubNodeGetter, rankOffset> SdtSubNodeBindingType;
-
-	/*********************************************************************
-	NodeListArray<TheClass>::CouplingSdtSubNodeType
-	This one represents a straight list of coupling sdt's. It's just like SdtSubNodeType, except
-	the adder will use nodeaddcouplingdata() instead of nodeaddsimpledata().
-
-	NodeListArray<MySdt>::CouplingSdtSubNodeType mySdts;
-	myNetNodes[arrayIndex] will then retrieve the MySdt* stored directly in the given sub-node.
-	**********************************************************************/
-	typedef NodeListArray<T, CouplingSdtSubNodeAdder, SdtSubNodeGetter, rankOffset> CouplingSdtSubNodeType;
-	typedef NodeListArray<T, CouplingSdtSubNodeBindingAdder, SdtSubNodeGetter, rankOffset> CouplingSdtSubNodeBindingType;
-
-	/*********************************************************************
-	NodeListArray<TheClass>::ObjSubNodeType
-	This one represents a straight list of odt's.
-
-	NodeListArray<MyObj>::ObjSubNodeType myObjs;
-	myObjs[arrayIndex] will then retrieve the MyObj* stored directly in the given sub-node.
-	to add, you do myObjs.add(&o(MyObj, createinstance(theClass, model())));
-	**********************************************************************/
-	typedef NodeListArray<T, ObjSubNodeAdder, SdtSubNodeGetter, rankOffset> ObjSubNodeType;
-	typedef NodeListArray<T, ObjSubNodeAdder, SdtSubNodeGetter, OneBasedRankOffset> ObjSubNodeTypeOneBased;
-
-	/*********************************************************************
-	NodeListArray::NodePtrType:
-	This one represents a list of one-way pointers to nodes. This is just like the
-	NodeListArray::ObjPtrType, except it returns a TreeNode*, i.e. the node itself instead of the odt/sdt.
-	This can be used if you're pointing to nodes that don't necessarily have object data.
-	NodeListArray::NodePtrType myNetNodes;
-	myNetNodes[arrayIndex] will then get back a treenode that is the network node.
-	**********************************************************************/
-	typedef NodeListArray<TreeNode, NodePtrAdder, NodePtrGetter, rankOffset> NodePtrType;
-
-	/*********************************************************************
-	NodeListArray::StoredAttCouplingType:
-	This one represents a list of two-way couplings to objects. This is just like the
-	NodeListArray::ObjStoredAttCouplingType, except it returns a TreeNode*, i.e. the node itself instead of the odt/sdt.
-	Like ObjListArray, the other side of the coupling will be stored in the "stored" attribute
-	of the object.
-	NodeListArray::StoredAttCouplingType myNetNodes;
-	myNetNodes[arrayIndex] will then get back a treenode that is the network node.
-	**********************************************************************/
-	typedef NodeListArray<TreeNode, StoredAttCouplingAdder, StoredAttCouplingGetter, rankOffset> StoredAttCouplingType;
-	typedef NodeListArray<TreeNode, StoredAttCouplingAdder, StoredAttCouplingGetter, OneBasedRankOffset> StoredAttCouplingTypeOneBased;
-
-	/*********************************************************************
-	NodeListArray::SubNodeCouplingType:
-	This one represents a list of two-way couplings to nodes. This will store the other side of the
-	coupling as a sub-node of the node referenced, and when dereferenced it will return the node that
-	contains the coupling sub-node.
-	**********************************************************************/
-	typedef NodeListArray<TreeNode, SubNodeCouplingAdder, SubNodeCouplingGetter, rankOffset> SubNodeCouplingType;
-
-	/*********************************************************************
-	NodeListArray<MyObj>::SdtSubNodeCouplingType:
-	This one represents a list of two-way couplings to objects. This will store the other side of the
-	coupling as a sub-node of the object referenced, and when dereferenced it will return the object
-	whose holder node contains the coupling sub-node. It's just like SubNodeCouplingType, except it returns
-	an object reference instead of a node reference.
-	**********************************************************************/
-	typedef NodeListArray<T, SdtSubNodeCouplingAdder, SdtSubNodeCouplingGetter, rankOffset> SdtSubNodeCouplingType;
-
-	/*********************************************************************
-	NodeListArray<OtherType, OtherTypeAdder>::SdtSubSubNodeCouplingType:
-	This one represents a list of two-way couplings to objects. This will store the other side of the
-	coupling as a sub-sub-node of the object referenced, and when dereferenced it will return the object
-	whose holder node contains the parent of the coupling sub-node. It's just like SdtSubNodeCouplingType,
-	except it returns up(up(theCouplingPartner)) instead of just one up(). Also, in this case you must
-	define the adder, or just the container for the other side of the coupling by using the
-	CustomCouplingAdder to do this:
-	class MyType {
-	static TreeNode* GetOtherContainer(OtherType* other) {return other->myTypeList;}
-	NodeListArray<OtherType, NodeListArray<OtherType>::CustomCouplingAdder<GetOtherContainer>>::SdtSubSubNodeType otherTypeList;
-	};
-
-	class OtherType {
-	NodeListArray<MyType>::ObjCouplingType myTypeList;
-	}
-	**********************************************************************/
-	typedef NodeListArray<T, Adder, SdtSubSubNodeCouplingGetter, rankOffset> SdtSubSubNodeCouplingType;
-
-	class IteratorElement
-	{
-		NodeListArray* list;
-		TreeNode::IteratorElement nodeElement;
-		int curIndex;
-	public:
-		IteratorElement() : arrayAddress(0), curIndex(0), nodeElement() {}
-		IteratorElement(NodeListArray* list, int curIndex) : list(list), curIndex(curIndex), nodeElement(list->parent, curIndex + 1) {}
-		IteratorElement(IteratorElement& other) : list(other.list), curIndex(other.curIndex), nodeElement(other.nodeElement) {}
-		T* operator ->() const { return Getter(nodeElement.element); }
-		T* operator * () const { return Getter(nodeElement.element); }
-		operator T*() const { return Getter(nodeElement.element); }
-		IteratorElement& operator = (IteratorElement& other)
-		{
-			nodeElement = other.nodeElement;
-			return *this;
-		}
-	};
-
-	// Iterator for NodeListArray: for use with std iterator algorithms
-	class Iterator : public std::iterator<std::random_access_iterator_tag, IteratorElement, ptrdiff_t, IteratorElement*, IteratorElement>
-	{
-		NodeListArray * list;
-		ptrdiff_t curIndex;
-	public:
-		Iterator() : list(0), curIndex(-1) {}
-		Iterator(NodeListArray* list, int curIndex) : list(list), curIndex(curIndex) {}
-		Iterator(Iterator& other) : list(other.list), curIndex(other.curIndex) {}
-		Iterator& operator = (Iterator& other) { list = other.list; curIndex = other.curIndex; return *this; }
-		bool operator == (Iterator& other) { return list == other.list && curIndex == other.curIndex; }
-		bool operator != (Iterator& other) { return !(operator == (other)); }
-		//T* operator * () const {return list->operator[](curIndex);}
-		//T* operator ->() {return list->operator[](curIndex);}
-		IteratorElement operator * () { return IteratorElement(list, curIndex); }
-		Iterator& operator ++() { curIndex++; return *this; }
-		Iterator& operator ++(int x) { curIndex++; return *this; }
-		Iterator& operator --() { curIndex--; return *this; }
-		Iterator& operator --(int x) { curIndex--; return *this; }
-		Iterator operator +(ptrdiff_t n) { return Iterator(list, curIndex + n); }
-		Iterator operator -(ptrdiff_t n) { return Iterator(list, curIndex - n); }
-		ptrdiff_t operator -(Iterator& other) { return curIndex - other.curIndex; }
-		bool operator <(Iterator& other) { return curIndex < other.curIndex; }
-		bool operator <=(Iterator& other) { return curIndex <= other.curIndex; }
-		bool operator >(Iterator& other) { return curIndex > other.curIndex; }
-		bool operator >=(Iterator& other) { return curIndex > other.curIndex; }
-		Iterator& operator +=(ptrdiff_t n) { curIndex -= n; return *this; }
-		Iterator& operator -=(ptrdiff_t n) { curIndex -= n; return *this; }
-		T* operator [](ptrdiff_t n) { return list[curIndex + n]; }
-	};
-	// container iteration methods
-	Iterator begin() { return Iterator(this, 0); }
-	Iterator end() { return Iterator(this, size()); }
-	Iterator rbegin() { return Iterator(this, size() - 1); }
-	Iterator rend() { return Iterator(this, -1); }
-	// vector-esque methods
-	void push_back(T* obj) { add(obj); }
-	void pop_back() { remove(size() - rankOffset); }
-	Iterator insert(Iterator position, const T*& obj)
-	{
-		add(obj, position.curIndex);
-		return position;
-	}
-	T* back() const
-	{
-		if (size() == 0)
-			return 0;
-		return Getter(last(parent));
-	}
-	T* front() const
-	{
-		if (size() == 0)
-			return 0;
-		return Getter(first(parent));
-	}
-};
-
-class engine_export SubnodesArray
-{
-protected:
-	TreeNode* holder = nullptr;
-public:
-	SubnodesArray(TreeNode* holder = nullptr) : holder(holder) {}
-	SubnodesArray(const SubnodesArray& other) : holder(other.holder) {}
-	void construct(const SubnodesArray& other) { ::new(this)SubnodesArray(other); }
-	SubnodesArray& operator =(const SubnodesArray& other) { holder = other.holder; return *this; }
-
-	int length();
-	TreeNode* _assert(const char* name);
-	TreeNode* _assert(const char* name, const Variant& val);
-	void clear();
-	TreeNode* operator[](int r);
-	TreeNode* operator[](const char* name);
-	TreeNode* operator[](const Variant& index);
-};
-
-class engine_export LabelsArray
-{
-private:
-	static bool dieHard;
-protected:
-	TreeNode* holder = nullptr;
-public:
-	LabelsArray(TreeNode* holder = nullptr) : holder(holder) {}
-	LabelsArray(const LabelsArray& other) : holder(other.holder) {}
-	void construct(const LabelsArray& other) { ::new(this)LabelsArray(other); }
-	LabelsArray& operator =(const LabelsArray& other) { holder = other.holder; return *this; }
-
-	TreeNode* _assert(const char* name);
-	TreeNode* _assert(const char* name, const Variant& val);
-
-	TreeNode* operator[](const char* name);
-};
-
-struct portinfo
-{
-	TreeNode* object;
-	int portnr;
-	short portopen;
-	short metaopen;
+	bool operator() (const char* a, const char* b) const { return strcmp(a, b) == 0; }
 };
 
 template <class Number>
@@ -2932,7 +2452,8 @@ public:
 	Vec3Generic operator + (const Vec3Generic& a) const { return Vec3Generic(x + a.x, y + a.y, z + a.z); }
 	Vec3Generic operator - (const Vec3Generic& a) const { return Vec3Generic(x - a.x, y - a.y, z - a.z); }
 	Vec3Generic operator - () const { return Vec3Generic(-x, -y, -z); }
-	Vec3Generic operator / (const Vec3Generic& other) const { 
+	Vec3Generic operator / (const Vec3Generic& other) const
+	{
 		if (other.x == 0)
 			throw "Divide by zero error: x component of denominator is 0";
 		if (other.y == 0)
@@ -2940,12 +2461,13 @@ public:
 		if (other.z == 0)
 			throw "Divide by zero error: z component of denominator is 0";
 
-		return Vec3Generic(x / other.x, y / other.y, z / other.z); 
+		return Vec3Generic(x / other.x, y / other.y, z / other.z);
 	}
-	Vec3Generic operator / (Number mult) const { 
+	Vec3Generic operator / (Number mult) const
+	{
 		if (mult == 0)
 			throw "Divide by zero error: denominator is 0";
-		return Vec3Generic(x / mult, y / mult, z / mult); 
+		return Vec3Generic(x / mult, y / mult, z / mult);
 	}
 	Vec3Generic operator * (const Vec3Generic& other) const { return Vec3Generic(x * other.x, y * other.y, z * other.z); }
 	Vec3Generic operator * (Number mult) const { return Vec3Generic(x * mult, y * mult, z * mult); }
@@ -2981,7 +2503,8 @@ public:
 	__declspec(property(get = __magnitude)) Number magnitude;
 
 	Number dot(const Vec3Generic& other) const { return getDotProduct(other); }
-	Vec3Generic cross(const Vec3Generic& other) {
+	Vec3Generic cross(const Vec3Generic& other)
+	{
 		const Vec3Generic& u = *this;
 		const Vec3Generic& v = other;
 		Vec3Generic r;
@@ -2990,7 +2513,8 @@ public:
 		r.z = u.x * v.y - u.y * v.x;
 		return r;
 	}
-	Number angle(const Vec3Generic& other) {
+	Number angle(const Vec3Generic& other)
+	{
 		Number thisMagnitude = magnitude;
 		if (thisMagnitude == 0)
 			throw "Error in u.angle(v) - magnitude of u is 0";
@@ -3001,26 +2525,30 @@ public:
 
 		Number cosTheta = dot(other) / thisMagnitude / otherMagnitude;
 		Number theta = acos(cosTheta);
-		Number degrees = radianstodegrees(theta);
+		Number degrees = theta * 180 / 3.14159265358979;
 		return degrees;
 	}
-	Vec3Generic lerp(const Vec3Generic& other, double t) {
+	Vec3Generic lerp(const Vec3Generic& other, double t)
+	{
 		double omt = 1 - t;
 		return Vec3Generic(
-			(Number)(x * omt + other.x * t), 
-			(Number)(y * omt + other.y * t), 
+			(Number)(x * omt + other.x * t),
+			(Number)(y * omt + other.y * t),
 			(Number)(z * omt + other.z * t)
-		);
+			);
 	}
-	Vec3Generic project(TreeNode* from, TreeNode* to) {
+	Vec3Generic project(TreeNode* from, TreeNode* to)
+	{
+		double newVec[3] = { 0, 0, 0 };
+#if !defined FLEXSIM_ENGINE_COMPILE || defined FLEXSIM_COMMANDS
 		if (!objectexists(from))
 			throw "Error in v.project(from, to) - from does not exist";
 
 		if (!objectexists(to))
 			throw "Error in v.project(from, to) - to does not exist";
 
-		double newVec[3] = { 0, 0, 0 };
 		vectorproject(from, x, y, z, to, newVec);
+#endif
 		return Vec3Generic(newVec);
 	}
 
@@ -3155,13 +2683,13 @@ public:
 	void __setR(double val) { _r = bound(val); }
 	void __setG(double val) { _g = bound(val); }
 	void __setB(double val) { _b = bound(val); }
-	void __setA(double val) { _a = bound(val); }	
+	void __setA(double val) { _a = bound(val); }
 
 	__declspec(property(get = __getR, put = __setR)) double r;
 	__declspec(property(get = __getG, put = __setG)) double g;
 	__declspec(property(get = __getB, put = __setB)) double b;
 	__declspec(property(get = __getA, put = __setA)) double a;
-	
+
 	Color(const Color& o) : _r(bound(o.r)), _g(bound(o.g)), _b(bound(o.b)), _a(bound(o.a)) {}
 	Color(double r2, double g2, double b2, double a2) { r = r2; g = g2; b = b2; a = a2; }
 	Color() {}
@@ -3190,9 +2718,9 @@ public:
 	Color& operator -= (const Color& o) { r -= o.r; g -= o.g; b -= o.b; a -= o.a; return *this; }
 	bool operator == (const Color& o) const { return r == o.r && g == o.g && b == o.b && a == o.a; }
 	bool operator != (const Color& o) const { return r != o.r || g != o.g || b != o.b || a != o.a; }
-	Color& operator = (const Color& o) { r = o.r; g = o.g; b = o.b; a = o.a; return *this; }	
+	Color& operator = (const Color& o) { r = o.r; g = o.g; b = o.b; a = o.a; return *this; }
 	operator double* () { return &_r; }
-	
+
 	Color lerp(const Color& o, double t)
 	{
 		double omt = 1 - t;
@@ -3217,91 +2745,200 @@ public:
 	static const Color white;
 	static const Color black;
 	static const Color yellow;
-	static Color __aqua()       { return aqua; }
-	static Color __blue()		{ return blue; }
-	static Color __brown()		{ return brown; }
-	static Color __gray()		{ return gray; }
-	static Color __green()		{ return green; }
-	static Color __lightBlue()	{ return lightBlue; }
-	static Color __lime()		{ return lime; }
-	static Color __orange()		{ return orange; }
-	static Color __pink()		{ return pink; }
-	static Color __purple()		{ return purple; }
-	static Color __red()		{ return red; }
-	static Color __silver()		{ return silver; }
-	static Color __teal()		{ return teal; }
-	static Color __white()      { return white; }
-	static Color __black()      { return black; }
-	static Color __yellow()		{ return yellow; }
+	static Color __aqua() { return aqua; }
+	static Color __blue() { return blue; }
+	static Color __brown() { return brown; }
+	static Color __gray() { return gray; }
+	static Color __green() { return green; }
+	static Color __lightBlue() { return lightBlue; }
+	static Color __lime() { return lime; }
+	static Color __orange() { return orange; }
+	static Color __pink() { return pink; }
+	static Color __purple() { return purple; }
+	static Color __red() { return red; }
+	static Color __silver() { return silver; }
+	static Color __teal() { return teal; }
+	static Color __white() { return white; }
+	static Color __black() { return black; }
+	static Color __yellow() { return yellow; }
 
 	static Color random(int stream = 0);
 };
 
-class Table
+
+
+struct portinfo
+{
+	TreeNode* object;
+	int portnr;
+	short portopen;
+	short metaopen;
+};
+
+class EventDataStruct
 {
 public:
-	TreeNode* root;
-	std::shared_ptr <Table> ref;
+	int code = 0;
+	char * string = "";
+	void * data = nullptr;
+};
 
+class Table
+{
+private:
+	static void NoDelete(Table* table) {}
+public:
 	struct TableElement
 	{
-		std::weak_ptr<Table> tableRef;
+		Table* tableRef;
 		int depth;
 		int indexes[10];
 
-		TableElement(std::shared_ptr <Table> table) : tableRef(table) {}
+		TableElement(Table* table) : tableRef(table) {}
+		engine_export TableElement(TableElement&& other);
+		engine_export TableElement(const TableElement& other);
+		void destruct() { this->~TableElement(); }
 
-		void operator = (const Variant& val);
-		bool operator == (const Variant& val) { return getValue() == val; }
-		bool operator != (const Variant& val) { return getValue() != val; }
-		TableElement operator [](const Variant& index);
+		engine_export void operator = (const Variant& val);
+		bool operator == (const Variant& val) const { return getValue() == val; }
+		bool operator != (const Variant& val) const { return getValue() != val; }
+		engine_export TableElement operator [](const Variant& index);
 
-		operator Variant()		{ return getValue(); }
-		operator int()			{ return getValue(); }
-		operator double()		{ return getValue(); }
-		operator std::string()	{ return getValue(); }
-		operator TreeNode*()	{ return getValue(); }
-		Variant getValue();
+		double operator ++ () { Variant prevVal = getValue();  operator = (prevVal + 1); return prevVal; }
+		double operator -- () { Variant prevVal = getValue();  operator = (prevVal - 1); return prevVal; }
+		void operator += (const Variant& val) { operator = (getValue() + val); }
+		void operator -= (const Variant& val) { operator = (getValue() - val); }
+		void operator *= (const Variant& val) { operator = (getValue() * val); }
+		void operator /= (const Variant& val) { if( val != 0) operator = (getValue() / val); }
+
+		operator Variant() { return getValue(); }
+		operator int() { return getValue(); }
+		operator double() { return getValue(); }
+		operator std::string() { return getValue(); }
+		operator TreeNode*() { return getValue(); }
+		engine_export Variant getValue() const;
+	};
+	class TableDataSource
+	{
+	public:
+		engine_export virtual ~TableDataSource() {}
+		TreeNode* root;
+		static const int ADD_COLS_BEFORE_ROWS = 0x1;
+		static const int READ_ONLY = 0x2;
+		static const int READ_ONLY_ROW_HEADERS = 0x4;
+		static const int BUNDLE_TYPES_ONLY = 0x8;
+		static bool cellTypeIsBundleType;
+		virtual int getConstraints() const { return 0; }
+		engine_export virtual int __numRows() const;
+		engine_export virtual int __numCols() const;
+		__declspec(property(get = __numRows)) int numRows;
+		__declspec(property(get = __numCols)) int numCols;
+
+		virtual std::string __name() const;
+		__declspec(property(get = __name)) std::string name;
+
+		engine_export virtual int getBundleFieldType(int col) { return 0; }
+		engine_export virtual void addCol(int col, int datatype);
+		engine_export virtual void addRow(int row, int datatype);
+		engine_export virtual TreeNode* cell(const Variant& row, const Variant& col);
+		engine_export virtual void clear(int recursive = 0);
+		engine_export virtual void deleteCol(int col);
+		engine_export virtual void deleteRow(int row);
+		engine_export virtual Variant executeCell(const Variant& row, const Variant& col);
+		virtual std::string getColHeader(int colNum);
+		virtual std::string getRowHeader(int rowNum);
+		engine_export virtual void moveCol(int fromCol, int toCol);
+		engine_export virtual void moveRow(int fromRow, int toRow);
+		engine_export virtual void setColHeader(int colNum, const char* name);
+		engine_export virtual void setRowHeader(int rowNum, const char* name);
+		engine_export virtual void setSize(int rows, int cols, int datatype, int overwrite);
+		engine_export virtual void sort(const Variant& cols, const Variant& ascDesc);
+		engine_export virtual void swapCols(int col, int col2);
+		engine_export virtual void swapRows(int row, int row2);
+
+		engine_export virtual Variant getValue(int row, int col);
+		engine_export virtual void setValue(int row, int col, const Variant& val);
+		engine_export void checkBounds(int index, int rowOrCol);
+		engine_export int indexFromVariant(int depth, const Variant& headerName);
+		engine_export void clearCell(treenode cell, int recursive = 0);
+
 	};
 
-	Table(TreeNode* node) : root(node), ref(this) {}
-	Table() {}
+private:
+	class BundleDataSource : public TableDataSource
+	{
+	public:
 
-	Table& operator = (TreeNode* node) { root = node; return *this; }
-	operator TreeNode*() { return root; }
-	operator Variant() { return root; }
-	TableElement operator [](const Variant& row);	
+		virtual int getConstraints() const override { return ADD_COLS_BEFORE_ROWS | READ_ONLY_ROW_HEADERS | BUNDLE_TYPES_ONLY; }
+		engine_export virtual int __numRows() const override;
+		engine_export virtual int __numCols() const override;
 
-	int __numRows() const;
-	int __numCols() const;
+		engine_export virtual int getBundleFieldType(int col) override;
+		engine_export virtual void addCol(int col, int datatype) override;
+		engine_export virtual void addRow(int row, int datatype) override;
+		engine_export virtual TreeNode* cell(const Variant& row, const Variant& col) override;
+		engine_export virtual void clear(int recursive = 0) override;
+		engine_export virtual std::string getColHeader(int colNum) override;
+		engine_export virtual std::string getRowHeader(int rowNum) override;
+		virtual void setRowHeader(int rowNum, const char* name) { throw "Cannot set row headers on a bundle table"; }
+
+		engine_export virtual Variant getValue(int row, int col);
+		engine_export virtual void setValue(int row, int col, const Variant& val);
+	};
+public:
+	TableDataSource* dataSource;
+	TableDataSource treeTableSource;
+	BundleDataSource bundleSource;
+	std::shared_ptr<TableDataSource> extendedDataSource;
+	engine_export Table(TreeNode* node);
+	engine_export Table();
+	engine_export Table& operator =(const Table&);
+	Table(std::shared_ptr<TableDataSource> source) : extendedDataSource(source) { dataSource = source.get(); }
+
+	engine_export Table& operator = (TreeNode* node);
+	engine_export operator TreeNode*();
+	engine_export operator Variant();
+	engine_export TableElement operator [](const Variant& row);
+
+	int __numRows() const { return dataSource->__numRows(); }
+	int __numCols() const { return dataSource->__numCols(); }
 	__declspec(property(get = __numRows)) int numRows;
 	__declspec(property(get = __numCols)) int numCols;
 
-	std:: string __name() const;
+	std::string __name() { return dataSource->__name(); }
 	__declspec(property(get = __name)) std::string name;
 
-	Table& addCol(int col, int datatype);
-	Table& addRow(int row, int datatype);	
-	TreeNode* cell(int row, int col);
-	Table& clear();
-	Table& deleteCol(int col);
-	Table& deleteRow(int row);
-	Variant executeCell(int row, int col);
-	std::string getColHeader(int colNum);
-	std::string getRowHeader(int rowNum);
-	Table& Table::moveCol(int fromCol, int toCol);
-	Table& Table::moveRow(int fromRow, int toRow);
-	Table& setColHeader(int colNum, std::string name);
-	Table& setRowHeader(int rowNum, std::string name);
-	Table& setSize(int rows, int cols, int datatype, int overwrite);
-	Table& sort(const Variant& cols, const Variant& ascDesc);
-	Table& Table::swapCols(int col, int col2);
-	Table& Table::swapRows(int row, int row2);	
+	Table& addCol(int col = 0, int datatype = 0){ dataSource->addCol(col, datatype); return *this; }
+	Table& addRow(int row = 0, int datatype = 0) { dataSource->addRow(row, datatype); return *this; }
+	TreeNode* cell(const Variant& row, const Variant& col) { return dataSource->cell(row, col); }
+	Table& clear(int recursive = 0) { dataSource->clear(recursive); return *this; }
+	Table& deleteCol(int col) { dataSource->deleteCol(col); return *this; }
+	Table& deleteRow(int row) { dataSource->deleteRow(row); return *this; }
+	Variant executeCell(const Variant& row, const Variant& col) { return dataSource->executeCell(row, col); }
+	std::string getColHeader(int colNum) const { return dataSource->getColHeader(colNum); }
+	std::string getRowHeader(int rowNum) const { return dataSource->getRowHeader(rowNum); }
+	Table& moveCol(int fromCol, int toCol) { dataSource->moveCol(fromCol, toCol); return *this; }
+	Table& moveRow(int fromRow, int toRow) { dataSource->moveRow(fromRow, toRow); return *this; }
+	Table& setColHeader(int colNum, const char* name) { dataSource->setColHeader(colNum, name); return *this; }
+	Table& setRowHeader(int rowNum, const char* name) { dataSource->setRowHeader(rowNum, name); return *this; }
+	Table& setColHeader(int colNum, std::string& name) { return setColHeader(colNum, name.c_str()); }
+	Table& setRowHeader(int rowNum, std::string& name) { return setRowHeader(rowNum, name.c_str()); }
+	Table& setSize(int rows, int cols, int datatype, int overwrite) { dataSource->setSize(rows, cols, datatype, overwrite); return *this; }
+	Table& sort(const Variant& cols, const Variant& ascDesc) { dataSource->sort(cols, ascDesc); return *this; }
+	Table& swapCols(int col, int col2) { dataSource->swapCols(col, col2); return *this; }
+	Table& swapRows(int row, int row2) { dataSource->swapRows(row, row2); return *this; }
 
-	Variant getValue(int row, int col);
-	void setValue(int row, int col, const Variant& val);	
-	int indexFromVariant(int depth, const Variant& headerName);
-	void checkBounds(int index, int rowOrCol);
+	engine_export Table& cloneTo(Table& dest);
+	engine_export Array clone();
+
+private:
+	Variant getValue(int row, int col) { return dataSource->getValue(row, col); }
+	void setValue(int row, int col, const Variant& val) { return dataSource->setValue(row, col, val); }
+	engine_export int indexFromVariant(int depth, const Variant& headerName) { return dataSource->indexFromVariant(depth, headerName); }
+	void checkBounds(int index, int rowOrCol) { dataSource->checkBounds(index, rowOrCol); }
+public:
+
+	engine_export static Table global(const char* name);
 };
 
 }

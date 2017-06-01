@@ -70,20 +70,23 @@ inline double setlabelnum(treenode object, int labelrank, double val){set(rank(l
 inline double setlabelnum(treenode object, string labelname, double val){string path = concat("/",labelname); set(node((char*)(path.c_str()), labels(object)), val);return 0;}
 inline double setlabelstr(treenode object, int labelrank, string val){sets(rank(labels(object), labelrank), val);return 0;}
 inline double setlabelstr(treenode object, string labelname, string val){sets(label(object, labelname), val);return 0;}
-inline double gettablenum(treenode thetable, int row, int col){return get(cellrc(thetable, row, col));}
+engine_export double gettablenum(treenode thetable, int row, int col);
 inline double gettablenum(string tablename, int row, int col){return gettablenumalias((char*)tablename.c_str(), row, col);}
 inline treenode gettablecell(treenode thetable, int row, int col){return cellrc(thetable, row, col);}
 inline treenode gettablecell(string tablename, int row, int col){return cellrc(reftable(tablename), row, col);}
 inline treenode gettablecell(int table, int row, int col){return cellrc(reftable(table), row, col);}
-inline string gettablestr(treenode thetable, int row, int col){return gets(cellrc(thetable, row, col));}
-inline string gettablestr(string tablename, int row, int col){return gets(cellrc(reftable(tablename), row, col));}
-inline string gettablestr(int table, int row, int col){return gets(cellrc(reftable(table), row, col));}
-inline double settablenum(treenode thetable, int row, int col, double val){set(cellrc(thetable, row, col), val);return 0;}
-inline double settablenum(string tablename, int row, int col, double val){settablenumalias((char*)tablename.c_str(), row, col, val);return 0;}
-inline double settablestr(treenode thetable, int row, int col, char* val){sets(cellrc(thetable, row, col), val);return 0;}
-inline double settablestr(treenode thetable, int row, int col, string val){sets(cellrc(thetable, row, col), val);return 0;}
-inline double settablestr(string tablename, int row, int col, string val){sets(cellrc(reftable(tablename), row, col), val);return 0;}
-inline double settablestr(int table, int row, int col, char* val){sets(cellrc(reftable(table), row, col), val);return 0;}
+engine_export const char* gettablestr_cstr(treenode thetable, int row, int col);
+inline string gettablestr(treenode thetable, int row, int col){return gettablestr_cstr(thetable, row, col);}
+inline string gettablestr(string tablename, int row, int col){return gettablestr_cstr(reftable(tablename.c_str()), row, col);}
+engine_export const char* gettablestr_cstr(int table, int row, int col);
+inline string gettablestr(int table, int row, int col){return gettablestr_cstr(table, row, col);}
+engine_export double settablenum(treenode thetable, int row, int col, double val);
+inline double settablenum(string tablename, int row, int col, double val){settablenumalias(tablename.c_str(), row, col, val);return 0;}
+visible double settablestr(const char * table, int row, int col, const char * value);
+engine_export double settablestr(treenode thetable, int row, int col, const char* val);
+inline double settablestr(treenode thetable, int row, int col, string val){ return settablestr(thetable, row, col, val.c_str());}
+inline double settablestr(string tablename, int row, int col, string val){return settablestr(tablename.c_str(), row, col, val.c_str());}
+engine_export double settablestr(int table, int row, int col, const char* val);
 inline treenode addtablerow(treenode table, int row=0, int datatype=0){return addtablerowalias(table,row,datatype);}
 inline treenode addtablerow(char* tablename, int row=0, int datatype=0){return addtablerowalias(reftable(tablename),row,datatype);}
 inline treenode addtablerow(int table, int row=0, int datatype=0){return addtablerowalias(reftable(table),row,datatype);}
@@ -276,40 +279,26 @@ inline treenode getvarnode(treenode thenode, char* thename){return getvarnodeimp
 inline treenode getvarnode(treenode thenode, int therank){return rank(variables(thenode), therank);}
 inline double showprogressbar(string text){return showprogressbar_importedfunction((char*)text.c_str());}
 //double userinput(treenode variable, string prompt){return userinput_importedfunction(variable, (char*)prompt.c_str());}
-inline string gettableheader(treenode table, int roworcol, int rowcolnr){
-	if(!objectexists(table)) return "Error: table not exists in gettableheader.";
-	if(roworcol==1)	// return row header
-		return getname(rank(table, rowcolnr));
-	else				// return col header
-		return getname(rank(rank(table, 1),rowcolnr));
-}
-inline string gettableheader(string table, int roworcol, int rowcolnr){
-	return gettableheader(reftable((char*)table.c_str()), roworcol, rowcolnr);
-}
-inline string gettableheader(int table, int roworcol, int rowcolnr){
-	return gettableheader(reftable(table), roworcol, rowcolnr);
-}
-inline int settableheader(treenode table, int roworcol, int rowcolnr, string value){
-	if(!objectexists(table)) return 0;
-	if(roworcol==1){	// set row header
-		setname(rank(table, rowcolnr), value);
-		return 1;
-	}
-	else{				// set col header
-		setname(rank(rank(table, 1),rowcolnr), value);
-		return 1;
-	}
-}
+
+engine_export const char* gettableheader_cstr(const char* tablename, int roworcol, int rowcolnr);
+engine_export const char*  gettableheader_cstr(int tablename, int roworcol, int rowcolnr);
+engine_export const char*  gettableheader_cstr(treenode tablename, int roworcol, int rowcolnr);
+inline string gettableheader(treenode table, int roworcol, int rowcolnr){ return gettableheader_cstr(table, roworcol, rowcolnr); }
+inline string gettableheader(string table, int roworcol, int rowcolnr){return gettableheader_cstr(table.c_str(), roworcol, rowcolnr);}
+inline string gettableheader(int table, int roworcol, int rowcolnr){return gettableheader_cstr(table, roworcol, rowcolnr);}
+engine_export void settableheader(treenode table, int roworcol, int rowcolnr, const char* str);
+inline int settableheader(treenode table, int roworcol, int rowcolnr, string value){settableheader(table, roworcol, rowcolnr, value.c_str()); return 1;}
 inline int settableheader(string table, int roworcol, int rowcolnr, string value){return settableheader(reftable(table), roworcol, rowcolnr, value);}
 inline int settableheader(int table, int roworcol, int rowcolnr, string value){return settableheader(reftable(table), roworcol, rowcolnr, value);}
 
-inline int gettablerows(treenode table){return content(table);}
-inline int gettablerows(string table){return gettablerows(reftable(table));}
-inline int gettablerows(int table){return gettablerows(reftable(table));}
+engine_export int gettablerows(treenode table);
+visible int gettablerows(const char* table);
+inline int gettablerows(string table){return gettablerows(table.c_str());}
+engine_export int gettablerows(int table);
 
-inline double settablesize(char* table,int nrows,int ncols, int type = 1, int overwrite = 0){return settablesizealias(table, nrows, ncols, type, overwrite);}
-inline double settablesize(string table,int nrows,int ncols, int type = 1, int overwrite = 0){return settablesizealias((char*)table.c_str(), nrows, ncols, type, overwrite);}
-inline double settablesize(treenode table,int nrows,int ncols, int type = 1, int overwrite = 0){return settable(table, ncols, nrows, type, overwrite);}
+inline double settablesize(char* table,int nrows,int ncols, int type = 0, int overwrite = 0){return settablesizealias(table, nrows, ncols, type, overwrite);}
+inline double settablesize(string table,int nrows,int ncols, int type = 0, int overwrite = 0){return settablesizealias((char*)table.c_str(), nrows, ncols, type, overwrite);}
+engine_export double settablesize(treenode table,int nrows,int ncols, int type = 0, int overwrite = 0);
 
 inline double importtable(treenode node, char * table, int usetopgrey, int useleftgrey) {return importtablealias(node, table, usetopgrey, useleftgrey);}
 inline double importtable(treenode node, char * table) {return importtablealias(node, table, 0, 0);}
@@ -327,19 +316,10 @@ inline double sorttable(int table, int col)
 	return sorttable_alias3(table, col);
 }
 
-inline int gettablecols(treenode table)
-{
-	return content(first(table));
-}
-inline int gettablecols(string table)
-{
-	return gettablecols(reftable(table));
-}
-
-inline int gettablecols(int table)
-{
-	return gettablecols(reftable(table));
-}
+engine_export int gettablecols(treenode table);
+visible int gettablecols( const char* globaltablename);
+inline int gettablecols(string table) { return gettablecols(table.c_str()); }
+engine_export int gettablecols(int table);
 
 inline int makearray(int size){return size;}
 
@@ -832,7 +812,14 @@ engine_export treenode inittrackedvariable(treenode theNode, int type, double st
 visible double rotationproject(treenode originSpace, double rx, double ry, double rz, treenode ontoSpace, double* rotationsOut);
 
 engine_export int getsystemmetric(int metric, HWND win);
+engine_export Variant callwebscriptmethod(treenode view, const char* id, const char* name, ...);
 
+visible void fglMultMatrix(float m00, float m01, float m02, float m03, float m04, float m05, float m06, float m07, float m08, float m09, float m10, float m11, float m12, float m13, float m14, float m15);
+engine_export void fglMultMatrix(const float* matrix);
+visible void fglLoadMatrix(float m00, float m01, float m02, float m03, float m04, float m05, float m06, float m07, float m08, float m09, float m10, float m11, float m12, float m13, float m14, float m15);
+engine_export void fglLoadMatrix(const float* matrix);
+engine_export void autoloadallmedia(treenode obj);
+visible int autoloadallmedia();
 }
 
 #endif

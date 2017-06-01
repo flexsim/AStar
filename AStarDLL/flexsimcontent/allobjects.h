@@ -178,8 +178,6 @@
 	#define forobjectlayerunder(__top__) for (treenode a = first(__top__); objectexists(a); a = next(a))
 	#define forobjectsbefore(__node__) for (treenode a = prev(__node__); objectexists(a) && getrank(a) >= 1; a = prev(a))
 	#define forobjectsbehind(__node__) for (treenode a = next(__node__); objectexists(a); a = next(a))
-	#define max(__left__, __right__) ((__left__ >= __right__) ? __left__ : __right__)
-	#define min(__left__, __right__) ((__left__ <= __right__) ? __left__ : __right__)
 	#define eq(__a__, __b__) (__a__ == __b__)
 	#define ne(__a__, __b__) (__a__ != __b__)
 	#define msgsendingobject() _parnode(1, callPoint)
@@ -572,6 +570,7 @@
 #define KINEMATIC_RELATIVE_LOCS 0x8
 #define KINEMATIC_RESET_BUFFER 0x10
 #define KINEMATIC_MANAGE_ROT_OVERRIDE 0x20
+#define KINEMATIC_NO_INCLINE_ROTATION 0x40
 
 // Constants group: KINEMATIC
 #define KINEMATIC_X  0
@@ -1036,6 +1035,7 @@
 #define CLF_EXPERTFIT			0x00040000
 #define CLF_OPTQUEST			0x00020000
 #define CLF_XMLSAVELOAD			0x00010000
+#define CLF_OPTQUEST_STUDENT	0x00000008
 
 #define UNDO_AGGREGATED 1
 #define UNDO_MOVE_SIZE_ROTATE 2
@@ -1379,6 +1379,8 @@
 #define BUNDLE_FIELD_INDEX_HASH 0x0200
 #define BUNDLE_FIELD_INDEX_MASK 0x7F00
 
+#define BUNDLE_FIELD_NULLABLE 0x8000
+
 #define BUNDLE_FIELD_NAME_SIZE 64
 
 #define SM_RESET 1
@@ -1485,6 +1487,10 @@
 #define START_TIME_STR 71
 #define CURRENT_TIME_STR 72
 #define STOP_TIME_STR 73
+#define WARMUP_TIME_STR 74
+
+#define WARMUP_TIME 81
+#define WARMUP_TIME_NODE 82
 
 // Constants group: FLUID CONVEYOR
 #define FLUID_CONVEYOR_DIRECTION_FORWARD  1
@@ -1895,6 +1901,57 @@
 #define RUN_SPEED_LOW_PRECISION 1
 #define RUN_SPEED_HIGH_PRECISION 2
 
+#define STICK_JOY_STATUS 0
+#define STICK_JOY_XPOS 1
+#define STICK_JOY_YPOS 2
+#define STICK_JOY_ZPOS 3
+#define STICK_JOY_BUTTONS 4
+#define STICK_JOY_SET_CAPTURE 5
+#define STICK_JOY_RELEASE_CAPTURE 6
+#define STICK_JOY_RPOS 7
+#define STICK_JOY_UPOS 8
+#define STICK_JOY_VPOS 9
+#define STICK_JOY_POV 10
+#define STICK_JOY_CURRENT_BUTTON 11
+#define STICK_JOY_FLAGS 12
+#define STICK_XBOX_STATUS 20
+#define STICK_XBOX_BUTTONS 21
+#define STICK_XBOX_LEFT_THUMB_X 22
+#define STICK_XBOX_LEFT_THUMB_Y 23
+#define STICK_XBOX_RIGHT_THUMB_X 24
+#define STICK_XBOX_RIGHT_THUMB_Y 25
+#define STICK_XBOX_LEFT_TRIGGER 26
+#define STICK_XBOX_RIGHT_TRIGGER 27
+#define STICK_VR_STATUS 50
+#define STICK_VR_THUMB_X 51
+#define STICK_VR_THUMB_Y 52
+#define STICK_VR_INDEX_TRIGGER 53
+#define STICK_VR_GRIP_TRIGGER 54
+#define STICK_VR_BUTTON_1 55
+#define STICK_VR_BUTTON_2 56
+#define STICK_VR_BUTTON_3 57
+#define STICK_VR_BUTTON_4 58
+#define STICK_VR_TOUCH_BUTTON_1 59
+#define STICK_VR_TOUCH_BUTTON_2 60
+#define STICK_VR_TOUCH_BUTTON_3 61
+#define STICK_VR_TOUCH_BUTTON_4 62
+#define STICK_VR_TOUCH_THUMB_REST 63
+#define STICK_VR_TOUCH_INDEX_TRIGGER 64
+#define STICK_VR_TOUCH_POINTING 65
+#define STICK_VR_TOUCH_THUMB_UP 66
+#define STICK_VR_HAND_POSITION 67
+#define STICK_VR_HAND_ROTATION 68
+#define STICK_VR_HAND_WORLD_POSITION 69
+#define STICK_VR_HAND_WORLD_ROTATION 70
+#define STICK_VR_HAND_OFFSET_POSITION 71
+#define STICK_VR_TARGET_FLOOR_POSITION 72
+#define STICK_VR_SET_VIBRATION 73
+#define STICK_VR_SUBMIT_VIBRATION 74
+
+#define TASKBAR_NORMAL 2
+#define TASKBAR_ERROR 4
+#define TASKBAR_PAUSED 8
+#define TASKBAR_INDETERMINATE 1
 
 namespace FlexSim {
 
@@ -2042,6 +2099,7 @@ class TaskSequence : public SimpleDataType{
 	virtual const char* getClassFactory() {return "TaskSequence";}
 	virtual void bind();
 	virtual char* toString(int verbose);
+	virtual int getCapabilities() { return 1; } //Labels
 	virtual treenode getObjectTree();
 	virtual TreeNode* getLabelNode(const char* labelName, bool assert);
 	virtual TreeNode* getLabelNode(int labelRank, bool assert);
@@ -2089,6 +2147,8 @@ class SendMessageEvent : public FlexSimEvent {
 	virtual void execute();
 	virtual const char* getClassFactory() {return "SendMessageEvent";}
 	virtual void bind();
+	virtual void getDescription(char* toStr, size_t maxSize);
+	virtual void getEventDataDescription(char* toStr, size_t maxSize);
 };
 
 class SimulationStartEvent : public FlexSimEvent {
@@ -2102,6 +2162,17 @@ public:
 private:
 	std::vector<ObjRef<FlexSimEventHandler>> objects;
 	static ObjRef<SimulationStartEvent> simulationStartEvent;
+};
+
+class MTBFCheckEvent : public FlexSimEvent {
+public:
+	MTBFCheckEvent() : FlexSimEvent() {}
+	MTBFCheckEvent(TreeNode* mtbfNode, TreeNode* coupling) : FlexSimEvent(), mtbfNode(mtbfNode), coupling(coupling) {}
+	virtual void execute() override;
+	virtual const char* getClassFactory() {return "MTBFCheckEvent";}
+private:
+	TreeNode* mtbfNode;
+	TreeNode* coupling;
 };
 
 class FRItemInfo : public SimpleDataType
@@ -2853,13 +2924,13 @@ FS_CONTENT_DLL_FUNC virtual double onRunWarm();
 
 FS_CONTENT_DLL_FUNC virtual double onUndo(bool isUndo, treenode undoRecord);
 
-FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stop(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double resumeObject(int id, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void resume(int id, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double resumeObject();
+FS_CONTENT_DLL_FUNC virtual void resume();
 
 FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
@@ -2894,6 +2965,8 @@ FS_CONTENT_DLL_FUNC double resetLabels();
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
 FS_CONTENT_DLL_FUNC virtual void bindStatistics();
+
+FS_CONTENT_DLL_FUNC void bindStandardStatistics(bool force);
 
 FS_CONTENT_DLL_FUNC treenode stateProfileResolver(const Variant& p1);
 
@@ -2931,15 +3004,15 @@ FS_CONTENT_DLL_FUNC virtual Variant onMessage(treenode fromobject, const Variant
 
 FS_CONTENT_DLL_FUNC virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double stopObject(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stop(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual void onInitialStop();
 
-FS_CONTENT_DLL_FUNC virtual double resumeObject(int id, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void resume(int id, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double resumeObject();
+FS_CONTENT_DLL_FUNC virtual void resume();
 
 FS_CONTENT_DLL_FUNC virtual void onFinalResume();
 
@@ -3066,6 +3139,8 @@ FS_CONTENT_DLL_FUNC virtual double onTransportOutComplete(treenode item, int por
 
 FS_CONTENT_DLL_FUNC virtual double onTransportInComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
 
+FS_CONTENT_DLL_FUNC virtual void onTransportInFailed(treenode item, int portnumber);
+
 FS_CONTENT_DLL_FUNC double resetVariables();
 
 FS_CONTENT_DLL_FUNC static inline FRItemInfo* getItemInfo(treenode flowitem);
@@ -3102,9 +3177,9 @@ FS_CONTENT_DLL_FUNC treenode createMoveTaskSequence(treenode dispatcher, treenod
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double resumeObject();
+FS_CONTENT_DLL_FUNC virtual void resume();
 
 FS_CONTENT_DLL_FUNC double saveState();
 
@@ -3184,6 +3259,8 @@ FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *strda
 
 FS_CONTENT_DLL_FUNC double onReset();
 
+FS_CONTENT_DLL_FUNC virtual void onMemberDestroyed(TaskExecuter* te);
+
 FS_CONTENT_DLL_FUNC virtual double navigateToObject(treenode traveler, treenode destination, double endSpeed);
 
 FS_CONTENT_DLL_FUNC virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed);
@@ -3237,14 +3314,15 @@ class GlobalTable : public ObjectDataType
 {
 public:
 
+
+// c++ member functions
+
+FS_CONTENT_DLL_FUNC virtual double onReset();
+
+FS_CONTENT_DLL_FUNC virtual void bindEvents();
+
 TreeNode* node_v_data;
-#define v_data node_v_data->safedatafloat()[0]
-TreeNode* node_v_rows;
-#define v_rows node_v_rows->safedatafloat()[0]
-TreeNode* node_v_columns;
-#define v_columns node_v_columns->safedatafloat()[0]
-TreeNode* node_v_initonreset;
-#define v_initonreset node_v_initonreset->safedatafloat()[0]
+TreeNode* node_v_resettrigger;
 TreeNode* node_v_width;
 #define v_width node_v_width->safedatafloat()[0]
 TreeNode* node_v_height;
@@ -3314,6 +3392,8 @@ FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
 FS_CONTENT_DLL_FUNC virtual treenode getEventInfoObject(const char* eventName);
 
+FS_CONTENT_DLL_FUNC virtual double CheckBringDown(treenode coupling, treenode profile, int toState, int fromState);
+
 TreeNode* node_v_members;
 #define v_members node_v_members->safedatafloat()[0]
 TreeNode* node_v_mtbf;
@@ -3329,10 +3409,6 @@ TreeNode* node_v_downfunction;
 TreeNode* node_v_upfunction;
 TreeNode* node_v_mtbfstates;
 #define v_mtbfstates node_v_mtbfstates->safedatafloat()[0]
-TreeNode* node_v_accuracy;
-#define v_accuracy node_v_accuracy->safedatafloat()[0]
-TreeNode* node_v_rangecutoff;
-#define v_rangecutoff node_v_rangecutoff->safedatafloat()[0]
 TreeNode* node_v_enabled;
 #define v_enabled node_v_enabled->safedatafloat()[0]
 
@@ -3456,6 +3532,8 @@ FS_CONTENT_DLL_FUNC double validateTravelMemberStructure(treenode curtmemnode);
 FS_CONTENT_DLL_FUNC static treenode getTENetNode(treenode membernode);
 
 FS_CONTENT_DLL_FUNC static NetworkNavigator* getInstance();
+
+FS_CONTENT_DLL_FUNC virtual void onMemberDestroyed(TaskExecuter* te);
 
 TreeNode* node_v_nodemembers;
 #define v_nodemembers node_v_nodemembers->safedatafloat()[0]
@@ -4007,7 +4085,7 @@ FS_CONTENT_DLL_FUNC int checkDestroy();
 
 FS_CONTENT_DLL_FUNC treenode getStateProfile(treenode object, int profileNum);
 
-FS_CONTENT_DLL_FUNC double getStateTime(treenode profile, int state);
+FS_CONTENT_DLL_FUNC double getStateTime(treenode profile, int state, int curState);
 
 FS_CONTENT_DLL_FUNC int getStateUsed(treenode profile, int state);
 
@@ -4866,8 +4944,6 @@ TreeNode* node_v_arrivalmode;
 TreeNode* node_v_interarrivaltime;
 TreeNode* node_v_timezerocreate;
 #define v_timezerocreate node_v_timezerocreate->safedatafloat()[0]
-TreeNode* node_v_interarrivalitemtype;
-#define v_interarrivalitemtype node_v_interarrivalitemtype->safedatafloat()[0]
 TreeNode* node_v_itemclass;
 #define v_itemclass node_v_itemclass->safedatafloat()[0]
 TreeNode* node_v_schedule;
@@ -4910,6 +4986,8 @@ FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *strda
 FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
 
 FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
+
+FS_CONTENT_DLL_FUNC virtual void onTransportInFailed(treenode item, int port);
 
 FS_CONTENT_DLL_FUNC double resetVariables();
 
@@ -4990,9 +5068,9 @@ FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
 
 FS_CONTENT_DLL_FUNC double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double resumeObject();
+FS_CONTENT_DLL_FUNC virtual void resume();
 
 FS_CONTENT_DLL_FUNC virtual double callProcessOperators( treenode item, int trigger);
 
@@ -5015,6 +5093,8 @@ FS_CONTENT_DLL_FUNC double checkSetupOpFree(treenode item);
 FS_CONTENT_DLL_FUNC double checkProcessOpFree(treenode item);
 
 FS_CONTENT_DLL_FUNC virtual double startSetupTime(treenode item, int port);
+
+FS_CONTENT_DLL_FUNC virtual void onTransportInFailed(treenode item, int port);
 
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
@@ -5136,6 +5216,8 @@ FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
 
 FS_CONTENT_DLL_FUNC virtual double onTransportInComplete(treenode item, int port, treenode transporter DEFAULTNULL);
 
+FS_CONTENT_DLL_FUNC virtual void onTransportInFailed(treenode item, int port);
+
 FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
 
 FS_CONTENT_DLL_FUNC virtual double updateVersion(char* newversion, char* oldversion);
@@ -5234,6 +5316,8 @@ FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
 
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
+FS_CONTENT_DLL_FUNC double assertProfile();
+
 TreeNode* node_v_optable;
 #define v_optable node_v_optable->safedatafloat()[0]
 TreeNode* node_v_nrofprocesses;
@@ -5305,6 +5389,8 @@ FS_CONTENT_DLL_FUNC virtual int assignBay(treenode item);
 FS_CONTENT_DLL_FUNC virtual int assignLevel(treenode item, int bay);
 
 FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int portnumber);
+
+FS_CONTENT_DLL_FUNC virtual void onTransportInFailed(treenode item, int port);
 
 FS_CONTENT_DLL_FUNC double getBayXCenter(double baynumber);
 
@@ -5400,6 +5486,12 @@ TreeNode* node_v_floorstorage;
 #define v_floorstorage node_v_floorstorage->safedatafloat()[0]
 TreeNode* node_v_opacity;
 #define v_opacity node_v_opacity->safedatafloat()[0]
+TreeNode* node_v_columnspacing;
+#define v_columnspacing node_v_columnspacing->safedatafloat()[0]
+TreeNode* node_v_hidefloor;
+#define v_hidefloor node_v_hidefloor->safedatafloat()[0]
+TreeNode* node_v_extendcolumn;
+#define v_extendcolumn node_v_extendcolumn->safedatafloat()[0]
 
 // c++ attributes
 int lastpredrawoutput;
@@ -5410,6 +5502,8 @@ IndexedMesh structuralMesh;
 
 Mesh platformsMesh;
 
+Mesh braceMesh;
+
 bool rebuildMeshes;
 
 double meshSY;
@@ -5417,6 +5511,12 @@ double meshSY;
 int meshDrawMode;
 
 int meshFloorStorage;
+
+int meshColumnSpacing;
+
+bool meshHideFloor;
+
+int meshExtendColumn;
 
 
 // System
@@ -5466,9 +5566,9 @@ FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode involvedobj, treenode
 
 FS_CONTENT_DLL_FUNC virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resumeObject();
+FS_CONTENT_DLL_FUNC virtual void resume();
 
 FS_CONTENT_DLL_FUNC virtual double photoEyeEntryLogic(treenode item);
 
@@ -5500,7 +5600,7 @@ FS_CONTENT_DLL_FUNC double initItem(treenode item);
 
 FS_CONTENT_DLL_FUNC double buildBaseMesh(treenode cursection);
 
-FS_CONTENT_DLL_FUNC double buildConveyorMesh(treenode cursection);
+FS_CONTENT_DLL_FUNC double buildConveyorMesh(treenode cursection, double &curtexperc);
 
 TreeNode* node_v_speed;
 #define v_speed node_v_speed->safedatafloat()[0]
@@ -5590,6 +5690,8 @@ TreeNode* node_v_texremainder;
 #define v_texremainder node_v_texremainder->safedatafloat()[0]
 TreeNode* node_v_sideoffset;
 #define v_sideoffset node_v_sideoffset->safedatafloat()[0]
+TreeNode* node_v_animateskirt;
+#define v_animateskirt node_v_animateskirt->safedatafloat()[0]
 
 // c++ attributes
 treenode cursection;
@@ -5775,9 +5877,9 @@ FS_CONTENT_DLL_FUNC double destroyItemEvent(treenode item, int event);
 
 FS_CONTENT_DLL_FUNC double cleanItemEvent(treenode item, int event);
 
-FS_CONTENT_DLL_FUNC double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resumeObject();
+FS_CONTENT_DLL_FUNC virtual void resume();
 
 FS_CONTENT_DLL_FUNC double buildDecisionMesh();
 
@@ -5821,9 +5923,9 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double resumeObject(int id, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void resume(int id, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC double onTransportInNotify(treenode item, int port);
 
@@ -5893,11 +5995,11 @@ FS_CONTENT_DLL_FUNC double rankInOrder(treenode tasksequence);
 
 FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resumeObject(int id, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC void resume(int id, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double resumeObject();
+FS_CONTENT_DLL_FUNC virtual void resume();
 
 FS_CONTENT_DLL_FUNC double reorder();
 
@@ -5993,11 +6095,11 @@ FS_CONTENT_DLL_FUNC virtual double finishOffset();
 
 FS_CONTENT_DLL_FUNC treenode  findDefaultNavigator();
 
-FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resumeObject(int id, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC void resume(int id, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double resumeObject();
+FS_CONTENT_DLL_FUNC virtual void resume();
 
 FS_CONTENT_DLL_FUNC virtual double preemptActive(treenode task, treenode activets, int preempttype, treenode newts);
 
@@ -6045,9 +6147,13 @@ FS_CONTENT_DLL_FUNC virtual double onResourceAvailable(int port);
 
 FS_CONTENT_DLL_FUNC virtual double onStartSimulation();
 
+FS_CONTENT_DLL_FUNC virtual double onDestroy(treenode view);
+
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
 FS_CONTENT_DLL_FUNC virtual void bindStatistics();
+
+FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
 
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
@@ -6172,6 +6278,8 @@ FS_CONTENT_DLL_FUNC virtual void onEndTask(treenode task);
 
 FS_CONTENT_DLL_FUNC virtual double getEntryLoc(treenode involved,  double* returnarray);
 
+FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
+
 
 // System
 
@@ -6252,6 +6360,8 @@ FS_CONTENT_DLL_FUNC double onDraw(treenode view);
 
 FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
 
+FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
+
 TreeNode* node_v_shellzloc;
 #define v_shellzloc node_v_shellzloc->safedatafloat()[0]
 TreeNode* node_v_xconvey;
@@ -6313,6 +6423,8 @@ FS_CONTENT_DLL_FUNC Vec3 calcApproachOffsetRot(int orientationType);
 FS_CONTENT_DLL_FUNC Vec3 calcItemRot(int orientationType);
 
 FS_CONTENT_DLL_FUNC double calcClampWidth(treenode item, int orientationType);
+
+FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
 
 TreeNode* node_v_motionmethod;
 #define v_motionmethod node_v_motionmethod->safedatafloat()[0]
@@ -6418,6 +6530,8 @@ FS_CONTENT_DLL_FUNC virtual double onClick(treenode view, int code);
 
 FS_CONTENT_DLL_FUNC double scaleComponents(int picktype, double newsize);
 
+FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
+
 TreeNode* node_v_shellxloc;
 #define v_shellxloc node_v_shellxloc->safedatafloat()[0]
 TreeNode* node_v_shellyloc;
@@ -6484,6 +6598,8 @@ FS_CONTENT_DLL_FUNC virtual double onClick(treenode view, int code);
 
 FS_CONTENT_DLL_FUNC double scaleComponents();
 
+FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
+
 TreeNode* node_v_forkspeed;
 #define v_forkspeed node_v_forkspeed->safedatafloat()[0]
 TreeNode* node_v_forkinitialheight;
@@ -6527,9 +6643,9 @@ FS_CONTENT_DLL_FUNC double getPickOffset(treenode item, treenode toobject, doubl
 
 FS_CONTENT_DLL_FUNC double getPlaceOffset(treenode item, treenode fromobject,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double resumeObject(int id, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void resume(int id, int stateprofile DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
@@ -6937,9 +7053,9 @@ FS_CONTENT_DLL_FUNC virtual double emptyObject();
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double resumeObject();
+FS_CONTENT_DLL_FUNC virtual void resume();
 
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
@@ -7446,9 +7562,9 @@ FS_CONTENT_DLL_FUNC virtual double moveMaterialOut(double amount, int port);
 
 FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double stopObjectAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double resumeObject();
+FS_CONTENT_DLL_FUNC virtual void resume();
 
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]

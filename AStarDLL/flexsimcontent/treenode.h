@@ -4,6 +4,7 @@
 #include "basicmacros.h"
 #include "basicclasses.h"
 #include "datatypes.h"
+#include <unordered_map>
 
 #if defined FLEXSIM_ENGINE_COMPILE || defined COMPILING_MODULE_DLL || defined COMPILING_FLEXSIM_CONTENT
 #define FULL_TREENODE_DEF
@@ -17,10 +18,54 @@
 	#define IN_TREENODE_H
 	#include "treenodemacros.h"
 	visible int validlink(FlexSim::TreeNode *, char *);
-	#define VALIDLINKFAST(x) (x!=&TreeNode::failSafeLink && !IsBadReadPtr(x,sizeof(TreeNode)) && x->checkParity())
+	#define VALIDLINKFAST(x) (x != nullptr && x!=&TreeNode::failSafeLink && testpointer(x,sizeof(TreeNode), nullptr) && x->checkParity())
+
+	#include "Platform.h"
 #endif
 
 namespace FlexSim {
+
+class engine_export SubnodesArray
+{
+protected:
+	TreeNode* holder = nullptr;
+public:
+	SubnodesArray(TreeNode* holder = nullptr) : holder(holder) {}
+	SubnodesArray(const SubnodesArray& other) : holder(other.holder) {}
+	void construct(const SubnodesArray& other) { ::new(this)SubnodesArray(other); }
+	SubnodesArray& operator =(const SubnodesArray& other) { holder = other.holder; return *this; }
+
+	int __getLength();
+	__declspec(property(get = __getLength)) int length;
+	TreeNode* _assert(const char* name);
+	TreeNode* _assert(const char* name, const Variant& val) { return _assert(name, val, false); }
+	TreeNode* _assert(const char* name, const Variant& val, bool persist);
+	void clear();
+	TreeNode* operator[](int r);
+	TreeNode* operator[](const char* name);
+	TreeNode* operator[](const Variant& index);
+	TreeNode* add();
+};
+
+class engine_export LabelsArray
+{
+private:
+	static bool dieHard;
+protected:
+	TreeNode* holder = nullptr;
+public:
+	LabelsArray(TreeNode* holder = nullptr) : holder(holder) {}
+	LabelsArray(const LabelsArray& other) : holder(other.holder) {}
+	void construct(const LabelsArray& other) { ::new(this)LabelsArray(other); }
+	LabelsArray& operator =(const LabelsArray& other) { holder = other.holder; return *this; }
+
+	TreeNode* _assert(const char* name);
+	TreeNode* _assert(const char* name, const Variant& val);
+
+	TreeNode* operator[](const char* name);
+};
+
+
 
 class TreeNode
 {
@@ -29,7 +74,13 @@ public:
 	// value
 	engine_export Variant __getValue();
 	engine_export TreeNode* __setValue(const Variant&);
+	Variant __getValueSafe();
+	TreeNode* __setValueSafe(const Variant&);
+#ifdef FLEXSIM_ENGINE_COMPILE
+	__declspec(property(get = __getValueSafe, put = __setValueSafe)) Variant value;
+#else
 	__declspec(property(get = __getValue, put = __setValue)) Variant value;
+#endif
 
 	// name
 	engine_export FlexSimPrivateTypes::String __getName();
@@ -69,11 +120,15 @@ public:
 	engine_export TreeNode* __getNext();
 	__declspec(property(get = __getNext)) TreeNode* next;
 
-	// size
-	engine_export int __getNumSubnodes();
-	engine_export void __setNumSubnodes(int);
-	__declspec(property(get = __getNumSubnodes, put = __setNumSubnodes)) int numSubnodes;
+	SubnodesArray __getSubnodes() { return SubnodesArray(this); }
+	__declspec(property(get = __getSubnodes)) SubnodesArray subnodes;
 
+	LabelsArray __getLabels() { return LabelsArray(this); }
+	__declspec(property(get = __getLabels)) LabelsArray labels;
+
+	engine_export TreeNode* __getOwnerObject();
+	__declspec(property(get = __getOwnerObject)) TreeNode* ownerObject;
+	engine_export TreeNode* findOwnerObject();
 	// evaluate
 	engine_export Variant evaluate(const VariantParams& params);
 	engine_export Variant evaluate();
@@ -98,13 +153,43 @@ public:
 	engine_export Variant evaluate(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant& );
 	engine_export Variant evaluate(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
 
-	engine_export TreeNode* subnode(const char* name, int assert = 0);
-	engine_export TreeNode* subnode(int rank, int assert = 0);
 
-	engine_export TreeNode* label(const char* name, int assert = 0);
-	engine_export TreeNode* label(int rank, int assert = 0);
-
+	/// <summary>	Destroys the node. </summary>
+	/// <remarks>	If undos are enabled, this will add an undo record. </remarks>
+	/// <param name="to">	[in,out] If non-null, to. </param>
 	engine_export void destroy();
+
+	/// <summary>	Joins this node with another node using a two-way coupling. </summary>
+	/// <remarks>	If undos are enabled, this will add an undo record. </remarks>
+	/// <param name="to">	[in,out] If non-null, to. </param>
+	engine_export TreeNode* joinTo(TreeNode* to);
+
+	/// <summary>	Points this node to another node using a one-way coupling. </summary>
+	/// <remarks>	If undos are enabled, this will add an undo record. </remarks>
+	/// <param name="to">	[in,out] If non-null, to. </param>
+	engine_export TreeNode* pointTo(TreeNode* to);
+
+	/// <summary>	Breaks off this node's pointer coupling data. </summary>
+	/// <remarks>	If it is currently a two-way coupling, both sides of the coupling will be set to point to null.
+	/// 			If undos are enabled, this will add an undo record. </remarks>
+	/// <param name="to">	[in,out] If non-null, to. </param>
+	engine_export TreeNode* breakItOff();
+
+	/// <summary>	Sets the name of the node. </summary>
+	/// <remarks>	If undos are enabled, this will add an undo record. </remarks>
+	/// <param name="name">	The name. </param>
+	engine_export TreeNode* setName(const char* name);
+
+	/// <summary>	Adds data to the node. </summary>
+	/// <remarks>	If undos are enabled, this will add an undo record. </remarks>
+	/// <param name="type">	The data type. </param>
+	/// <returns>	This node, allowing you to chain commands. </returns>
+	engine_export TreeNode* addData(int type);
+
+	engine_export TreeNode* find(const char* path);
+
+	engine_export TreeNode* addSimpleData(SimpleDataType* simple, bool bind);
+	engine_export TreeNode* addCouplingData(CouplingDataType* cdt, bool bind);
 
 	// object data
 	template <class T>
@@ -131,7 +216,7 @@ protected:
 public:
 	TreeNode * ownerobjectcache;                  // (4 or 8 bytes)
 	void* dupedMember;                            // (4 or 8 bytes)
-	HashTable<TreeNode*> * listhash;              // (4 or 8 bytes)
+	std::unordered_map<std::string, TreeNode*> * listhash;              // (4 or 8 bytes)
 	int arraysize;                                // (4 bytes)
 	TreeNode * parent;                            // (4 or 8 bytes)
 content_private:
@@ -156,6 +241,8 @@ public:
 	engine_export int cleanup();
 	engine_export double * safedatafloat();
 	engine_export ByteBlock * safedatabyteblock();
+	engine_export TreeNode * safedatapartner();
+
 	#ifdef COMPILING_FLEXSIM_CONTENT
 		// do not use this method. It is for backwards compatibility
 		void __addUnknownData(void* theData) { datatype = 0; data = theData; }

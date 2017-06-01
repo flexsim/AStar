@@ -134,7 +134,6 @@ namespace FlexSim {
 	typedef treenode     (*_att)(treenode node, int index);
 	typedef treenode     (*_att_s)(treenode node, char * name);
 	typedef treenode     (*_attlink)(treenode N, char* s);
-	typedef int          (*_autoloadallmedia)();
 	typedef int          (*_autoloadimages)();
 	typedef int          (*_autoloadshapes)();
 	typedef int          (*_autoloadsounds)();
@@ -163,7 +162,6 @@ namespace FlexSim {
 	typedef double       (*_buildnodeflexscript)(treenode node);
 	typedef int          (*_calculate6DOFrobotinversekinematics)(double * loc, treenode planningItem, double* rotOffset, double approachoffset, treenode robot, double* d, double* a, double xtrans, double * returnval);
 	typedef double       (*_calculateconfidence)(double stddev, double nrofdatapoints, double confidence);
-	typedef double       (*_callwebscriptmethod)(treenode view, char* id, char* name, ...);
 	typedef char*        (*_cdir_cstr)();
 	typedef treenode     (*_cell)(treenode node, unsigned int xpos, unsigned int ypos);
 	typedef treenode     (*_cellrowcolumn)(treenode node, unsigned int xpos, unsigned int ypos);
@@ -567,15 +565,13 @@ namespace FlexSim {
 	typedef double       (*_getrank)(treenode);
 	typedef int          (*_getrunstate)();
 	typedef Variant (*_getsdtvalue)(treenode sdtNode, const char* valName);
-	typedef double       (*_getshapeindex)(char * thename);
+	typedef double       (*_getshapeindex)(const char * thename);
 	typedef int          (*_getshapenrframes)(int shapeindex);
-	typedef double       (*_getsoundindex)(char * thename);
+	typedef double       (*_getsoundindex)(const char * thename);
 	typedef double       (*_getstatenum_alias1)(treenode object);
 	typedef double       (*_getstatenum_alias2)(treenode object, int profilenr);
 	typedef treenode     (*_gettablecell)(char* globaltablename, int row, int column);
-	typedef int          (*_gettablecols)(char* globaltablename);
 	typedef double       (*_gettablenumalias)(char * table, int row, int col);
-	typedef char*        (*_gettablestr)(char * table, int row, int col);
 	typedef treenode     (*_gettaskinvolved)(treenode tasksequence, unsigned int rankrequested, unsigned int involvednum);
 	typedef treenode     (*_gettasksequence)(treenode dispatcher, double tsrank);
 	typedef treenode     (*_gettasksequencequeue)(treenode dispatcher);
@@ -583,7 +579,7 @@ namespace FlexSim {
 	typedef double       (*_gettaskvariable)(treenode tasksequence, unsigned int rankrequested, unsigned int varnum);
 	typedef treenode     (*_gettenetnode)(treenode te);
 	typedef double       (*_gettenetworkinfo)(treenode te, treenode destobj, int info);
-	typedef double       (*_gettextureindex)(char * thename);
+	typedef double       (*_gettextureindex)(const char * thename);
 	typedef double       (*_gettotalnroftasks)(treenode tasksequence);
 	typedef double       (*_gettreedrawpositionalias)(treenode object, treenode roottree, int* cury, int increment);
 	typedef int          (*_getundorecordid)(treenode undorecord);
@@ -705,10 +701,10 @@ namespace FlexSim {
 	typedef double       (*_makehisto)(treenode data, treenode dest, int nrofbuckets, double minval, double maxval);
 	typedef double       (*_maxof) (double a, double b);
 	typedef double       (*_mediareset)();
-	typedef double       (*_menubelow)(HMENU m, double x);
+	typedef HMENU        (*_menubelow)(HMENU m, double x);
 	typedef double       (*_menucheck)(HMENU m, double x, double y);
 	typedef double       (*_menugray)(HMENU m, double x, double y);
-	typedef double       (*_menumain)();
+	typedef HMENU        (*_menumain)();
 	typedef void 		 (*_mesh)(treenode meshnode, unsigned int perVertexAttribs, unsigned int flags);
 	typedef int  		 (*_meshaddvertex)(treenode meshnode);
 	typedef unsigned int (*_meshaddcustomvertexattrib)(treenode meshnode, const char* name, int componentsPerVertex, GLenum type, bool isNormalized);
@@ -988,9 +984,8 @@ namespace FlexSim {
 	typedef int          (*_setstatealias3)(treenode , int, const char*);
 	typedef int          (*_setstatealias4)(treenode , int, treenode);
 	typedef double       (*_settable)(treenode node, unsigned int xsize, unsigned int ysize, double datatype, double overwrite);
-	typedef double       (*_settablenumalias)(char * table, int row, int col, double value);
+	typedef double       (*_settablenumalias)(const char * table, int row, int col, double value);
 	typedef double       (*_settablesizealias)(char* globaltablename,int nrows,int ncols, int type, int overwrite);
-	typedef double       (*_settablestr)(char * table, int row, int col, char * value);
 	typedef double       (*_setvarnumalias)(treenode object, char *varname, double val);
 	typedef double       (*_setvarstralias)(treenode object, char *varname, char *val);
 	typedef double       (*_setviewtextalias)(treenode target, char *);
@@ -1213,7 +1208,6 @@ DECLARE_FLEXSIM_FUNCTION_2(assertlabelalias, "assertlabel")
 DECLARE_FLEXSIM_FUNCTION_2(assertsubnodealias, "assertsubnode")
 DECLARE_FLEXSIM_FUNCTION_2(assertvariablealias, "assertvariable")
 DECLARE_FLEXSIM_FUNCTION_1(attlink)
-DECLARE_FLEXSIM_FUNCTION_1(autoloadallmedia)
 DECLARE_FLEXSIM_FUNCTION_1(autoloadimages)
 DECLARE_FLEXSIM_FUNCTION_1(autoloadshapes)
 DECLARE_FLEXSIM_FUNCTION_1(autoloadsounds)
@@ -1237,7 +1231,6 @@ DECLARE_FLEXSIM_FUNCTION_1(buildall)
 DECLARE_FLEXSIM_FUNCTION_1(buildnodeflexscript)
 DECLARE_FLEXSIM_FUNCTION_1(calculate6DOFrobotinversekinematics)
 DECLARE_FLEXSIM_FUNCTION_1(calculateconfidence)
-DECLARE_FLEXSIM_FUNCTION_1(callwebscriptmethod)
 DECLARE_FLEXSIM_FUNCTION_2(cauchyalias, "cauchy")
 DECLARE_FLEXSIM_FUNCTION_1(cdir_cstr)
 DECLARE_FLEXSIM_FUNCTION_2(cempiricalalias, "cempirical")
@@ -2281,6 +2274,7 @@ DECLARE_FLEXSIM_ATTRIBUTE(gridlinewidth)
 DECLARE_FLEXSIM_ATTRIBUTE(gridx)
 DECLARE_FLEXSIM_ATTRIBUTE(gridy)
 DECLARE_FLEXSIM_ATTRIBUTE(gridz)
+DECLARE_FLEXSIM_ATTRIBUTE(gridplane)
 DECLARE_FLEXSIM_ATTRIBUTE(guifocus)
 DECLARE_FLEXSIM_ATTRIBUTE(guifocusclass)
 DECLARE_FLEXSIM_ATTRIBUTE(hidden)

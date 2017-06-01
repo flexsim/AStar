@@ -6,6 +6,11 @@
 #include "byteblock.h"
 #include "flexsimevent.h"
 #include <unordered_map>
+#include "Group.h"
+
+#if defined FLEXSIM_ENGINE_COMPILE
+#include "locator.h"
+#endif
 
 namespace FlexSim
 {
@@ -48,9 +53,14 @@ public:
 		const Variant* puller = nullptr;
 		TreeNode* onPull = nullptr;
 		virtual void bindEvents() override;
+
+		Variant __getValue() { return value; }
+		void remove() { List::remove(holder); };
+		engine_export virtual void bindInterface();
 	};
 
 	class LabelField;
+	class GroupField;
 	class Field : public SimpleDataType
 	{
 		friend class List;
@@ -59,7 +69,7 @@ public:
 		engine_export virtual void bind() override;
 		engine_export virtual void bindStatistics() override;
 		engine_export void bindEvents() override { bindStatisticsAsEvents(); }
-		void reset(List* list);
+		engine_export virtual void reset(List* list);
 		double isDynamic;
 		double staticIndex;
 		bool shouldTrackTotal(List* list) { return !isDynamic && list->trackStaticFieldTotals; }
@@ -70,6 +80,7 @@ public:
 		virtual Variant evaluateOnQuery(Entry* entry, const Variant& requester) { return Variant(); }
 		virtual bool needsPuller() { return false; }
 		virtual LabelField* toLabelField() { return nullptr; }
+		virtual GroupField* toGroupField() { return nullptr; }
 	};
 
 	class LabelField : public Field
@@ -94,6 +105,19 @@ public:
 		virtual void bind() override;
 		virtual const char* getClassFactory() override { return "ListPushArgumentField"; }
 		virtual Variant evaluateOnAdd(Entry* entry, const VariantParams& params) override;
+	};
+	class GroupField : public Field
+	{
+	public:
+		GroupField(TreeNode* groupNode) { group = groupNode; isDynamic = 0; staticIndex = 0; }
+		GroupField() {}
+		NodeRef group;
+		virtual void bind() override;
+		virtual void reset(List* list) override;
+		virtual const char* getClassFactory() { return "ListGroupField"; }
+		virtual Variant evaluateOnAdd(Entry* entry, const VariantParams& params) override;
+		virtual Variant evaluateOnQuery(Entry* entry, const Variant& requester) override;
+		virtual GroupField* toGroupField() override { return this; }
 	};
 
 	struct OverflowTrackableValue
@@ -189,13 +213,24 @@ public:
 		TreeNode* onFulfill = nullptr;
 		virtual void bindEvents() override;
 		Variant value;
+
+		Variant __getPuller() { return puller; }
+		std::string __getQuery();
+		double __getNumRequested() { return numRequested; }
+		double __getNumRequired() { return numRequired; }
+		int __getFlags() { return flags; }
+		void remove() { List::remove(holder); };
+		engine_export virtual void bindInterface();
 	};
 
-	struct PushResult
+	/// <summary>	A push result that is still being composed (as opposed to a push 
+	/// 			result that is the final result of a push). </summary>
+	/// <remarks>	Anthony.johnson, 2/27/2017. </remarks>
+	struct ComposingPushResult
 	{
-		PushResult() {}
-		PushResult(const Variant& val) { addToResult(returnVal); }
-		PushResult(PushResult&& other) : returnVal(std::move(other.returnVal)), returnArray(std::move(other.returnArray)) {  }
+		ComposingPushResult() {}
+		ComposingPushResult(const Variant& val) { addToResult(returnVal); }
+		ComposingPushResult(ComposingPushResult&& other) : returnVal(std::move(other.returnVal)), returnArray(std::move(other.returnArray)) {  }
 		Variant returnVal;
 		std::unique_ptr<std::vector<Variant>> returnArray;
 		int numResults = 0;
@@ -205,7 +240,7 @@ public:
 
 	typedef NodeListArray<Entry>::CouplingSdtSubNodeType EntryList;
 
-	NodeListArray<Field>::SdtSubNodeType fields;
+	NodeListArray<Field>::SdtSubNodeBindingType fields;
 	double numTrackingFields;
 	double trackStaticFieldTotals;
 	NodeListArray<Entry>::CouplingSdtSubNodeType removedEntries;
@@ -223,16 +258,18 @@ protected:
 	class PartitionHash
 	{
 	public:
-		size_t operator() (const Variant& pullerKey);
+		size_t operator() (const Variant& pullerKey) const;
 	};
 
 	class VariantKeyEqual
 	{
 	public:
-		bool operator() (const Variant& a, const Variant& b);
+		bool operator() (const Variant& a, const Variant& b) const;
 	};
 
+
 public:
+	static List* global(const char* name);
 	// Events
 	TreeNode* onPush = nullptr;
 	TreeNode* onPull = nullptr;
@@ -247,6 +284,18 @@ public:
 		virtual void bind() override;
 		Variant pushedVal;
 	};
+	class PullResult : public Variant
+	{
+	public:
+		PullResult() : backOrder(nullptr), amountPulled(0.0) {}
+		BackOrder* backOrder;
+		double amountPulled;
+		void destruct() { this->~PullResult(); }
+		void construct() { ::new(this) PullResult(); }
+		void copyConstruct(const PullResult& other) { ::new (this) PullResult(other); }
+		static void bindInterface();
+		BackOrder* __getBackOrder() { return backOrder; }
+	};
 
 	class Partition : public SimpleDataType
 	{
@@ -257,8 +306,13 @@ public:
 		std::unordered_map<Variant, Entry*, PartitionHash, VariantKeyEqual> entryMap;
 		std::unordered_map<Variant, BackOrder*, PartitionHash, VariantKeyEqual> backOrderMap;
 
-		NodeListArray<BackOrder>::SdtSubNodeBindingType backOrders;
-		NodeListArray<Entry>::CouplingSdtSubNodeBindingType entries;
+		typedef NodeListArray<BackOrder>::SdtSubNodeBindingType BackOrders;
+		BackOrders backOrders;
+		typedef NodeListArray<Entry>::CouplingSdtSubNodeBindingType Entries;
+		Entries entries;
+		
+		typedef NodeListArray<BackOrder, nullptr, nullptr, 0, ThrowingAssertionMethod>::SdtSubNodeBindingTypeOneBased ListBackOrders;
+		typedef NodeListArray<Entry, nullptr, nullptr, 0, ThrowingAssertionMethod>::CouplingSdtSubNodeBindingTypeOneBased ListEntries;
 
 		Variant id;
 		List* list;
@@ -274,7 +328,8 @@ public:
 		engine_export virtual void bind() override;
 		virtual const char* getClassFactory() override { return "ListPartition"; }
 
-		Variant pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, int flags);
+
+		PullResult pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, int flags);
 		Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, int flags, EntryRange* range = nullptr);
 		Variant calculateSelectClauseValue(int queryMatchIndex, int selectClauseRank, SqlQuery* q, List::OverflowTrackableValue* tracker);
 		/// <summary>	Gets the result from the last pull query. </summary>
@@ -300,7 +355,7 @@ public:
 
 		Variant push(const VariantParams& params);
 		Variant processPushedEntries(EntryRange& range, const Variant& involvedVal);
-		PushResult matchEntriesToBackOrders(EntryRange& range);
+		ComposingPushResult matchEntriesToBackOrders(EntryRange& range);
 		engine_export virtual Variant getEntryValue(int entryIndex, int fieldId);
 
 		Entry* addEntry(Entry* entry, const VariantParams& params);
@@ -407,6 +462,11 @@ public:
 	engine_export TreeNode* fieldResolver(const Variant& fieldID);
 	engine_export int getFieldPossibilities(TreeNode* dest, const Variant& p1, const Variant& p2);
 	engine_export virtual void onReset();
+	void removeBadInitialContents();
+	void initializeFields();
+	void addInitialContents();
+	void addGroupFields(Group* group);
+	void addGroupMembers(Group* group);
 	engine_export virtual int getFieldId(const char* fieldName);
 	engine_export virtual const char* enumerateColNames(int colNum);
 	engine_export Variant push(const Variant& involved);
@@ -427,7 +487,11 @@ public:
 private:
 	int lastPushMarker;
 	ListSqlDataSource* processQuery(const char* sqlQuery, int flags, TreeNode* parsedContainer, bool isBackOrderQuery);
-	inline Variant pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, const Variant& partitionID, int flags);
+	inline PullResult pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, const Variant& partitionID, int flags);
+	inline Variant legacyPull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, const Variant& partitionID, int flags)
+	{
+		return pull(q, requestNum, requireNum, puller, partitionID, flags);
+	}
 	inline Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, const Variant& partitionID, int flags);
 	Variant pullBackOrders(const char* sqlQuery, double requestNum, const Variant& value, const Variant& partitionID, int flags);
 	Variant pullBackOrders(TreeNode* cachedQuery, double requestNum, const Variant& value, const Variant& partitionID, int flags);
@@ -446,8 +510,16 @@ public:
 	/// 			are pushed entries that have not been completely fulfilled.</remarks>
 	/// <returns>	The last push marker. </returns>
 	engine_export int getLastPushMarker() { return lastPushMarker; }
-	engine_export Variant pull(const char* sqlQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
-	engine_export Variant pull(TreeNode* cachedQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
+	engine_export PullResult pull(const char* sqlQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
+	engine_export PullResult pull(TreeNode* cachedQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
+	Variant legacyPull(const char* sqlQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0)
+	{
+		return pull(sqlQuery, requestNum, requireNum, puller, partitionID, flags);
+	}
+	Variant legacyPull(TreeNode* cachedQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0)
+	{
+		return pull(cachedQuery, requestNum, requireNum, puller, partitionID, flags);
+	}
 	/// <summary>	Gets the back order for the given puller. </summary>
 	/// <remarks>	If the list is set to Unique Pullers Only, then back orders may have multiple
 	///				pullers associated with them. This method uses the list's internal map to quickly
@@ -527,6 +599,7 @@ public:
 	double keepEmptyPartitions = 0;
 	double allowMultiplePushes = 0;
 	double reevaluateAllValues = 0;
+	double autoAddGroupFields = 0;
 
 	void addValueListeners(Entry* entry);
 	void addPullerListeners(BackOrder* backOrder);
@@ -547,9 +620,19 @@ public:
 	/// <remarks>	Anthony.johnson, 9/28/2015. </remarks>
 	/// <param name="node">	[in,out] If non-null, the node to remove. </param>
 	engine_export static void remove(TreeNode* node);
+
+	engine_export virtual void bindInterface() override;
+
+private:
+	Partition::ListEntries __getListEntries(const Variant& partitionID);
+	Partition::ListBackOrders __getListBackOrders(const Variant& partitionID);
 };
 
 #ifdef FLEXSIM_ENGINE_COMPILE
+
+engine_export treenode globallist(const char* listName);
+engine_export treenode globallist(int listRank);
+engine_export treenode globallist(const Variant& list);
 
 engine_export Variant listpush(const char* listName, const Variant& involved);
 engine_export Variant listpush(treenode list, const Variant& involved);

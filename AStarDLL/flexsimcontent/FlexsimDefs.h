@@ -32,6 +32,11 @@ THE SOFTWARE.
 
 using std::string;
 
+namespace FlexSim {
+	typedef HWND Window;
+	typedef HMENU Menu;
+}
+
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 
 	#define CONTENT_DLL_COMPILE
@@ -66,10 +71,12 @@ namespace FlexSim {
 	#define parnode(__a__) _parnode(__a__, callPoint)
 	#define parval(__a__) _parval(__a__, callPoint)
 	#define parstr(__a__) _parstr(__a__, callPoint)
-	#include "basicmacros.h"
-	#include "basicutils.h"
 }
+	
+#include "basicmacros.h"
+
 #endif
+#include "basicutils.h"
 
 #include "datatypes.h"
 

@@ -17,7 +17,6 @@ class IndexedMesh;
 class NodeRef;
 template<class ObjType> class ObjRef;
 class Bundle;
-template<class ElementType> class FlexSimCVector;
 template<class ElementType> class HashTable;
 class SqlDataSource;
 class SqlQuery;
@@ -39,12 +38,13 @@ class FlexScriptDebugInstance;
 struct PropertyBinding;
 struct Property; 
 struct SelfBoundProperty;
-
+class EventDataStruct;
+class CodeEditor;
+class Group;
 }
 
 //class AviPlayer;
 class Kinematic;
-class EventDataStruct;
 class TreeWin;
 class ScenePositionCache;
 class PortDrawCache;

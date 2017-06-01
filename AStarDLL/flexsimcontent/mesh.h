@@ -4,7 +4,7 @@
 #include "simpledatatype.h"
 #include <vector>
 #ifdef FLEXSIM_ENGINE_COMPILE
-	#include <fstream>
+	#include "nowide/fstream.hpp"
 #endif
 
 namespace FlexSim {
@@ -29,24 +29,7 @@ public:
 		perMeshAmbient[3] = perMeshDiffuse[3] = perMeshSpecular[3] = perMeshEmissive[3] = 1.0f;
 	}
 	~Mesh() {cleanup(true);}
-	Mesh(const Mesh& other) : lastShaderProgram(other.lastShaderProgram), numVerts(other.numVerts), vertByteStride(other.vertByteStride),
-		texCoordOffset(other.texCoordOffset),  normalOffset(other.normalOffset), colorOffset(other.colorOffset),
-		flags(other.flags), perMeshAttribs(other.perMeshAttribs), perVertexAttribs(other.perVertexAttribs),
-		vbo(0), vao(0), maxBufferSize(other.maxBufferSize), isDirty(true)
-	{
-		holder = 0;
-
-		vertBuffer = new unsigned char[other.maxBufferSize];
-		memcpy(vertBuffer, other.vertBuffer, other.maxBufferSize);
-
-		if (other.customVertexAttribs) {
-			customVertexAttribs = new std::vector<CustomVertexAttrib*>(other.customVertexAttribs->size());
-			for (size_t i = 0; i < other.customVertexAttribs->size(); ++i)
-				(*customVertexAttribs)[i] = new CustomVertexAttrib(*((*other.customVertexAttribs)[i]));
-		} else customVertexAttribs = 0;
-
-		memcpy(allStatics, other.allStatics, STATIC_BLOCK_SIZE);
-	}
+	engine_export Mesh(const Mesh& other);
 
 protected:
 	Mesh(int flags) : lastShaderProgram(0), numVerts(0), vertByteStride(0), flags(flags), perMeshAttribs(0), perVertexAttribs(0),
@@ -88,13 +71,15 @@ protected:
 		void* copyPoint;
 	};
 	struct CustomVertexAttrib {
-		string name;
+		std::string name;
 		GLint attribLocation;
 		unsigned char attribOffset;
 		int componentsPerVertex;
 		GLenum type;
 		bool isNormalized;
 		void bind(TreeNode* x);
+		void bindVertexAttribArray(char* basePoint, int totalByteStride);
+		void unbindVertexAttribArray();
 	};
 	int getComponentsPerVertex(int attribId);
 	void fillVertexCopier(const CustomVertexAttrib& attrib, AttribCopier& copier);
@@ -123,6 +108,7 @@ public:
 
 	static void startCyclesExport(const char* filePath);
 	static void endCyclesExport();
+
 protected:
 	void drawRenderMode(int drawMode, int vertOffset, int vertCount, int vertStride);
 
@@ -162,9 +148,12 @@ protected:
 #define MESH_DIFFUSE4               0x0400000
 #define MESH_AMBIENT_AND_DIFFUSE    0x0800000
 #define MESH_AMBIENT_AND_DIFFUSE4   0x1000000
+// the following are per-mesh-only attributes
 #define MESH_SPECULAR               0x2000000
 #define MESH_SHININESS              0x4000000
 #define MESH_EMISSION               0x8000000
+
+#define MESH_PER_VERTEX_COLOR_ATTRIBS (MESH_DIFFUSE | MESH_DIFFUSE4 | MESH_AMBIENT_AND_DIFFUSE | MESH_AMBIENT_AND_DIFFUSE4)
 
 #define MESH_COLOR_ATTRIBS (MESH_AMBIENT | MESH_DIFFUSE | MESH_DIFFUSE4 | MESH_AMBIENT_AND_DIFFUSE \
 				| MESH_AMBIENT_AND_DIFFUSE4 | MESH_SPECULAR | MESH_SHININESS | MESH_EMISSION)
@@ -175,6 +164,7 @@ protected:
 #define MESH_FORCE_CLEANUP 0x8
 #define MESH_NO_POSITION 0x10
 #define MESH_FORCE_CLEANUP_FULL 0x20
+#define MESH_INSTANCED 0x8
 
 // MESH_IN_MEMORY: (not implemented, just an idea at this point) means the mesh is not bound to the tree, 
 // which means it can delete its buffers once copied into the open gl objects
@@ -232,11 +222,11 @@ protected:
 	/// 			prepareDraw() essentially enables all the client states for what is needed, and
 	/// 			binds to the proper buffers. </remarks>
 	/// <param name="stride">	The stride.</param>
-	void prepareDraw(int offset = 0, int stride = 0);
+	void prepareDraw(unsigned int& vao, int offset = 0, int stride = 0);
 	void applyAttribs();
 	void resetAttribs();
 	bool checkForShaderChange();
-	void cleanupDraw();
+	void cleanupDraw(unsigned int& vao);
 	/// <summary>	defineGLObjects(): defines the vertex array object. Call this one, and it will
 	/// 			call defineVBO. </summary>
 	/// <remarks>	 </remarks>
@@ -334,20 +324,21 @@ public:
 	engine_export virtual void draw(int drawMode, int vertOffset = 0, int vertCount = 0, int vertStride = 0);
 	engine_export float* getVertexAttrib(unsigned int vertIndex, unsigned int attribId);
 
+	engine_export Mesh& merge(const Mesh& other);
+	engine_export void scaleToBounds(const Vec3f& min, const Vec3f& max);
+	engine_export void getBounds(Vec3f& min, Vec3f& max) const;
 
 };
 
 class IndexedMesh : public Mesh
 {
+	friend class InstancedMesh;
+	friend class IndexedMesh;
 public:
-	IndexedMesh() : Mesh(MESH_INDEXED), numIndices(0), maxIndexBufferSize(0), indexBuffer(0), indexVBO(0), storageType(0), elementSize(sizeof(unsigned int)){}
+	IndexedMesh() : Mesh(MESH_INDEXED), numIndices(0), maxNumIndices(0), intIndexBuffer(0), indexVBO(0), elementSize(sizeof(unsigned short)), storageType(GL_UNSIGNED_SHORT){}
+	engine_export IndexedMesh(const Mesh& other);
 	~IndexedMesh()  {cleanupIndexBuffer(true);}
-	IndexedMesh(const IndexedMesh& other) : Mesh(other), numIndices(other.numIndices), maxIndexBufferSize(other.maxIndexBufferSize),
-		indexVBO(0), storageType(other.storageType), elementSize(other.elementSize)
-	{
-		indexBuffer = new GLuint[maxIndexBufferSize * elementSize / sizeof(GLuint)];
-		memcpy(indexBuffer, other.indexBuffer, maxIndexBufferSize * elementSize);
-	}
+	engine_export IndexedMesh(const IndexedMesh& other);
 
 	virtual const char* getClassFactory() {return "IndexedMesh";}
 	engine_export virtual void bind();
@@ -364,7 +355,7 @@ public:
 	/// <param name="buffer">	[in] The index buffer. </param>
 	engine_export void defineIndexBuffer(int num, unsigned int * buffer);
 	engine_export void defineIndexBuffer(int num, int* buffer) { defineIndexBuffer(num, (unsigned int*)buffer); }
-	
+
 	/// <summary>	Adds an index to the index buffer. </summary>
 	/// <remarks>	 If you want to add indices as you go, use this method. </remarks>
 	/// <param name="index">	The vertex index, returned by addVertex()</param>
@@ -383,18 +374,32 @@ public:
 
 protected:
 	unsigned int numIndices;
-	unsigned int maxIndexBufferSize;
-	unsigned int * indexBuffer;
+	/// <summary>	The maximum number of indices possible, given the current allocated buffer size </summary>
+	/// <remarks>	Anthony.johnson, 8/15/2013. </remarks>
+	unsigned int maxNumIndices;
+	union {
+		unsigned int * intIndexBuffer;
+		unsigned short * shortIndexBuffer;
+	};
 	unsigned int indexVBO;
 	unsigned int elementSize;
 	unsigned int storageType;
 	void defineVBO();
-	void prepareDraw();
-	void cleanupDraw();
+	void prepareDraw(unsigned int& vao);
+	void cleanupDraw(unsigned int& vao);
 	/// <summary>	defineGLObjects(): defines the vertex array object. Call this one, and it will
 	/// 			call defineVBO. </summary>
 	/// <remarks>	 </remarks>
 	void defineGLObjects();
+
+	template <class DestType, class SrcType>
+	void copyBuffer(int num, DestType* to, SrcType* from, int indexOffset = 0) {
+		for (int i = 0; i < num; i++)
+			to[i] = (DestType)from[i] + indexOffset;
+	}
+
+	void assertStorageType(unsigned int type);
+	void assertIndexBufferSize(int numIndices);
 
 #ifdef FLEXSIM_ENGINE_COMPILE
 	public:
@@ -405,6 +410,8 @@ protected:
 
 		void indexedDrawCyclesExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
 #endif
+public:
+	engine_export IndexedMesh& merge(const IndexedMesh& other);
 };
 
 class InstancedMesh : public IndexedMesh
@@ -412,14 +419,8 @@ class InstancedMesh : public IndexedMesh
 public:
 	InstancedMesh() : IndexedMesh(), instancedVertBuffer(0), instancedAttribs(0), maxInstancedBufferSize(0), instancedVertByteStride(0) {}
 	~InstancedMesh() { cleanupInstancedVerts(); }
-	InstancedMesh(const InstancedMesh& other) : IndexedMesh(other), maxInstancedBufferSize(other.maxInstancedBufferSize), 
-		instancedVertByteStride(other.instancedVertByteStride), numInstancedVerts(other.numInstancedVerts)
-	{
-		instancedVertBuffer = new unsigned char[other.maxInstancedBufferSize];
-		memcpy(instancedVertBuffer, other.instancedVertBuffer, other.maxInstancedBufferSize);
-
-		//TODO: copy instancedAttribs from other
-	}
+	engine_export InstancedMesh(const InstancedMesh& other);
+	InstancedMesh(const IndexedMesh& other) : IndexedMesh(other), instancedVertBuffer(0), instancedAttribs(0), maxInstancedBufferSize(0), instancedVertByteStride(0) {}
 
 	virtual void init(unsigned int numVerts, unsigned int perVertexAttribs = 0, unsigned int flags = 0) override
 	{
@@ -432,7 +433,9 @@ protected:
 	struct InstancedVertexAttrib : public Mesh::CustomVertexAttrib {
 		GLuint attribDivisor;
 		void bind(TreeNode* x);
+		void bindVertexAttribArray(char* basePoint, int totalByteStride);
 	};
+	int lastDrawnIndexVBO = -1;
 	std::vector <InstancedVertexAttrib> * instancedAttribs;
 	unsigned char* instancedVertBuffer;
 	int instancedVertByteStride;
@@ -442,12 +445,12 @@ protected:
 	/// <remarks>	</remarks>
 	engine_export void cleanupInstancedVerts();
 	bool checkForShaderChange();
-	void defineGLObjects();
+	void defineGLObjects(IndexedMesh* mesh);
 	void defineVBO();
-	void prepareDraw(int instanceOffset, int instanceStride);
-	void cleanupDraw();
+	void prepareDraw(IndexedMesh* mesh);
+	void cleanupDraw(IndexedMesh* mesh);
 public:
-	GLuint instanceVBO;
+	GLuint instanceVBO = 0;
 	int numInstancedVerts;
 	/// <summary>	Binds the mesh. </summary>
 	/// <remarks>	</remarks>
@@ -472,11 +475,13 @@ public:
 
 	engine_export unsigned int addInstancedVertex();
 	engine_export void setInstancedVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* data);
-	engine_export void defineInstancedVertexAttribs(unsigned int vertIndex, unsigned int attribId, float* data);
-	engine_export void draw(int drawMode, int instanceOffset, int numInstances, int instanceStride);
-	void draw(int drawMode) { draw(drawMode, 0, 0, 0); }
+	engine_export void defineInstancedVertexAttribs(unsigned int numVerts, unsigned int attribId, float* data);
+private:
+	engine_export void instancedDrawRenderMode(int drawMode, IndexedMesh* mesh);
+public:
+	void draw(int drawMode) { draw(drawMode, this); }
+	void draw(int drawMode, IndexedMesh* mesh) { instancedDrawRenderMode(drawMode, mesh); }
 
-	void instancedDrawRenderMode(int drawMode, int instanceOffset, int numInstances, int instanceStride);
 };
 
 

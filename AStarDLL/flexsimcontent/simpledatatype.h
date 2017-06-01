@@ -3,15 +3,18 @@
 #include "basicclasses.h"
 #include "basicmacros.h"
 #include "datatypes.h"
-#include "basicutils.h"
+#include "byteblock.h"
 // if i'm compiling the engine then I don't yet have access
 // to some of the commands I need, so include the right files
 #ifdef FLEXSIM_ENGINE_COMPILE
-	#include "commandlist.h"
-	#include "modelling.h"
-	extern "C" __declspec(dllexport) char* bbgetbuffer(FlexSim::treenode x);
-	extern "C" __declspec(dllexport) int bbsetsize(FlexSim::treenode x, int size);
-	extern "C" __declspec(dllexport) int bbgetsize(FlexSim::treenode x);
+	#include "treenode.h"
+	#if defined FLEXSIM_COMMANDS
+		#include "commandlist.h"
+		#include "modelling.h"
+	#endif
+		extern "C" __declspec(dllexport) char* bbgetbuffer(FlexSim::treenode x);
+		extern "C" __declspec(dllexport) int bbsetsize(FlexSim::treenode x, int size);
+		extern "C" __declspec(dllexport) int bbgetsize(FlexSim::treenode x);
 #endif
 namespace FlexSim {
 
@@ -78,7 +81,11 @@ public:
 	static const int DISPLAY_TABLE_CELL = 0x2;
 	static const int DISPLAY_LIST = 0x4;
 	static const int DISPLAY_DEBUGGER = 0x8;
+	static const int DISPLAY_SPECIAL = 0x100;
 	engine_export virtual char* toString(int displayFlags);
+	engine_export virtual int stringtodata(char *datastring, int precision) { return 0; };
+	engine_export virtual int getCapabilities() { return 0; }
+	static const int CAPABILITY_LABELS = 0x1;
 engine_private:
 	virtual TreeNode* getObjectTree() { return 0; }
 	virtual TreeNode* getLabelNode(const char* labelName, bool assert) { return 0; }
@@ -206,7 +213,7 @@ template<class ObjType>
 		case SDT_BIND_ON_LOAD: {
 			TreeNode* theNode = bindByName(name, 0, DATA_BYTEBLOCK, 0);
 			if(bindMode == SDT_BIND_ON_SAVE)
-				sets(theNode, (char*)val.c_str());
+				theNode->value = (char*)val.c_str();
 			else val = bbgetbuffer(theNode);
 			break;
 		}
@@ -306,46 +313,11 @@ template<class ObjType>
 	#define bindHeapArray(name, numElements) bindHeapArrayByName(#name, name, numElements)
 
 	private:
-	template<class Type>
-	void displayFlexSimArray(Type& val)
-	{
-		char buffer[100];
-		sprintf(buffer, "Array[%d]: {", (int)val.size());
-		appendToDisplayStr(buffer);
-		for (auto x = val.begin(); x != val.end(); x++) {
-			if (x != val.begin())
-				appendToDisplayStr(", ");
-			StlValueBinder<Type::ElementType>::Displayer(x);
-		}
-		appendToDisplayStr("}");
-	}
+		engine_export void displayFlexSimArray(Array& val);
 
 	public:
 	// bind method for treenodearray and string array
-	template<class Type>
-	void bindFlexSimArrayByName(const char* name, Type& val)
-	{
-		int bindMode = getBindMode();
-		switch (bindMode) {
-			// else continue into load/save
-			case SDT_BIND_ON_SAVE: {
-				TreeNode* theNode = bindByName(name, 0, DATA_BYTEBLOCK, 0);
-				clearcontents(theNode);
-				for (auto x = val.begin(); x != val.end(); x++)
-					StlValueBinder<Type::ElementType>::Saver(nodeinsertinto(theNode), x);
-				break;
-			}
-			case SDT_BIND_ON_LOAD: {
-				TreeNode* theNode = bindByName(name, 0, DATA_BYTEBLOCK, 0);
-				int numElements = content(theNode);
-				val.resize(numElements);
-				for (int i = 1; i <= content(theNode); i++)
-					val[i] = StlValueBinder<Type::ElementType>::Loader(rank(theNode, i));
-				break;
-			}
-			case SDT_BIND_ON_DISPLAY: displayFlexSimArray(val); break;
-		}
-	}
+	engine_export void bindFlexSimArrayByName(const char* name, Array& val);
 
 	#define bindFlexSimArray(name) bindFlexSimArrayByName(#name, name)
 
@@ -401,115 +373,13 @@ template<class ObjType>
 			sprintf(str, format, x);\
 			appendToDisplayStr(str);
 
-	template <class Type> 
-	class StlValueBinder<Type, typename std::enable_if<std::is_floating_point<Type>::value, void>::type> {
-	public:
-		static treenode Saver(treenode x, Type* toVal)
-			{return setnodenum(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
-		static Type Loader(treenode x)
-			{return (Type)get(x);}
-		static void Displayer(Type* x)
-			{FORMAT_AND_DISPLAY("%lf", (double)*x);}
-	};
-
-	template <class Type> 
-	class StlValueBinder<Type, typename std::enable_if<std::is_integral<Type>::value, void>::type> {
-	public:
-		static treenode Saver(treenode x, Type* toVal)
-			{return setnodenum(nodeadddata(x, DATA_FLOAT), (double)*toVal);}
-		static Type Loader(treenode x)
-			{return (Type)get(x);}
-		static void Displayer(Type* x)
-			{FORMAT_AND_DISPLAY("%d", (int)*x);}
-	};
-
-	template <> class StlValueBinder<char*> {
-	public:
-		static treenode Saver(treenode x, char** toVal)
-			{return sets(nodeadddata(x, DATA_BYTEBLOCK), *toVal);}
-		static char* Loader(treenode x)
-			{return bbgetbuffer(x);}
-		static void Displayer(char** x)
-			{appendToDisplayStr(*x);}
-	};
-
-	template <> class StlValueBinder<std::string> {
-	public:
-		static treenode Saver(treenode x, std::string* toVal)
-			{return sets(nodeadddata(x, DATA_BYTEBLOCK), *toVal);}
-		static std::string Loader(treenode x)
-			{return bbgetbuffer(x);}
-		static void Displayer(std::string* x)
-			{appendToDisplayStr(x->c_str());}
-	};
-
-	template <> class StlValueBinder<treenode> {
-	public:
-		static treenode Saver(treenode x, treenode* toVal)
-			{return nodepoint(nodeadddata(x, DATA_POINTERCOUPLING), *toVal);}
-		static treenode Loader(treenode x)
-			{return tonode(get(x));}
-		static void Displayer(treenode* x)
-		{
-			std::string str;
-			if (objectexists(*x))
-				str = nodetomodelpath(*x, 1);
-			else if(*x == 0)
-				str = "NULL";
-			else str = "[Invalid Ptr]";
-			appendToDisplayStr(str.c_str());
-		}
-	};
-
-	template <> class StlValueBinder<NodeRef> {
-	public:
-		static treenode Saver(treenode x, NodeRef* toVal)
-		{
-			return nodepoint(nodeadddata(x, DATA_POINTERCOUPLING), *toVal);
-		}
-		static NodeRef Loader(treenode x)
-		{
-			return tonode(get(x));
-		}
-		static void Displayer(NodeRef* x)
-		{
-			std::string str;
-			if (objectexists(*x))
-				str = nodetomodelpath(*x, 1);
-			else if (!(*x))
-				str = "NULL";
-			else str = "[Invalid Ptr]";
-			appendToDisplayStr(str.c_str());
-		}
-	};
-
-	template <class T> 
-	class StlValueBinder<T*, typename std::enable_if<std::is_base_of<SimpleDataType, T>::value, void>::type> {
-	public:
-		static treenode Saver(treenode x, T** toVal)
-			{return nodepoint(nodeadddata(x, DATA_POINTERCOUPLING), *toVal ? (*toVal)->holder : 0);}
-		static T* Loader(treenode x)
-		{
-			treenode dereference = tonode(get(x)); 
-			if (objectexists(dereference))
-				return dereference->object<T>();
-			return 0;
-		}
-		static void Displayer(T** x)
-		{
-			if(x && (*x))
-				StlValueBinder<treenode>::Displayer(&((*x)->holder));
-			else appendToDisplayStr("NULL");
-		}
-	};
-
 
 	template <class T>
 	class StlValueBinder<T*, typename std::enable_if<!std::is_base_of<SimpleDataType, T>::value, void>::type> {
 	public:
-		static void Saver(treenode x, T** toVal)
+		static treenode Saver(treenode x, T** toVal)
 		{
-			(*toVal)->bind(x);
+			(*toVal)->bind(x); return x;
 		}
 		static T* Loader(treenode x)
 		{
@@ -522,11 +392,118 @@ template<class ObjType>
 			(*x)->bind(0);
 		}
 	};
+	template <class Type> 
+	class StlValueBinder<Type, typename std::enable_if<std::is_floating_point<Type>::value, void>::type> {
+	public:
+		static treenode Saver(treenode x, Type* toVal)
+			{x->addData(DATA_FLOAT)->safedatafloat()[0] = (double)*toVal; return x;}
+		static Type Loader(treenode x)
+			{return (Type)x->safedatafloat()[0];}
+		static void Displayer(Type* val)
+			{FORMAT_AND_DISPLAY("%lf", (double)*val);}
+	};
+	template <class Type> 
+	class StlValueBinder<Type, typename std::enable_if<std::is_integral<Type>::value, void>::type> {
+	public:
+		static treenode Saver(treenode x, Type* toVal)
+			{x->addData(DATA_FLOAT)->safedatafloat()[0] = (double)*toVal; return x;}
+		static Type Loader(treenode x)
+		{return (Type)x->safedatafloat()[0];}
+		static void Displayer(Type* val)
+			{FORMAT_AND_DISPLAY("%d", (int)*val);}
+	};
+
+
+
+	template <> class StlValueBinder<char*> {
+	public:
+		static treenode Saver(treenode x, char** toVal)
+			{x->value = *toVal; return x;}
+		static char* Loader(treenode x)
+			{return bbgetbuffer(x);}
+		static void Displayer(char** x)
+			{appendToDisplayStr(*x);}
+	};
+
+	template <> class StlValueBinder<std::string> {
+	public:
+		static treenode Saver(treenode x, std::string* toVal)
+			{x->value = *toVal; return x;}
+		static std::string Loader(treenode x)
+			{return bbgetbuffer(x);}
+		static void Displayer(std::string* x)
+			{appendToDisplayStr(x->c_str());}
+	};
+
+	template <> class StlValueBinder<treenode> {
+	public:
+		static treenode Saver(treenode x, treenode* toVal)
+			{x->addData(DATA_POINTERCOUPLING)->pointTo(*toVal); return x;}
+		static treenode Loader(treenode x)
+			{return x->safedatapartner();}
+		static void Displayer(treenode* x)
+		{
+			std::string str;
+			if (*x)
+#				if defined FLEXSIM_ENGINE_COMPILE
+				str = (*x)->getPath();
+#				else
+				str = nodetopath(*x, 1);
+#				endif
+			else if(*x == 0)
+				str = "NULL";
+			else str = "[Invalid Ptr]";
+			appendToDisplayStr(str.c_str());
+		}
+	};
+
+	template <> class StlValueBinder<NodeRef> {
+	public:
+		static treenode Saver(treenode x, NodeRef* toVal)
+		{ x->addData(DATA_POINTERCOUPLING)->pointTo(*toVal); return x; }
+		static NodeRef Loader(treenode x)
+		{ return x->safedatapartner(); }
+		static void Displayer(NodeRef* x)
+		{
+			std::string str;
+			if (*x)
+#				if defined FLEXSIM_ENGINE_COMPILE
+				str = (*x)->getPath();
+#				else
+				str = nodetopath(*x, 1);
+#				endif
+			else if (!(*x))
+				str = "NULL";
+			else str = "[Invalid Ptr]";
+			appendToDisplayStr(str.c_str());
+		}
+	};
+
+	template <class T> 
+	class StlValueBinder<T*, typename std::enable_if<std::is_base_of<SimpleDataType, T>::value, void>::type> {
+	public:
+		static treenode Saver(treenode x, T** toVal)
+		{ x->addData(DATA_POINTERCOUPLING)->pointTo(*toVal ? (*toVal)->holder : 0); return x; }
+		static T* Loader(treenode x)
+		{
+			treenode dereference = x->safedatapartner(); 
+			if (dereference)
+				return dereference->object<T>();
+			return 0;
+		}
+		static void Displayer(T** x)
+		{
+			if(x && (*x))
+				StlValueBinder<treenode>::Displayer(&((*x)->holder));
+			else appendToDisplayStr("NULL");
+		}
+	};
+
 
 	template <class SetType>
 	static void StlSetInserter(SetType& theSet, typename SetType::value_type theVal)
 	{
-		theSet.insert(theVal);
+		theSet.insert_bareBones(theVal);
 	}
 
 	template <class SetType>
@@ -547,16 +524,16 @@ template<class ObjType>
 			if (temp == theSet.end())
 				return;
 			treenode container = bindByName(prefix, 0, DATA_FLOAT);
-			clearcontents(container);
+			container->subnodes.clear();
 			for (; temp != theSet.end(); temp++)
-				Binder::Saver(nodeinsertinto(container), (SetType::value_type*)&(*(temp)));
+				Binder::Saver(container->subnodes.add(), (SetType::value_type*)&(*(temp)));
 			break;
 		}
 		case SDT_BIND_ON_LOAD: {
 			treenode container = bindByName(prefix, 0, DATA_FLOAT);
 			theSet.clear();
-			for (int i = 1; i <= content(container); i++)
-				Inserter(theSet, Binder::Loader(rank(container, i)));
+			for (int i = 1; i <= container->subnodes.length; i++)
+				Inserter(theSet, Binder::Loader(container->subnodes[i]));
 			break;
 		}
 		case SDT_BIND_ON_DISPLAY: {
@@ -574,21 +551,6 @@ template<class ObjType>
 
 		}
 	}
-
-	template <class SetType>
-	void bindStlContainerByName(const char* prefix, SetType& theSet)
-	{
-		bindStlContainerByName<SetType, StlValueBinder<SetType::value_type>, StlVectorInserter<SetType>>(prefix, theSet);
-	}
-	#define bindStlContainer(x) bindStlContainerByName(#x, x)
-
-	template <class SetType>
-	void bindStlSetByName(const char* prefix, SetType& theMap)
-	{
-		bindStlContainerByName<SetType, StlValueBinder<SetType::value_type>, StlSetInserter<SetType>>
-			(prefix, theMap);
-	}
-	#define bindStlSet(x) bindStlSetByName(#x, x)
 
 	template <class MapType, class KeyBinder, class ValBinder>
 	void bindStlMapByName(const char* prefix, MapType& theMap)
@@ -673,6 +635,20 @@ template<class ObjType>
 	}
 	#define bindNumberToNode(name, x) bindNumberToNodeByName(#name, name, x)
 
+	template <class SetType>
+	void bindStlContainerByName(const char* prefix, SetType& theSet)
+	{
+		bindStlContainerByName<SetType, StlValueBinder<SetType::value_type>, StlVectorInserter<SetType>>(prefix, theSet);
+	}
+	#define bindStlContainer(x) bindStlContainerByName(#x, x)
+
+	template <class SetType>
+	void bindStlSetByName(const char* prefix, SetType& theMap)
+	{
+		bindStlContainerByName<SetType, StlValueBinder<SetType::value_type>, StlSetInserter<SetType>>
+			(prefix, theMap);
+	}
+	#define bindStlSet(x) bindStlSetByName(#x, x)
 
 	template <typename SubClass>
 	static void bindCallbackByName(char* name, Variant (SubClass::*callback)(FLEXSIMINTERFACE))
@@ -870,6 +846,8 @@ template<class ObjType>
 	static const int BIND_STAT_ON_RUNWARM = 5;
 	static const int BIND_STAT_ON_BIND_EVENTS = 6;
 	static const int BIND_STAT_ENUMERATE_REQUIREMENT_POSSIBILITIES = 7;
+	static const int BIND_STAT_ENUMERATE_REQUIREMENT_NAMES = 8;
+	static const int BIND_STAT_ENUMERATE_INTERFACE = 9;
 
 	// flags and op codes for flagging extended functionality as well as retrieving data associated with
 	// that functionality
@@ -974,8 +952,10 @@ template<class ObjType>
 	{
 		switch (getBindStatisticMode()) {
 		case BIND_STAT_ENUMERATE:
+		case BIND_STAT_ENUMERATE_INTERFACE:
 		case BIND_STAT_FILL_BINDING_ENTRY:
-		case BIND_STAT_ENUMERATE_REQUIREMENT_POSSIBILITIES: {
+		case BIND_STAT_ENUMERATE_REQUIREMENT_POSSIBILITIES: 
+		case BIND_STAT_ENUMERATE_REQUIREMENT_NAMES: {
 			RelayToClass relayToClass;
 			bindRelayedClassStatisticsEx(prefix, flags, force_cast<StatNodeResolver1>(resolver), force_cast<StatRequirementEnumerator>(enumerator), &relayToClass);
 			break;
@@ -989,6 +969,8 @@ template<class ObjType>
 	engine_export void enumerateStatistics(StatisticBinding* dest);
 	engine_export Variant enumerateStatistics(FLEXSIMINTERFACE);
 
+	engine_export void enumerateInterfaceStatistics(StatisticBinding* dest);
+
 	engine_export TreeNode* assertStatistic(const char* statTitle);
 	engine_export TreeNode* assertStatistic(StatisticBinding* enumeration);
 	engine_export TreeNode* assertStatistic(const char* statTitle, const Variant& p1, const Variant& p2 = Variant(), const Variant& p3 = Variant(), int* outFlags = nullptr);
@@ -998,6 +980,10 @@ template<class ObjType>
 
 	engine_export int enumerateRequirementPossibilities(const char* statTitle, TreeNode* destNode, const Variant& p1 = Variant(), const Variant& p2 = Variant());
 	engine_export Variant enumerateRequirementPossibilities(FLEXSIMINTERFACE);
+
+	engine_export Variant enumerateRequirementNames(const char* statTitle);
+	engine_export Variant enumerateRequirementNames(FLEXSIMINTERFACE);
+	engine_export void ListStatRequirementNames(const char* name1, const char* name2 = 0, const char* name3 = 0);
 
 #define UPDATE_SDT_STAT(node, newValue) if (node) { node->objectAs(TrackedVariable)->set(newValue); }
 #define UPDATE_SDT_STAT_DELTA(node, delta) if (node) {\
@@ -1043,6 +1029,7 @@ template<class ObjType>
 	static Variant s_requirement1;
 	static Variant s_requirement2;
 	static int s_enumerateReqsResult;
+	static Variant s_enumerateReqNamesResult;
 	TreeNode* getStatisticNode(const char* nodeName, int flags, bool assert);
 
 	//@}
@@ -1052,54 +1039,94 @@ template<class ObjType>
 	*/
 	//@{
 	public:
+	static const int BIND_METHOD_STATIC = 0x2;
 	virtual bool isClassType(const char* className) { return false; }
 	virtual void bindInterface() {}
+#if !defined FLEXSIM_ENGINE_COMPILE || defined FLEXSIM_FLEXSCRIPT_CPP
 	private:
-	engine_export void bindMethodByName(const char* name, void* callback, const char* signature, int flags = 0);
+	engine_export static void bindMethodByName(const char* name, void* callback, const char* signature, int flags = 0);
 	public:
 	template<class Callback>
-	void bindMethodByName(const char* name, typename std::enable_if<std::is_member_function_pointer<Callback>::value, Callback>::type callback, const char* signature, int flags = 0)
+	static void bindMethodByName(const char* name, typename std::enable_if<std::is_member_function_pointer<Callback>::value || std::is_pointer<Callback>::value, Callback>::type callback, const char* signature, int flags = 0)
 	{
 		bindMethodByName(name, force_cast<void*>(callback), signature, flags);
 	}
 
-#define bindMethod(method, className, signature, ...) bindMethodByName<decltype(&className::method)>(#method, &className::method, signature, __VA_ARGS__)
+#define bindMethod(method, className, signature, ...) SimpleDataType::bindMethodByName<decltype(&className::method)>(#method, &className::method, signature, __VA_ARGS__)
 
 	private:
-	engine_export void bindPropertyByName(const char* name, PropertyBinding* newProperty);
+	engine_export static void bindPropertyByName(const char* name, PropertyBinding* newProperty);
+	engine_export static void bindOperatorByName(const char* opName, void* operatorPtr, const char* signature);
+	public:
+	template<class Callback>
+	static void bindOperatorByName(const char* opName, typename std::enable_if<std::is_member_function_pointer<Callback>::value || std::is_pointer<Callback>::value, Callback>::type callback, const char* signature)
+	{
+		bindOperatorByName(opName, force_cast<void*>(callback), signature);
+	}
+#define bindOperator(method, className, signature) bindOperatorByName<decltype(&className::operator method)>(#method, &className::operator method, signature)
+
+	private:
 	
 	public:
 	template <class Type>
-	void bindTypedPropertyByName(const char* name, const char* typeName, void* getter, void* setter) 
+	static void bindTypedPropertyByName(const char* name, const char* typeName, void* getter, void* setter, const char* version = nullptr) 
 	{
-		bindPropertyByName(name, new TypedPropertyBinding<Type>(typeName, getter, setter));
+		if (version)
+			bindPropertyByName(name, new TypedPropertyBinding<Type>(typeName, getter, setter, version));
+		else
+			bindPropertyByName(name, new TypedPropertyBinding<Type>(typeName, getter, setter));
 	}
-#define bindTypedProperty(member, type, getter, setter) bindTypedPropertyByName<type>(#member, #type, force_cast<void*>(getter), force_cast<void*>(setter))
+	static void bindStaticConstIntPropertyByName(const char* name, int value);
 
-	void bindPropertyByName(const char* name, void* getter, void* setter)
+private:
+	engine_export static void bindConstructorVoidPtr(void* constructorCallback, const char* signature);
+	engine_export static void bindDestructorVoidPtr(void* destructorCallback);
+public:
+	template <class Type> 
+	static void bindConstructor(Type* constructorCallback, const char* signature)
+	{
+		bindConstructorVoidPtr(force_cast<void*>(constructorCallback), signature);
+	}
+	template <class Type>
+	static void bindConstructor(void (Type::*constructorCallback) (), const char* signature)
+	{
+		bindConstructorVoidPtr(force_cast<void*>(constructorCallback), signature);
+	}
+	template <class Type>
+	static void bindDestructor(void(Type::*destructorCallback)())
+	{
+		bindDestructorVoidPtr(force_cast<void*>(destructorCallback));
+	}
+
+#define bindTypedProperty(member, type, getter, setter, ...) SimpleDataType::bindTypedPropertyByName<type>(#member, #type, force_cast<void*>(getter), force_cast<void*>(setter), __VA_ARGS__)
+#define bindStaticConstIntProperty(name, value) bindStaticConstIntPropertyByName(#name, value)
+
+	static void bindPropertyByName(const char* name, void* getter, void* setter)
 	{
 		bindPropertyByName(name, new PropertyBinding(getter, setter));
 	}
-#define bindProperty(member, getter, setter) bindPropertyByName(#member, force_cast<void*>(getter), force_cast<void*>(setter))
+#define bindProperty(member, getter, setter) SimpleDataType::bindPropertyByName(#member, force_cast<void*>(getter), force_cast<void*>(setter))
+
+	static engine_export void bindParentClass(const char* className);
 
 	private:
-	engine_export void bindDynamicPropertyPrivate(PropertyBinding* dynamicPropertyBinding);
+	engine_export static void bindDynamicPropertyPrivate(PropertyBinding* dynamicPropertyBinding);
 	public:
 	template<class Getter, class Setter>
-	void bindDynamicPropertyByType(
+	static void bindDynamicPropertyByType(
 		typename std::enable_if<std::is_member_function_pointer<Getter>::value, Getter>::type propertyGetter,
 		typename std::enable_if<std::is_member_function_pointer<Setter>::value, Setter>::type propertySetter
 		) {
 		bindDynamicPropertyPrivate(new PropertyBinding(propertyGetter, propertySetter));
 	}
-#define bindDynamicProperty(getter, setter) bindDynamicPropertyByType<decltype(getter), decltype(setter)>(getter, setter);
+#define bindDynamicProperty(getter, setter) SimpleDataType::bindDynamicPropertyByType<decltype(getter), decltype(setter)>(getter, setter);
 
 	private:
-	engine_export void bindNodeListArrayClassPrivate(void** data);
+	engine_export static void bindNodeListArrayClassPrivate(void** data);
 
 	public:
 	template <class NLA>
-	void bindNodeListArrayClassByName(const char* interfaceName, const char* elementName, bool readOnly = false)
+	static void bindNodeListArrayClassByName(const char* interfaceName, const char* elementName, bool readOnly = false)
 	{
 		class NLAHelper : public NLA
 		{
@@ -1110,6 +1137,8 @@ template<class ObjType>
 		auto bracketOp = (NLA::ElementType*(NLA::*)(int) const)&NLA::operator[];
 		auto copyConstructor = (void(NLA::*)(NLA& other))&NLAHelper::construct;
 		auto copyAssigner = (NLA&(NLA::*)(const NLA& other))&NLA::operator=;
+		auto addedBinder = (void(*)())&NLA::bindInterface;
+		auto boolCaster = (bool(NLA::*)())&NLA::operator bool;
 
 		void* data[] = {
 			(void*)interfaceName,
@@ -1119,72 +1148,89 @@ template<class ObjType>
 			force_cast<void*>(&NLA::toArray),
 			force_cast<void*>(copyConstructor),
 			force_cast<void*>(copyAssigner),
+			force_cast<void*>(addedBinder),
 			readOnly ? nullptr : force_cast<void*>(&NLA::push),
 			readOnly ? nullptr : force_cast<void*>(&NLA::pop),
 			readOnly ? nullptr : force_cast<void*>(&NLA::shift),
 			readOnly ? nullptr : force_cast<void*>(&NLA::unshift),
+			force_cast<void*>(boolCaster),
 		};
 		bindNodeListArrayClassPrivate(data);
 	}
-#define bindNodeListArrayAsClass(Class, Element) bindNodeListArrayClassByName<Class>(#Class, #Element)
-#define bindNodeListArrayAsReadOnlyClass(Class, Element) bindNodeListArrayClassByName<Class>(#Class, #Element, true)
+#define bindNodeListArrayAsClass(Class, Element) SimpleDataType::bindNodeListArrayClassByName<Class>(#Class, #Element)
+#define bindNodeListArrayAsReadOnlyClass(Class, Element) SimpleDataType::bindNodeListArrayClassByName<Class>(#Class, #Element, true)
 
 	private:
-		engine_export void bindCastOperatorPrivate(const char* castClass, void* funcPtr, bool classOrPointer);
+		engine_export static void bindCastOperatorPrivate(const char* castClass, void* funcPtr);
 	public:
 		template <class Type, class ToType>
-		void bindCastOperatorByName(const char* castClass, ToType(Type::*funcPtr)(), bool classOrPointer)
+		static void bindCastOperatorByName(const char* castClass, ToType(Type::*funcPtr)())
 		{
-			bindCastOperatorPrivate(castClass, force_cast<void*>(funcPtr), classOrPointer);
+			bindCastOperatorPrivate(castClass, force_cast<void*>(funcPtr));
 		}
-#define bindCastOperator(to, caster, classOrPointer) bindCastOperatorByName(#to, caster, classOrPointer)
+#define bindCastOperator(to, caster) SimpleDataType::bindCastOperatorByName(#to, caster)
 
 	private:
-		engine_export void bindBracketOperatorPrivate(const char* returnType, void* operatorPtr, bool intElseString, bool ptrElseClass);
+		engine_export static void bindBracketOperatorPrivate(const char* returnType, void* operatorPtr, bool intElseString, bool ptrElseClass);
 	public:
 		template <typename ReturnType, typename Type>
-		void bindBracketOperatorByName(const char* returnTypeName, ReturnType(Type::* operatorPtr)(int)) {
+		static void bindBracketOperatorByName(const char* returnTypeName, ReturnType(Type::* operatorPtr)(int)) {
 			if (std::is_pointer<ReturnType>::value)
 				bindBracketOperatorPrivate(returnTypeName, force_cast<void*>(operatorPtr), true, true);
 			else
 				bindBracketOperatorPrivate(returnTypeName, force_cast<void*>(operatorPtr), true, false);
 		}
 		template <typename ReturnType, typename Type>
-		void bindBracketOperatorByName(const char* returnTypeName, ReturnType(Type::* operatorPtr)(const char*)) {
+		static void bindBracketOperatorByName(const char* returnTypeName, ReturnType(Type::* operatorPtr)(const char*)) {
+			if (std::is_pointer<ReturnType>::value)
+				bindBracketOperatorPrivate(returnTypeName, force_cast<void*>(operatorPtr), false, true);
+			else
+				bindBracketOperatorPrivate(returnTypeName, force_cast<void*>(operatorPtr), false, false);
+		}
+		template <typename ReturnType, typename Type>
+		static void bindBracketOperatorByName(const char* returnTypeName, ReturnType(Type::* operatorPtr)(const Variant&)) {
 			if (std::is_pointer<ReturnType>::value)
 				bindBracketOperatorPrivate(returnTypeName, force_cast<void*>(operatorPtr), false, true);
 			else
 				bindBracketOperatorPrivate(returnTypeName, force_cast<void*>(operatorPtr), false, false);
 		}
 #define bindBracketOperator(ReturnType, Class, Arg) \
-	bindBracketOperatorByName(#ReturnType, (ReturnType(Class::*)(Arg))&Class::operator [])
+	SimpleDataType::bindBracketOperatorByName(#ReturnType, (ReturnType(Class::*)(Arg))&Class::operator [])
 
 	private:
-		engine_export void bindCopyConstructorPrivate(void* copyConstructor);
-		engine_export void bindCopyAssignerPrivate(void* copyAssigner);
+		engine_export static void bindCopyConstructorPrivate(void* copyConstructor);
+		engine_export static void bindCopyAssignerPrivate(void* copyAssigner);
 
 	public:
 		template <class Type> // for const copy constructor
-		void bindCopyConstructor(void(Type::*construct)(const Type&)) { bindCopyConstructorPrivate(force_cast<void*>(construct)); }
+		static void bindCopyConstructor(void(Type::*construct)(const Type&)) { bindCopyConstructorPrivate(force_cast<void*>(construct)); }
 		template <class Type> // for non-const copy constructor
-		void bindCopyConstructor(void(Type::*construct)(Type&)) { bindCopyConstructorPrivate(force_cast<void*>(construct)); }
+		static void bindCopyConstructor(void(Type::*construct)(Type&)) { bindCopyConstructorPrivate(force_cast<void*>(construct)); }
 
 		template <class Type> // for const copy assigner
-		void bindCopyAssigner(Type&(Type::*assigner)(const Type&)) { bindCopyAssignerPrivate(force_cast<void*>(assigner)); }
+		static void bindCopyAssigner(Type&(Type::*assigner)(const Type&)) { bindCopyAssignerPrivate(force_cast<void*>(assigner)); }
 		template <class Type> // for non-const copy assigner
-		void bindCopyAssigner(Type&(Type::*assigner)(Type&)) { bindCopyAssignerPrivate(force_cast<void*>(assigner)); }
+		static void bindCopyAssigner(Type&(Type::*assigner)(Type&)) { bindCopyAssignerPrivate(force_cast<void*>(assigner)); }
 
 	private:
-		engine_export void bindClassByNamePrivate(const char* className, void* instance, void* method, size_t size);
+		engine_export static void bindClassByNamePrivate(const char* className, void* method, size_t size, bool isUserAccessible);
 	public:
 		template <class ClassType>
-		void bindClassByName(const char* className, ClassType* type) {
-			bindClassByNamePrivate(className, type, force_cast<void*>(&ClassType::bind), sizeof(ClassType));
+		static void bindClassByName(const char* className, bool isUserAccessible = false) {
+			bindClassByNamePrivate(className, force_cast<void*>(&ClassType::bindInterface), sizeof(ClassType), isUserAccessible);
 		}
-#define bindClass(ClassType) { ClassType instance; bindClassByName(#ClassType, &instance); }
+#define bindClass(ClassType, ...) SimpleDataType::bindClassByName<ClassType>(#ClassType, __VA_ARGS__)
 
 	public:
-		engine_export void bindDocumentationXMLPath(const char* path);
+		engine_export static void bindDocumentationXMLPath(const char* path);
+#endif
+	public:
+
+		static SimpleDataType* createEngineSDTDerivative(const char* classname, TreeNode* holder);
+
+		typedef SimpleDataType* (*CreateSDTDerivative)(const char* classname, TreeNode* holder);
+		static CreateSDTDerivative createContentSDTDerivative;
+		static SimpleDataType* createSDTDerivative_NoDLLConnection(const char* classname, TreeNode* holder);
 	//@}
 };
 
@@ -1229,7 +1275,7 @@ public:
 	/// 			for speed reasons it will only rebind that event's node. </remarks>
 	/// <param name="sdt">	[in,out] If non-null, the sdt. </param>
 	engine_export void select(SimpleDataType* sdt);
-	std::vector<SimpleDataType::EventBindingEntry> events;
+	FlexSimPrivateTypes::Vector<SimpleDataType::EventBindingEntry> events;
 	const EventBindingEntry& getSelectedEntry() { return events[selected]; }
 };
 
@@ -1265,7 +1311,7 @@ public:
 	engine_export StatisticBindingEntry* end();
 };
 
-
+#if !defined FLEXSIM_ENGINE_COMPILE || defined FLEXSIM_FLEXSCRIPT_CPP
 /// <summary>	Defines an interface for interaction with FlexSim's SQL parser/evaluator. </summary>
 /// <remarks>	Sub-class implementations act as delegates to the parser,
 /// 			providing, first, mappings of table and column names to table and
@@ -1315,7 +1361,7 @@ public:
 	/// <summary>	Retrieves a value out of a table. </summary>
 	/// <remarks>	Anthony, 8/27/2014. </remarks>
 	/// <param name="tableId">	Identifier for the table. </param>
-	/// <param name="row">	  	The row. </param>
+	/// <param name="row">	  	The zero-based row. </param>
 	/// <param name="colId">  	Identifier for the col. </param>
 	/// <returns>	The value. </returns>
 	virtual Variant getValue(int tableId, int row, int colId) {return SQL_NULL;}
@@ -1345,31 +1391,41 @@ public:
 
 	virtual const char* getClassFactory() override { return "SqlDataSource"; }
 };
+#endif
 
+#if !defined FLEXSIM_ENGINE_COMPILE || defined FLEXSIM_EXECUTIVE
 /// <summary>	Defines the TrackedVariable class. </summary>
 /// <remarks>	Tracked variables accept a sequence of values (one at a time)
 ///				and provide methods to get the current, min, max, and avg. </remarks>
 class TrackedVariable : public SimpleDataType
 {
 private:
-
 	static const int HISTORY_FIELD_TIME = 0;
 	static const int HISTORY_FIELD_VALUE = 1;
 	void assertHistory();
 	void resetHistory();
 	void deassertHistory();
 	void deassertProfile();
-	TrackedVariable();
 	double curValue;
+	double _rate = 0.0;
 public:
 
+	TrackedVariable();
+	engine_export ~TrackedVariable() {}
+	engine_export static TrackedVariable* init(TreeNode* theNode, int type, double startVal = 0, int flags = 0);
+	static const char* className;
 	virtual TrackedVariable* toTrackedVariable() override { return this; }
 	engine_export virtual const char* getClassFactory() override { return "TrackedVariable"; }
+	virtual bool isClassType(const char* className) { return strcmp(className, "TrackedVariable") == 0 || __super::isClassType(className); }
 	engine_export virtual void bind() override;
-	engine_export virtual char* toString(int verbose) override;
+	engine_export virtual void bindInterface() override;
+	engine_export virtual char* toString(int verbose) override; 
+
+	static TrackedVariable* global(const char* name);
 
 	treenode history = nullptr;
 	int type = SimpleDataType::STAT_TYPE_LEVEL;
+	double startValue;
 	double cumulative;
 	double cumulativeTime;
 	double minValue;
@@ -1381,14 +1437,11 @@ public:
 	double flags = 0;
 	double lowerBound = -DBL_MAX;
 	double upperBound = DBL_MAX;
-	double rate = 0.0;
 
 	bool useCachedTime = false;
 	double cachedTime = 0.0;
 
-	engine_export void reset();
-	engine_export void reset(double value);
-	engine_export void reset(double value, int type);
+	engine_export void reset(double value = FLT_MAX, int type = -1);
 	engine_export void set(double value);
 	// TODO: implement proper acc/dec for kinetic levels
 	//engine_export void set(double value, double toRate, double toAcc);
@@ -1400,10 +1453,20 @@ public:
 	engine_export void setAtTime(const Variant& value, double curTime);
 
 	engine_export void setBounds(double lower, double upper) { lowerBound = lower; upperBound = upper; }
+	engine_export void setUpperBound(double upper);
+	engine_export void setLowerBound(double lower);
+
+	engine_export double getUpperBound();
+	engine_export double getLowerBound();
+
+	engine_export Table getProfile();
+	engine_export Table getHistory();
+
+	engine_export int getType() { return type; }
 private:
 	void updateKineticCumulative(double endUndboundedValue, double timeAtCurrent);
+	void __setRate(double toRate);
 public:
-
 
 	engine_export virtual void bindEvents() override;
 	engine_export virtual void bindStatistics() override;
@@ -1418,7 +1481,8 @@ public:
 	/// <param name="atValue">	The target value. </param>
 	/// <returns>	The time that the variable will arrive at the target value, or -1 if never. </returns>
 	engine_export double getArrivalTime(double atValue);
-	engine_export double getCurrentRate();
+	engine_export double getCurrentRate() { return _rate; }
+	__declspec(property(get = getCurrentRate, put = __setRate)) double rate;
 
 private:
 	double getCurrentIgnoringBounds();
@@ -1436,15 +1500,40 @@ public:
 	engine_export virtual bool setPrimaryValue(const Variant& val) override;
 	virtual Variant getPrimaryValue() override { return getCurrent(); }
 	virtual Variant evaluate(const VariantParams& params) override { return getCurrent(); }
+	Variant getCategoricalName();
 
 	engine_export static TrackedVariable* create();
 	engine_export void addSubscriber(bool needsHistory, bool needsProfile, bool persist);
 	Variant addSubscriber(FLEXSIMINTERFACE);
 private:
 	void countDownSubscribers();
-	engine_export ~TrackedVariable() {}
 	int needsHistoryCountDown = 0;
 	int needsProfileCountDown = 0;
+
 };
+#endif
+
+#if !defined FLEXSIM_ENGINE_COMPILE || defined FLEXSIM_TREEWIN
+/// <summary>	Defines the Table Header class. </summary>
+/// <remarks>	Preserves column header names when all of a table's rows are removed.</remarks>
+class TableHeader : public SimpleDataType
+{
+public:
+	Array headers;
+	Array dataTypes;
+	virtual const char* getClassFactory() override { return "TableHeader"; }
+	TableHeader() {}
+	virtual void bind() override;
+	static TableHeader* create() { return new TableHeader; }
+
+	void saveHeaders(TreeNode* table);
+	void restoreHeaders(TreeNode* table);
+	void resizeHeaders(TreeNode* table, int xSize, double dataType);
+	
+	virtual char* toString(int displayFlags) override;
+
+};
+#endif
+
 
 }
