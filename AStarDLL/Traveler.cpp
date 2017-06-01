@@ -157,7 +157,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 	cullExpiredAllocations();
 
 	int initialAllocsSize = allocations.size();
-	if (enableCollisionAvoidance && !nav->ignoreInactiveMemberCollisions) {
+	if (enableCollisionAvoidance && (!nav->ignoreInactiveMemberCollisions || isBlocked)) {
 		for (auto& allocation : allocations) {
 			allocation->extendReleaseTime(DBL_MAX);
 			allocation->isMarkedForDeletion = true;
