@@ -1,8 +1,18 @@
 #pragma once
 #include "FlexsimDefs.h"
 #include "Divider.h"
+#include <vector>
 
 namespace AStar {
+
+struct BridgeTraveler {
+	BridgeTraveler(Traveler* traveler, double entryTime, int pathIndex, double spatialz)
+		: traveler(traveler), entryTime(entryTime), pathIndex(pathIndex), spatialz(spatialz) {}
+	Traveler* traveler;
+	double entryTime;
+	int pathIndex;
+	double spatialz;
+};
 
 class Bridge : public Divider
 {
@@ -15,6 +25,9 @@ public:
 	virtual void addPassagesToTable(AStarNavigator* nav) override;
 
 	double isTwoWay = 0.0;
+	std::vector<BridgeTraveler*> bridgeTravelers;
+	Traveler* blockedTraveler;
+	int blockedPathIndex;
 	double calculateDistance() const;
 	virtual Bridge* toBridge() override { return this; }
 

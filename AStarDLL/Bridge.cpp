@@ -12,22 +12,33 @@ void Bridge::bind()
 
 void Bridge::addPassagesToTable(AStarNavigator* nav)
 {
+	// Clear bridgeTravelers on reset
+	for (int i = bridgeTravelers.size() - 1; i >= 0; i--) {
+		delete bridgeTravelers[i];
+		bridgeTravelers.pop_back();
+	}
+	blockedTraveler = nullptr;
+
 	if (pointList.size() < 2)
 		return;
-	AStarCell fromCell = nav->getCellFromLoc(Vec2(pointList[0]->x, pointList[0]->y));
 
+	AStarCell fromCell = nav->getCellFromLoc(Vec2(pointList[0]->x, pointList[0]->y));
+	AStarCell toCell = nav->getCellFromLoc(Vec2(pointList.back()->x, pointList.back()->y));
+	if (fromCell == toCell)
+		return;
+
+	// add bridge data to cells
 	auto addExtraData = [&](const AStarCell& cell, bool isAtStart) {
-		AStarNodeExtraData* entry = nav->assertExtraData(fromCell);
+		AStarNodeExtraData* entry = nav->assertExtraData(cell);
 
 		entry->bridges.push_back(AStarNodeExtraData::BridgeEntry());
 		entry->bridges.back().bridge = this;
 		entry->bridges.back().isAtBridgeStart = isAtStart;
 	};
 
-	addExtraData(nav->getCellFromLoc(Vec2(pointList[0]->x, pointList[0]->y)), true);
+	addExtraData(fromCell, true);
 	if (isTwoWay)
-		addExtraData(nav->getCellFromLoc(Vec2(pointList.back()->x, pointList.back()->y)), false);
-
+		addExtraData(toCell, false);
 }
 
 double Bridge::calculateDistance() const

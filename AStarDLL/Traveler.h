@@ -1,3 +1,4 @@
+#pragma once
 #include "AStarClasses.h"
 #include "FlexsimDefs.h"
 #include <list>
@@ -50,6 +51,7 @@ public:
 		travelPath = std::move(path);
 		navigatePath(0, isDistQueryOnly);
 	}
+	void onBridgeArrival(int pathIndex);
 	void onArrival();
 
 	/// <summary>	Adds an allocation to the map's set of allocations. </summary>
@@ -135,6 +137,31 @@ public:
 	treenode onBlockTrigger = nullptr;
 	treenode onContinueTrigger = nullptr;
 	treenode onRerouteTrigger = nullptr;
+
+	class BridgeArrivalEvent : public FlexSimEvent
+	{
+	public:
+		BridgeArrivalEvent() : FlexSimEvent() {}
+		BridgeArrivalEvent(Traveler* object, int pathIndex, double time)
+			: pathIndex(pathIndex), FlexSimEvent(object->holder, time, nullptr, 0) {}
+		virtual const char* getClassFactory() override { return "AStar::Traveler::BridgeArrivalEvent"; }
+		virtual void execute() { partner()->objectAs(Traveler)->onBridgeArrival(pathIndex); }
+
+		int pathIndex;
+	};
+	ObjRef<BridgeArrivalEvent> bridgeArrivalEvent;
+
+	class BridgeCompletedEvent : public FlexSimEvent
+	{
+	public:
+		BridgeCompletedEvent() : FlexSimEvent() {}
+		BridgeCompletedEvent(Traveler* object, int pathIndex, double time)
+			: pathIndex(pathIndex), FlexSimEvent(object->holder, time, nullptr, 0) {}
+		virtual const char* getClassFactory() override { return "AStar::Traveler::BridgeCompletedEvent"; }
+		virtual void execute() override { partner()->objectAs(Traveler)->navigatePath(pathIndex, false); }
+
+		int pathIndex;
+	};
 
 };
 

@@ -140,6 +140,7 @@ public:
 	virtual double onReset() override;
 	virtual double onStartSimulation() override;
 	virtual double onRunWarm() override;
+	virtual double onPreDraw(TreeNode* view) override;
 	virtual double onDraw(TreeNode* view) override;
 	virtual double onDrag(TreeNode* view) override;
 	virtual double onClick(TreeNode* view, int clickcode) override;
