@@ -155,6 +155,7 @@ struct AStarPathEntry {
 typedef std::vector<AStarPathEntry> TravelPath;
 
 struct AStarSearchEntry {
+	AStarSearchEntry() : prevBridgeIndex(-1) {}
 	float f;
 	float g;
 	float h;
