@@ -212,6 +212,7 @@ double AStarNavigator::onPreDraw(TreeNode* view)
 
 		if (bridge) {
 			double bridgeDistance = bridge->calculateDistance();
+			double virtualRatio =  bridgeDistance / bridge->calculateDistance(true);
 
 			for (int i = 0; i < bridge->bridgeTravelers.size(); i++) {
 				BridgeTraveler* bridgeTraveler = bridge->bridgeTravelers[i];
@@ -239,7 +240,7 @@ double AStarNavigator::onPreDraw(TreeNode* view)
 							bridge->pointList[j]->x - bridge->pointList[j - 1]->x,
 							bridge->pointList[j]->y - bridge->pointList[j - 1]->y,
 							bridge->pointList[j]->z - bridge->pointList[j - 1]->z);
-						double dist = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+						double dist = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z) * virtualRatio;
 
 						if (travelerDistance > dist)
 							travelerDistance -= dist;
@@ -856,7 +857,7 @@ the outside 8 nodes.
 			if (e != edgeTableExtraData.end() && extra->bridges.size() > 0) {
 				for (int i = 0; i < extra->bridges.size(); i++) {
 					auto& entry = extra->bridges[i];
-					double addedDist = entry.bridge->calculateDistance();
+					double addedDist = entry.bridge->calculateDistance(true);
 					Point* endPoint = entry.isAtBridgeStart ? entry.bridge->pointList.back() : entry.bridge->pointList.front();
 					AStarCell endCell = getCellFromLoc(Vec2(endPoint->x, endPoint->y));
 					AStarNode* node = getNode(endCell);

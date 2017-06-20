@@ -1938,6 +1938,8 @@ repaintall();</data></node>
 int enable = objectexists(focus);
 
 int path = 0;
+int bridge = 0;
+int useVirtualDistance = 0;
 if (enable) {
 	treenode pointsEdit = node("/PointsEdit", c);
 	
@@ -1948,29 +1950,38 @@ if (enable) {
 	path = comparetext(type, "AStar::PreferredPath");
 	if (path) {
 		double pathWeight = function_s(ownerobject(focus), "getPathWeight", focus);
-		setvarnum(node("/editPathWeight", c), "weight", pathWeight);
+		setvarnum(node("/PathWeight/editPathWeight", c), "weight", pathWeight);
 	} else {
-		setvarnum(node("/editPathWeight", c), "weight", 0);
+		setvarnum(node("/PathWeight/editPathWeight", c), "weight", 0);
 	}
 	
 	int showPoints = !comparetext(type, "AStar::Barrier");
 	windowshow(windowfromnode(pointsEdit), showPoints);
 	windowshow(windowfromnode(node("/BarrierPoints", c)), !showPoints);
 	
+	bridge = comparetext(type, "AStar::Bridge");
+	windowshow(windowfromnode(node("/VirtualDistance", c)), bridge);
+	windowshow(windowfromnode(node("/PathWeight", c)), !bridge);
+	if (bridge) {
+		useVirtualDistance = get(node("/useVirtualDistance", focus));
+		double virtualDistance = node("/virtualDistance", focus).value;
+		setvarnum(node("/VirtualDistance/editVirtualDistance", c), "virtualDistance", virtualDistance);
+	} else {
+		setvarnum(node("/VirtualDistance/editVirtualDistance", c), "weight", 0);
+	}
+	
 	applylinks(c, 1);
-	
-	//setviewtext(node("/editName", c), getname(focus));
-	
-}// else {
-//	setviewtext(node("/editName", c), "");
-//}
+}
 
 windowgray(windowfromnode(node("/Name", c)), !enable);
 windowgray(windowfromnode(node("/editName", c)), !enable);
-windowgray(windowfromnode(node("/Path Weight", c)), !enable || !path);
+windowgray(windowfromnode(node("/VirtualDistance/Virtual Distance", c)), !enable || !bridge);
 
-forobjecttreeunder(node("/editPathWeight", c))
+forobjecttreeunder(node("/PathWeight", c))
 	windowgray(windowfromnode(a), !enable || !path);
+
+forobjecttreeunder(node("/VirtualDistance/editVirtualDistance", c))
+	windowgray(windowfromnode(a), !useVirtualDistance);
 
 forobjecttreeunder(node("/PointsEdit", c))
 	windowgray(windowfromnode(a), !enable);
@@ -2017,39 +2028,105 @@ if (objectexists(focus)) {
                 <node f="40"><name></name></node></node>
               </node></node>
             </data></node>
-            <node f="42" dt="4"><name>Path Weight</name><data>
+            <node f="42" dt="4"><name>PathWeight</name><data>
              <node f="40"><name>object</name></node>
-             <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-             <node f="42" dt="1"><name>spatialx</name><data>0000000040310000</data></node>
+             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+             <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
              <node f="42" dt="1"><name>spatialy</name><data>0000000040458000</data></node>
              <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data></node>
-             <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-            </data></node>
-            <node f="42" dt="4"><name>editPathWeight</name><data>
-             <node f="40"><name>object</name></node>
-             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-             <node f="42" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
-             <node f="42" dt="1"><name>spatialy</name><data>0000000040440000</data></node>
-             <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
              <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-             <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
-             <node f="42" dt="2"><name>objectfocus</name><data>..&gt;variables/weight</data></node>
-             <node f="42" dt="2"><name>tooltip</name><data>Path Weight</data></node>
-             <node f="42"><name>variables</name>
-              <node f="40"><name></name></node>
-              <node f="42" dt="2"><name>valuetype</name><data></data></node>
-              <node f="42" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
-              <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
-              <node f="42" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
-              <node f="42" dt="1"><name>conversion</name><data>0000000000000000</data></node>
-              <node f="42" dt="1"><name>eternalSpinner</name><data>0000000000000000</data></node>
-              <node f="42" dt="1"><name>weight</name><data>0000000000000000</data></node>
-              <node f="442" dt="2"><name>OnKillFocus</name><data>treenode focus = node("../../..&gt;objectfocus+", c);
+             <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data>
+              <node f="40"><name></name></node></node>
+             <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+            </data>
+             <node f="40"><name></name></node>
+             <node f="42" dt="4"><name>Path Weight</name><data>
+              <node f="40"><name>object</name></node>
+              <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>0000000040310000</data></node>
+              <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
+              <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data></node>
+              <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+             </data></node>
+             <node f="42" dt="4"><name>editPathWeight</name><data>
+              <node f="40"><name>object</name></node>
+              <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
+              <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+              <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+              <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+              <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
+              <node f="42" dt="2"><name>objectfocus</name><data>..&gt;variables/weight</data></node>
+              <node f="42" dt="2"><name>tooltip</name><data>Path Weight</data></node>
+              <node f="42"><name>variables</name>
+               <node f="40"><name></name></node>
+               <node f="42" dt="2"><name>valuetype</name><data></data></node>
+               <node f="42" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
+               <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
+               <node f="42" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
+               <node f="42" dt="1"><name>conversion</name><data>0000000000000000</data></node>
+               <node f="42" dt="1"><name>eternalSpinner</name><data>0000000000000000</data></node>
+               <node f="42" dt="1"><name>weight</name><data>0000000000000000</data></node>
+               <node f="442" dt="2"><name>OnKillFocus</name><data>treenode focus = node("../../../..&gt;objectfocus+", c);
 
  function_s(ownerobject(focus), "setPathWeight", focus, getvarnum(up(up(c)), "weight"));</data></node>
-             </node>
+              </node>
+             </data>
+              <node f="40"><name></name></node></node>
+            </node>
+            <node f="42" dt="4"><name>VirtualDistance</name><data>
+             <node f="40"><name>object</name></node>
+             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+             <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+             <node f="42" dt="1"><name>spatialy</name><data>0000000040458000</data></node>
+             <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data></node>
+             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+             <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data>
+              <node f="40"><name></name></node></node>
+             <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
             </data>
-             <node f="40"><name></name></node></node>
+             <node f="40"><name></name></node>
+             <node f="42" dt="4"><name>Virtual Distance</name><data>
+              <node f="40"><name>object</name></node>
+              <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
+              <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
+              <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+              <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+              <node f="42" dt="2"><name>coldlink</name><data>../../..&gt;objectfocus+/useVirtualDistance</data></node>
+              <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);
+
+int gray = !getchecked(c);
+forobjecttreeunder(node("../editVirtualDistance", c))
+	windowgray(windowfromnode(a), gray);</data></node>
+              <node f="42" dt="2"><name>tooltip</name><data>Use a virtual distance instead of the actual bridge distance.</data></node>
+             </data></node>
+             <node f="42" dt="4"><name>editVirtualDistance</name><data>
+              <node f="40"><name>object</name></node>
+              <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>000000004067c000</data></node>
+              <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+              <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+              <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+              <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
+              <node f="42" dt="2"><name>objectfocus</name><data>..&gt;variables/virtualDistance</data></node>
+              <node f="42" dt="2"><name>tooltip</name><data>Virtual Distance</data></node>
+              <node f="42"><name>variables</name>
+               <node f="40"><name></name></node>
+               <node f="42" dt="2"><name>valuetype</name><data></data></node>
+               <node f="42" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
+               <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
+               <node f="42" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
+               <node f="42" dt="1"><name>conversion</name><data>0000000000000000</data></node>
+               <node f="42" dt="1"><name>eternalSpinner</name><data>0000000000000000</data></node>
+               <node f="42" dt="1"><name>virtualDistance</name><data>0000000000000000</data></node>
+               <node f="442" dt="2"><name>OnKillFocus</name><data>treenode focus = node("../../../..&gt;objectfocus+", c);
+
+node("/virtualDistance", focus).value = getvarnum(up(up(c)), "virtualDistance");</data></node>
+              </node>
+             </data>
+              <node f="40"><name></name></node></node>
+            </node>
             <node f="42" dt="4"><name>PointsEdit</name><data>
              <node f="40"><name>object</name></node>
              <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>

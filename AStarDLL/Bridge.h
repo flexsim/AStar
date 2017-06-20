@@ -25,10 +25,13 @@ public:
 	virtual void addPassagesToTable(AStarNavigator* nav) override;
 
 	double isTwoWay = 0.0;
+	double useVirtualDistance = 0.0;
+	double virtualDistance = 0.0;
 	std::vector<BridgeTraveler*> bridgeTravelers;
 	Traveler* blockedTraveler;
 	int blockedPathIndex;
-	double calculateDistance() const;
+
+	double calculateDistance(bool noVirtual = false) const;
 	virtual Bridge* toBridge() override { return this; }
 
 

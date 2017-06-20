@@ -8,6 +8,8 @@ void Bridge::bind()
 {
 	__super::bind();
 	bindDouble(isTwoWay, 1);
+	bindDouble(useVirtualDistance, 1);
+	bindDouble(virtualDistance, 1);
 }
 
 void Bridge::addPassagesToTable(AStarNavigator* nav)
@@ -41,16 +43,20 @@ void Bridge::addPassagesToTable(AStarNavigator* nav)
 		addExtraData(toCell, false);
 }
 
-double Bridge::calculateDistance() const
+double Bridge::calculateDistance(bool noVirtual) const
 {
-	double total = 0;
-	for (int i = 1; i < pointList.size(); i++) {
-		Vec3 diff(
-			pointList[i]->x - pointList[i - 1]->x,
-			pointList[i]->y - pointList[i - 1]->y,
-			pointList[i]->z - pointList[i - 1]->z);
-		total += sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+	if (!useVirtualDistance || noVirtual) {
+		double total = 0;
+		for (int i = 1; i < pointList.size(); i++) {
+			Vec3 diff(
+				pointList[i]->x - pointList[i - 1]->x,
+				pointList[i]->y - pointList[i - 1]->y,
+				pointList[i]->z - pointList[i - 1]->z);
+			total += sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+		}
+		return total;
 	}
-	return total;
+	else
+		return virtualDistance;
 }
 }
