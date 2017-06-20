@@ -2207,15 +2207,17 @@ repaintview(table);</data></node>
               <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
               <node f="42" dt="2"><name>hotlinkx</name><data>#define POINT_X 1
 #define POINT_Y 2
+#define POINT_Z 3
 
 treenode focus = node("../..&gt;objectfocus+", c);
 treenode table = node("&gt;table", c);
 treenode astarNavigator = ownerobject(focus);
+treenode result = node("../..&gt;result", c);
 
 if (!objectexists(focus))
 	return 0;
 	
-if (gets(node("../..&gt;result", c)) == "AStar::Barrier")
+if (gets(result) == "AStar::Barrier")
 	return 0;
 
 if (!eventdata) {
@@ -2229,24 +2231,39 @@ if (!eventdata) {
 		set(xNode, x);
 		treenode yNode = nodeadddata(nodeinsertinto(parent), DATATYPE_NUMBER);
 		set(yNode, y);
+		
+		if (gets(result) == "AStar::Bridge") {
+			double z = function_s(astarNavigator, "getPointCoord", focus, i, POINT_Z);
+			treenode zNode = nodeadddata(nodeinsertinto(parent), DATATYPE_NUMBER);
+			set(zNode, z);
+		}
 	}
 	if (content(table) &gt;= 1) {
-		setname(rank(first(table), 1), "X");
-		setname(rank(first(table), 2), "Y");
+		setname(rank(first(table), POINT_X), "X");
+		setname(rank(first(table), POINT_Y), "Y");
+		if (gets(result) == "AStar::Bridge")
+			setname(rank(first(table), POINT_Z), "Z");
 	}
 } else {
 	int rebuildMeshes = 0;
 	for (int i = 0; i &lt; content(node("/points", focus)); i++) {
 		double x = function_s(astarNavigator, "getPointCoord", focus, i, POINT_X);
 		double y = function_s(astarNavigator, "getPointCoord", focus, i, POINT_Y);
+		double z = 0;
 		
 		treenode newpoints = rank(table, i+1);
-		double newx = get(first(newpoints));
-		double newy = get(last(newpoints));
+		double newx = get(newpoints.subnodes[POINT_X]);
+		double newy = get(newpoints.subnodes[POINT_Y]);
+		double newz = 0;
 		
-		if (x != newx || y != newy) {
+		if (gets(result) == "AStar::Bridge") {
+			z = function_s(astarNavigator, "getPointCoord", focus, i, POINT_Z);
+			newz = get(newpoints.subnodes[POINT_Z]);
+		}
+		
+		if (x != newx || y != newy || z != newz) {
 			rebuildMeshes = 1;
-			function_s(astarNavigator, "setPointCoords", focus, i, newx, newy);
+			function_s(astarNavigator, "setPointCoords", focus, i, newx, newy, newz);
 		}
 	}
 	

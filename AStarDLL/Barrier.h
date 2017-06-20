@@ -68,11 +68,13 @@ public:
 
 	// These functions are for modifying barrier points. They each 
 	// check bounds before making any modifications.
-	void addPoint(double x, double y);
+	void addPoint(double x, double y, double z = 0);
 	void removePoint(int pointIndex);
 	void swapPoints(int index1, int index2);
 	bool getPointCoords(int pointIndex, double& x, double& y);
+	bool getPointCoords(int pointIndex, double& x, double& y, double& z);
 	bool setPointCoords(int pointIndex, double x, double y);
+	bool setPointCoords(int pointIndex, double x, double y, double z);
 	virtual Divider* toDivider() { return nullptr; }
 	virtual Bridge* toBridge() { return nullptr; }
 	virtual PreferredPath* toPreferredPath() { return nullptr; }
