@@ -299,9 +299,9 @@ double Barrier::onMouseMove(const Vec3& pos, const Vec3& diff)
 	return 1;
 }
 
-void Barrier::addPoint(double x, double y)
+void Barrier::addPoint(double x, double y, double z)
 {
-	pointList.add(new Point(x, y));
+	pointList.add(new Point(x, y, z));
 }
 
 void Barrier::removePoint(int pointIndex)
@@ -333,6 +333,17 @@ bool Barrier::getPointCoords(int pointIndex, double& x, double& y)
 	return true;
 }
 
+bool Barrier::getPointCoords(int pointIndex, double& x, double& y, double& z)
+{
+	if (pointIndex >= pointList.size())
+		return false;
+
+	x = pointList[pointIndex]->x;
+	y = pointList[pointIndex]->y;
+	z = pointList[pointIndex]->z;
+	return true;
+}
+
 bool Barrier::setPointCoords(int pointIndex, double x, double y)
 {
 	if (pointIndex >= pointList.size())
@@ -340,6 +351,17 @@ bool Barrier::setPointCoords(int pointIndex, double x, double y)
 
 	pointList[pointIndex]->x = x;
 	pointList[pointIndex]->y = y;
+	return true;
+}
+
+bool Barrier::setPointCoords(int pointIndex, double x, double y, double z)
+{
+	if (pointIndex >= pointList.size())
+		return false;
+
+	pointList[pointIndex]->x = x;
+	pointList[pointIndex]->y = y;
+	pointList[pointIndex]->z = z;
 	return true;
 }
 
@@ -536,7 +558,10 @@ ASTAR_FUNCTION Variant Barrier_addPoint(FLEXSIMINTERFACE)
 
 	try {
 		Barrier* b = barNode->objectAs(Barrier);
-		b->addPoint(param(2), param(3));
+		if (parqty() == 4)
+			b->addPoint(param(2), param(3), param(4));
+		else
+			b->addPoint(param(2), param(3));
 	} catch (...) {
 		return 0;
 	}
@@ -587,7 +612,10 @@ ASTAR_FUNCTION Variant Barrier_setPointCoords(FLEXSIMINTERFACE)
 
 	try {
 		Barrier* b = barNode->objectAs(Barrier);
-		b->setPointCoords((int)param(2), param(3), param(4));
+		if(parqty() == 5)
+			b->setPointCoords((int)param(2), param(3), param(4), param(5));
+		else
+			b->setPointCoords((int)param(2), param(3), param(4));
 	} catch (...) {
 		return 0;
 	}
@@ -603,10 +631,11 @@ ASTAR_FUNCTION Variant Barrier_getPointCoord(FLEXSIMINTERFACE)
 	TreeNode* barNode = param(1);
 	double x = 0;
 	double y = 0;
+	double z = 0;
 
 	try {
 		Barrier* b = barNode->objectAs(Barrier);
-		b->getPointCoords((int)param(2), x, y);
+		b->getPointCoords((int)param(2), x, y, z);
 	} catch (...) {
 		return 0;
 	}
@@ -616,6 +645,9 @@ ASTAR_FUNCTION Variant Barrier_getPointCoord(FLEXSIMINTERFACE)
 
 	if ((int)param(3) == POINT_Y)
 		return y;
+
+	if ((int)param(3) == POINT_Z)
+		return z;
 
 	return 1;
 }

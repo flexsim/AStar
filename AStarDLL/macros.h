@@ -20,6 +20,7 @@
 
 #define POINT_X 1
 #define POINT_Y 2
+#define POINT_Z 3
 
 #define ROOT2 1.4142135623f
 #define ROOT5 2.2360679775f
