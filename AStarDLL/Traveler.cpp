@@ -385,27 +385,28 @@ void Traveler::onBridgeArrival(int pathIndex) {
 	AStarNodeExtraData::BridgeEntry& entry = nodeData->second->bridges[e.bridgeIndex];
 	Bridge* bridge = entry.bridge;
 	double bridgeDistance = bridge->calculateDistance();
+	std::vector<int> bridgeTravelerPositions;
 
 	// Check if there is space for the traveler right now
 	auto bridgeHasSpace = [&]() {
 		if (!navigator->enableCollisionAvoidance || bridge->bridgeTravelers.size() == 0)
 			return true;
 
-		double travelerDistance = bridgeDistance;
-		double nextBridgeTravelerDistance = min(
+		double travelerDistance = min(
 			(time() - bridge->bridgeTravelers[0]->entryTime)
 			* bridge->bridgeTravelers[0]->traveler->te->v_maxspeed,
-			travelerDistance);
+			bridgeDistance);
+		bridgeTravelerPositions.push_back(travelerDistance);
 		for (int i = 1; i < bridge->bridgeTravelers.size(); i++) {
 			BridgeTraveler* bridgeTraveler = bridge->bridgeTravelers[i];
 			BridgeTraveler* nextBridgeTraveler = bridge->bridgeTravelers[i - 1];
-			nextBridgeTravelerDistance = min(
+			travelerDistance = min(
 				(time() - bridgeTraveler->entryTime) * bridgeTraveler->traveler->te->v_maxspeed,
-				nextBridgeTravelerDistance - 0.5 * nextBridgeTraveler->traveler->te->b_spatialsx
+				travelerDistance - 0.5 * nextBridgeTraveler->traveler->te->b_spatialsx
 				- 0.5 * bridgeTraveler->traveler->te->b_spatialsx);
+			bridgeTravelerPositions.push_back(travelerDistance);
 		}
-
-		travelerDistance = nextBridgeTravelerDistance
+		travelerDistance = travelerDistance
 			- 0.5 * bridge->bridgeTravelers.back()->traveler->te->b_spatialsx
 			- 0.5 * te->b_spatialsx;
 
@@ -428,23 +429,50 @@ void Traveler::onBridgeArrival(int pathIndex) {
 		}
 	}
 	else {
-		// Check if space will be made available soon
-		double emptySpace = bridgeDistance;
-		double slowestMaxspeed = DBL_MAX;
-		for (int i = 1; i < bridge->bridgeTravelers.size(); i++) {
+		// Is there empty space that will be made available?
+		int emptySpaceIndex = -1;
+		double emptySpace = bridgeTravelerPositions.back()
+			- bridge->bridgeTravelers.back()->traveler->te->b_spatialsx;
+		for (int i = bridge->bridgeTravelers.size() - 1; i > 0; i--) {
 			BridgeTraveler* bridgeTraveler = bridge->bridgeTravelers[i];
 			BridgeTraveler* nextBridgeTraveler = bridge->bridgeTravelers[i - 1];
+			emptySpace += bridgeTravelerPositions[i - 1] - bridgeTravelerPositions[i];
 			emptySpace -= 0.5 * bridgeTraveler->traveler->te->b_spatialsx;
 			emptySpace -= 0.5 * nextBridgeTraveler->traveler->te->b_spatialsx;
-			slowestMaxspeed = min(nextBridgeTraveler->traveler->te->v_maxspeed, slowestMaxspeed);
-		}
-		emptySpace -= 0.5 * bridge->bridgeTravelers.back()->traveler->te->b_spatialsx;
-		emptySpace -= 0.5 * te->b_spatialsx;
-		slowestMaxspeed = min(bridge->bridgeTravelers.back()->traveler->te->v_maxspeed, slowestMaxspeed);
 
-		if (emptySpace >= 0) {
-			createevent(new BridgeArrivalEvent(this, pathIndex, time() +
-				(0.5 * te->b_spatialsx) / te->v_maxspeed));
+			if (emptySpace >= 0.5 * te->b_spatialsx)
+				emptySpaceIndex = i;
+		}
+		if (emptySpaceIndex == -1) {
+			emptySpace += bridgeDistance - bridgeTravelerPositions[0];
+			if (emptySpace >= 0.5 * te->b_spatialsx)
+				emptySpaceIndex = 0;
+		}
+
+		if (emptySpaceIndex != -1) {
+			// Calculate when space will be made available
+			double nextDest = bridgeTravelerPositions[emptySpaceIndex];
+			if (emptySpaceIndex == 0)
+				nextDest += bridgeDistance - bridgeTravelerPositions[emptySpaceIndex];
+			else
+				nextDest += bridgeTravelerPositions[emptySpaceIndex - 1] - bridgeTravelerPositions[emptySpaceIndex];
+			nextDest -= emptySpace - 0.5 * te->b_spatialsx;
+
+			double arrivalTime = (nextDest - bridgeTravelerPositions[emptySpaceIndex]) / te->v_maxspeed;
+
+			for (int i = emptySpaceIndex + 1; i < bridge->bridgeTravelers.size(); i++) {
+				BridgeTraveler* bridgeTraveler = bridge->bridgeTravelers[i];
+				BridgeTraveler* nextBridgeTraveler = bridge->bridgeTravelers[i - 1];
+
+				nextDest -= 0.5 * bridgeTraveler->traveler->te->b_spatialsx;
+				nextDest -= 0.5 * nextBridgeTraveler->traveler->te->b_spatialsx;
+
+				arrivalTime = max(
+					(nextDest - bridgeTravelerPositions[emptySpaceIndex]) / te->v_maxspeed,
+					arrivalTime);
+			}
+
+			createevent(new BridgeArrivalEvent(this, pathIndex, time() + arrivalTime));
 		}
 		else {
 			// Traveler is blocked trying to get on the bridge

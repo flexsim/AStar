@@ -579,6 +579,7 @@ return asn;
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Bridge")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
+        <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\bridge.bmp</data></node>
        </data></node>
       </node>
       <node f="42"><name>Pages</name>
@@ -1634,6 +1635,7 @@ repaintview(TheTable);
              <node f="42"><name>Dividers</name></node>
              <node f="42"><name>One-Way Dividers</name></node>
              <node f="42"><name>Preferred Paths</name></node>
+             <node f="42"><name>Bridges</name></node>
             </node>
             <node f="42" dt="1"><name>itemcurrent</name><data>000000003ff00000</data></node>
             <node f="42" dt="2"><name>OnSelect</name><data>function_s(node("../SelectBarrier", c), "refreshList");</data></node>
@@ -1655,6 +1657,7 @@ repaintview(TheTable);
              <node f="42" dt="2"><name>Add Divider</name><data>function_s(ownerobject(c), "add", EDITMODE_DIVIDER);</data></node>
              <node f="42" dt="2"><name>Add One-Way Divider</name><data>function_s(ownerobject(c), "add", EDITMODE_ONE_WAY_DIVIDER);</data></node>
              <node f="42" dt="2"><name>Add Preferred Path</name><data>function_s(ownerobject(c), "add", EDITMODE_PREFERRED_PATH);</data></node>
+             <node f="42" dt="2"><name>Add Bridge</name><data>function_s(ownerobject(c), "add", EDITMODE_BRIDGE);</data></node>
             </node>
             <node f="42" dt="1"><name>menupopup</name><data>000000003ff00000</data>
              <node f="40"><name></name></node></node>
@@ -1695,6 +1698,10 @@ switch (filter) {
 	
 	case 5:  //Preferred Path	
 		function_s(c, "add", EDITMODE_PREFERRED_PATH);
+	break;
+	
+	case 6:  //Bridge
+		function_s(c, "add", EDITMODE_BRIDGE);
 	break;
 }
 </data></node>
@@ -1870,6 +1877,10 @@ switch (filter) {
 	
 	case 5:  //Preferred Path	
 		function_s(c, "filterList", "AStar::PreferredPath");
+	break;
+	
+	case 6:  //Bridge	
+		function_s(c, "filterList", "AStar::Bridge");
 	break;
 }
 
