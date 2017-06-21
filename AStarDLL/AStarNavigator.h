@@ -178,7 +178,10 @@ public:
 	AStarNode* getNode(const AStarCell& cell) { return &DeRefEdgeTable(cell.row, cell.col); }
 	AStarNode* getNode(int row, int col) { return &DeRefEdgeTable(row, col); }
 	AStarNodeExtraData* assertExtraData(const AStarCell& cell);
-	AStarNodeExtraData* getExtraData(const AStarCell& cell) { return edgeTableExtraData.find(cell.colRow)->second; }
+	AStarNodeExtraData* getExtraData(const AStarCell& cell) {
+		auto extraIter = edgeTableExtraData.find(cell.colRow);
+		return extraIter != edgeTableExtraData.end() ? extraIter->second : nullptr;
+	}
 
 
 	NodeListArray<Traveler>::CouplingSdtSubNodeType travelers;
