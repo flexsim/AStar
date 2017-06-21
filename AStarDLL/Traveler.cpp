@@ -440,8 +440,10 @@ void Traveler::onBridgeArrival(int pathIndex) {
 			emptySpace -= 0.5 * bridgeTraveler->traveler->te->b_spatialsx;
 			emptySpace -= 0.5 * nextBridgeTraveler->traveler->te->b_spatialsx;
 
-			if (emptySpace >= 0.5 * te->b_spatialsx)
+			if (emptySpace >= 0.5 * te->b_spatialsx) {
 				emptySpaceIndex = i;
+				break;
+			}
 		}
 		if (emptySpaceIndex == -1) {
 			emptySpace += bridgeDistance - bridgeTravelerPositions[0];
