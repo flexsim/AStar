@@ -857,7 +857,7 @@ the outside 8 nodes.
 			if (e != edgeTableExtraData.end() && extra->bridges.size() > 0) {
 				for (int i = 0; i < extra->bridges.size(); i++) {
 					auto& entry = extra->bridges[i];
-					double addedDist = entry.bridge->calculateDistance(true);
+					double addedDist = entry.bridge->calculateDistance();
 					Point* endPoint = entry.isAtBridgeStart ? entry.bridge->pointList.back() : entry.bridge->pointList.front();
 					AStarCell endCell = getCellFromLoc(Vec2(endPoint->x, endPoint->y));
 					AStarNode* node = getNode(endCell);
