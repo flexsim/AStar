@@ -151,6 +151,35 @@ for(treenode a = NULL, nextforobjectselectionset(&a, node); objectexists(a); nex
 #define BINDFLAG_DESTROYONRESET		0x00000020
 #define BINDFLAG_BINDVARIABLES		0x00000040
 
+// model unit macros
+#define TIME_RANK 1
+#define LENGTH_RANK 2
+#define FLUID_RANK 3
+#define DATE_TIME_RANK 4
+#define TIME_FORMAT_RANK 5
+#define DATE_FORMAT_RANK 6
+
+#define START_RANK 1
+#define CURRENT_RANK 2
+#define STOP_RANK 3
+#define WARMUP_RANK 4
+
+#define TIME_STR_RANK 1
+#define YEAR_RANK 2
+#define MONTH_RANK 3
+#define DAY_RANK 4
+#define DAYOFWEEK_RANK 5
+#define HOUR_RANK 6
+#define MINUTE_RANK 7
+#define SECOND_RANK 8
+#define MILLISECOND_RANK 9
+
+#define NAME_RANK 1
+#define ABBREVIATION_RANK 2
+#define MULTIPLE_RANK 3
+#define NAME_PLURAL_RANK 4
+#define TYPE_RANK 5
+
 #define SM_RESET 1
 #define SM_MESSAGE 2
 #define SM_EVENT 3
@@ -241,6 +270,8 @@ for(treenode a = NULL, nextforobjectselectionset(&a, node); objectexists(a); nex
 #define KINEMATIC_TURNXY  3
 #define KINEMATIC_TURNYZ  4
 #define KINEMATIC_TURNZX  5
+
+
 
 inline void * doubletoptr(double x)
 {

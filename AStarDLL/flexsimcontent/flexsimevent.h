@@ -69,7 +69,8 @@ public:
 		IncreaseToOrThroughValue = 6,
 		DecreaseToOrThroughValue = 7,
 		FirstIncrease = 8,
-		FirstDecrease = 9
+		FirstDecrease = 9,
+		Update = 10,
 	};
 	ValueChangeListener() {}
 	void setFirstOldOldValue()

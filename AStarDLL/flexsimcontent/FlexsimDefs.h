@@ -112,6 +112,7 @@ namespace FlexSim {
 	#include "flexsimevent.h"
 	#include "mesh.h"
 	#include "List.h"
+	#include "StatisticsCollector.h"
 
 	#if defined COMPILING_MODULE_DLL
 		#include "allobjects.h"
