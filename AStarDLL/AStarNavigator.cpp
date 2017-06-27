@@ -172,6 +172,9 @@ double AStarNavigator::onReset()
 	buildEdgeTable();
 	setDirty();
 
+	for (Barrier* barrier : barrierList)
+		barrier->onReset(this);
+
 	if (enableCollisionAvoidance && collisionUpdateIntervalFactor > 0 && travelers.size() > 0) {
 		double avgSpeed = sumSpeed / travelers.size();
 		double avgNodeMoveTime = nodeWidth / avgSpeed;
@@ -200,82 +203,6 @@ double AStarNavigator::onRunWarm()
 		extra->totalBlockedTime = 0.0;
 		extra->totalBlocks = 0;
 	}
-	return 0;
-}
-
-double AStarNavigator::onPreDraw(TreeNode* view)
-{
-	for (int i = 0; i < barrierList.size(); i++) {
-		Barrier* barrier = barrierList[i];
-		Bridge* bridge = barrier->toBridge();
-		double nextBridgeTravelerDistance;
-
-		if (bridge) {
-			double bridgeDistance = bridge->calculateDistance();
-			double virtualRatio =  bridgeDistance / bridge->calculateDistance(true);
-
-			for (int i = 0; i < bridge->bridgeTravelers.size(); i++) {
-				BridgeTraveler* bridgeTraveler = bridge->bridgeTravelers[i];
-				double travelerDistance = min(
-					(time() - bridgeTraveler->entryTime) * bridgeTraveler->traveler->te->v_maxspeed,
-					bridgeDistance);
-				if (enableCollisionAvoidance) {
-					if (i - 1 != -1) {
-						BridgeTraveler* nextBridgeTraveler = bridge->bridgeTravelers[i - 1];
-						travelerDistance = min(travelerDistance, nextBridgeTravelerDistance
-							- 0.5 * nextBridgeTraveler->traveler->te->b_spatialsx
-							- 0.5 * bridgeTraveler->traveler->te->b_spatialsx);
-					}
-					nextBridgeTravelerDistance = travelerDistance;
-				}
-
-				if (travelerDistance == bridgeDistance) {
-					bridgeTraveler->traveler->te->b_spatialx = bridge->pointList.back()->x;
-					bridgeTraveler->traveler->te->b_spatialy = bridge->pointList.back()->y;
-					bridgeTraveler->traveler->te->b_spatialz = bridge->pointList.back()->z + bridgeTraveler->spatialz;
-				}
-				else {
-					for (int j = 1; j < bridge->pointList.size(); j++) {
-						Vec3 diff(
-							bridge->pointList[j]->x - bridge->pointList[j - 1]->x,
-							bridge->pointList[j]->y - bridge->pointList[j - 1]->y,
-							bridge->pointList[j]->z - bridge->pointList[j - 1]->z);
-						double dist = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z) * virtualRatio;
-
-						if (travelerDistance > dist)
-							travelerDistance -= dist;
-						else {
-							Vec3 interpolated = Vec3(
-								bridge->pointList[j - 1]->x,
-								bridge->pointList[j - 1]->y,
-								bridge->pointList[j - 1]->z)
-								.lerp(Vec3(
-									bridge->pointList[j]->x,
-									bridge->pointList[j]->y,
-									bridge->pointList[j]->z),
-									travelerDistance / dist);
-
-							double nextRot = radianstodegrees(atan2(
-								bridge->pointList[j]->y - interpolated.y,
-								bridge->pointList[j]->x - interpolated.x));
-							while (nextRot > 180)
-								nextRot -= 360;
-							while (nextRot < -180)
-								nextRot += 360;
-
-							bridgeTraveler->traveler->te->b_spatialrz = nextRot;
-							bridgeTraveler->traveler->te->b_spatialx = interpolated.x;
-							bridgeTraveler->traveler->te->b_spatialy = interpolated.y;
-							bridgeTraveler->traveler->te->b_spatialz = interpolated.z + bridgeTraveler->spatialz;
-
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
 	return 0;
 }
 
