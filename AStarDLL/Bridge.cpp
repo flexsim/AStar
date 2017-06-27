@@ -140,7 +140,7 @@ void Bridge::onExit(Traveler * traveler)
 
 	bool wasFull = !isAvailable && filledDistance >= travelDistance;
 	filledDistance -= traveler->navigator->nodeWidth;
-	if (wasFull && filledDistance < travelDistance) {
+	if (wasFull && (filledDistance < travelDistance || filledDistance <= 0.0)) {
 		if (lastTraveler) {
 			double distRemaining = traveler->navigator->nodeWidth - (time() - lastTraveler->bridgeData.entryTime) / lastTraveler->te->v_maxspeed;
 			createevent(new AvailableEvent(this, time() + (distRemaining / lastTraveler->te->v_maxspeed)));
