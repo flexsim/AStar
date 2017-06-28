@@ -184,6 +184,14 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 	NodeAllocation* lastAllocation = nullptr;
 	Bridge* bridgeArrival = nullptr;
 
+	double containerRot = 0;
+	if (te->holder->up != model()) {
+		treenode obj = te->holder;
+		while (obj != model()) {
+			obj = obj->findOwnerObject();
+			containerRot += zrot(obj);			
+		}
+	}
 	int i;
 	for (i = startAtPathIndex + 1; i < numNodes; i++) {
 		e = travelPath[i];
@@ -209,6 +217,8 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 				diff.x = (e.cell.col - laste.cell.col)*nodeWidth;
 				diff.y = (e.cell.row - laste.cell.row)*nodeWidth;
 				diff.z = 0;
+				if(containerRot)
+					diff.rotateXY(-containerRot);
 			}
 			else {
 				Vec3 toLoc = nav->getLocFromCell(e.cell);

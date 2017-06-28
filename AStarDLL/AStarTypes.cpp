@@ -304,8 +304,8 @@ DestinationThreshold::DestinationThreshold(treenode dest, double fudgeFactor)
 	xAxisThreshold = 0.5 * size.x + fudgeFactor;
 	yAxisThreshold = 0.5 * size.y + fudgeFactor;
 	rotation = dest->objectAs(ObjectDataType)->rotation.z;
-	while (dest->up != model()) {
-		dest = dest->up;
+	while (dest->findOwnerObject() != model()) {
+		dest = dest->findOwnerObject();
 		rotation += dest->objectAs(ObjectDataType)->rotation.z;
 	}
 	anyThresholdRadius = 0.0;

@@ -502,6 +502,7 @@ double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double
 
 double AStarNavigator::navigateToLoc(treenode traveler, double * destLoc, double endSpeed)
 {
+	destLoc = Vec3(destLoc).project(traveler->findOwnerObject(), model());
 	Traveler* t = getTraveler(traveler->objectAs(TaskExecuter));
 	t->destThreshold = DestinationThreshold();
 	t->destNode = nullptr;
