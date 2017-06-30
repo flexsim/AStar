@@ -1777,24 +1777,23 @@ unsigned int AStarNavigator::getClassType()
 
 void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 {
-	int col = (int)((modelPos.x - xOffset) / nodeWidth);
-	int row = (int)((modelPos.y - yOffset) / nodeWidth);
+	AStarCell cell = getCellFromLoc(Vec2(modelPos.x, modelPos.y));
 
-	if (col >= 0 && col < edgeTableXSize && row >= 0 && row < edgeTableYSize) {
-		AStarNode& node = DeRefEdgeTable(row, col);
+	if (cell.col >= 0 && cell.col < edgeTableXSize && cell.row >= 0 && cell.row < edgeTableYSize) {
+		AStarNode& node = DeRefEdgeTable(cell.row, cell.col);
 		node.canGoDown = false;
 		node.canGoUp = false;
 		node.canGoRight = false;
 		node.canGoLeft = false;
 
-		if (col > 0)
-			DeRefEdgeTable(row, col - 1).canGoRight = 0;
-		if (col < edgeTableXSize - 1)
-			DeRefEdgeTable(row, col + 1).canGoLeft = 0;
-		if (row > 0)
-			DeRefEdgeTable(row - 1, col).canGoUp = 0;
-		if (row < edgeTableYSize - 1)
-			DeRefEdgeTable(row + 1, col).canGoDown = 0;
+		if (cell.col > 0)
+			DeRefEdgeTable(cell.row, cell.col - 1).canGoRight = 0;
+		if (cell.col < edgeTableXSize - 1)
+			DeRefEdgeTable(cell.row, cell.col + 1).canGoLeft = 0;
+		if (cell.row > 0)
+			DeRefEdgeTable(cell.row - 1, cell.col).canGoUp = 0;
+		if (cell.row < edgeTableYSize - 1)
+			DeRefEdgeTable(cell.row + 1, cell.col).canGoDown = 0;
 	}
 }
 
