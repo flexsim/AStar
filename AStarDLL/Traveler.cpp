@@ -212,7 +212,6 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 			int numSuccessfulAllocations = 0;
 			Vec3 diff;
 			double startTime = endTime;
-			double travelSpeed = te->v_maxspeed;
 			if (!isExitingBridge) {
 				diff.x = (e.cell.col - laste.cell.col)*nodeWidth;
 				diff.y = (e.cell.row - laste.cell.row)*nodeWidth;
@@ -226,11 +225,10 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 				step.isHorizontalDeepSearch = false;
 				step.isVerticalDeepSearch = false;
 				diff = toLoc - startLoc;
-				travelSpeed /= bridgeData.bridge->getTravelToGeomDistScale();
 				isExitingBridge = false;
 			}
 			endTime = addkinematic(kinematics, diff.x, diff.y, diff.z,
-				travelSpeed, 0, 0, 0, 0, startTime, KINEMATIC_TRAVEL);
+				te->v_maxspeed, 0, 0, 0, 0, startTime, KINEMATIC_TRAVEL);
 
 			if (rotLerpSize != 0) {
 				double nextRot = radianstodegrees(atan2(diff.y, diff.x));

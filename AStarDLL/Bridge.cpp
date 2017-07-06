@@ -46,21 +46,17 @@ void Bridge::addPassagesToTable(AStarNavigator* nav)
 		addExtraData(toCell, false);
 }
 
-double Bridge::calculateDistance(bool noVirtual) const
+double Bridge::calculateDistance() const
 {
-	if (!useVirtualDistance || noVirtual) {
-		double total = 0;
-		for (int i = 1; i < pointList.size(); i++) {
-			Vec3 diff(
-				pointList[i]->x - pointList[i - 1]->x,
-				pointList[i]->y - pointList[i - 1]->y,
-				pointList[i]->z - pointList[i - 1]->z);
-			total += sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
-		}
-		return total;
+	double total = 0;
+	for (int i = 1; i < pointList.size(); i++) {
+		Vec3 diff(
+			pointList[i]->x - pointList[i - 1]->x,
+			pointList[i]->y - pointList[i - 1]->y,
+			pointList[i]->z - pointList[i - 1]->z);
+		total += sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
 	}
-	else
-		return virtualDistance;
+	return total;
 }
 
 void Bridge::onReset(AStarNavigator* nav)
@@ -68,9 +64,9 @@ void Bridge::onReset(AStarNavigator* nav)
 	blockedTraveler = nullptr;
 	firstTraveler = nullptr;
 	lastTraveler = nullptr;
-	geometricDistance = calculateDistance(true);
+	geometricDistance = calculateDistance();
 	nodeWidth = nav->nodeWidth;
-	travelDistance = max(0.0, calculateDistance() - nodeWidth);
+	travelDistance = useVirtualDistance ? virtualDistance : max(0.001 * nodeWidth, geometricDistance - nodeWidth);
 	filledDistance = 0.0;
 	isAvailable = true;
 	lastUpdateTime = -1;
@@ -142,7 +138,7 @@ void Bridge::onExit(Traveler * traveler)
 	filledDistance -= traveler->navigator->nodeWidth;
 	if (wasFull && (filledDistance < travelDistance || filledDistance <= 0.0)) {
 		if (lastTraveler) {
-			double distRemaining = traveler->navigator->nodeWidth - (time() - lastTraveler->bridgeData.entryTime) / lastTraveler->te->v_maxspeed;
+			double distRemaining = nodeWidth - (time() - lastTraveler->bridgeData.entryTime) / lastTraveler->te->v_maxspeed;
 			createevent(new AvailableEvent(this, time() + (distRemaining / lastTraveler->te->v_maxspeed)));
 		}
 		else onAvailable();
@@ -151,8 +147,7 @@ void Bridge::onExit(Traveler * traveler)
 
 void Bridge::onEndArrival(Traveler * traveler, int pathIndex)
 {
-	double distScale = geometricDistance / (travelDistance + traveler->navigator->nodeWidth);
-	updateLocation(traveler, travelDistance * distScale);
+	updateLocation(traveler, geometricDistance - traveler->navigator->nodeWidth);
 	traveler->navigatePath(pathIndex, false);
 }
 
@@ -174,7 +169,7 @@ void Bridge::updateLocations()
 	lastUpdateTime = time();
 	
 	Traveler* t = firstTraveler;
-	double distScale = geometricDistance / (travelDistance + t->navigator->nodeWidth);
+	double distScale = getTravelToGeomDistScale();
 	double curMax = travelDistance;
 	double curTime = time();
 	while (t) {

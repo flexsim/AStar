@@ -19,6 +19,11 @@ public:
 	double useVirtualDistance = 0.0;
 	double virtualDistance = 0.0;
 	double geometricDistance = 0.0;
+	/// <summary>The travel distance from arriving at the beginning of the 
+	/// 		 bridge, to arriving one node width short of the end of the 
+	/// 		 bridge, on node width. If virtual distance is used, this is 
+	/// 		 the virtual distance. If not, it is the geometric distance 
+	/// 		 minus one node width.</summary>
 	double travelDistance = 0.0;
 	double filledDistance = 0.0;
 	double lastUpdateTime = -1.0;
@@ -29,8 +34,8 @@ public:
 	Traveler* blockedTraveler;
 	int blockedPathIndex;
 
-	double calculateDistance(bool noVirtual = false) const;
-	double getTravelToGeomDistScale() { return geometricDistance / (travelDistance + nodeWidth); }
+	double calculateDistance() const;
+	double getTravelToGeomDistScale() { return (geometricDistance - nodeWidth) / travelDistance; }
 	virtual Bridge* toBridge() override { return this; }
 
 
