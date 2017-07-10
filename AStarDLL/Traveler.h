@@ -110,7 +110,7 @@ public:
 			Traveler* t = partner()->objectAs(Traveler);
 			if (t->blockEvent == this)
 				t->blockEvent = nullptr;
-			t->onBlock(involved->objectAs(Traveler), colliderPathIndex, cell);
+			t->onBlock(involved ? involved->objectAs(Traveler) : nullptr, colliderPathIndex, cell);
 		}
 		bool operator < (const BlockEvent& other) {
 			if (time < other.time)
@@ -152,6 +152,8 @@ public:
 		ObjRef<Bridge::ArrivalEvent> arrivalEvent;
 	};
 	BridgeData bridgeData;
+
+	void onTEDestroyed();
 
 };
 

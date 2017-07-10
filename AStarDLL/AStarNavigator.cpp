@@ -189,11 +189,11 @@ double AStarNavigator::onReset()
 
 
 double AStarNavigator::onStartSimulation()
-{
+{XS
 	for (int i = 0; i < travelers.size(); i++)
 		travelers[i]->onStartSimulation();
 	return 0;
-}
+XE}
 
 double AStarNavigator::onRunWarm()
 {
@@ -509,6 +509,11 @@ double AStarNavigator::navigateToLoc(treenode traveler, double * destLoc, double
 	t->endSpeed = endSpeed;
 	navigateToLoc(t, destLoc, endSpeed);
 	return 0.0;
+}
+
+void AStarNavigator::onMemberDestroyed(TaskExecuter * te)
+{
+	getTraveler(te)->onTEDestroyed();
 }
 
 void AStarNavigator::onCollisionIntervalUpdate()

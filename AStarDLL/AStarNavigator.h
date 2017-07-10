@@ -150,6 +150,7 @@ public:
 	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed) override;
 	double navigateToLoc(Traveler* traveler, double* destLoc, double endSpeed);
 	virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed) override;
+	virtual void onMemberDestroyed(TaskExecuter* te) override;
 	virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
 
 	AStarSearchEntry* checkExpandOpenSet(AStarNode* node, AStarSearchEntry* entryIn, Direction direction, int travelVal, double dist, double bonusMod, AStarNodeExtraData* extraData);

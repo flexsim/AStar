@@ -93,7 +93,7 @@ void Traveler::onReset()
 }
 
 void Traveler::onStartSimulation()
-{
+{XS
 	if (navigator->enableCollisionAvoidance && !navigator->ignoreInactiveMemberCollisions) {
 		Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
 		AStarCell resetCell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
@@ -101,10 +101,11 @@ void Traveler::onStartSimulation()
 		travelPath.push_back(AStarPathEntry(resetCell, -1));
 		addAllocation(NodeAllocation(this, resetCell, 0, 0, 0.0, DBL_MAX, 1.0), true, false);
 	}
-}
+XE}
 
 void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isCollisionUpdateInterval)
 {
+	XS
 	AStarNavigator* nav = navigator;
 	nextCollisionUpdateTravelIndex = -1;
 
@@ -346,9 +347,12 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 	}
 
 	_ASSERTE(allocations.size() > 0 || !enableCollisionAvoidance || navigator->ignoreInactiveMemberCollisions || bridgeArrival || bridgeData.bridge);
+	XE
 }
 
-void Traveler::onBridgeArrival(Bridge* bridge, int pathIndex) {
+void Traveler::onBridgeArrival(Bridge* bridge, int pathIndex) 
+{
+	XS
 	if (isBlocked)
 		return;
 
@@ -371,10 +375,12 @@ void Traveler::onBridgeArrival(Bridge* bridge, int pathIndex) {
 		bridge->blockedTraveler = this;
 		bridge->blockedPathIndex = pathIndex;
 	}
+	XE
 }
 
 NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, bool notifyPendingAllocations)
 {
+	XS
 	AStarNodeExtraData* nodeData = navigator->assertExtraData(allocation.cell);
 
 	if (!force || notifyPendingAllocations) {
@@ -437,11 +443,13 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, 
 	allocations.push_back(nodeData->allocations.begin());
 
 	return &(nodeData->allocations.front());
+	XE
 }
 
 
 NodeAllocation* Traveler::findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs)
 {
+	XS
 	NodeAllocationIterator bestIter = nodeData->allocations.end();
 	double minAcquireTime = DBL_MAX;
 	double curTime = time();
@@ -471,6 +479,7 @@ NodeAllocation* Traveler::findCollision(AStarNodeExtraData* nodeData, const Node
 		return &(*bestIter);
 
 	return nullptr;
+	XE
 }
 
 
@@ -677,6 +686,18 @@ bool Traveler::findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travel
 	}
 	travelers.pop_back();
 	return false;
+}
+
+
+void Traveler::onTEDestroyed()
+{
+	if (!navigator->enableCollisionAvoidance)
+		return;
+	if (blockEvent)
+		destroyevent(blockEvent);
+	if (arrivalEvent)
+		destroyevent(arrivalEvent);
+	clearAllocations();
 }
 
 void Traveler::onArrival()
