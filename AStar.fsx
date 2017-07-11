@@ -182,7 +182,7 @@
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Divider</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/One-Way Divider</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -550,6 +550,7 @@ set(spatialy(asn), y);
 set(spatialz(asn), z);
 return asn;
 </data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
        </data></node>
        <node f="42" dt="4"><name>Barrier</name><data>
         <node f="40"><name></name></node>
@@ -563,7 +564,7 @@ return asn;
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\divider.bmp</data></node>
        </data></node>
-       <node f="42" dt="4"><name>One-Way Divider</name><data>
+       <node f="10000042" dt="4"><name>One-Way Divider</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::OneWayDivider")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -575,7 +576,7 @@ return asn;
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
        </data></node>
-       <node f="10000042" dt="4"><name>Bridge</name><data>
+       <node f="42" dt="4"><name>Bridge</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Bridge")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
