@@ -997,9 +997,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 double AStarNavigator::abortTravel(TreeNode* travelerNode, TreeNode* newTS)
 {
 	TaskExecuter* te = travelerNode->objectAs(TaskExecuter);
-	TreeNode* myCoupling = first(te->node_v_navigator);
-	TreeNode* teCoupling = tonode(get(myCoupling));
-	Traveler* traveler = myCoupling->objectAs(Traveler);
+	Traveler* traveler = getTraveler(te);
 	if (!traveler->isActive)
 		return 0;
 	traveler->abortTravel(newTS);
