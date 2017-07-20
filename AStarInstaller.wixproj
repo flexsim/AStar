@@ -32,12 +32,10 @@
     <Compile Include="AStar.wxs" />
     <Compile Include="bitmaps\Bitmaps.wxs" />
     <Compile Include="cursors\Cursors.wxs" />
-    <Compile Include="help\Help.wxs" />
     <Compile Include="shapes\Shapes.wxs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cursors" />
-    <Folder Include="help" />
     <Folder Include="bitmaps" />
     <Folder Include="shapes" />
   </ItemGroup>

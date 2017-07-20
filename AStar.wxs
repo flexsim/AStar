@@ -45,7 +45,6 @@
     <ComponentGroupRef Id="group_bitmaps"/>
     <ComponentGroupRef Id="group_cursors"/>
     <ComponentGroupRef Id="group_shapes"/>
-    <ComponentGroupRef Id="group_help" />
     
   </Module>
 </Wix>
