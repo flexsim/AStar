@@ -1264,6 +1264,7 @@ windowgray(windowfromnode(c.find("Max Heat Value")), gray);
 windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
 </data></node>
           </node>
+          <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>Show Barriers</name><data>
@@ -2701,7 +2702,6 @@ applylinks(parent);</data></node>
          </node>
          <node f="42" dt="4"><name>Triggers</name><data>
           <node f="40"><name>object</name></node>
-          <node f="42" dt="2"><name>viewfocus</name><data>MAIN:/project/model</data></node>
           <node f="42" dt="1"><name>viewwindowopen</name><data>000000003ff00000</data></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
@@ -2709,6 +2709,7 @@ applylinks(parent);</data></node>
           <node f="42" dt="1"><name>spatialsx</name><data>0000000040796000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          <node f="42" dt="2"><name>helptopic</name><data>TriggersTab</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>OnReset</name><data>
