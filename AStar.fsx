@@ -1303,20 +1303,11 @@ windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
           </data></node>
-          <node f="42" dt="4"><name>Show Traffic</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000405e8000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          </data></node>
           <node f="42" dt="4"><name>Show Allocations</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>000000004062c000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000405e8000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
@@ -1326,7 +1317,7 @@ windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040664000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>000000004062c000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Check to show a heat map of the AStar grid</data></node>
@@ -1337,7 +1328,7 @@ windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>0000000040418000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>000000004069c000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040664000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>00000000406e0000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/heatMapMode</data></node>
@@ -1354,7 +1345,7 @@ windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>0000000040418000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000406da000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000406a6000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
            <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) 
@@ -1364,7 +1355,7 @@ windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>000000004060e000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000406d4000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000406a0000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040618000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/maxHeatValue</data></node>
