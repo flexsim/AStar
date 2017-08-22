@@ -77,6 +77,7 @@ protected:
 	double showHeatMap;
 	double heatMapMode;
 	double maxHeatValue;
+	double transparentBaseColor;
 	struct HeatMapColorEntry {
 		Vec4f color = Vec4f(0.0f, 0.0f, 0.0f, 0.0f);
 		AStarNodeExtraData* node = nullptr;

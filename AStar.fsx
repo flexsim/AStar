@@ -1262,6 +1262,7 @@ set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
 windowgray(windowfromnode(c.find("SelectHeatMapMode")), gray);
 windowgray(windowfromnode(c.find("Max Heat Value")), gray);
 windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
+windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
 </data></node>
           </node>
           <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
@@ -1363,6 +1364,18 @@ windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
 bright red, in the heat map.</data></node>
           </data>
            <node f="40"><name></name></node></node>
+          <node f="42" dt="4"><name>TransparentBaseColor</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040418000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000406d6000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040690000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to make the base color of the heat map transparent</data></node>
+           <node f="42" dt="2"><name>OnPress</name><data></data></node>
+           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/transparentBaseColor</data></node>
+           <node f="42" dt="2"><name>windowtitle</name><data>Transparent Base Color</data></node>
+          </data></node>
          </node>
          <node f="42" dt="4"><name>Barriers</name><data>
           <node f="40"><name>object</name></node>

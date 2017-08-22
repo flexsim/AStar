@@ -94,6 +94,7 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(showHeatMap);
 	bindVariable(heatMapMode);
 	bindVariable(maxHeatValue);
+	bindVariable(transparentBaseColor);
 
 	bindVariable(collisionUpdateIntervalFactor);
 
@@ -1360,6 +1361,8 @@ void AStarNavigator::drawHeatMap(float z, TreeNode* view)
 	if (!heatMapBuffer) {
 		heatMapBuffer = std::unique_ptr<unsigned int[]>(new unsigned int[numPixels]);
 		Vec4f baseColor = heatMapColorProgression[0];
+		if (transparentBaseColor)
+			baseColor.a = 0;
 		int baseColorInt = (((int)(baseColor.a * 255)) << 24)
 			| (((int)(baseColor.b * 255)) << 16)
 			| (((int)(baseColor.g * 255)) << 8)
