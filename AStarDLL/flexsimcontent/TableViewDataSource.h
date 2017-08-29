@@ -109,7 +109,7 @@ public:
 	engine_export virtual size_t getCellTextRequiredBufferSize(treenode cellNode, TableCell cell, int precision, bool editing = false);
 
 	/// <summary>	Gets a cell value. </summary>
-	/// <remarks>	You only need to implement this if you decide not to implement the getCellText... methods </remarks>
+	/// <remarks>	You only need to implement this if you decide not to implement the getCellText... methods, or if you want copying to not throw exceptions </remarks>
 	/// <param name="cell">	The cell. </param>
 	/// <returns>	The cell value. </returns>
 	engine_export virtual Variant getCellValue(treenode cellNode, TableCell cell) { return cellNode->value; }

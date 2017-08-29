@@ -234,9 +234,6 @@ public:
 		return values;
 	}
 
-
-	operator Array() { return toArray(); }
-
 	void push(T* obj) { add(obj); }
 	void pop() { if (!size()) throw "pop() called on empty container";  parent->last->destroy(); }
 

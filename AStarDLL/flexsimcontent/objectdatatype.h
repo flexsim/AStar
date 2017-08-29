@@ -279,6 +279,8 @@ public:
 	__declspec(property(get = __getRotation)) Vec3& rotation;
 	__declspec(property(get = __getSize)) Vec3& size;
 
+	engine_export void setState(int state, int profile);
+
 	engine_export Color& __getColor();
 	// making color into a property creates name collisions with the color() attribute command
 	// so for now I'm leaving this out.

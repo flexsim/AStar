@@ -820,6 +820,38 @@ visible void fglLoadMatrix(float m00, float m01, float m02, float m03, float m04
 engine_export void fglLoadMatrix(const float* matrix);
 engine_export void autoloadallmedia(treenode obj);
 visible int autoloadallmedia();
+
+engine_export int print();
+engine_export int print(const Variant&);
+engine_export int print(const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&,
+	const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&,
+	const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&,
+	const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&,
+	const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&,
+	const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&,
+	const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&,
+	const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&,
+	const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&,
+	const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
+engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&,
+	const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
 }
 
 #endif

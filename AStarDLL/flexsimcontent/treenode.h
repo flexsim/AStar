@@ -45,6 +45,7 @@ public:
 	TreeNode* operator[](const char* name);
 	TreeNode* operator[](const Variant& index);
 	TreeNode* add();
+	Array toArray();
 };
 
 class engine_export LabelsArray
