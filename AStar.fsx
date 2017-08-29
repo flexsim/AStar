@@ -1275,7 +1275,7 @@ windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
            <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data></data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to show A* Barriers</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Bounds</name><data>
            <node f="40"><name>object</name></node>
@@ -1284,7 +1284,7 @@ windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
            <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data></data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to show A* grid boundaries</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Grid</name><data>
            <node f="40"><name>object</name></node>
@@ -1293,7 +1293,7 @@ windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
            <node f="42" dt="1"><name>spatialy</name><data>0000000040508000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data></data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to show A* grid</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Members</name><data>
            <node f="40"><name>object</name></node>
@@ -1302,7 +1302,7 @@ windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
            <node f="42" dt="1"><name>spatialy</name><data>0000000040578000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data></data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to draw a circle beneath A* Traveler members and a square beneath A* FR members</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Allocations</name><data>
            <node f="40"><name>object</name></node>
@@ -1311,7 +1311,7 @@ windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
            <node f="42" dt="1"><name>spatialy</name><data>00000000405e8000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data></data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>When using collision avoidance, check to show grid node allocations for each traveller</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/showAllocations</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Heat Map</name><data>
@@ -1324,6 +1324,7 @@ windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
            <node f="42" dt="2"><name>tooltip</name><data>Check to show a heat map of the AStar grid</data></node>
            <node f="42" dt="2"><name>OnPress</name><data>function_s(up(c), "enableHeatMapControls");</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/showHeatMap</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to draw a heatmap over the A* grid</data></node>
           </data></node>
           <node f="42" dt="4"><name>SelectHeatMapMode</name><data>
            <node f="40"><name>object</name></node>
