@@ -147,13 +147,15 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 	if (!isCollisionUpdateInterval) {
 		lastRotation = te->b_spatialrz;
 		endTime = time();
-		if (te->node_v_modifyrotation) {
+		if (objectexists(te->node_v_modifyrotation) && te->node_v_modifyrotation->value) {
 
 			if (rotLerpSize == 0)
 				kinFlags |= KINEMATIC_MANAGE_ROTATIONS;
 
 			if (!te->canRotateOnIncline())
 				kinFlags |= KINEMATIC_NO_INCLINE_ROTATION;
+		} else {
+			rotLerpSize = 0;
 		}
 		initkinematics(kinematics, startLoc.x, startLoc.y, te->b_spatialz, 0, 0, te->b_spatialrz, kinFlags, 0);
 	} else {
