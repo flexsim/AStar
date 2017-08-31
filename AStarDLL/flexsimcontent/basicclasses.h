@@ -24,6 +24,7 @@ class Variant;
 class VariantParams;
 class VariantLValue;
 class List;
+class StatisticsCollector;
 typedef char* (*customdisplayfunction)(TreeNode*, int);
 class SplineCache;
 class TableViewDataSource;

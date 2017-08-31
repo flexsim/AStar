@@ -80,6 +80,7 @@ public:
 	virtual PreferredPath* toPreferredPath() { return nullptr; }
 
 	void addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color);
+	virtual void onReset(AStarNavigator* nav) {}
 };
 
 }

@@ -4915,6 +4915,91 @@ FS_CONTENT_DLL_FUNC virtual void bindVariables();
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
+// GenericChart
+class GenericChart : public StatisticObject
+{
+public:
+
+
+// c++ member functions
+
+FS_CONTENT_DLL_FUNC virtual double onReset();
+
+FS_CONTENT_DLL_FUNC virtual Variant onMessage(treenode from, const Variant& p1, const Variant& p2, const Variant& p3);
+
+FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+
+FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+
+FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode  view);
+
+FS_CONTENT_DLL_FUNC virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
+
+FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
+
+FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+
+FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+
+FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+
+FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
+
+FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+
+FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
+
+FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
+
+FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+
+FS_CONTENT_DLL_FUNC std::string setProperties(treenode view);
+
+FS_CONTENT_DLL_FUNC std::string setSeriesProperties(treenode view, int seriesRank, int index);
+
+FS_CONTENT_DLL_FUNC treenode getBundleNode(treenode tableRef);
+
+FS_CONTENT_DLL_FUNC treenode getBundleFormatter(treenode tableRef, bool isRepData);
+
+FS_CONTENT_DLL_FUNC Variant getNewIDsInSeries(treenode bundleNode, treenode series);
+
+FS_CONTENT_DLL_FUNC void getDataForTable(treenode tableRef, treenode destNode);
+
+FS_CONTENT_DLL_FUNC treenode getSettingsNode();
+
+TreeNode* node_v_data;
+TreeNode* node_v_initialized;
+#define v_initialized node_v_initialized->safedatafloat()[0]
+TreeNode* node_v_chartType;
+#define v_chartType node_v_chartType->safedatafloat()[0]
+TreeNode* node_v_genericChartType;
+#define v_genericChartType node_v_genericChartType->safedatafloat()[0]
+TreeNode* node_v_timeplotSettings;
+#define v_timeplotSettings node_v_timeplotSettings->safedatafloat()[0]
+TreeNode* node_v_histogramSettings;
+#define v_histogramSettings node_v_histogramSettings->safedatafloat()[0]
+TreeNode* node_v_ganttSettings;
+#define v_ganttSettings node_v_ganttSettings->safedatafloat()[0]
+TreeNode* node_v_pieSettings;
+#define v_pieSettings node_v_pieSettings->safedatafloat()[0]
+TreeNode* node_v_barSettings;
+#define v_barSettings node_v_barSettings->safedatafloat()[0]
+TreeNode* node_v_tableSettings;
+#define v_tableSettings node_v_tableSettings->safedatafloat()[0]
+
+// System
+
+FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
 // Source
 class Source : public FixedResource
 {

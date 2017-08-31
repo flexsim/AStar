@@ -257,10 +257,10 @@ double Barrier::onMouseMove(const Vec3& pos, const Vec3& diff)
 		Point* activePoint = pointList[(int)activePointIndex];
 
 		if (arrow <= 2) {
-			activePoint->x = diff.x + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
+			activePoint->x = pos.x + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
 		}
 		if (arrow == 0 || arrow > 2) {
-			activePoint->y = diff.y + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
+			activePoint->y = pos.y + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
 		}
 
 		Point* bottomLeft = pointList[0];

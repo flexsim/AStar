@@ -364,7 +364,7 @@ template<class ObjType>
 		}
 		static void Displayer(Type* x)
 		{
-			x->bind(0);
+			x->bind(nullptr);
 		}
 	};
 
@@ -503,13 +503,13 @@ template<class ObjType>
 	template <class SetType>
 	static void StlSetInserter(SetType& theSet, typename SetType::value_type theVal)
 	{
-		theSet.insert_bareBones(theVal);
+		theSet.insert(std::move(theVal));
 	}
 
 	template <class SetType>
 	static void StlVectorInserter(SetType& theSet, typename SetType::value_type theVal)
 	{
-		theSet.push_back(theVal);
+		theSet.push_back(std::move(theVal));
 	}
 
 
@@ -563,11 +563,10 @@ template<class ObjType>
 			if (temp == theMap.end())
 				return;
 			treenode container = bindByName(prefix, 0, DATA_FLOAT);
-			clearcontents(container);
+			container->subnodes.clear();
 			for (; temp != theMap.end(); temp++) {
 				ValBinder::Saver(
-					nodeinsertinto(
-						KeyBinder::Saver(nodeinsertinto(container), (MapType::key_type*)&(temp->first))), 
+					KeyBinder::Saver(container->subnodes.add(), (MapType::key_type*)&(temp->first))->subnodes.add(), 
 						(&(temp->second)));
 			}
 			break;
@@ -575,9 +574,9 @@ template<class ObjType>
 		case SDT_BIND_ON_LOAD: {
 			treenode container = bindByName(prefix, 0, DATA_FLOAT);
 			theMap.clear();
-			for (int i = 1; i <= content(container); i++) {
-				treenode x = rank(container, i);
-				theMap[KeyBinder::Loader(x)] = ValBinder::Loader(last(x));
+			for (int i = 1; i <= container->subnodes.length; i++) {
+				treenode x = container->subnodes[i];
+				theMap[KeyBinder::Loader(x)] = ValBinder::Loader(x->last);
 			}
 			break;
 		}
@@ -809,7 +808,7 @@ template<class ObjType>
 
 #define FIRE_SDT_EVENT(node, ...) if (node) { node->evaluate(__VA_ARGS__); }
 #define FIRE_SDT_EVENT_VALUE_GETTER(node, ...) (node ? node->evaluate(__VA_ARGS__) : Variant())
-#define FIRE_SDT_EVENT_VALUE_CHANGE(node, newValue, oldValue) {if (node && newValue != oldValue) { node->evaluate(newValue, oldValue); }}
+#define FIRE_SDT_EVENT_VALUE_CHANGE(node, newValue, oldValue) {if (node) { node->evaluate(newValue, oldValue); }}
 #define FIRE_SDT_EVENT_VALUE_CHANGE_KINETIC(node, newValue, oldValue) {if (node) { node->evaluate(newValue, oldValue); }}
 
 	private:
@@ -1168,6 +1167,11 @@ public:
 		{
 			bindCastOperatorPrivate(castClass, force_cast<void*>(funcPtr));
 		}
+		template <class Type, class ToType>
+		static void bindCastOperatorByName(const char* castClass, ToType(Type::*funcPtr) () const)
+		{
+			bindCastOperatorPrivate(castClass, force_cast<void*>(funcPtr));
+		}
 #define bindCastOperator(to, caster) SimpleDataType::bindCastOperatorByName(#to, caster)
 
 	private:
@@ -1324,6 +1328,8 @@ class SqlDataSource : public SimpleDataType
 #define SQL_COL_NOT_FOUND INT_MAX
 /// <summary>	"Not found" table is one that it tried to resolve but couldn't. </summary>
 #define SQL_TABLE_NOT_FOUND (INT_MAX - 2)
+
+#define SQL_FLEXSCRIPT_EXCEPTION (INT_MAX - 3)
 
 #define SQL_COL_END ((const char*) 0x2)
 #define SQL_NULL Variant()

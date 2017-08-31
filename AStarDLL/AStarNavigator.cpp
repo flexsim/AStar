@@ -94,6 +94,7 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(showHeatMap);
 	bindVariable(heatMapMode);
 	bindVariable(maxHeatValue);
+	bindVariable(transparentBaseColor);
 
 	bindVariable(collisionUpdateIntervalFactor);
 
@@ -172,6 +173,9 @@ double AStarNavigator::onReset()
 	buildEdgeTable();
 	setDirty();
 
+	for (Barrier* barrier : barrierList)
+		barrier->onReset(this);
+
 	if (enableCollisionAvoidance && collisionUpdateIntervalFactor > 0 && travelers.size() > 0) {
 		double avgSpeed = sumSpeed / travelers.size();
 		double avgNodeMoveTime = nodeWidth / avgSpeed;
@@ -186,11 +190,11 @@ double AStarNavigator::onReset()
 
 
 double AStarNavigator::onStartSimulation()
-{
+{XS
 	for (int i = 0; i < travelers.size(); i++)
 		travelers[i]->onStartSimulation();
 	return 0;
-}
+XE}
 
 double AStarNavigator::onRunWarm()
 {
@@ -200,82 +204,6 @@ double AStarNavigator::onRunWarm()
 		extra->totalBlockedTime = 0.0;
 		extra->totalBlocks = 0;
 	}
-	return 0;
-}
-
-double AStarNavigator::onPreDraw(TreeNode* view)
-{
-	for (int i = 0; i < barrierList.size(); i++) {
-		Barrier* barrier = barrierList[i];
-		Bridge* bridge = barrier->toBridge();
-		double nextBridgeTravelerDistance;
-
-		if (bridge) {
-			double bridgeDistance = bridge->calculateDistance();
-			double virtualRatio =  bridgeDistance / bridge->calculateDistance(true);
-
-			for (int i = 0; i < bridge->bridgeTravelers.size(); i++) {
-				BridgeTraveler* bridgeTraveler = bridge->bridgeTravelers[i];
-				double travelerDistance = min(
-					(time() - bridgeTraveler->entryTime) * bridgeTraveler->traveler->te->v_maxspeed,
-					bridgeDistance);
-				if (enableCollisionAvoidance) {
-					if (i - 1 != -1) {
-						BridgeTraveler* nextBridgeTraveler = bridge->bridgeTravelers[i - 1];
-						travelerDistance = min(travelerDistance, nextBridgeTravelerDistance
-							- 0.5 * nextBridgeTraveler->traveler->te->b_spatialsx
-							- 0.5 * bridgeTraveler->traveler->te->b_spatialsx);
-					}
-					nextBridgeTravelerDistance = travelerDistance;
-				}
-
-				if (travelerDistance == bridgeDistance) {
-					bridgeTraveler->traveler->te->b_spatialx = bridge->pointList.back()->x;
-					bridgeTraveler->traveler->te->b_spatialy = bridge->pointList.back()->y;
-					bridgeTraveler->traveler->te->b_spatialz = bridge->pointList.back()->z + bridgeTraveler->spatialz;
-				}
-				else {
-					for (int j = 1; j < bridge->pointList.size(); j++) {
-						Vec3 diff(
-							bridge->pointList[j]->x - bridge->pointList[j - 1]->x,
-							bridge->pointList[j]->y - bridge->pointList[j - 1]->y,
-							bridge->pointList[j]->z - bridge->pointList[j - 1]->z);
-						double dist = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z) * virtualRatio;
-
-						if (travelerDistance > dist)
-							travelerDistance -= dist;
-						else {
-							Vec3 interpolated = Vec3(
-								bridge->pointList[j - 1]->x,
-								bridge->pointList[j - 1]->y,
-								bridge->pointList[j - 1]->z)
-								.lerp(Vec3(
-									bridge->pointList[j]->x,
-									bridge->pointList[j]->y,
-									bridge->pointList[j]->z),
-									travelerDistance / dist);
-
-							double nextRot = radianstodegrees(atan2(
-								bridge->pointList[j]->y - interpolated.y,
-								bridge->pointList[j]->x - interpolated.x));
-							while (nextRot > 180)
-								nextRot -= 360;
-							while (nextRot < -180)
-								nextRot += 360;
-
-							bridgeTraveler->traveler->te->b_spatialrz = nextRot;
-							bridgeTraveler->traveler->te->b_spatialx = interpolated.x;
-							bridgeTraveler->traveler->te->b_spatialy = interpolated.y;
-							bridgeTraveler->traveler->te->b_spatialz = interpolated.z + bridgeTraveler->spatialz;
-
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
 	return 0;
 }
 
@@ -575,12 +503,18 @@ double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double
 
 double AStarNavigator::navigateToLoc(treenode traveler, double * destLoc, double endSpeed)
 {
+	destLoc = Vec3(destLoc).project(traveler->findOwnerObject(), model());
 	Traveler* t = getTraveler(traveler->objectAs(TaskExecuter));
 	t->destThreshold = DestinationThreshold();
 	t->destNode = nullptr;
 	t->endSpeed = endSpeed;
 	navigateToLoc(t, destLoc, endSpeed);
 	return 0.0;
+}
+
+void AStarNavigator::onMemberDestroyed(TaskExecuter * te)
+{
+	getTraveler(te)->onTEDestroyed();
 }
 
 void AStarNavigator::onCollisionIntervalUpdate()
@@ -857,7 +791,7 @@ the outside 8 nodes.
 			if (e != edgeTableExtraData.end() && extra->bridges.size() > 0) {
 				for (int i = 0; i < extra->bridges.size(); i++) {
 					auto& entry = extra->bridges[i];
-					double addedDist = entry.bridge->calculateDistance(true);
+					double addedDist = entry.bridge->travelDistance + nodeWidth;
 					Point* endPoint = entry.isAtBridgeStart ? entry.bridge->pointList.back() : entry.bridge->pointList.front();
 					AStarCell endCell = getCellFromLoc(Vec2(endPoint->x, endPoint->y));
 					AStarNode* node = getNode(endCell);
@@ -1064,9 +998,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 double AStarNavigator::abortTravel(TreeNode* travelerNode, TreeNode* newTS)
 {
 	TaskExecuter* te = travelerNode->objectAs(TaskExecuter);
-	TreeNode* myCoupling = first(te->node_v_navigator);
-	TreeNode* teCoupling = tonode(get(myCoupling));
-	Traveler* traveler = myCoupling->objectAs(Traveler);
+	Traveler* traveler = getTraveler(te);
 	if (!traveler->isActive)
 		return 0;
 	traveler->abortTravel(newTS);
@@ -1429,6 +1361,8 @@ void AStarNavigator::drawHeatMap(float z, TreeNode* view)
 	if (!heatMapBuffer) {
 		heatMapBuffer = std::unique_ptr<unsigned int[]>(new unsigned int[numPixels]);
 		Vec4f baseColor = heatMapColorProgression[0];
+		if (transparentBaseColor)
+			baseColor.a = 0;
 		int baseColorInt = (((int)(baseColor.a * 255)) << 24)
 			| (((int)(baseColor.b * 255)) << 16)
 			| (((int)(baseColor.g * 255)) << 8)
@@ -1849,24 +1783,23 @@ unsigned int AStarNavigator::getClassType()
 
 void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 {
-	int col = (int)((modelPos.x - xOffset) / nodeWidth);
-	int row = (int)((modelPos.y - yOffset) / nodeWidth);
+	AStarCell cell = getCellFromLoc(Vec2(modelPos.x, modelPos.y));
 
-	if (col >= 0 && col < edgeTableXSize && row >= 0 && row < edgeTableYSize) {
-		AStarNode& node = DeRefEdgeTable(row, col);
+	if (cell.col >= 0 && cell.col < edgeTableXSize && cell.row >= 0 && cell.row < edgeTableYSize) {
+		AStarNode& node = DeRefEdgeTable(cell.row, cell.col);
 		node.canGoDown = false;
 		node.canGoUp = false;
 		node.canGoRight = false;
 		node.canGoLeft = false;
 
-		if (col > 0)
-			DeRefEdgeTable(row, col - 1).canGoRight = 0;
-		if (col < edgeTableXSize - 1)
-			DeRefEdgeTable(row, col + 1).canGoLeft = 0;
-		if (row > 0)
-			DeRefEdgeTable(row - 1, col).canGoUp = 0;
-		if (row < edgeTableYSize - 1)
-			DeRefEdgeTable(row + 1, col).canGoDown = 0;
+		if (cell.col > 0)
+			DeRefEdgeTable(cell.row, cell.col - 1).canGoRight = 0;
+		if (cell.col < edgeTableXSize - 1)
+			DeRefEdgeTable(cell.row, cell.col + 1).canGoLeft = 0;
+		if (cell.row > 0)
+			DeRefEdgeTable(cell.row - 1, cell.col).canGoUp = 0;
+		if (cell.row < edgeTableYSize - 1)
+			DeRefEdgeTable(cell.row + 1, cell.col).canGoDown = 0;
 	}
 }
 

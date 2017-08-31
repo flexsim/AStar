@@ -162,9 +162,11 @@ void AStarNodeExtraData::fulfillTopRequest()
 			cell = traveler->allocations.back()->cell;
 		else cell = traveler->travelPath[topRequest.travelPathIndex - 1].cell;
 		AStarNodeExtraData* blockedCell = traveler->navigator->getExtraData(cell);
-		blockedTime = min(blockedTime, statisticaltime());
-		blockedCell->totalBlockedTime += blockedTime;
-		blockedCell->totalBlocks++;
+		if (blockedCell != nullptr) {
+			blockedTime = min(blockedTime, statisticaltime());
+			blockedCell->totalBlockedTime += blockedTime;
+			blockedCell->totalBlocks++;
+		}
 	}
 	traveler->navigatePath(topRequest.travelPathIndex - 1, false);
 	if (requests.size() > 0)
@@ -302,8 +304,8 @@ DestinationThreshold::DestinationThreshold(treenode dest, double fudgeFactor)
 	xAxisThreshold = 0.5 * size.x + fudgeFactor;
 	yAxisThreshold = 0.5 * size.y + fudgeFactor;
 	rotation = dest->objectAs(ObjectDataType)->rotation.z;
-	while (dest->up != model()) {
-		dest = dest->up;
+	while (dest->findOwnerObject() != model()) {
+		dest = dest->findOwnerObject();
 		rotation += dest->objectAs(ObjectDataType)->rotation.z;
 	}
 	anyThresholdRadius = 0.0;

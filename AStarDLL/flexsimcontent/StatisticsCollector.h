@@ -7,6 +7,11 @@
 #include <functional>
 #include <map>
 
+#define DATA_FORMAT_NONE 0
+#define DATA_FORMAT_OBJECT 1
+#define DATA_FORMAT_TIME 2
+#define DATA_FORMAT_PERCENT 3
+
 namespace FlexSim
 {
 
@@ -174,7 +179,21 @@ public:
 };
 #pragma endregion (classes IDService, IDServiceCore)
 
-class StatisticsCollector : public ObjectDataType
+// This interface makes it easier to deal with the fact that both
+// the statistics collector and the calculated table specify column
+// formats (DATA_FORMAT_*)
+class StatisticsCollector;
+class CalculatedTable;
+class ColumnFormatter : public ObjectDataType
+{
+public:
+	virtual int getColumnFormat(int colNr) = 0;
+	virtual Array getColumnFormats() = 0;
+	virtual StatisticsCollector* toStatisticsCollector() { return nullptr; }
+	virtual CalculatedTable* toCalculatedTable() { return nullptr; }
+};
+
+class StatisticsCollector : public ColumnFormatter
 {
 protected:
 	class CollectedData
@@ -285,19 +304,21 @@ public:
 			Always,
 		};
 
+		const static int NO_INDEX = -1;
+
 		StatisticsCollector* __getCollector();
 		__declspec(property(get = __getCollector)) StatisticsCollector* collector;
 
 		double valueApplicationMode = (double)OnEventOnly;
 		ByteBlock columnType;
+		double bundleIndex = NO_INDEX;
 
 		virtual const char* getColumnType() = 0;
 
 		virtual Variant getValue() = 0;
 		virtual int getBundleFieldType() = 0;
 
-		virtual bool isObjectID() { return false; }
-		virtual bool isTime() { return false; }
+		virtual int getColumnFormat() { return DATA_FORMAT_NONE; }
 		bool isDynamic() { return valueApplicationMode == (double)Always; }
 
 		virtual bool isClassType(const char* className) override {
@@ -329,8 +350,7 @@ public:
 		virtual Variant getValue() override;
 		virtual int getBundleFieldType() override;
 
-		virtual bool isObjectID() override;
-		virtual bool isTime() override;
+		virtual int getColumnFormat() override;
 
 		virtual void bind() override;
 		virtual const char* getClassFactory() override { return "StatisticsCollectorBasicColumn"; }
@@ -379,14 +399,9 @@ public:
 	class CodeColumn : public Column
 	{
 	public:
-		enum ValueFormat {
-			NoFormat = 0,
-			ObjectID,
-			Time,
-		};
 
 		double bundleFieldType = 1;
-		double valueFormat = (double)NoFormat;
+		double valueFormat = DATA_FORMAT_NONE;
 		TreeNode* codeNode;
 		
 		virtual const char* getColumnType() override { return "Code"; }
@@ -395,8 +410,7 @@ public:
 	
 		virtual int getBundleFieldType() override { return (int)bundleFieldType; }
 
-		virtual bool isObjectID() override { return valueFormat == (double)ObjectID; }
-		virtual bool isTime() override { return valueFormat == (double)Time; }
+		virtual int getColumnFormat() override { return (int)valueFormat; }
 		
 		virtual void bind() override;
 		virtual const char* getClassFactory() override { return "StatisticsCollectorCodeColumn"; }
@@ -652,8 +666,7 @@ public:
 	TreeNode* rowTableObjects;
 	TreeNode* rowTable;
 	ByteBlock rowProperty;
-	BundleMember data;
-
+	
 	enum InstanceMode { All, SpecifiedObject };
 	double instanceMode;
 	NodeRef instanceObject;
@@ -665,6 +678,8 @@ public:
 	NodeListArray<EventReference>::SdtSubNodeBindingType updateEventReference;
 	
 	NodeListArray<FlexSimEvent>::CouplingSdtPtrType liveListeners;
+
+	BundleMember data;
 
 	engine_export TreeNode* addEventReference(TreeNode* object, const char* eventName);
 	engine_export TreeNode* addTimerEventReference();
@@ -718,8 +733,8 @@ public:
 	engine_export operator TreeNode*() { return holder; }
 
 	// These methods allow access to some column metadata
-	engine_export int isColumnObjectID(int columnNr);
-	engine_export int isColumnTime(int columnNr);
+	engine_export int getColumnFormat(int columnNr) override;
+	engine_export Array getColumnFormats() override;
 
 	engine_export static StatisticsCollector* createGlobal();
 	engine_export static StatisticsCollector* getGlobal(const Variant& id);
@@ -744,9 +759,11 @@ public:
 	engine_export static const char* getDateTimeStr(double modelTime);
 
 	engine_export static void clearIDs() { IDService::clear(); }
+
+	virtual StatisticsCollector* toStatisticsCollector() { return this; }
 };
 
-class CalculatedTable : public ObjectDataType
+class CalculatedTable : public ColumnFormatter
 {
 protected:
 
@@ -828,11 +845,11 @@ public:
 	double buildFailed = 0;
 	ByteBlock badQuery;
 
-	// And here's where the result gets dumped
-	BundleMember data;
-
 	// and here's the last update time
 	double lastUpdateTime = -1;
+
+	// and here's where the result gets dumped
+	BundleMember data;
 
 	engine_export static CalculatedTable* getGlobal(const Variant& queryTable);
 
@@ -844,12 +861,14 @@ public:
 	engine_export void update(int force = 0);
 	void updateFormatList();
 
-	engine_export int isColumnObjectID(int colNum);
-	engine_export int isColumnTime(int colNum);
+	engine_export int getColumnFormat(int columnNr) override;
+	engine_export Array getColumnFormats() override;
 
 	engine_export int dependsOnExperimentData();
 
 	engine_export virtual void bindVariables() override;
+
+	virtual CalculatedTable* toCalculatedTable() { return this; }
 };
 
 }

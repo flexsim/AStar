@@ -966,6 +966,26 @@ public:
 		return *this;
 	}
 
+	void bind(TreeNode* x) {
+		Variant var = *this;
+		var.bind(x);
+		*this = (Array)var;
+	}
+
+	bool operator == (const FlexSimArray<Type, TypeId>& other) const
+	{
+		if (size() != other.size())
+			return false;
+		for (int i = 1; i <= size(); i++)
+			if (operator [](i) != other[i])
+				return false;
+		return true;
+	}
+	bool operator != (const FlexSimArray<Type, TypeId>& other) const
+	{
+		return !operator ==(other);
+	}
+
 	typedef FlexSimArray<Variant, VariantType::Array> VariantArray;
 	typedef FlexSimArrayUnionMember<Variant, VariantType::Array> VariantArrayUnionMember;
 };
@@ -1179,6 +1199,7 @@ public:
 	VariantType type;
 	friend struct Compiler::ClassInfo;
 	friend class TreeNode;
+
 protected:
 	// a weak str ptr is one that's not owned by me, so I shouldn't deallocate it
 	static const unsigned char WEAK_STR = 0x1;
@@ -1580,6 +1601,7 @@ public:
 		case VariantType::String: return strcmp(asString().c_str(), other.asString().c_str()) == 0;
 		case VariantType::TreeNode: return asTreeNode() == other.asTreeNode();
 		case VariantType::Pointer: return asPointer == other.asPointer;
+		case VariantType::Array: return asArray() == other.asArray();
 		}
 		return false;
 	}
@@ -1690,12 +1712,12 @@ public:
 	COMPARE_STRING(op, const std::string&); \
 	COMPARE_STRING(op, const char*);
 
-	COMPARE_STRING_PAIR(== )
-		COMPARE_STRING_PAIR(!= )
-		COMPARE_STRING_PAIR(> )
-		COMPARE_STRING_PAIR(< )
-		COMPARE_STRING_PAIR(>= )
-		COMPARE_STRING_PAIR(<= )
+COMPARE_STRING_PAIR(== )
+COMPARE_STRING_PAIR(!= )
+COMPARE_STRING_PAIR(> )
+COMPARE_STRING_PAIR(< )
+	COMPARE_STRING_PAIR(>= )
+	COMPARE_STRING_PAIR(<= )
 
 #undef COMPARE_STRING_PAIR
 #undef COMPARE_STRING
@@ -1749,12 +1771,12 @@ public:
 #define COMPARE_NUMBER_TYPES_2(op, defaultVal)\
 	FOR_ALL_NUMBER_TYPES_2(COMPARE_NUMBER_2, op, defaultVal)
 
-		COMPARE_NUMBER_TYPES_1(<, false)
-		COMPARE_NUMBER_TYPES_1(>, false)
-		COMPARE_NUMBER_TYPES_1(<=, false)
-		COMPARE_NUMBER_TYPES_1(>=, false)
-		COMPARE_NUMBER_TYPES_2(==, false)
-		COMPARE_NUMBER_TYPES_2(!=, true)
+	COMPARE_NUMBER_TYPES_1(< , false)
+	COMPARE_NUMBER_TYPES_1(> , false)
+	COMPARE_NUMBER_TYPES_1(<= , false)
+	COMPARE_NUMBER_TYPES_1(>= , false)
+	COMPARE_NUMBER_TYPES_2(== , false)
+	COMPARE_NUMBER_TYPES_2(!= , true)
 
 #undef COMPARE_NUMBER
 #undef COMPARE_NUMBER_TYPES
@@ -1771,9 +1793,6 @@ public:
 			return (double)(asNumber op num);\
 		return (double)num;\
 	}
-
-
-
 	
 
 	// Variant op numberType
@@ -2008,6 +2027,7 @@ inline bool operator != (TreeNode* left, const NodeRef& right)
 	inline double operator op (numType left, const Variant& right) {\
 		return static_cast<double>(left) op static_cast<double>(right); \
 	}
+
 	FOR_ALL_NUMBER_TYPES(BINARY_OP, +)
 	FOR_ALL_NUMBER_TYPES(BINARY_OP, -)
 	FOR_ALL_NUMBER_TYPES(BINARY_OP, *)
@@ -2027,6 +2047,10 @@ inline Variant operator + (const char* left, const Variant& right)
 {
 	return Variant(std::string(left).append(right));
 }
+
+
+inline double& operator += (double& left, const Variant& right) { left += (double)right; return left; }
+inline double& operator -= (double& left, const Variant& right) { left -= (double)right; return left; }
 
 #undef BINARY_OP
 
@@ -2939,6 +2963,123 @@ private:
 public:
 
 	engine_export static Table global(const char* name);
+};
+
+class engine_export DateTime
+{
+public:
+	DateTime(double);
+	DateTime(const char*, const char* format = nullptr);
+	DateTime(const Variant&);
+
+	operator double() { return m_value; }
+private:
+	void construct(double val) { new (this) DateTime(val); }
+	void construct(const char* val) { new (this) DateTime(val); }
+	void construct(const Variant& val) { new (this) DateTime(val); }
+	void construct(const DateTime& other) { new (this) DateTime(other); }
+
+public:
+	//static DateTime fromModelTime(double modelTime);
+
+	static DateTime milliseconds(double value) { return DateTime(value * 0.001); }
+	static DateTime seconds(double value) { return DateTime(value); }
+	static DateTime minutes(double value) { return DateTime(value * 60.0); }
+	static DateTime hours(double value) { return DateTime(value * 3600.0); }
+	static DateTime days(double value) { return DateTime(value * 86400.0); }
+
+	static DateTime fromExcelTime(double excelTime);
+	std::string toString(const char* format = nullptr) const;
+
+private:
+	double m_value;
+
+public:
+	static void bindInterface();
+
+	operator Variant() const { return Variant(m_value);  }
+	double __getValue() const { return m_value; }
+	__declspec(property(get = __getValue)) double value;
+	double __getExcelTime() const;
+	__declspec(property(get = __getExcelTime)) double excelTime;
+
+	int __getYear() const;
+	__declspec(property(get = __getYear)) int year;
+
+	int __getMonth() const;
+	__declspec(property(get = __getMonth)) int month;
+
+	int __getDay() const;
+	__declspec(property(get = __getDay)) int day; // day of month (1 - 31)
+
+	int __getDayOfWeek() const;
+	__declspec(property(get = __getDayOfWeek)) int dayOfWeek; // day of week (1 - 7)
+
+	int __getHour() const;
+	__declspec(property(get = __get)) int hour; // hour of day (0 - 23)
+
+	int __getMinute() const;
+	__declspec(property(get = __getMinute)) int minute; // minute of hour (0 - 59)
+
+	int __getSecond() const;
+	__declspec(property(get = __getSecond)) int second; // second of minute (0 - 59)
+
+	int __getMillisecond() const;
+	__declspec(property(get = __getMillisecond)) int millisecond; // millisecond of second (0 - 999)
+
+
+	double __getTotalDays() { return m_value / 86400.0; }
+	__declspec(property(get = __getTotalDays)) double totalDays; // number of days since jan 1 1601
+
+	double __getTotalHours() const { return m_value / 3600.0; }
+	__declspec(property(get = __getTotalHours)) double totalHours; // number of hours since jan 1 1601
+
+	double __getTotalMinutes() const { return m_value / 60.0; }
+	__declspec(property(get = __getTotalMinutes)) double totalMinutes; // number of minutes since jan 1 1601
+
+	double __getTotalSeconds() const { return m_value; }
+	__declspec(property(get = __getTotalSeconds)) double totalSeconds; // number of seconds since jan 1 1601
+
+	double __getTotalMilliseconds() const { return m_value * 1000.0; }
+	__declspec(property(get = __getTotalMilliseconds)) double totalMilliseconds; // number of milliseconds since jan 1 1601
+
+	DateTime operator + (const DateTime& other) const { return DateTime(m_value + other.m_value); }
+	DateTime operator - (const DateTime& other) const { return DateTime(m_value - other.m_value); }
+	DateTime operator < (const DateTime& other) const { return m_value < other.value; }
+	DateTime operator <= (const DateTime& other) const { return m_value <= other.value; }
+	DateTime operator > (const DateTime& other) const { return m_value > other.value; }
+	DateTime operator >= (const DateTime& other) const { return m_value >= other.value; }
+	DateTime operator == (const DateTime& other) const { return m_value == other.value; }
+	DateTime operator != (const DateTime& other) const { return m_value != other.value; }
+};
+
+class engine_export Model
+{
+public:
+	static DateTime getDateTime(double modelTime);
+	static double getTime(const DateTime& dateTime);
+
+	static double time();
+	static double statisticalTime();
+	static double warmupTime();
+	static double nextStopTime();
+
+	static DateTime startDateTime()
+	{
+		return getDateTime(0.0);
+	}
+	static DateTime dateTime()
+	{
+		return getDateTime(time());
+	}
+	static DateTime nextStopDateTime()
+	{
+		return getDateTime(nextStopTime());
+	}
+	static DateTime warmupDateTime()
+	{
+		return getDateTime(warmupTime());
+	}
 };
 
 }

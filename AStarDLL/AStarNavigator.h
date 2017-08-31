@@ -77,6 +77,7 @@ protected:
 	double showHeatMap;
 	double heatMapMode;
 	double maxHeatValue;
+	double transparentBaseColor;
 	struct HeatMapColorEntry {
 		Vec4f color = Vec4f(0.0f, 0.0f, 0.0f, 0.0f);
 		AStarNodeExtraData* node = nullptr;
@@ -140,7 +141,6 @@ public:
 	virtual double onReset() override;
 	virtual double onStartSimulation() override;
 	virtual double onRunWarm() override;
-	virtual double onPreDraw(TreeNode* view) override;
 	virtual double onDraw(TreeNode* view) override;
 	virtual double onDrag(TreeNode* view) override;
 	virtual double onClick(TreeNode* view, int clickcode) override;
@@ -151,6 +151,7 @@ public:
 	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed) override;
 	double navigateToLoc(Traveler* traveler, double* destLoc, double endSpeed);
 	virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed) override;
+	virtual void onMemberDestroyed(TaskExecuter* te) override;
 	virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
 
 	AStarSearchEntry* checkExpandOpenSet(AStarNode* node, AStarSearchEntry* entryIn, Direction direction, int travelVal, double dist, double bonusMod, AStarNodeExtraData* extraData);
@@ -178,7 +179,10 @@ public:
 	AStarNode* getNode(const AStarCell& cell) { return &DeRefEdgeTable(cell.row, cell.col); }
 	AStarNode* getNode(int row, int col) { return &DeRefEdgeTable(row, col); }
 	AStarNodeExtraData* assertExtraData(const AStarCell& cell);
-	AStarNodeExtraData* getExtraData(const AStarCell& cell) { return edgeTableExtraData.find(cell.colRow)->second; }
+	AStarNodeExtraData* getExtraData(const AStarCell& cell) {
+		auto extraIter = edgeTableExtraData.find(cell.colRow);
+		return extraIter != edgeTableExtraData.end() ? extraIter->second : nullptr;
+	}
 
 
 	NodeListArray<Traveler>::CouplingSdtSubNodeType travelers;

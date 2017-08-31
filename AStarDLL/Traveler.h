@@ -4,6 +4,7 @@
 #include <list>
 #include <deque>
 #include "AStarTypes.h"
+#include "Bridge.h"
 
 namespace AStar {
 
@@ -51,7 +52,7 @@ public:
 		travelPath = std::move(path);
 		navigatePath(0, isDistQueryOnly);
 	}
-	void onBridgeArrival(int pathIndex);
+	void onBridgeArrival(Bridge* bridge, int pathIndex);
 	void onArrival();
 
 	/// <summary>	Adds an allocation to the map's set of allocations. </summary>
@@ -109,7 +110,7 @@ public:
 			Traveler* t = partner()->objectAs(Traveler);
 			if (t->blockEvent == this)
 				t->blockEvent = nullptr;
-			t->onBlock(involved->objectAs(Traveler), colliderPathIndex, cell);
+			t->onBlock(involved ? involved->objectAs(Traveler) : nullptr, colliderPathIndex, cell);
 		}
 		bool operator < (const BlockEvent& other) {
 			if (time < other.time)
@@ -138,30 +139,21 @@ public:
 	treenode onContinueTrigger = nullptr;
 	treenode onRerouteTrigger = nullptr;
 
-	class BridgeArrivalEvent : public FlexSimEvent
-	{
-	public:
-		BridgeArrivalEvent() : FlexSimEvent() {}
-		BridgeArrivalEvent(Traveler* object, int pathIndex, double time)
-			: pathIndex(pathIndex), FlexSimEvent(object->holder, time, nullptr, 0) {}
-		virtual const char* getClassFactory() override { return "AStar::Traveler::BridgeArrivalEvent"; }
-		virtual void execute() { partner()->objectAs(Traveler)->onBridgeArrival(pathIndex); }
-
+	struct BridgeData {
+		BridgeData() : bridge(nullptr), entryTime(DBL_MAX) {}
+		BridgeData(Bridge* bridge, double entryTime, int pathIndex, double spatialz)
+			: bridge(bridge), entryTime(entryTime), pathIndex(pathIndex), spatialz(spatialz) {}
+		Traveler* nextTraveler = nullptr;
+		Traveler* prevTraveler = nullptr;
+		double entryTime;
 		int pathIndex;
+		double spatialz;
+		Bridge* bridge;
+		ObjRef<Bridge::ArrivalEvent> arrivalEvent;
 	};
-	ObjRef<BridgeArrivalEvent> bridgeArrivalEvent;
+	BridgeData bridgeData;
 
-	class BridgeCompletedEvent : public FlexSimEvent
-	{
-	public:
-		BridgeCompletedEvent() : FlexSimEvent() {}
-		BridgeCompletedEvent(Traveler* object, int pathIndex, double time)
-			: pathIndex(pathIndex), FlexSimEvent(object->holder, time, nullptr, 0) {}
-		virtual const char* getClassFactory() override { return "AStar::Traveler::BridgeCompletedEvent"; }
-		virtual void execute() override { partner()->objectAs(Traveler)->navigatePath(pathIndex, false); }
-
-		int pathIndex;
-	};
+	void onTEDestroyed();
 
 };
 

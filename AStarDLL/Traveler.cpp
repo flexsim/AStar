@@ -38,6 +38,12 @@ void Traveler::bind()
 		appendToDisplayStr("\r\n:");
 	}
 	bindNumber(tinyTime);
+	bindObjPtr(bridgeData.bridge);
+	bindObjRef(bridgeData.arrivalEvent, 0);
+	bindNumber(bridgeData.entryTime);
+	bindNumber(bridgeData.pathIndex);
+	bindObjPtr(bridgeData.prevTraveler);
+	bindObjPtr(bridgeData.nextTraveler);
 	//bindStlContainer(allocations);
 }
 
@@ -83,10 +89,11 @@ void Traveler::onReset()
 	needsContinueTrigger = false;
 	destThreshold = DestinationThreshold();
 	destNode = nullptr;
+	bridgeData.bridge = nullptr;
 }
 
 void Traveler::onStartSimulation()
-{
+{XS
 	if (navigator->enableCollisionAvoidance && !navigator->ignoreInactiveMemberCollisions) {
 		Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
 		AStarCell resetCell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
@@ -94,10 +101,11 @@ void Traveler::onStartSimulation()
 		travelPath.push_back(AStarPathEntry(resetCell, -1));
 		addAllocation(NodeAllocation(this, resetCell, 0, 0, 0.0, DBL_MAX, 1.0), true, false);
 	}
-}
+XE}
 
 void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isCollisionUpdateInterval)
 {
+	XS
 	AStarNavigator* nav = navigator;
 	nextCollisionUpdateTravelIndex = -1;
 
@@ -121,7 +129,13 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 
 	treenode kinematics = !isDistQueryOnly ? te->node_v_kinematics : distQueryKinematics;
 	double outputVector[3];
-	Vec3 startLoc = nav->getLocFromCell(travelPath[startAtPathIndex].cell);
+	Vec3 startLoc;
+	bool isExitingBridge = bridgeData.bridge != nullptr;
+	if (isExitingBridge)
+		startLoc = te->getLocation(0.5, 0.5, 0);
+	else
+		startLoc = nav->getLocFromCell(travelPath[startAtPathIndex].cell);
+
 	if (up(te->holder) != model())
 		startLoc = startLoc.project(model(), up(te->holder));
 
@@ -169,24 +183,56 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 
 	int didBlockPathIndex = -1;
 	NodeAllocation* lastAllocation = nullptr;
-	bool onBridge;
+	Bridge* bridgeArrival = nullptr;
 
+	double containerRot = 0;
+	if (te->holder->up != model()) {
+		treenode obj = te->holder;
+		while (obj != model()) {
+			obj = obj->findOwnerObject();
+			containerRot += zrot(obj);			
+		}
+	}
 	int i;
 	for (i = startAtPathIndex + 1; i < numNodes; i++) {
 		e = travelPath[i];
 		AllocationStep step(laste.cell, e.cell);
 		double totalTravelDist;
-		onBridge = false;
-		if (laste.bridgeIndex == -1) {
+		bridgeArrival = nullptr;
+
+		if (laste.bridgeIndex != -1) {
+			AStarNodeExtraData* nodeData = nav->getExtraData(laste.cell);
+			AStarNodeExtraData::BridgeEntry& entry = nodeData->bridges[laste.bridgeIndex];
+			Bridge* bridge = entry.bridge;
+			if (bridgeData.bridge != bridge) {
+				bridgeArrival = bridge;
+			}
+		}
+
+		if (!bridgeArrival) {
 			int numSuccessfulAllocations = 0;
-			double diffX = (e.cell.col - laste.cell.col)*nodeWidth;
-			double diffY = (e.cell.row - laste.cell.row)*nodeWidth;
+			Vec3 diff;
 			double startTime = endTime;
-			endTime = addkinematic(kinematics, diffX, diffY, 0,
+			if (!isExitingBridge) {
+				diff.x = (e.cell.col - laste.cell.col)*nodeWidth;
+				diff.y = (e.cell.row - laste.cell.row)*nodeWidth;
+				diff.z = 0;
+				if(containerRot)
+					diff.rotateXY(-containerRot);
+			}
+			else {
+				Vec3 toLoc = nav->getLocFromCell(e.cell);
+				step.isDiagonal = false;
+				step.isHorizontalDeepSearch = false;
+				step.isVerticalDeepSearch = false;
+				diff = toLoc - startLoc;
+				isExitingBridge = false;
+			}
+			endTime = addkinematic(kinematics, diff.x, diff.y, diff.z,
 				te->v_maxspeed, 0, 0, 0, 0, startTime, KINEMATIC_TRAVEL);
 
 			if (rotLerpSize != 0) {
-				double nextRot = radianstodegrees(atan2(diffY, diffX));
+				double nextRot = radianstodegrees(atan2(diff.y, diff.x));
 				double rotDiff = nextRot - lastRotation;
 				while (rotDiff > 180)
 					rotDiff -= 360;
@@ -239,95 +285,19 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 					break;
 				}
 			}
-			totalTravelDist = sqrt(sqr(diffX) + sqr(diffY));
-		} else {
-			// travel on a bridge
-			auto nodeData = nav->edgeTableExtraData.find(laste.cell.colRow);
-			AStarNodeExtraData::BridgeEntry& entry = nodeData->second->bridges[laste.bridgeIndex];
-			Bridge* bridge = entry.bridge;
+			totalTravelDist = diff.magnitude;
+		}
+		else {
+			// travel onto a bridge
+			Bridge* bridge = bridgeArrival;
 			totalTravelDist = 0;
-			onBridge = true;
 
-			// check if traveler is in list
-			int bridgeTravelerIndex = -1;
-			for (int i = 0; i < bridge->bridgeTravelers.size(); i++) {
-				if (bridge->bridgeTravelers[i]->traveler == this) {
-					bridgeTravelerIndex = i;
-					break;
-				}
-			}
-
-			if (bridgeTravelerIndex == -1) {
-				// Create a BridgeArrivalEvent
-				if (bridgeArrivalEvent)
-					destroyevent(bridgeArrivalEvent->holder);
-				bridgeArrivalEvent = createevent(new BridgeArrivalEvent(this, i - 1, endTime))->objectAs(BridgeArrivalEvent);
-				if (lastAllocation)
-					lastAllocation->extendReleaseTime(DBL_MAX);
-				didBlockPathIndex = i;
-				break;
-			}
-			else {
-				// try to allocate node off of bridge
-				if (enableCollisionAvoidance) {
-					NodeAllocation allocation(this, e.cell, i, 0, endTime, std::nextafter(endTime, DBL_MAX), 1.0);
-					bool success = true;
-					lastAllocation = addAllocation(allocation, false, true);
-					success = lastAllocation != nullptr;
-					if (!success) {
-						if (blockEvent)
-							destroyevent(blockEvent->holder);
-
-						AStarNodeExtraData* nodeData = navigator->getExtraData(e.cell);
-						std::vector<Traveler*> deadlockList;
-						NodeAllocation requestedAlloc(this, e.cell, i, 0, time(), DBL_MAX, 0.0);
-						request = nodeData->addRequest(requestedAlloc, *((NodeAllocation*)NULL), &deadlockList);
-
-						deactivatekinematics(te->node_v_kinematics);
-						didBlockPathIndex = i;
-						break;
-					}
-				}
-
-				// calctulate the traveled distance
-				totalTravelDist = bridge->calculateDistance();
-
-				// remove the traveler from the bridge
-				BridgeTraveler* bridgeTraveler = bridge->bridgeTravelers[bridgeTravelerIndex];
-				bridge->bridgeTravelers.erase(bridge->bridgeTravelers.begin() + bridgeTravelerIndex);
-
-				// move to the cell off the bridge
-				Vec3 loc = nav->getLocFromCell(e.cell);
-				if (up(te->holder) != model())
-					loc = loc.project(model(), up(te->holder));
-				initkinematics(kinematics, loc.x, loc.y, bridgeTraveler->spatialz,
-					0, 0, te->b_spatialrz, kinFlags, 0);
-
-				if (enableCollisionAvoidance) {
-					if (bridge->bridgeTravelers.size()) {
-						// update entryTime for last BridgeTraveler
-						bridge->bridgeTravelers.front()->entryTime = max(
-							bridge->bridgeTravelers.front()->entryTime,
-							time() - ((totalTravelDist - (0.5 * bridgeTraveler->traveler->te->b_spatialsx))
-							/ bridgeTraveler->traveler->te->v_maxspeed));
-
-						// make BridgeCompletedEvent for last BridgeTraveler
-						createevent(new Traveler::BridgeCompletedEvent(
-							bridge->bridgeTravelers.front()->traveler,
-							bridge->bridgeTravelers.front()->pathIndex,
-							bridge->bridgeTravelers.front()->entryTime + (totalTravelDist / te->v_maxspeed)));
-					}
-
-					// move blockedTraveler onto bridge
-					if (bridge->blockedTraveler != nullptr) {
-						Traveler* blockedTraveler = bridge->blockedTraveler;
-						bridge->blockedTraveler = nullptr;
-						blockedTraveler->onBridgeArrival(bridge->blockedPathIndex);
-					}
-				}
-
-				delete bridgeTraveler;
-			}
+			// Create a BridgeArrivalEvent
+			if (bridgeData.arrivalEvent)
+				destroyevent(bridgeData.arrivalEvent->holder);
+			bridgeData.arrivalEvent = createevent(new Bridge::ArrivalEvent(bridge, this, i - 1, endTime))->objectAs(Bridge::ArrivalEvent);
+			didBlockPathIndex = i;
+			break;
 		}
 
 		if (!isDistQueryOnly) {
@@ -350,11 +320,14 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 		laste = e;
 	}
 
-	// remove the original allocations if I was able to allocate ahead at least one
+	// remove the original allocations and get off the bridge if I was able to allocate ahead at least one
 	// This will trigger other travelers who might be waiting for me to move on 
 	// from the current point I'm at.
-	if (enableCollisionAvoidance && numNodes > startAtPathIndex + 1 && !isCollisionUpdateInterval && initialAllocsSize > 0) {
-		if (didBlockPathIndex == -1 || didBlockPathIndex > startAtPathIndex + 1) {
+	if (numNodes > startAtPathIndex + 1 && !isCollisionUpdateInterval && (didBlockPathIndex == -1 || didBlockPathIndex > startAtPathIndex + 1)) {
+		if (bridgeData.bridge)
+			bridgeData.bridge->onExit(this);
+
+		if (enableCollisionAvoidance && initialAllocsSize > 0) {
 			for (int i = initialAllocsSize - 1; i >= 0; i--) {
 				if (allocations[i]->isMarkedForDeletion) {
 					removeAllocation(allocations.begin() + i);
@@ -373,117 +346,41 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 			arrivalEvent = createevent(new ArrivalEvent(this, endTime))->objectAs(ArrivalEvent);
 	}
 
-	_ASSERTE(allocations.size() > 0 || !enableCollisionAvoidance || navigator->ignoreInactiveMemberCollisions || onBridge);
+	_ASSERTE(allocations.size() > 0 || !enableCollisionAvoidance || navigator->ignoreInactiveMemberCollisions || bridgeArrival || bridgeData.bridge);
+	XE
 }
 
-void Traveler::onBridgeArrival(int pathIndex) {
+void Traveler::onBridgeArrival(Bridge* bridge, int pathIndex) 
+{
+	XS
 	if (isBlocked)
 		return;
 
 	AStarPathEntry e = travelPath[pathIndex];
-	auto nodeData = navigator->edgeTableExtraData.find(e.cell.colRow);
-	AStarNodeExtraData::BridgeEntry& entry = nodeData->second->bridges[e.bridgeIndex];
-	Bridge* bridge = entry.bridge;
-	double bridgeDistance = bridge->calculateDistance();
-	std::vector<int> bridgeTravelerPositions;
+	AStarNodeExtraData::BridgeEntry& entry = navigator->getExtraData(e.cell)->bridges[e.bridgeIndex];
 
-	// Check if there is space for the traveler right now
-	auto bridgeHasSpace = [&]() {
-		if (!navigator->enableCollisionAvoidance || bridge->bridgeTravelers.size() == 0)
-			return true;
+	updateLocation();
+	bridgeData = BridgeData(bridge, DBL_MAX, pathIndex, te->b_spatialz);
 
-		double travelerDistance = min(
-			(time() - bridge->bridgeTravelers[0]->entryTime)
-			* bridge->bridgeTravelers[0]->traveler->te->v_maxspeed,
-			bridgeDistance);
-		bridgeTravelerPositions.push_back(travelerDistance);
-		for (int i = 1; i < bridge->bridgeTravelers.size(); i++) {
-			BridgeTraveler* bridgeTraveler = bridge->bridgeTravelers[i];
-			BridgeTraveler* nextBridgeTraveler = bridge->bridgeTravelers[i - 1];
-			travelerDistance = min(
-				(time() - bridgeTraveler->entryTime) * bridgeTraveler->traveler->te->v_maxspeed,
-				travelerDistance - 0.5 * nextBridgeTraveler->traveler->te->b_spatialsx
-				- 0.5 * bridgeTraveler->traveler->te->b_spatialsx);
-			bridgeTravelerPositions.push_back(travelerDistance);
-		}
-		travelerDistance = travelerDistance
-			- 0.5 * bridge->bridgeTravelers.back()->traveler->te->b_spatialsx
-			- 0.5 * te->b_spatialsx;
-
-		if (travelerDistance >= 0)
-			return true;
-		else
-			return false;
-	};
-
-	if (bridgeHasSpace()) {
+	if (bridge->isAvailable) {
 		// move onto bridge
 		clearAllocations();
-		bridge->bridgeTravelers.push_back(new BridgeTraveler(this, time(), pathIndex, te->b_spatialz));
-
-		deactivatekinematics(te->node_v_kinematics);
-
-		if (!navigator->enableCollisionAvoidance || bridge->bridgeTravelers.size() == 1) {
-			createevent(new Traveler::BridgeCompletedEvent(this, pathIndex,
-				time() + (bridgeDistance / te->v_maxspeed)));
-		}
+		bridge->onEntry(this, pathIndex);
 	}
 	else {
-		// Is there empty space that will be made available?
-		int emptySpaceIndex = -1;
-		double emptySpace = bridgeTravelerPositions.back()
-			- bridge->bridgeTravelers.back()->traveler->te->b_spatialsx;
-		for (int i = bridge->bridgeTravelers.size() - 1; i > 0; i--) {
-			BridgeTraveler* bridgeTraveler = bridge->bridgeTravelers[i];
-			BridgeTraveler* nextBridgeTraveler = bridge->bridgeTravelers[i - 1];
-			emptySpace += bridgeTravelerPositions[i - 1] - bridgeTravelerPositions[i];
-			emptySpace -= 0.5 * bridgeTraveler->traveler->te->b_spatialsx;
-			emptySpace -= 0.5 * nextBridgeTraveler->traveler->te->b_spatialsx;
-
-			if (emptySpace >= 0.5 * te->b_spatialsx)
-				emptySpaceIndex = i;
-		}
-		if (emptySpaceIndex == -1) {
-			emptySpace += bridgeDistance - bridgeTravelerPositions[0];
-			if (emptySpace >= 0.5 * te->b_spatialsx)
-				emptySpaceIndex = 0;
-		}
-
-		if (emptySpaceIndex != -1) {
-			// Calculate when space will be made available
-			double nextDest = bridgeTravelerPositions[emptySpaceIndex];
-			if (emptySpaceIndex == 0)
-				nextDest += bridgeDistance - bridgeTravelerPositions[emptySpaceIndex];
-			else
-				nextDest += bridgeTravelerPositions[emptySpaceIndex - 1] - bridgeTravelerPositions[emptySpaceIndex];
-			nextDest -= emptySpace - 0.5 * te->b_spatialsx;
-
-			double arrivalTime = (nextDest - bridgeTravelerPositions[emptySpaceIndex]) / te->v_maxspeed;
-
-			for (int i = emptySpaceIndex + 1; i < bridge->bridgeTravelers.size(); i++) {
-				BridgeTraveler* bridgeTraveler = bridge->bridgeTravelers[i];
-				BridgeTraveler* nextBridgeTraveler = bridge->bridgeTravelers[i - 1];
-
-				nextDest -= 0.5 * bridgeTraveler->traveler->te->b_spatialsx;
-				nextDest -= 0.5 * nextBridgeTraveler->traveler->te->b_spatialsx;
-
-				arrivalTime = max(
-					(nextDest - bridgeTravelerPositions[emptySpaceIndex]) / te->v_maxspeed,
-					arrivalTime);
-			}
-
-			createevent(new BridgeArrivalEvent(this, pathIndex, time() + arrivalTime));
-		}
-		else {
-			// Traveler is blocked trying to get on the bridge
-			bridge->blockedTraveler = this;
-			bridge->blockedPathIndex = pathIndex;
-		}
+		if (allocations.size() > 0)
+			allocations.back()->extendReleaseTime(DBL_MAX);
+		_ASSERTE(bridge->blockedTraveler == nullptr);
+		// Traveler is blocked trying to get on the bridge
+		bridge->blockedTraveler = this;
+		bridge->blockedPathIndex = pathIndex;
 	}
+	XE
 }
 
 NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, bool notifyPendingAllocations)
 {
+	XS
 	AStarNodeExtraData* nodeData = navigator->assertExtraData(allocation.cell);
 
 	if (!force || notifyPendingAllocations) {
@@ -546,11 +443,13 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, 
 	allocations.push_back(nodeData->allocations.begin());
 
 	return &(nodeData->allocations.front());
+	XE
 }
 
 
 NodeAllocation* Traveler::findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs)
 {
+	XS
 	NodeAllocationIterator bestIter = nodeData->allocations.end();
 	double minAcquireTime = DBL_MAX;
 	double curTime = time();
@@ -580,6 +479,7 @@ NodeAllocation* Traveler::findCollision(AStarNodeExtraData* nodeData, const Node
 		return &(*bestIter);
 
 	return nullptr;
+	XE
 }
 
 
@@ -788,6 +688,18 @@ bool Traveler::findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travel
 	return false;
 }
 
+
+void Traveler::onTEDestroyed()
+{
+	if (!navigator->enableCollisionAvoidance)
+		return;
+	if (blockEvent)
+		destroyevent(blockEvent);
+	if (arrivalEvent)
+		destroyevent(arrivalEvent);
+	clearAllocations();
+}
+
 void Traveler::onArrival()
 {
 	arrivalEvent = nullptr;
@@ -852,10 +764,15 @@ void Traveler::abortTravel(TreeNode* newTS)
 
 void Traveler::updateLocation()
 {
-	TreeNode* kinematics = te->node_v_kinematics;
-	updatekinematics(kinematics, te->holder, time());
-	te->b_spatialx -= 0.5*te->b_spatialsx;
-	te->b_spatialy += 0.5*te->b_spatialsy;
+	if (bridgeData.bridge && bridgeData.entryTime <= time()) {
+		bridgeData.bridge->updateLocations();
+	}
+	else {
+		TreeNode* kinematics = te->node_v_kinematics;
+		updatekinematics(kinematics, te->holder, time());
+		te->b_spatialx -= 0.5*te->b_spatialsx;
+		te->b_spatialy += 0.5*te->b_spatialsy;
+	}
 }
 
 }

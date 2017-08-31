@@ -182,7 +182,7 @@
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Divider</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/One-Way Divider</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -550,6 +550,7 @@ set(spatialy(asn), y);
 set(spatialz(asn), z);
 return asn;
 </data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
        </data></node>
        <node f="42" dt="4"><name>Barrier</name><data>
         <node f="40"><name></name></node>
@@ -557,13 +558,13 @@ return asn;
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
        </data></node>
-       <node f="10000042" dt="4"><name>Divider</name><data>
+       <node f="42" dt="4"><name>Divider</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Divider")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\divider.bmp</data></node>
        </data></node>
-       <node f="42" dt="4"><name>One-Way Divider</name><data>
+       <node f="10000042" dt="4"><name>One-Way Divider</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::OneWayDivider")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -592,7 +593,7 @@ return asn;
         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040100000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>00000000406e0000</data></node>
         <node f="42" dt="1"><name>spatialy</name><data>00000000405d8000</data></node>
-        <node f="42" dt="1"><name>spatialsx</name><data>00000000407b4000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>00000000407db000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>000000004082a000</data></node>
         <node f="42" dt="2"><name>windowtitle</name><data></data></node>
         <node f="442" dt="2"><name>OnOpen</name><data>treenode tabcontrol = node("/tabcontrol",c);
@@ -800,7 +801,7 @@ repaintall();</data></node>
           <node f="42" dt="4"><name>Deep Search Routing</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>00000000406de000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>000000004062c000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
@@ -810,7 +811,7 @@ repaintall();</data></node>
           <node f="42" dt="4"><name>Collision Avoidance</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>00000000406de000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>00000000403f0000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
@@ -825,7 +826,7 @@ over each other.</data></node>
           <node f="42" dt="4"><name>Ignore Inactive Members</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040718000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>00000000404a0000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040618000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
@@ -836,7 +837,7 @@ other inactive travelers.</data></node>
           <node f="42" dt="4"><name>Smooth Rotations</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>00000000406de000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040524000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
@@ -1048,7 +1049,7 @@ if (objectexists(member)) {
             <node f="42" dt="1"><name>spatialy</name><data>0000000040310000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-            <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
+            <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
             <node f="42" dt="2"><name>tooltip</name><data>Click this button then "sample" an object in FlexSim</data></node>
             <node f="42"><name>variables</name>
              <node f="40"><name></name></node>
@@ -1075,7 +1076,6 @@ repaintall();</data></node>
             <node f="42" dt="2"><name>OnPress</name><data>createpopup("VIEW:/standardviews/other/UniversalSelect", "", nodetopath(node("&gt;SelectDelegate",c), 1), c, 0, 0, 0,0);</data></node>
             <node f="42" dt="2"><name>tooltip</name><data>Add a new member</data></node>
             <node f="42" dt="2"><name>bitmap</name><data>buttons\add.png</data></node>
-            <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
             <node f="42" dt="4"><name>SelectDelegate</name><data>
              <node f="40"><name></name></node>
              <node f="42"><name>variables</name>
@@ -1165,7 +1165,6 @@ for (int i = 1; i &lt;= content(members); i++) {
 return NULL;</data></node>
             <node f="42" dt="2"><name>tooltip</name><data>Remove the selected member</data></node>
             <node f="42" dt="2"><name>bitmap</name><data>buttons\remove.png</data></node>
-            <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
            </data></node>
            <node f="42" dt="4"><name>MembersList</name><data>
             <node f="40"><name>object</name></node>
@@ -1263,8 +1262,10 @@ set(node("@&gt;objectfocus+&gt;variables/drawMode", c), drawmode);</data></node>
 windowgray(windowfromnode(c.find("SelectHeatMapMode")), gray);
 windowgray(windowfromnode(c.find("Max Heat Value")), gray);
 windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
+windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
 </data></node>
           </node>
+          <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>Show Barriers</name><data>
@@ -1303,20 +1304,11 @@ windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
           </data></node>
-          <node f="42" dt="4"><name>Show Traffic</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000405e8000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          </data></node>
           <node f="42" dt="4"><name>Show Allocations</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>000000004062c000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000405e8000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
@@ -1326,7 +1318,7 @@ windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040664000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>000000004062c000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Check to show a heat map of the AStar grid</data></node>
@@ -1337,7 +1329,7 @@ windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>0000000040418000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>000000004069c000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040664000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>00000000406e0000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/heatMapMode</data></node>
@@ -1354,7 +1346,7 @@ windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>0000000040418000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000406da000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000406a6000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
            <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) 
@@ -1364,7 +1356,7 @@ windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>000000004060e000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000406d4000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000406a0000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040618000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/maxHeatValue</data></node>
@@ -1372,6 +1364,18 @@ windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
 bright red, in the heat map.</data></node>
           </data>
            <node f="40"><name></name></node></node>
+          <node f="42" dt="4"><name>TransparentBaseColor</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040418000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000406d6000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040690000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to make the base color of the heat map transparent</data></node>
+           <node f="42" dt="2"><name>OnPress</name><data></data></node>
+           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/transparentBaseColor</data></node>
+           <node f="42" dt="2"><name>windowtitle</name><data>Transparent Base Color</data></node>
+          </data></node>
          </node>
          <node f="42" dt="4"><name>Barriers</name><data>
           <node f="40"><name>object</name></node>
@@ -1708,7 +1712,6 @@ switch (filter) {
             </node>
             <node f="42" dt="2"><name>tooltip</name><data>Add a new barrier</data></node>
             <node f="42" dt="2"><name>bitmap</name><data>buttons\add.png</data></node>
-            <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
            </data>
             <node f="40"><name></name></node></node>
            <node f="42" dt="4"><name>Remove</name><data>
@@ -1743,7 +1746,6 @@ listboxrefresh(selectBarrier);
 executefsnode(OnSelect(selectBarrier), selectBarrier);</data></node>
             <node f="42" dt="2"><name>tooltip</name><data>Remove the selected section</data></node>
             <node f="42" dt="2"><name>bitmap</name><data>buttons\remove.png</data></node>
-            <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
            </data></node>
            <node f="42" dt="4"><name>Up</name><data>
             <node f="40"><name>object</name></node>
@@ -1790,7 +1792,6 @@ set(itemcurrent(selectBarrier), index -1);
 function_s(selectBarrier, "refreshList");
 repaintall();</data></node>
             <node f="42" dt="2"><name>tooltip</name><data>Move the selected barrier up in the list</data></node>
-            <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
            </data></node>
            <node f="42" dt="4"><name>Down</name><data>
             <node f="40"><name>object</name></node>
@@ -1837,7 +1838,6 @@ set(itemcurrent(selectBarrier), index +1);
 function_s(selectBarrier, "refreshList");
 repaintall();</data></node>
             <node f="42" dt="2"><name>tooltip</name><data>Move the selected barrier down in the list</data></node>
-            <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
            </data></node>
            <node f="42" dt="4"><name>SelectBarrier</name><data>
             <node f="40"><name>object</name></node>
@@ -2102,7 +2102,7 @@ if (objectexists(focus)) {
               <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
               <node f="42" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
-              <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+              <node f="42" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
               <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
               <node f="42" dt="2"><name>coldlink</name><data>../../..&gt;objectfocus+/useVirtualDistance</data></node>
               <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);
@@ -2181,7 +2181,6 @@ repaintall();
                <node f="40"><name></name></node></node>
               <node f="42" dt="2"><name>tooltip</name><data>Add a new point</data></node>
               <node f="42" dt="2"><name>bitmap</name><data>buttons\add.png</data></node>
-              <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
              </data>
               <node f="40"><name></name></node></node>
              <node f="42" dt="4"><name>Remove</name><data>
@@ -2216,7 +2215,6 @@ settableviewselection(table, maxof(1, index -1), 0, maxof(1, index -1), 2);
 repaintview(table);</data></node>
               <node f="42" dt="2"><name>tooltip</name><data>Remove the selected point</data></node>
               <node f="42" dt="2"><name>bitmap</name><data>buttons\remove.png</data></node>
-              <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
              </data></node>
              <node f="42" dt="4"><name>Up</name><data>
               <node f="40"><name>object</name></node>
@@ -2248,7 +2246,6 @@ repaintall();
 settableviewselection(table, index -1, 0, index -1, 2);
 repaintview(table);</data></node>
               <node f="42" dt="2"><name>tooltip</name><data>Move the selected point up in the list</data></node>
-              <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
              </data></node>
              <node f="42" dt="4"><name>Down</name><data>
               <node f="40"><name>object</name></node>
@@ -2280,7 +2277,6 @@ repaintall();
 settableviewselection(table, index +1, 0, index +1, 2);
 repaintview(table);</data></node>
               <node f="42" dt="2"><name>tooltip</name><data>Move the selected point down in the list</data></node>
-              <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
              </data></node>
              <node f="42" dt="4"><name>PointsTable</name><data>
               <node f="40"><name>object</name></node>
@@ -2413,9 +2409,10 @@ repaintview(TheTable);
               <node f="42" dt="1"><name>OnMouseWheelDelta</name><data>0000000000000000</data></node>
               <node f="42" dt="1"><name>cellwidth</name><data>0000000040540000</data>
                <node f="40"><name></name></node>
-               <node f="42" dt="1"><name></name><data>00000000403e0000</data></node>
-               <node f="42" dt="1"><name></name><data>0000000040540000</data></node>
-               <node f="42" dt="1"><name></name><data>0000000040540000</data></node>
+               <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+               <node f="42" dt="1"><name></name><data>0000000040504000</data></node>
+               <node f="42" dt="1"><name></name><data>0000000040504000</data></node>
+               <node f="42" dt="1"><name></name><data>00000000404e0000</data></node>
               </node>
               <node f="42" dt="1"><name>cellheight</name><data>0000000040320000</data></node>
               <node f="42" dt="1"><name>alignbottommargin</name><data>0000000040140000</data></node>
@@ -2709,7 +2706,6 @@ applylinks(parent);</data></node>
          </node>
          <node f="42" dt="4"><name>Triggers</name><data>
           <node f="40"><name>object</name></node>
-          <node f="42" dt="2"><name>viewfocus</name><data>MAIN:/project/model</data></node>
           <node f="42" dt="1"><name>viewwindowopen</name><data>000000003ff00000</data></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
@@ -2717,6 +2713,7 @@ applylinks(parent);</data></node>
           <node f="42" dt="1"><name>spatialsx</name><data>0000000040796000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          <node f="42" dt="2"><name>helptopic</name><data>TriggersTab</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>OnReset</name><data>
@@ -3050,7 +3047,7 @@ return 0;
    </node>
   </node>
  </node>
- <node f="42" dt="2"><name>release</name><data>17.1</data></node>
+ <node f="42" dt="2"><name>release</name><data>17.2</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
- <node f="42" dt="2"><name>flexsim release</name><data>17.1</data></node>
+ <node f="42" dt="2"><name>flexsim release</name><data>17.2</data></node>
 </node></flexsim-tree>
