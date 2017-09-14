@@ -1607,11 +1607,11 @@ public:
 	}
 	bool operator == (TreeNode* other) const
 	{
-		return operator TreeNode*() == other;
+		return (type == VariantType::TreeNode && operator TreeNode*() == other) || (type == VariantType::Number && asNumber == 0.0 && other == nullptr);
 	}
 	bool operator != (TreeNode* other) const
 	{
-		return operator TreeNode*() != other;
+		return !operator == (other);
 	}
 	bool operator != (const Variant& other) const
 	{
@@ -1651,6 +1651,8 @@ public:
 	{
 		if (type == VariantType::Number)
 			asNumber += val;
+		else if (type == VariantType::Null)
+			operator = (val);
 		return *this;
 	}
 	Variant& operator +=(const char* val)
@@ -1683,6 +1685,8 @@ public:
 	{
 		if (type == VariantType::Number)
 			asNumber -= val;
+		else if (type == VariantType::Null)
+			operator = (-val);
 		return *this;
 	}
 	Variant& operator *=(double val)
@@ -1700,24 +1704,24 @@ public:
 
 #pragma region string comparisons
 
-#define COMPARE_STRING(op, inType) \
+#define COMPARE_STRING(op, inType, defaultVal) \
 	bool operator op (inType str) const \
 	{\
 		if (type == VariantType::String) \
 			return asString() op str; \
-		return false; \
+		return defaultVal; \
 	}\
 
-#define COMPARE_STRING_PAIR(op) \
-	COMPARE_STRING(op, const std::string&); \
-	COMPARE_STRING(op, const char*);
+#define COMPARE_STRING_PAIR(op, defaultVal) \
+	COMPARE_STRING(op, const std::string&, defaultVal); \
+	COMPARE_STRING(op, const char*, defaultVal);
 
-COMPARE_STRING_PAIR(== )
-COMPARE_STRING_PAIR(!= )
-COMPARE_STRING_PAIR(> )
-COMPARE_STRING_PAIR(< )
-	COMPARE_STRING_PAIR(>= )
-	COMPARE_STRING_PAIR(<= )
+	COMPARE_STRING_PAIR(== , false)
+	COMPARE_STRING_PAIR(!= , true)
+	COMPARE_STRING_PAIR(>, false)
+	COMPARE_STRING_PAIR(<, false)
+	COMPARE_STRING_PAIR(>= , false)
+	COMPARE_STRING_PAIR(<= , false)
 
 #undef COMPARE_STRING_PAIR
 #undef COMPARE_STRING
@@ -1750,6 +1754,13 @@ COMPARE_STRING_PAIR(< )
 	macro(unsigned __int64, p1, p2)
 
 #pragma region number comparisons
+
+	// nullvar is like unto zero, but not equal to it:
+	// nullvar == 0 : false
+	// nullvar <= 0 : false
+	// nullvar >= 0 : false
+	// nullvar < 1 : true
+	// nullvar > -1 : true 
 
 #define COMPARE_NUMBER_1(numberType, op, defaultVal) \
 	bool operator op (numberType theNum) const \
@@ -1854,12 +1865,16 @@ COMPARE_STRING_PAIR(< )
 	{
 		if (type == VariantType::Number)
 			return ++asNumber;
+		else if (type == VariantType::Null)
+			return operator = (1);
 		return 0.0;
 	}
 	double operator ++(int)
 	{
 		if (type == VariantType::Number)
 			return asNumber++;
+		else if (type == VariantType::Null)
+			operator = (1);
 		return 0.0;
 	}
 	double __postFixIncrement() { return (*this)++; }
@@ -1867,12 +1882,16 @@ COMPARE_STRING_PAIR(< )
 	{
 		if (type == VariantType::Number)
 			return --asNumber;
+		else if (type == VariantType::Null)
+			return operator = (-1);
 		return 0.0;
 	}
 	double operator --(int)
 	{
 		if (type == VariantType::Number)
 			return asNumber--;
+		else if (type == VariantType::Null)
+			operator = (-1);
 		return 0.0;
 	}
 	double __postFixDecrement() { return (*this)--; }
@@ -2969,10 +2988,9 @@ class engine_export DateTime
 {
 public:
 	DateTime(double);
-	DateTime(const char*, const char* format = nullptr);
+	//DateTime(const char*, const char* format = nullptr);
 	DateTime(const Variant&);
 
-	operator double() { return m_value; }
 private:
 	void construct(double val) { new (this) DateTime(val); }
 	void construct(const char* val) { new (this) DateTime(val); }
@@ -2988,6 +3006,8 @@ public:
 	static DateTime hours(double value) { return DateTime(value * 3600.0); }
 	static DateTime days(double value) { return DateTime(value * 86400.0); }
 
+	static std::string getLocaleName(int type);
+
 	static DateTime fromExcelTime(double excelTime);
 	std::string toString(const char* format = nullptr) const;
 
@@ -2998,6 +3018,7 @@ public:
 	static void bindInterface();
 
 	operator Variant() const { return Variant(m_value);  }
+	operator double() { return m_value; }
 	double __getValue() const { return m_value; }
 	__declspec(property(get = __getValue)) double value;
 	double __getExcelTime() const;
@@ -3045,12 +3066,12 @@ public:
 
 	DateTime operator + (const DateTime& other) const { return DateTime(m_value + other.m_value); }
 	DateTime operator - (const DateTime& other) const { return DateTime(m_value - other.m_value); }
-	DateTime operator < (const DateTime& other) const { return m_value < other.value; }
-	DateTime operator <= (const DateTime& other) const { return m_value <= other.value; }
-	DateTime operator > (const DateTime& other) const { return m_value > other.value; }
-	DateTime operator >= (const DateTime& other) const { return m_value >= other.value; }
-	DateTime operator == (const DateTime& other) const { return m_value == other.value; }
-	DateTime operator != (const DateTime& other) const { return m_value != other.value; }
+	bool operator < (const DateTime& other) const { return m_value < other.value; }
+	bool operator <= (const DateTime& other) const { return m_value <= other.value; }
+	bool operator > (const DateTime& other) const { return m_value > other.value; }
+	bool operator >= (const DateTime& other) const { return m_value >= other.value; }
+	bool operator == (const DateTime& other) const { return  m_value == other.value; }
+	bool operator != (const DateTime& other) const { return m_value != other.value; }
 };
 
 class engine_export Model

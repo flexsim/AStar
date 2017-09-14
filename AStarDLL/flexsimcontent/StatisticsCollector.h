@@ -202,20 +202,21 @@ protected:
 		StatisticsCollector* collector = nullptr;
 
 		// These are set in the event phase
-		Variant groupObject;
-		Variant eventObject;
-		Variant processFlowInstance;
-		Variant eventName;
+		Group* group = nullptr;
+		TreeNode* eventNode = nullptr;
+		ObjectDataType* processFlowInstance = nullptr;
+		std::string eventName;
 
+		bool dataAvailable = false;
 		bool rowDataAvailable = false;
 
 		// The row function iterates through all rows, setting the row object and number
-		Variant rowObject;
-		int rowNumber;
+		Variant rowValue;
+		int rowNum;
 
 		bool colDataAvailable = false;
 		// Then the row function iterates through all columns, setting the col number
-		int colNumber;
+		int colNum;
 
 		// Any additional properties are stored here
 		std::map<std::string, Variant> properties;
@@ -236,19 +237,19 @@ protected:
 		void construct(const CollectedDataInterface& other) { data = other.data; }
 		CollectedDataInterface& operator =(const CollectedDataInterface& other) { data = other.data; return *this; }
 
-		Variant __getGroupObject() { return data->groupObject; }
-		Variant __getEventObject() { return data->eventObject; }
-		Variant __getProcessFlowInstance() { return data->processFlowInstance; }
-		Variant __getEventName() { return data->eventName; }
-		Variant __getRowObject();
+		Group* __getGroup();
+		TreeNode* __getEventNode();
+		ObjectDataType* __getProcessFlowInstance();
+		std::string __getEventName();
+		Variant __getRowValue();
 		int __getRowNumber();
 		int __getColNumber();
 		Variant __getCurrentValue();
 
-		__declspec(property(get = __getGroupObject)) Variant groupObject;
-		__declspec(property(get = __getEventObject)) Variant eventObject;
-		__declspec(property(get = __getProcessFlowInstance)) Variant processFlowInstance;
-		__declspec(property(get = __getEventName)) Variant eventName;
+		__declspec(property(get = __getGroup)) Group* group;
+		__declspec(property(get = __getEventNode)) TreeNode* eventNode;
+		__declspec(property(get = __getProcessFlowInstance)) ObjectDataType* processFlowInstance;
+		__declspec(property(get = __getEventName)) std::string eventName;
 		__declspec(property(get = __getRowObject)) Variant rowObject;
 		__declspec(property(get = __getRowNumber)) int rowNumber;
 		__declspec(property(get = __getColNumber)) int colNumber;
@@ -304,21 +305,25 @@ public:
 			Always,
 		};
 
+		double bundleFieldType = 1;
+		double valueFormat = DATA_FORMAT_NONE;
+		TreeNode* valueNode;
+
+		virtual void bind() override;
+		virtual const char* getClassFactory() override { return "StatisticsCollectorColumn"; }
+
 		const static int NO_INDEX = -1;
 
 		StatisticsCollector* __getCollector();
 		__declspec(property(get = __getCollector)) StatisticsCollector* collector;
 
 		double valueApplicationMode = (double)OnEventOnly;
-		ByteBlock columnType;
 		double bundleIndex = NO_INDEX;
 
-		virtual const char* getColumnType() = 0;
+		Variant getValue() { return valueNode->evaluate(); }
+		int getBundleFieldType() { return (int)bundleFieldType;	};
 
-		virtual Variant getValue() = 0;
-		virtual int getBundleFieldType() = 0;
-
-		virtual int getColumnFormat() { return DATA_FORMAT_NONE; }
+		int getColumnFormat() { return (int)valueFormat; }
 		bool isDynamic() { return valueApplicationMode == (double)Always; }
 
 		virtual bool isClassType(const char* className) override {
@@ -328,92 +333,6 @@ public:
 		static void eventAdder(TreeNode* x, EventReference* column);
 		static EventReference* eventGetter(TreeNode* x);
 		NodeListArray<EventReference, eventAdder, eventGetter, 0> events;
-
-		virtual void bind() override;
-	};
-
-	class BasicColumn : public Column
-	{
-	public:
-		enum ValueType { 
-			FSTime = 1,
-			StatisticalTime,
-			Time, 
-			EventObjectID, 
-			ProcessFlowInstanceID,
-			RowNumber,
-		};
-		double type = (double)FSTime;
-
-		virtual const char* getColumnType() override { return "Basic"; }
-
-		virtual Variant getValue() override;
-		virtual int getBundleFieldType() override;
-
-		virtual int getColumnFormat() override;
-
-		virtual void bind() override;
-		virtual const char* getClassFactory() override { return "StatisticsCollectorBasicColumn"; }
-	};
-
-	class StatisticColumn : public Column
-	{
-	public:
-		TreeNode* objectReference;
-		
-		enum StatisticType { Input = 1, Output, Content, Staytime };
-		double statisticType = Input;
-
-		enum ValueType { Current = 1, Minimum, Maximum, Average };
-		double valueType = Current;
-
-		virtual const char* getColumnType() override { return "Statistic"; }
-
-		virtual Variant getValue() override;
-		virtual int getBundleFieldType() override;
-
-		virtual void bind() override;
-		virtual const char* getClassFactory() override { return "StatisticsCollectorStatisticColumn"; }
-	};
-
-	class StateStatisticColumn : public Column
-	{
-	public:
-		TreeNode* objectReference;
-
-		enum StatisticType { CurrentValue, TimeAtValue };
-		double statisticMode = (double)CurrentValue;
-
-		TreeNode* profileValue;
-		TreeNode* stateValue;
-
-		virtual const char* getColumnType() override { return "StateStatistic"; }
-
-		virtual Variant getValue() override;
-		virtual int getBundleFieldType() override;
-
-		virtual void bind() override;
-		virtual const char* getClassFactory() override { return "StatisticsCollectorStateStatisticColumn"; }
-	};
-
-	class CodeColumn : public Column
-	{
-	public:
-
-		double bundleFieldType = 1;
-		double valueFormat = DATA_FORMAT_NONE;
-		TreeNode* codeNode;
-		
-		virtual const char* getColumnType() override { return "Code"; }
-
-		virtual Variant getValue() override;
-	
-		virtual int getBundleFieldType() override { return (int)bundleFieldType; }
-
-		virtual int getColumnFormat() override { return (int)valueFormat; }
-		
-		virtual void bind() override;
-		virtual const char* getClassFactory() override { return "StatisticsCollectorCodeColumn"; }
 	};
 
 	class EventParamProperty : public SimpleDataType
@@ -479,6 +398,7 @@ public:
 		ObjRef<EventReference> linkedEvent;
 		NodeRef eventObject;
 		ByteBlock eventName;
+		double flags = 0;
 		NodeRef instanceObject;
 		double changeRule = 0;
 		TreeNode* changeValue;
@@ -659,24 +579,22 @@ public:
 	double inErrorState = 0;
 	double changeCount;
 	double saved = 0;
-	double displayTimeAsText = 0;
 
-	enum RowMode { Add = 1, AddForEach, AssertForObject, DefineTable };
+	double resetRowMode = 0;
+	ByteBlock resetRowProperty;
+
+	enum RowMode { Add = 1, Assert, Enumerate };
 	double rowMode = (double)Add;
 	TreeNode* rowTableObjects;
 	TreeNode* rowTable;
 	ByteBlock rowProperty;
 	
-	enum InstanceMode { All, SpecifiedObject };
-	double instanceMode;
 	NodeRef instanceObject;
 
 	NodeListArray<EventReference>::SdtSubNodeBindingType eventReferences;
 	NodeListArray<Column>::SdtSubNodeBindingType columns;
 
 	NodeListArray<Column>::ObjPtrType dynamicColumns;
-	NodeListArray<EventReference>::SdtSubNodeBindingType updateEventReference;
-	
 	NodeListArray<FlexSimEvent>::CouplingSdtPtrType liveListeners;
 
 	BundleMember data;
@@ -693,8 +611,6 @@ protected:
 public:
 	engine_export TreeNode* addColumn(const char* type);
 
-	static engine_export const char* getColumnType(TreeNode* column);
-
 	engine_export void linkColumnAndEvent(TreeNode* column, TreeNode* eventRef);
 	engine_export void unlinkColumnAndEvent(TreeNode* column, TreeNode* eventRef);
 	engine_export void unlinkAllEvents(TreeNode* column);
@@ -706,7 +622,7 @@ public:
 	void updateRowTable();
 
 	void onEventOccured(EventReference* eventReference,
-		TreeNode* eventObject, const char* eventName, TreeNode* instanceObject, CallPoint* listenerCP);
+		TreeNode* eventObject, const char* eventName, TreeNode* instanceObject, CallPoint* listenerCP, int flags = 0);
 
 	engine_export void update();
 
@@ -722,9 +638,6 @@ public:
 
 	engine_export int __getRowMode() { return (int)rowMode; }
 	engine_export void __setRowMode(int value) { rowMode = value; }
-
-	engine_export int __getInstanceMode() { return (int)instanceMode; }
-	engine_export void __setInstanceMode(int mode) { instanceMode = mode; }
 
 	engine_export TreeNode* __getInstanceObject() { return instanceObject; }
 	engine_export void __setInstanceObject(TreeNode* obj) { instanceObject = obj; }
@@ -743,9 +656,6 @@ public:
 	engine_export void onRunWarm();
 	// double onStartSimulation() override;
 
-	// Events
-	TreeNode* onUpdate = nullptr;
-
 	engine_export virtual void bindEvents() override;
 	engine_export virtual void bindVariables() override;
 	engine_export virtual void bindInterface() override;
@@ -756,7 +666,6 @@ public:
 	engine_export static int isValueID(double id) { return IDService::isValueID(id); }
 	engine_export static TreeNode* getObjectFromID(double id) { return IDService::getObjectFromID(id); }
 	engine_export static const char* getPathFromID(double id) { return IDService::getPathFromID(id); }
-	engine_export static const char* getDateTimeStr(double modelTime);
 
 	engine_export static void clearIDs() { IDService::clear(); }
 

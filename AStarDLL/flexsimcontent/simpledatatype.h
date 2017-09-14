@@ -1536,6 +1536,8 @@ public:
 	void restoreHeaders(TreeNode* table);
 	void resizeHeaders(TreeNode* table, int xSize, double dataType);
 	
+	int numCols() {	return (int)headers.size(); }
+
 	virtual char* toString(int displayFlags) override;
 
 };

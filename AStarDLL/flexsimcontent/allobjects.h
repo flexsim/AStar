@@ -4961,7 +4961,7 @@ FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
 
 FS_CONTENT_DLL_FUNC std::string setProperties(treenode view);
 
-FS_CONTENT_DLL_FUNC std::string setSeriesProperties(treenode view, int seriesRank, int index);
+FS_CONTENT_DLL_FUNC std::string colorToJSON(treenode colorNode);
 
 FS_CONTENT_DLL_FUNC treenode getBundleNode(treenode tableRef);
 
@@ -4980,6 +4980,14 @@ TreeNode* node_v_chartType;
 #define v_chartType node_v_chartType->safedatafloat()[0]
 TreeNode* node_v_genericChartType;
 #define v_genericChartType node_v_genericChartType->safedatafloat()[0]
+TreeNode* node_v_fontSize;
+#define v_fontSize node_v_fontSize->safedatafloat()[0]
+TreeNode* node_v_titleFontSize;
+#define v_titleFontSize node_v_titleFontSize->safedatafloat()[0]
+TreeNode* node_v_precision;
+#define v_precision node_v_precision->safedatafloat()[0]
+TreeNode* node_v_showLegend;
+#define v_showLegend node_v_showLegend->safedatafloat()[0]
 TreeNode* node_v_timeplotSettings;
 #define v_timeplotSettings node_v_timeplotSettings->safedatafloat()[0]
 TreeNode* node_v_histogramSettings;
@@ -5358,6 +5366,8 @@ FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
 FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
+
+FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
 TreeNode* node_v_unpack;
 #define v_unpack node_v_unpack->safedatafloat()[0]

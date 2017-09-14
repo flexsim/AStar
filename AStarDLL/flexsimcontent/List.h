@@ -465,6 +465,7 @@ public:
 	void removeBadInitialContents();
 	void initializeFields();
 	void addInitialContents();
+	void pushInitialContentsObject(TreeNode* obj);
 	void addGroupFields(Group* group);
 	void addGroupMembers(Group* group);
 	engine_export virtual int getFieldId(const char* fieldName);
