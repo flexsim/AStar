@@ -255,12 +255,6 @@ protected:
 	Variant push(const VariantParams& params);
 	static Variant curPuller;
 
-	class PartitionHash
-	{
-	public:
-		size_t operator() (const Variant& pullerKey) const;
-	};
-
 	class VariantKeyEqual
 	{
 	public:
@@ -303,8 +297,8 @@ public:
 		Partition() {}
 		Partition(Variant partitionID, List* list) : id(partitionID), list(list) {}
 
-		std::unordered_map<Variant, Entry*, PartitionHash, VariantKeyEqual> entryMap;
-		std::unordered_map<Variant, BackOrder*, PartitionHash, VariantKeyEqual> backOrderMap;
+		std::unordered_map<Variant, Entry*, Variant::Hash, VariantKeyEqual> entryMap;
+		std::unordered_map<Variant, BackOrder*, Variant::Hash, VariantKeyEqual> backOrderMap;
 
 		typedef NodeListArray<BackOrder>::SdtSubNodeBindingType BackOrders;
 		BackOrders backOrders;
@@ -388,7 +382,7 @@ public:
 
 	NodeListArray<Partition>::SdtSubNodeBindingType partitions;
 	NodeListArray<Partition>::SdtSubNodeBindingType deadPartitions;
-	std::unordered_map<Variant, Partition*, PartitionHash, VariantKeyEqual> partitionMap;
+	std::unordered_map<Variant, Partition*, Variant::Hash, VariantKeyEqual> partitionMap;
 	
 	double uniqueValues;
 	double uniquePullers;
@@ -462,6 +456,7 @@ public:
 	engine_export TreeNode* fieldResolver(const Variant& fieldID);
 	engine_export int getFieldPossibilities(TreeNode* dest, const Variant& p1, const Variant& p2);
 	engine_export virtual void onReset();
+	engine_export virtual void onPostReset();
 	void removeBadInitialContents();
 	void initializeFields();
 	void addInitialContents();

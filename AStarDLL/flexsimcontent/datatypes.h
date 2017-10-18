@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <regex>
 #include "basicclasses.h"
 
 #ifdef FLEXSIM_ENGINE_COMPILE
@@ -3101,6 +3102,46 @@ public:
 	{
 		return getDateTime(warmupTime());
 	}
+};
+
+class engine_export RegExResult
+{
+protected:
+	char* toSearch = nullptr;
+	
+	std::regex* pattern = nullptr;
+	std::vector<std::cmatch>* matchResultSet = nullptr;
+	std::vector<std::unique_ptr<char[]>>* arrayIndexResults = nullptr;
+	std::vector<int>* indexCache = nullptr;
+	
+	bool isGlobal = false;
+	const char* searchPos = nullptr;
+	int lastFoundIndex = 0;
+
+	bool finished = false;
+
+private:
+	RegExResult() {}
+	bool findNextMatchInternal();
+
+public:
+	RegExResult(const char* searchPattern, const char* toSearch);
+	RegExResult(const RegExResult& other);
+	~RegExResult();
+	void construct(const RegExResult& other);
+	RegExResult& operator=(const RegExResult& other);
+
+	Array findNextMatch();
+	operator Array();
+
+	const char* operator[](int i);
+	Array getMatch(int i);
+	Array getMatchIndex(int i);
+
+	int __getLength();
+	__declspec(property(get = __getLength)) int length;
+
+	static void bindInterface();
 };
 
 }

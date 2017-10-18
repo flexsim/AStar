@@ -103,7 +103,6 @@ public:
 		virtual const char* getClassFactory() override { return "IDServiceCoreIDInfo"; }
 	};
 protected:
-
 	NodeListArray<IDInfo>::CouplingSdtSubNodeBindingType idInfoObjects;
 	bool mapsBuilt = false;
 	std::unordered_map<TreeNode*, IDInfo*> nodeIDMap;
@@ -112,12 +111,20 @@ protected:
 	std::unordered_map<TreeNode*, IDInfo*>::iterator nodeIDMapEnd = nodeIDMap.end();
 	std::unordered_map<unsigned int, IDInfo*>::iterator idPathMapEnd = idPathMap.end();
 
+	std::string getObjectHashPath(TreeNode* object);
+	unsigned int hashPath(const char* path, size_t length);
 	void buildIDInfoMaps();
 
 	double getObjectID(TreeNode* object);
 	double getItemID(TreeNode* item);
 
 public:
+	// The model IDService should not keep dead IDs.
+	// The experimenter IDService, on the other hand, should,
+	// because a replication might have created an object that
+	// doesn't exist in the original.
+	double keepDeadIDs = 0;
+
 	void onReset();
 	double getID(TreeNode* object);
 
@@ -159,7 +166,7 @@ public:
 	};
 
 	double saved = 0;
-
+	engine_export void enableExperimenterMode();
 	engine_export void onReset();
 
 	engine_export static double getID(TreeNode* object);
@@ -591,6 +598,10 @@ public:
 	
 	NodeRef instanceObject;
 
+	double lastUpdateTime = 0;
+	double updateSinceReset = 0;
+	NodeRef lastUpdateEvent;
+
 	NodeListArray<EventReference>::SdtSubNodeBindingType eventReferences;
 	NodeListArray<Column>::SdtSubNodeBindingType columns;
 
@@ -653,6 +664,9 @@ public:
 	engine_export static StatisticsCollector* getGlobal(const Variant& id);
 
 	engine_export void onReset();
+	engine_export void onPostReset();
+	void createListeners();
+	void createEvents();
 	engine_export void onRunWarm();
 	// double onStartSimulation() override;
 
@@ -675,6 +689,7 @@ public:
 class CalculatedTable : public ColumnFormatter
 {
 protected:
+	bool shouldUpdate() const;
 
 public:
 	class Timer : public FlexSimEvent
@@ -738,7 +753,7 @@ public:
 
 	// Inputs
 	ByteBlock query;
-	enum UpdateMode { Manual = 0, ByInterval = 1, Always = 2 };
+	enum UpdateMode { Manual = 0, ByInterval = 1, Always = 2, LazyInterval = 3 };
 	double updateMode = 0;
 	double updateInterval = 0;
 	double enabled = 1;
@@ -756,6 +771,8 @@ public:
 
 	// and here's the last update time
 	double lastUpdateTime = -1;
+	double updateSinceReset = 0;
+	NodeRef lastUpdateEvent;
 
 	// and here's where the result gets dumped
 	BundleMember data;
