@@ -583,6 +583,7 @@ protected:
 
 public:
 	double enabled = 1;
+	double ignoreWarmup = 0;
 	double inErrorState = 0;
 	double changeCount;
 	double saved = 0;

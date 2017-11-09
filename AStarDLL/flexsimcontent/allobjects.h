@@ -6151,6 +6151,8 @@ public:
 
 // c++ member functions
 
+FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+
 FS_CONTENT_DLL_FUNC double onReset();
 
 FS_CONTENT_DLL_FUNC  TaskExecuter();
@@ -6376,6 +6378,9 @@ FS_CONTENT_DLL_FUNC virtual double getEntryLoc(treenode involved,  double* retur
 
 FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
 
+TreeNode* node_v_activeRoles;
+#define v_activeRoles node_v_activeRoles->safedatafloat()[0]
+TreeNode* node_v_currentLocation;
 
 // System
 
