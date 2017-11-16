@@ -101,7 +101,9 @@ public:
 	double deepSearch;
 	double drawMode;
 	double showAllocations;
+	double showTravelThreshold;
 	void drawAllocations(float z);
+	void drawDestinationThreshold(TreeNode* destination, float z);
 
 	double ignoreDestBarrier;
 

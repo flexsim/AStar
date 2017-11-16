@@ -74,6 +74,7 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(surroundDepth);
 	bindVariable(deepSearch);
 	bindVariable(ignoreDestBarrier);
+	bindVariable(showTravelThreshold);
 	bindVariable(smoothRotations);
 
 	bindVariable(barriers);
@@ -213,7 +214,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 	// draws the grid, barriers, and traffic
 
 	int drawMode = (int)this->drawMode;
-	if (drawMode == 0 && (showHeatMap == 0 || heatMapMode == 0) && showAllocations == 0)
+	if (drawMode == 0 && (showHeatMap == 0 || heatMapMode == 0) && showAllocations == 0 && showTravelThreshold == 0)
 		return 0;
 
 	double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
@@ -261,6 +262,9 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		if (showAllocations)
 			drawAllocations(0.02f / lengthMultiple);
+
+		if (showTravelThreshold)
+			drawDestinationThreshold(selectedobject(view), 0.02f / lengthMultiple);
 	} else {
 
 		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
@@ -668,7 +672,6 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	// Set the desination outside a barrier if necessary
 	if (ignoreDestBarrier) {
 		AStarCell tempDestCell = destCell;
-
 		checkGetOutOfBarrier(tempDestCell, te, startCell.row, startCell.col, &traveler->destThreshold, false);
 	}
 
@@ -1611,15 +1614,11 @@ void AStarNavigator::buildGridMesh(float z)
 	double quarterNodeWidth = 0.25 * nodeWidth;
 	float gold[4] = {0.8f,0.8f,0.0f, 1.0f};
 	float red[4] = {1.0f, 0.0f, 0.0f, 1.0f};
-	// Draw the grid one row at a time, using the large dimension
-	bool drawByRow = edgeTableXSize >= edgeTableYSize;
-	int maxDim = drawByRow ? edgeTableXSize : edgeTableYSize;
-	int minDim = !drawByRow ? edgeTableXSize : edgeTableYSize;
+
 	gridMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_FORCE_CLEANUP);
-	for(int i = 0; i < maxDim; i++) {
-		for(int j = 0; j < minDim; j++) {
-			int row = !drawByRow ? i : j;
-			int col = drawByRow ? i : j;
+
+	for(int row = 0; row < edgeTableYSize; row++) {
+		for(int col = 0; col < edgeTableXSize; col++) {
 			AStarNode* n = &DeRefEdgeTable(row, col);
 			AStarSearchEntry s;
 			s.cell.col = col;
@@ -1669,14 +1668,13 @@ void AStarNavigator::buildGridMesh(float z)
 				continue;
 			}
 
-
 			ADD_GRID_LINE(Up, x, y, z, x, y + 0.25 * nodeWidth, z);
 			ADD_GRID_LINE(Down, x, y, z, x, y - 0.25 * nodeWidth, z);
 			ADD_GRID_LINE(Right, x, y, z, x + 0.25 * nodeWidth, y, z);
 			ADD_GRID_LINE(Left, x, y, z, x - 0.25 * nodeWidth, y, z);
 			
 			if(n->isInTotalSet) {
-				mpt("Grid error at x ");mpd(j);mpt(" y ");mpd(i);mpr();
+				mpt("Grid error at x ");mpd(col);mpt(" y ");mpd(row);mpr();
 				int newVertex1 = gridMesh.addVertex();
 				int newVertex2 = gridMesh.addVertex();
 
@@ -1758,6 +1756,58 @@ void AStarNavigator::drawAllocations(float z)
 	fglEnable(GL_LIGHTING);
 	fglEnable(GL_TEXTURE_2D);
 
+}
+
+
+void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
+{
+	if (!objectexists(destination))
+		return;
+
+	DestinationThreshold dt = DestinationThreshold(destination, nodeWidth);
+	double loc[3];
+	Vec3 size = destination->objectAs(ObjectDataType)->size;
+	vectorproject(destination, 0.5 * size.x, -0.5 * size.y, 0, model(), loc);
+
+	// Set the desination outside a barrier if necessary
+	if (ignoreDestBarrier) {
+		AStarCell destCell = getCellFromLoc(loc);
+		checkGetOutOfBarrier(destCell, nullptr, 0, 0, &dt, false);
+	}
+
+	Mesh mesh;
+	mesh.init(0, MESH_POSITION, MESH_DYNAMIC_DRAW);
+	double diamondRadius = 0.1 * nodeWidth;
+	for (int row = 0; row < edgeTableYSize; row++) {
+		for (int col = 0; col < edgeTableXSize; col++) {
+			AStarNode* n = &DeRefEdgeTable(row, col);
+			AStarCell cell;
+			cell.col = col;
+			cell.row = row;
+			if (dt.isWithinThreshold(cell, gridOrigin, loc, nodeWidth)) {
+				Vec3 centerPos = getLocFromCell(cell);
+				int vert = mesh.addVertex();
+				mesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
+				vert = mesh.addVertex();
+				mesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y + diamondRadius, z));
+				vert = mesh.addVertex();
+				mesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, z));
+				vert = mesh.addVertex();
+				mesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, z));
+				vert = mesh.addVertex();
+				mesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y - diamondRadius, z));
+				vert = mesh.addVertex();
+				mesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
+			}
+		}
+	}
+
+	fglDisable(GL_LIGHTING);
+	fglDisable(GL_TEXTURE_2D);
+	fglColor(0.8f, 0.2f, 0.2f, 1.0f);
+	mesh.draw(GL_TRIANGLES);
+	fglEnable(GL_LIGHTING);
+	fglEnable(GL_TEXTURE_2D);
 }
 
 void AStarNavigator::setDirty()
