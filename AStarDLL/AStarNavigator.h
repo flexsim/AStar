@@ -68,7 +68,7 @@ protected:
 	void buildBoundsMesh();
 	void buildBarrierMesh();
 	void drawMembers(float z);
-	void drawGrid(float z);
+	void buildGridMesh(float z);
 
 	static const int HEAT_MAP_TRAVERSALS_PER_TIME = 1;
 	static const int HEAT_MAP_BLOCKAGE_TIME_PER_TRAVERSAL = 2;

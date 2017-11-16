@@ -212,22 +212,26 @@ double AStarNavigator::onDraw(TreeNode* view)
 	// Based on the drawMode, this function
 	// draws the grid, barriers, and traffic
 
+	int drawMode = (int)this->drawMode;
+	if (drawMode == 0 && (showHeatMap == 0 || heatMapMode == 0) && showAllocations == 0)
+		return 0;
+
+	double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 	if (isDirty) {
 		if (!edgeTable && hasEdgeTable)
 			buildEdgeTable();
 
-		if (drawMode && ASTAR_DRAW_MODE_BARRIERS)
+		if (drawMode & ASTAR_DRAW_MODE_GRID)
+			buildGridMesh(0.01f / lengthMultiple);
+
+		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
 			buildBarrierMesh();
 
-		if (drawMode && ASTAR_DRAW_MODE_BOUNDS && edgeTable)
+		if ((drawMode & ASTAR_DRAW_MODE_BOUNDS) && edgeTable)
 			buildBoundsMesh();
 
 		isDirty = false;
 	}
-
-	int pickingmode = getpickingmode(view);
-	int drawMode = (int)this->drawMode;
-	if(drawMode == 0 && (showHeatMap == 0 || heatMapMode == 0) && showAllocations == 0) return 0;
 
 	fglDisable(GL_TEXTURE_2D);
 	fglDisable(GL_LIGHTING);
@@ -238,10 +242,10 @@ double AStarNavigator::onDraw(TreeNode* view)
 	fglScale(1.0/b_spatialsx, 1.0/b_spatialsy, 1.0/b_spatialsz);
 	fglTranslate(-loc[0], -loc[1], -loc[2]);
 
-	double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
+	int pickingmode = getpickingmode(view);
 	if (!pickingmode) {
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
-			drawGrid(0.01f / lengthMultiple);
+			gridMesh.draw(GL_LINES);
 
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
 			boundsMesh.draw(GL_TRIANGLES);
@@ -1599,7 +1603,7 @@ void AStarNavigator::drawMembers(float z)
 	memberMesh.draw(GL_TRIANGLES);
 }
 
-void AStarNavigator::drawGrid(float z)
+void AStarNavigator::buildGridMesh(float z)
 {
 	if (!((int)drawMode & ASTAR_DRAW_MODE_GRID))
 		return;
@@ -1611,8 +1615,8 @@ void AStarNavigator::drawGrid(float z)
 	bool drawByRow = edgeTableXSize >= edgeTableYSize;
 	int maxDim = drawByRow ? edgeTableXSize : edgeTableYSize;
 	int minDim = !drawByRow ? edgeTableXSize : edgeTableYSize;
+	gridMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_FORCE_CLEANUP);
 	for(int i = 0; i < maxDim; i++) {
-		gridMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_FORCE_CLEANUP);
 		for(int j = 0; j < minDim; j++) {
 			int row = !drawByRow ? i : j;
 			int col = drawByRow ? i : j;
@@ -1685,9 +1689,7 @@ void AStarNavigator::drawGrid(float z)
 				gridMesh.setVertexAttrib(newVertex2, MESH_POSITION, pos2);
 			}
 		}
-		gridMesh.draw(GL_LINES);
 	}
-	gridMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_FORCE_CLEANUP);
 }
 
 
