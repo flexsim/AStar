@@ -65,6 +65,7 @@ protected:
 	inline AStarSearchEntry* expandOpenSet(int r, int c, float multiplier, int travelVal, char bridgeIndex = -1);
 	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold, bool setStartEntry);
 	void buildEdgeTable();
+	void checkBounds(TreeNode* theObj, Vec2& min, Vec2& max);
 	void buildBoundsMesh();
 	void buildBarrierMesh();
 	void drawMembers(float z);
@@ -173,6 +174,7 @@ public:
 	TreeNode* AStarNavigator::resolveTraveler();
 
 	void blockGridModelPos(const Vec3& modelPos);
+	void addObjectBarrierToTable(TreeNode* obj);
 
 	void setDirty();
 
