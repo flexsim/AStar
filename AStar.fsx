@@ -610,12 +610,7 @@ repaintview(c);</data></node>
         <node f="42" dt="2"><name>OnPreOpen</name><data>standardpreopen(c);
 </data>
          <node f="40"><name></name></node></node>
-        <node f="42" dt="2"><name>OnClose</name><data></data>
-         <node f="40" dt="7"><name></name><data/>
-          <node f="40"><name></name></node>
-          <node f="42" dt="2"><name>sdt::attributetree</name><data>FlexScriptCode</data>
-           <node f="40"><name></name></node></node>
-         </node></node>
+        <node f="42" dt="2"><name>OnClose</name><data></data></node>
         <node f="442" dt="2"><name>OnApply</name><data>treenode tabcontrol = node("../tabcontrol",c);
 iterate(1, content(tabcontrol), 1){
   if (objectexists(node("&gt;PageOnApply",rank(tabcontrol,count))))
@@ -727,17 +722,10 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
             <node f="40"><name></name></node>
             <node f="42" dt="2"><name>valuetype</name><data>distance</data></node>
             <node f="42" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
-            <node f="42" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
+            <node f="42" dt="1"><name>ishotlink</name><data>0000000000000000</data></node>
             <node f="42" dt="1"><name>step</name><data>9999999a3fb99999</data></node>
             <node f="42" dt="1"><name>conversion</name><data>0000000000000000</data></node>
-            <node f="442" dt="2"><name>OnKillFocus</name><data>treenode parent = ownerobject(c);
-if (stringtonum(getviewtext(node("/EditValue", parent))) &lt;= 0.1) {
-	setviewtext(node("/EditValue", parent), "0.1");
-	set(node("&gt;objectfocus+", parent), 0.1);
-}
-
-function_s(node("@&gt;objectfocus+", c), "rebuildMeshes");
-repaintall();</data></node>
+            <node f="42" dt="1"><name>rangemin</name><data>9999999a3fb99999</data></node>
            </node>
           </data>
            <node f="40"><name></name></node></node>
@@ -974,12 +962,7 @@ forobjectsbehind (c)
 		double utilization = useCount / requestCount * 100;
 		setviewtext(c, concat(numtostring(utilization), " %"));
 	}
-}</data>
-             <node f="40" dt="7"><name></name><data/>
-              <node f="40"><name></name></node>
-              <node f="42" dt="2"><name>sdt::attributetree</name><data>FlexScriptCode</data>
-               <node f="40"><name></name></node></node>
-             </node></node>
+}</data></node>
             <node f="42"><name>style</name>
              <node f="40"><name></name></node>
              <node f="42"><name>ES_READONLY</name></node>
@@ -1586,12 +1569,7 @@ if (!eventdata) {
 	}
 } else {
 	return 0;
-}*/</data>
-             <node f="40" dt="7"><name></name><data/>
-              <node f="40"><name></name></node>
-              <node f="42" dt="2"><name>sdt::attributetree</name><data>FlexScriptCode</data>
-               <node f="40"><name></name></node></node>
-             </node></node>
+}*/</data></node>
             <node f="42" dt="2"><name>OnMouseWheel</name><data>treenode TheTable = ownerobject(c);
 
 double vert_nMin = scrollinfo(TheTable,0,1,1);
@@ -2047,12 +2025,7 @@ if (objectexists(focus)) {
 	} else {
 		setviewtext(c, getname(focus));
 	}
-}</data>
-              <node f="40" dt="7"><name></name><data/>
-               <node f="40"><name></name></node>
-               <node f="42" dt="2"><name>sdt::attributetree</name><data>FlexScriptCode</data>
-                <node f="40"><name></name></node></node>
-              </node></node>
+}</data></node>
             </data></node>
             <node f="42" dt="4"><name>PathWeight</name><data>
              <node f="40"><name>object</name></node>
@@ -2370,12 +2343,7 @@ if (!eventdata) {
 		function_s(astarNavigator, "rebuildMeshes");
 		repaintall();
 	}	
-}</data>
-               <node f="40" dt="7"><name></name><data/>
-                <node f="40"><name></name></node>
-                <node f="42" dt="2"><name>sdt::attributetree</name><data>FlexScriptCode</data>
-                 <node f="40"><name></name></node></node>
-               </node></node>
+}</data></node>
               <node f="42" dt="2"><name>OnKeyUp</name><data>#define VK_RETURN 13
 if (lastkeydown() == VK_RETURN) {
 	applylinks(c);
@@ -2510,12 +2478,7 @@ if (eventdata) {
 	applylinks(node("/X/editSX/EditValue", c), 1);
 	applylinks(node("/Y/editY/EditValue", c), 1);
 	applylinks(node("/Y/editSY/EditValue", c), 1);
-}</data>
-              <node f="40" dt="7"><name></name><data/>
-               <node f="40"><name></name></node>
-               <node f="42" dt="2"><name>sdt::attributetree</name><data>FlexScriptCode</data>
-                <node f="40"><name></name></node></node>
-              </node></node>
+}</data></node>
              <node f="42"><name>variables</name>
               <node f="40"><name></name></node>
               <node f="42" dt="1"><name>posx</name><data>0000000000000000</data></node>
