@@ -1534,7 +1534,7 @@ public:
 
 	void saveHeaders(TreeNode* table);
 	void restoreHeaders(TreeNode* table);
-	void resizeHeaders(TreeNode* table, int xSize, double dataType);
+	void resizeHeaders(TreeNode* table, int xSize, double dataType, int index = 0);
 	
 	int numCols() {	return (int)headers.size(); }
 

@@ -1276,10 +1276,13 @@ void AStarNavigator::checkBounds(TreeNode* theObj, Vec2& min, Vec2& max)
 
 void AStarNavigator::buildBoundsMesh()
 {
-	if (!edgeTable)
-		return;
-
 	boundsMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
+
+	if (!edgeTable) {
+		isBoundsMeshBuilt = false;
+		return;
+	}
+
 	float up[3] = {0.0f, 0.0f, 1.0f};
 	TreeNode* color = node_b_color;
 	float boundsColor[4] = {
@@ -1616,14 +1619,16 @@ void AStarNavigator::drawMembers(float z)
 
 void AStarNavigator::buildGridMesh(float z)
 {
-	if (!edgeTable)
+	gridMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_FORCE_CLEANUP);
+
+	if (!edgeTable) {
+		isGridMeshBuilt = false;
 		return;
+	}
 	
 	double quarterNodeWidth = 0.25 * nodeWidth;
 	float gold[4] = {0.8f,0.8f,0.0f, 1.0f};
 	float red[4] = {1.0f, 0.0f, 0.0f, 1.0f};
-
-	gridMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_FORCE_CLEANUP);
 
 	for(int row = 0; row < edgeTableYSize; row++) {
 		for(int col = 0; col < edgeTableXSize; col++) {
