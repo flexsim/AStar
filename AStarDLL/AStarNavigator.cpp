@@ -50,7 +50,6 @@ AStarNavigator::AStarNavigator()
 	, yOffset(0)
 	, edgeTableXSize(0)
 	, edgeTableYSize(0)
-	, isDirty(true)
 {
 	return;
 }
@@ -60,7 +59,6 @@ AStarNavigator::~AStarNavigator()
 	if (edgeTable) {
 		delete [] edgeTable;
 		edgeTable = 0;
-		hasEdgeTable = 0;
 	}
 }
 
@@ -212,26 +210,25 @@ double AStarNavigator::onDraw(TreeNode* view)
 {
 	// Based on the drawMode, this function
 	// draws the grid, barriers, and traffic
-
 	int drawMode = (int)this->drawMode;
 	if (drawMode == 0 && (showHeatMap == 0 || heatMapMode == 0) && showAllocations == 0 && showTravelThreshold == 0)
 		return 0;
 
 	double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
-	if (isDirty) {
-		if (!edgeTable && hasEdgeTable)
-			buildEdgeTable();
-
+	if (isGridDirty) {
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
 			buildGridMesh(0.01f / lengthMultiple);
 
+		if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
+			buildBoundsMesh();
+
+		isGridDirty = false;
+	}
+	if (isBarrierDirty) {
 		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
 			buildBarrierMesh();
 
-		if ((drawMode & ASTAR_DRAW_MODE_BOUNDS) && edgeTable)
-			buildBoundsMesh();
-
-		isDirty = false;
+		isBarrierDirty = false;
 	}
 
 	fglDisable(GL_TEXTURE_2D);
@@ -245,13 +242,13 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 	int pickingmode = getpickingmode(view);
 	if (!pickingmode) {
-		if (drawMode & ASTAR_DRAW_MODE_GRID)
+		if (isGridMeshBuilt && (drawMode & ASTAR_DRAW_MODE_GRID))
 			gridMesh.draw(GL_LINES);
 
-		if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
+		if (isBoundsMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BOUNDS))
 			boundsMesh.draw(GL_TRIANGLES);
 
-		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
+		if (isBarrierMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BARRIERS))
 			barrierMesh.draw(GL_TRIANGLES);
 
 		if (showHeatMap != 0 && heatMapMode != 0)
@@ -383,6 +380,7 @@ double AStarNavigator::onDrag(TreeNode* view)
 		savedXOffset += dx / nodeWidth;
 		savedYOffset += dy / nodeWidth;
 		setDirty();
+		isGridDirty = true;
 		return 1;
 	}
 
@@ -1032,6 +1030,8 @@ double AStarNavigator::updateLocations(TaskExecuter* te)
 
 void AStarNavigator::buildEdgeTable()
 {
+	isGridDirty = true;
+
 	heatMapBuffer.reset(nullptr);
 	// Determine the grid bounds
 	Vec2 min = Vec2(FLT_MAX,FLT_MAX);
@@ -1051,8 +1051,6 @@ void AStarNavigator::buildEdgeTable()
 		if (edgeTable)
 			delete [] edgeTable;
 		edgeTable = 0;
-		hasEdgeTable = 0;
-		boundsMesh.init(0, 0, 0);
 		return;
 	}
 
@@ -1132,8 +1130,6 @@ void AStarNavigator::buildEdgeTable()
 		if (path)
 			maxPathWeight = max(path->pathWeight, maxPathWeight);
 	}
-
-	hasEdgeTable = 1;
 }
 
 void AStarNavigator::addObjectBarrierToTable(TreeNode* theObj)
@@ -1280,6 +1276,9 @@ void AStarNavigator::checkBounds(TreeNode* theObj, Vec2& min, Vec2& max)
 
 void AStarNavigator::buildBoundsMesh()
 {
+	if (!edgeTable)
+		return;
+
 	boundsMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
 	float up[3] = {0.0f, 0.0f, 1.0f};
 	TreeNode* color = node_b_color;
@@ -1340,6 +1339,8 @@ void AStarNavigator::buildBoundsMesh()
 
 	// bottom border
 	ADD_PLAIN_QUAD(bottomRight, bottomLeft, oBottomLeft, oBottomRight);
+
+	isBoundsMeshBuilt = true;
 }
 
 void AStarNavigator::buildBarrierMesh()
@@ -1352,6 +1353,8 @@ void AStarNavigator::buildBarrierMesh()
 		barrierList[i]->nodeWidth = nodeWidth;
 		barrierList[i]->addVertices(&barrierMesh, 0.1f / getmodelunit(LENGTH_MULTIPLE));
 	}
+
+	isBarrierMeshBuilt = true;
 }
 
 void AStarNavigator::drawHeatMap(float z, TreeNode* view)
@@ -1613,7 +1616,7 @@ void AStarNavigator::drawMembers(float z)
 
 void AStarNavigator::buildGridMesh(float z)
 {
-	if (!((int)drawMode & ASTAR_DRAW_MODE_GRID))
+	if (!edgeTable)
 		return;
 	
 	double quarterNodeWidth = 0.25 * nodeWidth;
@@ -1693,6 +1696,8 @@ void AStarNavigator::buildGridMesh(float z)
 			}
 		}
 	}
+
+	isGridMeshBuilt = true;
 }
 
 
@@ -1768,6 +1773,8 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 {
 	if (!objectexists(destination))
 		return;
+	if (!edgeTable)
+		return;
 
 	DestinationThreshold dt = DestinationThreshold(destination, nodeWidth);
 	double loc[3];
@@ -1817,7 +1824,7 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 
 void AStarNavigator::setDirty()
 {
-	isDirty = true;
+	isBarrierDirty = true;
 }
 
 AStarCell AStarNavigator::getCellFromLoc(const Vec2& modelLoc)
@@ -2130,6 +2137,17 @@ ASTAR_FUNCTION Variant AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
 
 	AStarNavigator* a = navNode->objectAs(AStarNavigator);
 	a->setDirty();
+	return 1;
+}
+
+ASTAR_FUNCTION Variant AStarNavigator_rebuildEdgeTable(FLEXSIMINTERFACE)
+{
+	TreeNode* navNode = c;
+	if (!isclasstype(navNode, "AStar::AStarNavigator"))
+		return 0;
+
+	AStarNavigator* a = navNode->objectAs(AStarNavigator);
+	a->buildEdgeTable();
 	return 1;
 }
 

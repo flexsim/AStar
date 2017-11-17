@@ -60,11 +60,14 @@ protected:
 	Mesh barrierMesh;
 	Mesh gridMesh;
 	Mesh memberMesh;
-	bool isDirty;
+	bool isGridDirty = false;
+	bool isBarrierDirty = true;
+	bool isBoundsMeshBuilt = false;
+	bool isBarrierMeshBuilt = false;
+	bool isGridMeshBuilt = false;
 
 	inline AStarSearchEntry* expandOpenSet(int r, int c, float multiplier, int travelVal, char bridgeIndex = -1);
 	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold, bool setStartEntry);
-	void buildEdgeTable();
 	void checkBounds(TreeNode* theObj, Vec2& min, Vec2& max);
 	void buildBoundsMesh();
 	void buildBarrierMesh();
@@ -112,8 +115,6 @@ public:
 	double pathCount;
 	double requestCount;
 	double cacheUseCount;
-
-	double hasEdgeTable;
 
 	double enableCollisionAvoidance;
 	double ignoreInactiveMemberCollisions;
@@ -177,6 +178,7 @@ public:
 	void addObjectBarrierToTable(TreeNode* obj);
 
 	void setDirty();
+	void buildEdgeTable();
 
 	AStarCell getCellFromLoc(const Vec2& modelLoc);
 	Vec3 getLocFromCell(const AStarCell& cell) { return Vec3(gridOrigin.x + cell.col * nodeWidth, gridOrigin.y + cell.row * nodeWidth, 0.0);	}
