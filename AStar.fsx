@@ -63,6 +63,7 @@
          <node f="1000042" dt="2"><name>getPathWeight</name><data>dll:"module:AStar" func:"PreferredPath_getWeight"</data></node>
          <node f="1000042" dt="2"><name>getPointCoord</name><data>dll:"module:AStar" func:"Barrier_getPointCoord"</data></node>
          <node f="1000042" dt="2"><name>rebuildMeshes</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildMeshes"</data></node>
+         <node f="1000042" dt="2"><name>rebuildEdgeTable</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildEdgeTable"</data></node>
          <node f="1000042" dt="2"><name>removeBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_removeBarrier"</data></node>
          <node f="1000042" dt="2"><name>removeMember</name><data>dll:"module:AStar" func:"AStarNavigator_removeMember"</data></node>
          <node f="1000042" dt="2"><name>removePoint</name><data>dll:"module:AStar" func:"Barrier_removePoint"</data></node>
@@ -616,7 +617,11 @@ iterate(1, content(tabcontrol), 1){
   if (objectexists(node("&gt;PageOnApply",rank(tabcontrol,count))))
      nodefunction(node("&gt;PageOnApply",rank(tabcontrol,count)));
 }
-</data></node>
+
+if (time() == 0 &amp;&amp; !getrunstate() &amp;&amp; !applicationcommand("switchRunning", -1)) {
+	function_s(node("..&gt;objectfocus+", c), "rebuildEdgeTable");
+	repaintall();
+}</data></node>
        </data>
         <node f="40"><name></name></node>
         <node f="42" dt="4"><name>overlay</name><data>
