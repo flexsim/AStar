@@ -616,11 +616,6 @@ repaintview(c);</data></node>
 iterate(1, content(tabcontrol), 1){
   if (objectexists(node("&gt;PageOnApply",rank(tabcontrol,count))))
      nodefunction(node("&gt;PageOnApply",rank(tabcontrol,count)));
-}
-
-if (time() == 0 &amp;&amp; !getrunstate() &amp;&amp; !applicationcommand("switchRunning", -1)) {
-	function_s(node("..&gt;objectfocus+", c), "rebuildEdgeTable");
-	repaintall();
 }</data></node>
        </data>
         <node f="40"><name></name></node>
