@@ -218,17 +218,20 @@ double AStarNavigator::onDraw(TreeNode* view)
 	if (isGridDirty) {
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
 			buildGridMesh(0.01f / lengthMultiple);
-
+		if (isGridMeshBuilt)
+			isGridDirty = false;
+	}
+	if (isBoundsDirty) {
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
 			buildBoundsMesh();
-
-		isGridDirty = false;
+		if (isBoundsMeshBuilt)
+			isBoundsDirty = false;
 	}
 	if (isBarrierDirty) {
 		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
 			buildBarrierMesh();
-
-		isBarrierDirty = false;
+		if (isBarrierMeshBuilt)
+			isBarrierDirty = false;
 	}
 
 	fglDisable(GL_TEXTURE_2D);
@@ -377,10 +380,10 @@ double AStarNavigator::onDrag(TreeNode* view)
 			inc(spatialy(traveler), dy);
 		}
 		*/
-		savedXOffset += dx / nodeWidth;
-		savedYOffset += dy / nodeWidth;
+		savedXOffset += dx / savedNodeWidth;
+		savedYOffset += dy / savedNodeWidth;
 		setDirty();
-		isGridDirty = true;
+		isBoundsDirty = true;
 		return 1;
 	}
 
@@ -1031,6 +1034,7 @@ double AStarNavigator::updateLocations(TaskExecuter* te)
 void AStarNavigator::buildEdgeTable()
 {
 	isGridDirty = true;
+	isBoundsDirty = true;
 
 	heatMapBuffer.reset(nullptr);
 	// Determine the grid bounds
@@ -1046,6 +1050,7 @@ void AStarNavigator::buildEdgeTable()
 	if (deepSearch)
 		directionChangePenalty = 0.025;
 
+	savedNodeWidth = nodeWidth;
 
 	if (content(barriers) == 0 && objectBarrierList.size() == 0) {
 		if (edgeTable)
@@ -1296,13 +1301,13 @@ void AStarNavigator::buildBoundsMesh()
 	boundsMesh.setMeshAttrib(MESH_NORMAL, up);
 	boundsMesh.setMeshAttrib(MESH_DIFFUSE4, boundsColor);
 
-	float width = edgeTableXSize * nodeWidth;
-	float height = edgeTableYSize * nodeWidth;
-	float borderWidth = nodeWidth;
+	float width = edgeTableXSize * savedNodeWidth;
+	float height = edgeTableYSize * savedNodeWidth;
+	float borderWidth = savedNodeWidth;
 
 	float midBW = 0.4 * borderWidth;
 	float z = 0.1f / getmodelunit(LENGTH_MULTIPLE);
-	float bottomLeft[3] = {savedXOffset * nodeWidth, savedYOffset * nodeWidth, z};
+	float bottomLeft[3] = {savedXOffset * savedNodeWidth, savedYOffset * savedNodeWidth, z};
 	float topRight[3] = {bottomLeft[0] + width, bottomLeft[1] + height, z};
 	float topLeft[3] = {bottomLeft[0], topRight[1], z};
 	float bottomRight[3] = {topRight[0], bottomLeft[1], z};

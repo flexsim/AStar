@@ -53,6 +53,7 @@ protected:
 	int yOffset;
 	float savedXOffset;
 	float savedYOffset;
+	double savedNodeWidth;
 	double directionChangePenalty;
 
 	// Drawing variables
@@ -61,6 +62,7 @@ protected:
 	Mesh gridMesh;
 	Mesh memberMesh;
 	bool isGridDirty = false;
+	bool isBoundsDirty = true;
 	bool isBarrierDirty = true;
 	bool isBoundsMeshBuilt = false;
 	bool isBarrierMeshBuilt = false;
