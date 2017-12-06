@@ -1100,55 +1100,18 @@ repaintall();</data></node>
             <node f="42" dt="1"><name>spatialy</name><data>00000000404d8000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-            <node f="42" dt="2"><name>OnPress</name><data>treenode membersList = node("../MembersList", c);
-int index = get(itemcurrent(membersList));
-if (index == 0)
-	return 0;
-	
-string name = getname(rank(items(membersList), index));
+          <node f="42" dt="2"><name>OnPress</name><data>treenode list = node("../MembersList", c);
+string path = getname(rank(items(list), get(itemcurrent(list))));
 
+treenode member = node(path, model());
 
-int list = get(itemcurrent(node("../MemberChooser", c)));
-treenode object = NULL;
-
-switch (list) {
-	case 1: //ALL
-		object = nodefunction(node("&gt;searchObjects", c), name, node("@&gt;objectfocus+&gt;variables/activetravelmembers", c));
-		if (!object) object = nodefunction(node("&gt;searchObjects", c), name, node("@&gt;objectfocus+&gt;variables/travelmembers", c));
-		if (!object) object = nodefunction(node("&gt;searchObjects", c), name, node("@&gt;objectfocus+&gt;variables/fixedResourceBarriers", c));
-	break;
-	
-	case 2: //ACTIVE
-		object = nodefunction(node("&gt;searchObjects", c), name, node("@&gt;objectfocus+&gt;variables/activetravelmembers", c));
-	break;
-	
-	case 3: //INACTIVE
-		object = nodefunction(node("&gt;searchObjects", c), name, node("@&gt;objectfocus+&gt;variables/travelmembers", c));
-	break;
-	
-	case 4: //FR
-		object = nodefunction(node("&gt;searchObjects", c), name, node("@&gt;objectfocus+&gt;variables/fixedResourceBarriers", c));
-	break;
-}
-
-if (objectexists(object)) {
+if (objectexists(member)) {
 	treenode navigator = node("@&gt;objectfocus+", c);
-	function_s(navigator, "removeMember", object);
+	function_s(navigator, "removeMember", member);
 	nodefunction(node("../MembersList&gt;refresh",c));
 	repaintall();
 }
 </data></node>
-            <node f="442" dt="2"><name>searchObjects</name><data>string name = param(1);
-treenode members = param(2);
-
-for (int i = 1; i &lt;= content(members); i++) {
-	treenode object = ownerobject(tonode(get(rank(members, i))));
-	string objName = getname(object);
-	if (comparetext(name, objName)) {
-		return object;
-	}
-}
-return NULL;</data></node>
             <node f="42" dt="2"><name>tooltip</name><data>Remove the selected member</data></node>
             <node f="42" dt="2"><name>bitmap</name><data>buttons\remove.png</data></node>
            </data></node>
