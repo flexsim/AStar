@@ -919,7 +919,7 @@ void AStarNavigator::checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* travele
 		case 3: currCol = cell.col - distance; currRow = cell.row; break;
 		}
 
-		if(currRow >= 0 && currRow <= edgeTableYSize && currCol >= 0 && currCol <= edgeTableXSize)
+		if(currRow >= 0 && currRow < edgeTableYSize && currCol >= 0 && currCol < edgeTableXSize)
 			node = &DeRefEdgeTable(currRow, currCol);
 	}
 
