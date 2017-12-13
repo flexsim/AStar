@@ -133,11 +133,11 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 	bool isExitingBridge = bridgeData.bridge != nullptr;
 	if (isExitingBridge)
 		startLoc = te->getLocation(0.5, 0.5, 0);
-	else
+	else {
 		startLoc = nav->getLocFromCell(travelPath[startAtPathIndex].cell);
-
-	if (up(te->holder) != model())
-		startLoc = startLoc.project(model(), up(te->holder));
+		if (up(te->holder) != model())
+			startLoc = startLoc.project(model(), up(te->holder));
+	}
 
 	int kinFlags = 0;
 	double endTime;
@@ -548,8 +548,6 @@ void Traveler::onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell
 	if (shouldStop) {
 		updateLocation();
 		Vec3 pos = te->getLocation(0.5, 0.5, 0.0);
-		if (up(te->holder) != model())
-			pos = pos.project(model(), up(te->holder));
 		initkinematics(te->node_v_kinematics, pos.x, pos.y, te->b_spatialz, 0.0, 0.0, 0.0, 1, 0);
 
 		setstate(te->holder, STATE_BLOCKED);
