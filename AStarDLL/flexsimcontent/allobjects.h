@@ -2159,8 +2159,11 @@ public:
 	virtual const char* getClassFactory() {return "SimulationStartEvent";}
 	virtual void bind();
 	FS_CONTENT_DLL_FUNC static void addObject(FlexSimEventHandler* object);
+	FS_CONTENT_DLL_FUNC static void addPostResetObject(ObjectDataType* object);
+	FS_CONTENT_DLL_FUNC static void executePostReset();
 private:
 	std::vector<ObjRef<FlexSimEventHandler>> objects;
+	static std::vector<ObjRef<ObjectDataType>> postResetObjects;
 	static ObjRef<SimulationStartEvent> simulationStartEvent;
 };
 
@@ -3703,12 +3706,6 @@ TreeNode* node_v_importtable;
 #define v_importtable node_v_importtable->safedatafloat()[0]
 TreeNode* node_v_exporttable;
 #define v_exporttable node_v_exporttable->safedatafloat()[0]
-TreeNode* node_v_rowtemplate;
-#define v_rowtemplate node_v_rowtemplate->safedatafloat()[0]
-TreeNode* node_v_exporttemplate;
-#define v_exporttemplate node_v_exporttemplate->safedatafloat()[0]
-TreeNode* node_v_filetemplate;
-#define v_filetemplate node_v_filetemplate->safedatafloat()[0]
 TreeNode* node_v_sheet;
 TreeNode* node_v_tname;
 TreeNode* node_v_headerval;
@@ -4973,6 +4970,8 @@ FS_CONTENT_DLL_FUNC void getDataForTable(treenode tableRef, treenode destNode);
 
 FS_CONTENT_DLL_FUNC treenode getSettingsNode();
 
+FS_CONTENT_DLL_FUNC void onColorAssignment(const Variant& value, const Variant& color, int usedExistingColor);
+
 TreeNode* node_v_data;
 TreeNode* node_v_initialized;
 #define v_initialized node_v_initialized->safedatafloat()[0]
@@ -6152,6 +6151,8 @@ public:
 
 // c++ member functions
 
+FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+
 FS_CONTENT_DLL_FUNC double onReset();
 
 FS_CONTENT_DLL_FUNC  TaskExecuter();
@@ -6327,6 +6328,8 @@ TreeNode* node_v_availableonstart;
 #define v_availableonstart node_v_availableonstart->safedatafloat()[0]
 TreeNode* node_v_activetasksequence;
 #define v_activetasksequence node_v_activetasksequence->safedatafloat()[0]
+TreeNode* node_v_resetposition;
+#define v_resetposition node_v_resetposition->safedatafloat()[0]
 
 // c++ attributes
 double offsetloc[3] ;
@@ -6375,6 +6378,9 @@ FS_CONTENT_DLL_FUNC virtual double getEntryLoc(treenode involved,  double* retur
 
 FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
 
+TreeNode* node_v_activeRoles;
+#define v_activeRoles node_v_activeRoles->safedatafloat()[0]
+TreeNode* node_v_currentLocation;
 
 // System
 

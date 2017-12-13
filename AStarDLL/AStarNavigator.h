@@ -53,6 +53,7 @@ protected:
 	int yOffset;
 	float savedXOffset;
 	float savedYOffset;
+	double savedNodeWidth;
 	double directionChangePenalty;
 
 	// Drawing variables
@@ -60,15 +61,20 @@ protected:
 	Mesh barrierMesh;
 	Mesh gridMesh;
 	Mesh memberMesh;
-	bool isDirty;
+	bool isGridDirty = false;
+	bool isBoundsDirty = true;
+	bool isBarrierDirty = true;
+	bool isBoundsMeshBuilt = false;
+	bool isBarrierMeshBuilt = false;
+	bool isGridMeshBuilt = false;
 
 	inline AStarSearchEntry* expandOpenSet(int r, int c, float multiplier, int travelVal, char bridgeIndex = -1);
 	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold, bool setStartEntry);
-	void buildEdgeTable();
+	void checkBounds(TreeNode* theObj, Vec2& min, Vec2& max);
 	void buildBoundsMesh();
 	void buildBarrierMesh();
 	void drawMembers(float z);
-	void drawGrid(float z);
+	void buildGridMesh(float z);
 
 	static const int HEAT_MAP_TRAVERSALS_PER_TIME = 1;
 	static const int HEAT_MAP_BLOCKAGE_TIME_PER_TRAVERSAL = 2;
@@ -101,7 +107,9 @@ public:
 	double deepSearch;
 	double drawMode;
 	double showAllocations;
+	double showTravelThreshold;
 	void drawAllocations(float z);
+	void drawDestinationThreshold(TreeNode* destination, float z);
 
 	double ignoreDestBarrier;
 
@@ -109,8 +117,6 @@ public:
 	double pathCount;
 	double requestCount;
 	double cacheUseCount;
-
-	double hasEdgeTable;
 
 	double enableCollisionAvoidance;
 	double ignoreInactiveMemberCollisions;
@@ -171,8 +177,10 @@ public:
 	TreeNode* AStarNavigator::resolveTraveler();
 
 	void blockGridModelPos(const Vec3& modelPos);
+	void addObjectBarrierToTable(TreeNode* obj);
 
 	void setDirty();
+	void buildEdgeTable();
 
 	AStarCell getCellFromLoc(const Vec2& modelLoc);
 	Vec3 getLocFromCell(const AStarCell& cell) { return Vec3(gridOrigin.x + cell.col * nodeWidth, gridOrigin.y + cell.row * nodeWidth, 0.0);	}

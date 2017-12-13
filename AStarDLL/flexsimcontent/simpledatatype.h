@@ -1039,7 +1039,7 @@ template<class ObjType>
 	//@{
 	public:
 	static const int BIND_METHOD_STATIC = 0x2;
-	virtual bool isClassType(const char* className) { return false; }
+	virtual bool isClassType(const char* className) { const char* classFactory = getClassFactory(); return classFactory && strcmp(classFactory, className) == 0; }
 	virtual void bindInterface() {}
 #if !defined FLEXSIM_ENGINE_COMPILE || defined FLEXSIM_FLEXSCRIPT_CPP
 	private:
@@ -1534,7 +1534,7 @@ public:
 
 	void saveHeaders(TreeNode* table);
 	void restoreHeaders(TreeNode* table);
-	void resizeHeaders(TreeNode* table, int xSize, double dataType);
+	void resizeHeaders(TreeNode* table, int xSize, double dataType, int index = 0);
 	
 	int numCols() {	return (int)headers.size(); }
 

@@ -197,6 +197,7 @@ public:
 		double lastFulfillQty = 0.0;
 		double orderTime;
 		Variant puller;
+		NodeRef object;
 		int flags;
 		bool incrementalAllocation;
 		EntryRange range;
@@ -221,6 +222,8 @@ public:
 		int __getFlags() { return flags; }
 		void remove() { List::remove(holder); };
 		engine_export virtual void bindInterface();
+
+		operator treenode () { return holder; }
 	};
 
 	/// <summary>	A push result that is still being composed (as opposed to a push 
@@ -254,12 +257,6 @@ protected:
 	void cacheBackOrderIndices();
 	Variant push(const VariantParams& params);
 	static Variant curPuller;
-
-	class PartitionHash
-	{
-	public:
-		size_t operator() (const Variant& pullerKey) const;
-	};
 
 	class VariantKeyEqual
 	{
@@ -303,8 +300,8 @@ public:
 		Partition() {}
 		Partition(Variant partitionID, List* list) : id(partitionID), list(list) {}
 
-		std::unordered_map<Variant, Entry*, PartitionHash, VariantKeyEqual> entryMap;
-		std::unordered_map<Variant, BackOrder*, PartitionHash, VariantKeyEqual> backOrderMap;
+		std::unordered_map<Variant, Entry*, Variant::Hash, VariantKeyEqual> entryMap;
+		std::unordered_map<Variant, BackOrder*, Variant::Hash, VariantKeyEqual> backOrderMap;
 
 		typedef NodeListArray<BackOrder>::SdtSubNodeBindingType BackOrders;
 		BackOrders backOrders;
@@ -330,6 +327,7 @@ public:
 
 
 		PullResult pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, int flags);
+		PullResult pull(TreeNode* w, double requestNum, double requireNum, const Variant& puller, int flags);
 		Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, int flags, EntryRange* range = nullptr);
 		Variant calculateSelectClauseValue(int queryMatchIndex, int selectClauseRank, SqlQuery* q, List::OverflowTrackableValue* tracker);
 		/// <summary>	Gets the result from the last pull query. </summary>
@@ -351,7 +349,7 @@ public:
 		/// 									range. </param>
 		/// <returns>	The result. </returns>
 		Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool shouldRemoveEntries,
-			EntryRange& range, bool getEntryNodes, double& fulfillQty, double maxFulfillQty, EntryRange* innerRange = nullptr, bool isFirstFulfillment = true);
+			EntryRange& range, bool getEntryNodes, double& fulfillQty, double maxFulfillQty, EntryRange* innerRange = nullptr, bool isFirstFulfillment = true, TreeNode* matchNode = nullptr);
 
 		Variant push(const VariantParams& params);
 		Variant processPushedEntries(EntryRange& range, const Variant& involvedVal);
@@ -388,7 +386,7 @@ public:
 
 	NodeListArray<Partition>::SdtSubNodeBindingType partitions;
 	NodeListArray<Partition>::SdtSubNodeBindingType deadPartitions;
-	std::unordered_map<Variant, Partition*, PartitionHash, VariantKeyEqual> partitionMap;
+	std::unordered_map<Variant, Partition*, Variant::Hash, VariantKeyEqual> partitionMap;
 	
 	double uniqueValues;
 	double uniquePullers;
@@ -462,6 +460,7 @@ public:
 	engine_export TreeNode* fieldResolver(const Variant& fieldID);
 	engine_export int getFieldPossibilities(TreeNode* dest, const Variant& p1, const Variant& p2);
 	engine_export virtual void onReset();
+	engine_export virtual void onPostReset();
 	void removeBadInitialContents();
 	void initializeFields();
 	void addInitialContents();
@@ -512,7 +511,7 @@ public:
 	/// <returns>	The last push marker. </returns>
 	engine_export int getLastPushMarker() { return lastPushMarker; }
 	engine_export PullResult pull(const char* sqlQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
-	engine_export PullResult pull(TreeNode* cachedQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
+	engine_export PullResult pull(TreeNode* what, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
 	Variant legacyPull(const char* sqlQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0)
 	{
 		return pull(sqlQuery, requestNum, requireNum, puller, partitionID, flags);

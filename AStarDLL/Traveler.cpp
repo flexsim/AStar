@@ -168,7 +168,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 	AStarPathEntry e, laste;
 	int numNodes = travelPath.size();
 	laste = travelPath[startAtPathIndex];
-	bool enableCollisionAvoidance = nav->enableCollisionAvoidance;
+	bool enableCollisionAvoidance = nav->enableCollisionAvoidance && !isDistQueryOnly;
 
 	cullExpiredAllocations();
 

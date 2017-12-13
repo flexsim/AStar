@@ -49,6 +49,7 @@
         <node f="42" dt="1"><name>maxHeatValue</name><data>9999999a3fb99999</data></node>
         <node f="42" dt="1"><name>collisionUpdateIntervalFactor</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>ignoreInactiveMemberCollisions</name><data>000000003ff00000</data></node>
+        <node f="42" dt="1"><name>showTravelThreshold</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node>
@@ -62,6 +63,7 @@
          <node f="1000042" dt="2"><name>getPathWeight</name><data>dll:"module:AStar" func:"PreferredPath_getWeight"</data></node>
          <node f="1000042" dt="2"><name>getPointCoord</name><data>dll:"module:AStar" func:"Barrier_getPointCoord"</data></node>
          <node f="1000042" dt="2"><name>rebuildMeshes</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildMeshes"</data></node>
+         <node f="1000042" dt="2"><name>rebuildEdgeTable</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildEdgeTable"</data></node>
          <node f="1000042" dt="2"><name>removeBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_removeBarrier"</data></node>
          <node f="1000042" dt="2"><name>removeMember</name><data>dll:"module:AStar" func:"AStarNavigator_removeMember"</data></node>
          <node f="1000042" dt="2"><name>removePoint</name><data>dll:"module:AStar" func:"Barrier_removePoint"</data></node>
@@ -78,6 +80,7 @@
          <node f="1000042" dt="2"><name>blockGridModelPos</name><data>dll:"module:AStar" func:"AStarNavigator_blockGridModelPos"</data></node>
          <node f="1000042" dt="2"><name>dumpBlockageData</name><data>dll:"module:AStar" func:"AStarNavigator_dumpBlockageData"</data></node>
          <node f="1000042" dt="2"><name>addCopiedMember</name><data>dll:"module:AStar" func:"AStarNavigator_addMember"</data></node>
+         <node f="1000042" dt="2"><name>addObjectBarrierToTable</name><data>dll:"module:AStar" func:"AStarNavigator_addObjectBarrierToTable"</data></node>
         </node>
         <node f="42"><name>cppfunctions</name>
          <node f="40"><name></name></node></node>
@@ -608,18 +611,12 @@ repaintview(c);</data></node>
         <node f="42" dt="2"><name>OnPreOpen</name><data>standardpreopen(c);
 </data>
          <node f="40"><name></name></node></node>
-        <node f="42" dt="2"><name>OnClose</name><data></data>
-         <node f="40" dt="7"><name></name><data/>
-          <node f="40"><name></name></node>
-          <node f="42" dt="2"><name>sdt::attributetree</name><data>FlexScriptCode</data>
-           <node f="40"><name></name></node></node>
-         </node></node>
+        <node f="42" dt="2"><name>OnClose</name><data></data></node>
         <node f="442" dt="2"><name>OnApply</name><data>treenode tabcontrol = node("../tabcontrol",c);
 iterate(1, content(tabcontrol), 1){
   if (objectexists(node("&gt;PageOnApply",rank(tabcontrol,count))))
      nodefunction(node("&gt;PageOnApply",rank(tabcontrol,count)));
-}
-</data></node>
+}</data></node>
        </data>
         <node f="40"><name></name></node>
         <node f="42" dt="4"><name>overlay</name><data>
@@ -725,17 +722,10 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
             <node f="40"><name></name></node>
             <node f="42" dt="2"><name>valuetype</name><data>distance</data></node>
             <node f="42" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
-            <node f="42" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
+            <node f="42" dt="1"><name>ishotlink</name><data>0000000000000000</data></node>
             <node f="42" dt="1"><name>step</name><data>9999999a3fb99999</data></node>
             <node f="42" dt="1"><name>conversion</name><data>0000000000000000</data></node>
-            <node f="442" dt="2"><name>OnKillFocus</name><data>treenode parent = ownerobject(c);
-if (stringtonum(getviewtext(node("/EditValue", parent))) &lt;= 0.1) {
-	setviewtext(node("/EditValue", parent), "0.1");
-	set(node("&gt;objectfocus+", parent), 0.1);
-}
-
-function_s(node("@&gt;objectfocus+", c), "rebuildMeshes");
-repaintall();</data></node>
+            <node f="42" dt="1"><name>rangemin</name><data>9999999a3fb99999</data></node>
            </node>
           </data>
            <node f="40"><name></name></node></node>
@@ -972,12 +962,7 @@ forobjectsbehind (c)
 		double utilization = useCount / requestCount * 100;
 		setviewtext(c, concat(numtostring(utilization), " %"));
 	}
-}</data>
-             <node f="40" dt="7"><name></name><data/>
-              <node f="40"><name></name></node>
-              <node f="42" dt="2"><name>sdt::attributetree</name><data>FlexScriptCode</data>
-               <node f="40"><name></name></node></node>
-             </node></node>
+}</data></node>
             <node f="42"><name>style</name>
              <node f="40"><name></name></node>
              <node f="42"><name>ES_READONLY</name></node>
@@ -1115,55 +1100,18 @@ repaintall();</data></node>
             <node f="42" dt="1"><name>spatialy</name><data>00000000404d8000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-            <node f="42" dt="2"><name>OnPress</name><data>treenode membersList = node("../MembersList", c);
-int index = get(itemcurrent(membersList));
-if (index == 0)
-	return 0;
-	
-string name = getname(rank(items(membersList), index));
+          <node f="42" dt="2"><name>OnPress</name><data>treenode list = node("../MembersList", c);
+string path = getname(rank(items(list), get(itemcurrent(list))));
 
+treenode member = node(path, model());
 
-int list = get(itemcurrent(node("../MemberChooser", c)));
-treenode object = NULL;
-
-switch (list) {
-	case 1: //ALL
-		object = nodefunction(node("&gt;searchObjects", c), name, node("@&gt;objectfocus+&gt;variables/activetravelmembers", c));
-		if (!object) object = nodefunction(node("&gt;searchObjects", c), name, node("@&gt;objectfocus+&gt;variables/travelmembers", c));
-		if (!object) object = nodefunction(node("&gt;searchObjects", c), name, node("@&gt;objectfocus+&gt;variables/fixedResourceBarriers", c));
-	break;
-	
-	case 2: //ACTIVE
-		object = nodefunction(node("&gt;searchObjects", c), name, node("@&gt;objectfocus+&gt;variables/activetravelmembers", c));
-	break;
-	
-	case 3: //INACTIVE
-		object = nodefunction(node("&gt;searchObjects", c), name, node("@&gt;objectfocus+&gt;variables/travelmembers", c));
-	break;
-	
-	case 4: //FR
-		object = nodefunction(node("&gt;searchObjects", c), name, node("@&gt;objectfocus+&gt;variables/fixedResourceBarriers", c));
-	break;
-}
-
-if (objectexists(object)) {
+if (objectexists(member)) {
 	treenode navigator = node("@&gt;objectfocus+", c);
-	function_s(navigator, "removeMember", object);
+	function_s(navigator, "removeMember", member);
 	nodefunction(node("../MembersList&gt;refresh",c));
 	repaintall();
 }
 </data></node>
-            <node f="442" dt="2"><name>searchObjects</name><data>string name = param(1);
-treenode members = param(2);
-
-for (int i = 1; i &lt;= content(members); i++) {
-	treenode object = ownerobject(tonode(get(rank(members, i))));
-	string objName = getname(object);
-	if (comparetext(name, objName)) {
-		return object;
-	}
-}
-return NULL;</data></node>
             <node f="42" dt="2"><name>tooltip</name><data>Remove the selected member</data></node>
             <node f="42" dt="2"><name>bitmap</name><data>buttons\remove.png</data></node>
            </data></node>
@@ -1378,6 +1326,17 @@ bright red, in the heat map.</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/transparentBaseColor</data></node>
            <node f="42" dt="2"><name>windowtitle</name><data>Transparent Base Color</data></node>
           </data></node>
+          <node f="42" dt="4"><name>Show Travel Threshold</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040704000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040690000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to display the nodes around the highlighted object where
+a traveller could end their travel to the object</data></node>
+           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/showTravelThreshold</data></node>
+          </data></node>
          </node>
          <node f="42" dt="4"><name>Barriers</name><data>
           <node f="40"><name>object</name></node>
@@ -1573,12 +1532,7 @@ if (!eventdata) {
 	}
 } else {
 	return 0;
-}*/</data>
-             <node f="40" dt="7"><name></name><data/>
-              <node f="40"><name></name></node>
-              <node f="42" dt="2"><name>sdt::attributetree</name><data>FlexScriptCode</data>
-               <node f="40"><name></name></node></node>
-             </node></node>
+}*/</data></node>
             <node f="42" dt="2"><name>OnMouseWheel</name><data>treenode TheTable = ownerobject(c);
 
 double vert_nMin = scrollinfo(TheTable,0,1,1);
@@ -2034,12 +1988,7 @@ if (objectexists(focus)) {
 	} else {
 		setviewtext(c, getname(focus));
 	}
-}</data>
-              <node f="40" dt="7"><name></name><data/>
-               <node f="40"><name></name></node>
-               <node f="42" dt="2"><name>sdt::attributetree</name><data>FlexScriptCode</data>
-                <node f="40"><name></name></node></node>
-              </node></node>
+}</data></node>
             </data></node>
             <node f="42" dt="4"><name>PathWeight</name><data>
              <node f="40"><name>object</name></node>
@@ -2357,12 +2306,7 @@ if (!eventdata) {
 		function_s(astarNavigator, "rebuildMeshes");
 		repaintall();
 	}	
-}</data>
-               <node f="40" dt="7"><name></name><data/>
-                <node f="40"><name></name></node>
-                <node f="42" dt="2"><name>sdt::attributetree</name><data>FlexScriptCode</data>
-                 <node f="40"><name></name></node></node>
-               </node></node>
+}</data></node>
               <node f="42" dt="2"><name>OnKeyUp</name><data>#define VK_RETURN 13
 if (lastkeydown() == VK_RETURN) {
 	applylinks(c);
@@ -2497,12 +2441,7 @@ if (eventdata) {
 	applylinks(node("/X/editSX/EditValue", c), 1);
 	applylinks(node("/Y/editY/EditValue", c), 1);
 	applylinks(node("/Y/editSY/EditValue", c), 1);
-}</data>
-              <node f="40" dt="7"><name></name><data/>
-               <node f="40"><name></name></node>
-               <node f="42" dt="2"><name>sdt::attributetree</name><data>FlexScriptCode</data>
-                <node f="40"><name></name></node></node>
-              </node></node>
+}</data></node>
              <node f="42"><name>variables</name>
               <node f="40"><name></name></node>
               <node f="42" dt="1"><name>posx</name><data>0000000000000000</data></node>
