@@ -213,6 +213,15 @@ double AStarNavigator::onDraw(TreeNode* view)
 	int drawMode = (int)this->drawMode;
 	if (drawMode == 0 && (showHeatMap == 0 || heatMapMode == 0) && showAllocations == 0 && showTravelThreshold == 0)
 		return 0;
+	
+	// Show the activeBarrier if the AStarNavigator is highlighted
+	if (objectexists(activeBarrier)) {
+		bool showActiveBarrier = selectedobject(view) == this->holder;
+		Barrier* b = activeBarrier->objectAs(Barrier);
+		b->isActive = showActiveBarrier;
+		if (showActiveBarrier != isActiveBarrierBuilt)
+			isBarrierDirty = true;
+	}
 
 	double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 	if (isGridDirty) {
@@ -232,6 +241,14 @@ double AStarNavigator::onDraw(TreeNode* view)
 			buildBarrierMesh();
 		if (isBarrierMeshBuilt)
 			isBarrierDirty = false;
+	}
+
+	// Save if the active barrier is built in the barrier mesh
+	if (objectexists(activeBarrier)) {
+		Barrier* b = activeBarrier->objectAs(Barrier);
+		b->isActive = 1;
+		if (isBarrierMeshBuilt)
+			isActiveBarrierBuilt = selectedobject(view) == this->holder;
 	}
 
 	fglDisable(GL_TEXTURE_2D);
