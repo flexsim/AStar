@@ -250,6 +250,8 @@ double AStarNavigator::onDraw(TreeNode* view)
 		if (isBarrierMeshBuilt)
 			isActiveBarrierBuilt = selectedobject(view) == this->holder;
 	}
+	else
+		isActiveBarrierBuilt = false;
 
 	fglDisable(GL_TEXTURE_2D);
 	fglDisable(GL_LIGHTING);
