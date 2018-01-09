@@ -183,53 +183,31 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 
 double Barrier::onClick(treenode view, int clickCode, double x, double y)
 {
-	if (clickCode == LEFT_PRESS) {
-		Point* bottomLeft = pointList[0];
-		Point* topRight = pointList[1];
+	Point* activePoint = pointList[(int)activePointIndex];
+	Point* bottomLeft = pointList[0];
+	Point* topRight = pointList[1];
 
-		// Fix the points
-		if (bottomLeft->x > topRight->x) {
-			double bottomLeftX = bottomLeft->x;
-			bottomLeft->x = topRight->x;
-			topRight->x = bottomLeftX;
-		}
-		if (bottomLeft->y > topRight->y) {
-			double bottomLeftY = bottomLeft->y;
-			bottomLeft->y = topRight->y;
-			topRight->y = bottomLeftY;
-		}
-
-		// If creating, don't try to change the active node or the mode
+	if (clickCode == LEFT_RELEASE) {
 		if (mode & BARRIER_MODE_CREATE) {
-			Point* bottomLeft = pointList[0];
-			Point* topRight = pointList[1];
-			Point* activePoint = pointList[(int)activePointIndex];
-			double width = topRight->x - bottomLeft->x;
-			double height = topRight->y - bottomLeft->y;
-
-			// Enforce a minimum size
-			if (width < nodeWidth) {
-				if (activePoint == bottomLeft) {
-					activePoint->x = topRight->x - nodeWidth;
-				}
-				else {
-					activePoint->x = bottomLeft->x + nodeWidth;
-				}
-			}
-
-			if (height < nodeWidth) {
-				if (activePoint == bottomLeft) {
-					activePoint->y = topRight->y - nodeWidth;
-				}
-				else {
-					activePoint->y = bottomLeft->y + nodeWidth;
-				}
-			}
-
-			o(AStarNavigator, ownerobject(holder)).addCreateRecord(view, this);
-			return 0;
+			// Set activePoint to current mouse position
+			activePoint->x = x;
+			activePoint->y = y;
 		}
+	}
 
+	// Fix the points
+	if (bottomLeft->x > topRight->x) {
+		double bottomLeftX = bottomLeft->x;
+		bottomLeft->x = topRight->x;
+		topRight->x = bottomLeftX;
+	}
+	if (bottomLeft->y > topRight->y) {
+		double bottomLeftY = bottomLeft->y;
+		bottomLeft->y = topRight->y;
+		topRight->y = bottomLeftY;
+	}
+
+	if (clickCode == LEFT_PRESS && !(mode & BARRIER_MODE_CREATE)) {
 		for (int i = 0; i < pointList.size(); i++) {
 			applicationcommand("addundotracking", view, node("x", pointList[i]->holder));
 			applicationcommand("addundotracking", view, node("y", pointList[i]->holder));
@@ -328,6 +306,31 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 
 	if (clickCode == LEFT_RELEASE) {
 		if (mode & BARRIER_MODE_POINT_EDIT) {
+			double width = topRight->x - bottomLeft->x;
+			double height = topRight->y - bottomLeft->y;
+
+			// Enforce a minimum size
+			if (width < nodeWidth) {
+				if (activePoint == bottomLeft) {
+					activePoint->x = topRight->x - nodeWidth;
+				}
+				else {
+					activePoint->x = bottomLeft->x + nodeWidth;
+				}
+			}
+			if (height < nodeWidth) {
+				if (activePoint == bottomLeft) {
+					activePoint->y = topRight->y - nodeWidth;
+				}
+				else {
+					activePoint->y = bottomLeft->y + nodeWidth;
+				}
+			}
+
+			// After creating
+			if (mode & BARRIER_MODE_CREATE)
+				o(AStarNavigator, ownerobject(holder)).addCreateRecord(view, this);
+		
 			activePointIndex = 0;
 			mode = 0;
 			arrow = 0;
@@ -356,8 +359,7 @@ double Barrier::onMouseMove(const Vec3& pos, const Vec3& diff)
 			activePoint->y += diff.y;
 		}
 	}
-
-	if (mode & BARRIER_MODE_MOVE) {
+	else if (mode & BARRIER_MODE_MOVE) {
 		if (mode & BARRIER_MODE_CREATE) {
 			mode = BARRIER_MODE_MOVE;
 			modeleditmode(0);

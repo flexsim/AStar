@@ -186,7 +186,7 @@
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/One-Way Divider</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Divider</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -280,10 +280,14 @@ if (clickCode == LEFT_PRESS) {
 
 if (clickCode == LEFT_RELEASE) {
 	setvarnum(c, "dragging", 0);
-	if (mode == EDITMODE_SOLID_BARRIER &amp;&amp; getvarnum(c, "creating")) {
-		setvarnum(c, "creating", 0);
-		setvarnum(c, "editing", 1);
-		function_s(activeNavigator, "setBarrierMode", currBarrierNode, 0); //So the barrier isn't deleted on right click
+	if (getvarnum(c, "creating")) {
+		if(mode == EDITMODE_SOLID_BARRIER) {
+			setvarnum(c, "creating", 0);
+			setvarnum(c, "editing", 1);
+		}
+		treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
+		if (!objectexists(secondary))
+			function_s(activeNavigator, "onClick", activedocumentnode(), LEFT_RELEASE, mouseX, mouseY);
 	}
 }</data></node>
         <node f="442" dt="2"><name>OnMouseMove</name><data>if (!objectexists(i))
@@ -562,13 +566,13 @@ return asn;
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
        </data></node>
-       <node f="42" dt="4"><name>Divider</name><data>
+       <node f="10000042" dt="4"><name>Divider</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Divider")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\divider.bmp</data></node>
        </data></node>
-       <node f="10000042" dt="4"><name>One-Way Divider</name><data>
+       <node f="42" dt="4"><name>One-Way Divider</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::OneWayDivider")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>

@@ -247,7 +247,6 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 double Divider::onClick(treenode view, int clickCode, double x, double y)
 {
 	if (clickCode == LEFT_PRESS) {
-
 		// If creating, don't try to change the active node or the mode
 		if (mode & BARRIER_MODE_CREATE) {
 			if (modeleditmode(-1) == 0) {
@@ -314,61 +313,19 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 
 double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 {
-	if (mode & BARRIER_MODE_MOVE) {
+	if (mode & BARRIER_MODE_POINT_EDIT) {
+		Point* activePoint = pointList[(int)activePointIndex];
+		activePoint->x += diff.x;
+		activePoint->y += diff.y;
+		if (toBridge())
+			activePoint->z += diff.z;
+	}
+	else if (mode & BARRIER_MODE_MOVE) {
 		for (int i = 0; i < pointList.size(); i++) {
 			pointList[i]->x += diff.x;
 			pointList[i]->y += diff.y;
 			if (toBridge())
 				pointList[i]->z += diff.z;
-		}
-	}
-
-	if (mode & BARRIER_MODE_POINT_EDIT) {
-		Point* activePoint = pointList[(int)activePointIndex];
-		if (toBridge() && (activePoint->z != 0 || diff.z != 0)) {
-			activePoint->x += diff.x;
-			activePoint->y += diff.y;
-			activePoint->z += diff.z;
-		} else {
-			activePoint->x = pos.x;
-			activePoint->y = pos.y;
-		}
-
-		double radius = nodeWidth * 0.6;
-		double x, y;
-		getPointCoords(activePointIndex, x, y);
-		// Don't get closer than nodeWidth to a neighbor
-		// Most nodes have a lesser neighbor
-		if (activePointIndex > 0) {
-			int prevIndex = (int)activePointIndex - 1;
-			Point* prev = pointList[prevIndex];
-			double prevX, prevY;
-			getPointCoords(prevIndex, prevX, prevY);
-
-			double dx = x - prevX;
-			double dy = y - prevY;
-			if (sqrt(dx * dx + dy * dy) < radius) {
-				double theta = atan2(dy, dx);
-				x = prevX + cos(theta) * radius;
-				y = prevY + sin(theta) * radius;
-				setPointCoords(activePointIndex, x, y);
-			}
-		}
-
-		if (activePointIndex < pointList.size() - 1) {
-			int nextIndex = (int)activePointIndex + 1;
-			Point* next = pointList[nextIndex];
-			double nextX, nextY;
-			getPointCoords(nextIndex, nextX, nextY);
-
-			double dx = x - nextX;
-			double dy = y - nextY;
-			if (sqrt(dx * dx + dy * dy) < radius) {
-				double theta = atan2(dy, dx);
-				x = nextX + cos(theta) * radius;
-				y = nextY + sin(theta) * radius;
-				setPointCoords(activePointIndex, x, y);
-			}
 		}
 	}
 

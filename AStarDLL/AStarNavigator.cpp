@@ -2102,6 +2102,7 @@ ASTAR_FUNCTION Variant AStarNavigator_onClick(FLEXSIMINTERFACE)
 	if (objectexists(a->activeBarrier)) {
 		Barrier* b = a->activeBarrier->objectAs(Barrier);
 		b->onClick(param(1), (int)param(2), param(3), param(4));
+		a->setDirty();
 	}
 	return 1;
 }
