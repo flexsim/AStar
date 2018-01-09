@@ -132,26 +132,23 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 		black[2] += 0.2f;
 	}
 
-	float scale = 0.1 * (height + width);
-	
-	Vec3f right[3] = {
-		Vec3f(xmax, ymin + height *0.5f + 0.25f * scale, z),
-		Vec3f(xmax, ymin + height *0.5f - 0.25f * scale, z),
-		Vec3f(xmax + 0.5f * scale, ymin + height *0.5f, z)
-	};
+	float scale = max(this->nodeWidth, 0.15 * max(height, width));
 
 	Vec3f left[3] = {
 		Vec3f(xmin, ymin + height *0.5f + 0.25f * scale, z),
 		Vec3f(xmin, ymin + height *0.5f - 0.25f * scale, z),
 		Vec3f(xmin - 0.5f * scale, ymin + height *0.5f, z)
 	};
-
+	Vec3f right[3] = {
+		Vec3f(xmax, ymin + height *0.5f + 0.25f * scale, z),
+		Vec3f(xmax, ymin + height *0.5f - 0.25f * scale, z),
+		Vec3f(xmax + 0.5f * scale, ymin + height *0.5f, z)
+	};
 	Vec3f top[3] = {
 		Vec3f(xmin + width * 0.5f - 0.25f * scale, ymax, z),
 		Vec3f(xmin + width * 0.5f + 0.25f * scale, ymax, z),
 		Vec3f(xmin + width * 0.5f, ymax + 0.5f * scale, z)
 	};
-
 	Vec3f bottom[3] = {
 		Vec3f(xmin + width * 0.5f - 0.25f * scale, ymin, z),
 		Vec3f(xmin + width * 0.5f + 0.25f * scale, ymin, z),
@@ -187,9 +184,48 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 double Barrier::onClick(treenode view, int clickCode, double x, double y)
 {
 	if (clickCode == LEFT_PRESS) {
+		Point* bottomLeft = pointList[0];
+		Point* topRight = pointList[1];
+
+		// Fix the points
+		if (bottomLeft->x > topRight->x) {
+			double bottomLeftX = bottomLeft->x;
+			bottomLeft->x = topRight->x;
+			topRight->x = bottomLeftX;
+		}
+		if (bottomLeft->y > topRight->y) {
+			double bottomLeftY = bottomLeft->y;
+			bottomLeft->y = topRight->y;
+			topRight->y = bottomLeftY;
+		}
 
 		// If creating, don't try to change the active node or the mode
 		if (mode & BARRIER_MODE_CREATE) {
+			Point* bottomLeft = pointList[0];
+			Point* topRight = pointList[1];
+			Point* activePoint = pointList[(int)activePointIndex];
+			double width = topRight->x - bottomLeft->x;
+			double height = topRight->y - bottomLeft->y;
+
+			// Enforce a minimum size
+			if (width < nodeWidth) {
+				if (activePoint == bottomLeft) {
+					activePoint->x = topRight->x - nodeWidth;
+				}
+				else {
+					activePoint->x = bottomLeft->x + nodeWidth;
+				}
+			}
+
+			if (height < nodeWidth) {
+				if (activePoint == bottomLeft) {
+					activePoint->y = topRight->y - nodeWidth;
+				}
+				else {
+					activePoint->y = bottomLeft->y + nodeWidth;
+				}
+			}
+
 			o(AStarNavigator, ownerobject(holder)).addCreateRecord(view, this);
 			return 0;
 		}
@@ -199,30 +235,87 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 			applicationcommand("addundotracking", view, node("y", pointList[i]->holder));
 		}
 
+		double z = 0;
 		double xmin, ymin, xmax, ymax;
 		if (!getBoundingBox(xmin, ymin, xmax, ymax))
 			return 0;
 
+		double width = xmax - xmin;
+		double height = ymax - ymin;
+
+		float scale = max(this->nodeWidth, 0.15 * max(height, width));
+
+		Vec3f left[3] = {
+			Vec3f(xmin, ymin + height *0.5f + 0.25f * scale, z),
+			Vec3f(xmin, ymin + height *0.5f - 0.25f * scale, z),
+			Vec3f(xmin - 0.5f * scale, ymin + height *0.5f, z)
+		};
+		Vec3f right[3] = {
+			Vec3f(xmax, ymin + height *0.5f + 0.25f * scale, z),
+			Vec3f(xmax, ymin + height *0.5f - 0.25f * scale, z),
+			Vec3f(xmax + 0.5f * scale, ymin + height *0.5f, z)
+		};
+		Vec3f top[3] = {
+			Vec3f(xmin + width * 0.5f - 0.25f * scale, ymax, z),
+			Vec3f(xmin + width * 0.5f + 0.25f * scale, ymax, z),
+			Vec3f(xmin + width * 0.5f, ymax + 0.5f * scale, z)
+		};
+		Vec3f bottom[3] = {
+			Vec3f(xmin + width * 0.5f - 0.25f * scale, ymin, z),
+			Vec3f(xmin + width * 0.5f + 0.25f * scale, ymin, z),
+			Vec3f(xmin + width * 0.5f, ymin - 0.5f * scale, z)
+		};
+		
+		auto PointInTriangle = [](Vec3f P, Vec3f A, Vec3f B, Vec3f C) {
+			// Prepare our barycentric variables
+			Vec3f u = B - A;
+			Vec3f v = C - A;
+			Vec3f w = P - A;
+
+			Vec3f vCrossW = v.cross(w);
+			Vec3f vCrossU = v.cross(u);
+
+			// Test sign of r
+			if (vCrossW.dot(vCrossU) < 0)
+				return false;
+
+			Vec3f uCrossW = u.cross(w);
+			Vec3f uCrossV = u.cross(v);
+
+			// Test sign of t
+			if (uCrossW.dot(uCrossV) < 0)
+				return false;
+
+			// At this point, we know that r and t and both > 0.
+			// Therefore, as long as their sum is <= 1, each must be less <= 1
+			float denom = uCrossV.getLength();
+			float r = vCrossW.getLength() / denom;
+			float t = uCrossW.getLength() / denom;
+
+			return (r + t <= 1);
+		};
+
+		Vec3f point = Vec3f(x, y, 0);
 		// Left Arrow
-		if (x < xmin) {
+		if (PointInTriangle(point, left[0], left[1], left[2])) {
 			activePointIndex = 0;
 			mode = BARRIER_MODE_POINT_EDIT;
 			arrow = 1;
 		
 		// Right Arrow
-		} else if (x > xmax) {
+		} else if (PointInTriangle(point, right[0], right[1], right[2])) {
 			activePointIndex = 1;
 			mode = BARRIER_MODE_POINT_EDIT;
 			arrow = 2;
 		
 		// Top Arrow
-		} else if (y > ymax) {
+		} else if (PointInTriangle(point, top[0], top[1], top[2])) {
 			activePointIndex = 1;
 			mode = BARRIER_MODE_POINT_EDIT;
 			arrow = 3;
 		
 		// Bottom Arrow
-		} else if (y < ymin) {
+		} else if (PointInTriangle(point, bottom[0], bottom[1], bottom[2])) {
 			activePointIndex = 0;
 			mode = BARRIER_MODE_POINT_EDIT;
 			arrow = 4;
@@ -257,31 +350,10 @@ double Barrier::onMouseMove(const Vec3& pos, const Vec3& diff)
 		Point* activePoint = pointList[(int)activePointIndex];
 
 		if (arrow <= 2) {
-			activePoint->x = pos.x + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
+			activePoint->x += diff.x;
 		}
 		if (arrow == 0 || arrow > 2) {
-			activePoint->y = pos.y + 0.2 * nodeWidth * (activePointIndex ? 1 : -1);
-		}
-
-		Point* bottomLeft = pointList[0];
-		Point* topRight = pointList[1];
-		double width = topRight->x - bottomLeft->x;
-		double height = topRight->y - bottomLeft->y;
-
-		if (width < nodeWidth) {
-			if (activePoint == bottomLeft) {
-				activePoint->x = topRight->x - nodeWidth;
-			} else {
-				activePoint->x = bottomLeft->x + nodeWidth;
-			}
-		}
-
-		if (height < nodeWidth) {
-			if (activePoint == bottomLeft) {
-				activePoint->y = topRight->y - nodeWidth;
-			} else {
-				activePoint->y = bottomLeft->y + nodeWidth;
-			}
+			activePoint->y += diff.y;
 		}
 	}
 
