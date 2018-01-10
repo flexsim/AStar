@@ -252,9 +252,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 	}
 	else if (isBarrierMeshBuilt)
 		isActiveBarrierBuilt = false;
-
-	fglDisable(GL_TEXTURE_2D);
-	fglDisable(GL_LIGHTING);
 	
 	double loc[3];
 	vectorproject(holder, 0, 0, 0, model(), loc);
@@ -264,6 +261,9 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 	int pickingmode = getpickingmode(view);
 	if (!pickingmode) {
+		fglDisable(GL_TEXTURE_2D);
+		fglDisable(GL_LIGHTING);
+
 		if (isGridMeshBuilt && (drawMode & ASTAR_DRAW_MODE_GRID))
 			gridMesh.draw(GL_LINES);
 
@@ -272,6 +272,9 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		if (isBarrierMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BARRIERS))
 			barrierMesh.draw(GL_TRIANGLES);
+
+		fglEnable(GL_TEXTURE_2D);
+		fglEnable(GL_LIGHTING);
 
 		if (showHeatMap != 0 && heatMapMode != 0)
 			drawHeatMap(0.01f / lengthMultiple, view);
@@ -285,6 +288,8 @@ double AStarNavigator::onDraw(TreeNode* view)
 		if (showTravelThreshold)
 			drawDestinationThreshold(selectedobject(view), 0.04f / lengthMultiple);
 	} else {
+		fglDisable(GL_TEXTURE_2D);
+		fglDisable(GL_LIGHTING);
 
 		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
 			for(int i = 0; i < barrierList.size(); i++) {
@@ -303,9 +308,11 @@ double AStarNavigator::onDraw(TreeNode* view)
 			setpickingdrawfocus(view, holder, PICK_TYPE_BOUNDS);
 			boundsMesh.draw(GL_TRIANGLES);
 		}
+
+		fglEnable(GL_TEXTURE_2D);
+		fglEnable(GL_LIGHTING);
 	}
-	fglEnable(GL_TEXTURE_2D);
-	fglEnable(GL_LIGHTING);
+	
 	return 0;
 }
 
@@ -1638,7 +1645,11 @@ void AStarNavigator::drawMembers(float z)
 #undef ABT
 #undef ABV
 
+	fglDisable(GL_LIGHTING);
+	fglDisable(GL_TEXTURE_2D);
 	memberMesh.draw(GL_TRIANGLES);
+	fglEnable(GL_LIGHTING);
+	fglEnable(GL_TEXTURE_2D);
 }
 
 void AStarNavigator::buildGridMesh(float z)
