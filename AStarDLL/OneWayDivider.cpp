@@ -119,15 +119,22 @@ void OneWayDivider::addBarriersToTable(AStarNavigator* nav)
 
 void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 {
-	float dark[4] = {0.4f, 0.4f, 0.4f, 1.0f};
-	float light[4] = {0.0, 1.0f, 0.0f, 1.0f};
-	float highlight[4] = {0.3f, 0.3f, 0.3f, 1.0f};
-	if (isActive) {
-		dark[0] += 0.2f;
-		dark[1] += 0.2f;
-		dark[2] += 0.2f;
-		light[0] += 0.2f;
-		light[2] += 0.2f;
+	float green[4] = { 0.2f, 1.0f, 0.2f, 1.0f };
+	float lightGray[4] = { 0.6f, 0.6f, 0.6f, 1.0f };
+	float darkGray[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	if (!isActive) {
+		green[0] = 0.0f;
+		green[2] = 0.0f;
+		lightGray[0] = 0.4f;
+		lightGray[1] = 0.4f;
+		lightGray[2] = 0.4f;
+		darkGray[0] = 0.4f;
+		darkGray[1] = 0.4f;
+		darkGray[2] = 0.4f;
+		black[0] = 0.4f;
+		black[1] = 0.4f;
+		black[2] = 0.4f;
 	}
 	nrVerts = 0;
 	meshOffset = barrierMesh->numVerts;
@@ -135,11 +142,11 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 	// Add circles at each node
 	const float TWO_PI = 2 * 3.1415926536f;
 	int numSides = 20;
-	float radius = nodeWidth * 0.3;
+	float radius = nodeWidth * 0.15;
 	float dTheta = TWO_PI / numSides;
 
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = {pointList[i]->x, pointList[i]->y, z};
+		float center[3] = {pointList[i]->x, pointList[i]->y, z + 0.01};
 
 		// For each side, draw a triangle
 		for (int j = 0; j < numSides - 1; j++) {
@@ -162,9 +169,9 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 			barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
 		}
 
-			ABV(center, dark, highlight);
-			ABV(pos1, dark, highlight);
-			ABV(pos2, dark, highlight);
+			ABV(center, darkGray, black);
+			ABV(pos1, darkGray, black);
+			ABV(pos2, darkGray, black);
 
 		}
 
@@ -172,15 +179,15 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 		float lastTheta = (numSides - 1) * dTheta;
 		float pos2[3] = {radius + center[0], center[1], z};
 		float pos1[3] = {radius * cos(lastTheta) + center[0], radius * sin(lastTheta) + center[1], z};
-		ABV(center, dark, highlight);
-		ABV(pos1, dark, highlight);
-		ABV(pos2, dark, highlight);
+		ABV(center, darkGray, black);
+		ABV(pos1, darkGray, black);
+		ABV(pos2, darkGray, black);
 	}
 #undef ABV
 	// Draw alternating light and dark triangles
 
 	float maxTriangleWidth = 2 * nodeWidth;
-	float distToRect = 0.4 * nodeWidth;
+	float distToRect = 0;// 0.4 * nodeWidth;
 	float distToCorner = sqrt(distToRect * distToRect + radius * radius);
 	float height = 2 * radius;
 	dTheta = atan2(radius, distToRect);
@@ -243,7 +250,7 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 			// Set the points for next round
 			if (j % 2 == 0) {
 				// Draw the dark (top) triangle
-				ABT(pos0, pos1, pos2, dark);
+				ABT(pos0, pos1, pos2, lightGray);
 
 				// Calculate the far right corner of the bottom triangle
 				float newX = currentX;
@@ -261,7 +268,7 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 				pos1[1] = newY;
 			} else {
 				// Draw the light (bottom) triangle
-				ABV(pos0, light); ABV(pos1, dark); ABV(pos2, dark);
+				ABV(pos0, green); ABV(pos1, lightGray); ABV(pos2, lightGray);
 
 				// Calculate the far right corner of the top triangle
 				// New vertex location: find the new point in local coords,

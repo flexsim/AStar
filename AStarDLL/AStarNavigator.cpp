@@ -226,19 +226,19 @@ double AStarNavigator::onDraw(TreeNode* view)
 	double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 	if (isGridDirty) {
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
-			buildGridMesh(0.01f / lengthMultiple);
+			buildGridMesh(0.05f / lengthMultiple);
 		if (isGridMeshBuilt)
 			isGridDirty = false;
 	}
 	if (isBoundsDirty) {
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
-			buildBoundsMesh();
+			buildBoundsMesh(0.02f / lengthMultiple);
 		if (isBoundsMeshBuilt)
 			isBoundsDirty = false;
 	}
 	if (isBarrierDirty) {
 		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
-			buildBarrierMesh();
+			buildBarrierMesh(0.06f / lengthMultiple);
 		if (isBarrierMeshBuilt)
 			isBarrierDirty = false;
 	}
@@ -274,16 +274,16 @@ double AStarNavigator::onDraw(TreeNode* view)
 			barrierMesh.draw(GL_TRIANGLES);
 
 		if (showHeatMap != 0 && heatMapMode != 0)
-			drawHeatMap(0.015f / lengthMultiple, view);
+			drawHeatMap(0.01f / lengthMultiple, view);
 
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
 			drawMembers(0.02f / lengthMultiple);
 
 		if (showAllocations)
-			drawAllocations(0.02f / lengthMultiple);
+			drawAllocations(0.03f / lengthMultiple);
 
 		if (showTravelThreshold)
-			drawDestinationThreshold(selectedobject(view), 0.02f / lengthMultiple);
+			drawDestinationThreshold(selectedobject(view), 0.04f / lengthMultiple);
 	} else {
 
 		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
@@ -1299,7 +1299,7 @@ void AStarNavigator::checkBounds(TreeNode* theObj, Vec2& min, Vec2& max)
 	checkBound(0, -ysize(theObj), zsize(theObj));
 };
 
-void AStarNavigator::buildBoundsMesh()
+void AStarNavigator::buildBoundsMesh(float z)
 {
 	boundsMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
 
@@ -1326,7 +1326,6 @@ void AStarNavigator::buildBoundsMesh()
 	float borderWidth = savedNodeWidth;
 
 	float midBW = 0.4 * borderWidth;
-	float z = 0.1f / getmodelunit(LENGTH_MULTIPLE);
 	float bottomLeft[3] = {savedXOffset * savedNodeWidth, savedYOffset * savedNodeWidth, z};
 	float topRight[3] = {bottomLeft[0] + width, bottomLeft[1] + height, z};
 	float topLeft[3] = {bottomLeft[0], topRight[1], z};
@@ -1371,7 +1370,7 @@ void AStarNavigator::buildBoundsMesh()
 	isBoundsMeshBuilt = true;
 }
 
-void AStarNavigator::buildBarrierMesh()
+void AStarNavigator::buildBarrierMesh(float z)
 {
 	barrierMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, 0);
 	float up[3] = {0.0f, 0.0f, 1.0f};
@@ -1379,7 +1378,7 @@ void AStarNavigator::buildBarrierMesh()
 	barrierMesh.setMeshAttrib(MESH_NORMAL, up);
 	for (int i = 0; i < barrierList.size(); i++) {
 		barrierList[i]->nodeWidth = nodeWidth;
-		barrierList[i]->addVertices(&barrierMesh, 0.1f / getmodelunit(LENGTH_MULTIPLE));
+		barrierList[i]->addVertices(&barrierMesh, z);
 	}
 
 	isBarrierMeshBuilt = true;

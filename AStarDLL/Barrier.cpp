@@ -441,16 +441,23 @@ bool Barrier::setPointCoords(int pointIndex, double x, double y, double z)
 
 void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 {
-	float dark[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
-	float light[4] = { color.r, color.g, color.b, color.a };
-	float highlight[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
-	if (isActive) {
-		dark[0] += 0.2f;
-		dark[1] += 0.2f;
-		dark[2] += 0.2f;
-		light[0] = min(1.0f, light[0] + 0.2f);
-		light[1] = min(1.0f, light[1] + 0.2f);
-		light[2] = min(1.0f, light[2] + 0.2f);
+	float theColor[4] = { color.r, color.g, color.b, color.a };
+	float lightGray[4] = { 0.6f, 0.6f, 0.6f, 1.0f };
+	float darkGray[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	if (!isActive) {
+		theColor[0] = min(1.0f, theColor[0] + 0.2f);
+		theColor[1] = min(1.0f, theColor[1] + 0.2f);
+		theColor[2] = min(1.0f, theColor[2] + 0.2f);
+		lightGray[0] = 0.4f;
+		lightGray[1] = 0.4f;
+		lightGray[2] = 0.4f;
+		darkGray[0] = 0.4f;
+		darkGray[1] = 0.4f;
+		darkGray[2] = 0.4f;
+		black[0] = 0.4f;
+		black[1] = 0.4f;
+		black[2] = 0.4f;
 	}
 	nrVerts = 0;
 	meshOffset = barrierMesh->numVerts;
@@ -458,13 +465,13 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 	// Add circles at each node
 	const float TWO_PI = 2 * 3.1415926536f;
 	int numSides = 20;
-	float radius = nodeWidth * 0.3;
+	float radius = nodeWidth * 0.15;
 	float dTheta = TWO_PI / numSides;
 
 	bool isBridge = toBridge() ? true : false;
 
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = { pointList[i]->x, pointList[i]->y, isBridge ? pointList[i]->z : z };
+		float center[3] = { pointList[i]->x, pointList[i]->y, (isBridge ? pointList[i]->z + z : z) + 0.01};
 
 		// For each side, draw a triangle
 		for (int j = 0; j < numSides - 1; j++) {
@@ -487,9 +494,9 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 			barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
 							}
 
-			ABV(center, dark, highlight);
-			ABV(pos1, dark, highlight);
-			ABV(pos2, dark, highlight);
+			ABV(center, darkGray, black);
+			ABV(pos1, darkGray, black);
+			ABV(pos2, darkGray, black);
 
 		}
 
@@ -497,25 +504,27 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 		float lastTheta = (numSides - 1) * dTheta;
 		float pos2[3] = { radius + center[0], center[1], center[2] };
 		float pos1[3] = { radius * cos(lastTheta) + center[0], radius * sin(lastTheta) + center[1], center[2] };
-		ABV(center, dark, highlight);
-		ABV(pos1, dark, highlight);
-		ABV(pos2, dark, highlight);
+		ABV(center, darkGray, black);
+		ABV(pos1, darkGray, black);
+		ABV(pos2, darkGray, black);
 	}
 #undef ABV
 
 	// Draw a series of triangles
 	float maxTriangleWidth = nodeWidth;
-	float distToRect = 0.4 * nodeWidth;
+	float distToRect = 0;// 0.4 * nodeWidth;
 	float distToCorner = sqrt(distToRect * distToRect + radius * radius);
 	float height = 2 * radius;
 	dTheta = atan2(radius, distToRect);
 	for (int i = 0; i < pointList.size() - 1; i++) {
 		Point* point = pointList[i];
 		Point* next = pointList[i + 1];
+		float pointZ = isBridge ? point->z + z : z;
+		float nextZ = isBridge ? next->z + z : z;
 
 		float dx = next->x - point->x;
 		float dy = next->y - point->y;
-		float dz = next->z - point->z;
+		float dz = pointZ - nextZ;
 		float theta = atan2(dy, dx);
 
 		float length = sqrt(dx * dx + dy * dy) - 2 * distToRect;
@@ -531,8 +540,6 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 		}
 		float triangleWidth = length / numTriangles;
 		float tw = triangleWidth;
-
-		float pointZ = isBridge ? point->z : z;
 
 		// Use the bottomleft corner of the rectangle to get every other corner
 		float bottomLeft[3] = { distToCorner * cos(theta - dTheta) + point->x,
@@ -558,7 +565,7 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 	barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
 			}
 
-#define ABT(pos1, pos2, pos3, dark, green) ABV(pos1, green) ABV(pos2, dark) ABV(pos3, dark)
+#define ABT(pos1, pos2, pos3, dark, color) ABV(pos1, color) ABV(pos2, dark) ABV(pos3, dark)
 
 
 			float triangleTipX = (j + 1) * tw;
@@ -584,15 +591,15 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 
 			pos0[0] = triangleTipX;
 			pos0[1] = triangleTipY;
-			pos0[2] = point->z + dz * (j + 1) / numTriangles;
+			pos0[2] = pointZ + dz * (j + 1) / numTriangles;
 			pos1[0] = triangleTopX;
 			pos1[1] = triangleTopY;
-			pos1[2] = point->z + dz * j / numTriangles;
+			pos1[2] = pointZ + dz * j / numTriangles;
 			pos2[0] = triangleBottomX;
 			pos2[1] = triangleBottomY;
-			pos2[2] = point->z + dz * j / numTriangles;
+			pos2[2] = pointZ + dz * j / numTriangles;
 
-			ABT(pos0, pos1, pos2, dark, light);
+			ABT(pos0, pos1, pos2, lightGray, theColor);
 		}
 	}
 #undef ABT

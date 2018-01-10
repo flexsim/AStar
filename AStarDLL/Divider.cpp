@@ -138,15 +138,19 @@ void Divider::addBarriersToTable(AStarNavigator* nav)
 
 void Divider::addVertices(Mesh* barrierMesh, float z)
 {
-	float gray[4] = {0.4f, 0.4f, 0.4f, 1.0f};
-	float black[4] = {0.4f, 0.4f, 0.4f, 1.0f};
-	if (isActive) {
-		black[0] += 0.2f;
-		black[1] += 0.2f;
-		black[2] += 0.2f;
-		gray[0] -= 0.1f;
-		gray[1] -= 0.1f;
-		gray[2] -= 0.1f;
+	float lightGray[4] = { 0.6f, 0.6f, 0.6f, 1.0f };
+	float darkGray[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	if (!isActive) {
+		lightGray[0] = 0.4f;
+		lightGray[1] = 0.4f;
+		lightGray[2] = 0.4f;
+		darkGray[0] = 0.4f;
+		darkGray[1] = 0.4f;
+		darkGray[2] = 0.4f;
+		black[0] = 0.4f;
+		black[1] = 0.4f;
+		black[2] = 0.4f;
 	}
 	nrVerts = 0;
 	meshOffset = barrierMesh->numVerts;
@@ -154,11 +158,11 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 	// Add circles at each node
 	const float TWO_PI = 2 * 3.1415926536f;
 	int numSides = 20;
-	float radius = nodeWidth * 0.3;
+	float radius = nodeWidth * 0.15;
 	float dTheta = TWO_PI / numSides;
 
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = {pointList[i]->x, pointList[i]->y, z};
+		float center[3] = {pointList[i]->x, pointList[i]->y, z + 0.01};
 
 		// For each side, draw a triangle
 		for (int j = 0; j < numSides - 1; j++) {
@@ -181,9 +185,9 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 			barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
 		}
 
-			ABV(centerVert, center, black, gray);
-			ABV(vert1, pos1, black, gray);
-			ABV(vert2, pos2, black, gray);
+			ABV(centerVert, center, darkGray, black);
+			ABV(vert1, pos1, darkGray, black);
+			ABV(vert2, pos2, darkGray, black);
 
 		}
 
@@ -191,14 +195,14 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 		float lastTheta = (numSides - 1) * dTheta;
 		float pos2[3] = {radius + center[0], center[1], z};
 		float pos1[3] = {radius * cos(lastTheta) + center[0], radius * sin(lastTheta) + center[1], z};
-		ABV(centerVert, center, black, gray);
-		ABV(vert1, pos1, black, gray);
-		ABV(vert2, pos2, black, gray);
+		ABV(centerVert, center, darkGray, black);
+		ABV(vert1, pos1, darkGray, black);
+		ABV(vert2, pos2, darkGray, black);
 #undef ABV
 	}
 
 	// For each pair of points, draw a rectangle in between
-	float distToRect = 0.4 * nodeWidth;
+	float distToRect = 0;// 0.4 * nodeWidth;
 	float distToCorner = sqrt(distToRect * distToRect + radius * radius);
 	dTheta = atan2(radius, distToRect);
 	for (int i = 0; i < pointList.size() - 1; i++) {
@@ -236,8 +240,8 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 
 #define ABT(pos1, pos2, pos3, color) ABV(pos1, color) ABV(pos2, color) ABV(pos3, color)
 
-		ABT(bottomLeft, topRight, topLeft, black);
-		ABT(bottomLeft, bottomRight, topRight, black);
+		ABT(bottomLeft, topRight, topLeft, lightGray);
+		ABT(bottomLeft, bottomRight, topRight, lightGray);
 
 #undef ABT
 #undef ABV
@@ -267,7 +271,7 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 			double dx = x - pointX;
 			double dy = y - pointY;
 
-			double radius = nodeWidth * 0.3;
+			double radius = nodeWidth * 0.15;
 			if (sqrt(dx * dx + dy * dy) <= radius) {
 				clickedIndex = i;
 				break;

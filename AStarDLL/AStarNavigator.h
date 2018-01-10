@@ -72,8 +72,8 @@ protected:
 	inline AStarSearchEntry* expandOpenSet(int r, int c, float multiplier, int travelVal, char bridgeIndex = -1);
 	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold, bool setStartEntry);
 	void checkBounds(TreeNode* theObj, Vec2& min, Vec2& max);
-	void buildBoundsMesh();
-	void buildBarrierMesh();
+	void buildBoundsMesh(float z);
+	void buildBarrierMesh(float z);
 	void drawMembers(float z);
 	void buildGridMesh(float z);
 
