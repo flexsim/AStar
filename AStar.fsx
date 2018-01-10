@@ -340,12 +340,14 @@ setvarnum(c, "lastModelX", 0);
 setvarnum(c, "lastModelY", 0);
 setvarnum(c, "dragX", 0);
 setvarnum(c, "dragY", 0);
+nodepoint(getvarnode(c, "currBarrierNode"), 0);
 
 treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
 if (!objectexists(activeNav))
 	return 0;
 function_s(activeNav, "onClick", activedocumentnode(), RIGHT_RELEASE, 0, 0);
-function_s(activeNav, "rebuildMeshes");</data></node>
+function_s(activeNav, "rebuildMeshes");
+function_s(activeNav, "setEditMode", getvarnum(c, "mode"));</data></node>
         <node f="442" dt="2"><name>checkStatus</name><data>#define BARRIER_MODE_CREATE 0x2
 
 treenode activeNavigator = tonode(getvarnum(ownerobject(c), "activeNavigator"));
@@ -415,7 +417,26 @@ nodepoint(objectfocus(c), 0);</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>treenode handler = tonode(get(objectfocus(c)));
+        <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
+treenode handler = tonode(get(objectfocus(c)));
+treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
+
+if(objectexists(secondary)) {
+	treenode currBarrierNode = tonode(getvarnum(handler, "currBarrierNode"));
+	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
+	if (!objectexists(activeNavigator))
+		activeNavigator = function_s(handler, "findNavigator");
+	
+	if(objectexists(activeNavigator) &amp;&amp; secondary != currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
+		// Add to an existing
+		setvarnum(handler, "creating", 1);
+		setvarnum(handler, "editing", 0);
+		
+		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "currBarrierNode"), secondary);
+	}
+}
+
 executefsnode(OnClick(handler), handler, i, eventdata);
 </data></node>
         <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
@@ -445,7 +466,26 @@ nodepoint(objectfocus(c), 0);</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>treenode handler = tonode(get(objectfocus(c)));
+        <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
+treenode handler = tonode(get(objectfocus(c)));
+treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
+
+if(objectexists(secondary)) {
+	treenode currBarrierNode = tonode(getvarnum(handler, "currBarrierNode"));
+	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
+	if (!objectexists(activeNavigator))
+		activeNavigator = function_s(handler, "findNavigator");
+	
+	if(objectexists(activeNavigator) &amp;&amp; secondary != currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
+		// Add to an existing
+		setvarnum(handler, "creating", 1);
+		setvarnum(handler, "editing", 0);
+		
+		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "currBarrierNode"), secondary);
+	}
+}
+
 executefsnode(OnClick(handler), handler, i, eventdata);
 </data></node>
         <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
@@ -475,7 +515,26 @@ nodepoint(objectfocus(c), 0);</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>treenode handler = tonode(get(objectfocus(c)));
+        <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
+treenode handler = tonode(get(objectfocus(c)));
+treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
+
+if(objectexists(secondary)) {
+	treenode currBarrierNode = tonode(getvarnum(handler, "currBarrierNode"));
+	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
+	if (!objectexists(activeNavigator))
+		activeNavigator = function_s(handler, "findNavigator");
+	
+	if(objectexists(activeNavigator) &amp;&amp; secondary != currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
+		// Add to an existing
+		setvarnum(handler, "creating", 1);
+		setvarnum(handler, "editing", 0);
+		
+		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "currBarrierNode"), secondary);
+	}
+}
+
 executefsnode(OnClick(handler), handler, i, eventdata);
 </data></node>
         <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
@@ -505,7 +564,26 @@ nodepoint(objectfocus(c), 0);</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>treenode handler = tonode(get(objectfocus(c)));
+        <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
+treenode handler = tonode(get(objectfocus(c)));
+treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
+
+if(objectexists(secondary)) {
+	treenode currBarrierNode = tonode(getvarnum(handler, "currBarrierNode"));
+	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
+	if (!objectexists(activeNavigator))
+		activeNavigator = function_s(handler, "findNavigator");
+	
+	if(objectexists(activeNavigator) &amp;&amp; secondary != currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
+		// Add to an existing
+		setvarnum(handler, "creating", 1);
+		setvarnum(handler, "editing", 0);
+		
+		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "currBarrierNode"), secondary);
+	}
+}
+
 executefsnode(OnClick(handler), handler, i, eventdata);
 </data></node>
         <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
