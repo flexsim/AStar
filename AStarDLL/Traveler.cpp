@@ -50,9 +50,9 @@ void Traveler::bind()
 
 void Traveler::bindEvents()
 {
-	bindEventByName("onBlock", onBlockTrigger, "OnBlock");
-	bindEventByName("onReroute", onRerouteTrigger, "OnReroute");
-	bindEventByName("onContinue", onContinueTrigger, "OnContinue");
+	bindEventByName("onBlock", onBlockTrigger, "OnBlock", EVENT_TYPE_TRIGGER);
+	bindEventByName("onReroute", onRerouteTrigger, "OnReroute", EVENT_TYPE_TRIGGER);
+	bindEventByName("onContinue", onContinueTrigger, "OnContinue", EVENT_TYPE_TRIGGER);
 }
 
 TreeNode* Traveler::getEventInfoObject(const char* eventTitle)

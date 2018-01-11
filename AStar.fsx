@@ -3034,6 +3034,7 @@ return 0;
          </node>
         </node>
        </node>
+       <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object is blocked on the AStar network</data></node>
       </data></node>
       <node f="42" dt="4"><name>OnContinue</name><data>
        <node f="40"><name></name></node>
@@ -3049,6 +3050,7 @@ return 0;
          </node>
         </node>
        </node>
+       <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object continues on the AStar network after being blocked</data></node>
       </data></node>
       <node f="42" dt="4"><name>OnReroute</name><data>
        <node f="40"><name></name></node>
@@ -3064,6 +3066,7 @@ return 0;
          </node>
         </node>
        </node>
+       <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object is rerouted along a different path on the AStar network</data></node>
       </data></node>
      </node>
     </node>
