@@ -329,8 +329,12 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 			Barrier* b = activeBarrier->objectAs(Barrier);
 			// is the clicked barrier different than the current barrier
 			if (b != barrier) {
+				// Send the click to the activeBarrier if it's in create mode
+				if(b->mode & BARRIER_MODE_CREATE)
+					return b->onClick(view, (int)clickcode, cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
+
 				// then reset the current barrier to be "not active"
-				b->activePointIndex = b->pointList.size();
+				b->activePointIndex = 0;
 				b->isActive = 0;
 			}
 		}
@@ -1381,7 +1385,6 @@ void AStarNavigator::buildBarrierMesh(float z)
 {
 	barrierMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, 0);
 	float up[3] = {0.0f, 0.0f, 1.0f};
-	float black[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 	barrierMesh.setMeshAttrib(MESH_NORMAL, up);
 	for (int i = 0; i < barrierList.size(); i++) {
 		barrierList[i]->nodeWidth = nodeWidth;

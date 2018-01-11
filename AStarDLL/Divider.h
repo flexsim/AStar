@@ -14,6 +14,7 @@ public:
 	virtual void bind(void);
 
 	// See Barrier.h for descriptions of these functions
+	virtual void init(double nodeWidth, double x1, double y1, double x2, double y2) override;
 	virtual bool getBoundingBox(double& x0, double& y0, double& x1, double& y1) override;
 	virtual void addBarriersToTable(AStarNavigator* nav) override;
 	virtual void addVertices(Mesh* barrierMesh, float z) override;

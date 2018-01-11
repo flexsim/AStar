@@ -5,9 +5,21 @@
 
 namespace AStar {
 
-void Bridge::bind()
+Bridge::Bridge()
+	: Divider()
 {
-	__super::bind();
+	return;
+}
+
+const char * Bridge::getClassFactory(void)
+{
+	return "AStar::Bridge";
+}
+
+
+void Bridge::bind(void)
+{
+	Divider::bind();
 	bindDouble(isTwoWay, 1);
 	bindDouble(useVirtualDistance, 1);
 	bindDouble(virtualDistance, 1);
@@ -20,6 +32,11 @@ void Bridge::bind()
 	bindObjPtr(lastTraveler);
 	bindNumber(blockedPathIndex);
 	bindNumber(nodeWidth);
+}
+
+void Bridge::init(double nodeWidth, double x1, double y1, double x2, double y2)
+{
+	Barrier::init(nodeWidth, x1, y1, x2, y2);
 }
 
 void Bridge::addPassagesToTable(AStarNavigator* nav)
@@ -46,17 +63,30 @@ void Bridge::addPassagesToTable(AStarNavigator* nav)
 		addExtraData(toCell, false);
 }
 
-double Bridge::calculateDistance() const
+void Bridge::addVertices(Mesh* barrierMesh, float z)
 {
-	double total = 0;
-	for (int i = 1; i < pointList.size(); i++) {
-		Vec3 diff(
-			pointList[i]->x - pointList[i - 1]->x,
-			pointList[i]->y - pointList[i - 1]->y,
-			pointList[i]->z - pointList[i - 1]->z);
-		total += sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+	addPathVertices(barrierMesh, z, Vec4f(0.0f, 0.3f, 1.0f, 1.0f));
+}
+
+double Bridge::onMouseMove(const Vec3& pos, const Vec3& diff)
+{
+	if (mode & BARRIER_MODE_POINT_EDIT) {
+		Point* activePoint = pointList[(int)activePointIndex];
+		activePoint->x += diff.x;
+		activePoint->y += diff.y;
+		if (toBridge())
+			activePoint->z += diff.z;
 	}
-	return total;
+	else if (mode & BARRIER_MODE_MOVE) {
+		for (int i = 0; i < pointList.size(); i++) {
+			pointList[i]->x += diff.x;
+			pointList[i]->y += diff.y;
+			if (toBridge())
+				pointList[i]->z += diff.z;
+		}
+	}
+
+	return 0;
 }
 
 void Bridge::onReset(AStarNavigator* nav)
@@ -72,15 +102,22 @@ void Bridge::onReset(AStarNavigator* nav)
 	lastUpdateTime = -1;
 }
 
-
-Bridge::ArrivalEvent::ArrivalEvent(Bridge* bridge, Traveler* object, int pathIndex, double time)
-	: pathIndex(pathIndex), FlexSimEvent(bridge->holder, time, object->holder, 0) 
+double Bridge::calculateDistance() const
 {
+	double total = 0;
+	for (int i = 1; i < pointList.size(); i++) {
+		Vec3 diff(
+			pointList[i]->x - pointList[i - 1]->x,
+			pointList[i]->y - pointList[i - 1]->y,
+			pointList[i]->z - pointList[i - 1]->z);
+		total += sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+	}
+	return total;
 }
 
-void Bridge::ArrivalEvent::execute() 
-{ 
-	involved->objectAs(Traveler)->onBridgeArrival(partner()->objectAs(Bridge), pathIndex); 
+double Bridge::getTravelToGeomDistScale()
+{
+	return (geometricDistance - nodeWidth) / travelDistance;
 }
 
 void Bridge::onEntry(Traveler * traveler, int pathIndex)
@@ -130,7 +167,7 @@ void Bridge::onExit(Traveler * traveler)
 		}
 
 		double distRemaining = travelDistance - distTraveled;
-		createevent(new Bridge::EndArrivalEvent(this, firstTraveler, firstTraveler->bridgeData.pathIndex, 
+		createevent(new Bridge::EndArrivalEvent(this, firstTraveler, firstTraveler->bridgeData.pathIndex,
 			time() + (distRemaining / firstTraveler->te->v_maxspeed)));
 	}
 
@@ -167,7 +204,7 @@ void Bridge::updateLocations()
 	if (lastUpdateTime == time() || !firstTraveler)
 		return;
 	lastUpdateTime = time();
-	
+
 	Traveler* t = firstTraveler;
 	double distScale = getTravelToGeomDistScale();
 	double curMax = travelDistance;
@@ -184,12 +221,14 @@ void Bridge::updateLocations()
 void Bridge::updateLocation(Traveler* traveler, double geomDist)
 {
 	for (int j = 1; j < pointList.size(); j++) {
-		Vec3 fromLoc(pointList[j - 1]->x,
-			         pointList[j - 1]->y,
-			         pointList[j - 1]->z);
-		Vec3 toLoc(pointList[j]->x,
-				   pointList[j]->y,
-				   pointList[j]->z);
+		Vec3 fromLoc(
+			pointList[j - 1]->x,
+			pointList[j - 1]->y,
+			pointList[j - 1]->z);
+		Vec3 toLoc(
+			pointList[j]->x,
+			pointList[j]->y,
+			pointList[j]->z);
 		Vec3 diff = toLoc - fromLoc;
 		double dist = diff.magnitude;
 
@@ -211,6 +250,17 @@ void Bridge::updateLocation(Traveler* traveler, double geomDist)
 			break;
 		}
 	}
+}
+
+
+Bridge::ArrivalEvent::ArrivalEvent(Bridge* bridge, Traveler* object, int pathIndex, double time)
+	: pathIndex(pathIndex), FlexSimEvent(bridge->holder, time, object->holder, 0) 
+{
+}
+
+void Bridge::ArrivalEvent::execute() 
+{ 
+	involved->objectAs(Traveler)->onBridgeArrival(partner()->objectAs(Bridge), pathIndex); 
 }
 
 Bridge::EndArrivalEvent::EndArrivalEvent(Bridge* bridge, Traveler* object, int pathIndex, double time)

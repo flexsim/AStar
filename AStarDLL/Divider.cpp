@@ -21,6 +21,16 @@ void Divider::bind(void)
 	Barrier::bind();
 }
 
+void Divider::init(double nodeWidth, double x1, double y1, double x2, double y2)
+{
+	// Snap to grid points
+	x1 = floor((x1 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+	y1 = floor((y1 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+	x2 = floor((x2 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+	y2 = floor((y2 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+	Barrier::init(nodeWidth, x1, y1, x2, y2);
+}
+
 bool Divider::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
 {
 	if (pointList.size() < 2)
@@ -319,8 +329,9 @@ double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 {
 	if (mode & BARRIER_MODE_POINT_EDIT) {
 		Point* activePoint = pointList[(int)activePointIndex];
-		activePoint->x += diff.x;
-		activePoint->y += diff.y;
+		// Snap to grid points
+		activePoint->x = floor((pos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+		activePoint->y = floor((pos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 		if (toBridge())
 			activePoint->z += diff.z;
 	}

@@ -75,9 +75,12 @@ public:
 	bool getPointCoords(int pointIndex, double& x, double& y, double& z);
 	bool setPointCoords(int pointIndex, double x, double y);
 	bool setPointCoords(int pointIndex, double x, double y, double z);
+
+	// These functions are for checking if the barrier is subclassed
 	virtual Divider* toDivider() { return nullptr; }
-	virtual Bridge* toBridge() { return nullptr; }
+	virtual OneWayDivider* toOneWayDivider() { return nullptr; }
 	virtual PreferredPath* toPreferredPath() { return nullptr; }
+	virtual Bridge* toBridge() { return nullptr; }
 
 	void addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color);
 	virtual void onReset(AStarNavigator* nav) {}

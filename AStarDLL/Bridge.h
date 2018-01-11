@@ -9,11 +9,18 @@ class Bridge : public Divider
 {
 public:
 
-	virtual const char * getClassFactory(void) override { return "AStar::Bridge"; }
-	virtual void bind() override;
+	Bridge();
 
+	virtual const char * getClassFactory(void);
+	virtual void bind(void);
+
+	virtual void init(double nodeWidth, double x1, double y1, double x2, double y2) override;
 	virtual void addBarriersToTable(AStarNavigator* nav) override {}
 	virtual void addPassagesToTable(AStarNavigator* nav) override;
+	virtual void addVertices(Mesh* barrierMesh, float z) override;
+	virtual double onMouseMove(const Vec3& pos, const Vec3& diff) override;
+	virtual void onReset(AStarNavigator* nav) override;
+	virtual Bridge* toBridge() override { return this; }
 
 	double isTwoWay = 0.0;
 	double useVirtualDistance = 0.0;
@@ -35,16 +42,13 @@ public:
 	int blockedPathIndex;
 
 	double calculateDistance() const;
-	double getTravelToGeomDistScale() { return (geometricDistance - nodeWidth) / travelDistance; }
-	virtual Bridge* toBridge() override { return this; }
-
-
-	virtual void addVertices(Mesh* barrierMesh, float z) override
-	{
-		addPathVertices(barrierMesh, z, Vec4f(0.0f, 0.3f, 1.0f, 1.0f));
-	}
-
-	virtual void onReset(AStarNavigator* nav) override;
+	double getTravelToGeomDistScale();
+	void onEntry(Traveler* traveler, int pathIndex);
+	void onExit(Traveler* traveler);
+	void onEndArrival(Traveler* traveler, int pathIndex);
+	void onAvailable();
+	void updateLocations();
+	void updateLocation(Traveler* t, double geomDistAlongBridge);
 
 	class ArrivalEvent : public FlexSimEvent
 	{
@@ -57,10 +61,7 @@ public:
 
 		int pathIndex;
 	};
-	void onEntry(Traveler* traveler, int pathIndex);
-	void onExit(Traveler* traveler);
 
-	void onEndArrival(Traveler* traveler, int pathIndex);
 	class EndArrivalEvent : public FlexSimEvent
 	{
 	public:
@@ -73,7 +74,6 @@ public:
 		int pathIndex;
 	};
 
-	void onAvailable();
 	class AvailableEvent : public FlexSimEvent
 	{
 	public:
@@ -84,8 +84,7 @@ public:
 		virtual void execute() { partner()->objectAs(Bridge)->onAvailable(); }
 	};
 
-	void updateLocations();
-	void updateLocation(Traveler* t, double geomDistAlongBridge);
+
 };
 
 }

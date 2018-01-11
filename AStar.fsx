@@ -427,7 +427,7 @@ if(objectexists(secondary)) {
 	if (!objectexists(activeNavigator))
 		activeNavigator = function_s(handler, "findNavigator");
 	
-	if(objectexists(activeNavigator) &amp;&amp; secondary != currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
+	if(objectexists(activeNavigator) &amp;&amp; !currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
 		// Add to an existing
 		setvarnum(handler, "creating", 1);
 		setvarnum(handler, "editing", 0);
@@ -476,7 +476,7 @@ if(objectexists(secondary)) {
 	if (!objectexists(activeNavigator))
 		activeNavigator = function_s(handler, "findNavigator");
 	
-	if(objectexists(activeNavigator) &amp;&amp; secondary != currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
+	if(objectexists(activeNavigator) &amp;&amp; !currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
 		// Add to an existing
 		setvarnum(handler, "creating", 1);
 		setvarnum(handler, "editing", 0);
@@ -525,7 +525,7 @@ if(objectexists(secondary)) {
 	if (!objectexists(activeNavigator))
 		activeNavigator = function_s(handler, "findNavigator");
 	
-	if(objectexists(activeNavigator) &amp;&amp; secondary != currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
+	if(objectexists(activeNavigator) &amp;&amp; !currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
 		// Add to an existing
 		setvarnum(handler, "creating", 1);
 		setvarnum(handler, "editing", 0);
@@ -574,7 +574,7 @@ if(objectexists(secondary)) {
 	if (!objectexists(activeNavigator))
 		activeNavigator = function_s(handler, "findNavigator");
 	
-	if(objectexists(activeNavigator) &amp;&amp; secondary != currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
+	if(objectexists(activeNavigator) &amp;&amp; !currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
 		// Add to an existing
 		setvarnum(handler, "creating", 1);
 		setvarnum(handler, "editing", 0);
