@@ -121,7 +121,7 @@ void AStarNavigator::bindVariables(void)
 
 void AStarNavigator::bindTEEvents(TaskExecuter* te)
 {
-	te->bindRelayedClassEvents<Traveler>("AStar", 0, &AStarNavigator::resolveTraveler);
+	te->bindRelayedClassEvents<Traveler>("AStar", 0, &AStarNavigator::resolveTraveler, getTraveler(te));
 }
 
 void AStarNavigator::bindTEStatistics(TaskExecuter* te)
