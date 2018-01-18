@@ -146,7 +146,7 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 	float dTheta = TWO_PI / numSides;
 
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = {pointList[i]->x, pointList[i]->y, z + 0.01};
+		float center[3] = {pointList[i]->x, pointList[i]->y, z + 0.01 / getmodelunit(LENGTH_MULTIPLE)};
 
 		// For each side, draw a triangle
 		for (int j = 0; j < numSides - 1; j++) {

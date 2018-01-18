@@ -34,11 +34,6 @@ void Bridge::bind(void)
 	bindNumber(nodeWidth);
 }
 
-void Bridge::init(double nodeWidth, double x1, double y1, double x2, double y2)
-{
-	Barrier::init(nodeWidth, x1, y1, x2, y2);
-}
-
 void Bridge::addPassagesToTable(AStarNavigator* nav)
 {
 	if (pointList.size() < 2)
@@ -66,27 +61,6 @@ void Bridge::addPassagesToTable(AStarNavigator* nav)
 void Bridge::addVertices(Mesh* barrierMesh, float z)
 {
 	addPathVertices(barrierMesh, z, Vec4f(0.0f, 0.3f, 1.0f, 1.0f));
-}
-
-double Bridge::onMouseMove(const Vec3& pos, const Vec3& diff)
-{
-	if (mode & BARRIER_MODE_POINT_EDIT) {
-		Point* activePoint = pointList[(int)activePointIndex];
-		activePoint->x += diff.x;
-		activePoint->y += diff.y;
-		if (toBridge())
-			activePoint->z += diff.z;
-	}
-	else if (mode & BARRIER_MODE_MOVE) {
-		for (int i = 0; i < pointList.size(); i++) {
-			pointList[i]->x += diff.x;
-			pointList[i]->y += diff.y;
-			if (toBridge())
-				pointList[i]->z += diff.z;
-		}
-	}
-
-	return 0;
 }
 
 void Bridge::onReset(AStarNavigator* nav)

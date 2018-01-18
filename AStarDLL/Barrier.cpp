@@ -310,21 +310,17 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 			double height = topRight->y - bottomLeft->y;
 
 			// Enforce a minimum size
-			if (width < nodeWidth) {
-				if (activePoint == bottomLeft) {
-					activePoint->x = topRight->x - nodeWidth;
-				}
-				else {
-					activePoint->x = bottomLeft->x + nodeWidth;
-				}
+			if (width < nodeWidth / 2) {
+				if (activePoint == bottomLeft)
+					activePoint->x = topRight->x - nodeWidth / 2;
+				else
+					activePoint->x = bottomLeft->x + nodeWidth / 2;
 			}
-			if (height < nodeWidth) {
-				if (activePoint == bottomLeft) {
-					activePoint->y = topRight->y - nodeWidth;
-				}
-				else {
-					activePoint->y = bottomLeft->y + nodeWidth;
-				}
+			if (height < nodeWidth / 2) {
+				if (activePoint == bottomLeft)
+					activePoint->y = topRight->y - nodeWidth / 2;
+				else
+					activePoint->y = bottomLeft->y + nodeWidth / 2;
 			}
 
 			// After creating
@@ -471,7 +467,7 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 	bool isBridge = toBridge() ? true : false;
 
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = { pointList[i]->x, pointList[i]->y, (isBridge ? pointList[i]->z + z : z) + 0.01};
+		float center[3] = { pointList[i]->x, pointList[i]->y, (isBridge ? pointList[i]->z + z : z) + 0.01 / getmodelunit(LENGTH_MULTIPLE)};
 
 		// For each side, draw a triangle
 		for (int j = 0; j < numSides - 1; j++) {

@@ -24,10 +24,12 @@ void Divider::bind(void)
 void Divider::init(double nodeWidth, double x1, double y1, double x2, double y2)
 {
 	// Snap to grid points
-	x1 = floor((x1 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-	y1 = floor((y1 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-	x2 = floor((x2 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-	y2 = floor((y2 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+	if (!toPreferredPath() && !toBridge()) {
+		x1 = floor((x1 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+		y1 = floor((y1 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+		x2 = floor((x2 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+		y2 = floor((y2 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+	}
 	Barrier::init(nodeWidth, x1, y1, x2, y2);
 }
 
@@ -172,7 +174,7 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 	float dTheta = TWO_PI / numSides;
 
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = {pointList[i]->x, pointList[i]->y, z + 0.01};
+		float center[3] = {pointList[i]->x, pointList[i]->y, z + 0.01 / getmodelunit(LENGTH_MULTIPLE)};
 
 		// For each side, draw a triangle
 		for (int j = 0; j < numSides - 1; j++) {
@@ -330,8 +332,14 @@ double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 	if (mode & BARRIER_MODE_POINT_EDIT) {
 		Point* activePoint = pointList[(int)activePointIndex];
 		// Snap to grid points
-		activePoint->x = floor((pos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-		activePoint->y = floor((pos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+		if (!toPreferredPath() && !toBridge()) {
+			activePoint->x = floor((pos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+			activePoint->y = floor((pos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+		}
+		else {
+			activePoint->x += diff.x;
+			activePoint->y += diff.y;
+		}
 		if (toBridge())
 			activePoint->z += diff.z;
 	}

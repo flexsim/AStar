@@ -14,11 +14,9 @@ public:
 	virtual const char * getClassFactory(void);
 	virtual void bind(void);
 
-	virtual void init(double nodeWidth, double x1, double y1, double x2, double y2) override;
 	virtual void addBarriersToTable(AStarNavigator* nav) override {}
 	virtual void addPassagesToTable(AStarNavigator* nav) override;
 	virtual void addVertices(Mesh* barrierMesh, float z) override;
-	virtual double onMouseMove(const Vec3& pos, const Vec3& diff) override;
 	virtual void onReset(AStarNavigator* nav) override;
 	virtual Bridge* toBridge() override { return this; }
 

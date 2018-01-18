@@ -232,13 +232,13 @@ double AStarNavigator::onDraw(TreeNode* view)
 	}
 	if (isBoundsDirty) {
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS)
-			buildBoundsMesh(0.02f / lengthMultiple);
+			buildBoundsMesh(0);
 		if (isBoundsMeshBuilt)
 			isBoundsDirty = false;
 	}
 	if (isBarrierDirty) {
 		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
-			buildBarrierMesh(0.06f / lengthMultiple);
+			buildBarrierMesh(0);
 		if (isBarrierMeshBuilt)
 			isBarrierDirty = false;
 	}
@@ -259,6 +259,17 @@ double AStarNavigator::onDraw(TreeNode* view)
 	fglScale(1.0/b_spatialsx, 1.0/b_spatialsy, 1.0/b_spatialsz);
 	fglTranslate(-loc[0], -loc[1], -loc[2]);
 
+	float factor, units;
+	bool polyOffsetFill = glIsEnabled(GL_POLYGON_OFFSET_FILL);
+	glGetFloatv(GL_POLYGON_OFFSET_FACTOR, &factor);
+	glGetFloatv(GL_POLYGON_OFFSET_UNITS, &units);
+	fglEnable(GL_POLYGON_OFFSET_FILL);
+
+	double vpRadius = get(viewpointradius(view));
+	if (get(viewprojectiontype(view)) == 1)
+		vpRadius = maxof(get(spatialsx(view)), get(spatialsy(view))) / get(viewmagnification(view));
+	double offset = max(-1, -50 / (vpRadius * getmodelunit(LENGTH_MULTIPLE)));
+
 	int pickingmode = getpickingmode(view);
 	if (!pickingmode) {
 		fglDisable(GL_TEXTURE_2D);
@@ -267,30 +278,37 @@ double AStarNavigator::onDraw(TreeNode* view)
 		if (isGridMeshBuilt && (drawMode & ASTAR_DRAW_MODE_GRID))
 			gridMesh.draw(GL_LINES);
 
+		glPolygonOffset(offset - 0.010, -2);
 		if (isBoundsMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BOUNDS))
 			boundsMesh.draw(GL_TRIANGLES);
 
+		glPolygonOffset(offset - 0.025, -5);
 		if (isBarrierMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BARRIERS))
 			barrierMesh.draw(GL_TRIANGLES);
 
 		fglEnable(GL_TEXTURE_2D);
 		fglEnable(GL_LIGHTING);
 
+		glPolygonOffset(offset - 0.005, -1);
 		if (showHeatMap != 0 && heatMapMode != 0)
-			drawHeatMap(0.01f / lengthMultiple, view);
+			drawHeatMap(0, view);
 
+		glPolygonOffset(offset - 0.015, -3);
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
-			drawMembers(0.02f / lengthMultiple);
+			drawMembers(0);
 
+		glPolygonOffset(offset - 0.020, -4);
 		if (showAllocations)
-			drawAllocations(0.03f / lengthMultiple);
+			drawAllocations(0);
 
+		glPolygonOffset(offset - 0.030, -6);
 		if (showTravelThreshold)
-			drawDestinationThreshold(selectedobject(view), 0.04f / lengthMultiple);
+			drawDestinationThreshold(selectedobject(view), 0);
 	} else {
 		fglDisable(GL_TEXTURE_2D);
 		fglDisable(GL_LIGHTING);
 
+		glPolygonOffset(offset - 0.025, -5);
 		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
 			for(int i = 0; i < barrierList.size(); i++) {
 				Barrier* barrier = barrierList[i];
@@ -304,6 +322,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 			}
 		}
 
+		glPolygonOffset(offset - 0.010, -2);
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS) {
 			setpickingdrawfocus(view, holder, PICK_TYPE_BOUNDS);
 			boundsMesh.draw(GL_TRIANGLES);
@@ -312,6 +331,10 @@ double AStarNavigator::onDraw(TreeNode* view)
 		fglEnable(GL_TEXTURE_2D);
 		fglEnable(GL_LIGHTING);
 	}
+
+	glPolygonOffset(factor, units);
+	if (polyOffsetFill == false)
+		fglDisable(GL_POLYGON_OFFSET_FILL);
 	
 	return 0;
 }
