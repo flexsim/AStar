@@ -265,7 +265,7 @@ if (!objectexists(selobj)) {
 	}
 } else {
 	if (clickCode == LEFT_PRESS) {
-		postwindowmessage(windowfromnode(activedocumentnode()),
+		postwindowmessage(windowfromnode(i/*The view*/),
 			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
 			node("checkStatus", eventfunctions(c)), 0);	
 	}	
@@ -273,6 +273,8 @@ if (!objectexists(selobj)) {
 
 
 if (clickCode == LEFT_PRESS) {
+	if(getvarnum(c, "creating"))
+		function_s(activeNavigator, "setBarrierMode", currBarrierNode, BARRIER_MODE_DYNAMIC_CREATE);
 	setvarnum(c, "dragX", 0);
 	setvarnum(c, "dragY", 0);
 	setvarnum(c, "dragging", 1);
@@ -286,8 +288,10 @@ if (clickCode == LEFT_RELEASE) {
 			setvarnum(c, "editing", 1);
 		}
 		treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
-		if (!objectexists(secondary))
-			function_s(activeNavigator, "onClick", activedocumentnode(), LEFT_RELEASE, mouseX, mouseY);
+		if (!objectexists(secondary)) {
+			function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY);
+			setselectedobject(i/*The view*/, activeNavigator);
+		}
 	}
 }</data></node>
         <node f="442" dt="2"><name>OnMouseMove</name><data>if (!objectexists(i))
@@ -2484,12 +2488,12 @@ if (eventdata) {
 	double sizey = getvarnum(c, "sizey");
 
 	double nodeWidth = getvarnum(ownerobject(focus), "nodeWidth");
-	if (sizex &lt; nodeWidth) {
-		sizex = nodeWidth;
+	if (sizex &lt; nodeWidth / 2) {
+		sizex = nodeWidth / 2;
 		setvarnum(c, "sizex", sizex);
 	}
-	if (sizey &lt; nodeWidth) {
-		sizey = nodeWidth;
+	if (sizey &lt; nodeWidth / 2) {
+		sizey = nodeWidth / 2;
 		setvarnum(c, "sizey", sizey);
 	}
 

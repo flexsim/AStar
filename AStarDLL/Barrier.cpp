@@ -8,6 +8,7 @@ Barrier::Barrier()
 	: meshOffset(0)
 	, nrVerts(0)
 	, isActive(0)
+	, isHovered(0)
 	, activePointIndex(0)
 	, mode(0)
 	, nodeWidth(1.0)
@@ -130,6 +131,13 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 		black[0] += 0.2f;
 		black[1] += 0.2f;
 		black[2] += 0.2f;
+		z += 0.01 / getmodelunit(LENGTH_MULTIPLE);
+	}
+	else if (isHovered) {
+		black[0] += 0.3f;
+		black[1] += 0.3f;
+		black[2] += 0.3f;
+		z += 0.02 / getmodelunit(LENGTH_MULTIPLE);
 	}
 
 	float scale = max(this->nodeWidth, 0.15 * max(height, width));
@@ -187,12 +195,10 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 	Point* bottomLeft = pointList[0];
 	Point* topRight = pointList[1];
 
-	if (clickCode == LEFT_RELEASE) {
-		if (mode & BARRIER_MODE_CREATE) {
-			// Set activePoint to current mouse position
-			activePoint->x = x;
-			activePoint->y = y;
-		}
+	if (clickCode == LEFT_PRESS && mode & BARRIER_MODE_CREATE) {
+		// Set activePoint to current mouse position
+		activePoint->x = x;
+		activePoint->y = y;
 	}
 
 	// Fix the points
@@ -322,10 +328,6 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 				else
 					activePoint->y = bottomLeft->y + nodeWidth / 2;
 			}
-
-			// After creating
-			if (mode & BARRIER_MODE_CREATE)
-				o(AStarNavigator, ownerobject(holder)).addCreateRecord(view, this);
 		
 			activePointIndex = 0;
 			mode = 0;
@@ -437,23 +439,39 @@ bool Barrier::setPointCoords(int pointIndex, double x, double y, double z)
 
 void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 {
-	float theColor[4] = { color.r, color.g, color.b, color.a };
-	float lightGray[4] = { 0.6f, 0.6f, 0.6f, 1.0f };
-	float darkGray[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
-	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	if (!isActive) {
-		theColor[0] = min(1.0f, theColor[0] + 0.2f);
-		theColor[1] = min(1.0f, theColor[1] + 0.2f);
-		theColor[2] = min(1.0f, theColor[2] + 0.2f);
-		lightGray[0] = 0.4f;
-		lightGray[1] = 0.4f;
-		lightGray[2] = 0.4f;
+	float theColor[4] = { min(1.0f, color.r + 0.2f), min(1.0f, color.g + 0.2f), min(1.0f, color.b + 0.2f), color.a };
+	float lightGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	float darkGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	float black[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	if (isActive) {
+		theColor[0] = color.r;
+		theColor[1] = color.g;
+		theColor[2] = color.b;
+		lightGray[0] = 0.6f;
+		lightGray[1] = 0.6f;
+		lightGray[2] = 0.6f;
+		darkGray[0] = 0.3f;
+		darkGray[1] = 0.3f;
+		darkGray[2] = 0.3f;
+		black[0] = 0.0f;
+		black[1] = 0.0f;
+		black[2] = 0.0f;
+		z += 0.01 / getmodelunit(LENGTH_MULTIPLE);
+	}
+	else if (isHovered) {
+		theColor[0] = min(1.0f, color.r + 0.1f);
+		theColor[1] = min(1.0f, color.g + 0.1f);
+		theColor[2] = min(1.0f, color.b + 0.1f);
+		lightGray[0] = 0.7f;
+		lightGray[1] = 0.7f;
+		lightGray[2] = 0.7f;
 		darkGray[0] = 0.4f;
 		darkGray[1] = 0.4f;
 		darkGray[2] = 0.4f;
 		black[0] = 0.4f;
 		black[1] = 0.4f;
 		black[2] = 0.4f;
+		z += 0.02 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	nrVerts = 0;
 	meshOffset = barrierMesh->numVerts;

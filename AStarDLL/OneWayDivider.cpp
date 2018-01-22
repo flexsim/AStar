@@ -119,22 +119,37 @@ void OneWayDivider::addBarriersToTable(AStarNavigator* nav)
 
 void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 {
-	float green[4] = { 0.2f, 1.0f, 0.2f, 1.0f };
-	float lightGray[4] = { 0.6f, 0.6f, 0.6f, 1.0f };
-	float darkGray[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
-	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	if (!isActive) {
-		green[0] = 0.0f;
-		green[2] = 0.0f;
-		lightGray[0] = 0.4f;
-		lightGray[1] = 0.4f;
-		lightGray[2] = 0.4f;
+	float green[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
+	float lightGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	float darkGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	float black[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	if (isActive) {
+		green[0] = 0.2f;
+		green[2] = 0.2f;
+		lightGray[0] = 0.6f;
+		lightGray[1] = 0.6f;
+		lightGray[2] = 0.6f;
+		darkGray[0] = 0.3f;
+		darkGray[1] = 0.3f;
+		darkGray[2] = 0.3f;
+		black[0] = 0.0f;
+		black[1] = 0.0f;
+		black[2] = 0.0f;
+		z += 0.01 / getmodelunit(LENGTH_MULTIPLE);
+	}
+	else if (isHovered) {
+		green[0] = 0.2f;
+		green[2] = 0.2f;
+		lightGray[0] = 0.7f;
+		lightGray[1] = 0.7f;
+		lightGray[2] = 0.7f;
 		darkGray[0] = 0.4f;
 		darkGray[1] = 0.4f;
 		darkGray[2] = 0.4f;
 		black[0] = 0.4f;
 		black[1] = 0.4f;
 		black[2] = 0.4f;
+		z += 0.02 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	nrVerts = 0;
 	meshOffset = barrierMesh->numVerts;

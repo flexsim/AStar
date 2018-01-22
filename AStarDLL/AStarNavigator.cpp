@@ -223,6 +223,16 @@ double AStarNavigator::onDraw(TreeNode* view)
 			isBarrierDirty = true;
 	}
 
+	// Semi highlight hovered barrier
+	treenode hovered = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, -1));
+	if (objectexists(hovered)) {
+		Barrier* b = hovered->objectAs(Barrier);
+		if (!objectexists(activeBarrier) || !(activeBarrier->objectAs(Barrier)->mode & BARRIER_MODE_CREATE)) {
+			b->isHovered = true;
+			isBarrierDirty = true;
+		}
+	}
+
 	double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 	if (isGridDirty) {
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
@@ -246,12 +256,21 @@ double AStarNavigator::onDraw(TreeNode* view)
 	// Save if the active barrier is built in the barrier mesh
 	if (objectexists(activeBarrier)) {
 		Barrier* b = activeBarrier->objectAs(Barrier);
-		b->isActive = 1;
+		b->isActive = true;
 		if (isBarrierMeshBuilt)
 			isActiveBarrierBuilt = selectedobject(view) == this->holder;
 	}
 	else if (isBarrierMeshBuilt)
 		isActiveBarrierBuilt = false;
+
+	// unset hovered barrier
+	if (objectexists(hovered)) {
+		Barrier* b = hovered->objectAs(Barrier);
+		if (b->isHovered) {
+			b->isHovered = false;
+			isBarrierDirty = true;
+		}
+	}
 	
 	double loc[3];
 	vectorproject(holder, 0, 0, 0, model(), loc);
@@ -407,6 +426,10 @@ double AStarNavigator::onDrag(TreeNode* view)
 
 			for (int i = 0; i < barrier->pointList.size(); i++) {
 				Point* point = barrier->pointList[i];
+				// add undo tracking for the x and y values
+				applicationcommand("addundotracking", view, node("x", point->holder));
+				applicationcommand("addundotracking", view, node("y", point->holder));
+				// move point x and y
 				point->x += dx;
 				point->y += dy;
 			}
@@ -518,7 +541,25 @@ double AStarNavigator::onDestroy(TreeNode* view)
 		TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT,0));
 		
 		if (objectexists(secondary)) {
-			destroyobject(secondary);
+			Divider* divider = secondary->objectAs(Barrier)->toDivider();
+			if (divider && divider->mode == 0) {
+				if (divider->activePointIndex != divider->pointList.size()) {
+					// Remove a divider point
+					divider->removePoint(divider->activePointIndex);
+					// Set the previous point as the active (unless there are only 2)
+					if (divider->pointList.size() > 2) {
+						if (divider->activePointIndex != 0) {
+							divider->activePointIndex -= 1;
+						}
+					}
+					else
+						divider->activePointIndex = divider->pointList.size();
+				}
+				else
+					destroyobject(secondary);
+			}
+			else
+				destroyobject(secondary);
 			setDirty();
 		} else {
 			destroyobject(holder);
@@ -2088,6 +2129,9 @@ ASTAR_FUNCTION Variant AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	setname(newNode, ss.str().c_str());
 	a->activeBarrier = newNode;
 	a->setDirty();
+
+	// Create undo record on the active view
+	a->addCreateRecord(nodefromwindow(activedocumentview()), newBarrier);
 
 	return newNode;
 }

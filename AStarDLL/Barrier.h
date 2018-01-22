@@ -26,6 +26,7 @@ public:
 	unsigned int meshOffset;
 	unsigned int nrVerts;
 	unsigned int isActive;
+	unsigned int isHovered;
 
 	unsigned int mode;
 	unsigned int activePointIndex;

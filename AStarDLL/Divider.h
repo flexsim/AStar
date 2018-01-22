@@ -21,6 +21,8 @@ public:
 	virtual double onClick(treenode view, int clickCode, double x, double y) override;
 	virtual double onMouseMove(const Vec3& pos, const Vec3& diff) override;
 	virtual Divider* toDivider() override { return this; }
+
+	void addCreatePointRecord(treenode view, Point* point);
 };
 
 }

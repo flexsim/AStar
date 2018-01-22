@@ -150,19 +150,32 @@ void Divider::addBarriersToTable(AStarNavigator* nav)
 
 void Divider::addVertices(Mesh* barrierMesh, float z)
 {
-	float lightGray[4] = { 0.6f, 0.6f, 0.6f, 1.0f };
-	float darkGray[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
-	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	if (!isActive) {
-		lightGray[0] = 0.4f;
-		lightGray[1] = 0.4f;
-		lightGray[2] = 0.4f;
+	float lightGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	float darkGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	float black[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	if (isActive) {
+		lightGray[0] = 0.6f;
+		lightGray[1] = 0.6f;
+		lightGray[2] = 0.6f;
+		darkGray[0] = 0.3f;
+		darkGray[1] = 0.3f;
+		darkGray[2] = 0.3f;
+		black[0] = 0.0f;
+		black[1] = 0.0f;
+		black[2] = 0.0f;
+		z += 0.01 / getmodelunit(LENGTH_MULTIPLE);
+	}
+	else if (isHovered) {
+		lightGray[0] = 0.7f;
+		lightGray[1] = 0.7f;
+		lightGray[2] = 0.7f;
 		darkGray[0] = 0.4f;
 		darkGray[1] = 0.4f;
 		darkGray[2] = 0.4f;
 		black[0] = 0.4f;
 		black[1] = 0.4f;
 		black[2] = 0.4f;
+		z += 0.02 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	nrVerts = 0;
 	meshOffset = barrierMesh->numVerts;
@@ -264,13 +277,8 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 {
 	if (clickCode == LEFT_PRESS) {
 		// If creating, don't try to change the active node or the mode
-		if (mode & BARRIER_MODE_CREATE) {
-			if (modeleditmode(-1) == 0) {
-				o(AStarNavigator, ownerobject(holder)).addCreateRecord(view, this);
-				mode = 0;
-			}
+		if (mode & BARRIER_MODE_CREATE)
 			return 0;
-		}
 
 		// If the click is on a node, make that the active node
 		int clickedIndex = -1;
@@ -303,10 +311,36 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 	if (clickCode == LEFT_RELEASE) {
 		// If creating, make a new point, and make it the active one
 		if (mode & BARRIER_MODE_CREATE) {
-			addPoint(x, y);
-			activePointIndex = pointList.size() - 1;
+			// Snap to gridpoints
+			if (!toPreferredPath() && !toBridge()) {
+				x = floor((x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+				y = floor((y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+			}
+
+			if (activePointIndex == 0) {
+				// Add undo record
+				if (pointList.size() > 2)
+					addCreatePointRecord(view, pointList[activePointIndex]);
+				// Add to the start of the pointlist
+				pointList.unshift(new Point(x, y, 0));
+				activePointIndex = 0;
+			}
+			else if (activePointIndex == pointList.size() - 1) {
+				// Add undo record
+				if(pointList.size() > 2)
+					addCreatePointRecord(view, pointList[activePointIndex]);
+				// Add to the end of the pointlist
+				addPoint(x, y);
+				activePointIndex = pointList.size() - 1;
+			}
+			else {
+				if (pointList.size() < 3)
+					activePointIndex = pointList.size();
+				mode = 0;
+			}
 		} else {
-			activePointIndex = pointList.size();
+			if(pointList.size() < 3)
+				activePointIndex = pointList.size();
 			mode = 0;
 		}
 	}
@@ -314,13 +348,11 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 	if (clickCode == RIGHT_RELEASE) {
 		// Right click -> abort barrier creation
 		if ((mode & BARRIER_MODE_CREATE)) {
-			pointList.remove(pointList.size() - 1);
+			pointList.remove(activePointIndex);
 			mode = 0;
 			activePointIndex = pointList.size();
 			if (pointList.size() < 2)
 				destroyobject(holder);
-			else
-				o(AStarNavigator, ownerobject(holder)).addCreateRecord(view, this);
 		}
 	}
 
@@ -329,7 +361,7 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 
 double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 {
-	if (mode & BARRIER_MODE_POINT_EDIT) {
+	if (mode & BARRIER_MODE_POINT_EDIT && activePointIndex < pointList.size()) {
 		Point* activePoint = pointList[(int)activePointIndex];
 		// Snap to grid points
 		if (!toPreferredPath() && !toBridge()) {
@@ -344,15 +376,33 @@ double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 			activePoint->z += diff.z;
 	}
 	else if (mode & BARRIER_MODE_MOVE) {
+		double diffX = diff.x;
+		double diffY = diff.y;
 		for (int i = 0; i < pointList.size(); i++) {
-			pointList[i]->x += diff.x;
-			pointList[i]->y += diff.y;
+			// Snap to grid points
+			if (!toPreferredPath() && !toBridge()) {
+				diffX = floor((pos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth
+					- floor((pos.x - diffX + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+				diffY = floor((pos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth
+					- floor((pos.y - diffY + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+			}
+			pointList[i]->x += diffX;
+			pointList[i]->y += diffY;
 			if (toBridge())
 				pointList[i]->z += diff.z;
 		}
 	}
 
 	return 0;
+}
+
+void Divider::addCreatePointRecord(treenode view, Point* point)
+{
+	int undoId = beginaggregatedundo(view, "Create Divider Point");
+	createundorecord(view, ownerobject(holder), UNDO_UPDATE_LINKS_ON_UNDO, 0, 0, 0);
+	createundorecord(view, point->holder, UNDO_CREATE_OBJECT, 0, 0, 0);
+	createundorecord(view, ownerobject(holder), UNDO_UPDATE_LINKS_ON_REDO, 0, 0, 0);
+	endaggregatedundo(view, undoId);
 }
 
 }
