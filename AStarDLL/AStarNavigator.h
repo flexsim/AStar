@@ -122,6 +122,8 @@ public:
 	double enableCollisionAvoidance;
 	double ignoreInactiveMemberCollisions;
 
+	double snapBetweenGrid;
+
 	double collisionUpdateIntervalFactor;
 	double collisionUpdateInterval;
 	double nextCollisionUpdateTime; 

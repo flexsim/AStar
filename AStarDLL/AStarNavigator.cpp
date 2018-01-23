@@ -90,6 +90,8 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(enableCollisionAvoidance);
 	bindVariable(ignoreInactiveMemberCollisions);
 
+	bindVariable(snapBetweenGrid);
+
 	bindVariable(showHeatMap);
 	bindVariable(heatMapMode);
 	bindVariable(maxHeatValue);

@@ -23,13 +23,6 @@ void Divider::bind(void)
 
 void Divider::init(double nodeWidth, double x1, double y1, double x2, double y2)
 {
-	// Snap to grid points
-	if (!toPreferredPath() && !toBridge()) {
-		x1 = floor((x1 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-		y1 = floor((y1 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-		x2 = floor((x2 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-		y2 = floor((y2 + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-	}
 	Barrier::init(nodeWidth, x1, y1, x2, y2);
 }
 
@@ -311,8 +304,8 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 	if (clickCode == LEFT_RELEASE) {
 		// If creating, make a new point, and make it the active one
 		if (mode & BARRIER_MODE_CREATE) {
-			// Snap to gridpoints
-			if (!toPreferredPath() && !toBridge()) {
+			// Snap between grid points
+			if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge()) {
 				x = floor((x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 				y = floor((y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 			}
@@ -363,8 +356,8 @@ double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 {
 	if (mode & BARRIER_MODE_POINT_EDIT && activePointIndex < pointList.size()) {
 		Point* activePoint = pointList[(int)activePointIndex];
-		// Snap to grid points
-		if (!toPreferredPath() && !toBridge()) {
+		// Snap between grid points
+		if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge()) {
 			activePoint->x = floor((pos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 			activePoint->y = floor((pos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 		}
@@ -379,8 +372,8 @@ double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 		double diffX = diff.x;
 		double diffY = diff.y;
 		for (int i = 0; i < pointList.size(); i++) {
-			// Snap to grid points
-			if (!toPreferredPath() && !toBridge()) {
+			// Snap between grid points
+			if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge()) {
 				diffX = floor((pos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth
 					- floor((pos.x - diffX + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 				diffY = floor((pos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth
