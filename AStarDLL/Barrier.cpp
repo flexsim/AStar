@@ -11,6 +11,7 @@ Barrier::Barrier()
 	, isHovered(0)
 	, activePointIndex(0)
 	, mode(0)
+	, lastMode(0)
 	, nodeWidth(1.0)
 {
 	return;

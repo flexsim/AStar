@@ -268,11 +268,7 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 
 double Divider::onClick(treenode view, int clickCode, double x, double y)
 {
-	if (clickCode == LEFT_PRESS) {
-		// If creating, don't try to change the active node or the mode
-		if (mode & BARRIER_MODE_CREATE)
-			return 0;
-
+	if (clickCode == LEFT_PRESS && !(mode & BARRIER_MODE_CREATE)) {
 		// If the click is on a node, make that the active node
 		int clickedIndex = -1;
 		for (int i = 0; i < pointList.size(); i++) {
@@ -312,7 +308,7 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 
 			if (activePointIndex == 0) {
 				// Add undo record
-				if (pointList.size() > 2)
+				if (pointList.size() > 2 && lastMode & BARRIER_MODE_CREATE)
 					addCreatePointRecord(view, pointList[activePointIndex]);
 				// Add to the start of the pointlist
 				pointList.unshift(new Point(x, y, 0));
@@ -320,7 +316,7 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 			}
 			else if (activePointIndex == pointList.size() - 1) {
 				// Add undo record
-				if(pointList.size() > 2)
+				if (pointList.size() > 2 && lastMode & BARRIER_MODE_CREATE)
 					addCreatePointRecord(view, pointList[activePointIndex]);
 				// Add to the end of the pointlist
 				addPoint(x, y);
@@ -344,6 +340,8 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 				destroyobject(holder);
 		}
 	}
+
+	lastMode = mode;
 
 	return 0;
 }

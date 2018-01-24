@@ -29,6 +29,7 @@ public:
 	unsigned int isHovered;
 
 	unsigned int mode;
+	unsigned int lastMode;
 	unsigned int activePointIndex;
 	unsigned int arrow;
 
