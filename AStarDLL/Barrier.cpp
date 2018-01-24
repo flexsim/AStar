@@ -131,13 +131,13 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 		black[0] += 0.2f;
 		black[1] += 0.2f;
 		black[2] += 0.2f;
-		z += 0.01 / getmodelunit(LENGTH_MULTIPLE);
+		z += 0.001 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	else if (isHovered) {
 		black[0] += 0.3f;
 		black[1] += 0.3f;
 		black[2] += 0.3f;
-		z += 0.02 / getmodelunit(LENGTH_MULTIPLE);
+		z += 0.002 / getmodelunit(LENGTH_MULTIPLE);
 	}
 
 	float scale = max(this->nodeWidth, 0.15 * max(height, width));
@@ -456,7 +456,7 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 		black[0] = 0.0f;
 		black[1] = 0.0f;
 		black[2] = 0.0f;
-		z += 0.01 / getmodelunit(LENGTH_MULTIPLE);
+		z += 0.001 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	else if (isHovered) {
 		theColor[0] = min(1.0f, color.r + 0.1f);
@@ -471,7 +471,7 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 		black[0] = 0.45f;
 		black[1] = 0.45f;
 		black[2] = 0.45f;
-		z += 0.02 / getmodelunit(LENGTH_MULTIPLE);
+		z += 0.002 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	nrVerts = 0;
 	meshOffset = barrierMesh->numVerts;
@@ -485,7 +485,7 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 	bool isBridge = toBridge() ? true : false;
 
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = { pointList[i]->x, pointList[i]->y, (isBridge ? pointList[i]->z + z : z) + 0.01 / getmodelunit(LENGTH_MULTIPLE)};
+		float center[3] = { pointList[i]->x, pointList[i]->y, (isBridge ? pointList[i]->z + z : z) + 0.001 / getmodelunit(LENGTH_MULTIPLE)};
 
 		// For each side, draw a triangle
 		for (int j = 0; j < numSides - 1; j++) {

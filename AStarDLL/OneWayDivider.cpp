@@ -135,7 +135,7 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 		black[0] = 0.0f;
 		black[1] = 0.0f;
 		black[2] = 0.0f;
-		z += 0.01 / getmodelunit(LENGTH_MULTIPLE);
+		z += 0.001 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	else if (isHovered) {
 		green[0] = 0.2f;
@@ -149,7 +149,7 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 		black[0] = 0.45f;
 		black[1] = 0.45f;
 		black[2] = 0.45f;
-		z += 0.02 / getmodelunit(LENGTH_MULTIPLE);
+		z += 0.002 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	nrVerts = 0;
 	meshOffset = barrierMesh->numVerts;
@@ -161,7 +161,7 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 	float dTheta = TWO_PI / numSides;
 
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = {pointList[i]->x, pointList[i]->y, z + 0.01 / getmodelunit(LENGTH_MULTIPLE)};
+		float center[3] = {pointList[i]->x, pointList[i]->y, z + 0.001 / getmodelunit(LENGTH_MULTIPLE)};
 
 		// For each side, draw a triangle
 		for (int j = 0; j < numSides - 1; j++) {
