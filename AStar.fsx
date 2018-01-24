@@ -967,14 +967,14 @@ other inactive travelers.</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/smoothRotations</data></node>
           </data></node>
-          <node f="42" dt="4"><name>Snap Dividers</name><data>
+          <node f="42" dt="4"><name>Snap Dividers to Grid</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040578000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Snap Dividers Between Grid Points</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Snap dividers between points of the AStar grid</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/snapBetweenGrid</data></node>
           </data></node>
           <node f="42" dt="4"><name>Paths</name><data>
