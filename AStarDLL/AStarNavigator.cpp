@@ -215,24 +215,30 @@ double AStarNavigator::onDraw(TreeNode* view)
 	int drawMode = (int)this->drawMode;
 	if (drawMode == 0 && (showHeatMap == 0 || heatMapMode == 0) && showAllocations == 0 && showTravelThreshold == 0)
 		return 0;
-	
-	// Show the activeBarrier if the AStarNavigator is highlighted
-	if (objectexists(activeBarrier)) {
-		bool showActiveBarrier = selectedobject(view) == this->holder;
-		Barrier* b = activeBarrier->objectAs(Barrier);
-		b->isActive = showActiveBarrier;
-		if (showActiveBarrier != isActiveBarrierBuilt)
-			isBarrierDirty = true;
-	}
 
-	// Semi highlight hovered barrier
+	int pickingmode = getpickingmode(view);
 	treenode hovered = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, -1));
-	if (objectexists(hovered)) {
-		Barrier* b = hovered->objectAs(Barrier);
-		if (!objectexists(activeBarrier) || !(activeBarrier->objectAs(Barrier)->mode & BARRIER_MODE_CREATE)) {
-			b->isHovered = true;
-			isBarrierDirty = true;
+
+	if (!pickingmode) {
+		// Show the activeBarrier if the AStarNavigator is highlighted
+		if (objectexists(activeBarrier)) {
+			bool showActiveBarrier = selectedobject(view) == this->holder;
+			Barrier* b = activeBarrier->objectAs(Barrier);
+			b->isActive = showActiveBarrier;
+			if (showActiveBarrier != isActiveBarrierBuilt)
+				isBarrierDirty = true;
 		}
+
+		// Semi highlight hovered barrier
+		if (objectexists(hovered)) {
+			Barrier* b = hovered->objectAs(Barrier);
+			if (!objectexists(activeBarrier) || !(activeBarrier->objectAs(Barrier)->mode & BARRIER_MODE_CREATE)) {
+				b->isHovered = true;
+				isBarrierDirty = true;
+			}
+		}
+		else if (isHoveredBarrierBuilt)
+			isBarrierDirty = true;
 	}
 
 	double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
@@ -255,23 +261,26 @@ double AStarNavigator::onDraw(TreeNode* view)
 			isBarrierDirty = false;
 	}
 
-	// Save if the active barrier is built in the barrier mesh
-	if (objectexists(activeBarrier)) {
-		Barrier* b = activeBarrier->objectAs(Barrier);
-		b->isActive = true;
-		if (isBarrierMeshBuilt)
-			isActiveBarrierBuilt = selectedobject(view) == this->holder;
-	}
-	else if (isBarrierMeshBuilt)
-		isActiveBarrierBuilt = false;
-
-	// unset hovered barrier
-	if (objectexists(hovered)) {
-		Barrier* b = hovered->objectAs(Barrier);
-		if (b->isHovered) {
-			b->isHovered = false;
-			isBarrierDirty = true;
+	if (!pickingmode) {
+		// Save if the active barrier is built in the barrier mesh
+		if (objectexists(activeBarrier)) {
+			Barrier* b = activeBarrier->objectAs(Barrier);
+			if (isBarrierMeshBuilt)
+				isActiveBarrierBuilt = b->isActive;
+			b->isActive = true;
 		}
+		else if (isBarrierMeshBuilt)
+			isActiveBarrierBuilt = false;
+
+		// unset hovered barrier
+		if (objectexists(hovered)) {
+			Barrier* b = hovered->objectAs(Barrier);
+			isHoveredBarrierBuilt = b->isHovered;
+			if (b->isHovered)
+				b->isHovered = false;
+		}
+		else
+			isHoveredBarrierBuilt = false;
 	}
 	
 	double loc[3];
@@ -291,7 +300,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 		vpRadius = maxof(get(spatialsx(view)), get(spatialsy(view))) / get(viewmagnification(view));
 	double offset = max(-1, -50 / (vpRadius * getmodelunit(LENGTH_MULTIPLE)));
 
-	int pickingmode = getpickingmode(view);
 	if (!pickingmode) {
 		fglDisable(GL_TEXTURE_2D);
 		fglDisable(GL_LIGHTING);
@@ -400,6 +408,25 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 
 double AStarNavigator::onUndo(bool isUndo, treenode undoRecord)
 {
+	if (objectexists(activeBarrier)) {
+		Barrier* b = activeBarrier->objectAs(Barrier);
+		// Stop barrier creation
+		if (b->mode & BARRIER_MODE_CREATE) {
+			if (b->pointList.size() > 2) {
+				b->removePoint(min(b->activePointIndex, b->pointList.size() - 1));
+				b->activePointIndex = b->pointList.size();
+				b->mode = 0;
+			}
+			else
+				destroyobject(b->holder);
+		}
+		else {
+			// Fix active point index
+			if(b->activePointIndex > b->pointList.size())
+				b->activePointIndex = b->pointList.size();
+		}
+	}
+	// Redraw barriers
 	setDirty();
 	return 0;
 }
@@ -539,29 +566,18 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 double AStarNavigator::onDestroy(TreeNode* view)
 {
 	if (objectexists(view)) {
-		int picktype = (int)getpickingdrawfocus(view, PICK_TYPE,0);
-		TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT,0));
-		
-		if (objectexists(secondary)) {
-			Divider* divider = secondary->objectAs(Barrier)->toDivider();
-			if (divider && divider->mode == 0) {
-				if (divider->activePointIndex != divider->pointList.size()) {
-					// Remove a divider point
-					divider->removePoint(divider->activePointIndex);
-					// Set the previous point as the active (unless there are only 2)
-					if (divider->pointList.size() > 2) {
-						if (divider->activePointIndex != 0) {
-							divider->activePointIndex -= 1;
-						}
-					}
-					else
-						divider->activePointIndex = divider->pointList.size();
-				}
-				else
-					destroyobject(secondary);
+		if (objectexists(activeBarrier)) {
+			Divider* divider = activeBarrier->objectAs(Barrier)->toDivider();
+			if (divider && divider->mode == 0 && divider->pointList.size() > 2
+				&& divider->activePointIndex != divider->pointList.size()) {
+				// Remove a divider point
+				divider->removePoint(divider->activePointIndex);
+				// Set the previous point as the active
+				if (divider->activePointIndex != 0)
+					divider->activePointIndex -= 1;
 			}
 			else
-				destroyobject(secondary);
+				destroyobject(activeBarrier);
 			setDirty();
 		} else {
 			destroyobject(holder);

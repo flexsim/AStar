@@ -68,6 +68,7 @@ protected:
 	bool isBarrierMeshBuilt = false;
 	bool isGridMeshBuilt = false;
 	bool isActiveBarrierBuilt = false;
+	bool isHoveredBarrierBuilt = false;
 
 	inline AStarSearchEntry* expandOpenSet(int r, int c, float multiplier, int travelVal, char bridgeIndex = -1);
 	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold, bool setStartEntry);

@@ -162,12 +162,12 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 		lightGray[0] = 0.7f;
 		lightGray[1] = 0.7f;
 		lightGray[2] = 0.7f;
-		darkGray[0] = 0.4f;
-		darkGray[1] = 0.4f;
-		darkGray[2] = 0.4f;
-		black[0] = 0.4f;
-		black[1] = 0.4f;
-		black[2] = 0.4f;
+		darkGray[0] = 0.45f;
+		darkGray[1] = 0.45f;
+		darkGray[2] = 0.45f;
+		black[0] = 0.45f;
+		black[1] = 0.45f;
+		black[2] = 0.45f;
 		z += 0.02 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	nrVerts = 0;
@@ -327,21 +327,17 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 				activePointIndex = pointList.size() - 1;
 			}
 			else {
-				if (pointList.size() < 3)
-					activePointIndex = pointList.size();
 				mode = 0;
 			}
 		} else {
-			if(pointList.size() < 3)
-				activePointIndex = pointList.size();
 			mode = 0;
 		}
 	}
 
 	if (clickCode == RIGHT_RELEASE) {
 		// Right click -> abort barrier creation
-		if ((mode & BARRIER_MODE_CREATE)) {
-			pointList.remove(activePointIndex);
+		if (mode & BARRIER_MODE_CREATE) {
+			removePoint(activePointIndex);
 			mode = 0;
 			activePointIndex = pointList.size();
 			if (pointList.size() < 2)

@@ -281,8 +281,6 @@ if (!objectexists(selobj)) {
 
 
 if (clickCode == LEFT_PRESS) {
-	if(getvarnum(c, "creating"))
-		function_s(activeNavigator, "setBarrierMode", currBarrierNode, BARRIER_MODE_DYNAMIC_CREATE);
 	setvarnum(c, "dragX", 0);
 	setvarnum(c, "dragY", 0);
 	setvarnum(c, "dragging", 1);
@@ -434,18 +432,28 @@ treenode handler = tonode(get(objectfocus(c)));
 treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
 
 if(objectexists(secondary)) {
-	treenode currBarrierNode = tonode(getvarnum(handler, "currBarrierNode"));
 	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
 	if (!objectexists(activeNavigator))
 		activeNavigator = function_s(handler, "findNavigator");
 	
-	if(objectexists(activeNavigator) &amp;&amp; !currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
+	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
+		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(secondary, getname(c))) {
 		// Add to an existing
+		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "currBarrierNode"), secondary);
+		
 		setvarnum(handler, "creating", 1);
 		setvarnum(handler, "editing", 0);
 		
-		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "currBarrierNode"), secondary);
+		double mouseX = cursorinfo(i, 2, 1, 1);
+		double mouseY = cursorinfo(i, 2, 2, 1);
+		function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY);
+		
+		postwindowmessage(windowfromnode(i/*The view*/),
+			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
+			node("checkStatus", eventfunctions(handler)), 0);
+		
+		return 0;
 	}
 }
 
@@ -483,18 +491,28 @@ treenode handler = tonode(get(objectfocus(c)));
 treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
 
 if(objectexists(secondary)) {
-	treenode currBarrierNode = tonode(getvarnum(handler, "currBarrierNode"));
 	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
 	if (!objectexists(activeNavigator))
 		activeNavigator = function_s(handler, "findNavigator");
 	
-	if(objectexists(activeNavigator) &amp;&amp; !currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
+	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
+		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(secondary, getname(c))) {
 		// Add to an existing
+		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "currBarrierNode"), secondary);
+		
 		setvarnum(handler, "creating", 1);
 		setvarnum(handler, "editing", 0);
 		
-		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "currBarrierNode"), secondary);
+		double mouseX = cursorinfo(i, 2, 1, 1);
+		double mouseY = cursorinfo(i, 2, 2, 1);
+		function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY);
+		
+		postwindowmessage(windowfromnode(i/*The view*/),
+			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
+			node("checkStatus", eventfunctions(handler)), 0);
+		
+		return 0;
 	}
 }
 
@@ -532,18 +550,28 @@ treenode handler = tonode(get(objectfocus(c)));
 treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
 
 if(objectexists(secondary)) {
-	treenode currBarrierNode = tonode(getvarnum(handler, "currBarrierNode"));
 	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
 	if (!objectexists(activeNavigator))
 		activeNavigator = function_s(handler, "findNavigator");
 	
-	if(objectexists(activeNavigator) &amp;&amp; !currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
+	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
+		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(secondary, getname(c))) {
 		// Add to an existing
+		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "currBarrierNode"), secondary);
+		
 		setvarnum(handler, "creating", 1);
 		setvarnum(handler, "editing", 0);
 		
-		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "currBarrierNode"), secondary);
+		double mouseX = cursorinfo(i, 2, 1, 1);
+		double mouseY = cursorinfo(i, 2, 2, 1);
+		function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY);
+		
+		postwindowmessage(windowfromnode(i/*The view*/),
+			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
+			node("checkStatus", eventfunctions(handler)), 0);
+		
+		return 0;
 	}
 }
 
@@ -581,18 +609,28 @@ treenode handler = tonode(get(objectfocus(c)));
 treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
 
 if(objectexists(secondary)) {
-	treenode currBarrierNode = tonode(getvarnum(handler, "currBarrierNode"));
 	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
 	if (!objectexists(activeNavigator))
 		activeNavigator = function_s(handler, "findNavigator");
 	
-	if(objectexists(activeNavigator) &amp;&amp; !currBarrierNode &amp;&amp; isclasstype(secondary, getname(c))) {
+	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
+		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(secondary, getname(c))) {
 		// Add to an existing
+		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "currBarrierNode"), secondary);
+		
 		setvarnum(handler, "creating", 1);
 		setvarnum(handler, "editing", 0);
 		
-		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "currBarrierNode"), secondary);
+		double mouseX = cursorinfo(i, 2, 1, 1);
+		double mouseY = cursorinfo(i, 2, 2, 1);
+		function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY);
+		
+		postwindowmessage(windowfromnode(i/*The view*/),
+			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
+			node("checkStatus", eventfunctions(handler)), 0);
+		
+		return 0;
 	}
 }
 

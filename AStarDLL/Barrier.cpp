@@ -465,12 +465,12 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 		lightGray[0] = 0.7f;
 		lightGray[1] = 0.7f;
 		lightGray[2] = 0.7f;
-		darkGray[0] = 0.4f;
-		darkGray[1] = 0.4f;
-		darkGray[2] = 0.4f;
-		black[0] = 0.4f;
-		black[1] = 0.4f;
-		black[2] = 0.4f;
+		darkGray[0] = 0.45f;
+		darkGray[1] = 0.45f;
+		darkGray[2] = 0.45f;
+		black[0] = 0.45f;
+		black[1] = 0.45f;
+		black[2] = 0.45f;
 		z += 0.02 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	nrVerts = 0;
