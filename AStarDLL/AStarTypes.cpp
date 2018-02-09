@@ -205,6 +205,20 @@ void AStarNodeExtraData::onReleaseTimeExtended(NodeAllocation& changedAlloc, dou
 	}
 }
 
+
+
+void AStarNodeExtraData::onReleaseTimeTruncated(NodeAllocation& changedAlloc, double oldReleaseTime)
+{
+	NodeAllocationIterator nextIter;
+
+	if (changedAlloc.acquireTime <= time() && requests.size() > 0) {
+		if (continueEvent)
+			destroyevent(continueEvent->holder);
+		if (changedAlloc.releaseTime < FLT_MAX)
+			continueEvent = createevent(new ContinueEvent(std::nextafter(changedAlloc.releaseTime, FLT_MAX), requests.front().traveler, changedAlloc.traveler, cell))->objectAs(ContinueEvent);
+	}
+}
+
 NodeAllocation* AStarNodeExtraData::addRequest(NodeAllocation& request, NodeAllocation& blockingAllocation, std::vector<Traveler*>* deadlockList)
 {
 	requests.push_back(request);
@@ -277,6 +291,17 @@ void NodeAllocation::extendReleaseTime(double toTime)
 	AStarNodeExtraData* nodeData = traveler->navigator->getExtraData(cell);
 	nodeData->onReleaseTimeExtended(*this, oldReleaseTime);
 }
+
+void NodeAllocation::truncateReleaseTime(double toTime)
+{
+	double oldReleaseTime = releaseTime;
+	releaseTime = toTime;
+	if (toTime >= oldReleaseTime)
+		return;
+	AStarNodeExtraData* nodeData = traveler->navigator->getExtraData(cell);
+	nodeData->onReleaseTimeTruncated(*this, oldReleaseTime);
+}
+
 
 
 bool AllocationStep::isImmediatelyBlocked(Traveler* traveler)

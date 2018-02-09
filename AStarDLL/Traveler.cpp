@@ -44,6 +44,10 @@ void Traveler::bind()
 	bindNumber(bridgeData.pathIndex);
 	bindObjPtr(bridgeData.prevTraveler);
 	bindObjPtr(bridgeData.nextTraveler);
+
+	bindNumber(turnSpeed);
+	bindNumber(turnDelay);
+	bindNumber(estimatedIndefiniteAllocTimeDelay);
 	//bindStlContainer(allocations);
 }
 
@@ -149,7 +153,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 		endTime = time();
 		if (objectexists(te->node_v_modifyrotation) && te->node_v_modifyrotation->value) {
 
-			if (rotLerpSize == 0)
+			if (rotLerpSize == 0 && !nav->stopForTurns)
 				kinFlags |= KINEMATIC_MANAGE_ROTATIONS;
 
 			if (!te->canRotateOnIncline())
@@ -196,6 +200,8 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 		}
 	}
 	int i;
+	double deallocTimeOffset = (nodeWidth * nav->deallocTimeAddFactor) / te->v_maxspeed;
+	double firstCellDeallocTime = time() + deallocTimeOffset;
 	for (i = startAtPathIndex + 1; i < numNodes; i++) {
 		e = travelPath[i];
 		AllocationStep step(laste.cell, e.cell);
@@ -230,10 +236,8 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 				diff = toLoc - startLoc;
 				isExitingBridge = false;
 			}
-			endTime = addkinematic(kinematics, diff.x, diff.y, diff.z,
-				te->v_maxspeed, 0, 0, 0, 0, startTime, KINEMATIC_TRAVEL);
 
-			if (rotLerpSize != 0) {
+			if (rotLerpSize != 0 || nav->stopForTurns) {
 				double nextRot = radianstodegrees(atan2(diff.y, diff.x));
 				double rotDiff = nextRot - lastRotation;
 				while (rotDiff > 180)
@@ -241,15 +245,28 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 				while (rotDiff < -180)
 					rotDiff += 360;
 
-				double timeToRot = rotDiff / rotLerpSpeed;
-				double rotStartTime = max(time(), startTime - 0.5 * timeToRot);
-				addkinematic(kinematics, 0, 0, rotDiff, rotLerpSpeed, 0, 0, 0, 0, rotStartTime, KINEMATIC_ROTATE);
+				if (nav->stopForTurns) {
+					if (fabs(rotDiff) > 1) {
+						startTime = addkinematic(kinematics, 0, 0, rotDiff, turnSpeed, 0, 0, 0, 0, startTime + 0.5 * turnDelay, KINEMATIC_ROTATE) + 0.5 * turnDelay;
+						if (lastAllocation)
+							lastAllocation->extendReleaseTime(startTime + deallocTimeOffset);
+						if (i == startAtPathIndex + 1)
+							firstCellDeallocTime = startTime + deallocTimeOffset;
+					}
+				} else {
+					double timeToRot = fabs(rotDiff) / rotLerpSpeed;
+					double rotStartTime = max(time(), startTime - 0.5 * timeToRot);
+					addkinematic(kinematics, 0, 0, rotDiff, rotLerpSpeed, 0, 0, 0, 0, rotStartTime, KINEMATIC_ROTATE);
+				}
 				lastRotation = nextRot;
 			}
 
+			endTime = addkinematic(kinematics, diff.x, diff.y, diff.z,
+				te->v_maxspeed, 0, 0, 0, 0, startTime, KINEMATIC_TRAVEL);
+
 			if (enableCollisionAvoidance) {
 				double middleReleaseTime = 0.5 * (startTime + endTime);
-				NodeAllocation allocation(this, e.cell, i, 0, startTime, middleReleaseTime, 1.0);
+				NodeAllocation allocation(this, e.cell, i, 0, startTime, middleReleaseTime + deallocTimeOffset, 1.0);
 				bool success = true;
 				NodeAllocation* intermediate1 = nullptr;
 				NodeAllocation* intermediate2 = nullptr;
@@ -272,7 +289,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 				}
 				if (success) {
 					allocation.cell = e.cell;
-					allocation.releaseTime = std::nextafter(endTime, DBL_MAX);
+					allocation.releaseTime = std::nextafter(endTime + deallocTimeOffset, DBL_MAX);
 					lastAllocation = addAllocation(allocation, false, true);
 					success = lastAllocation != nullptr;
 				}
@@ -332,7 +349,9 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 		if (enableCollisionAvoidance && initialAllocsSize > 0) {
 			for (int i = initialAllocsSize - 1; i >= 0; i--) {
 				if (allocations[i]->isMarkedForDeletion) {
-					removeAllocation(allocations.begin() + i);
+					if (firstCellDeallocTime == time())
+						removeAllocation(allocations.begin() + i);
+					else allocations[i]->truncateReleaseTime(firstCellDeallocTime);
 				}
 			}
 		}

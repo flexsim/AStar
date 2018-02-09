@@ -37,6 +37,7 @@ protected:
 	// Temporary variables that are used as part of the search
 	AStarNode * n;
 	AStarSearchEntry shortest;
+	Traveler* routingTraveler = nullptr;
 	int travelFromPrevious;
 	Vec2 destLoc;
 	double maxPathWeight;
@@ -106,6 +107,24 @@ public:
 	double defaultPathWeight;
 	double nodeWidth;
 	double surroundDepth;
+
+	double routeByTravelTime;
+	double activeReroute;
+
+	static double getRotationFromTravelDirection(int travelDir);
+	double stopForTurns;
+	treenode turnSpeed;
+	treenode turnDelay;
+	treenode estimatedIndefiniteAllocTimeDelay;
+	double routingTravelStartTime;
+	/// <summary>The dealloc time add factor. This creates an additional amount of time that a node will be allocated. The
+	/// 		 value is expressed as a percentage (0 - 1.0) of a node width. The algorithm will calculate the time 
+	/// 		 it takes the te to travel this distance, and add the time to the deallocation time.</summary>
+	double deallocTimeAddFactor;
+
+	static const int SEARCH_DIAGONALS = 0;
+	static const int SEARCH_DEEP_DIAGONALS = 1;
+	static const int SEARCH_RIGHT_ANGLES_ONLY = 2;
 	double deepSearch;
 	double drawMode;
 	double showAllocations;
@@ -168,7 +187,7 @@ public:
 	AStarSearchEntry* checkExpandOpenSetDiagonal(AStarNode* node, AStarSearchEntry* entryIn,
 		Direction dir1, Direction dir2, int travelVal, double dist, AStarNodeExtraData* extraData);
 
-	TravelPath calculateRoute(Traveler* traveler, double* destLoc, double endSpeed, bool doFullSearch = false);
+	TravelPath calculateRoute(Traveler* traveler, double* destLoc, double endSpeed, bool doFullSearch = false, double travelStartTime = -1);
 
 	virtual double updateLocations() override;
 	virtual double updateLocations(TaskExecuter* te) override;

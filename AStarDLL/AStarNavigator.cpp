@@ -71,6 +71,15 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(nodeWidth);
 	bindVariable(surroundDepth);
 	bindVariable(deepSearch);
+
+	bindVariable(routeByTravelTime);
+	bindVariable(activeReroute);
+	bindVariable(stopForTurns);
+	bindVariable(turnSpeed);
+	bindVariable(turnDelay);
+	bindVariable(estimatedIndefiniteAllocTimeDelay);
+	bindVariable(deallocTimeAddFactor);
+
 	bindVariable(ignoreDestBarrier);
 	bindVariable(showTravelThreshold);
 	bindVariable(smoothRotations);
@@ -101,6 +110,8 @@ void AStarNavigator::bindVariables(void)
 
 	bindStateVariable(collisionUpdateInterval);
 	bindStateVariable(nextCollisionUpdateTime);
+
+
 
 
 	bindVariableByName("extraData", extraDataNode, ODT_BIND_STATE_VARIABLE);
@@ -654,12 +665,12 @@ void AStarNavigator::onCollisionIntervalUpdate()
 }
 
 AStarSearchEntry* AStarNavigator::checkExpandOpenSet(AStarNode* node, AStarSearchEntry* entryIn, Direction direction, 
-	int travelVal, double dist, double bonusMod, AStarNodeExtraData* extraData)
+	int travelVal, double distFactor, double bonusMod, AStarNodeExtraData* extraData)
 {
 	if (node->canGo(direction)) {
 		int theCol = entryIn->cell.col + AStarNode::colInc[direction];
 		int theRow = entryIn->cell.row + AStarNode::rowInc[direction];
-		double distance = dist;
+		double distance = distFactor;
 		if (extraData && extraData->getBonus(direction) != 0) {
 			distance *= 1.0 - (bonusMod * (double)(int)extraData->getBonus(direction)) / 127;
 		}
@@ -698,7 +709,7 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(AStarNode* node, AS
 		}
 	}
 
-	if (e1 && deepSearch) {
+	if (e1 && deepSearch == SEARCH_DEEP_DIAGONALS) {
 		AStarNode* n1 = &DeRefEdgeTable(e1->cell.row, e1->cell.col);
 		AStarSearchEntry e1StackCopy = *e1;
 
@@ -714,9 +725,18 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(AStarNode* node, AS
 }
 
 
-TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLoc, double endSpeed, bool doFullSearch)
+TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLoc, double endSpeed, bool doFullSearch, double startTime)
 {
 	TreeNode* travelerNode = traveler->te->holder;
+	routingTraveler = traveler;
+	routingTravelStartTime = startTime < 0 ? time() : startTime;
+	if (stopForTurns) {
+		traveler->turnDelay = turnDelay->evaluate(traveler->te->holder);
+		traveler->turnSpeed = turnSpeed->evaluate(traveler->te->holder);
+	}
+	if (routeByTravelTime && enableCollisionAvoidance) {
+		traveler->estimatedIndefiniteAllocTimeDelay = estimatedIndefiniteAllocTimeDelay->evaluate(traveler->te->holder);
+	}
 	double centerx = 0.5 * xsize(travelerNode);
 	double centery = 0.5 * ysize(travelerNode);
 
@@ -745,7 +765,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	// Figure out if this path is in the cache
 	bool shouldUseCache = false;
 	CachedPathID p;
-	if (cachePaths && !doFullSearch) {
+	if (cachePaths && !doFullSearch && !routeByTravelTime) {
 		requestCount++;
 		p.startRow = startCell.row;
 		p.startCol = startCell.col;
@@ -900,10 +920,12 @@ the outside 8 nodes.
 		checkExpandOpenSet(n, (&shortest), Down, TRAVEL_DOWN, 1.0, 1.0, extraData);
 		checkExpandOpenSet(n, (&shortest), Left, TRAVEL_LEFT, 1.0, 1.0, extraData);
 
-		checkExpandOpenSetDiagonal(n, (&shortest), Up, Right, TRAVEL_UP | TRAVEL_RIGHT, ROOT2, extraData);
-		checkExpandOpenSetDiagonal(n, (&shortest), Up, Left, TRAVEL_UP | TRAVEL_LEFT, ROOT2, extraData);
-		checkExpandOpenSetDiagonal(n, (&shortest), Down, Right, TRAVEL_DOWN | TRAVEL_RIGHT, ROOT2, extraData);
-		checkExpandOpenSetDiagonal(n, (&shortest), Down, Left, TRAVEL_DOWN | TRAVEL_LEFT, ROOT2, extraData);
+		if (deepSearch != SEARCH_RIGHT_ANGLES_ONLY) {
+			checkExpandOpenSetDiagonal(n, (&shortest), Up, Right, TRAVEL_UP | TRAVEL_RIGHT, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(n, (&shortest), Up, Left, TRAVEL_UP | TRAVEL_LEFT, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(n, (&shortest), Down, Right, TRAVEL_DOWN | TRAVEL_RIGHT, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(n, (&shortest), Down, Left, TRAVEL_DOWN | TRAVEL_LEFT, ROOT2, extraData);
+		}
 
 		if (n->hasExtraData) {
 			auto e = edgeTableExtraData.find(shortest.cell.colRow);
@@ -977,10 +999,12 @@ the outside 8 nodes.
 		}
 	}
 
-	if (cachePaths && !doFullSearch) {
+	if (cachePaths && !doFullSearch && !routeByTravelTime) {
 		pathCache[p] = travelPath;
 		pathCount++;
 	}
+
+	routingTraveler = nullptr;
 
 	return travelPath;
 
@@ -1079,17 +1103,60 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 		totalSetIndex = entryHash[hashEntry.cell.colRow];
 		entry = &(totalSet[totalSetIndex]);
 	}
-	float newG = shortest.g + multiplier * nodeWidth;
-	/*  Check if the guy is changing directions. If so, I want to increase the distance so it will be a penalty to make turns*/ \
+	float speedScale = routeByTravelTime ? 1.0 / routingTraveler->te->v_maxspeed : 1.0;
+	float newG = shortest.g + multiplier * nodeWidth * speedScale;
+
+	float rotationTime = 0.0f;
+	/*  Check if the guy is changing directions. If so, I want to increase the distance so it will be a penalty to make turns*/
 	if(travelVal != travelFromPrevious) {
 		// add a small penalty if he's turning
-		newG += directionChangePenalty * nodeWidth;
-		// if it's a right angle turn or more, then add more penalty
-		if((travelFromPrevious & travelVal) == 0)
+		if (routeByTravelTime && stopForTurns) {
+			rotationTime = routingTraveler->turnDelay;
+			double fromDirection = getRotationFromTravelDirection(travelFromPrevious);
+			double toDirection = getRotationFromTravelDirection(travelVal);
+			double diff = toDirection;
+			if (diff > 180.0)
+				diff -= 360.0;
+			else if (diff < -180.0)
+				diff += 360.0;
+
+			rotationTime += fabs(diff) / routingTraveler->turnSpeed;
+			newG += rotationTime;
+		} else {
 			newG += directionChangePenalty * nodeWidth;
+			// if it's a right angle turn or more, then add more penalty
+			if ((travelFromPrevious & travelVal) == 0)
+				newG += directionChangePenalty * nodeWidth;
+		}
+	}
+
+	if (routeByTravelTime && enableCollisionAvoidance) {
+		AStarNodeExtraData* extra = getExtraData(AStarCell(c, r));
+		if (extra) {
+			double allocTime = routingTravelStartTime + shortest.g + rotationTime;
+			auto found = std::find_if(extra->allocations.begin(), extra->allocations.end(), 
+				[&] (NodeAllocation& alloc) -> bool {
+					return alloc.acquireTime <= allocTime
+						&& alloc.releaseTime > allocTime;
+				});
+			if (found != extra->allocations.end()) {
+				double releaseTime = found->releaseTime;
+				while (releaseTime != DBL_MAX 
+					&& (found = std::find_if(extra->allocations.begin(), extra->allocations.end(),
+						[&](NodeAllocation& alloc) -> bool { return alloc.acquireTime == releaseTime; })) != extra->allocations.end()) 
+				{
+					releaseTime = found->releaseTime;
+				}
+				if (releaseTime == DBL_MAX) {
+					newG += (double)estimatedIndefiniteAllocTimeDelay->evaluate(routingTraveler->te->holder);
+				} else {
+					newG += releaseTime - allocTime;
+				}
+			}
+		}
 	}
 	
-	if (!entry || newG < entry->g-0.01*nodeWidth) {
+	if (!entry || newG < entry->g - 0.01*nodeWidth) {
 		// if entry is NULL, that means he's not in the total set yet,
 		// so I need to add him.
 		if (!entry) {
@@ -1102,7 +1169,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 			// calculate the distance heuristic h
 			double diffx = destLoc.x - (gridOrigin.x + entry->cell.col * nodeWidth);
 			double diffy = destLoc.y - (gridOrigin.y + entry->cell.row * nodeWidth);
-			entry->h = (1.0 - maxPathWeight) * sqrt(diffx*diffx + diffy*diffy);
+			entry->h = (1.0 - maxPathWeight) * sqrt(diffx*diffx + diffy*diffy) * speedScale;
 			entry->closed = 0;
 			n->isInTotalSet = true;
 		}
@@ -1825,6 +1892,39 @@ void AStarNavigator::buildGridMesh(float z)
 	isGridMeshBuilt = true;
 }
 
+double AStarNavigator::getRotationFromTravelDirection(int travelDir)
+{
+	if (travelDir & TRAVEL_FAR_RIGHT) {
+		if (travelDir & TRAVEL_UP)
+			return 26.565051177089;
+		else return -26.565051177089;
+	} else if (travelDir & TRAVEL_FAR_LEFT) {
+		if (travelDir & TRAVEL_UP)
+			return 153.434948822923;
+		else return -153.434948822923;
+	} else if (travelDir & TRAVEL_FAR_UP) {
+		if (travelDir & TRAVEL_RIGHT)
+			return 63.434948822917;
+		else return 116.565051177095;
+	} else if (travelDir & TRAVEL_FAR_DOWN) {
+		if (travelDir & TRAVEL_RIGHT)
+			return -63.434948822917;
+		else return -116.565051177095;
+	} else if (travelDir & TRAVEL_RIGHT) {
+		if (travelDir & TRAVEL_UP)
+			return 45.0;
+		else if (travelDir & TRAVEL_DOWN)
+			return -45.0;
+		else return 0.0;
+	} else if (travelDir & TRAVEL_LEFT) {
+		if (travelDir & TRAVEL_UP)
+			return 135;
+		else if (travelDir & TRAVEL_DOWN)
+			return -135.0;
+		else return 180.9;
+	}
+	return 0.0;
+}
 
 void AStarNavigator::drawAllocations(float z)
 {

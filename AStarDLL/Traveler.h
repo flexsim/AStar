@@ -23,6 +23,9 @@ public:
 
 	Vec3 destLoc;
 	double endSpeed;
+	double turnSpeed;
+	double turnDelay;
+	double estimatedIndefiniteAllocTimeDelay;
 	DestinationThreshold destThreshold;
 	treenode destNode;
 	bool isActive = false;
