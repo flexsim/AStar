@@ -590,6 +590,12 @@ double AStarNavigator::onDestroy(TreeNode* view)
 double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destination, double endSpeed)
 {
 	double loc[3];
+
+	if (isclasstype(destination, CLASSTYPE_FLEXSIMEVENTHANDLER) && o(FlexSimEventHandler, destination).usePlaceOffsetForTravel(&o(TaskExecuter, traveler))) {
+		o(FlexSimEventHandler, destination).getPlaceOffset(traveler, 0, loc);
+		return navigateToLoc(traveler, loc, endSpeed);
+	}
+
 	Vec3 size = destination->objectAs(ObjectDataType)->size;
 	vectorproject(destination, 0.5 * size.x, -0.5 * size.y, 0, model(), loc);
 
