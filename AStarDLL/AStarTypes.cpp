@@ -87,7 +87,8 @@ void AStarPathEntry::bind(TreeNode* toNode)
 			break;
 		case SDT_BIND_ON_DISPLAY: {
 			char str[100];
-			sprintf(str, "bridgeIndex: %d", (int)bridgeIndex);
+			sprintf(str, "bridgeIndex: %d", 
+				(int)bridgeIndex);
 			SimpleDataType::appendToDisplayStr(str);
 			break;
 		}

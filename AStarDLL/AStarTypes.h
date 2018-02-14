@@ -153,7 +153,7 @@ struct AStarPathEntry {
 	AStarPathEntry(AStarCell cell, char bridgeIndex) : cell(cell), bridgeIndex(bridgeIndex) {}
 	void bind(TreeNode* toNode);
 	AStarCell cell;
-	char bridgeIndex;
+	int bridgeIndex;
 };
 
 typedef std::vector<AStarPathEntry> TravelPath;
@@ -169,7 +169,7 @@ struct AStarSearchEntry {
 	float h;
 	AStarCell cell;
 	unsigned int previous;
-	int travelFromPrevious;
+	float rotOnArrival;
 	char prevBridgeIndex;
 	bool closed;
 };

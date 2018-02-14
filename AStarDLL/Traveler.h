@@ -135,8 +135,10 @@ public:
 	ObjRef<BlockEvent> blockEvent;
 	double lastBlockTime;
 	double tinyTime = 0.0;
+	bool isRoutingNow = false;
 
 	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);
+	static bool findPredictedDeadlockCycle(AStarCell traveledFromCell, NodeAllocation& blockingAllocation, double allocTime, double releaseAtTime);
 
 	treenode onBlockTrigger = nullptr;
 	treenode onContinueTrigger = nullptr;
@@ -157,6 +159,22 @@ public:
 	BridgeData bridgeData;
 
 	void onTEDestroyed();
+
+	class RerouteEvent : public FlexSimEvent {
+	public:
+		RerouteEvent() : FlexSimEvent() {}
+		RerouteEvent(Traveler* rerouter, double time)
+			: FlexSimEvent(rerouter->holder, time, rerouter->holder, 0)
+		{}
+		virtual const char* getClassFactory() override { return "AStar::Traveler::RerouteEvent"; }
+		virtual void execute() override
+		{
+			partner()->objectAs(Traveler)->rerouteOnPredictedBlock(true);
+		}
+	};
+	ObjRef<RerouteEvent> rerouteEvent;
+	void rerouteOnPredictedBlock(bool isAtJunctionTime);
+	std::vector<Traveler*> pendingRerouteTravelers;
 
 };
 

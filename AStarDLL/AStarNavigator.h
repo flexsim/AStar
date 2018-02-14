@@ -38,7 +38,6 @@ protected:
 	AStarNode * n;
 	AStarSearchEntry shortest;
 	Traveler* routingTraveler = nullptr;
-	int travelFromPrevious;
 	Vec2 destLoc;
 	double maxPathWeight;
 	int shortestIndex;
@@ -71,7 +70,7 @@ protected:
 	bool isActiveBarrierBuilt = false;
 	bool isHoveredBarrierBuilt = false;
 
-	inline AStarSearchEntry* expandOpenSet(int r, int c, float multiplier, int travelVal, char bridgeIndex = -1);
+	inline AStarSearchEntry* expandOpenSet(int r, int c, float multiplier, float rotOnArrival, char bridgeIndex = -1);
 	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold, bool setStartEntry);
 	void checkBounds(TreeNode* theObj, Vec2& min, Vec2& max);
 	void buildBoundsMesh(float z);
@@ -108,14 +107,26 @@ public:
 	double nodeWidth;
 	double surroundDepth;
 
+	/// <summary>Route by travel time. Boolean. If 1, the routing algorithm will use estimated travel time, including 
+	/// 		 time blocked for collision avoidance, as the cost function in the A* algorithm.</summary>
 	double routeByTravelTime;
-	double activeReroute;
 
-	static double getRotationFromTravelDirection(int travelDir);
+	static float clampDirection(float rotDirection);
+	/// <summary>Stop for turns. Boolean.</summary>
 	double stopForTurns;
+	/// <summary>The turn speed. Only used when stopping for turns.</summary>
 	treenode turnSpeed;
+	/// <summary>The turn delay. And additional delay associated with stopping and turning. This is meant 
+	/// 		 to allow the user to define an additional delay because deceleration is not simulated.</summary>
 	treenode turnDelay;
-	treenode estimatedIndefiniteAllocTimeDelay;
+	/// <summary>The estimated indefinite allocate time delay. Only needed when routing based on travel time. 
+	/// 		 This is an additional penalty for a route that hits an allocation that is indefinite.</summary>
+	treenode indefiniteAllocTimePenalty;
+	/// <summary>The deadlock penalty.</summary>
+	treenode deadlockPenalty;
+
+	/// <summary>The routing travel start time. Used in the routing algorithm when routing based on travel time, to 
+	/// 		 estimate when collisions will happen.</summary>
 	double routingTravelStartTime;
 	/// <summary>The dealloc time add factor. This creates an additional amount of time that a node will be allocated. The
 	/// 		 value is expressed as a percentage (0 - 1.0) of a node width. The algorithm will calculate the time 
@@ -183,10 +194,21 @@ public:
 	virtual void onMemberDestroyed(TaskExecuter* te) override;
 	virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
 
-	AStarSearchEntry* checkExpandOpenSet(AStarNode* node, AStarSearchEntry* entryIn, Direction direction, int travelVal, double dist, double bonusMod, AStarNodeExtraData* extraData);
+	AStarSearchEntry* checkExpandOpenSet(AStarNode* node, AStarSearchEntry* entryIn, Direction direction, float rotDirection, double dist, double bonusMod, AStarNodeExtraData* extraData);
 	AStarSearchEntry* checkExpandOpenSetDiagonal(AStarNode* node, AStarSearchEntry* entryIn,
-		Direction dir1, Direction dir2, int travelVal, double dist, AStarNodeExtraData* extraData);
+		Direction dir1, Direction dir2, float rotDirection, double dist, AStarNodeExtraData* extraData);
 
+	/// <summary>Calculates the route.</summary>
+	///
+	/// <remarks>Anthony Johnson, 2/12/2018.</remarks>
+	///
+	/// <param name="traveler">		  [in,out] If non-null, the traveler.</param>
+	/// <param name="destLoc">		  [in,out] If non-null, destination location.</param>
+	/// <param name="endSpeed">		  The end speed.</param>
+	/// <param name="doFullSearch">   (Optional) True to do full search (no cached paths).</param>
+	/// <param name="travelStartTime">(Optional) The travel start time.</param>
+	///
+	/// <returns>The calculated route.</returns>
 	TravelPath calculateRoute(Traveler* traveler, double* destLoc, double endSpeed, bool doFullSearch = false, double travelStartTime = -1);
 
 	virtual double updateLocations() override;
@@ -214,6 +236,7 @@ public:
 		auto extraIter = edgeTableExtraData.find(cell.colRow);
 		return extraIter != edgeTableExtraData.end() ? extraIter->second : nullptr;
 	}
+	static AStarCell getPrevCell(AStarCell& toCell, float rotDirection);
 
 
 	NodeListArray<Traveler>::CouplingSdtSubNodeType travelers;
