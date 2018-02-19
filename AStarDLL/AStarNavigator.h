@@ -121,17 +121,18 @@ public:
 	treenode turnDelay;
 	/// <summary>The estimated indefinite allocate time delay. Only needed when routing based on travel time. 
 	/// 		 This is an additional penalty for a route that hits an allocation that is indefinite.</summary>
-	treenode indefiniteAllocTimePenalty;
+	//treenode indefiniteAllocTimePenalty;
 	/// <summary>The deadlock penalty.</summary>
-	treenode deadlockPenalty;
+	//treenode deadlockPenalty;
 
 	/// <summary>The routing travel start time. Used in the routing algorithm when routing based on travel time, to 
 	/// 		 estimate when collisions will happen.</summary>
 	double routingTravelStartTime;
+
 	/// <summary>The dealloc time add factor. This creates an additional amount of time that a node will be allocated. The
 	/// 		 value is expressed as a percentage (0 - 1.0) of a node width. The algorithm will calculate the time 
 	/// 		 it takes the te to travel this distance, and add the time to the deallocation time.</summary>
-	double deallocTimeAddFactor;
+	double deallocTimeOffset;
 
 	static const int SEARCH_DIAGONALS = 0;
 	static const int SEARCH_DEEP_DIAGONALS = 1;

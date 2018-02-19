@@ -25,7 +25,7 @@ public:
 	double endSpeed;
 	double turnSpeed;
 	double turnDelay;
-	double estimatedIndefiniteAllocTimeDelay;
+	//double estimatedIndefiniteAllocTimeDelay;
 	DestinationThreshold destThreshold;
 	treenode destNode;
 	bool isActive = false;

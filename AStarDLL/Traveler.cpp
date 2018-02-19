@@ -47,7 +47,7 @@ void Traveler::bind()
 
 	bindNumber(turnSpeed);
 	bindNumber(turnDelay);
-	bindNumber(estimatedIndefiniteAllocTimeDelay);
+	//bindNumber(estimatedIndefiniteAllocTimeDelay);
 	//bindStlContainer(allocations);
 }
 
@@ -206,7 +206,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isC
 		}
 	}
 	int i;
-	double deallocTimeOffset = (nodeWidth * nav->deallocTimeAddFactor) / te->v_maxspeed;
+	double deallocTimeOffset = nav->deallocTimeOffset;
 	double firstCellDeallocTime = time() + deallocTimeOffset;
 	for (i = startAtPathIndex + 1; i < numNodes; i++) {
 		e = travelPath[i];

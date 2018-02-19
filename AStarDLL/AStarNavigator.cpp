@@ -68,9 +68,9 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(stopForTurns);
 	bindVariable(turnSpeed);
 	bindVariable(turnDelay);
-	bindVariable(indefiniteAllocTimePenalty);
-	bindVariable(deadlockPenalty);
-	bindVariable(deallocTimeAddFactor);
+	//bindVariable(indefiniteAllocTimePenalty);
+	//bindVariable(deadlockPenalty);
+	bindVariable(deallocTimeOffset);
 
 	bindVariable(ignoreDestBarrier);
 	bindVariable(showTravelThreshold);
@@ -730,9 +730,9 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 		traveler->turnDelay = turnDelay->evaluate(traveler->te->holder);
 		traveler->turnSpeed = turnSpeed->evaluate(traveler->te->holder);
 	}
-	if (routeByTravelTime && enableCollisionAvoidance) {
-		traveler->estimatedIndefiniteAllocTimeDelay = indefiniteAllocTimePenalty->evaluate(traveler->te->holder);
-	}
+	//if (routeByTravelTime && enableCollisionAvoidance) {
+	//	traveler->estimatedIndefiniteAllocTimeDelay = indefiniteAllocTimePenalty->evaluate(traveler->te->holder);
+	//}
 	double centerx = 0.5 * xsize(travelerNode);
 	double centery = 0.5 * ysize(travelerNode);
 
@@ -1104,6 +1104,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 		}
 	}
 
+	/* The initial release of the route by travel time feature will not take allocations into account
 	if (routeByTravelTime && enableCollisionAvoidance) {
 		AStarNodeExtraData* extra = getExtraData(AStarCell(c, r));
 		if (extra) {
@@ -1138,6 +1139,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 			}
 		}
 	}
+	*/
 	
 	if (!entry || newG < entry->g - 0.01*nodeWidth) {
 		// if entry is NULL, that means he's not in the total set yet,
