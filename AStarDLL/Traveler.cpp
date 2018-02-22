@@ -90,6 +90,7 @@ void Traveler::onReset()
 	destThreshold = DestinationThreshold();
 	destNode = nullptr;
 	bridgeData.bridge = nullptr;
+	routingAlgorithmSnapshots.clear();
 }
 
 void Traveler::onStartSimulation()

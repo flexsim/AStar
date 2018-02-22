@@ -1337,6 +1337,54 @@ bright red, in the heat map.</data></node>
 a traveller could end their travel to the object</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/showTravelThreshold</data></node>
           </data></node>
+          <node f="42" dt="4"><name>Debug Routing Algorithm</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040720000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040690000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to display the nodes around the highlighted object where
+a traveller could end their travel to the object</data></node>
+           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/debugRoutingAlgorithm</data></node>
+           <node f="42"><name>eventfunctions</name>
+            <node f="40"><name></name></node>
+            <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata)
+	function_s(c, "grayWindows", 1);</data></node>
+            <node f="42" dt="2"><name>OnPress</name><data>function_s(c, "grayWindows")</data></node>
+            <node f="442" dt="2"><name>grayWindows</name><data>int gray = param(1) ? !c.find("&gt;coldlink+")?.value : !getchecked(c);
+windowgray(windowfromnode(c.find("../Completion Percent")), gray);
+windowgray(windowfromnode(c.find("../CompletionRatioTracker")), gray);
+</data></node>
+           </node>
+           <node f="42" dt="2"><name>windowtitle</name><data>Debug/Show Routing Algorithm</data></node>
+           <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>Completion Percent</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040418000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>000000004073f000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+           <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) 
+	function_s(up(c), "enableHeatMapControls");</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>CompletionRatioTracker</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405e8000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>000000004060e000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>000000004073c000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>5555555540730555</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
+           <node f="42" dt="2"><name>hotlink</name><data>@&gt;objectfocus+&gt;variables/routingAlgorithmCompletionRatio</data></node>
+           <node f="42" dt="1"><name>itemcurrent</name><data>000000003fe00000</data></node>
+           <node f="42" dt="1"><name>rangemin</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>rangemax</name><data>000000003ff00000</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>To use this, click on an A* traveler in the model, then move this tracker to 
+see the progression of that traveler's last routing algorithm execution.</data></node>
+          </data></node>
          </node>
          <node f="42" dt="4"><name>Barriers</name><data>
           <node f="40"><name>object</name></node>

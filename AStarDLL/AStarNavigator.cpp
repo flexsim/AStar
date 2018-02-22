@@ -101,6 +101,9 @@ void AStarNavigator::bindVariables(void)
 	bindStateVariable(nextCollisionUpdateTime);
 
 
+	bindVariable(debugRoutingAlgorithm);
+	bindVariable(routingAlgorithmCompletionRatio);
+
 	bindVariableByName("extraData", extraDataNode, ODT_BIND_STATE_VARIABLE);
 
 	travelers.init(node_v_travelmembers);
@@ -265,6 +268,28 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		if (showTravelThreshold)
 			drawDestinationThreshold(selectedobject(view), 0.02f / lengthMultiple);
+
+		if (debugRoutingAlgorithm) {
+			fglEnable(GL_TEXTURE_2D);
+
+			treenode selObj = selectedobject(view);
+			if (objectexists(selObj) && isclasstype(selObj, CLASSTYPE_TASKEXECUTER)) {
+				TaskExecuter* te = selObj->objectAs(TaskExecuter);
+				if (te->node_v_navigator->subnodes.length > 0) {
+					treenode member = te->node_v_navigator->subnodes[1]->value;
+					if (member && ownerobject(member) == holder) {
+						drawRoutingAlgorithm(member->objectAs(Traveler), view);
+					}
+				}
+			}
+
+			for (Traveler* traveler : travelers) {
+				if (switch_selected(traveler->te->holder, -1))
+					drawRoutingAlgorithm(traveler, view);
+			}
+
+			fglDisable(GL_TEXTURE_2D);
+		}
 	} else {
 
 		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
@@ -605,6 +630,8 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(AStarNode* node, AS
 TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLoc, double endSpeed, bool doFullSearch)
 {
 	TreeNode* travelerNode = traveler->te->holder;
+	if (debugRoutingAlgorithm)
+		traveler->routingAlgorithmSnapshots.clear();
 	double centerx = 0.5 * xsize(travelerNode);
 	double centery = 0.5 * ysize(travelerNode);
 
@@ -732,12 +759,14 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 
 		shortestIndex = heapEntry.totalSetIndex;
 		shortest = *entry;
+
 		if (shortest.h < closestSoFar) {
 			closestSoFar = shortest.h;
 			closestIndex = heapEntry.totalSetIndex;
 		}
 		// close the node
-		shortest.closed = 1;
+		entry->closed = true;
+		shortest.closed = true;
 		n = &(DeRefEdgeTable(shortest.cell.row, shortest.cell.col));
 		n->open = false;
 
@@ -806,6 +835,13 @@ the outside 8 nodes.
 					expandOpenSet(endCell.row, endCell.col, addedDist / nodeWidth, 0, i);
 				}
 			}
+		}
+
+		if (debugRoutingAlgorithm) {
+			traveler->routingAlgorithmSnapshots.resize(traveler->routingAlgorithmSnapshots.size() + 1);
+			auto& entry = traveler->routingAlgorithmSnapshots.back();
+			entry.shortestIndex = shortestIndex;
+			entry.totalSet = totalSet;
 		}
 	} // End of the while loop
 
@@ -1952,6 +1988,57 @@ void AStarNavigator::dumpBlockageData(treenode destNode)
 		table[Variant(table.numRows)][Variant("TotalBlocks")] = data->totalBlocks;
 		table[Variant(table.numRows)][Variant("TotalBlockedTime")] = data->totalBlockedTime;
 	}
+}
+
+void AStarNavigator::drawRoutingAlgorithm(Traveler * traveler, treenode view)
+{
+	if (traveler->routingAlgorithmSnapshots.size() == 0)
+		return;
+
+	double diamondRadius = 0.1 * nodeWidth;
+
+	size_t index = (size_t)(routingAlgorithmCompletionRatio * traveler->routingAlgorithmSnapshots.size());
+	if (index >= traveler->routingAlgorithmSnapshots.size())
+		index = traveler->routingAlgorithmSnapshots.size() - 1;
+
+	auto& snapshot = traveler->routingAlgorithmSnapshots[index];
+
+	Mesh dotMesh;
+	dotMesh.init(6, MESH_POSITION, MESH_DYNAMIC_DRAW);
+	float position[][3] = {
+		{0.0f, diamondRadius, 0.0f},
+		{-diamondRadius, 0.0f, 0.0f},
+		{ 0.0f, -diamondRadius, 0.0f },
+		{ 0.0f, diamondRadius, 0.0f },
+		{0.0f, -diamondRadius, 0.0f},
+		{diamondRadius, 0.0f, 0.0f}
+	};
+	dotMesh.defineVertexAttribs(MESH_POSITION, position[0]);
+
+	for (size_t i = 0; i < snapshot.totalSet.size(); i++) {
+		AStarSearchEntry& entry = snapshot.totalSet[i];
+		fglPushMatrix();
+
+		Vec3 centerPos = getLocFromCell(entry.cell);
+		//centerPos = centerPos / scale;
+		fglTranslate(centerPos.x, centerPos.y, centerPos.z);
+
+		if (i == snapshot.shortestIndex)
+			fglColor(0.0f, 0.0f, 1.0f, 1.0f);
+		else if (entry.closed)
+			fglColor(1.0f, 0.0f, 0.0f, 1.0f);
+		else fglColor(0.0f, 0.5f, 0.0f, 1.0f);
+
+		dotMesh.draw(GL_TRIANGLES);
+		char buffer[200];
+
+		sprintf(buffer, "g%.2f + h%.2f = %.2f", entry.g, entry.h, entry.f);
+		drawtext(view, buffer, -4 * diamondRadius, 0, diamondRadius, diamondRadius, diamondRadius, 0.01 * diamondRadius, 90, 0, 0, 0, 0, 0);
+		fglDisable(GL_LIGHTING);
+
+		fglPopMatrix();
+	}
+
 }
 
 ASTAR_FUNCTION Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)

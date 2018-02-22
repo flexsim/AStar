@@ -155,6 +155,13 @@ public:
 
 	void onTEDestroyed();
 
+	struct RoutingAlgorithmSnapshot {
+		std::vector<AStarSearchEntry> totalSet;
+		int shortestIndex;
+	};
+	std::vector<RoutingAlgorithmSnapshot> routingAlgorithmSnapshots;
+
+
 };
 
 
