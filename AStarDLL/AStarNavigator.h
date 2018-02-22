@@ -181,6 +181,7 @@ public:
 	TreeNode* AStarNavigator::resolveTraveler();
 
 	void blockGridModelPos(const Vec3& modelPos);
+	void divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2);
 	void addObjectBarrierToTable(TreeNode* obj);
 
 	void setDirty();

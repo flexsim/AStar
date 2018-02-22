@@ -79,6 +79,7 @@
          <node f="1000042" dt="2"><name>onMouseMove</name><data>dll:"module:AStar" func:"AStarNavigator_onMouseMove"</data></node>
          <node f="1000042" dt="2"><name>onClick</name><data>dll:"module:AStar" func:"AStarNavigator_onClick"</data></node>
          <node f="1000042" dt="2"><name>blockGridModelPos</name><data>dll:"module:AStar" func:"AStarNavigator_blockGridModelPos"</data></node>
+         <node f="1000042" dt="2"><name>divideGridModelLine</name><data>dll:"module:AStar" func:"AStarNavigator_divideGridModelLine"</data></node>
          <node f="1000042" dt="2"><name>dumpBlockageData</name><data>dll:"module:AStar" func:"AStarNavigator_dumpBlockageData"</data></node>
          <node f="1000042" dt="2"><name>addCopiedMember</name><data>dll:"module:AStar" func:"AStarNavigator_addMember"</data></node>
          <node f="1000042" dt="2"><name>addObjectBarrierToTable</name><data>dll:"module:AStar" func:"AStarNavigator_addObjectBarrierToTable"</data></node>

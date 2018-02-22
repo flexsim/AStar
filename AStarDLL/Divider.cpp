@@ -46,98 +46,18 @@ bool Divider::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
 	return true;
 }
 void Divider::addBarriersToTable(AStarNavigator* nav)
-	//AStarNode* edgeTable, 
-	//					  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
-	//					  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
 {
-	double x = pointList[0]->x;
-	double y = pointList[0]->y;
+	Point* point = pointList[0];
+	Point* nextPoint;
 
-	double c0 = nav->gridOrigin.x;
-	double r0 = nav->gridOrigin.y;
-	// here I assume the row/column number represents the slot above / right of the
-	// corner I am working on 
-	int col = (int)round(((x - c0) / nodeWidth) + 0.5);
-	int row = (int)round(((y - r0) / nodeWidth) + 0.5);
-
-	double nextX, nextY;
-	int nextCol, nextRow;
-	for (int i = 0; i < pointList.size() - 1; 
-		i++, x = nextX, y = nextY, row = nextRow, col = nextCol) {
+	// Add each segment of pointList to the edge table as a divider
+	for (int i = 0; i < pointList.size() - 1; i++, point = nextPoint) {
+		nextPoint = pointList[i + 1];
 		
-		nextX = pointList[i + 1]->x;
-		nextY = pointList[i + 1]->y;
-
-		// calculate the column and row numbers for that point (again, above/right of the current corner)
-		nextCol = (int)round(((nextX - c0) / nodeWidth) + 0.5);
-		nextRow = (int)round(((nextY - r0) / nodeWidth) + 0.5);
-
-		// set dx and dy, the differences between the rows and columns
-		double dx = nextCol - col;
-		double dy = nextRow - row;
-		
-		if(dy == 0 && dx == 0)
-			continue;
-
-		// figure out the unit increment (either -1 or 1) for traversing from the
-		// current point to the next point
-		int colInc = (int)sign(dx);
-		if(colInc == 0) 
-			colInc = 1;
-
-		int rowInc = (int)sign(dy);
-		if(rowInc == 0) 
-			rowInc = 1;
-
-		// prevent divide by zero errors
-		if(dx == 0) dx = 0.01;
-		// get the slope of the line
-		double goalSlope = dy/dx;
-
-		int currCol = col;
-		int currRow = row;
-		// now step through the line, essentially walking along the edges of the grid tiles
-		// under the line, and set the divider by zeroing out the bits on each side of the line
-		// I'm walking on
-		while(currCol != nextCol || currRow != nextRow) {
-
-			// the way that I essentially move along the line
-			// is at each grid point, I do a test step horizontally, 
-			// and a test step vertically, and then test the new slope of the line to the 
-			// destination for each of those test steps. Whichever line's slope is closest
-			// to the actual slope represents the step I want to take.
-			int testCol = currCol + colInc;
-			int testRow = currRow + rowInc;
-			double dxTestCol = nextCol - testCol;
-			if(dxTestCol == 0) dxTestCol = 0.01;
-			double dxTestRow = nextCol - currCol;
-			if(dxTestRow == 0) dxTestRow = 0.01;
-			
-			double colIncSlope = (nextRow - currRow)/dxTestCol;
-			double rowIncSlope = (nextRow - testRow)/dxTestRow;
-			
-			int nextCurrCol, nextCurrRow;
-			if(fabs(colIncSlope - goalSlope) <= fabs(rowIncSlope - goalSlope)) {
-				// move over one column
-				nextCurrCol = testCol;
-				nextCurrRow = currRow;
-				
-				int modifyCol = min(nextCurrCol, currCol);
-				nav->getNode(currRow, modifyCol)->canGoDown = 0;
-				nav->getNode(currRow - 1, modifyCol)->canGoUp = 0;
-				
-			} else {
-				nextCurrCol = currCol;
-				nextCurrRow = testRow;
-				
-				int modifyRow = min(nextCurrRow, currRow);
-				nav->getNode(modifyRow, currCol)->canGoLeft = 0;
-				nav->getNode(modifyRow, currCol - 1)->canGoRight = 0;
-			}
-			
-			currCol = nextCurrCol;
-			currRow = nextCurrRow;
-		}
+		nav->divideGridModelLine(
+			Vec3(point->x, point->y, point->z),
+			Vec3(nextPoint->x, nextPoint->y, nextPoint->z)
+		);
 	}
 }
 
