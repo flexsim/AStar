@@ -176,6 +176,13 @@ public:
 	void rerouteOnPredictedBlock(bool isAtJunctionTime);
 	std::vector<Traveler*> pendingRerouteTravelers;
 
+	struct RoutingAlgorithmSnapshot {
+		std::vector<AStarSearchEntry> totalSet;
+		int shortestIndex;
+	};
+	std::vector<RoutingAlgorithmSnapshot> routingAlgorithmSnapshots;
+
+
 };
 
 

@@ -248,6 +248,10 @@ public:
 
 	std::unique_ptr<unsigned int[]> heatMapBuffer;
 	void dumpBlockageData(treenode destNode);
+
+	double debugRoutingAlgorithm;
+	double routingAlgorithmCompletionRatio;
+	void drawRoutingAlgorithm(Traveler* traveler, treenode view);
 };
 
 }
