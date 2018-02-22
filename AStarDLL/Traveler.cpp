@@ -574,15 +574,15 @@ Traveler::TravelerAllocations::iterator Traveler::find(NodeAllocation* alloc)
 
 void Traveler::onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell& cell)
 {
-	while (allocations.size() > 1 && allocations[0]->cell != cell)
-		removeAllocation(allocations.begin());
+	cullExpiredAllocations();
 	bool shouldStop = true;
 	if (travelPath.size() <= colliderPathIndex)
 		shouldStop = false;
 
 	AStarNodeExtraData* nodeData = navigator->getExtraData(cell);
+	double curTime = time();
 	auto foundAlloc = std::find_if(nodeData->allocations.begin(), nodeData->allocations.end(),
-		[&](NodeAllocation& alloc) { return alloc.traveler == collidingWith && alloc.acquireTime <= time() && alloc.releaseTime > time(); }
+		[&](NodeAllocation& alloc) { return alloc.traveler == collidingWith && alloc.acquireTime <= curTime && alloc.releaseTime > curTime; }
 		);
 	
 	if (shouldStop && foundAlloc == nodeData->allocations.end())
@@ -594,15 +594,15 @@ void Traveler::onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell
 		initkinematics(te->node_v_kinematics, pos.x, pos.y, te->b_spatialz, 0.0, 0.0, 0.0, 1, 0);
 
 		setstate(te->holder, STATE_BLOCKED);
-		lastBlockTime = time();
+		lastBlockTime = curTime;
 
 		std::vector<Traveler*> deadlockList;
 		for (auto& allocation : allocations)
 			allocation->extendReleaseTime(DBL_MAX);
-		NodeAllocation requestedAlloc(this, cell, colliderPathIndex, 0, time(), DBL_MAX, 0.0);
+		NodeAllocation requestedAlloc(this, cell, colliderPathIndex, 0, curTime, DBL_MAX, 0.0);
 		request = nodeData->addRequest(requestedAlloc, *foundAlloc, &deadlockList);
 		bool isDeadlock = deadlockList.size() > 0;
-		if (onBlockTrigger && (!nodeData->continueEvent || nodeData->continueEvent->time - time() > tinyTime)) {
+		if (onBlockTrigger && (!nodeData->continueEvent || nodeData->continueEvent->time - curTime > tinyTime)) {
 			FIRE_SDT_EVENT(onBlockTrigger, te->holder, isDeadlock);
 			needsContinueTrigger = true;
 		}
