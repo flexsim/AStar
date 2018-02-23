@@ -1998,7 +1998,7 @@ void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 	}
 }
 
-void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2)
+void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay)
 {
 	// here I assume the row/column number represents the slot above / right of the
 	// corner I am working on 
@@ -2009,27 +2009,21 @@ void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& mode
 	int nextCol = (int)round(((modelPos2.x - gridOrigin.x) / nodeWidth) + 0.5);
 	int nextRow = (int)round(((modelPos2.y - gridOrigin.y) / nodeWidth) + 0.5);
 
-	// set dx and dy, the differences between the rows and columns
-	double dx = nextCol - col;
-	double dy = nextRow - row;
+	// set diff, the differences between the rows and columns
+	Vec2 diff = Vec2(nextCol - col, nextRow - row);
 
-	if (dy == 0 && dx == 0)
+	if (diff.y == 0 && diff.x == 0)
 		return;
 
 	// figure out the unit increment (either -1 or 1) for traversing from the
 	// current point to the next point
-	int colInc = (int)sign(dx);
+	int colInc = (int)sign(diff.x);
 	if (colInc == 0)
 		colInc = 1;
 
-	int rowInc = (int)sign(dy);
+	int rowInc = (int)sign(diff.y);
 	if (rowInc == 0)
 		rowInc = 1;
-
-	// prevent divide by zero errors
-	if (dx == 0) dx = 0.01;
-	// get the slope of the line
-	double goalSlope = dy / dx;
 
 	int currCol = col;
 	int currRow = row;
@@ -2045,32 +2039,36 @@ void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& mode
 		// to the actual slope represents the step I want to take.
 		int testCol = currCol + colInc;
 		int testRow = currRow + rowInc;
-		double dxTestCol = nextCol - testCol;
-		if (dxTestCol == 0) dxTestCol = 0.01;
-		double dxTestRow = nextCol - currCol;
-		if (dxTestRow == 0) dxTestRow = 0.01;
-
-		double colIncSlope = (nextRow - currRow) / dxTestCol;
-		double rowIncSlope = (nextRow - testRow) / dxTestRow;
+		Vec2 diffTestCol = Vec2(nextCol - testCol, nextRow - currRow);
+		Vec2 diffTestRow = Vec2(nextCol - currCol, nextRow - testRow);
+		double colSimilarity = diff.getDotProduct(diffTestCol) / (diff.getLength() * diffTestCol.getLength());
+		double rowSimilarity = diff.getDotProduct(diffTestRow) / (diff.getLength() * diffTestRow.getLength());
 
 		int nextCurrCol, nextCurrRow;
-		if (fabs(colIncSlope - goalSlope) <= fabs(rowIncSlope - goalSlope)) {
+		if (colSimilarity >= rowSimilarity && diffTestRow.getLength() != 0 || diffTestCol.getLength() == 0) {
 			// move over one column
 			nextCurrCol = testCol;
 			nextCurrRow = currRow;
 
 			int modifyCol = min(nextCurrCol, currCol);
-			getNode(currRow, modifyCol)->canGoDown = 0;
-			getNode(currRow - 1, modifyCol)->canGoUp = 0;
-
+			if (modifyCol >= 0 && modifyCol < edgeTableXSize) {
+				if ((!oneWay || diff.x > 0) && currRow >= 0 && currRow < edgeTableYSize)
+					getNode(currRow, modifyCol)->canGoDown = 0;
+				if ((!oneWay || diff.x < 0) && currRow - 1 >= 0 && currRow - 1 < edgeTableYSize)
+					getNode(currRow - 1, modifyCol)->canGoUp = 0;
+			}
 		}
 		else {
 			nextCurrCol = currCol;
 			nextCurrRow = testRow;
 
 			int modifyRow = min(nextCurrRow, currRow);
-			getNode(modifyRow, currCol)->canGoLeft = 0;
-			getNode(modifyRow, currCol - 1)->canGoRight = 0;
+			if (modifyRow >= 0 && modifyRow < edgeTableYSize) {
+				if ((!oneWay || diff.y < 0) && currCol >= 0 && currCol < edgeTableXSize)
+					getNode(modifyRow, currCol)->canGoLeft = 0;
+				if ((!oneWay || diff.y > 0) && currCol - 1 >= 0 && currCol - 1 < edgeTableXSize)
+					getNode(modifyRow, currCol - 1)->canGoRight = 0;
+			}
 		}
 
 		currCol = nextCurrCol;
@@ -2173,7 +2171,11 @@ ASTAR_FUNCTION Variant AStarNavigator_blockGridModelPos(FLEXSIMINTERFACE)
 
 ASTAR_FUNCTION Variant AStarNavigator_divideGridModelLine(FLEXSIMINTERFACE)
 {
-	o(AStarNavigator, c).divideGridModelLine(Vec3(param(1), param(2), param(3)), Vec3(param(4), param(5), param(6)));
+	o(AStarNavigator, c).divideGridModelLine(
+		Vec3(param(1), param(2), param(3)),
+		Vec3(param(4), param(5), param(6)),
+		parqty() == 7 ? param(7).operator int() : false
+	);
 	return 0;
 }
 
