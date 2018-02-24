@@ -218,6 +218,8 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 	int pickingmode = getpickingmode(view);
 	treenode hovered = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, -1));
+	if (hovered->ownerObject != holder)
+		hovered = NULL;
 
 	if (!pickingmode) {
 		// Show the activeBarrier if the AStarNavigator is highlighted
