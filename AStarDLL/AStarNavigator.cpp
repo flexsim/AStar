@@ -2036,9 +2036,9 @@ void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& mode
 
 		// the way that I essentially move along the line
 		// is at each grid point, I do a test step horizontally, 
-		// and a test step vertically, and then test the new slope of the line to the 
-		// destination for each of those test steps. Whichever line's slope is closest
-		// to the actual slope represents the step I want to take.
+		// and a test step vertically, and perform a cosine similarity test on
+		// the line to the destination for each of those test steps. Whichever
+		// line is most similar to the actual line represents the step I want to take.
 		int testCol = currCol + colInc;
 		int testRow = currRow + rowInc;
 		Vec2 diffTestCol = Vec2(nextCol - testCol, nextRow - currRow);
@@ -2047,7 +2047,7 @@ void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& mode
 		double rowSimilarity = diff.getDotProduct(diffTestRow) / (diff.getLength() * diffTestRow.getLength());
 
 		int nextCurrCol, nextCurrRow;
-		if (colSimilarity >= rowSimilarity && diffTestRow.getLength() != 0 || diffTestCol.getLength() == 0) {
+		if (colSimilarity > rowSimilarity && diffTestRow.getLength() != 0 || diffTestCol.getLength() == 0) {
 			// move over one column
 			nextCurrCol = testCol;
 			nextCurrRow = currRow;
