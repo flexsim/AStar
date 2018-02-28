@@ -978,7 +978,7 @@ the outside 8 nodes.
 			+ traveler->destThreshold.yAxisThreshold * traveler->destThreshold.yAxisThreshold);
 		while (travelPath.size() > 1) {
 			Vec3 pos = getLocFromCell(travelPath[travelPath.size() - 2].cell);
-			Vec3 diff = pos - Vec3(traveler->destLoc.x, traveler->destLoc.y, 0);
+			Vec3 diff = pos - Vec3(destLoc.x, destLoc.y, 0);
 			if (diff.magnitude > threshold)
 				break;
 			travelPath.pop_back();
