@@ -43,17 +43,20 @@ public:
 	TaskExecuter* te;
 	bool isBlocked = false;
 	bool needsContinueTrigger = false;
+	/// <summary>Zero-based index of the travel path element that could not be allocated 
+	/// 		 (the next node after where the traveler is when he gets blocked).</summary>
+	int blockedAtTravelPathIndex = -1;
 	void onReset();
 	void onStartSimulation();
 	void onCollisionIntervalUpdate() {
 		if (!isBlocked && nextCollisionUpdateTravelIndex >= 0)
-			navigatePath(nextCollisionUpdateTravelIndex, false, true); 
+			navigatePath(nextCollisionUpdateTravelIndex, true); 
 	}
-	void navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isCollisionUpdateInterval = false);
-	void navigatePath(TravelPath&& path, bool isDistQueryOnly)
+	void navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval = false);
+	void navigatePath(TravelPath&& path)
 	{
 		travelPath = std::move(path);
-		navigatePath(0, isDistQueryOnly);
+		navigatePath(0);
 	}
 	void onBridgeArrival(Bridge* bridge, int pathIndex);
 	void onArrival();
@@ -89,15 +92,10 @@ public:
 		virtual void execute() override { partner()->objectAs(Traveler)->onArrival(); }
 	};
 	ObjRef<ArrivalEvent> arrivalEvent;
-	treenode distQueryKinematics;
 
 	void onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell& cell);
 
-	struct NavigationAttempt {
-		TravelPath path;
-		Traveler* traveler;
-		double penalty = DBL_MAX;
-	};
+	bool isNavigatingAroundDeadlock = false;
 	bool navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, NodeAllocation& deadlockCreatingRequest);
 	class BlockEvent : public FlexSimEvent
 	{
@@ -138,7 +136,6 @@ public:
 	bool isRoutingNow = false;
 
 	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);
-	static bool findPredictedDeadlockCycle(AStarCell traveledFromCell, NodeAllocation& blockingAllocation, double allocTime, double releaseAtTime);
 
 	treenode onBlockTrigger = nullptr;
 	treenode onContinueTrigger = nullptr;
@@ -159,22 +156,6 @@ public:
 	BridgeData bridgeData;
 
 	void onTEDestroyed();
-
-	class RerouteEvent : public FlexSimEvent {
-	public:
-		RerouteEvent() : FlexSimEvent() {}
-		RerouteEvent(Traveler* rerouter, double time)
-			: FlexSimEvent(rerouter->holder, time, rerouter->holder, 0)
-		{}
-		virtual const char* getClassFactory() override { return "AStar::Traveler::RerouteEvent"; }
-		virtual void execute() override
-		{
-			partner()->objectAs(Traveler)->rerouteOnPredictedBlock(true);
-		}
-	};
-	ObjRef<RerouteEvent> rerouteEvent;
-	void rerouteOnPredictedBlock(bool isAtJunctionTime);
-	std::vector<Traveler*> pendingRerouteTravelers;
 
 	struct RoutingAlgorithmSnapshot {
 		std::vector<AStarSearchEntry> totalSet;
