@@ -185,7 +185,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 	laste = travelPath[startAtPathIndex];
 	bool enableCollisionAvoidance = nav->enableCollisionAvoidance;
 
-	cullExpiredAllocations();
+	clearAllocationsExcept(laste.cell);
 
 	int initialAllocsSize = allocations.size();
 	if (enableCollisionAvoidance && (!nav->ignoreInactiveMemberCollisions || isBlocked)) {
@@ -528,6 +528,15 @@ void Traveler::cullExpiredAllocations()
 		removeAllocation(allocations.begin());
 }
 
+void Traveler::clearAllocationsExcept(const AStarCell & cell)
+{
+	double curTime = time();
+	while (allocations.size() > 0 && allocations[0]->cell != cell)
+		removeAllocation(allocations.begin());
+	while (allocations.size() > 1)
+		removeAllocation(allocations.begin() + (allocations.size() - 1));
+}
+
 void Traveler::clearAllocations()
 {
 	while (allocations.size() > 0)
@@ -598,12 +607,6 @@ void Traveler::onBlock(Traveler* collidingWith, int atPathIndex, AStarCell& cell
 		if (isDeadlock) {
 			blockEvent = nullptr;
 			navigateAroundDeadlock(deadlockList, requestedAlloc);
-			if (blockEvent && blockEvent->time == curTime && blockEvent->involved == collidingWith->holder) {
-				stop();
-				string error = "Unrecoverable deadlock encountered for ";
-				error.append(holder->name.c_str()).append(". Model stopped.");
-				EX(error.c_str(), "", 1);
-			}
 		}
 	} else {
 		navigatePath(atPathIndex - 1);
@@ -708,13 +711,17 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 		TravelPath newPath;
 		newPath.push_back(AStarPathEntry(curCell, -1));
 		newPath.push_back(AStarPathEntry(bestCell, -1));
+		while (bestTraveler->allocations.size() > 1 && bestTraveler->allocations.front()->cell != curCell)
+			bestTraveler->removeAllocation(bestTraveler->allocations.begin());
+		while (bestTraveler->allocations.size() > 1)
+			bestTraveler->removeAllocation(bestTraveler->allocations.end() - 1);
 		bestTraveler->isNavigatingAroundDeadlock = true;
 		bestTraveler->navigatePath(std::move(newPath));
 	} else {
-		stop();
 		string error = "Unrecoverable deadlock encountered for ";
 		error.append(holder->name.c_str()).append(". Model stopped");
 		EX(error.c_str(), "", 1);
+		stop();
 	}
 
 	return true;

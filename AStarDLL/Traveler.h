@@ -73,6 +73,7 @@ public:
 	static NodeAllocation* findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs);
 	void removeAllocation(TravelerAllocations::iterator iter);
 	void cullExpiredAllocations();
+	void clearAllocationsExcept(const AStarCell& cell);
 	void clearAllocations();
 	void clearAllocationsUpTo(TravelerAllocations::iterator iter);
 	/// <summary>	Clears the allocations including and after fromPoint. </summary>
