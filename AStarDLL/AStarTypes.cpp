@@ -169,7 +169,7 @@ void AStarNodeExtraData::fulfillTopRequest()
 			blockedCell->totalBlocks++;
 		}
 	}
-	traveler->navigatePath(topRequest.travelPathIndex - 1, false);
+	traveler->navigatePath(topRequest.travelPathIndex - 1);
 	if (requests.size() > 0)
 		checkCreateContinueEvent();
 }
@@ -361,6 +361,32 @@ void DestinationThreshold::bind(SimpleDataType * sdt, const char* prefix)
 	sdt->bindNumberByName(string(prefix).append("yAxisThreshold").c_str(), yAxisThreshold);
 	sdt->bindNumberByName(string(prefix).append("rotation").c_str(), rotation);
 	sdt->bindNumberByName(string(prefix).append("anyThresholdRadius").c_str(), anyThresholdRadius);
+}
+
+double TravelPath::calculateTotalDistance(AStarNavigator * nav)
+{
+	double dist = 0.0;
+	for (size_t i = 1; i < size(); i++) {
+		AStarPathEntry& from = operator [](i - 1);
+		AStarPathEntry& to = operator [](i);
+		if (from.bridgeIndex >= 0) {
+			AStarNodeExtraData* nodeData = nav->getExtraData(from.cell);
+			AStarNodeExtraData::BridgeEntry& entry = nodeData->bridges[from.bridgeIndex];
+			Bridge* bridge = entry.bridge;
+			dist += bridge->travelDistance + nav->nodeWidth;
+		} else {
+			bool isDeepDiagonal = (abs(from.cell.row - to.cell.row) >= 2 || abs(from.cell.col - to.cell.col) >= 2);
+			if (isDeepDiagonal)
+				dist += nav->nodeWidth * 2.236067977499789696409;
+			else {
+				bool isDiagonal = from.cell.row != to.cell.row && from.cell.col != to.cell.col;
+				if (isDiagonal)
+					dist += nav->nodeWidth * 1.4142135623730950488;
+				else dist += nav->nodeWidth;
+			}
+		}
+	}
+	return dist;
 }
 
 }

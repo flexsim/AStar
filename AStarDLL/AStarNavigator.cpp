@@ -641,8 +641,8 @@ double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double
 		createevent(new CollisionIntervalUpdateEvent(this, nextCollisionUpdateTime));
 	}
 
-	TravelPath path = calculateRoute(traveler, traveler->destLoc, endSpeed, false);
-	traveler->navigatePath(std::move(path), false);
+	TravelPath path = calculateRoute(traveler, traveler->destLoc, traveler->destThreshold, endSpeed, false);
+	traveler->navigatePath(std::move(path));
 	return 0;
 }
 
@@ -744,7 +744,7 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(AStarNode* node, AS
 }
 
 
-TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLoc, double endSpeed, bool doFullSearch, double startTime)
+TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLoc, const DestinationThreshold& destThreshold, double endSpeed, bool doFullSearch, double startTime)
 {
 	TreeNode* travelerNode = traveler->te->holder;
 	routingTraveler = traveler;
@@ -813,8 +813,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	totalSet.clear();
 	// opensetheap is a sorted list of the nodes in the open set
 	// the value is the solution of f(x,y) for that node in the set
-	while(openSetHeap.size() > 0)
-		openSetHeap.pop();
+	openSetHeap = std::priority_queue<HeapEntry, std::vector<HeapEntry>, HeapEntryCompare>();
 
 	entryHash.clear();
 	// add the first node to the "open set"
@@ -826,11 +825,11 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	// Set the desination outside a barrier if necessary
 	if (ignoreDestBarrier) {
 		AStarCell tempDestCell = destCell;
-		checkGetOutOfBarrier(tempDestCell, te, startCell.row, startCell.col, &traveler->destThreshold, false);
+		checkGetOutOfBarrier(tempDestCell, te, startCell.row, startCell.col, &traveler->destThreshold);
 	}
 
 	// Get out of a barrier if necessary
-	checkGetOutOfBarrier(start->cell, te, destCell.row, destCell.col, nullptr, true);
+	checkGetOutOfBarrier(start->cell, te, destCell.row, destCell.col, nullptr);
 
 	start->g = 0;
 	start->h = (1.0 - maxPathWeight) * sqrt(sqr(x-xStart)+sqr(y-yStart));
@@ -961,15 +960,6 @@ the outside 8 nodes.
 		final = &(totalSet[closestIndex]);
 	}
 
-	// Tack on the barrierStart if necessary
-	if (barrierStart.cell.colRow != ~0) {
-		// Add barrierStart to the totalSet
-		totalSet.push_back(barrierStart);
-
-		// set start's previous to be the barrierStart
-		start->previous = totalSet.size() - 1;
-	}
-
 	unsigned int startPrevVal =  ~((unsigned int)0);
 	AStarSearchEntry* temp = final;
 	char prevBridgeIndex = -1;
@@ -998,12 +988,12 @@ the outside 8 nodes.
 		travelPath[travelPath.size() - i - 1] = temp;
 	}
 
-	if (traveler->destThreshold.xAxisThreshold > 0 || traveler->destThreshold.yAxisThreshold > 0) {
-		double threshold = sqrt(traveler->destThreshold.xAxisThreshold * traveler->destThreshold.xAxisThreshold 
-			+ traveler->destThreshold.yAxisThreshold * traveler->destThreshold.yAxisThreshold);
+	if (destThreshold.xAxisThreshold > 0 || destThreshold.yAxisThreshold > 0) {
+		double threshold = sqrt(destThreshold.xAxisThreshold * destThreshold.xAxisThreshold 
+			+ destThreshold.yAxisThreshold * destThreshold.yAxisThreshold);
 		while (travelPath.size() > 1) {
 			Vec3 pos = getLocFromCell(travelPath[travelPath.size() - 2].cell);
-			Vec3 diff = pos - Vec3(traveler->destLoc.x, traveler->destLoc.y, 0);
+			Vec3 diff = pos - Vec3(destLoc.x, destLoc.y, 0);
 			if (diff.magnitude > threshold)
 				break;
 			travelPath.pop_back();
@@ -1022,22 +1012,17 @@ the outside 8 nodes.
 
 double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination)
 {
-	updatelocations(taskexecuter->holder);
-
+	taskexecuter->updateLocations();
 	Traveler* traveler = getTraveler(taskexecuter);
 	double destLoc[3];
 	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), destLoc);
 
-	DestinationThreshold saved = traveler->destThreshold;
-	traveler->destThreshold = DestinationThreshold(destination->holder, 0.9 * nodeWidth);
-	TravelPath path = calculateRoute(traveler, destLoc, 0, true);
-	traveler->destThreshold = saved;
-	traveler->navigatePath(std::move(path), true);
-
-	return getkinematics(traveler->distQueryKinematics, KINEMATIC_TOTALDIST);
+	DestinationThreshold destThreshold(destination->holder, 0.9 * nodeWidth);
+	TravelPath path = calculateRoute(traveler, destLoc, destThreshold, 0, true);
+	return path.calculateTotalDistance(this);
 }
 
-void AStarNavigator::checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold, bool setStartEntry)
+void AStarNavigator::checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold)
 {
 	AStarNode* node = &DeRefEdgeTable(cell.row, cell.col);
 	int dy = rowDest - cell.row;
@@ -1077,14 +1062,6 @@ void AStarNavigator::checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* travele
 			node = &DeRefEdgeTable(currRow, currCol);
 	}
 
-	if (setStartEntry) {
-		barrierStart.cell.colRow = ~0;
-		barrierStart.previous = ~0;
-		if (cell.row != currRow || cell.col != currCol) {
-			barrierStart.cell.row = cell.row;
-			barrierStart.cell.col = cell.col;
-		} 
-	}
 	cell.row = currRow;
 	cell.col = currCol;
 	if (threshold && cell != originalCell) {
@@ -1133,7 +1110,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 		} else {
 			newG += directionChangePenalty * nodeWidth;
 			// if it's a right angle turn or more, then add more penalty
-			if (fabs(diff) > 90.0f)
+			if (fabs(diff) >= 90.0f)
 				newG += directionChangePenalty * nodeWidth;
 		}
 	}
@@ -2018,8 +1995,8 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 
 	// Set the desination outside a barrier if necessary
 	if (ignoreDestBarrier) {
-		AStarCell destCell = getCellFromLoc(loc);
-		checkGetOutOfBarrier(destCell, nullptr, 0, 0, &dt, false);
+		AStarCell destCell = getCellFromLoc(Vec2(loc));
+		checkGetOutOfBarrier(destCell, nullptr, 0, 0, &dt);
 	}
 
 	Mesh mesh;

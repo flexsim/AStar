@@ -48,6 +48,8 @@ public:
 		};
 		unsigned char value;
 	};
+	AStarNode() {}
+	AStarNode(char value) : value(value) {}
 	bool __extraData() { return !noExtraData; }
 	bool __inTotalSet() { return !notInTotalSet; }
 	void __setInTotalSet(bool toVal) { notInTotalSet = !toVal; }
@@ -156,7 +158,11 @@ struct AStarPathEntry {
 	int bridgeIndex;
 };
 
-typedef std::vector<AStarPathEntry> TravelPath;
+class TravelPath : public std::vector<AStarPathEntry>
+{
+public:
+	double calculateTotalDistance(AStarNavigator* nav);
+};
 
 struct AStarSearchEntry {
 	AStarSearchEntry() : prevBridgeIndex(-1) {}

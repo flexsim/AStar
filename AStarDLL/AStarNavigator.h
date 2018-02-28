@@ -19,7 +19,7 @@ protected:
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
 	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from colRow to index in totalSet
-	std::unordered_map<CachedPathID, std::vector<AStarPathEntry>, CachedPathID::Hash > pathCache;
+	std::unordered_map<CachedPathID, TravelPath, CachedPathID::Hash > pathCache;
 
 	struct HeapEntry {
 		HeapEntry(float f, unsigned int totalSetIndex) : f(f), totalSetIndex(totalSetIndex) {}
@@ -44,7 +44,6 @@ protected:
 	float closestSoFar;
 	int closestIndex;
 	TreeNode* kinematics;
-	AStarSearchEntry barrierStart;
 	double xStart;
 	double yStart;
 	double smoothRotations;
@@ -71,7 +70,7 @@ protected:
 	bool isHoveredBarrierBuilt = false;
 
 	inline AStarSearchEntry* expandOpenSet(int r, int c, float multiplier, float rotOnArrival, char bridgeIndex = -1);
-	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold, bool setStartEntry);
+	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold);
 	void checkBounds(TreeNode* theObj, Vec2& min, Vec2& max);
 	void buildBoundsMesh(float z);
 	void buildBarrierMesh(float z);
@@ -210,7 +209,7 @@ public:
 	/// <param name="travelStartTime">(Optional) The travel start time.</param>
 	///
 	/// <returns>The calculated route.</returns>
-	TravelPath calculateRoute(Traveler* traveler, double* destLoc, double endSpeed, bool doFullSearch = false, double travelStartTime = -1);
+	TravelPath calculateRoute(Traveler* traveler, double* destLoc, const DestinationThreshold& destThreshold, double endSpeed, bool doFullSearch = false, double travelStartTime = -1);
 
 	virtual double updateLocations() override;
 	virtual double updateLocations(TaskExecuter* te) override;
@@ -229,6 +228,7 @@ public:
 	void buildEdgeTable();
 
 	AStarCell getCellFromLoc(const Vec2& modelLoc);
+	AStarCell getCellFromLoc(const Vec3& modelLoc) { return getCellFromLoc(Vec2(modelLoc.x, modelLoc.y)); }
 	Vec3 getLocFromCell(const AStarCell& cell) { return Vec3(gridOrigin.x + cell.col * nodeWidth, gridOrigin.y + cell.row * nodeWidth, 0.0);	}
 	AStarNode* getNode(const AStarCell& cell) { return &DeRefEdgeTable(cell.row, cell.col); }
 	AStarNode* getNode(int row, int col) { return &DeRefEdgeTable(row, col); }

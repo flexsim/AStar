@@ -30,7 +30,6 @@ visible SimpleDataType* createsdtderivative(char* classname)
 	if (strcmp(classname, "Traveler") == 0) return new Traveler;
 	if (strcmp(classname, "Traveler::ArrivalEvent") == 0) return new Traveler::ArrivalEvent;
 	if (strcmp(classname, "Traveler::BlockEvent") == 0) return new Traveler::BlockEvent;
-	if (strcmp(classname, "Traveler::RerouteEvent") == 0) return new Traveler::RerouteEvent;
 	if (strcmp(classname, "AStarNodeExtraData::ContinueEvent") == 0) return new AStarNodeExtraData::ContinueEvent;
 	if (strcmp(classname, "NodeExtraData") == 0) return new AStarNodeExtraData;
 	if (strcmp(classname, "AStarNavigator::CollisionIntervalUpdateEvent") == 0) return new AStarNavigator::CollisionIntervalUpdateEvent;
