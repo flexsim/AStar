@@ -23,6 +23,9 @@ public:
 
 	Vec3 destLoc;
 	double endSpeed;
+	double turnSpeed;
+	double turnDelay;
+	//double estimatedIndefiniteAllocTimeDelay;
 	DestinationThreshold destThreshold;
 	treenode destNode;
 	bool isActive = false;
@@ -40,17 +43,20 @@ public:
 	TaskExecuter* te;
 	bool isBlocked = false;
 	bool needsContinueTrigger = false;
+	/// <summary>Zero-based index of the travel path element that could not be allocated 
+	/// 		 (the next node after where the traveler is when he gets blocked).</summary>
+	int blockedAtTravelPathIndex = -1;
 	void onReset();
 	void onStartSimulation();
 	void onCollisionIntervalUpdate() {
 		if (!isBlocked && nextCollisionUpdateTravelIndex >= 0)
-			navigatePath(nextCollisionUpdateTravelIndex, false, true); 
+			navigatePath(nextCollisionUpdateTravelIndex, true); 
 	}
-	void navigatePath(int startAtPathIndex, bool isDistQueryOnly, bool isCollisionUpdateInterval = false);
-	void navigatePath(TravelPath&& path, bool isDistQueryOnly)
+	void navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval = false);
+	void navigatePath(TravelPath&& path)
 	{
 		travelPath = std::move(path);
-		navigatePath(0, isDistQueryOnly);
+		navigatePath(0);
 	}
 	void onBridgeArrival(Bridge* bridge, int pathIndex);
 	void onArrival();
@@ -67,6 +73,7 @@ public:
 	static NodeAllocation* findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs);
 	void removeAllocation(TravelerAllocations::iterator iter);
 	void cullExpiredAllocations();
+	void clearAllocationsExcept(const AStarCell& cell);
 	void clearAllocations();
 	void clearAllocationsUpTo(TravelerAllocations::iterator iter);
 	/// <summary>	Clears the allocations including and after fromPoint. </summary>
@@ -86,15 +93,10 @@ public:
 		virtual void execute() override { partner()->objectAs(Traveler)->onArrival(); }
 	};
 	ObjRef<ArrivalEvent> arrivalEvent;
-	treenode distQueryKinematics;
 
 	void onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell& cell);
 
-	struct NavigationAttempt {
-		TravelPath path;
-		Traveler* traveler;
-		double penalty = DBL_MAX;
-	};
+	bool isNavigatingAroundDeadlock = false;
 	bool navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, NodeAllocation& deadlockCreatingRequest);
 	class BlockEvent : public FlexSimEvent
 	{
@@ -132,6 +134,7 @@ public:
 	ObjRef<BlockEvent> blockEvent;
 	double lastBlockTime;
 	double tinyTime = 0.0;
+	bool isRoutingNow = false;
 
 	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);
 
@@ -154,6 +157,13 @@ public:
 	BridgeData bridgeData;
 
 	void onTEDestroyed();
+
+	struct RoutingAlgorithmSnapshot {
+		std::vector<AStarSearchEntry> totalSet;
+		int shortestIndex;
+	};
+	std::vector<RoutingAlgorithmSnapshot> routingAlgorithmSnapshots;
+
 
 };
 

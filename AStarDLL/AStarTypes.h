@@ -48,6 +48,8 @@ public:
 		};
 		unsigned char value;
 	};
+	AStarNode() {}
+	AStarNode(char value) : value(value) {}
 	bool __extraData() { return !noExtraData; }
 	bool __inTotalSet() { return !notInTotalSet; }
 	void __setInTotalSet(bool toVal) { notInTotalSet = !toVal; }
@@ -69,11 +71,14 @@ struct NodeAllocation
 	AStarCell cell;
 	int travelPathIndex;
 	int intermediateAllocationIndex;
+	/// <summary>The acquire time of the allocation.</summary>
 	double acquireTime;
+	/// <summary>The release time of the allocation. If the release time is unknown, this will be DBL_MAX.</summary>
 	double releaseTime;
 	double traversalWeight;
 	bool isMarkedForDeletion = false;
 	void extendReleaseTime(double toTime);
+	void truncateReleaseTime(double toTime);
 	void bind(TreeNode* x);
 };
 
@@ -116,6 +121,7 @@ struct AStarNodeExtraData : public SimpleDataType
 	void onContinue(Traveler* blocker);
 	void fulfillTopRequest();
 	void onReleaseTimeExtended(NodeAllocation& alloc, double oldReleaseTime);
+	void onReleaseTimeTruncated(NodeAllocation& alloc, double oldReleaseTime);
 
 	/// <summary>	Adds a request to 'blockingAlloc'. </summary>
 	/// <remarks>	Anthony.johnson, 4/17/2017. </remarks>
@@ -149,19 +155,27 @@ struct AStarPathEntry {
 	AStarPathEntry(AStarCell cell, char bridgeIndex) : cell(cell), bridgeIndex(bridgeIndex) {}
 	void bind(TreeNode* toNode);
 	AStarCell cell;
-	char bridgeIndex;
+	int bridgeIndex;
 };
 
-typedef std::vector<AStarPathEntry> TravelPath;
+class TravelPath : public std::vector<AStarPathEntry>
+{
+public:
+	double calculateTotalDistance(AStarNavigator* nav);
+};
 
 struct AStarSearchEntry {
 	AStarSearchEntry() : prevBridgeIndex(-1) {}
+	// f, g and h are the elements of the formula f(x) = g(n) + h(n)
+	// where g is the calculated cost to get to n, and h is the 
+	// heuristic that defines the estimated cost to get from n to x
+	// where n is the current node being resolved and x is the destination
 	float f;
 	float g;
 	float h;
 	AStarCell cell;
 	unsigned int previous;
-	int travelFromPrevious;
+	float rotOnArrival;
 	char prevBridgeIndex;
 	bool closed;
 };

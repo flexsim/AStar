@@ -8,8 +8,8 @@
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403b0000</data></node>
-    <node f="42" dt="2"><name>after</name><data>dynamo</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040380000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AGV</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -51,6 +51,13 @@
         <node f="42" dt="1"><name>ignoreInactiveMemberCollisions</name><data>000000003ff00000</data></node>
         <node f="42" dt="1"><name>showTravelThreshold</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>snapBetweenGrid</name><data>000000003ff00000</data></node>
+        <node f="42" dt="1"><name>stopForTurns</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>turnDelay</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>turnSpeed</name><data>0000000040568000</data></node>
+        <node f="42" dt="1"><name>estimatedIndefiniteAllocTimeDelay</name><data>0000000040240000</data></node>
+        <node f="42" dt="1"><name>routeByTravelTime</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>activeReroute</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>deallocTimeOffset</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node>
@@ -688,6 +695,7 @@ set(spatialz(asn), z);
 return asn;
 </data></node>
         <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
+        <node f="42" dt="2"><name>windowtitle</name><data>A* Navigator</data></node>
        </data></node>
        <node f="42" dt="4"><name>Barrier</name><data>
         <node f="40"><name></name></node>
@@ -728,8 +736,8 @@ return asn;
         <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
         <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040100000</data></node>
-        <node f="42" dt="1"><name>spatialx</name><data>00000000406e0000</data></node>
-        <node f="42" dt="1"><name>spatialy</name><data>00000000405d8000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000040666000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>000000004057c000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>00000000407db000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>000000004082a000</data></node>
         <node f="42" dt="2"><name>windowtitle</name><data></data></node>
@@ -788,7 +796,7 @@ iterate(1, content(tabcontrol), 1){
          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
          <node f="42" dt="1"><name>spatialx</name><data>000000004056c000</data></node>
          <node f="42" dt="1"><name>spatialy</name><data>00000000403c0000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>aaaaaaab40745aaa</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>555555554076c555</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EditObjectName</data></node>
@@ -800,7 +808,7 @@ iterate(1, content(tabcontrol), 1){
          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405cc000</data></node>
          <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
          <node f="42" dt="1"><name>spatialy</name><data>0000000040518000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>aaaaaaab4079aaaa</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>55555555407c1555</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>aaaaaaab407c0aaa</data></node>
          <node f="42" dt="1"><name>itemcurrent</name><data>000000003ff00000</data></node>
          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040100000</data></node>
@@ -808,12 +816,12 @@ iterate(1, content(tabcontrol), 1){
          <node f="42" dt="2"><name>tooltip</name><data>Source pages</data></node>
         </data>
          <node f="40"><name></name></node>
-         <node f="42" dt="4"><name>AStar</name><data>
+         <node f="42" dt="4"><name>General</name><data>
           <node f="40"><name>object</name></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
           <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040796000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000407bc000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
           <node f="442" dt="2"><name>PageOnOpen</name><data>
@@ -846,19 +854,15 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000405e0000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>000000004059c000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
+           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
            <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/nodeWidth</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Enter the spacing between nodes.</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
            <node f="42"><name>variables</name>
             <node f="40"><name></name></node>
-            <node f="42" dt="2"><name>valuetype</name><data>distance</data></node>
+            <node f="42" dt="2"><name>valueType</name><data>length</data></node>
             <node f="42" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
-            <node f="42" dt="1"><name>ishotlink</name><data>0000000000000000</data></node>
-            <node f="42" dt="1"><name>step</name><data>9999999a3fb99999</data></node>
-            <node f="42" dt="1"><name>conversion</name><data>0000000000000000</data></node>
-            <node f="42" dt="1"><name>rangemin</name><data>9999999a3fb99999</data></node>
            </node>
           </data>
            <node f="40"><name></name></node></node>
@@ -880,7 +884,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
            <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/surroundDepth</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Specify how many nodes will appear around the outside of the AStar area.</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Specify how many nodes will appear around the outside of the A* area.</data></node>
            <node f="42" dt="1"><name>rangemin</name><data>000000003ff00000</data></node>
            <node f="42"><name>variables</name>
             <node f="40"><name></name></node>
@@ -894,75 +898,11 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            </node>
           </data>
            <node f="40"><name></name></node></node>
-          <node f="42" dt="4"><name>Default Path Weight</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040524000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-          </data></node>
-          <node f="42" dt="4"><name>EditPathWeight</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>00000000405e0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040518000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
-           <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/defaultPathWeight</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Default path weight for newly created Preferred Paths.</data></node>
-           <node f="42"><name>variables</name>
-            <node f="40"><name></name></node>
-            <node f="42" dt="2"><name>valuetype</name><data></data></node>
-            <node f="42" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
-            <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
-            <node f="42" dt="1"><name>ishotlink</name><data>000000003ff00000</data></node>
-            <node f="42" dt="1"><name>conversion</name><data>0000000000000000</data></node>
-           </node>
-          </data>
-           <node f="40"><name></name></node></node>
-          <node f="42" dt="4"><name>Deep Search Routing</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>000000004062c000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/deepSearch</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Toggle deep search</data></node>
-          </data></node>
-          <node f="42" dt="4"><name>Collision Avoidance</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000403f0000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/enableCollisionAvoidance</data></node>
-           <node f="42" dt="2"><name>OnPress</name><data>int gray = !getchecked(c);
-
-windowgray(windowfromnode(node("../Ignore Inactive Members", c)), gray);</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>If checked, travelers will allocate nodes in the travel grid as 
-part of their travel, preventing travelers from running 
-over each other.</data></node>
-          </data></node>
-          <node f="42" dt="4"><name>Ignore Inactive Members</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>0000000040718000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000404a0000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040618000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/ignoreInactiveMemberCollisions</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>If checked, travelers will travel through nodes allocated to 
-other inactive travelers.</data></node>
-          </data></node>
           <node f="42" dt="4"><name>Smooth Rotations</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040524000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040510000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
@@ -971,11 +911,11 @@ other inactive travelers.</data></node>
           <node f="42" dt="4"><name>Snap Dividers to Grid</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>0000000040704000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040578000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040580000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Snap dividers between points of the AStar grid</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Snap dividers between points of the A* grid</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/snapBetweenGrid</data></node>
           </data></node>
           <node f="42" dt="4"><name>Paths</name><data>
@@ -984,9 +924,9 @@ other inactive travelers.</data></node>
            <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000405b8000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000405f0000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>00000000406b8000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>0000000040646000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>000000004062a000</data></node>
            <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
           </data>
@@ -1119,7 +1059,7 @@ forobjectsbehind (c)
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040713000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>aaaaaaab40787aaa</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>55555555407ae555</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>aaaaaaab40620aaa</data></node>
            <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
@@ -1263,7 +1203,7 @@ if (objectexists(member)) {
             <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405c8000</data></node>
             <node f="42" dt="1"><name>spatialx</name><data>0000000040618000</data></node>
             <node f="42" dt="1"><name>spatialy</name><data>0000000040310000</data></node>
-            <node f="42" dt="1"><name>spatialsx</name><data>aaaaaaab406daaaa</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>0000000040714000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>55555555405b9555</data></node>
             <node f="442" dt="2"><name>hotlinkx</name><data>if (!eventdata) {
 	int list = get(itemcurrent(node("../MemberChooser", c)));
@@ -1309,13 +1249,237 @@ for (int i = 1; i &lt;= content(members); i++) {
            </data></node>
           </node>
          </node>
+         <node f="42" dt="4"><name>Behavior</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000407bc000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
+          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
+         </data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="4"><name>Path Routing</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000402a0000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>ChooseDeepSearch</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040690000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>00000000405e0000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data></data></node>
+           <node f="42"><name>items</name>
+            <node f="40"><name></name></node>
+            <node f="42" dt="1"><name>Right Angles Only</name><data>0000000040000000</data></node>
+            <node f="42" dt="1"><name>Diagonals</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>Deep Diagonals</name><data>000000003ff00000</data></node>
+           </node>
+           <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/deepSearch</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Choose a path routing configuration</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>CollisionAvoidancePanel</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040790000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040538000</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data></data></node>
+           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          </data>
+           <node f="40"><name></name></node>
+           <node f="42" dt="4"><name>Collision Avoidance</name><data>
+            <node f="40"><name>object</name></node>
+            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
+            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/enableCollisionAvoidance</data></node>
+            <node f="42"><name>eventfunctions</name>
+             <node f="40"><name></name></node>
+             <node f="442" dt="2"><name>coldlinkx</name><data>if(!eventdata)
+	function_s(c, "grayWindows", 1);</data></node>
+             <node f="442" dt="2"><name>grayWindows</name><data>int gray = param(1) ? !get(c.find("&gt;coldlink+")) : !getchecked(c);
+
+forobjecttreeunder(up(c)) {
+	if (a != c) {
+		windowgray(windowfromnode(a), gray);
+	}
+}
+</data></node>
+             <node f="42" dt="2"><name>OnPress</name><data>function_s(c, "grayWindows");
+</data></node>
+            </node>
+            <node f="42" dt="2"><name>tooltip</name><data>If checked, travelers will allocate nodes in the travel grid as 
+part of their travel, preventing travelers from running 
+over each other.</data></node>
+           </data></node>
+           <node f="42" dt="4"><name>Ignore Inactive Members</name><data>
+            <node f="40"><name>object</name></node>
+            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>0000000040340000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>00000000403c0000</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>0000000040618000</data></node>
+            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/ignoreInactiveMemberCollisions</data></node>
+            <node f="42" dt="2"><name>tooltip</name><data>If checked, travelers will travel through nodes allocated to 
+other inactive travelers.</data></node>
+           </data></node>
+           <node f="42" dt="4"><name>Deallocation Time Offset Factor</name><data>
+            <node f="40"><name>object</name></node>
+            <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>0000000040340000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>00000000404d8000</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>0000000040624000</data></node>
+            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+           </data></node>
+           <node f="42" dt="4"><name>EditDeallocTimeOffset</name><data>
+            <node f="40"><name>object</name></node>
+            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+            <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>0000000040674000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>00000000404c0000</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+            <node f="42" dt="2"><name>tooltip</name><data></data></node>
+            <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/deallocTimeOffset</data></node>
+            <node f="42"><name>variables</name>
+             <node f="40"><name></name></node>
+             <node f="42" dt="2"><name>valueType</name><data>time</data></node>
+            </node>
+           </data></node>
+          </node>
+          <node f="42" dt="4"><name>StopForTurnsPanel</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000405e8000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040790000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040538000</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data></data></node>
+           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          </data>
+           <node f="40"><name></name></node>
+           <node f="42" dt="4"><name>Stop for Turns</name><data>
+            <node f="40"><name>object</name></node>
+            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
+            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+            <node f="42" dt="2"><name>tooltip</name><data>Travelers will stop and rotate when they need to turn</data></node>
+            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/stopForTurns</data></node>
+            <node f="42"><name>eventfunctions</name>
+             <node f="40"><name></name></node>
+             <node f="442" dt="2"><name>coldlinkx</name><data>if(!eventdata)
+	function_s(c, "grayWindows", 1);</data></node>
+             <node f="442" dt="2"><name>grayWindows</name><data>int gray = param(1) ? !get(c.find("&gt;coldlink+")) : !getchecked(c);
+
+forobjecttreeunder(up(c)) {
+	if (a != c) {
+		windowgray(windowfromnode(a), gray);
+	}
+}
+</data></node>
+             <node f="42" dt="2"><name>OnPress</name><data>function_s(c, "grayWindows");
+</data></node>
+            </node>
+           </data></node>
+           <node f="42" dt="4"><name>Turn Speed</name><data>
+            <node f="40"><name>object</name></node>
+            <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>0000000040340000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>00000000403f0000</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
+            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+           </data></node>
+           <node f="42" dt="4"><name>EditTurnSpeed</name><data>
+            <node f="40"><name>object</name></node>
+            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+            <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>0000000040674000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>00000000403c0000</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+            <node f="42" dt="2"><name>tooltip</name><data>Enter the rotation speed for when stopping to rotate</data></node>
+            <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/turnSpeed</data></node>
+            <node f="42"><name>variables</name>
+             <node f="40"><name></name></node>
+             <node f="42" dt="2"><name>valueType</name><data>rotationspeed</data></node>
+            </node>
+           </data></node>
+           <node f="42" dt="4"><name>Turn Delay</name><data>
+            <node f="40"><name>object</name></node>
+            <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>0000000040340000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>00000000404d8000</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
+            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+           </data></node>
+           <node f="42" dt="4"><name>EditTurnDelay</name><data>
+            <node f="40"><name>object</name></node>
+            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+            <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>0000000040674000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>00000000404c0000</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+            <node f="42" dt="2"><name>tooltip</name><data>Enter the rotation speed for when stopping to rotate</data></node>
+            <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/turnDelay</data></node>
+            <node f="42"><name>variables</name>
+             <node f="40"><name></name></node>
+             <node f="42" dt="2"><name>valueType</name><data>time</data></node>
+            </node>
+           </data></node>
+          </node>
+          <node f="42" dt="4"><name>Route By Travel Time</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>000000004069c000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Do routing calculations based on the calculated travel time, 
+including turn times and time waiting for other travelers.</data></node>
+           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/routeByTravelTime</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>Default Preferred Path Weight</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000406da000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>000000004064c000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>EditPathWeight</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040690000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000406d4000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/defaultPathWeight</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Default path weight for newly created Preferred Paths.</data></node>
+          </data>
+           <node f="40"><name></name></node></node>
+         </node>
          <node f="42" dt="4"><name>Visual</name><data>
           <node f="40"><name>object</name></node>
           <node f="42" dt="1"><name>viewwindowopen</name><data>000000003ff00000</data></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
           <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040796000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000407bc000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
           <node f="42" dt="2"><name>tooltip</name><data></data></node>
@@ -1413,7 +1577,7 @@ windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
            <node f="42" dt="1"><name>spatialy</name><data>000000004062c000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Check to show a heat map of the AStar grid</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to show a heat map of the A* grid</data></node>
            <node f="42" dt="2"><name>OnPress</name><data>function_s(up(c), "enableHeatMapControls");</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/showHeatMap</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Check to draw a heatmap over the A* grid</data></node>
@@ -1480,13 +1644,61 @@ bright red, in the heat map.</data></node>
 a traveller could end their travel to the object</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/showTravelThreshold</data></node>
           </data></node>
+          <node f="42" dt="4"><name>Debug Routing Algorithm</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040720000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040690000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to display the nodes around the highlighted object where
+a traveller could end their travel to the object</data></node>
+           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/debugRoutingAlgorithm</data></node>
+           <node f="42"><name>eventfunctions</name>
+            <node f="40"><name></name></node>
+            <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata)
+	function_s(c, "grayWindows", 1);</data></node>
+            <node f="42" dt="2"><name>OnPress</name><data>function_s(c, "grayWindows")</data></node>
+            <node f="442" dt="2"><name>grayWindows</name><data>int gray = param(1) ? !c.find("&gt;coldlink+")?.value : !getchecked(c);
+windowgray(windowfromnode(c.find("../Completion Percent")), gray);
+windowgray(windowfromnode(c.find("../CompletionRatioTracker")), gray);
+</data></node>
+           </node>
+           <node f="42" dt="2"><name>windowtitle</name><data>Debug/Show Routing Algorithm</data></node>
+           <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>Completion Percent</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040418000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>000000004073f000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+           <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) 
+	function_s(up(c), "enableHeatMapControls");</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>CompletionRatioTracker</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405e8000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>000000004060e000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>000000004073c000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>5555555540730555</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
+           <node f="42" dt="2"><name>hotlink</name><data>@&gt;objectfocus+&gt;variables/routingAlgorithmCompletionRatio</data></node>
+           <node f="42" dt="1"><name>itemcurrent</name><data>000000003fe00000</data></node>
+           <node f="42" dt="1"><name>rangemin</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>rangemax</name><data>000000003ff00000</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>To use this, click on an A* traveler in the model, then move this tracker to 
+see the progression of that traveler's last routing algorithm execution.</data></node>
+          </data></node>
          </node>
          <node f="42" dt="4"><name>Barriers</name><data>
           <node f="40"><name>object</name></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
           <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040796000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000407bc000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
           <node f="442" dt="2"><name>PageOnOpen</name><data>treenode parent = up(c);
@@ -1548,7 +1760,7 @@ windowshow(windowfromnode(node("../Edit Table", c)), 1);</data></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>aaaaaaab40787aaa</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>55555555407ae555</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>5555555540780555</data></node>
            <node f="42" dt="1"><name>alignbottommargin</name><data>00000000401c0000</data></node>
            <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
@@ -1612,7 +1824,7 @@ repaintview(TheTable);</data></node>
             <node f="42" dt="2"><name>viewfocus</name><data>MAIN:/project/model</data></node>
             <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
-            <node f="42" dt="1"><name>spatialx</name><data>5555555540705555</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>000000004072c000</data></node>
             <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>00000000405e0000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040340000</data></node>
@@ -1627,7 +1839,7 @@ createcopy(getvarnode(excelauto, "rowtemplate"),table);
 setname(last(table),concat("Row_",numtostring(content(table),0,0)));
 
 // Set the destination cell in the MTI table
-//TODO: Modify the excel interface to handle AStar Barriers, right now it's just passing in an Other table type
+//TODO: Modify the excel interface to handle A* Barriers, right now it's just passing in an Other table type
 sets(node("/Flexsim_Object_Type", last(table)), "");
 sets(node("/Flexsim_Object_Name", last(table)), "");
 sets(node("/Flexsim_Table_Location", last(table)), nodetomodelpath(node("&gt;variables/barriers", node("@&gt;objectfocus+",c)), 1));
@@ -1653,7 +1865,7 @@ msg("NOTICE", concat(
             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040140000</data></node>
             <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
             <node f="42" dt="1"><name>spatialy</name><data>0000000040478000</data></node>
-            <node f="42" dt="1"><name>spatialsx</name><data>555555554076f555</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>0000000040796000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>5555555540747555</data></node>
             <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
             <node f="42" dt="2"><name>coldlinkx</name><data>/*treenode focus = node("&gt;focus+", c);
@@ -1714,7 +1926,7 @@ repaintview(TheTable);
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>aaaaaaab40787aaa</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>55555555407ae555</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>555555554079c555</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
            <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
@@ -1728,7 +1940,7 @@ repaintview(TheTable);
              <node f="40"><name></name></node>
              <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
              <node f="42" dt="1"><name>spatialy</name><data>0000000040320000</data></node>
-             <node f="42" dt="1"><name>spatialsx</name><data>5555555540535555</data></node>
+             <node f="42" dt="1"><name>spatialsx</name><data>00000000405d0000</data></node>
              <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             </node>
             <node f="42"><name>items</name>
@@ -1943,7 +2155,7 @@ repaintall();</data></node>
             <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405c8000</data></node>
             <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
             <node f="42" dt="1"><name>spatialy</name><data>0000000040508000</data></node>
-            <node f="42" dt="1"><name>spatialsx</name><data>5555555540535555</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>00000000405d0000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>000000004074c000</data></node>
             <node f="42" dt="2"><name>tooltip</name><data>Choose a barrier to edit</data></node>
             <node f="42"><name>items</name>
@@ -2035,7 +2247,7 @@ repaintall();</data></node>
             <node f="40"><name>object</name></node>
             <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-            <node f="42" dt="1"><name>spatialx</name><data>5555555540545555</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>00000000405e0000</data></node>
             <node f="42" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>000000004072e000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>555555554076f555</data></node>
@@ -2138,7 +2350,7 @@ if (objectexists(focus)) {
              <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
              <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
              <node f="42" dt="1"><name>spatialy</name><data>0000000040458000</data></node>
-             <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data></node>
+             <node f="42" dt="1"><name>spatialsx</name><data>000000004072e000</data></node>
              <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
              <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data>
               <node f="40"><name></name></node></node>
@@ -2184,7 +2396,7 @@ if (objectexists(focus)) {
              <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
              <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
              <node f="42" dt="1"><name>spatialy</name><data>0000000040458000</data></node>
-             <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data></node>
+             <node f="42" dt="1"><name>spatialsx</name><data>000000004072e000</data></node>
              <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
              <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data>
               <node f="40"><name></name></node></node>
@@ -2503,7 +2715,10 @@ repaintview(TheTable);
                <node f="42" dt="1"><name></name><data>0000000040504000</data></node>
                <node f="42" dt="1"><name></name><data>00000000404e0000</data></node>
               </node>
-              <node f="42" dt="1"><name>cellheight</name><data>0000000040320000</data></node>
+              <node f="42" dt="1"><name>cellheight</name><data>0000000040320000</data>
+               <node f="40"><name></name></node>
+               <node f="42" dt="1"><name></name><data>0000000040320000</data></node>
+              </node>
               <node f="42" dt="1"><name>alignbottommargin</name><data>0000000040140000</data></node>
               <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
               <node f="42" dt="1"><name>dataentry</name><data>0000000000000000</data></node>
@@ -2653,7 +2868,7 @@ if (eventdata) {
                <node f="40"><name>object</name></node>
                <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
                <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-               <node f="42" dt="1"><name>spatialx</name><data>55555555404a5555</data></node>
+               <node f="42" dt="1"><name>spatialx</name><data>aaaaaaab404aaaaa</data></node>
                <node f="42" dt="1"><name>aligncenterx</name><data>0000000040240000</data></node>
                <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
                <node f="42" dt="1"><name>spatialsx</name><data>00000000402c0000</data></node>
@@ -2726,7 +2941,7 @@ applylinks(parent);</data></node>
                <node f="40"><name>object</name></node>
                <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
                <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-               <node f="42" dt="1"><name>spatialx</name><data>55555555404a5555</data></node>
+               <node f="42" dt="1"><name>spatialx</name><data>aaaaaaab404aaaaa</data></node>
                <node f="42" dt="1"><name>aligncenterx</name><data>0000000040240000</data></node>
                <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
                <node f="42" dt="1"><name>spatialsx</name><data>00000000402c0000</data></node>
@@ -2794,7 +3009,7 @@ applylinks(parent);</data></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
           <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040796000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000407bc000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
           <node f="42" dt="2"><name>helptopic</name><data>TriggersTab</data></node>
@@ -2813,7 +3028,7 @@ applylinks(parent);</data></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>0000000040550000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>555555554073a555</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040761000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
            <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeTrigger</data></node>
@@ -2837,7 +3052,7 @@ applylinks(parent);</data></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>0000000040550000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>555555554073a555</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040761000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
            <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeTrigger</data></node>
@@ -2862,7 +3077,7 @@ applylinks(parent);</data></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>0000000040550000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>00000000404f8000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>555555554073a555</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040761000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
            <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeTrigger</data></node>
@@ -2882,7 +3097,7 @@ applylinks(parent);</data></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
           <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040796000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000407bc000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
          </data>
@@ -2894,7 +3109,7 @@ applylinks(parent);</data></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
           <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040796000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000407bc000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
          </data>
@@ -2906,7 +3121,7 @@ applylinks(parent);</data></node>
          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>spatialy</name><data>00000000403c0000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>55555555407a5555</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>00000000407cc000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040360000</data></node>
          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/BottomButtons</data></node>
@@ -2939,7 +3154,7 @@ applylinks(parent);</data></node>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404c0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404a0000</data></node>
     <node f="42" dt="2"><name>after</name><data>ThreeDView</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -3033,6 +3248,7 @@ return 0;</data></node>
       <node f="42" dt="2"><name>viewfocus</name><data>VIEW:/modules/AStar/LibraryGroup</data></node>
       <node f="42" dt="1"><name>picturealignleft</name><data>0000000040360000</data></node>
       <node f="42" dt="1"><name>expanded</name><data>0000000000000000</data></node>
+      <node f="42" dt="2"><name>windowtitle</name><data>A* Navigation</data></node>
      </data></node>
     </node>
    </node>

@@ -87,7 +87,8 @@ void AStarPathEntry::bind(TreeNode* toNode)
 			break;
 		case SDT_BIND_ON_DISPLAY: {
 			char str[100];
-			sprintf(str, "bridgeIndex: %d", (int)bridgeIndex);
+			sprintf(str, "bridgeIndex: %d", 
+				(int)bridgeIndex);
 			SimpleDataType::appendToDisplayStr(str);
 			break;
 		}
@@ -168,7 +169,7 @@ void AStarNodeExtraData::fulfillTopRequest()
 			blockedCell->totalBlocks++;
 		}
 	}
-	traveler->navigatePath(topRequest.travelPathIndex - 1, false);
+	traveler->navigatePath(topRequest.travelPathIndex - 1);
 	if (requests.size() > 0)
 		checkCreateContinueEvent();
 }
@@ -200,6 +201,20 @@ void AStarNodeExtraData::onReleaseTimeExtended(NodeAllocation& changedAlloc, dou
 
 	if (requests.size() > 0 && continueEvent && continueEvent->time == std::nextafter(oldReleaseTime, FLT_MAX)) {
 		destroyevent(continueEvent->holder);
+		if (changedAlloc.releaseTime < FLT_MAX)
+			continueEvent = createevent(new ContinueEvent(std::nextafter(changedAlloc.releaseTime, FLT_MAX), requests.front().traveler, changedAlloc.traveler, cell))->objectAs(ContinueEvent);
+	}
+}
+
+
+
+void AStarNodeExtraData::onReleaseTimeTruncated(NodeAllocation& changedAlloc, double oldReleaseTime)
+{
+	NodeAllocationIterator nextIter;
+
+	if (changedAlloc.acquireTime <= time() && requests.size() > 0) {
+		if (continueEvent)
+			destroyevent(continueEvent->holder);
 		if (changedAlloc.releaseTime < FLT_MAX)
 			continueEvent = createevent(new ContinueEvent(std::nextafter(changedAlloc.releaseTime, FLT_MAX), requests.front().traveler, changedAlloc.traveler, cell))->objectAs(ContinueEvent);
 	}
@@ -278,6 +293,17 @@ void NodeAllocation::extendReleaseTime(double toTime)
 	nodeData->onReleaseTimeExtended(*this, oldReleaseTime);
 }
 
+void NodeAllocation::truncateReleaseTime(double toTime)
+{
+	double oldReleaseTime = releaseTime;
+	releaseTime = toTime;
+	if (toTime >= oldReleaseTime)
+		return;
+	AStarNodeExtraData* nodeData = traveler->navigator->getExtraData(cell);
+	nodeData->onReleaseTimeTruncated(*this, oldReleaseTime);
+}
+
+
 
 bool AllocationStep::isImmediatelyBlocked(Traveler* traveler)
 {
@@ -335,6 +361,32 @@ void DestinationThreshold::bind(SimpleDataType * sdt, const char* prefix)
 	sdt->bindNumberByName(string(prefix).append("yAxisThreshold").c_str(), yAxisThreshold);
 	sdt->bindNumberByName(string(prefix).append("rotation").c_str(), rotation);
 	sdt->bindNumberByName(string(prefix).append("anyThresholdRadius").c_str(), anyThresholdRadius);
+}
+
+double TravelPath::calculateTotalDistance(AStarNavigator * nav)
+{
+	double dist = 0.0;
+	for (size_t i = 1; i < size(); i++) {
+		AStarPathEntry& from = operator [](i - 1);
+		AStarPathEntry& to = operator [](i);
+		if (from.bridgeIndex >= 0) {
+			AStarNodeExtraData* nodeData = nav->getExtraData(from.cell);
+			AStarNodeExtraData::BridgeEntry& entry = nodeData->bridges[from.bridgeIndex];
+			Bridge* bridge = entry.bridge;
+			dist += bridge->travelDistance + nav->nodeWidth;
+		} else {
+			bool isDeepDiagonal = (abs(from.cell.row - to.cell.row) >= 2 || abs(from.cell.col - to.cell.col) >= 2);
+			if (isDeepDiagonal)
+				dist += nav->nodeWidth * 2.236067977499789696409;
+			else {
+				bool isDiagonal = from.cell.row != to.cell.row && from.cell.col != to.cell.col;
+				if (isDiagonal)
+					dist += nav->nodeWidth * 1.4142135623730950488;
+				else dist += nav->nodeWidth;
+			}
+		}
+	}
+	return dist;
 }
 
 }

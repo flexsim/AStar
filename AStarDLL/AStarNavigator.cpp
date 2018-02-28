@@ -24,14 +24,6 @@ int AStarNode::colInc[]
 	0, // up
 	0 // down
 };
-#define TRAVEL_UP 0x1
-#define TRAVEL_DOWN 0x2
-#define TRAVEL_RIGHT 0x4
-#define TRAVEL_LEFT 0x8
-#define TRAVEL_FAR_UP 0x10
-#define TRAVEL_FAR_DOWN 0x20
-#define TRAVEL_FAR_RIGHT 0x40
-#define TRAVEL_FAR_LEFT 0x80
 
 unsigned int AStarNavigator::editMode = 0;
 std::vector<Vec4f> AStarNavigator::heatMapColorProgression =
@@ -71,6 +63,15 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(nodeWidth);
 	bindVariable(surroundDepth);
 	bindVariable(deepSearch);
+
+	bindVariable(routeByTravelTime);
+	bindVariable(stopForTurns);
+	bindVariable(turnSpeed);
+	bindVariable(turnDelay);
+	//bindVariable(indefiniteAllocTimePenalty);
+	//bindVariable(deadlockPenalty);
+	bindVariable(deallocTimeOffset);
+
 	bindVariable(ignoreDestBarrier);
 	bindVariable(showTravelThreshold);
 	bindVariable(smoothRotations);
@@ -102,6 +103,9 @@ void AStarNavigator::bindVariables(void)
 	bindStateVariable(collisionUpdateInterval);
 	bindStateVariable(nextCollisionUpdateTime);
 
+
+	bindVariable(debugRoutingAlgorithm);
+	bindVariable(routingAlgorithmCompletionRatio);
 
 	bindVariableByName("extraData", extraDataNode, ODT_BIND_STATE_VARIABLE);
 
@@ -335,6 +339,28 @@ double AStarNavigator::onDraw(TreeNode* view)
 		glPolygonOffset(offset - 0.030, -6);
 		if (showTravelThreshold)
 			drawDestinationThreshold(selectedobject(view), 0);
+
+		if (debugRoutingAlgorithm) {
+			fglEnable(GL_TEXTURE_2D);
+
+			treenode selObj = selectedobject(view);
+			if (objectexists(selObj) && isclasstype(selObj, CLASSTYPE_TASKEXECUTER)) {
+				TaskExecuter* te = selObj->objectAs(TaskExecuter);
+				if (te->node_v_navigator->subnodes.length > 0) {
+					treenode member = te->node_v_navigator->subnodes[1]->value;
+					if (member && ownerobject(member) == holder) {
+						drawRoutingAlgorithm(member->objectAs(Traveler), view);
+					}
+				}
+			}
+
+			for (Traveler* traveler : travelers) {
+				if (switch_selected(traveler->te->holder, -1))
+					drawRoutingAlgorithm(traveler, view);
+			}
+
+			fglDisable(GL_TEXTURE_2D);
+		}
 	} else {
 		fglDisable(GL_TEXTURE_2D);
 		fglDisable(GL_LIGHTING);
@@ -623,8 +649,8 @@ double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double
 		createevent(new CollisionIntervalUpdateEvent(this, nextCollisionUpdateTime));
 	}
 
-	TravelPath path = calculateRoute(traveler, traveler->destLoc, endSpeed, false);
-	traveler->navigatePath(std::move(path), false);
+	TravelPath path = calculateRoute(traveler, traveler->destLoc, traveler->destThreshold, endSpeed, false);
+	traveler->navigatePath(std::move(path));
 	return 0;
 }
 
@@ -662,22 +688,22 @@ void AStarNavigator::onCollisionIntervalUpdate()
 }
 
 AStarSearchEntry* AStarNavigator::checkExpandOpenSet(AStarNode* node, AStarSearchEntry* entryIn, Direction direction, 
-	int travelVal, double dist, double bonusMod, AStarNodeExtraData* extraData)
+	float rotDirection, double distFactor, double bonusMod, AStarNodeExtraData* extraData)
 {
 	if (node->canGo(direction)) {
 		int theCol = entryIn->cell.col + AStarNode::colInc[direction];
 		int theRow = entryIn->cell.row + AStarNode::rowInc[direction];
-		double distance = dist;
+		double distance = distFactor;
 		if (extraData && extraData->getBonus(direction) != 0) {
 			distance *= 1.0 - (bonusMod * (double)(int)extraData->getBonus(direction)) / 127;
 		}
-		return expandOpenSet(theRow, theCol, distance, travelVal);
+		return expandOpenSet(theRow, theCol, distance, rotDirection);
 	}
 	return nullptr;
 }
 
 AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(AStarNode* node, AStarSearchEntry* entryIn,
-	Direction dir1, Direction dir2, int travelVal, double dist, AStarNodeExtraData* extraData)
+	Direction dir1, Direction dir2, float rotDirection, double dist, AStarNodeExtraData* extraData)
 {
 	if (!node->canGo(dir1) || !node->canGo(dir2))
 		return nullptr;
@@ -690,7 +716,7 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(AStarNode* node, AS
 		if (iter != entryHash.end()) {
 			AStarSearchEntry* vert = &totalSet[iter->second];
 			AStarNode* vertNode = &DeRefEdgeTable(vert->cell.row, vert->cell.col);
-			e1 = checkExpandOpenSet(vertNode, vert, dir2, travelVal, dist, ROOT2_DIV2, extraData);
+			e1 = checkExpandOpenSet(vertNode, vert, dir2, rotDirection, dist, ROOT2_DIV2, extraData);
 		}
 	}
 	if (e1 == nullptr) {
@@ -701,30 +727,45 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(AStarNode* node, AS
 			if (iter != entryHash.end()) {
 				AStarSearchEntry* hrz = &totalSet[iter->second];
 				AStarNode* hrzNode = &DeRefEdgeTable(hrz->cell.row, hrz->cell.col);
-				e1 = checkExpandOpenSet(hrzNode, hrz, dir1, travelVal, dist, ROOT2_DIV2, extraData);
+				e1 = checkExpandOpenSet(hrzNode, hrz, dir1, rotDirection, dist, ROOT2_DIV2, extraData);
 			}
 		}
 	}
 
-	if (e1 && deepSearch) {
+	if (e1 && deepSearch == SEARCH_DEEP_DIAGONALS) {
 		AStarNode* n1 = &DeRefEdgeTable(e1->cell.row, e1->cell.col);
 		AStarSearchEntry e1StackCopy = *e1;
 
+		float deepDiagonalUpRotOffset = 22.5f;
+		if (rotDirection == 135.0f || rotDirection == -45.0f)
+			deepDiagonalUpRotOffset = -22.5f;
+
 		checkExpandOpenSet(n1, (&e1StackCopy), dir1, 
-			(travelVal | ((travelVal & TRAVEL_UP) ? TRAVEL_FAR_UP : TRAVEL_FAR_DOWN)), 
+			clampDirection(rotDirection + deepDiagonalUpRotOffset), 
 			ROOT5_DIVROOT2 * dist, ROOT5_DIV5, extraData);
 		
 		checkExpandOpenSet(n1, (&e1StackCopy), dir2, 
-			(travelVal | ((travelVal & TRAVEL_RIGHT) ? TRAVEL_FAR_RIGHT : TRAVEL_FAR_LEFT)), 
+			clampDirection(rotDirection - deepDiagonalUpRotOffset),
 			ROOT5_DIVROOT2 * dist, ROOT5_DIV5, extraData);
 	}
 	return e1;
 }
 
 
-TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLoc, double endSpeed, bool doFullSearch)
+TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLoc, const DestinationThreshold& destThreshold, double endSpeed, bool doFullSearch, double startTime)
 {
 	TreeNode* travelerNode = traveler->te->holder;
+	routingTraveler = traveler;
+	routingTravelStartTime = startTime < 0 ? time() : startTime;
+	if (debugRoutingAlgorithm)
+		traveler->routingAlgorithmSnapshots.clear();
+	if (stopForTurns) {
+		traveler->turnDelay = turnDelay->evaluate(traveler->te->holder);
+		traveler->turnSpeed = turnSpeed->evaluate(traveler->te->holder);
+	}
+	//if (routeByTravelTime && enableCollisionAvoidance) {
+	//	traveler->estimatedIndefiniteAllocTimeDelay = indefiniteAllocTimePenalty->evaluate(traveler->te->holder);
+	//}
 	double centerx = 0.5 * xsize(travelerNode);
 	double centery = 0.5 * ysize(travelerNode);
 
@@ -748,12 +789,11 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	AStarCell destCell = getCellFromLoc(destLoc);
 
 	// This will either be generated by the search, or looked up by the cache
-	TravelPath travelPath;
 
 	// Figure out if this path is in the cache
 	bool shouldUseCache = false;
 	CachedPathID p;
-	if (cachePaths && !doFullSearch) {
+	if (cachePaths && !doFullSearch && !routeByTravelTime) {
 		requestCount++;
 		p.startRow = startCell.row;
 		p.startCol = startCell.col;
@@ -780,24 +820,22 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	totalSet.clear();
 	// opensetheap is a sorted list of the nodes in the open set
 	// the value is the solution of f(x,y) for that node in the set
-	while(openSetHeap.size() > 0)
-		openSetHeap.pop();
+	openSetHeap = std::priority_queue<HeapEntry, std::vector<HeapEntry>, HeapEntryCompare>();
 
 	entryHash.clear();
 	// add the first node to the "open set"
 	totalSet.push_back(AStarSearchEntry());
 	AStarSearchEntry* start = &totalSet.back();
-	start->cell.col = startCell.col;
-	start->cell.row = startCell.row;
+	start->cell = startCell;
 
-	// Set the desination outside a barrier if necessary
+	// Set the destination outside a barrier if necessary
 	if (ignoreDestBarrier) {
 		AStarCell tempDestCell = destCell;
-		checkGetOutOfBarrier(tempDestCell, te, startCell.row, startCell.col, &traveler->destThreshold, false);
+		checkGetOutOfBarrier(tempDestCell, te, startCell.row, startCell.col, &traveler->destThreshold);
 	}
 
 	// Get out of a barrier if necessary
-	checkGetOutOfBarrier(start->cell, te, destCell.row, destCell.col, nullptr, true);
+	checkGetOutOfBarrier(start->cell, te, destCell.row, destCell.col, nullptr);
 
 	start->g = 0;
 	start->h = (1.0 - maxPathWeight) * sqrt(sqr(x-xStart)+sqr(y-yStart));
@@ -805,19 +843,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	start->previous = ~0;
 	start->closed = 0;
 
-	start->travelFromPrevious = 0;
-
-	double zRot = fmod(zrot(travelerNode), 360);
-	if (zRot < 0) zRot += 360;
-
-	if (zRot < 80 || zRot > 280)
-		start->travelFromPrevious |= TRAVEL_RIGHT;
-	else if (zRot < 260 && zRot > 100)
-		start->travelFromPrevious |= TRAVEL_LEFT;
-	if (zRot < 170 && zRot > 10)
-		start->travelFromPrevious |= TRAVEL_UP;
-	else if (zRot < 350 && zRot > 190)
-		start->travelFromPrevious |= TRAVEL_DOWN;
+	start->rotOnArrival = traveler->te->b_spatialrz;
 
 	entryHash[start->cell.colRow] = 0;
 
@@ -852,12 +878,14 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 
 		shortestIndex = heapEntry.totalSetIndex;
 		shortest = *entry;
+
 		if (shortest.h < closestSoFar) {
 			closestSoFar = shortest.h;
 			closestIndex = heapEntry.totalSetIndex;
 		}
 		// close the node
-		shortest.closed = 1;
+		entry->closed = true;
+		shortest.closed = true;
 		n = &(DeRefEdgeTable(shortest.cell.row, shortest.cell.col));
 		n->open = false;
 
@@ -866,13 +894,6 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 			final = &shortest;
 			break;
 		}
-
-		// travelFromPrevious is used to figure out the direction he's currently
-		// going because if there are multiple path solutions with the same 
-		// total distance, then I want to give priority to those solutions that
-		// keep him traveling in the same direction, i.e. make him turn the fewest
-		// times
-		travelFromPrevious = shortest.travelFromPrevious;
 
 /*
 
@@ -903,15 +924,17 @@ the outside 8 nodes.
 			if (found != edgeTableExtraData.end())
 				extraData = found->second;
 		}
-		checkExpandOpenSet(n, (&shortest), Up, TRAVEL_UP, 1.0, 1.0, extraData);
-		checkExpandOpenSet(n, (&shortest), Right, TRAVEL_RIGHT, 1.0, 1.0, extraData);
-		checkExpandOpenSet(n, (&shortest), Down, TRAVEL_DOWN, 1.0, 1.0, extraData);
-		checkExpandOpenSet(n, (&shortest), Left, TRAVEL_LEFT, 1.0, 1.0, extraData);
+		checkExpandOpenSet(n, (&shortest), Up, 90.0f, 1.0, 1.0, extraData);
+		checkExpandOpenSet(n, (&shortest), Right, 0.0f, 1.0, 1.0, extraData);
+		checkExpandOpenSet(n, (&shortest), Down, -90.0f, 1.0, 1.0, extraData);
+		checkExpandOpenSet(n, (&shortest), Left, 180.0f, 1.0, 1.0, extraData);
 
-		checkExpandOpenSetDiagonal(n, (&shortest), Up, Right, TRAVEL_UP | TRAVEL_RIGHT, ROOT2, extraData);
-		checkExpandOpenSetDiagonal(n, (&shortest), Up, Left, TRAVEL_UP | TRAVEL_LEFT, ROOT2, extraData);
-		checkExpandOpenSetDiagonal(n, (&shortest), Down, Right, TRAVEL_DOWN | TRAVEL_RIGHT, ROOT2, extraData);
-		checkExpandOpenSetDiagonal(n, (&shortest), Down, Left, TRAVEL_DOWN | TRAVEL_LEFT, ROOT2, extraData);
+		if (deepSearch != SEARCH_RIGHT_ANGLES_ONLY) {
+			checkExpandOpenSetDiagonal(n, (&shortest), Up, Right, 45.0f, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(n, (&shortest), Up, Left, 135.0f, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(n, (&shortest), Down, Right, -45.0f, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(n, (&shortest), Down, Left, -135.0f, ROOT2, extraData);
+		}
 
 		if (n->hasExtraData) {
 			auto e = edgeTableExtraData.find(shortest.cell.colRow);
@@ -927,6 +950,13 @@ the outside 8 nodes.
 				}
 			}
 		}
+
+		if (debugRoutingAlgorithm) {
+			traveler->routingAlgorithmSnapshots.resize(traveler->routingAlgorithmSnapshots.size() + 1);
+			auto& entry = traveler->routingAlgorithmSnapshots.back();
+			entry.shortestIndex = shortestIndex;
+			entry.totalSet = totalSet;
+		}
 	} // End of the while loop
 
 	// remake the start pointer (totalSet may reallocate due to push_back)
@@ -936,14 +966,7 @@ the outside 8 nodes.
 		final = &(totalSet[closestIndex]);
 	}
 
-	// Tack on the barrierStart if necessary
-	if (barrierStart.cell.colRow != ~0) {
-		// Add barrierStart to the totalSet
-		totalSet.push_back(barrierStart);
-
-		// set start's previous to be the barrierStart
-		start->previous = totalSet.size() - 1;
-	}
+	TravelPath travelPath;
 
 	unsigned int startPrevVal =  ~((unsigned int)0);
 	AStarSearchEntry* temp = final;
@@ -957,6 +980,34 @@ the outside 8 nodes.
 		else break;
 	}
 
+	if (startCell != start->cell) {
+		// build the path into the barrier to the start cell if 
+		// there is a barrier. Note that I'm building the path backwards
+		// I reverse it later on.
+		AStarCell curCell = start->cell;
+		while (curCell != startCell) {
+			int rowDiff = startCell.row - curCell.row;
+			int colDiff = startCell.col - curCell.col;
+			bool isMovedVertical = false;
+			if (rowDiff != 0) {
+				curCell.row += sign(rowDiff);
+				isMovedVertical = true;
+			}
+			if (colDiff != 0 && (deepSearch != SEARCH_RIGHT_ANGLES_ONLY || !isMovedVertical)) {
+				curCell.col += sign(colDiff);
+			}
+
+			if (colDiff != 0 && rowDiff != 0 && deepSearch == SEARCH_DEEP_DIAGONALS) {
+				if (abs(colDiff) > 1 && abs(colDiff) > abs(rowDiff))
+					curCell.col += sign(colDiff);
+				else if (abs(rowDiff) > 1 && abs(rowDiff) > abs(colDiff))
+					curCell.row += sign(rowDiff);
+			}
+
+			travelPath.push_back(AStarPathEntry(curCell, -1));
+		}
+	}
+
 	int totalsetsize = totalSet.size();
 	for (int i = 0; i < totalsetsize; i++) {
 		AStarSearchEntry & e = totalSet[i];
@@ -966,16 +1017,16 @@ the outside 8 nodes.
 	}
 	totalSet.clear();
 
-	// right now the travelPath is backwards, to reverse it
+	// right now the travelPath is backwards, so reverse it
 	for (int i = 0; i < travelPath.size() / 2; i++) {
 		auto temp = travelPath[i];
 		travelPath[i] = travelPath[travelPath.size() - i - 1];
 		travelPath[travelPath.size() - i - 1] = temp;
 	}
 
-	if (traveler->destThreshold.xAxisThreshold > 0 || traveler->destThreshold.yAxisThreshold > 0) {
-		double threshold = sqrt(traveler->destThreshold.xAxisThreshold * traveler->destThreshold.xAxisThreshold 
-			+ traveler->destThreshold.yAxisThreshold * traveler->destThreshold.yAxisThreshold);
+	if (destThreshold.xAxisThreshold > 0 || destThreshold.yAxisThreshold > 0) {
+		double threshold = sqrt(destThreshold.xAxisThreshold * destThreshold.xAxisThreshold 
+			+ destThreshold.yAxisThreshold * destThreshold.yAxisThreshold);
 		while (travelPath.size() > 1) {
 			Vec3 pos = getLocFromCell(travelPath[travelPath.size() - 2].cell);
 			Vec3 diff = pos - Vec3(destLoc.x, destLoc.y, 0);
@@ -985,33 +1036,29 @@ the outside 8 nodes.
 		}
 	}
 
-	if (cachePaths && !doFullSearch) {
+	if (cachePaths && !doFullSearch && !routeByTravelTime) {
 		pathCache[p] = travelPath;
 		pathCount++;
 	}
 
-	return travelPath;
+	routingTraveler = nullptr;
 
+	return travelPath;
 }
 
 double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination)
 {
-	updatelocations(taskexecuter->holder);
-
+	taskexecuter->updateLocations();
 	Traveler* traveler = getTraveler(taskexecuter);
 	double destLoc[3];
 	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), destLoc);
 
-	DestinationThreshold saved = traveler->destThreshold;
-	traveler->destThreshold = DestinationThreshold(destination->holder, 0.9 * nodeWidth);
-	TravelPath path = calculateRoute(traveler, destLoc, 0, true);
-	traveler->destThreshold = saved;
-	traveler->navigatePath(std::move(path), true);
-
-	return getkinematics(traveler->distQueryKinematics, KINEMATIC_TOTALDIST);
+	DestinationThreshold destThreshold(destination->holder, 0.9 * nodeWidth);
+	TravelPath path = calculateRoute(traveler, destLoc, destThreshold, 0, true);
+	return path.calculateTotalDistance(this);
 }
 
-void AStarNavigator::checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold, bool setStartEntry)
+void AStarNavigator::checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold)
 {
 	AStarNode* node = &DeRefEdgeTable(cell.row, cell.col);
 	int dy = rowDest - cell.row;
@@ -1051,14 +1098,6 @@ void AStarNavigator::checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* travele
 			node = &DeRefEdgeTable(currRow, currCol);
 	}
 
-	if (setStartEntry) {
-		barrierStart.cell.colRow = ~0;
-		barrierStart.previous = ~0;
-		if (cell.row != currRow || cell.col != currCol) {
-			barrierStart.cell.row = cell.row;
-			barrierStart.cell.col = cell.col;
-		} 
-	}
 	cell.row = currRow;
 	cell.col = currCol;
 	if (threshold && cell != originalCell) {
@@ -1068,7 +1107,7 @@ void AStarNavigator::checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* travele
 	}
 }
 
-AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, int travelVal, char bridgeIndex)
+AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, float rotDirection, char bridgeIndex)
 {
 	AStarSearchEntry* entry = NULL;
 	int closed = 0;
@@ -1087,17 +1126,69 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 		totalSetIndex = entryHash[hashEntry.cell.colRow];
 		entry = &(totalSet[totalSetIndex]);
 	}
-	float newG = shortest.g + multiplier * nodeWidth;
-	/*  Check if the guy is changing directions. If so, I want to increase the distance so it will be a penalty to make turns*/ \
-	if(travelVal != travelFromPrevious) {
+	float speedScale = routeByTravelTime ? 1.0 / routingTraveler->te->v_maxspeed : 1.0;
+	float newG = shortest.g + multiplier * nodeWidth * speedScale;
+
+	float rotationTime = 0.0f;
+	/*  Check if the guy is changing directions. If so, I want to increase the distance so it will be a penalty to make turns*/
+	if(rotDirection != shortest.rotOnArrival) {
+		float diff = rotDirection - shortest.rotOnArrival;
+		if (diff > 180.0f)
+			diff -= 360.0f;
+		else if (diff < -180.0f)
+			diff += 360.0f;
 		// add a small penalty if he's turning
-		newG += directionChangePenalty * nodeWidth;
-		// if it's a right angle turn or more, then add more penalty
-		if((travelFromPrevious & travelVal) == 0)
+		if (routeByTravelTime && stopForTurns) {
+			rotationTime = routingTraveler->turnDelay;
+
+			rotationTime += fabs(diff) / routingTraveler->turnSpeed;
+			newG += rotationTime;
+		} else {
 			newG += directionChangePenalty * nodeWidth;
+			// if it's a right angle turn or more, then add more penalty
+			if (fabs(diff) >= 90.0f)
+				newG += directionChangePenalty * nodeWidth;
+		}
 	}
+
+	/* The initial release of the route by travel time feature will not take allocations into account
+	if (routeByTravelTime && enableCollisionAvoidance) {
+		AStarNodeExtraData* extra = getExtraData(AStarCell(c, r));
+		if (extra) {
+			double allocTime = routingTravelStartTime + shortest.g + rotationTime;
+			auto found = std::find_if(extra->allocations.begin(), extra->allocations.end(), 
+				[&] (NodeAllocation& alloc) -> bool {
+					return alloc.acquireTime <= allocTime
+						&& alloc.releaseTime > allocTime
+						&& alloc.traveler != routingTraveler;
+				});
+			if (found != extra->allocations.end()) {
+				double releaseTime = found->releaseTime;
+				// find the last iteration
+				
+				AStarCell prevCell = getPrevCell(AStarCell(c, r), rotDirection);
+				bool foundDeadlock = Traveler::findPredictedDeadlockCycle(prevCell, *found, allocTime, releaseTime);
+				while (releaseTime != DBL_MAX 
+					&& (found = std::find_if(extra->allocations.begin(), extra->allocations.end(),
+						[&](NodeAllocation& alloc) -> bool { return alloc.acquireTime == releaseTime; })) != extra->allocations.end()) 
+				{
+					releaseTime = found->releaseTime;
+				}
+				if (foundDeadlock) {
+					newG += (double)deadlockPenalty->evaluate(routingTraveler->te->holder, allocTime, releaseTime - allocTime, c, r);
+				} else {
+					if (releaseTime == DBL_MAX) {
+						newG += (double)indefiniteAllocTimePenalty->evaluate(routingTraveler->te->holder);
+					} else {
+						newG += releaseTime - allocTime;
+					}
+				}
+			}
+		}
+	}
+	*/
 	
-	if (!entry || newG < entry->g-0.01*nodeWidth) {
+	if (!entry || newG < entry->g - 0.01*nodeWidth) {
 		// if entry is NULL, that means he's not in the total set yet,
 		// so I need to add him.
 		if (!entry) {
@@ -1110,7 +1201,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 			// calculate the distance heuristic h
 			double diffx = destLoc.x - (gridOrigin.x + entry->cell.col * nodeWidth);
 			double diffy = destLoc.y - (gridOrigin.y + entry->cell.row * nodeWidth);
-			entry->h = (1.0 - maxPathWeight) * sqrt(diffx*diffx + diffy*diffy);
+			entry->h = (1.0 - maxPathWeight) * sqrt(diffx*diffx + diffy*diffy) * speedScale;
 			entry->closed = 0;
 			n->isInTotalSet = true;
 		}
@@ -1118,7 +1209,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 		entry->f = entry->g + entry->h;
 		openSetHeap.push(HeapEntry(entry->f, totalSetIndex));
 		entry->previous = shortestIndex;
-		entry->travelFromPrevious = travelVal;
+		entry->rotOnArrival = rotDirection;
 		entry->prevBridgeIndex = bridgeIndex;
 	}
 	return entry;
@@ -1670,6 +1761,31 @@ void AStarNavigator::drawHeatMap(float z, TreeNode* view)
 
 }
 
+float AStarNavigator::clampDirection(float rotDirection)
+{
+	int quadrant = (int)(((int)rotDirection + 191) / 22.5);
+	switch (quadrant) {
+	case 0: return 180.0f;
+	case 1: return -153.434948822923f;
+	case 2: return -135.0f;
+	case 3: return -116.565051177095f;
+	case 4: return -90.0f;
+	case 5: return -63.434948822917f;
+	case 6: return -45.0f;
+	case 7: return -26.565051177089f;
+	case 8: return 0.0f;
+	case 9: return 26.565051177089f;
+	case 10: return 45.0f;
+	case 11: return 63.434948822917f;
+	case 12: return 90.0f;
+	case 13: return 116.565051177095f;
+	case 14: return 135.0f;
+	case 15: return 153.434948822923f;
+	case 16: return 180.0f;
+	}
+	return 0.0;
+}
+
 void AStarNavigator::drawMembers(float z)
 {
 	memberMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
@@ -1900,7 +2016,6 @@ void AStarNavigator::buildGridMesh(float z)
 	isGridMeshBuilt = true;
 }
 
-
 void AStarNavigator::drawAllocations(float z)
 {
 	if (!showAllocations || time() <= 0)
@@ -1983,8 +2098,8 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 
 	// Set the desination outside a barrier if necessary
 	if (ignoreDestBarrier) {
-		AStarCell destCell = getCellFromLoc(loc);
-		checkGetOutOfBarrier(destCell, nullptr, 0, 0, &dt, false);
+		AStarCell destCell = getCellFromLoc(Vec2(loc));
+		checkGetOutOfBarrier(destCell, nullptr, 0, 0, &dt);
 	}
 
 	Mesh mesh;
@@ -2186,6 +2301,30 @@ AStarNodeExtraData*  AStarNavigator::assertExtraData(const AStarCell& cell)
 	return extra;
 }
 
+AStarCell AStarNavigator::getPrevCell(AStarCell & toCell, float rotDirection)
+{
+	AStarCell cell(toCell);
+	switch ((int)rotDirection) {
+	case -153: case -154: cell.col += 2; cell.row++; break;
+	case -135: cell.col++; cell.row++; break;
+	case -116: case -117: cell.row += 2; cell.col++; break;
+	case -90: cell.row++; break;
+	case -63: case -64: cell.row += 2; cell.col--; break;
+	case -45: cell.row++; cell.col--; break;
+	case -26: case -27: cell.row++; cell.col -= 2; break;
+	case 0: cell.col--; break;
+	case 26: case 27: cell.row--; cell.col -= 2; break;
+	case 45: cell.row--; cell.col--; break;
+	case 63: case 64: cell.row -= 2; cell.col--; break;
+	case 90: cell.row--; break;
+	case 116: case 117: cell.row -= 2; cell.col++; break;
+	case 135: cell.row--; cell.col++; break;
+	case 153: case 154: cell.row--; cell.col += 2; break;
+	case 180: case -180: cell.col++; break;
+	}
+	return cell;
+}
+
 
 void AStarNavigator::buildActiveTravelerList()
 {
@@ -2241,6 +2380,57 @@ void AStarNavigator::dumpBlockageData(treenode destNode)
 		table[Variant(table.numRows)][Variant("TotalBlocks")] = data->totalBlocks;
 		table[Variant(table.numRows)][Variant("TotalBlockedTime")] = data->totalBlockedTime;
 	}
+}
+
+void AStarNavigator::drawRoutingAlgorithm(Traveler * traveler, treenode view)
+{
+	if (traveler->routingAlgorithmSnapshots.size() == 0)
+		return;
+
+	double diamondRadius = 0.1 * nodeWidth;
+
+	size_t index = (size_t)(routingAlgorithmCompletionRatio * traveler->routingAlgorithmSnapshots.size());
+	if (index >= traveler->routingAlgorithmSnapshots.size())
+		index = traveler->routingAlgorithmSnapshots.size() - 1;
+
+	auto& snapshot = traveler->routingAlgorithmSnapshots[index];
+
+	Mesh dotMesh;
+	dotMesh.init(6, MESH_POSITION, MESH_DYNAMIC_DRAW);
+	float position[][3] = {
+		{0.0f, diamondRadius, 0.0f},
+		{-diamondRadius, 0.0f, 0.0f},
+		{ 0.0f, -diamondRadius, 0.0f },
+		{ 0.0f, diamondRadius, 0.0f },
+		{0.0f, -diamondRadius, 0.0f},
+		{diamondRadius, 0.0f, 0.0f}
+	};
+	dotMesh.defineVertexAttribs(MESH_POSITION, position[0]);
+
+	for (size_t i = 0; i < snapshot.totalSet.size(); i++) {
+		AStarSearchEntry& entry = snapshot.totalSet[i];
+		fglPushMatrix();
+
+		Vec3 centerPos = getLocFromCell(entry.cell);
+		//centerPos = centerPos / scale;
+		fglTranslate(centerPos.x, centerPos.y, centerPos.z);
+
+		if (i == snapshot.shortestIndex)
+			fglColor(0.0f, 0.0f, 1.0f, 1.0f);
+		else if (entry.closed)
+			fglColor(1.0f, 0.0f, 0.0f, 1.0f);
+		else fglColor(0.0f, 0.5f, 0.0f, 1.0f);
+
+		dotMesh.draw(GL_TRIANGLES);
+		char buffer[200];
+
+		sprintf(buffer, "g%.2f + h%.2f = %.2f", entry.g, entry.h, entry.f);
+		drawtext(view, buffer, -4 * diamondRadius, 0, diamondRadius, diamondRadius, diamondRadius, 0.01 * diamondRadius, 90, 0, 0, 0, 0, 0);
+		fglDisable(GL_LIGHTING);
+
+		fglPopMatrix();
+	}
+
 }
 
 ASTAR_FUNCTION Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)
