@@ -1173,12 +1173,14 @@ void AStarNavigator::buildEdgeTable()
 
 	savedNodeWidth = nodeWidth;
 
-	if (content(barriers) == 0 && objectBarrierList.size() == 0) {
-		if (edgeTable)
-			delete [] edgeTable;
-		edgeTable = 0;
+	// Clear edge table
+	if (edgeTable)
+		delete[] edgeTable;
+	edgeTable = 0;
+
+	// Don't build edgeTable if there are no barriers
+	if (content(barriers) == 0 && objectBarrierList.size() == 0)
 		return;
-	}
 
 	// go through the barriers to determine bounds
 	for (int i = 0; i < barrierList.size(); i++) {
@@ -1196,13 +1198,56 @@ void AStarNavigator::buildEdgeTable()
 		if(y2 > max.y) max.y = y2;
 	}		
 
-	// go through objects to determine bounds
+	// populate array of custom barriers
 	for (int i = 0; i < objectBarrierList.size(); i++) {
-		// spatialx/y are the top left corner
-		// Treat objects as a solid barrier
 		TreeNode* theObj = objectBarrierList[i]->holder;
-		checkBounds(theObj, min, max);
+		if (function_s(theObj, "customizeAStarGrid", holder, nodeWidth))
+			continue;
+		addObjectBarrierToTable(theObj);
+	}
 
+	// go through objects to determine bounds
+	for (int i = 1; i <= customBarriers.size(); i++) {
+		if (customBarriers[i].size() == 1) {
+			// spatialx/y are the top left corner
+			// Treat objects as a solid barrier
+			checkBounds(customBarriers[i][1], min, max);
+		}
+		else if (customBarriers[i].size() == 3) {
+			// blockGridModelPos
+			double halfNodeWidth = 0.5 * nodeWidth;
+
+			if (customBarriers[i][1] + halfNodeWidth < min.x)
+				min.x = customBarriers[i][1] + halfNodeWidth;
+			if (customBarriers[i][1] - halfNodeWidth > max.x)
+				max.x = customBarriers[i][1] - halfNodeWidth;
+			if (customBarriers[i][2] + halfNodeWidth < min.y)
+				min.y = customBarriers[i][2] + halfNodeWidth;
+			if (customBarriers[i][2] - halfNodeWidth > max.y)
+				max.y = customBarriers[i][2] - halfNodeWidth;
+		}
+		else if (customBarriers[i].size() == 7) {
+			// divideGridModelLine
+			double halfNodeWidth = 0.5 * nodeWidth;
+
+			if (customBarriers[i][1] + halfNodeWidth < min.x)
+				min.x = customBarriers[i][1] + halfNodeWidth;
+			if (customBarriers[i][1] - halfNodeWidth > max.x)
+				max.x = customBarriers[i][1] - halfNodeWidth;
+			if (customBarriers[i][2] + halfNodeWidth < min.y)
+				min.y = customBarriers[i][2] + halfNodeWidth;
+			if (customBarriers[i][2] - halfNodeWidth > max.y)
+				max.y = customBarriers[i][2] - halfNodeWidth;
+
+			if (customBarriers[i][4] + halfNodeWidth < min.x)
+				min.x = customBarriers[i][4] + halfNodeWidth;
+			if (customBarriers[i][4] - halfNodeWidth > max.x)
+				max.x = customBarriers[i][4] - halfNodeWidth;
+			if (customBarriers[i][5] + halfNodeWidth < min.y)
+				min.y = customBarriers[i][5] + halfNodeWidth;
+			if (customBarriers[i][5] - halfNodeWidth > max.y)
+				max.y = customBarriers[i][5] - halfNodeWidth;
+		}
 	}
 
 	xOffset = (int)(floor(min.x / nodeWidth) - surroundDepth);
@@ -1220,8 +1265,6 @@ void AStarNavigator::buildEdgeTable()
 
 	// Create a new fully connected table
 	unsigned int tableSize = edgeTableYSize * edgeTableXSize;
-	if (edgeTable)
-		delete [] edgeTable;
 	edgeTable = new AStarNode[tableSize];
 	memset(edgeTable, 0xFFFFFFFF, tableSize * sizeof(AStarNode));
 
@@ -1242,12 +1285,29 @@ void AStarNavigator::buildEdgeTable()
 		barrier->addBarriersToTable(this);
 	}
 
-	for (int i = 0; i < objectBarrierList.size(); i++) {
-		TreeNode* theObj = objectBarrierList[i]->holder;
-		if (function_s(theObj, "customizeAStarGrid", holder, nodeWidth))
-			continue;
-		addObjectBarrierToTable(theObj);		
+	// add custom barriers
+	for (int i = 1; i <= customBarriers.size(); i++) {
+		if (customBarriers[i].size() == 1) {
+			// Treat objects as a solid barrier
+			addObjectBarrierToTable(customBarriers[i][1]);
+		}
+		else if (customBarriers[i].size() == 3) {
+			// blockGridModelPos
+			blockGridModelPos(
+				Vec3(customBarriers[i][1], customBarriers[i][2], customBarriers[i][3]));
+		}
+		else if (customBarriers[i].size() == 7) {
+			// divideGridModelLine
+			divideGridModelLine(
+				Vec3(customBarriers[i][1], customBarriers[i][2], customBarriers[i][3]),
+				Vec3(customBarriers[i][4], customBarriers[i][5], customBarriers[i][6]),
+				customBarriers[i][7].operator int());
+		}
 	}
+
+	// clear custom barriers
+	customBarriers.destruct();
+	customBarriers = Array();
 
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
@@ -1260,6 +1320,13 @@ void AStarNavigator::buildEdgeTable()
 
 void AStarNavigator::addObjectBarrierToTable(TreeNode* theObj)
 {
+	if (!edgeTable) {
+		Array customBarrier = Array(1);
+		customBarrier[1] = theObj;
+		customBarriers.push(customBarrier);
+		return;
+	}
+
 	Vec2 objMin(FLT_MAX, FLT_MAX), objMax(-FLT_MAX, -FLT_MAX);
 	int rotation = ((int)round(zrot(theObj) / 90) * 90);
 	// if the object is rotated at 0, 90, 180 or 270, then do simple stuff
@@ -1980,6 +2047,15 @@ unsigned int AStarNavigator::getClassType()
 
 void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 {
+	if (!edgeTable) {
+		Array customBarrier = Array(3);
+		customBarrier[1] = modelPos.x;
+		customBarrier[2] = modelPos.y;
+		customBarrier[3] = modelPos.z;
+		customBarriers.push(customBarrier);
+		return;
+	}
+
 	AStarCell cell = getCellFromLoc(Vec2(modelPos.x, modelPos.y));
 
 	if (cell.col >= 0 && cell.col < edgeTableXSize && cell.row >= 0 && cell.row < edgeTableYSize) {
@@ -2002,6 +2078,19 @@ void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 
 void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay)
 {
+	if (!edgeTable) {
+		Array customBarrier = Array(7);
+		customBarrier[1] = modelPos1.x;
+		customBarrier[2] = modelPos1.y;
+		customBarrier[3] = modelPos1.z;
+		customBarrier[4] = modelPos2.x;
+		customBarrier[5] = modelPos2.y;
+		customBarrier[6] = modelPos2.z;
+		customBarrier[7] = oneWay;
+		customBarriers.push(customBarrier);
+		return;
+	}
+
 	// here I assume the row/column number represents the slot above / right of the
 	// corner I am working on 
 	int col = (int)round(((modelPos1.x - gridOrigin.x) / nodeWidth) + 0.5);

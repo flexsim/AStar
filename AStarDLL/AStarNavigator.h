@@ -140,6 +140,7 @@ public:
 	TreeNode* barriers;
 	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
 	NodeRef activeBarrier;
+	Array customBarriers;
 
 	TreeNode* fixedResourceBarriers;
 	NodeListArray<ObjectDataType>::ObjStoredAttCouplingType objectBarrierList;
