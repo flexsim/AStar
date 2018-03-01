@@ -340,8 +340,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 		if (showTravelThreshold)
 			drawDestinationThreshold(selectedobject(view), 0);
 
-		if (debugRoutingAlgorithm) {
-			fglEnable(GL_TEXTURE_2D);
+		if (debugRoutingAlgorithm && fglInfo(FGL_INFO_SHADERTYPE, view) == SHADERTYPE_DEFAULT) {
 
 			treenode selObj = selectedobject(view);
 			if (objectexists(selObj) && isclasstype(selObj, CLASSTYPE_TASKEXECUTER)) {
@@ -358,8 +357,8 @@ double AStarNavigator::onDraw(TreeNode* view)
 				if (switch_selected(traveler->te->holder, -1))
 					drawRoutingAlgorithm(traveler, view);
 			}
-
-			fglDisable(GL_TEXTURE_2D);
+			fglEnable(GL_TEXTURE_2D);
+			fglEnable(GL_LIGHTING);
 		}
 	} else {
 		fglDisable(GL_TEXTURE_2D);
