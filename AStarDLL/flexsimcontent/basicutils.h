@@ -282,66 +282,66 @@ void cpp_repeat(int nr, Do doIt)
 		cpp_query(VA_ARG_0(__VA_ARGS__)), \
 	PP_IIF(PP_EQUAL(2, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));})),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(3, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__),  \
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));})),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(4, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));})),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(5, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));})),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(6, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));})),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(7, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_6(__VA_ARGS__));})),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_6(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(8, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_6(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_7(__VA_ARGS__));})),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_6(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_7(__VA_ARGS__));})),\
 	PP_IIF(PP_EQUAL(9, VA_NARGS(__VA_ARGS__)), \
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_6(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_7(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_8(__VA_ARGS__));})),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_6(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_7(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_8(__VA_ARGS__));})),\
 		cpp_query(VA_ARG_0(__VA_ARGS__), \
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_6(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_7(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_8(__VA_ARGS__));}),\
-		                    QueryCallback([&]() -> Variant {return Variant(VA_ARG_9(__VA_ARGS__));}))\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_1(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_2(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_3(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_4(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_5(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_6(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_7(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_8(__VA_ARGS__));}),\
+		                    CppQueryLambda([&]() -> Variant {return Variant(VA_ARG_9(__VA_ARGS__));}))\
 	)))))))))
 #endif
 

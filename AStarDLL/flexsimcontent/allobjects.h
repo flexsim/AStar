@@ -1838,6 +1838,7 @@
 #define EVENT_TYPE_DEFAULT 0x1
 #define EVENT_TYPE_VALUE_GETTER 0x2
 #define EVENT_TYPE_VALUE_NOTIFIER 0x4
+#define EVENT_TYPE_TRIGGER 0x8
 
 // A flag to not allow the event binding to a node based on the byte offset from the sdt memory pointer.&lt;/summary&gt;
 #define EVENT_DO_NOT_BIND_BYTE_OFFSET 0x100
@@ -1996,6 +1997,8 @@ class NetworkNavigator;
 class FlowItem;
 
 class SplineEndPoint;
+
+class DatabaseConnector;
 
 
 ///////////////////////////////////////////////////////
@@ -2434,6 +2437,43 @@ class NetworkTravelMember : public CouplingDataType
 	NodeRef reqNode;
 	int blockingState;
 };
+
+
+class DatabaseImporter: public CouplingDataType
+{
+public:
+	virtual void bind() override;
+	double shouldImportOnReset = 0.0;
+	ByteBlock query;
+	virtual const char* getClassFactory() override { return "DatabaseImporter"; }
+	void doImport(Database::Connection* connection);
+	void onReset(Database::Connection* connection) 
+	{ 
+		if (shouldImportOnReset) 
+			doImport(connection);
+	}
+};
+
+
+class DatabaseExporter : public CouplingDataType
+{
+public:
+	virtual const char* getClassFactory() override { return "DatabaseExporter"; }
+	virtual void bind() override;
+	void doExport(Database::Connection* connection, DatabaseConnector* connector);
+	Variant getTableNode(FLEXSIMINTERFACE);
+	treenode getTableNode();
+	Variant getDefaultSourceColumnName(FLEXSIMINTERFACE);
+	string getDefaultSourceColumnName(const char* colName, int colNum);
+	treenode getTableOwner();
+
+	ByteBlock tableName;
+	treenode columnMap;
+	treenode columnInfo;
+	double append;
+	double batchSize;
+};
+
 void searchhelpmanual(string searchStr, treenode destNode);
 
 }
@@ -2449,8 +2489,6 @@ namespace FlexSim {
 Variant pounddefines();
 
 visible double addsphere(treenode obj, double xval, double yval, double zval, double radius);
-
-visible void addsystemcontrolleritem(treenode controller, int prodid, int linenum, double target, double starttime, double num1, double num2, double num3, double num4);
 
 visible treenode  bcgetitemkinematics(treenode conveyor, treenode item, int kintype);
 
@@ -2576,8 +2614,6 @@ visible int getitemstate(treenode item);
 
 visible double getitemvar(treenode item, int index);
 
-visible double getlinecontrollerdata(treenode controller, int data, int column);
-
 visible treenode getnetnode(treenode object, int index);
 
 visible treenode getnetnodespline(treenode netnode, int outport);
@@ -2693,8 +2729,6 @@ Variant modelupdatelayer(treenode layer, char* newversion, char *oldversion);
 visible double movetasksequence(treenode tasksequence, treenode dispatcher);
 
 visible treenode netnodefromrank(int netnoderank);
-
-visible double notifylinecontroller(treenode obj, int therank, double objoutput, int sendinglast);
 
 Variant opennodeedge(treenode curnode, char* edgename);
 
@@ -2876,12 +2910,6 @@ visible void updatestates();
 
 visible void updatetoolsmenu();
 
-__declspec(dllexport) double updatereport(double reportnum);
-
-__declspec(dllexport) double updatereport(char* reportname);
-
-__declspec(dllexport) double updatereport(treenode thereport);
-
 Variant updateconveyorsectioninfo(treenode conveyor);
 
 
@@ -2977,6 +3005,8 @@ FS_CONTENT_DLL_FUNC int enumerateLabels(treenode destNode, const Variant& p1, co
 
 FS_CONTENT_DLL_FUNC treenode resolveLabel(const Variant& p1);
 
+FS_CONTENT_DLL_FUNC virtual double usePlaceOffsetForTravel(TaskExecuter* te);
+
 
 // System
 
@@ -3053,8 +3083,6 @@ FS_CONTENT_DLL_FUNC static char* displayMessageData(int code, char* edata);
 
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
-TreeNode* node_v_messagetrigger;
-TreeNode* node_v_ondrawtrigger;
 TreeNode* node_v_timetables;
 #define v_timetables node_v_timetables->safedatafloat()[0]
 TreeNode* node_v_networknodes;
@@ -3069,7 +3097,6 @@ TreeNode* node_v_collisionspheres;
 #define v_collisionspheres node_v_collisionspheres->safedatafloat()[0]
 TreeNode* node_v_collisionobjects;
 #define v_collisionobjects node_v_collisionobjects->safedatafloat()[0]
-TreeNode* node_v_resettrigger;
 TreeNode* node_v_savedstate;
 #define v_savedstate node_v_savedstate->safedatafloat()[0]
 TreeNode* node_v_resetposition;
@@ -3087,6 +3114,14 @@ treenode placeOffset = nullptr;
 treenode onStop = nullptr;
 
 treenode onResume = nullptr;
+
+treenode onDrawTrigger = nullptr;
+
+treenode onPreDrawTrigger = nullptr;
+
+treenode onResetTrigger = nullptr;
+
+treenode onMessageTrigger = nullptr;
 
 
 // System
@@ -3209,8 +3244,6 @@ TreeNode* node_v_pull;
 TreeNode* node_v_sendtoport;
 TreeNode* node_v_receivefromport;
 TreeNode* node_v_pullrequirement;
-TreeNode* node_v_entrytrigger;
-TreeNode* node_v_exittrigger;
 TreeNode* node_v_usetransport;
 #define v_usetransport node_v_usetransport->safedatafloat()[0]
 TreeNode* node_v_transportpriority;
@@ -3241,6 +3274,10 @@ treenode curTransporter = nullptr;
 int pullItemCalled;
 
 bool blockRecursiveReceive = false;
+
+treenode onEntryTrigger = nullptr;
+
+treenode onExitTrigger = nullptr;
 
 
 // System
@@ -3593,56 +3630,6 @@ FS_CONTENT_DLL_FUNC virtual void bindVariables();
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
 
-// GlobalVarGen
-class GlobalVarGen : public ObjectDataType
-{
-public:
-
-
-// c++ member functions
-
-FS_CONTENT_DLL_FUNC double updateCode();
-
-TreeNode* node_v_definecode;
-TreeNode* node_v_loadcode;
-TreeNode* node_v_table;
-#define v_table node_v_table->safedatafloat()[0]
-TreeNode* node_v_usercode;
-TreeNode* node_v_commands;
-#define v_commands node_v_commands->safedatafloat()[0]
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
-// WatchList
-class WatchList : public ObjectDataType
-{
-public:
-
-
-// c++ member functions
-
-FS_CONTENT_DLL_FUNC treenode findNode(treenode startnode, char *name);
-
-TreeNode* node_v_watchtable;
-#define v_watchtable node_v_watchtable->safedatafloat()[0]
-TreeNode* node_v_tablerowtemplate;
-#define v_tablerowtemplate node_v_tablerowtemplate->safedatafloat()[0]
-TreeNode* node_v_numwatches;
-#define v_numwatches node_v_numwatches->safedatafloat()[0]
-TreeNode* node_v_onchangetrigger;
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
 // PreLoad
 class PreLoad : public ObjectDataType
 {
@@ -3719,97 +3706,6 @@ TreeNode* node_v_CustomImport;
 TreeNode* node_v_CustomExport;
 TreeNode* node_v_desccustomimport;
 TreeNode* node_v_desccustomexport;
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
-// FlowNode
-class FlowNode : public FixedResource
-{
-public:
-
-
-// c++ member functions
-
-FS_CONTENT_DLL_FUNC double onReset();
-
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
-
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
-
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
-
-FS_CONTENT_DLL_FUNC double onPreDraw(treenode view);
-
-FS_CONTENT_DLL_FUNC double resetVariables();
-
-FS_CONTENT_DLL_FUNC double releaseItem(treenode item);
-
-TreeNode* node_v_itemspeed;
-TreeNode* node_v_maxcontent;
-#define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode* node_v_sideoffset;
-#define v_sideoffset node_v_sideoffset->safedatafloat()[0]
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
-// Reservoir
-class Reservoir : public FixedResource
-{
-public:
-
-
-// c++ member functions
-
-FS_CONTENT_DLL_FUNC double onReset();
-
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
-
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
-
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
-
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
-
-FS_CONTENT_DLL_FUNC double onPreDraw(treenode view);
-
-FS_CONTENT_DLL_FUNC double resetVariables();
-
-FS_CONTENT_DLL_FUNC double drawBox(double minZ, double maxZ);
-
-TreeNode* node_v_maxcontent;
-#define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode* node_v_curcontent;
-#define v_curcontent node_v_curcontent->safedatafloat()[0]
-TreeNode* node_v_highmark;
-#define v_highmark node_v_highmark->safedatafloat()[0]
-TreeNode* node_v_middlemark;
-#define v_middlemark node_v_middlemark->safedatafloat()[0]
-TreeNode* node_v_lowmark;
-#define v_lowmark node_v_lowmark->safedatafloat()[0]
-TreeNode* node_v_lastouttime;
-#define v_lastouttime node_v_lastouttime->safedatafloat()[0]
-TreeNode* node_v_lastintime;
-#define v_lastintime node_v_lastintime->safedatafloat()[0]
-TreeNode* node_v_unitsinitem;
-#define v_unitsinitem node_v_unitsinitem->safedatafloat()[0]
-TreeNode* node_v_risethroughhighmarktrigger;
-TreeNode* node_v_fallthroughhighmarktrigger;
-TreeNode* node_v_risethroughmiddlemarktrigger;
-TreeNode* node_v_fallthroughmiddlemarktrigger;
-TreeNode* node_v_risethroughlowmarktrigger;
-TreeNode* node_v_fallthroughlowmarktrigger;
-TreeNode* node_v_inflowrate;
-TreeNode* node_v_outflowrate;
 
 // System
 
@@ -4024,6 +3920,53 @@ Mesh shapeMesh;
 
 int meshShapeType;
 
+
+// System
+
+FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// DatabaseConnector
+class DatabaseConnector : public ObjectDataType
+{
+public:
+
+
+// c++ member functions
+
+FS_CONTENT_DLL_FUNC void onReset();
+
+FS_CONTENT_DLL_FUNC bool testConnection();
+
+FS_CONTENT_DLL_FUNC void updateInformationSchema();
+
+FS_CONTENT_DLL_FUNC void importAll();
+
+FS_CONTENT_DLL_FUNC void importSingle(treenode importer);
+
+FS_CONTENT_DLL_FUNC void exportAll();
+
+FS_CONTENT_DLL_FUNC void exportSingle(treenode exporter);
+
+FS_CONTENT_DLL_FUNC void getColumnInfo(const char* tableName, treenode destNode);
+
+TreeNode* node_v_connection;
+TreeNode* node_v_importers;
+#define v_importers node_v_importers->safedatafloat()[0]
+TreeNode* node_v_exporters;
+#define v_exporters node_v_exporters->safedatafloat()[0]
+TreeNode* node_v_tableInfo;
+#define v_tableInfo node_v_tableInfo->safedatafloat()[0]
+TreeNode* node_v_columnInfo;
+#define v_columnInfo node_v_columnInfo->safedatafloat()[0]
+TreeNode* node_v_tableList;
+#define v_tableList node_v_tableList->safedatafloat()[0]
+TreeNode* node_v_preparedStatements;
+#define v_preparedStatements node_v_preparedStatements->safedatafloat()[0]
+TreeNode* node_v_isInformationSchemaDirty;
+#define v_isInformationSchemaDirty node_v_isInformationSchemaDirty->safedatafloat()[0]
 
 // System
 
@@ -4954,9 +4897,11 @@ FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
 
 FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
 
+FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+
 FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
 
-FS_CONTENT_DLL_FUNC std::string setProperties(treenode view);
+FS_CONTENT_DLL_FUNC std::string setProperties(treenode view, treenode repData DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC std::string colorToJSON(treenode colorNode);
 
@@ -4972,6 +4917,16 @@ FS_CONTENT_DLL_FUNC treenode getSettingsNode();
 
 FS_CONTENT_DLL_FUNC void onColorAssignment(const Variant& value, const Variant& color, int usedExistingColor);
 
+FS_CONTENT_DLL_FUNC void onXCategoryFound(std::string category);
+
+FS_CONTENT_DLL_FUNC void onColorCategoryFound(std::string category);
+
+FS_CONTENT_DLL_FUNC virtual double onDestroy(treenode view);
+
+FS_CONTENT_DLL_FUNC void setTimeFormatD3(treenode view);
+
+FS_CONTENT_DLL_FUNC void setNumberFormatD3(treenode view);
+
 TreeNode* node_v_data;
 TreeNode* node_v_initialized;
 #define v_initialized node_v_initialized->safedatafloat()[0]
@@ -4983,6 +4938,8 @@ TreeNode* node_v_fontSize;
 #define v_fontSize node_v_fontSize->safedatafloat()[0]
 TreeNode* node_v_titleFontSize;
 #define v_titleFontSize node_v_titleFontSize->safedatafloat()[0]
+TreeNode* node_v_axisTitleFontSize;
+#define v_axisTitleFontSize node_v_axisTitleFontSize->safedatafloat()[0]
 TreeNode* node_v_precision;
 #define v_precision node_v_precision->safedatafloat()[0]
 TreeNode* node_v_showLegend;
@@ -4999,6 +4956,8 @@ TreeNode* node_v_barSettings;
 #define v_barSettings node_v_barSettings->safedatafloat()[0]
 TreeNode* node_v_tableSettings;
 #define v_tableSettings node_v_tableSettings->safedatafloat()[0]
+TreeNode* node_v_boxPlotSettings;
+#define v_boxPlotSettings node_v_boxPlotSettings->safedatafloat()[0]
 
 // System
 
@@ -5046,12 +5005,13 @@ TreeNode* node_v_sequence;
 #define v_sequence node_v_sequence->safedatafloat()[0]
 TreeNode* node_v_sequencecurrow;
 #define v_sequencecurrow node_v_sequencecurrow->safedatafloat()[0]
-TreeNode* node_v_creationtrigger;
 TreeNode* node_v_flowitembin;
 #define v_flowitembin node_v_flowitembin->safedatafloat()[0]
 
 // c++ attributes
 treenode flowitemtocreate;
+
+treenode onCreationTrigger = nullptr;
 
 
 // System
@@ -5107,7 +5067,6 @@ TreeNode* node_v_flush;
 #define v_flush node_v_flush->safedatafloat()[0]
 TreeNode* node_v_currentbatchsize;
 #define v_currentbatchsize node_v_currentbatchsize->safedatafloat()[0]
-TreeNode* node_v_endcollectingtrigger;
 TreeNode* node_v_placemode;
 #define v_placemode node_v_placemode->safedatafloat()[0]
 TreeNode* node_v_stackinitz;
@@ -5129,6 +5088,8 @@ TreeNode* node_v_productspacing;
 int lastpredrawoutput;
 
 int lastpredrawinput;
+
+treenode onEndCollectingTrigger = nullptr;
 
 
 // System
@@ -5205,37 +5166,18 @@ TreeNode* node_v_processoperatorpriority;
 TreeNode* node_v_preemptprocessoperators;
 #define v_preemptprocessoperators node_v_preemptprocessoperators->safedatafloat()[0]
 TreeNode* node_v_processdispatcher;
-TreeNode* node_v_setupfinishtrigger;
-TreeNode* node_v_processfinishtrigger;
-TreeNode* node_v_mtbf;
-TreeNode* node_v_breakdowntrigger;
-TreeNode* node_v_mttr;
-TreeNode* node_v_repairtrigger;
-TreeNode* node_v_usedownoperators;
-#define v_usedownoperators node_v_usedownoperators->safedatafloat()[0]
-TreeNode* node_v_nrofdownoperators;
-#define v_nrofdownoperators node_v_nrofdownoperators->safedatafloat()[0]
-TreeNode* node_v_downoperatorpriority;
-#define v_downoperatorpriority node_v_downoperatorpriority->safedatafloat()[0]
-TreeNode* node_v_preemptdownoperators;
-#define v_preemptdownoperators node_v_preemptdownoperators->safedatafloat()[0]
-TreeNode* node_v_downdispatcher;
-TreeNode* node_v_curdowndispatcher;
-#define v_curdowndispatcher node_v_curdowndispatcher->safedatafloat()[0]
-TreeNode* node_v_nextdown;
-#define v_nextdown node_v_nextdown->safedatafloat()[0]
 TreeNode* node_v_convey;
 #define v_convey node_v_convey->safedatafloat()[0]
-TreeNode* node_v_nextrepairtime;
-#define v_nextrepairtime node_v_nextrepairtime->safedatafloat()[0]
 TreeNode* node_v_usesameop;
 #define v_usesameop node_v_usesameop->safedatafloat()[0]
 TreeNode* node_v_nrofsetupoperators;
 #define v_nrofsetupoperators node_v_nrofsetupoperators->safedatafloat()[0]
-TreeNode* node_v_processingdownflag;
-#define v_processingdownflag node_v_processingdownflag->safedatafloat()[0]
-TreeNode* node_v_mtbfstates;
-#define v_mtbfstates node_v_mtbfstates->safedatafloat()[0]
+
+// c++ attributes
+treenode onSetupFinishTrigger = nullptr;
+
+treenode onProcessFinishTrigger = nullptr;
+
 
 // System
 
@@ -5328,8 +5270,6 @@ TreeNode* node_v_targetcomponentsum;
 #define v_targetcomponentsum node_v_targetcomponentsum->safedatafloat()[0]
 TreeNode* node_v_pack;
 #define v_pack node_v_pack->safedatafloat()[0]
-TreeNode* node_v_overriddenreceivefromport;
-TreeNode* node_v_overriddenpullrequirement;
 TreeNode* node_v_recycle;
 #define v_recycle node_v_recycle->safedatafloat()[0]
 
@@ -5418,26 +5358,14 @@ TreeNode* node_v_nrofprocesses;
 #define v_nrofprocesses node_v_nrofprocesses->safedatafloat()[0]
 TreeNode* node_v_curdispatcher;
 #define v_curdispatcher node_v_curdispatcher->safedatafloat()[0]
-TreeNode* node_v_processfinishtrigger;
-TreeNode* node_v_nrofdownoperators;
-#define v_nrofdownoperators node_v_nrofdownoperators->safedatafloat()[0]
-TreeNode* node_v_downdispatcher;
-TreeNode* node_v_downoppriority;
-#define v_downoppriority node_v_downoppriority->safedatafloat()[0]
-TreeNode* node_v_downoppreempt;
-#define v_downoppreempt node_v_downoppreempt->safedatafloat()[0]
-TreeNode* node_v_mtbf;
-TreeNode* node_v_mttr;
-TreeNode* node_v_breakdowntrigger;
-TreeNode* node_v_repairtrigger;
-TreeNode* node_v_nextdown;
-#define v_nextdown node_v_nextdown->safedatafloat()[0]
-TreeNode* node_v_nextrepair;
-#define v_nextrepair node_v_nextrepair->safedatafloat()[0]
 TreeNode* node_v_convey;
 #define v_convey node_v_convey->safedatafloat()[0]
 TreeNode* node_v_nonestate;
 #define v_nonestate node_v_nonestate->safedatafloat()[0]
+
+// c++ attributes
+treenode onProcessFinishTrigger = nullptr;
+
 
 // System
 
@@ -5557,7 +5485,7 @@ FS_CONTENT_DLL_FUNC virtual void bindEvents();
 TreeNode* node_v_placeinbay;
 TreeNode* node_v_placeinlevel;
 TreeNode* node_v_minimumstaytime;
-TreeNode* node_v_enddwelltimetrigger;
+TreeNode* node_v_entrytrigger;
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
 TreeNode* node_v_contenttable;
@@ -5611,6 +5539,8 @@ int meshColumnSpacing;
 bool meshHideFloor;
 
 int meshExtendColumn;
+
+treenode onEndDwellTimeTrigger = nullptr;
 
 
 // System
@@ -6045,18 +5975,26 @@ FS_CONTENT_DLL_FUNC double onStateChange(int toState, treenode stateProfile);
 
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
-TreeNode* node_v_transportinnotifycomplete;
-TreeNode* node_v_transportoutnotifycomplete;
-TreeNode* node_v_stopresume;
-TreeNode* node_v_pickplaceoffset;
-TreeNode* node_v_advancedfunctions;
-TreeNode* node_v_statechange;
 TreeNode* node_v_poffsetx;
 #define v_poffsetx node_v_poffsetx->safedatafloat()[0]
 TreeNode* node_v_poffsety;
 #define v_poffsety node_v_poffsety->safedatafloat()[0]
 TreeNode* node_v_poffsetz;
 #define v_poffsetz node_v_poffsetz->safedatafloat()[0]
+
+// c++ attributes
+treenode onStateChangeTrigger = nullptr;
+
+treenode onTransportInNotifyCompleteTrigger = nullptr;
+
+treenode onTransportOutNotifyCompleteTrigger = nullptr;
+
+treenode onStopResumeTrigger = nullptr;
+
+treenode onPickPlaceOffsetTrigger = nullptr;
+
+treenode onAdvancedFunctionsTrigger = nullptr;
+
 
 // System
 
@@ -6133,8 +6071,12 @@ TreeNode* node_v_passimmediately;
 #define v_passimmediately node_v_passimmediately->safedatafloat()[0]
 TreeNode* node_v_passto;
 TreeNode* node_v_queuestrategy;
-TreeNode* node_v_onresourceavailable;
-TreeNode* node_v_onreceivets;
+
+// c++ attributes
+treenode onReceiveTSTrigger = nullptr;
+
+treenode onResourceAvailableTrigger = nullptr;
+
 
 // System
 
@@ -6254,9 +6196,7 @@ FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
 TreeNode* node_v_loadtime;
-TreeNode* node_v_loadtrigger;
 TreeNode* node_v_unloadtime;
-TreeNode* node_v_unloadtrigger;
 TreeNode* node_v_maxspeed;
 #define v_maxspeed node_v_maxspeed->safedatafloat()[0]
 TreeNode* node_v_acceleration;
@@ -6337,6 +6277,10 @@ double offsetloc[3] ;
 treenode activetask;
 
 IndexedMesh spheresMesh;
+
+treenode onLoadTrigger = nullptr;
+
+treenode onUnloadTrigger = nullptr;
 
 treenode onPreemptTrigger = nullptr;
 
@@ -6762,19 +6706,28 @@ FS_CONTENT_DLL_FUNC double onStateChange(int toState, treenode stateProfile);
 
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
-TreeNode* node_v_onbeginoffset;
-TreeNode* node_v_onupdateoffset;
-TreeNode* node_v_onfinishoffset;
-TreeNode* node_v_pickplaceoffset;
-TreeNode* node_v_stopresume;
-TreeNode* node_v_advancedfunctions;
-TreeNode* node_v_statechange;
 TreeNode* node_v_poffsetx;
 #define v_poffsetx node_v_poffsetx->safedatafloat()[0]
 TreeNode* node_v_poffsety;
 #define v_poffsety node_v_poffsety->safedatafloat()[0]
 TreeNode* node_v_poffsetz;
 #define v_poffsetz node_v_poffsetz->safedatafloat()[0]
+
+// c++ attributes
+treenode statechange = nullptr;
+
+treenode onbeginoffset = nullptr;
+
+treenode onupdateoffset = nullptr;
+
+treenode onfinishoffset = nullptr;
+
+treenode pickplaceoffset = nullptr;
+
+treenode stopresume = nullptr;
+
+treenode advancedfunctions = nullptr;
+
 
 // System
 
@@ -6921,8 +6874,6 @@ TreeNode* node_v_showme;
 #define v_showme node_v_showme->safedatafloat()[0]
 TreeNode* node_v_lastupdatetime;
 #define v_lastupdatetime node_v_lastupdatetime->safedatafloat()[0]
-TreeNode* node_v_entrytrigger;
-TreeNode* node_v_arrivaltrigger;
 TreeNode* node_v_clicked;
 #define v_clicked node_v_clicked->safedatafloat()[0]
 TreeNode* node_v_sideoffset;
@@ -6958,6 +6909,10 @@ Mesh arrowMesh;
 double meshCheckSum;
 
 NodeListArray<NetNodeEdge>::CouplingSdtSubNodeType edges;
+
+treenode onArrivalTrigger = nullptr;
+
+treenode onEntryTrigger = nullptr;
 
 
 // System
@@ -7039,14 +6994,17 @@ TreeNode* node_v_searchbestmode;
 #define v_searchbestmode node_v_searchbestmode->safedatafloat()[0]
 TreeNode* node_v_speedtable;
 #define v_speedtable node_v_speedtable->safedatafloat()[0]
-TreeNode* node_v_entrytrigger;
-TreeNode* node_v_exittrigger;
-TreeNode* node_v_requesttrigger;
 
 // c++ attributes
 struct travelrequest{treenode requester;short opnum; short fromnode; short destnode; treenode traveldata;};
 
 int matchingcolumn;
+
+treenode onEntryTrigger = nullptr;
+
+treenode onExitTrigger = nullptr;
+
+treenode onRequestTrigger = nullptr;
 
 
 // System
@@ -7954,193 +7912,6 @@ TreeNode* node_v_scalefactor;
 // c++ attributes
 IndexedMesh contentMesh;
 
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
-// LineController
-class LineController : public TaskExecuter
-{
-public:
-
-
-// c++ member functions
-
-FS_CONTENT_DLL_FUNC virtual double onReset();
-
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
-
-FS_CONTENT_DLL_FUNC virtual Variant onMessage(treenode fromobject, const Variant& par1, const Variant& par2, const Variant& par3);
-
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
-
-FS_CONTENT_DLL_FUNC double onKeyedClick(treenode view, int code, char key);
-
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
-
-FS_CONTENT_DLL_FUNC double resetVariables();
-
-FS_CONTENT_DLL_FUNC double startSimulation();
-
-FS_CONTENT_DLL_FUNC double beginRun(int prodtype, double target);
-
-FS_CONTENT_DLL_FUNC double endChangeOver();
-
-FS_CONTENT_DLL_FUNC double endOfLineCheck(treenode lineobj, double objoutput, int sendinglast);
-
-FS_CONTENT_DLL_FUNC double endRun();
-
-FS_CONTENT_DLL_FUNC double gotoNextRun();
-
-FS_CONTENT_DLL_FUNC double clearOut();
-
-FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
-
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
-
-FS_CONTENT_DLL_FUNC double validateData();
-
-TreeNode* node_v_productdata;
-#define v_productdata node_v_productdata->safedatafloat()[0]
-TreeNode* node_v_changeover;
-#define v_changeover node_v_changeover->safedatafloat()[0]
-TreeNode* node_v_clearcheck;
-#define v_clearcheck node_v_clearcheck->safedatafloat()[0]
-TreeNode* node_v_startjobtrigger;
-TreeNode* node_v_cleartrigger;
-TreeNode* node_v_startjob;
-TreeNode* node_v_finishjob;
-TreeNode* node_v_curprodtype;
-#define v_curprodtype node_v_curprodtype->safedatafloat()[0]
-TreeNode* node_v_target;
-#define v_target node_v_target->safedatafloat()[0]
-TreeNode* node_v_starttime;
-#define v_starttime node_v_starttime->safedatafloat()[0]
-TreeNode* node_v_totaloutput;
-#define v_totaloutput node_v_totaloutput->safedatafloat()[0]
-TreeNode* node_v_netoutput;
-#define v_netoutput node_v_netoutput->safedatafloat()[0]
-TreeNode* node_v_members;
-#define v_members node_v_members->safedatafloat()[0]
-TreeNode* node_v_visibleconnections;
-#define v_visibleconnections node_v_visibleconnections->safedatafloat()[0]
-TreeNode* node_v_cleaning;
-#define v_cleaning node_v_cleaning->safedatafloat()[0]
-TreeNode* node_v_targetreachedtrigger;
-TreeNode* node_v_changeovercompletetrigger;
-TreeNode* node_v_forceclearout;
-#define v_forceclearout node_v_forceclearout->safedatafloat()[0]
-TreeNode* node_v_clearouttime;
-#define v_clearouttime node_v_clearouttime->safedatafloat()[0]
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
-// SystemController
-class SystemController : public Dispatcher
-{
-public:
-
-
-// c++ member functions
-
-FS_CONTENT_DLL_FUNC virtual double onReset();
-
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
-
-FS_CONTENT_DLL_FUNC double onOutOpen(int port);
-
-FS_CONTENT_DLL_FUNC virtual double onDraw(treenode view);
-
-FS_CONTENT_DLL_FUNC double resetVariables();
-
-FS_CONTENT_DLL_FUNC double startSimulation();
-
-FS_CONTENT_DLL_FUNC double getAdditionalColumn(int row, int col);
-
-FS_CONTENT_DLL_FUNC double nextTime();
-
-FS_CONTENT_DLL_FUNC double onResourceAvailable(treenode linecontrol, int port);
-
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
-
-TreeNode* node_v_masterschedule;
-#define v_masterschedule node_v_masterschedule->safedatafloat()[0]
-TreeNode* node_v_inactivetasks;
-#define v_inactivetasks node_v_inactivetasks->safedatafloat()[0]
-TreeNode* node_v_lineavailabletrigger;
-TreeNode* node_v_starttimetrigger;
-TreeNode* node_v_productcolors;
-#define v_productcolors node_v_productcolors->safedatafloat()[0]
-TreeNode* node_v_drawindicators;
-#define v_drawindicators node_v_drawindicators->safedatafloat()[0]
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
-// ScoreCard
-class ScoreCard : public FlexSimObject
-{
-public:
-
-
-// c++ member functions
-
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
-
-TreeNode* node_v_title;
-TreeNode* node_v_values;
-#define v_values node_v_values->safedatafloat()[0]
-TreeNode* node_v_textsize;
-#define v_textsize node_v_textsize->safedatafloat()[0]
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
-// Report
-class Report : public ObjectDataType
-{
-public:
-
-
-// c++ member functions
-
-FS_CONTENT_DLL_FUNC double updateTable();
-
-TreeNode* node_v_starttime;
-#define v_starttime node_v_starttime->safedatafloat()[0]
-TreeNode* node_v_endtime;
-#define v_endtime node_v_endtime->safedatafloat()[0]
-TreeNode* node_v_interval;
-#define v_interval node_v_interval->safedatafloat()[0]
-TreeNode* node_v_columns;
-#define v_columns node_v_columns->safedatafloat()[0]
-TreeNode* node_v_data;
-#define v_data node_v_data->safedatafloat()[0]
-TreeNode* node_v_width;
-#define v_width node_v_width->safedatafloat()[0]
-TreeNode* node_v_height;
-#define v_height node_v_height->safedatafloat()[0]
-TreeNode* node_v_cellwidth;
-#define v_cellwidth node_v_cellwidth->safedatafloat()[0]
-TreeNode* node_v_cellheight;
-#define v_cellheight node_v_cellheight->safedatafloat()[0]
 
 // System
 

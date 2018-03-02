@@ -252,9 +252,8 @@ namespace FlexSim {
 	typedef int          (*_cppgettoken)(treenode thetext, int index, ByteBlock * resultblock);
 	typedef int          (*_cppsettitletoken)(treenode thetext, int index, ByteBlock * resultblock, char * newtext);
 	typedef int          (*_cppsettoken)(treenode thetext, int index, ByteBlock * resultblock, char * newtext);
-	typedef std::function<Variant ()> QueryCallback;
-	typedef int          (*_cpp_queryalias)(const char* queryStr, QueryCallback& p1,  QueryCallback& p2, QueryCallback& p3,  QueryCallback& p4,
-									QueryCallback& p5,  QueryCallback& p6, QueryCallback& p7,  QueryCallback& p8, QueryCallback& p9);
+	typedef int          (*_cpp_queryalias)(const char* queryStr, CppQueryLambda& p1, CppQueryLambda& p2, CppQueryLambda& p3, CppQueryLambda& p4,
+		CppQueryLambda& p5, CppQueryLambda& p6, CppQueryLambda& p7, CppQueryLambda& p8, CppQueryLambda& p9);
 	typedef treenode     (*_createcoordinatedtasksequence)(treenode dispatcher);
 	typedef treenode     (*_createcopyalias)(treenode classobject, treenode instancecontainer, int samename, int inobject, int cached, int replace);
 	typedef treenode     (*_createcoupling)(treenode container1, treenode container2);

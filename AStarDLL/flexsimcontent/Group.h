@@ -15,6 +15,8 @@ public:
 	Group() {}
 	static Group* global(const char* name);
 
+	virtual bool isClassType(const char* className) override { return strcmp(className, "Group") == 0 || __super::isClassType(className); }
+
 	int isMember(treenode object, int recursive = 0);
 	void addMember(treenode object);
 	void removeMember(treenode object);

@@ -651,9 +651,9 @@ inline void  colorarray(int val, double * destcolor){colorarrayalias2(val, destc
 inline void fglColor(float r, float g, float b, float a = 1.0f) {fglColorAlias(r, g, b, a);}
 inline double viewtofile(treenode view, const char* file) {return viewtofile_alias1(view, (char*)file);}
 inline double viewtofile(treenode view, const char* file, int w, int h) {return viewtofile_alias2(view, (char*)file, w, h);}
-extern QueryCallback defQueryCallback;
-inline int cpp_query(const char* queryStr, QueryCallback& p1 = defQueryCallback,  QueryCallback& p2 = defQueryCallback, QueryCallback& p3 = defQueryCallback,  QueryCallback& p4 = defQueryCallback,
-									QueryCallback& p5 = defQueryCallback,  QueryCallback& p6 = defQueryCallback, QueryCallback& p7 = defQueryCallback,  QueryCallback& p8 = defQueryCallback, QueryCallback& p9 = defQueryCallback)
+extern CppQueryLambda defQueryLambda;
+inline int cpp_query(const char* queryStr, CppQueryLambda& p1 = defQueryLambda, CppQueryLambda& p2 = defQueryLambda, CppQueryLambda& p3 = defQueryLambda, CppQueryLambda& p4 = defQueryLambda,
+	CppQueryLambda& p5 = defQueryLambda, CppQueryLambda& p6 = defQueryLambda, CppQueryLambda& p7 = defQueryLambda, CppQueryLambda& p8 = defQueryLambda, CppQueryLambda& p9 = defQueryLambda)
 {
 		return cpp_queryalias(queryStr, p1, p2, p3, p4, p5, p6, p7, p8, p9);
 }

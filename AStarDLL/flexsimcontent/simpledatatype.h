@@ -671,6 +671,7 @@ template<class ObjType>
 	static const int EVENT_INFO_CATEGORY = 0x3;
 	static const int EVENT_INFO_LOCALIZED_TITLE = 0x4;
 	static const int EVENT_INFO_REQUIREMENTS = 0x5;
+	static const int EVENT_INFO_NODE = 0x6;
 	engine_export virtual Variant getEventInfo(const char* eventTitle, int info);
 	engine_export virtual Variant getEventInfo(FLEXSIMINTERFACE);
 
@@ -686,6 +687,7 @@ template<class ObjType>
 	static const int EVENT_TYPE_DEFAULT = 0x1;
 	static const int EVENT_TYPE_VALUE_GETTER = 0x2;
 	static const int EVENT_TYPE_VALUE_NOTIFIER = 0x4;
+	static const int EVENT_TYPE_TRIGGER = 0x8;
 
 	/// <summary>	A flag to not allow the event binding to a node based on the byte offset from the sdt memory pointer.</summary>
 	static const int EVENT_DO_NOT_BIND_BYTE_OFFSET = 0x100;
@@ -721,24 +723,31 @@ template<class ObjType>
 	public:
 		EventBindingEntry() : flags(0), resolver(nullptr), node(nullptr)
 		{}
-		EventBindingEntry(SimpleDataType* sdt, const char* nodeName, TreeNode*& node, const char* eventTitle, long long flags, 
-				EventNodeResolver resolver, CurValueResolver valueResolver) :
-			nodeName(nodeName ? nodeName : ""), 
-			node(&node), 
-			eventTitle(eventTitle ? eventTitle : ""), 
-			flags(flags | s_bindEventFlags), 
-			resolver(resolver), 
+		EventBindingEntry(SimpleDataType* sdt, const char* nodeName, TreeNode*& node, const char* eventTitle, const char* unmangledEventTitle, long long flags,
+			EventNodeResolver resolver, CurValueResolver valueResolver) :
+			sdt(sdt),
+			nodeName(nodeName ? nodeName : ""),
+			node(&node),
+			eventTitle(eventTitle ? eventTitle : ""),
+			unmangledEventTitle(unmangledEventTitle ? unmangledEventTitle : ""),
+			flags(flags | s_bindEventFlags),
+			resolver(resolver),
 			valueResolver(valueResolver)
 		{
 			if (!(flags & EVENT_DO_NOT_BIND_BYTE_OFFSET))
 				nodeByteOffset = (char*)(void*)(&node) - (char*)(void*)sdt;
 			if (this->flags & EVENT_REQUIREMENTS)
 				this->node = nullptr;
+			if (s_sharedRelayedEventBindingSDT.get())
+				sharedSDT = s_sharedRelayedEventBindingSDT;
 		}
 		/// <summary>	Future use: when a TE binds events, he's going to forward bindEvents to his navigator, which makes it
 		/// 			so nodeByteOffset can't be used (the events aren't members of the TE class, but on something like AGVData). </summary>
 		static int s_bindEventFlags;
+		static std::shared_ptr<SimpleDataType> s_sharedRelayedEventBindingSDT;
+		SimpleDataType* sdt;
 		std::string nodeName;
+		std::string unmangledEventTitle;
 		std::string eventTitle;
 		long long flags;
 		int nodeByteOffset = 0;
@@ -746,11 +755,12 @@ template<class ObjType>
 		EventNodeResolver resolver;
 		CurValueResolver valueResolver;
 		int numForwardsContained = 0;
+		std::shared_ptr<SimpleDataType> sharedSDT;
 	};
 
 	private:
 	engine_export void bindEventByNameEx(const char* nodeName, TreeNode*& node, const char* eventTitle, int flags = 0, EventNodeResolver resolver = nullptr, CurValueResolver valueResolver = nullptr);
-	engine_export void bindRelayedClassEventsEx(const char* prefix, int flags, EventNodeResolver resolver, SimpleDataType* sdt);
+	engine_export void bindRelayedClassEventsEx(const char* prefix, int flags, EventNodeResolver resolver, SimpleDataType* sdt, bool shouldShareSDT);
 	public:
 	template <class ResolverCallbackType = nullptr_t, class ValueResolverCallbackType = nullptr_t>
 	void bindEventByName(const char* nodeName, TreeNode*& node, const char* eventTitle, int flags = 0, 
@@ -769,15 +779,19 @@ template<class ObjType>
 
 
 	template <class RelayToClass, class ResolverCallbackType = nullptr_t>
-	void bindRelayedClassEvents(const char* prefix, int flags, ResolverCallbackType resolver)
+	void bindRelayedClassEvents(const char* prefix, int flags, ResolverCallbackType resolver, RelayToClass* existing = nullptr)
 	{
 		switch (getBindEventMode()) {
 			case BIND_EVENT_ENUMERATE: 
 			case BIND_EVENT_FILL_BINDING_ENTRY:
 			case BIND_EVENT_GET_INFO_OBJECT:
 			{
-				RelayToClass relayToClass;
-				bindRelayedClassEventsEx(prefix, flags, force_cast<EventNodeResolver>(resolver), &relayToClass);
+				if (existing) {
+					bindRelayedClassEventsEx(prefix, flags, force_cast<EventNodeResolver>(resolver), existing, false);
+				} else {
+					RelayToClass* relayToClass = new RelayToClass;
+					bindRelayedClassEventsEx(prefix, flags, force_cast<EventNodeResolver>(resolver), relayToClass, true);
+				}
 				break;
 			}
 		}
@@ -798,6 +812,7 @@ template<class ObjType>
 	engine_export TreeNode* assertEventWithCode(const char* eventTitle, const Variant& p1 = Variant(), const Variant& p2 = Variant(), const Variant& p3 = Variant(), int* outFlags = nullptr);
 	engine_export TreeNode* assertEvent(EventBinding* enumeration, const Variant& p1, const Variant& p2 = Variant(), const Variant& p3 = Variant());
 	engine_export Variant assertEvent(FLEXSIMINTERFACE);
+	engine_export Variant assertEventWithCode(FLEXSIMINTERFACE);
 	engine_export TreeNode* assertEventNode(const char* eventTitle, TreeNode*& node);
 	
 	engine_export double getEventCurValue(EventBinding* binding);
@@ -827,6 +842,7 @@ template<class ObjType>
 	static TreeNode* s_boundEventNode;
 	static EventBindingEntry* s_eventBindingEntry;
 	static std::string s_forwardingPrefix;
+	static const char* s_originalTitle;
 	static EventNodeResolver s_relayedEventResolver;
 	TreeNode* getEventNode(const char* nodeName, const char* eventTitle, int flags, bool assert);
 	//@}
@@ -1075,7 +1091,22 @@ template<class ObjType>
 		else
 			bindPropertyByName(name, new TypedPropertyBinding<Type>(typeName, getter, setter));
 	}
-	static void bindStaticConstIntPropertyByName(const char* name, int value);
+	template <class Type>
+	static void bindStaticTypedPropertyByName(const char* name, const char* typeName, void* getter, void* setter, const char* version = nullptr)
+	{
+		if (version)
+			bindPropertyByName(name, new StaticTypedPropertyBinding<Type>(typeName, getter));
+		else
+			bindPropertyByName(name, new StaticTypedPropertyBinding<Type>(typeName, getter));
+	}
+	template<int value>
+	static void bindStaticConstIntPropertyByName(const char* name)
+	{
+		struct MyGetterClass {
+			static int getter() { return value; }
+		};
+		bindStaticTypedPropertyByName<int>(name, "int", &MyGetterClass::getter, nullptr);
+	}
 
 private:
 	engine_export static void bindConstructorVoidPtr(void* constructorCallback, const char* signature);
@@ -1098,7 +1129,7 @@ public:
 	}
 
 #define bindTypedProperty(member, type, getter, setter, ...) SimpleDataType::bindTypedPropertyByName<type>(#member, #type, force_cast<void*>(getter), force_cast<void*>(setter), __VA_ARGS__)
-#define bindStaticConstIntProperty(name, value) bindStaticConstIntPropertyByName(#name, value)
+#define bindStaticConstIntProperty(name, value) bindStaticConstIntPropertyByName<value>(#name)
 
 	static void bindPropertyByName(const char* name, void* getter, void* setter)
 	{
@@ -1235,6 +1266,7 @@ public:
 		typedef SimpleDataType* (*CreateSDTDerivative)(const char* classname, TreeNode* holder);
 		static CreateSDTDerivative createContentSDTDerivative;
 		static SimpleDataType* createSDTDerivative_NoDLLConnection(const char* classname, TreeNode* holder);
+		virtual ObjectDataType* toObject() { return nullptr; }
 	//@}
 };
 
@@ -1416,7 +1448,7 @@ private:
 	double _rate = 0.0;
 public:
 
-	TrackedVariable();
+	engine_export TrackedVariable(); //Use init() method instead. Do not use this.
 	engine_export ~TrackedVariable() {}
 	engine_export static TrackedVariable* init(TreeNode* theNode, int type, double startVal = 0, int flags = 0);
 	static const char* className;
