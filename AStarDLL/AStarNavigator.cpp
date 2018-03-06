@@ -1286,7 +1286,10 @@ void AStarNavigator::buildEdgeTable()
 		if(x2 > max.x) max.x = x2;
 		if(y2 < min.y) min.y = y2;
 		if(y2 > max.y) max.y = y2;
-	}		
+	}
+
+	// Clear custom barriers
+	customBarriers = Array();
 
 	// populate array of custom barriers
 	for (int i = 0; i < objectBarrierList.size(); i++) {
@@ -1394,10 +1397,6 @@ void AStarNavigator::buildEdgeTable()
 				customBarriers[i][7].operator int());
 		}
 	}
-
-	// clear custom barriers
-	customBarriers.destruct();
-	customBarriers = Array();
 
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
@@ -2205,79 +2204,76 @@ void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& mode
 		return;
 	}
 
-	// here I assume the row/column number represents the slot above / right of the
-	// corner I am working on 
-	int col = (int)round(((modelPos1.x - gridOrigin.x) / nodeWidth) + 0.5);
-	int row = (int)round(((modelPos1.y - gridOrigin.y) / nodeWidth) + 0.5);
-	
-	// calculate the column and row numbers for that point (again, above/right of the current corner)
-	int nextCol = (int)round(((modelPos2.x - gridOrigin.x) / nodeWidth) + 0.5);
-	int nextRow = (int)round(((modelPos2.y - gridOrigin.y) / nodeWidth) + 0.5);
+	double low, high, step, pos;
 
-	// set diff, the differences between the rows and columns
-	Vec2 diff = Vec2(nextCol - col, nextRow - row);
+	// calculate columns and rows from the model points
+	double col = (modelPos1.x - gridOrigin.x) / nodeWidth;
+	double row = (modelPos1.y - gridOrigin.y) / nodeWidth;
+	double nextCol = (modelPos2.x - gridOrigin.x) / nodeWidth;
+	double nextRow = (modelPos2.y - gridOrigin.y) / nodeWidth;
 
-	if (diff.y == 0 && diff.x == 0)
-		return;
+	// x-axis grid cross
+	low = 1;
+	high = 0;
+	step = (nextRow - row) / (nextCol - col);
+	if (nextCol > col) {
+		low = ceil(col);
+		high = floor(nextCol);
+		pos = row + (low - col) * step + 1;
+	}
+	else if (nextCol < col) {
+		low = ceil(nextCol);
+		high = floor(col);
+		pos = nextRow + (low - nextCol) * step + 1;
+	}
+	if (low <= high) {
+		double currCol = low;
+		for (int i = 0; i <= fabs(high - low); i++) {
+			double currRow = nextRow < row ? pos - FLT_EPSILON : pos + FLT_EPSILON;
 
-	// figure out the unit increment (either -1 or 1) for traversing from the
-	// current point to the next point
-	int colInc = (int)sign(diff.x);
-	if (colInc == 0)
-		colInc = 1;
-
-	int rowInc = (int)sign(diff.y);
-	if (rowInc == 0)
-		rowInc = 1;
-
-	int currCol = col;
-	int currRow = row;
-	// now step through the line, essentially walking along the edges of the grid tiles
-	// under the line, and set the divider by zeroing out the bits on each side of the line
-	// I'm walking on
-	while (currCol != nextCol || currRow != nextRow) {
-
-		// the way that I essentially move along the line
-		// is at each grid point, I do a test step horizontally, 
-		// and a test step vertically, and perform a cosine similarity test on
-		// the line to the destination for each of those test steps. Whichever
-		// line is most similar to the actual line represents the step I want to take.
-		int testCol = currCol + colInc;
-		int testRow = currRow + rowInc;
-		Vec2 diffTestCol = Vec2(nextCol - testCol, nextRow - currRow);
-		Vec2 diffTestRow = Vec2(nextCol - currCol, nextRow - testRow);
-		double colSimilarity = diff.getDotProduct(diffTestCol) / (diff.getLength() * diffTestCol.getLength());
-		double rowSimilarity = diff.getDotProduct(diffTestRow) / (diff.getLength() * diffTestRow.getLength());
-
-		int nextCurrCol, nextCurrRow;
-		if (colSimilarity > rowSimilarity && diffTestRow.getLength() != 0 || diffTestCol.getLength() == 0) {
-			// move over one column
-			nextCurrCol = testCol;
-			nextCurrRow = currRow;
-
-			int modifyCol = min(nextCurrCol, currCol);
-			if (modifyCol >= 0 && modifyCol < edgeTableXSize) {
-				if ((!oneWay || diff.x > 0) && currRow >= 0 && currRow < edgeTableYSize)
-					getNode(currRow, modifyCol)->canGoDown = 0;
-				if ((!oneWay || diff.x < 0) && currRow - 1 >= 0 && currRow - 1 < edgeTableYSize)
-					getNode(currRow - 1, modifyCol)->canGoUp = 0;
+			// Block down and up
+			if (currCol >= 0 && currCol < edgeTableXSize) {
+				if ((!oneWay || nextCol > col) && currRow >= 0 && currRow < edgeTableYSize)
+					getNode(currRow, currCol)->canGoDown = 0;
+				if ((!oneWay || nextCol < col) && currRow - 1 >= 0 && currRow - 1 < edgeTableYSize)
+					getNode(currRow - 1, currCol)->canGoUp = 0;
 			}
-		}
-		else {
-			nextCurrCol = currCol;
-			nextCurrRow = testRow;
 
-			int modifyRow = min(nextCurrRow, currRow);
-			if (modifyRow >= 0 && modifyRow < edgeTableYSize) {
-				if ((!oneWay || diff.y < 0) && currCol >= 0 && currCol < edgeTableXSize)
-					getNode(modifyRow, currCol)->canGoLeft = 0;
-				if ((!oneWay || diff.y > 0) && currCol - 1 >= 0 && currCol - 1 < edgeTableXSize)
-					getNode(modifyRow, currCol - 1)->canGoRight = 0;
+			currCol++;
+			pos += step;
+		}
+	}
+
+	// y-axis grid cross
+	low = 1;
+	high = 0;
+	step = (nextCol - col) / (nextRow - row);
+	if (nextRow > row) {
+		low = ceil(row);
+		high = floor(nextRow);
+		pos = col + (low - row) * step + 1;
+	}
+	else if (nextRow < row) {
+		low = ceil(nextRow);
+		high = floor(row);
+		pos = nextCol + (low - nextRow) * step + 1;
+	}
+	if (low <= high) {
+		double currRow = low;
+		for (int i = 0; i <= fabs(high - low); i++) {
+			double currCol = nextCol > col ? pos - FLT_EPSILON : pos + FLT_EPSILON;
+
+			// Block left and right
+			if (currRow >= 0 && currRow < edgeTableYSize) {
+				if ((!oneWay || nextRow < row) && currCol >= 0 && currCol < edgeTableXSize)
+					getNode(currRow, currCol)->canGoLeft = 0;
+				if ((!oneWay || nextRow > row) && currCol - 1 >= 0 && currCol - 1 < edgeTableXSize)
+					getNode(currRow, currCol - 1)->canGoRight = 0;
 			}
-		}
 
-		currCol = nextCurrCol;
-		currRow = nextCurrRow;
+			currRow++;
+			pos += step;
+		}
 	}
 }
 
