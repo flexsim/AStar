@@ -3005,91 +3005,10 @@ applylinks(parent);</data></node>
          </node>
          <node f="42" dt="4"><name>Triggers</name><data>
           <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowopen</name><data>000000003ff00000</data></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>00000000407bc000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
-          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-          <node f="42" dt="2"><name>helptopic</name><data>TriggersTab</data></node>
+          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/pages/shared/Triggers</data></node>
+          <node f="42" dt="2"><name>objectfocus</name><data>MODEL:/AStarNavigator</data></node>
          </data>
-          <node f="40"><name></name></node>
-          <node f="42" dt="4"><name>OnReset</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>0000000040240000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040468000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-          </data></node>
-          <node f="42" dt="4"><name>EditOnReset</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>0000000040550000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040761000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
-           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeTrigger</data></node>
-           <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/resettrigger</data></node>
-           <node f="42"><name>variables</name>
-            <node f="40"><name></name></node>
-            <node f="42" dt="2"><name>picklist</name><data>VIEW:/picklists/resettriggerpicklist</data></node>
-            <node f="42" dt="2"><name>codedescription</name><data>OnReset</data></node>
-           </node>
-          </data></node>
-          <node f="42" dt="4"><name>OnMessage</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>0000000040240000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-          </data></node>
-          <node f="42" dt="4"><name>EditOnMessage</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>0000000040550000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040761000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
-           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeTrigger</data></node>
-           <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/messagetrigger</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when messages are sent to this object</data></node>
-           <node f="42"><name>variables</name>
-            <node f="40"><name></name></node>
-            <node f="42" dt="2"><name>picklist</name><data>VIEW:/picklists/messagetriggerpicklist</data></node>
-            <node f="42" dt="2"><name>codedescription</name><data>OnMessage</data></node>
-           </node>
-          </data></node>
-          <node f="42" dt="4"><name>Custom Draw</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>0000000040240000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040508000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-          </data></node>
-          <node f="42" dt="4"><name>EditOnDraw</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>0000000040550000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000404f8000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040761000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
-           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeTrigger</data></node>
-           <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/ondrawtrigger</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Define custom drawing logic</data></node>
-           <node f="42"><name>variables</name>
-            <node f="40"><name></name></node>
-            <node f="42" dt="2"><name>picklist</name><data>VIEW:/picklists/ondrawpicklist</data></node>
-            <node f="42" dt="2"><name>codedescription</name><data>Custom Draw</data></node>
-           </node>
-          </data></node>
-         </node>
+          <node f="40"><name></name></node></node>
          <node f="42" dt="4"><name>Labels</name><data>
           <node f="40"><name>object</name></node>
           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/pages/shared/Labels</data></node>
