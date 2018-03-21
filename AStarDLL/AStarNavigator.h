@@ -218,6 +218,7 @@ public:
 	virtual unsigned int getClassType() override;
 
 	virtual void bindVariables(void) override;
+	virtual void bindEvents() override;
 	virtual void bindTEEvents(TaskExecuter* te) override;
 	virtual void bindTEStatistics(TaskExecuter* te) override;
 	TreeNode* AStarNavigator::resolveTraveler();

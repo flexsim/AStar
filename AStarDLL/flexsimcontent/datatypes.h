@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <regex>
+#include <functional>
 #include "basicclasses.h"
 
 #ifdef FLEXSIM_ENGINE_COMPILE
@@ -2827,6 +2828,28 @@ public:
 	void * data = nullptr;
 };
 
+
+class CppQueryLambda {
+public:
+	struct CallableBase {
+		virtual Variant operator()() = 0;
+	};
+	template <typename F>
+	struct Callable : CallableBase {
+		F functor;
+		Callable(F functor) : functor(functor) {}
+		virtual Variant operator()() { return functor(); }
+	};
+private:
+	std::unique_ptr<CallableBase> c;
+public:
+	template <typename F>
+	CppQueryLambda(F f) {
+		c.reset(new Callable<F>(f));
+	}
+	Variant operator()() { return (*c)(); }
+};
+
 class Table
 {
 private:
@@ -2959,8 +2982,17 @@ public:
 	Table& deleteCol(int col) { dataSource->deleteCol(col); return *this; }
 	Table& deleteRow(int row) { dataSource->deleteRow(row); return *this; }
 	Variant executeCell(const Variant& row, const Variant& col) { return dataSource->executeCell(row, col); }
+private:
+	engine_export const char* getColHeader_cstr(int colNum) const;
+	engine_export const char* getRowHeader_cstr(int rowNum) const;
+public:
+#ifdef FLEXSIM_ENGINE_COMPILE
 	std::string getColHeader(int colNum) const { return dataSource->getColHeader(colNum); }
 	std::string getRowHeader(int rowNum) const { return dataSource->getRowHeader(rowNum); }
+#else
+	std::string getColHeader(int colNum) const { return getColHeader_cstr(colNum); }
+	std::string getRowHeader(int rowNum) const { return getRowHeader_cstr(rowNum); }
+#endif
 	Table& moveCol(int fromCol, int toCol) { dataSource->moveCol(fromCol, toCol); return *this; }
 	Table& moveRow(int fromRow, int toRow) { dataSource->moveRow(fromRow, toRow); return *this; }
 	Table& setColHeader(int colNum, const char* name) { dataSource->setColHeader(colNum, name); return *this; }
@@ -2980,10 +3012,60 @@ private:
 	void setValue(int row, int col, const Variant& val) { return dataSource->setValue(row, col, val); }
 	engine_export int indexFromVariant(int depth, const Variant& headerName) { return dataSource->indexFromVariant(depth, headerName); }
 	void checkBounds(int index, int rowOrCol) { dataSource->checkBounds(index, rowOrCol); }
+
+	static Table cpp_query(const char* query, CppQueryLambda* p1 = nullptr, CppQueryLambda* p2 = nullptr, CppQueryLambda* p3 = nullptr, CppQueryLambda* p4 = nullptr, CppQueryLambda* p5 = nullptr);
 public:
 
 	engine_export static Table global(const char* name);
+
+
+	class ReadOnlyTableDataSource : public TableDataSource
+	{
+	public:
+		virtual ~ReadOnlyTableDataSource() {}
+
+		virtual int getConstraints() const override { return READ_ONLY | READ_ONLY_ROW_HEADERS; }
+
+		engine_export virtual void addCol(int col, int datatype) override { throw "Cannot add a column to a read-only table"; }
+		engine_export virtual void addRow(int row, int datatype) override { throw "Cannot add a row to a read-only table"; }
+		engine_export virtual TreeNode* cell(const Variant& row, const Variant& col) override { return nullptr; }
+		engine_export virtual void clear(int recursive = 0) override { throw "Cannot clear a read-only table"; }
+		engine_export virtual void deleteCol(int col) override { throw "Cannot delete a column in a read-only table"; }
+		engine_export virtual void deleteRow(int row) override { throw "Cannot delete a row in a read-only table"; }
+		engine_export virtual Variant executeCell(const Variant& row, const Variant& col) override { throw "Cannot execute a cell in a table of this type"; }
+		engine_export virtual void moveCol(int fromCol, int toCol) override { throw "Cannot move a column in a read-only table"; }
+		engine_export virtual void moveRow(int fromRow, int toRow) override { throw "Cannot move a row in a read-only table"; }
+		engine_export virtual void setColHeader(int colNum, const char* name) override { throw "Cannot set a column header in a read-only table"; }
+		engine_export virtual void setRowHeader(int rowNum, const char* name) override { throw "Cannot set a row header in a read-only table"; }
+		engine_export virtual void setSize(int rows, int cols, int datatype, int overwrite) override { throw "Cannot set the size of a read-only table"; }
+		engine_export virtual void sort(const Variant& cols, const Variant& ascDesc) override { throw "Cannot sort a read-only table"; }
+		engine_export virtual void swapCols(int col, int col2) override { throw "Cannot swap columns in a read-only table"; }
+		engine_export virtual void swapRows(int row, int row2) override { throw "Cannot swap rows in a read-only table"; }
+
+		engine_export virtual void setValue(int row, int col, const Variant& val) override { throw "Cannot set a value in a read-only table"; }
+
+
+	};
+
+	engine_export static Table cpp_query(const char* theQuery, CppQueryLambda& p1) { return cpp_query(theQuery, &p1, nullptr, nullptr, nullptr, nullptr); }
+	engine_export static Table cpp_query(const char* theQuery, CppQueryLambda& p1, CppQueryLambda& p2)
+	{
+		return cpp_query(theQuery, &p1, &p2);
+	}
+	engine_export static Table cpp_query(const char* theQuery, CppQueryLambda& p1, CppQueryLambda& p2, CppQueryLambda& p3)
+	{
+		return cpp_query(theQuery, &p1, &p2, &p3, nullptr, nullptr);
+	}
+	engine_export static Table cpp_query(const char* theQuery, CppQueryLambda& p1, CppQueryLambda& p2, CppQueryLambda& p3, CppQueryLambda& p4)
+	{
+		return cpp_query(theQuery, &p1, &p2, &p3, &p4, nullptr);
+	}
+	engine_export static Table cpp_query(const char* theQuery, CppQueryLambda& p1, CppQueryLambda& p2, CppQueryLambda& p3, CppQueryLambda& p4, CppQueryLambda& p5)
+	{
+		return cpp_query(theQuery, &p1, &p2, &p3, &p4, &p5);
+	}
 };
+
 
 class engine_export DateTime
 {

@@ -404,6 +404,8 @@ public:
 
 	engine_export const float* __getModelToWorldMatrix();
 	__declspec(property(get = __getModelToWorldMatrix)) const float* modelToWorldMatrix;
+
+	virtual ObjectDataType* toObject() override { return this; }
 };
 
 

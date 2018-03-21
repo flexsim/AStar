@@ -42,6 +42,8 @@ protected:
 	TreeNode* calculatedTable;
 	TreeNode* genericChart;
 
+	TreeNode* statisticsCollectorStored;
+
 	NodeListArray<>::SubNodeType processedReplacements;
 	double firstPrepareComplete = 0;
 
@@ -90,13 +92,13 @@ public:
 	engine_export void clearEvents();
 	engine_export void clearObjects();
 
+	void verifyType();
 	engine_export void prepare();
 	engine_export void doReplacements(bool installing = false);
+	void replaceEvents();
 	engine_export void unpack();
 
 	engine_export void install();
-
-	engine_export void destroy();
 
 	engine_export void onCreate();
 	engine_export void onSave();

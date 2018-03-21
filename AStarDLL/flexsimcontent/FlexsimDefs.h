@@ -114,6 +114,7 @@ namespace FlexSim {
 	#include "List.h"
 	#include "StatisticsCollector.h"
 	#include "ChartTemplate.h"
+	#include "DatabaseConnection.h"
 
 	#if defined COMPILING_MODULE_DLL
 		#include "allobjects.h"

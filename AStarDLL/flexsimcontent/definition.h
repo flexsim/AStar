@@ -32,7 +32,7 @@ void* defaultgetflexsimexportedfunction(char* functionname)
 
 #if defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 
-QueryCallback defQueryCallback([]() -> Variant {return 0;});
+CppQueryLambda defQueryLambda([]() -> Variant {return 0;});
 
 #endif
 

@@ -182,7 +182,8 @@ public:
 	engine_export void mergeWith(IDService* other);
 
 	engine_export virtual void bindVariables() override;
-	engine_export virtual void bindInterface() override;
+	
+	static IDService* create(TreeNode* parent);
 };
 #pragma endregion (classes IDService, IDServiceCore)
 
@@ -370,6 +371,9 @@ public:
 		NodeRef object;
 		ByteBlock eventName;
 
+		ObjRef<SimpleDataType> trueEventObject;
+		ByteBlock unmangledEventTitle;
+
 		double changeRule = 0;
 		TreeNode* changeValue;
 
@@ -508,6 +512,7 @@ public:
 		void throwError(std::string message) { throw message + " (for " + curCollector->holder->name + ")"; }
 	public:
 		DataSource(StatisticsCollector* curCollector) : curCollector(curCollector) {}
+		bool isValid() { return (bool)curCollector; }
 
 		virtual int getConstraints() const override { return READ_ONLY | BUNDLE_TYPES_ONLY; }
 		engine_export virtual int __numRows() const override;
@@ -537,9 +542,9 @@ public:
 		virtual void setValue(int row, int col, const Variant& val) override { throwError("Error: cannnot set value"); }
 	};
 
-	Table::TableDataSource* getTableDataSource();
+	std::shared_ptr<Table::TableDataSource> getTableDataSource();
 protected:
-	std::unique_ptr<Table::TableDataSource> dataSource;
+	std::shared_ptr<Table::TableDataSource> dataSource;
 
 protected:
 	NodeListArray<CollectedDataProperty>::SdtSubNodeBindingType sharedProperties;
@@ -587,6 +592,7 @@ public:
 	double inErrorState = 0;
 	double changeCount;
 	double saved = 0;
+	double storeDataOnDrive = 0;
 
 	double resetRowMode = 0;
 	ByteBlock resetRowProperty;
@@ -684,6 +690,8 @@ public:
 
 	engine_export static void clearIDs() { IDService::clear(); }
 
+	engine_export Variant getDBExportColumnExpression(const char* colName, int dbDataType);
+
 	virtual StatisticsCollector* toStatisticsCollector() { return this; }
 };
 
@@ -720,6 +728,7 @@ public:
 		void throwError(std::string message) { throw message + " (for " + table->holder->name + ")"; }
 	public:
 		DataSource(CalculatedTable* table) : table(table) {}
+		bool isValid() { return (bool)table; }
 
 		virtual int getConstraints() const override { return READ_ONLY | BUNDLE_TYPES_ONLY; }
 		engine_export virtual int __numRows() const override;
@@ -749,8 +758,8 @@ public:
 		virtual void setValue(int row, int col, const Variant& val) override { throwError("Error: cannnot set value"); }
 	};
 
-	std::unique_ptr<Table::TableDataSource> dataSource;
-	Table::TableDataSource* getTableDataSource() { dataSource.reset(new DataSource(this)); return dataSource.get(); }
+	std::shared_ptr<Table::TableDataSource> dataSource;
+	std::shared_ptr<Table::TableDataSource> getTableDataSource();
 
 	// Inputs
 	ByteBlock query;
