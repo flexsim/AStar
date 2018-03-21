@@ -1057,7 +1057,7 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 	double destLoc[3];
 	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), destLoc);
 
-	DestinationThreshold destThreshold(destination->holder, 0.9 * nodeWidth);
+	DestinationThreshold destThreshold(destination->holder, nodeWidth);
 	TravelPath path = calculateRoute(traveler, destLoc, destThreshold, 0, true);
 	return path.calculateTotalDistance(this);
 }
