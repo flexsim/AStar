@@ -188,7 +188,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 	clearAllocationsExcept(laste.cell);
 
 	int initialAllocsSize = allocations.size();
-	if (enableCollisionAvoidance && (!nav->ignoreInactiveMemberCollisions || isBlocked)) {
+	if (enableCollisionAvoidance && (!nav->ignoreInactiveMemberCollisions || isBlocked || isContinuingFromDeadlock)) {
 		for (auto& allocation : allocations) {
 			allocation->extendReleaseTime(DBL_MAX);
 			allocation->isMarkedForDeletion = true;
@@ -197,6 +197,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 
 
 	isBlocked = false;
+	isContinuingFromDeadlock = false;
 	blockedAtTravelPathIndex = -1;
 
 	int didBlockPathIndex = -1;
@@ -676,7 +677,7 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 			AStarNodeExtraData* extra = navigator->getExtraData(check[i].cell);
 			if (extra) {
 				auto found = std::find_if(extra->allocations.begin(), extra->allocations.end(),
-					[&](NodeAllocation& alloc) -> bool {return alloc.acquireTime <= curTime && alloc.releaseTime >= curTime; });
+					[&](NodeAllocation& alloc) -> bool {return alloc.acquireTime <= curTime && alloc.releaseTime >= curTime && alloc.traveler != traveler; });
 				if (found == extra->allocations.end()) {
 					if (!bestAlternateTraveler) {
 						bestAlternateCell = check[i].cell;
@@ -785,6 +786,7 @@ void Traveler::onArrival()
 			clearAllocationsUpTo(allocations.end() - 2);
 		allocations.front()->extendReleaseTime(DBL_MAX);
 		isNavigatingAroundDeadlock = false;
+		isContinuingFromDeadlock = true; 
 		travelPath = navigator->calculateRoute(this, destLoc, destThreshold, endSpeed, false);
 		navigatePath(0);
 	}
