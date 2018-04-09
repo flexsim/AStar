@@ -166,6 +166,7 @@ public:
 		virtual int getColID(int tableId, const char* colName, int& flags) override;
 		virtual Variant getValue(int tableId, int row, int colId) override;
 		virtual int getRowCount(int tableId) override;
+		/// <summary>The current 0-based entry row to compare back orders against.</summary>
 		int curEntryRow = 0;
 	};
 
@@ -328,6 +329,23 @@ public:
 
 		PullResult pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, int flags);
 		PullResult pull(TreeNode* w, double requestNum, double requireNum, const Variant& puller, int flags);
+
+		/// <summary>Pulls the back orders.</summary>
+		///
+		/// <remarks>Anthony Johnson, 4/2/2018.</remarks>
+		///
+		/// <param name="q">		 [in,out] If non-null, a SqlQuery to process.</param>
+		/// <param name="requestNum">The request number.</param>
+		/// <param name="value">	 The entry value to evaluate back orders against. This value can be one of several things, 
+		/// 						 and each type implies different functionality
+		/// 						 If the value is a treenode, then it will check the the treenode is one of the entries. If so,
+		/// 						 the back orders will be evaluated against that entry. If it is a number, then it is the number 
+		/// 						 of entries to evaluate back orders against. These are assumed to be the last n entries in the list.
+		/// 						 </param>
+		/// <param name="flags">	 The flags.</param>
+		/// <param name="range">	 [in,out] (Optional) If non-null, the range.</param>
+		///
+		/// <returns>A Variant.</returns>
 		Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, int flags, EntryRange* range = nullptr);
 		Variant calculateSelectClauseValue(int queryMatchIndex, int selectClauseRank, SqlQuery* q, List::OverflowTrackableValue* tracker);
 		/// <summary>	Gets the result from the last pull query. </summary>

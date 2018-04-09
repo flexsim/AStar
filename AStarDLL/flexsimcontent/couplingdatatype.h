@@ -602,10 +602,10 @@ public:
 	public:
 		Iterator() : list(0), curIndex(-1) {}
 		Iterator(NodeListArray* list, int curIndex) : list(list), curIndex(curIndex) {}
-		Iterator(Iterator& other) : list(other.list), curIndex(other.curIndex) {}
-		Iterator& operator = (Iterator& other) { list = other.list; curIndex = other.curIndex; return *this; }
-		bool operator == (Iterator& other) { return list == other.list && curIndex == other.curIndex; }
-		bool operator != (Iterator& other) { return !(operator == (other)); }
+		Iterator(const Iterator& other) : list(other.list), curIndex(other.curIndex) {}
+		Iterator& operator = (const Iterator& other) { list = other.list; curIndex = other.curIndex; return *this; }
+		bool operator == (const Iterator& other) const { return list == other.list && curIndex == other.curIndex; }
+		bool operator != (const Iterator& other) const { return !(operator == (other)); }
 		//T* operator * () const {return list->operator[](curIndex);}
 		//T* operator ->() {return list->operator[](curIndex);}
 		IteratorElement operator * () { return IteratorElement(list, curIndex); }
@@ -613,13 +613,13 @@ public:
 		Iterator& operator ++(int x) { curIndex++; return *this; }
 		Iterator& operator --() { curIndex--; return *this; }
 		Iterator& operator --(int x) { curIndex--; return *this; }
-		Iterator operator +(ptrdiff_t n) { return Iterator(list, curIndex + n); }
-		Iterator operator -(ptrdiff_t n) { return Iterator(list, curIndex - n); }
-		ptrdiff_t operator -(Iterator& other) { return curIndex - other.curIndex; }
-		bool operator <(Iterator& other) { return curIndex < other.curIndex; }
-		bool operator <=(Iterator& other) { return curIndex <= other.curIndex; }
-		bool operator >(Iterator& other) { return curIndex > other.curIndex; }
-		bool operator >=(Iterator& other) { return curIndex > other.curIndex; }
+		Iterator operator +(ptrdiff_t n) const { return Iterator(list, curIndex + n); }
+		Iterator operator -(ptrdiff_t n) const { return Iterator(list, curIndex - n); }
+		ptrdiff_t operator -(const Iterator& other) const { return curIndex - other.curIndex; }
+		bool operator <(const Iterator& other) const { return curIndex < other.curIndex; }
+		bool operator <=(const Iterator& other) const { return curIndex <= other.curIndex; }
+		bool operator >(const Iterator& other) const { return curIndex > other.curIndex; }
+		bool operator >=(const Iterator& other) const { return curIndex > other.curIndex; }
 		Iterator& operator +=(ptrdiff_t n) { curIndex -= n; return *this; }
 		Iterator& operator -=(ptrdiff_t n) { curIndex -= n; return *this; }
 		T* operator [](ptrdiff_t n) { return list[curIndex + n]; }
