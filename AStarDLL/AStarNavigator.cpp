@@ -1798,8 +1798,9 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 		checkGetOutOfBarrier(destCell, nullptr, 0, 0, &dt, false);
 	}
 
-	Mesh mesh;
+	Mesh mesh, mesh2;
 	mesh.init(0, MESH_POSITION, MESH_DYNAMIC_DRAW);
+	mesh2.init(0, MESH_POSITION, MESH_DYNAMIC_DRAW);
 	double diamondRadius = 0.1 * nodeWidth;
 	for (int row = 0; row < edgeTableYSize; row++) {
 		for (int col = 0; col < edgeTableXSize; col++) {
@@ -1807,20 +1808,33 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 			AStarCell cell;
 			cell.col = col;
 			cell.row = row;
-			if (dt.isWithinThreshold(cell, gridOrigin, loc, nodeWidth)) {
+
+			int withinArrivalThreshold = 0;
+			if (dt.xAxisThreshold > 0 || dt.yAxisThreshold > 0) {
+				double threshold = sqrt(dt.xAxisThreshold * dt.xAxisThreshold + dt.yAxisThreshold * dt.yAxisThreshold);		
+				
+				Vec3 pos = getLocFromCell(cell);
+				Vec3 diff = pos - Vec3(loc[0], loc[1], 0);
+				if (diff.magnitude < threshold)
+					withinArrivalThreshold = 1;
+			}
+
+			bool withinTravelThreshold = dt.isWithinThreshold(cell, gridOrigin, loc, nodeWidth);
+			if (withinTravelThreshold || withinArrivalThreshold) {
+				Mesh* theMesh = withinTravelThreshold ? &mesh : &mesh2;
 				Vec3 centerPos = getLocFromCell(cell);
-				int vert = mesh.addVertex();
-				mesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
-				vert = mesh.addVertex();
-				mesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y + diamondRadius, z));
-				vert = mesh.addVertex();
-				mesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, z));
-				vert = mesh.addVertex();
-				mesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, z));
-				vert = mesh.addVertex();
-				mesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y - diamondRadius, z));
-				vert = mesh.addVertex();
-				mesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
+				int vert = theMesh->addVertex();
+				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
+				vert = theMesh->addVertex();
+				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y + diamondRadius, z));
+				vert = theMesh->addVertex();
+				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, z));
+				vert = theMesh->addVertex();
+				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, z));
+				vert = theMesh->addVertex();
+				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y - diamondRadius, z));
+				vert = theMesh->addVertex();
+				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
 			}
 		}
 	}
@@ -1829,6 +1843,8 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 	fglDisable(GL_TEXTURE_2D);
 	fglColor(0.8f, 0.2f, 0.2f, 1.0f);
 	mesh.draw(GL_TRIANGLES);
+	fglColor(0.8f, 0.6f, 0.2f, 1.0f);
+	mesh2.draw(GL_TRIANGLES);
 	fglEnable(GL_LIGHTING);
 	fglEnable(GL_TEXTURE_2D);
 }
