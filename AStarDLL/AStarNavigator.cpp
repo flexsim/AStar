@@ -1843,7 +1843,7 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 	fglDisable(GL_TEXTURE_2D);
 	fglColor(0.8f, 0.2f, 0.2f, 1.0f);
 	mesh.draw(GL_TRIANGLES);
-	fglColor(0.8f, 0.6f, 0.2f, 1.0f);
+	fglColor(0.2f, 0.2f, 0.8f, 1.0f);
 	mesh2.draw(GL_TRIANGLES);
 	fglEnable(GL_LIGHTING);
 	fglEnable(GL_TEXTURE_2D);
