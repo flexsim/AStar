@@ -3083,6 +3083,12 @@ FS_CONTENT_DLL_FUNC static char* displayMessageData(int code, char* edata);
 
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
+FS_CONTENT_DLL_FUNC void bindGeneralEvents();
+
+FS_CONTENT_DLL_FUNC void bindPickPlaceOffsetEvents(int pick, int place);
+
+FS_CONTENT_DLL_FUNC void bindStopResumeEvents();
+
 TreeNode* node_v_timetables;
 #define v_timetables node_v_timetables->safedatafloat()[0]
 TreeNode* node_v_networknodes;
@@ -3237,6 +3243,12 @@ FS_CONTENT_DLL_FUNC double checkReceiveItem(int maxContent);
 
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
+FS_CONTENT_DLL_FUNC void bindEntryExitEvents(int entry, int exit);
+
+FS_CONTENT_DLL_FUNC void bindOutputEvents();
+
+FS_CONTENT_DLL_FUNC void bindInputEvents();
+
 TreeNode* node_v_nrreleased;
 #define v_nrreleased node_v_nrreleased->safedatafloat()[0]
 TreeNode* node_v_pull;
@@ -3330,6 +3342,8 @@ FS_CONTENT_DLL_FUNC static float loadTravelRequestState(treenode reqnode);
 FS_CONTENT_DLL_FUNC virtual treenode addMember(TaskExecuter* te);
 
 FS_CONTENT_DLL_FUNC virtual treenode addCopiedMember(TaskExecuter* te, TaskExecuter* original);
+
+FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
 FS_CONTENT_DLL_FUNC virtual void bindTEEvents(TaskExecuter* te);
 
@@ -3876,6 +3890,8 @@ FS_CONTENT_DLL_FUNC unsigned int getClassType();
 FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
 
 FS_CONTENT_DLL_FUNC double doConnectIndirection(treenode otherobject, char characterpressed, int tome);
+
+FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
 TreeNode* node_v_shapetypes;
 #define v_shapetypes node_v_shapetypes->safedatafloat()[0]
@@ -4598,6 +4614,8 @@ FS_CONTENT_DLL_FUNC double updateOrderedStats();
 
 FS_CONTENT_DLL_FUNC double updateUnorderedStats();
 
+FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+
 FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
 
 FS_CONTENT_DLL_FUNC double setProperties(treenode view);
@@ -5205,6 +5223,8 @@ FS_CONTENT_DLL_FUNC double resetVariables();
 FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int portnumber);
 
 FS_CONTENT_DLL_FUNC virtual double updateLocations();
+
+FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
 TreeNode* node_v_recycle;
 #define v_recycle node_v_recycle->safedatafloat()[0]

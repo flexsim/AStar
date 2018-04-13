@@ -105,6 +105,8 @@ public:
 	engine_export void onPostSave();
 	engine_export void onLoad();
 
+	engine_export void onRunWarm();
+
 	engine_export virtual void bindVariables() override;
 
 

@@ -97,6 +97,7 @@ public:
 	void onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell& cell);
 
 	bool isNavigatingAroundDeadlock = false;
+	bool isContinuingFromDeadlock = false;
 	bool navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, NodeAllocation& deadlockCreatingRequest);
 	class BlockEvent : public FlexSimEvent
 	{

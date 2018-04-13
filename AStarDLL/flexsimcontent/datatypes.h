@@ -2866,6 +2866,7 @@ public:
 		engine_export TableElement(const TableElement& other);
 		void destruct() { this->~TableElement(); }
 
+		engine_export TableElement& operator = (const TableElement& val) { destruct(); new (this) TableElement(val); return *this; }
 		engine_export void operator = (const Variant& val);
 		bool operator == (const Variant& val) const { return getValue() == val; }
 		bool operator != (const Variant& val) const { return getValue() != val; }

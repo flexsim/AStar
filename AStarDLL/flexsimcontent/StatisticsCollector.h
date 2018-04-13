@@ -371,9 +371,6 @@ public:
 		NodeRef object;
 		ByteBlock eventName;
 
-		ObjRef<SimpleDataType> trueEventObject;
-		ByteBlock unmangledEventTitle;
-
 		double changeRule = 0;
 		TreeNode* changeValue;
 
