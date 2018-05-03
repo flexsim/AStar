@@ -16,7 +16,7 @@ public:
 	virtual void bind() override;
 	virtual void bindEvents() override;
 
-	TreeNode* getEventInfoObject(const char* eventTitle) override;
+	virtual TreeNode* getEventInfoObject(const char* eventTitle) override;
 
 	Traveler(AStarNavigator* nav, TaskExecuter* te) : navigator(nav), te(te) {}
 	Traveler() : navigator(nullptr), te(nullptr) {}
