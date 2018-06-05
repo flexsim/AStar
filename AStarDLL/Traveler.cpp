@@ -449,6 +449,9 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, 
 					if (laterTraveler->blockEvent)
 						destroyevent(laterTraveler->blockEvent->holder);
 					laterTraveler->blockEvent = createevent(event)->objectAs(BlockEvent);
+
+					if (laterTraveler->bridgeData.arrivalEvent)
+						destroyevent(laterTraveler->bridgeData.arrivalEvent->holder);
 				}
 
 				if (laterAllocation != &allocation) {
