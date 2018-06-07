@@ -800,8 +800,10 @@ void Traveler::abortTravel(TreeNode* newTS)
 	updateLocation();
 
 	if (navigator->enableCollisionAvoidance) {
-		if (request)
+		if (request) {
 			navigator->getExtraData(request->cell)->requests.remove_if([&](NodeAllocation& alloc) { return &alloc == request; });
+			request = nullptr;
+		}
 		if (blockEvent)
 			destroyevent(blockEvent->holder);
 		if (navigator->ignoreInactiveMemberCollisions)
