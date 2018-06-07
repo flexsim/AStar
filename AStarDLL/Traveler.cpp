@@ -815,7 +815,7 @@ void Traveler::abortTravel(TreeNode* newTS)
 			while (allocations.size() > 1 && allocations.back()->acquireTime > time())
 				clearAllocations(allocations.end() - 1);
 
-			for (int i = allocations.size(); i >= 0; i--) {
+			for (int i = allocations.size() - 1; i >= 0; i--) {
 				if (allocations[i]->cell != cell)
 					removeAllocation(allocations.begin() + i);
 				else allocations[i]->extendReleaseTime(DBL_MAX);
