@@ -1646,8 +1646,9 @@ public:
 	{
 		switch (type) {
 			case VariantType::Number: return -asNumber;
-			default: return Variant();
+			default:  throw "Invalid Variant type in negation operation"; break;
 		}
+		return Variant();
 	}
 	Variant& operator +=(double val)
 	{
@@ -1655,6 +1656,7 @@ public:
 			asNumber += val;
 		else if (type == VariantType::Null)
 			operator = (val);
+		else throw "Invalid Variant type in += assignment";
 		return *this;
 	}
 	Variant& operator +=(const char* val)
@@ -1663,7 +1665,7 @@ public:
 			std::string temp = asString();
 			temp.append(val);
 			asString() = temp;
-		}
+		} else throw "Invalid Variant type in += assignment";
 		return *this;
 	}
 	Variant& operator +=(const std::string& val)
@@ -1672,7 +1674,7 @@ public:
 			std::string temp = asString();
 			temp.append(val);
 			asString() = temp;
-		}
+		} else throw "Invalid Variant type in += assignment";
 		return *this;
 	}
 	Variant& operator +=(const Variant& val)
@@ -1689,18 +1691,21 @@ public:
 			asNumber -= val;
 		else if (type == VariantType::Null)
 			operator = (-val);
+		else throw "Invalid Variant type in += assignment";
 		return *this;
 	}
 	Variant& operator *=(double val)
 	{
 		if (type == VariantType::Number)
 			asNumber *= val;
+		else throw "Invalid Variant type in *= assignment";
 		return *this;
 	}
 	Variant& operator /=(double val)
 	{
 		if (type == VariantType::Number)
 			asNumber /= val;
+		else throw "Invalid Variant type in /= assignment";
 		return *this;
 	}
 
@@ -1804,6 +1809,7 @@ public:
 	{\
 		if (type == VariantType::Number)\
 			return (double)(asNumber op num);\
+		else throw "Invalid Variant type in " #op " operation";\
 		return (double)num;\
 	}
 	
@@ -1821,7 +1827,7 @@ public:
 			return Variant(asNumber + other.asNumber);
 		} else if (type == VariantType::String && other.type == VariantType::String) {
 			return Variant(asString() + other.asString());
-		}
+		} else throw "Invalid Variant types in + operation";
 
 		return Variant();
 	}
@@ -1830,6 +1836,7 @@ public:
 	double operator op (const Variant& other) const\
 	{\
 		if (type == VariantType::Number) return asNumber op other.asNumber;\
+		else throw "Invalid Variant types in " #op " operation";\
 		return Variant();\
 	}
 
@@ -1846,6 +1853,7 @@ public:
 	{
 		if (type == VariantType::String)
 			return Variant(asString() + other);
+		else throw "Invalid Variant type in + operation";
 		return Variant();
 	}
 
@@ -1853,6 +1861,7 @@ public:
 	{
 		if (type == VariantType::String)
 			return Variant(asString() + other);
+		else throw "Invalid Variant type in + operation";
 		return Variant();
 	}
 
@@ -1869,6 +1878,7 @@ public:
 			return ++asNumber;
 		else if (type == VariantType::Null)
 			return operator = (1);
+		else throw "Invalid Variant type in ++ operation";
 		return 0.0;
 	}
 	double operator ++(int)
@@ -1877,6 +1887,7 @@ public:
 			return asNumber++;
 		else if (type == VariantType::Null)
 			operator = (1);
+		else throw "Invalid Variant type in ++ operation";
 		return 0.0;
 	}
 	double __postFixIncrement() { return (*this)++; }
@@ -1886,6 +1897,7 @@ public:
 			return --asNumber;
 		else if (type == VariantType::Null)
 			return operator = (-1);
+		else throw "Invalid Variant type in -- operation";
 		return 0.0;
 	}
 	double operator --(int)
@@ -1894,6 +1906,7 @@ public:
 			return asNumber--;
 		else if (type == VariantType::Null)
 			operator = (-1);
+		else throw "Invalid Variant type in -- operation";
 		return 0.0;
 	}
 	double __postFixDecrement() { return (*this)--; }
@@ -2833,20 +2846,45 @@ class CppQueryLambda {
 public:
 	struct CallableBase {
 		virtual Variant operator()() = 0;
+		virtual ~CallableBase() {}
 	};
 	template <typename F>
 	struct Callable : CallableBase {
 		F functor;
 		Callable(F functor) : functor(functor) {}
 		virtual Variant operator()() { return functor(); }
+		virtual ~Callable() override {}
 	};
 private:
-	std::unique_ptr<CallableBase> c;
+	CallableBase* c = nullptr;
 public:
+	explicit operator bool() { return c != nullptr; }
+	CppQueryLambda() {}
 	template <typename F>
 	CppQueryLambda(F f) {
-		c.reset(new Callable<F>(f));
+		c = (CallableBase*)flexsimmalloc(sizeof(Callable<F>));
+		new (c) Callable<F>(f);
 	}
+	~CppQueryLambda()
+	{
+		if (c) {
+			c->~CallableBase();
+			flexsimfree(c);
+			c = nullptr;
+		}
+	}
+	CppQueryLambda(CppQueryLambda&& from) {
+		c = from.c;
+		from.c = nullptr;
+	}
+	CppQueryLambda& operator = (CppQueryLambda&& from) {
+		this->~CppQueryLambda();
+		c = from.c;
+		from.c = nullptr;
+		return *this;
+	}
+	CppQueryLambda(const CppQueryLambda& copy) = delete;
+	CppQueryLambda& operator = (const CppQueryLambda& copy) = delete;
 	Variant operator()() { return (*c)(); }
 };
 
@@ -3163,6 +3201,7 @@ class engine_export Model
 public:
 	static DateTime getDateTime(double modelTime);
 	static double getTime(const DateTime& dateTime);
+	static treenode find(const char* path);
 
 	static double time();
 	static double statisticalTime();

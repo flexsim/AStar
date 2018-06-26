@@ -81,6 +81,8 @@ public:
 		virtual bool needsPuller() { return false; }
 		virtual LabelField* toLabelField() { return nullptr; }
 		virtual GroupField* toGroupField() { return nullptr; }
+
+		engine_export virtual TreeNode* getEventInfoObject(const char* eventTitle) override;
 	};
 
 	class LabelField : public Field
@@ -135,26 +137,32 @@ public:
 		ListSqlDataSource(List* list) : list(list) {}
 		virtual const char* getClassFactory() override { return "ListSqlDataSource"; }
 		virtual void bind() override;
-		virtual int getColID(int tableId, const char* colName, int& flags) override;
+		virtual int getColID(int tableID, const char* colName, int& flags) override;
 		void reset();
 		void onModelReset();
-		virtual const char* enumerateColNames(int tableId, int colNum) override;
-		virtual Variant getValue(int tableId, int row, int colId) override;
-		virtual bool setValue(int tableId, int row, int colId, const Variant& toValue) override;
+		virtual const char* enumerateColNames(int tableID, int colNum) override;
+		virtual Variant getValue(int tableID, int row, int colID) override;
+		virtual bool setValue(int tableID, int row, int colID, const Variant& toValue) override;
 		virtual int getTableID(const char* tableName) override;
-		virtual int getRowCount(int tableId) override;
-		virtual OverflowTrackableValue getOverflowTrackableValue(int row, int colId);
+		virtual int getRowCount(int tableID) override;
+		virtual OverflowTrackableValue getOverflowTrackableValue(int row, int colID);
 
-		TreeNode* curPuller = 0;
+		virtual bool hasCustomWhereFilter() override { return matchValues != nullptr; }
+		bool evaluateCustomWhereFilter(SqlQuery* q, int row);
+		virtual bool evaluateCustomWhereFilter(SqlQuery* q) override;
+
+		TreeNode* curPuller = nullptr;
 		List* list;
 		Partition* partition;
 		TreeNode* sqlParse = 0;
+		const Array* matchValues = nullptr;
 		bool queryUsesSelectQty = false;
 		std::vector<std::string> labelNames;
 		void assertSQLParse();
 		void setQuery(SqlQuery* q);
 		static const int VALUE_TABLE = 0;
 		static const int PULLER_TABLE = 1;
+		static const int BACK_ORDER_TABLE = 2;
 	};
 	class ListBackOrderSqlDataSource : public ListSqlDataSource
 	{
@@ -163,9 +171,10 @@ public:
 		ListBackOrderSqlDataSource(List* list) : ListSqlDataSource(list) {}
 		virtual const char* getClassFactory() override { return "ListBackOrderSqlDataSource"; }
 		virtual void bind() override;
-		virtual int getColID(int tableId, const char* colName, int& flags) override;
-		virtual Variant getValue(int tableId, int row, int colId) override;
-		virtual int getRowCount(int tableId) override;
+		virtual int getTableID(const char* tableName) override;
+		virtual int getColID(int tableID, const char* colName, int& flags) override;
+		virtual Variant getValue(int tableID, int row, int colID) override;
+		virtual int getRowCount(int tableID) override;
 		/// <summary>The current 0-based entry row to compare back orders against.</summary>
 		int curEntryRow = 0;
 	};
@@ -182,13 +191,15 @@ public:
 	public:
 		BackOrder() {}
 		BackOrder(List* list, double numRequested, double numRequired, double numFulfilled,
-			const Variant& puller, Partition* partition, int flags, ListSqlDataSource* originalDelegate)
+			const Variant& puller, Partition* partition, int flags, const Array* matchValues, ListSqlDataSource* originalDelegate)
 			: ListSqlDataSource(list), numRequested(numRequested), numRequired(numRequired), numFulfilled(numFulfilled),
 			puller(puller), flags(flags), originalDelegate(originalDelegate)
 		{
 			orderTime = time();
 			incrementalAllocation = !(flags & List::ALLOCATE_ALL_OR_NOTHING);
 			this->partition = partition;
+			if (matchValues)
+				this->matchValues.reset(new Array(*matchValues));
 		}
 		virtual const char* getClassFactory() override { return "ListBackOrder"; }
 		virtual void bind() override;
@@ -198,7 +209,8 @@ public:
 		double lastFulfillQty = 0.0;
 		double orderTime;
 		Variant puller;
-		NodeRef object;
+		TreeNode* labels;
+		std::unique_ptr<Array> matchValues;
 		int flags;
 		bool incrementalAllocation;
 		EntryRange range;
@@ -209,9 +221,12 @@ public:
 			Full
 		};
 		Fulfillment checkFulfill(EntryRange& range);
-		virtual int getRowCount(int tableId) override;
-		virtual Variant getValue(int tableId, int row, int colId) override;
-		virtual OverflowTrackableValue getOverflowTrackableValue(int row, int colId) override;
+		virtual int getRowCount(int tableID) override;
+		virtual Variant getValue(int tableID, int row, int colID) override;
+		virtual bool evaluateCustomWhereFilter(SqlQuery* q) override;
+		virtual OverflowTrackableValue getOverflowTrackableValue(int row, int colID) override;
+
+
 		TreeNode* onFulfill = nullptr;
 		virtual void bindEvents() override;
 		Variant value;
@@ -225,6 +240,13 @@ public:
 		engine_export virtual void bindInterface();
 
 		operator treenode () { return holder; }
+
+		virtual TreeNode* getLabelNode(const char* labelName, bool assert);
+		virtual TreeNode* getLabelNode(int labelRank, bool assert);
+		Variant getLabelProperty(const char* name, unsigned nameHash, bool dieHard);
+		void setLabelProperty(const char* name, unsigned nameHash, const Variant& value);
+		LabelsArray getLabels() { return LabelsArray(holder); }
+		virtual int getCapabilities() { return CAPABILITY_LABELS; }
 	};
 
 	/// <summary>	A push result that is still being composed (as opposed to a push 
@@ -327,8 +349,7 @@ public:
 		virtual const char* getClassFactory() override { return "ListPartition"; }
 
 
-		PullResult pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, int flags);
-		PullResult pull(TreeNode* w, double requestNum, double requireNum, const Variant& puller, int flags);
+		PullResult pull(const Array* a, SqlQuery* q, double requestNum, double requireNum, const Variant& puller, int flags);
 
 		/// <summary>Pulls the back orders.</summary>
 		///
@@ -367,7 +388,7 @@ public:
 		/// 									range. </param>
 		/// <returns>	The result. </returns>
 		Variant getResult(int numMatches, SqlQuery* q, const Variant& puller, bool shouldRemoveEntries,
-			EntryRange& range, bool getEntryNodes, double& fulfillQty, double maxFulfillQty, EntryRange* innerRange = nullptr, bool isFirstFulfillment = true, TreeNode* matchNode = nullptr);
+			EntryRange& range, bool getEntryNodes, double& fulfillQty, double maxFulfillQty, EntryRange* innerRange = nullptr, bool isFirstFulfillment = true);
 
 		Variant push(const VariantParams& params);
 		Variant processPushedEntries(EntryRange& range, const Variant& involvedVal);
@@ -397,6 +418,8 @@ public:
 		TreeNode* backOrderOutput = nullptr;
 		TreeNode* backOrderStaytime = nullptr;
 
+		engine_export virtual TreeNode* getEventInfoObject(const char* eventTitle) override;
+
 		ObjRef<FlexSimEvent> backOrderFulfillEvent;
 
 		void assignSelectLabelsToPuller(TreeNode* puller, SqlQuery* q, int queryMatchIndex, bool reset, double qtyRatio = 1.0);
@@ -408,6 +431,7 @@ public:
 	
 	double uniqueValues;
 	double uniquePullers;
+	double sortBackOrdersFirst;
 	
 	Partition* assertPartition(const Variant& partitionID);
 	void removePartition(Partition& partition);
@@ -500,15 +524,15 @@ public:
 	///				find the entry that's associated with the given value.
 	///				If Unique Values Only is set to false this method will return null.</remarks>
 	/// <returns>	Entry node. </returns>
-	engine_export TreeNode* entryForValue(const Variant& value, const Variant& partitionID);
+	engine_export Entry* getEntryFromValue(const Variant& value, const Variant& partitionID = 0);
 
 private:
 	int lastPushMarker;
 	ListSqlDataSource* processQuery(const char* sqlQuery, int flags, TreeNode* parsedContainer, bool isBackOrderQuery);
-	inline PullResult pull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, const Variant& partitionID, int flags);
+	inline PullResult pull(const Array* a, SqlQuery* q, double requestNum, double requireNum, const Variant& puller, const Variant& partitionID, int flags);
 	inline Variant legacyPull(SqlQuery* q, double requestNum, double requireNum, const Variant& puller, const Variant& partitionID, int flags)
 	{
-		return pull(q, requestNum, requireNum, puller, partitionID, flags);
+		return pull(nullptr, q, requestNum, requireNum, puller, partitionID, flags);
 	}
 	inline Variant pullBackOrders(SqlQuery* q, double requestNum, const Variant& value, const Variant& partitionID, int flags);
 	Variant pullBackOrders(const char* sqlQuery, double requestNum, const Variant& value, const Variant& partitionID, int flags);
@@ -530,6 +554,7 @@ public:
 	engine_export int getLastPushMarker() { return lastPushMarker; }
 	engine_export PullResult pull(const char* sqlQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
 	engine_export PullResult pull(TreeNode* what, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
+	engine_export PullResult pull(const Array& a, const char*, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0);
 	Variant legacyPull(const char* sqlQuery, double requestNum, double requireNum, const Variant& puller = Variant(), const Variant& partitionID = Variant(), int flags = 0)
 	{
 		return pull(sqlQuery, requestNum, requireNum, puller, partitionID, flags);
@@ -618,6 +643,7 @@ public:
 	double allowMultiplePushes = 0;
 	double reevaluateAllValues = 0;
 	double autoAddGroupFields = 0;
+	double leaveEntriesOnList = 0;
 
 	void addValueListeners(Entry* entry);
 	void addPullerListeners(BackOrder* backOrder);
@@ -628,7 +654,7 @@ public:
 	void removeTimeIntervalListeners();
 
 	void reevaluateBackOrder(BackOrder* backOrder);
-	void reevaluateBackOrders(Entry* entry);
+	engine_export void reevaluateBackOrders(Entry* entry);
 	void reevaluateBackOrders();
 
 	static bool hasSelectStatement(SqlQuery* q);

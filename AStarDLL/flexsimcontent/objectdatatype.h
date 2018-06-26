@@ -406,6 +406,8 @@ public:
 	__declspec(property(get = __getModelToWorldMatrix)) const float* modelToWorldMatrix;
 
 	virtual ObjectDataType* toObject() override { return this; }
+
+	engine_export Variant message(double delayTime = 0, treenode fromObj = nullptr, const Variant& p1 = Variant(), const Variant& p2 = Variant(), const Variant& p3 = Variant());
 };
 
 

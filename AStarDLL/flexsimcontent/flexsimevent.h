@@ -118,5 +118,29 @@ public:
 };
 
 #endif
+
+class MessageEvent : public FlexSimEvent {
+public:
+	static const int EVENT_SENDMESSAGE = 19;
+	Variant p1;
+	Variant p2;
+	Variant p3;
+	MessageEvent() : FlexSimEvent()
+	{}
+	MessageEvent(treenode toobject, double time, treenode fromobject, const Variant& p1, const Variant& p2, const Variant& p3)
+		: FlexSimEvent(toobject, time, fromobject, 0, NULL),
+		p1(p1), p2(p2), p3(p3)
+	{}
+	MessageEvent(treenode toobject, double time, treenode fromobject, double p1, double p2, double p3)
+		: FlexSimEvent(toobject, time, fromobject, 0, NULL),
+		p1(p1), p2(p2), p3(p3)
+	{}
+	engine_export virtual void execute() override;
+	engine_export virtual const char* getClassFactory() override { return "SendMessageEvent"; }
+	engine_export virtual void bind() override;
+	engine_export virtual void getDescription(char* toStr, size_t maxSize) override;
+	engine_export virtual void getEventDataDescription(char* toStr, size_t maxSize) override;
+};
+
 }
 #endif

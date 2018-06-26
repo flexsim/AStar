@@ -216,11 +216,13 @@ protected:
 		std::string eventName;
 
 		bool dataAvailable = false;
+		bool rowValueAvailable = false;
 		bool rowDataAvailable = false;
 
 		// The row function iterates through all rows, setting the row object and number
 		Variant rowValue;
 		int rowNum;
+		int rowValueIndex;
 
 		bool colDataAvailable = false;
 		// Then the row function iterates through all columns, setting the col number
@@ -251,6 +253,7 @@ protected:
 		std::string __getEventName();
 		Variant __getRowValue();
 		int __getRowNumber();
+		int __getRowValueIndex();
 		int __getColNumber();
 		Variant __getCurrentValue();
 
@@ -260,6 +263,7 @@ protected:
 		__declspec(property(get = __getEventName)) std::string eventName;
 		__declspec(property(get = __getRowObject)) Variant rowObject;
 		__declspec(property(get = __getRowNumber)) int rowNumber;
+		__declspec(property(get = __getRowValueIndex)) int rowValueIndex;
 		__declspec(property(get = __getColNumber)) int colNumber;
 		__declspec(property(get = __getCurrentValue)) Variant currentValue;
 
@@ -301,6 +305,8 @@ protected:
 	SDTMember<VariantMapBinder> varRowMapData;
 
 	std::pair<int, bool> getRowForVariant(const Variant& value);
+	double willSort = 0;
+	void updateRowOrder(int& newRow, const Variant& rowValue);
 
 public:
 	class EventReference;
@@ -461,6 +467,11 @@ public:
 	};
 #endif
 
+	engine_export static bool isStatsCollectorListener(TreeNode* listener);
+	engine_export static const char* getListenerEventName(TreeNode* listener);
+	engine_export static bool areListenersEqual(TreeNode* listener1, TreeNode* listener2);
+	engine_export static void setListenerInstance(TreeNode* listener, TreeNode* instanceObject);
+
 	class QuerySource : public SqlDataSource
 	{
 	public:
@@ -599,6 +610,7 @@ public:
 	TreeNode* rowTableObjects;
 	TreeNode* rowTable;
 	ByteBlock rowProperty;
+	TreeNode* rowSortInfo;
 	
 	NodeRef instanceObject;
 
@@ -613,6 +625,7 @@ public:
 	NodeListArray<FlexSimEvent>::CouplingSdtPtrType liveListeners;
 
 	BundleMember data;
+	TreeNode* rowScores;
 
 	engine_export TreeNode* addEventReference(TreeNode* object, const char* eventName);
 	engine_export TreeNode* addTimerEventReference();
@@ -620,6 +633,7 @@ public:
 	engine_export void updateEventReferenceParams(TreeNode* eventReference);
 	engine_export TreeNode* addPropertyToEventReference(TreeNode* eventReference);
 	engine_export TreeNode* addSharedProperty();
+	engine_export TreeNode* addRowSortInfo();
 
 protected:
 	void addColumnInternal(Column* newColumn);
@@ -674,6 +688,18 @@ public:
 	engine_export void onRunWarm();
 	// double onStartSimulation() override;
 
+	// Events
+protected:
+	TreeNode* onRowAdded = nullptr;
+	TreeNode* onRowUpdated = nullptr;
+	Array columnsUpdated;
+	Array previousValues;
+public:
+
+	// getEventInfo
+	engine_export virtual TreeNode* getEventInfoObject(const char* eventTitle);
+
+	// Bind
 	engine_export virtual void bindEvents() override;
 	engine_export virtual void bindVariables() override;
 	engine_export virtual void bindInterface() override;

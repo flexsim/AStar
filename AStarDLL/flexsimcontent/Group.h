@@ -17,12 +17,12 @@ public:
 
 	virtual bool isClassType(const char* className) override { return strcmp(className, "Group") == 0 || __super::isClassType(className); }
 
-	int isMember(treenode object, int recursive = 0);
-	void addMember(treenode object);
-	void removeMember(treenode object);
-	int length();
-	int indexOf(treenode object);	
-	Array toFlatArray();
+	engine_export int isMember(treenode object, int recursive = 0);
+	engine_export void addMember(treenode object);
+	engine_export void removeMember(treenode object);
+	engine_export int length();
+	engine_export int indexOf(treenode object);
+	engine_export Array toFlatArray();
 
 	ObjectDataType* operator [] (int index);
 

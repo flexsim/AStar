@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<flexsim-tree version="3" treetype="tree">
+<flexsim-tree version="4" treetype="tree">
 <node f="42"><name>AStar</name>
  <node f="40"><name></name></node>
  <node f="42"><name>installdata</name>
@@ -8,7 +8,7 @@
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040380000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040390000</data></node>
     <node f="42" dt="2"><name>after</name><data>AGV</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -3101,7 +3101,7 @@ applylinks(parent);</data></node>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000402c0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000402a0000</data></node>
     <node f="42" dt="2"><name>after</name><data>Task Executer as Flowitem</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>

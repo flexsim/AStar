@@ -142,10 +142,10 @@ public:
 
 	/// <summary>	Notification when the table selection changed. </summary>
 	/// <remarks>	This is used by the Table View's On Paste.</remarks>
-	/// <param name="minCell">			The starting cell to paste to. </param>
-	/// <param name="nodeBuffer">		The node data to paste. </param>
 	engine_export virtual void selectionDidChange() { }
 
+	/// <summary>	Used to update the status bar. </summary>
+	engine_export virtual string getStatusBarText(TableCell rangeStart, TableCell rangeEnd);
 
 	/**
 	* @}

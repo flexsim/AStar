@@ -672,6 +672,8 @@ template<class ObjType>
 	static const int EVENT_INFO_LOCALIZED_TITLE = 0x4;
 	static const int EVENT_INFO_REQUIREMENTS = 0x5;
 	static const int EVENT_INFO_NODE = 0x6;
+	engine_export virtual Variant getEventTitle(TreeNode* eventNode);
+	engine_export virtual Variant getEventTitle(FLEXSIMINTERFACE); 
 	engine_export virtual Variant getEventInfo(const char* eventTitle, int info);
 	engine_export virtual Variant getEventInfo(FLEXSIMINTERFACE);
 
@@ -680,6 +682,7 @@ template<class ObjType>
 	static const int BIND_EVENT_ON_LOAD = 3;
 	static const int BIND_EVENT_FILL_BINDING_ENTRY = 4;
 	static const int BIND_EVENT_GET_INFO_OBJECT = 5;
+	static const int BIND_EVENT_GET_TITLE = 6;
 
 	// flags and op codes for flagging extended functionality as well as retrieving data associated with
 	// that functionality
@@ -785,6 +788,7 @@ template<class ObjType>
 			case BIND_EVENT_ENUMERATE: 
 			case BIND_EVENT_FILL_BINDING_ENTRY:
 			case BIND_EVENT_GET_INFO_OBJECT:
+			case BIND_EVENT_GET_TITLE:
 			{
 				if (existing) {
 					bindRelayedClassEventsEx(prefix, flags, force_cast<EventNodeResolver>(resolver), existing, false);
@@ -1367,6 +1371,7 @@ class SqlDataSource : public SimpleDataType
 #define SQL_NULL Variant()
 
 public:
+
 	/// <summary>	Returns true if the delegate can resolve column and table refs at parse time, otherwise false. </summary>
 	/// <remarks>	Default is true. If false, this means that references must be resolved at query time. This 
 	/// 			would only be useful if there is a mechanism by which you can parse and store a query beforehand,
@@ -1428,6 +1433,9 @@ public:
 	virtual int getNextIndexedRow(int tableID, int colID, const Variant& value, int lastRow = -1) { return -1; }
 
 	virtual const char* getClassFactory() override { return "SqlDataSource"; }
+
+	virtual bool hasCustomWhereFilter() { return false; }
+	virtual bool evaluateCustomWhereFilter(SqlQuery* q) { return true; }
 };
 #endif
 
@@ -1522,6 +1530,10 @@ public:
 	engine_export double getCurrentRate() { return _rate; }
 	__declspec(property(get = getCurrentRate, put = __setRate)) double rate;
 
+	engine_export double getLastResetTime() { return lastResetTime; }
+	engine_export double getAge();
+	__declspec(property(get = getAge)) double age;
+
 private:
 	double getCurrentIgnoringBounds();
 public:
@@ -1539,6 +1551,7 @@ public:
 	virtual Variant getPrimaryValue() override { return getCurrent(); }
 	virtual Variant evaluate(const VariantParams& params) override { return getCurrent(); }
 	Variant getCategoricalName();
+	std::string getCategoryName(int catNum) const;
 
 	engine_export static TrackedVariable* create();
 	engine_export void addSubscriber(bool needsHistory, bool needsProfile, bool persist);
@@ -1547,7 +1560,7 @@ private:
 	void countDownSubscribers();
 	int needsHistoryCountDown = 0;
 	int needsProfileCountDown = 0;
-
+	double lastResetTime;
 };
 #endif
 

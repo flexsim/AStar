@@ -31,7 +31,7 @@
     <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_DE6E5CC9103849C6858D6AB4125EF93C" Name="cursors">
  <!--Program GUIDs>
-<FlexSim="CD47227D-9C7E-4D23-8ADE-BAB27AE25FC6">
+<FlexSim="443E14EC-8B0E-4E95-9FD3-064ADD66FF4D">
 <FlexSimHC="342A606F-6915-4682-B3FE-0967D43B2B9B">
 <FlexSimChinese="CBDF8A4B-A108-4B52-8C38-D91FE5F4BE8F">
 </Program GUIDs-->
@@ -39,7 +39,7 @@
           <File Id="file_EC51B8F015A84670A89566285E67C9E8" KeyPath="yes" Source="$(var.ProjectDir)cursors\bridgetool.cur" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="108F5266-EE39-4B61-85E6-41507E06F966">
+<FlexSim="C8239DE3-0A4E-4C73-B481-F620E605D913">
 <FlexSimHC="042C73E6-4367-46F3-B831-18C33A39A97C">
 <FlexSimChinese="45A598FC-ECCD-4617-9104-5F39ECF1AE63">
 </Program GUIDs-->
@@ -47,7 +47,7 @@
           <File Id="file_702232241A574BDEBAAE3259DB596D2A" KeyPath="yes" Source="$(var.ProjectDir)cursors\dividertool.cur" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="1680798C-47B6-465D-A12C-44E467B72129">
+<FlexSim="4E52C318-13BC-449F-8E22-780CEF9E381C">
 <FlexSimHC="809CA044-20E6-48CF-BAD3-9AB80535A390">
 <FlexSimChinese="0C37DC0E-AA99-4F32-86A2-6417EE8FFE92">
 </Program GUIDs-->
@@ -55,7 +55,7 @@
           <File Id="file_0F4505FD38CA49C1AE55E1D5ED3BCC0A" KeyPath="yes" Source="$(var.ProjectDir)cursors\onewaydividertool.cur" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="9CB58845-68D9-4784-8C79-8DDBC870A277">
+<FlexSim="287A6E9C-C718-4A4C-AAA2-70D53A04ED44">
 <FlexSimHC="42D36C27-6ABB-40EA-A668-F48955AA8D03">
 <FlexSimChinese="B100F37F-90AE-4409-A89A-64D0AF9C48F3">
 </Program GUIDs-->
@@ -63,7 +63,7 @@
           <File Id="file_894872FFC51E4AED894A61F66226EBB1" KeyPath="yes" Source="$(var.ProjectDir)cursors\preferredpathtool.cur" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="10A81A38-2A3B-447C-A576-F1A311C47594">
+<FlexSim="9AEF1427-465D-469D-B025-6176FEF84374">
 <FlexSimHC="725441FC-B0AD-497F-A3E6-5D9A37353354">
 <FlexSimChinese="838061B4-82E1-4222-AE73-D930EBAFFD65">
 </Program GUIDs-->

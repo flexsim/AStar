@@ -159,6 +159,7 @@
 #define b_uniqueid Nb_uniqueid->safedatafloat()[0]
 #define node_b_animationinfo Nb_animationinfo
 #define node_b_resizeinfo Nb_resizeinfo
+#define node_b_shapedata Nb_shapedata
 
 
 // Constants
@@ -266,7 +267,7 @@
 #define TASKTYPE_TRAVELRELATIVE  10
 #define TASKTYPE_BREAK  11
 #define TASKTYPE_DELAY  12
-#define TASKTYPE_SENDMESSAGE  13
+#define TASKTYPE_SENDMESSAGE  13 //deprecated
 #define TASKTYPE_TE_ALLOCATED  14
 #define TASKTYPE_MOVEOBJECT  15
 #define TASKTYPE_DESTROYOBJECT  16
@@ -287,16 +288,7 @@
 #define TASKTYPE_STOPANIMATION  31
 #define TASKTYPE_FREEOPERATORS  32
 #define TASKTYPE_WAITFORTASK  33
-
-// Constants group: TASK
-#define TASK_TYPE  1
-#define TASK_INVOLVED1  2
-#define TASK_INVOLVED2  3
-#define TASK_VAR1  4
-#define TASK_VAR2  5
-#define TASK_VAR3  6
-#define TASK_VAR4  7
-#define TASK_CONTENT  3
+#define TASKTYPE_MESSAGE 34
 
 // Constants group: TASKSTATE
 #define TASKSTATE_UNFINISHED  1
@@ -1373,6 +1365,7 @@
 #define BUNDLE_FIELD_TYPE_INT 2
 #define BUNDLE_FIELD_TYPE_STR 3
 #define BUNDLE_FIELD_TYPE_FLOAT 4
+#define BUNDLE_FIELD_TYPE_VARCHAR 5
 #define BUNDLE_FIELD_TYPE_MASK 0x00FF
 
 #define BUNDLE_FIELD_INDEX_MAP 0x0100
@@ -1733,6 +1726,19 @@
 #define SHADOWTYPE_PCSS 3
 #define SHADOWTYPE_PCSS_SAVSM 4
 
+#define SHAPEINFO_GET_ANIMATION_COUNT 1
+#define SHAPEINFO_GET_ANIMATION_NAME 2
+#define SHAPEINFO_GET_ANIMATION_DURATION 3
+#define SHAPEINFO_SET_ANIMATION 4
+#define SHAPEINFO_UPDATE_ANIMATION 5
+#define SHAPEINFO_FIND_ANIMATION_CLIP_LIST 6
+#define SHAPEINFO_GET_BONE_MATRIX_INDEX 7
+#define SHAPEINFO_EXPORT_MESHES 8
+#define SHAPEINFO_ADD_ANIMATIONS_FROM_FILE 9
+#define SHAPEINFO_GET_ANIMATION_FILE_NAME 10
+#define SHAPEINFO_GET_MESH_COUNT 11
+#define SHAPEINFO_GET_MESH_NAME 12
+
 #define LIST_PULL_ALL_OR_NOTHING 0x1
 #define LIST_PARSE_QUERY 0x2
 #define LIST_PULL_ENTRY_NODES 0x4
@@ -2000,6 +2006,10 @@ class SplineEndPoint;
 
 class DatabaseConnector;
 
+class Task;
+
+class TaskSequence;
+
 
 ///////////////////////////////////////////////////////
 // Travel Requests
@@ -2087,6 +2097,8 @@ class TrafficControlRequest
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
+typedef NodeListArray<Task, nullptr, nullptr, 0, ThrowingAssertionMethod>::SdtSubNodeType TaskArray;
+typedef NodeListArray<TaskSequence, nullptr, nullptr, 0, ThrowingAssertionMethod>::SdtSubNodeType TaskSequenceArray;
 
 class TaskSequence : public SimpleDataType{
 	public:
@@ -2101,14 +2113,44 @@ class TaskSequence : public SimpleDataType{
 	unsigned int nrofallocations; // this is the current number of objects allocated or whose allocation has been requested
 	virtual const char* getClassFactory() {return "TaskSequence";}
 	virtual void bind();
+	virtual void bindInterface() override;
 	virtual char* toString(int verbose);
 	virtual int getCapabilities() { return 1; } //Labels
 	virtual treenode getObjectTree();
 	virtual TreeNode* getLabelNode(const char* labelName, bool assert);
 	virtual TreeNode* getLabelNode(int labelRank, bool assert);
+	
+	Variant getLabelProperty(const char* name, unsigned nameHash, bool dieHard);
+	void setLabelProperty(const char* name, unsigned nameHash, const Variant& value);
+
+	static TaskSequence* create(treenode obj, double priority = 0.0, int preempt = 0);
+	Task* addTask(int type, treenode involved1 = nullptr, treenode involved2 = nullptr, const Variant& var1 = Variant(), 
+		const Variant& var2 = Variant(), const Variant& var3 = Variant(), const Variant& var4 = Variant());
+	
 	treenode labelsNode;
 	void reset();
+	
+	private:
+	int __getPreempt() { return preempt; }
+	void __setPreempt(int toVal) { preempt = (char)toVal; }
+	double __getPriority() { return priority; }
+	void __setPriority(double toVal) { priority = toVal; }
+	int __getRank() { return holder->rank; }
+	void __setRank(int toRank) { holder->rank = toRank; }
+	
+	public:
+	void __dispatch(treenode dispatcher);
+	Task* __getCurrentTask() { return holder->subnodes[curtask]->objectAs(Task); }
+	
+	__declspec(property(get=__getCurrentTask)) Task* currentTask;
+
+	void dispatch() { __dispatch(nullptr);}
+	void move(Dispatcher* toDisp);
+	
+	TaskArray __getTasks() { return TaskArray(holder); }
+	__declspec(property(get=__getTasks)) TaskArray tasks;
 };
+
 
 class Task : public SimpleDataType{
 	public:
@@ -2119,10 +2161,10 @@ class Task : public SimpleDataType{
 	// The following are the most used variables of the task.
 	treenode involved1;
 	treenode involved2;
-	double var1;
-	double var2;
-	double var3;
-	double var4;
+	Variant var1;
+	Variant var2;
+	Variant var3;
+	Variant var4;
 
 	// syncnextkey is only used in coordinated tasks.  The dispatcher, when coordinating tasks, may immediately run through several proxy tasks for the same 
 	// executer.  However, it will not tell a proxy executer to begin a task until all of the previous tasks for that executer have been finished.  If it gets to a 
@@ -2132,10 +2174,32 @@ class Task : public SimpleDataType{
 	// The executerkey is specified by the user.  This is a reference to the rank of an allocate task, and specifies the executer that will execute a proxy task.
 	unsigned int executerkey;
 	virtual const char* getClassFactory() {return "Task";}
-	virtual void bind();
+	virtual void bind() override;
+	virtual void bindInterface() override;
 	virtual char* toString(int verbose);
+	
+	private:
+	int __getType() { return type; }
+	void __setType(int toVal) { type = toVal; }
+	treenode __getInvolved1() { return involved1; }
+	void __setInvolved1(treenode toVal) { involved1 = toVal; }
+	treenode __getInvolved2() { return involved2; }
+	void __setInvolved2(treenode toVal) { involved2 = toVal; }
+	Variant __getVar1() { return var1; }
+	void __setVar1(const Variant& toVal) { var1 = toVal; }
+	Variant __getVar2() { return var2; }
+	void __setVar2(const Variant& toVal) { var2 = toVal; }
+	Variant __getVar3() { return var3; }
+	void __setVar3(const Variant& toVal) { var3 = toVal; }
+	Variant __getVar4() { return var4; }
+	void __setVar4(const Variant& toVal) { var4 = toVal; }
+	int __getState() { return state; }
+	int __getRank() { return holder->rank; }
+	void __setRank(int toVal) { holder->rank = toVal; }
 };
 
+
+// deprecated
 class SendMessageEvent : public FlexSimEvent {
 	public:
 	double par1;
@@ -2162,6 +2226,7 @@ public:
 	virtual const char* getClassFactory() {return "SimulationStartEvent";}
 	virtual void bind();
 	FS_CONTENT_DLL_FUNC static void addObject(FlexSimEventHandler* object);
+	FS_CONTENT_DLL_FUNC static void clearPostResetObjects();
 	FS_CONTENT_DLL_FUNC static void addPostResetObject(ObjectDataType* object);
 	FS_CONTENT_DLL_FUNC static void executePostReset();
 private:
@@ -3465,6 +3530,7 @@ TreeNode* node_v_mtbfstates;
 #define v_mtbfstates node_v_mtbfstates->safedatafloat()[0]
 TreeNode* node_v_enabled;
 #define v_enabled node_v_enabled->safedatafloat()[0]
+TreeNode* node_v_downBehavior;
 
 // System
 
@@ -3507,6 +3573,30 @@ TreeNode* node_v_downfunction;
 TreeNode* node_v_upfunction;
 TreeNode* node_v_enabled;
 #define v_enabled node_v_enabled->safedatafloat()[0]
+
+// System
+
+FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// DownBehavior
+class DownBehavior : public ObjectDataType
+{
+public:
+
+
+// c++ member functions
+
+FS_CONTENT_DLL_FUNC virtual void bindEvents();
+
+FS_CONTENT_DLL_FUNC virtual treenode getEventInfoObject(const char* eventName);
+
+TreeNode* node_v_downtrigger;
+TreeNode* node_v_uptrigger;
+TreeNode* node_v_downfunction;
+TreeNode* node_v_upfunction;
 
 // System
 
@@ -4945,6 +5035,10 @@ FS_CONTENT_DLL_FUNC void setTimeFormatD3(treenode view);
 
 FS_CONTENT_DLL_FUNC void setNumberFormatD3(treenode view);
 
+FS_CONTENT_DLL_FUNC std::string getColumnReplacementText(int rank);
+
+FS_CONTENT_DLL_FUNC std::string getValueReplacementText(int rank);
+
 TreeNode* node_v_data;
 TreeNode* node_v_initialized;
 #define v_initialized node_v_initialized->safedatafloat()[0]
@@ -4976,6 +5070,8 @@ TreeNode* node_v_tableSettings;
 #define v_tableSettings node_v_tableSettings->safedatafloat()[0]
 TreeNode* node_v_boxPlotSettings;
 #define v_boxPlotSettings node_v_boxPlotSettings->safedatafloat()[0]
+TreeNode* node_v_sankeySettings;
+#define v_sankeySettings node_v_sankeySettings->safedatafloat()[0]
 
 // System
 
@@ -5069,6 +5165,8 @@ FS_CONTENT_DLL_FUNC virtual double updateLocations();
 
 FS_CONTENT_DLL_FUNC virtual double setLocations(int uptorank);
 
+FS_CONTENT_DLL_FUNC void calculateNextLocation(treenode item);
+
 FS_CONTENT_DLL_FUNC virtual double checkReceiveItem();
 
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
@@ -5089,18 +5187,6 @@ TreeNode* node_v_placemode;
 #define v_placemode node_v_placemode->safedatafloat()[0]
 TreeNode* node_v_stackinitz;
 #define v_stackinitz node_v_stackinitz->safedatafloat()[0]
-TreeNode* node_v_curxfringe;
-#define v_curxfringe node_v_curxfringe->safedatafloat()[0]
-TreeNode* node_v_curyloc;
-#define v_curyloc node_v_curyloc->safedatafloat()[0]
-TreeNode* node_v_curmaxysize;
-#define v_curmaxysize node_v_curmaxysize->safedatafloat()[0]
-TreeNode* node_v_curzloc;
-#define v_curzloc node_v_curzloc->safedatafloat()[0]
-TreeNode* node_v_curmaxzsize;
-#define v_curmaxzsize node_v_curmaxzsize->safedatafloat()[0]
-TreeNode* node_v_productspacing;
-#define v_productspacing node_v_productspacing->safedatafloat()[0]
 
 // c++ attributes
 int lastpredrawoutput;
@@ -5108,6 +5194,28 @@ int lastpredrawoutput;
 int lastpredrawinput;
 
 treenode onEndCollectingTrigger = nullptr;
+
+double currentxloc;
+
+double currentyloc;
+
+double currentzloc;
+
+double currentmaxsy;
+
+double currentmaxsz;
+
+double xfringeleft;
+
+double xfringeright;
+
+double yfringebottom;
+
+double yfringetop;
+
+double xinc;
+
+double yinc;
 
 
 // System
@@ -6081,7 +6189,11 @@ FS_CONTENT_DLL_FUNC double onDraw(treenode view);
 
 FS_CONTENT_DLL_FUNC virtual double onResourceAvailable(int port);
 
+FS_CONTENT_DLL_FUNC TaskSequenceArray __getTaskSequences();
+
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
+
+FS_CONTENT_DLL_FUNC virtual void bindInterface();
 
 TreeNode* node_v_tasksequencequeue;
 #define v_tasksequencequeue node_v_tasksequencequeue->safedatafloat()[0]
@@ -6212,6 +6324,12 @@ FS_CONTENT_DLL_FUNC virtual void bindEvents();
 FS_CONTENT_DLL_FUNC virtual void bindStatistics();
 
 FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
+
+FS_CONTENT_DLL_FUNC TaskSequence* __getActiveTaskSequence();
+
+FS_CONTENT_DLL_FUNC Task* __getActiveTask();
+
+FS_CONTENT_DLL_FUNC void bindInterface();
 
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
@@ -7080,6 +7198,9 @@ TreeNode* node_v_maxcomponents;
 #define v_maxcomponents node_v_maxcomponents->safedatafloat()[0]
 TreeNode* node_v_lasttick;
 #define v_lasttick node_v_lasttick->safedatafloat()[0]
+TreeNode* node_v_resettrigger;
+TreeNode* node_v_messagetrigger;
+TreeNode* node_v_ondrawtrigger;
 
 // System
 
@@ -7182,6 +7303,9 @@ TreeNode* node_v_drawbar;
 #define v_drawbar node_v_drawbar->safedatafloat()[0]
 TreeNode* node_v_objectstats;
 #define v_objectstats node_v_objectstats->safedatafloat()[0]
+TreeNode* node_v_resettrigger;
+TreeNode* node_v_messagetrigger;
+TreeNode* node_v_ondrawtrigger;
 
 // System
 
@@ -7691,6 +7815,11 @@ TreeNode* node_v_drawbar;
 #define v_drawbar node_v_drawbar->safedatafloat()[0]
 TreeNode* node_v_objectstats;
 #define v_objectstats node_v_objectstats->safedatafloat()[0]
+TreeNode* node_v_resettrigger;
+TreeNode* node_v_messagetrigger;
+TreeNode* node_v_ondrawtrigger;
+TreeNode* node_v_entrytrigger;
+TreeNode* node_v_exittrigger;
 
 // System
 
