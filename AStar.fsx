@@ -1122,7 +1122,10 @@ if (objectexists(member)) {
             <node f="42" dt="2"><name>tooltip</name><data>Click this button then "sample" an object in FlexSim</data></node>
             <node f="42"><name>variables</name>
              <node f="40"><name></name></node>
-             <node f="42" dt="1"><name>valType</name><data>0000000040700000</data></node>
+             <node f="42" dt="1"><name>valType</name><data>0000000040700000</data>
+              <node f="40"><name></name></node>
+              <node f="42"><name>objectPath</name></node>
+             </node>
             </node>
             <node f="42"><name>eventfunctions</name>
              <node f="40"><name></name></node>
