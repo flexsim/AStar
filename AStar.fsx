@@ -56,8 +56,30 @@
         <node f="42" dt="1"><name>turnSpeed</name><data>0000000040568000</data></node>
         <node f="42" dt="1"><name>estimatedIndefiniteAllocTimeDelay</name><data>0000000040240000</data></node>
         <node f="42" dt="1"><name>routeByTravelTime</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>activeReroute</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>deallocTimeOffset</name><data>0000000000000000</data></node>
+        <node f="42"><name>grids</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="7"><name>MainGrid</name><data/>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>nodeWidth</name><data>000000003ff00000</data></node>
+          <node f="42" dt="1"><name>minPointX</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>minPointY</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>minPointZ</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>maxPointX</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>maxPointY</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>maxPointZ</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>gridOriginX</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>gridOriginY</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>gridOriginZ</name><data>0000000000000000</data></node>
+          <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Grid</data>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>navigator</name><data><coupling>/installdata/add/1/data/astar/AStarNavigator</coupling></data></node>
+           <node f="42" dt="1"><name>isBounded</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>isLowestGrid</name><data>0000000000000000</data></node>
+          </node>
+         </node>
+        </node>
+        <node f="42"><name></name></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node>

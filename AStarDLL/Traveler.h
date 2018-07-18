@@ -31,7 +31,7 @@ public:
 	bool isActive = false;
 	std::list<Traveler*>::iterator activeEntry;
 	TravelPath travelPath;
-	double nodeWidth;
+	//double nodeWidth;
 	typedef std::deque<NodeAllocationIterator> TravelerAllocations;
 	TravelerAllocations allocations;
 	NodeAllocation* request = nullptr;

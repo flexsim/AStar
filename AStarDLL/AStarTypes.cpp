@@ -11,20 +11,23 @@ namespace AStar {
 
 void AStarCell::bind(TreeNode* x, const char* prefix)
 {
+	string gridName = string(prefix) + "grid";
 	string rowName = string(prefix) + "row";
 	string colName = string(prefix) + "col";
 	switch (SimpleDataType::getBindMode()) {
 		case SDT_BIND_ON_LOAD:
+			grid = x->subnodes[gridName.c_str()]->value;
 			col = x->subnodes[colName.c_str()]->value;
 			row = x->subnodes[rowName.c_str()]->value;
 			break;
 		case SDT_BIND_ON_SAVE:
+			assertsubnode(x, (char*)gridName.c_str())->value = grid;
 			assertsubnode(x, (char*)colName.c_str())->value = col;
 			assertsubnode(x, (char*)rowName.c_str())->value = row;
 			break;
 		case SDT_BIND_ON_DISPLAY: {
 			char str[256];
-			sprintf(str, "%s: %d, %s: %d ", colName.c_str(), (int)col, rowName.c_str(), (int)row);
+			sprintf(str, "%s: %d %s: %d, %s: %d ", gridName.c_str(), (int)grid, colName.c_str(), (int)col, rowName.c_str(), (int)row);
 			SimpleDataType::appendToDisplayStr(str);
 			break;
 		}
@@ -35,6 +38,7 @@ void AStarCell::bind(TreeNode* x, const char* prefix)
 
 void AStarCell::bind(SimpleDataType* sdt, const char* prefix)
 {
+	sdt->bindNumberByName((string(prefix) + "grid").c_str(), grid);
 	sdt->bindNumberByName((string(prefix) + "col").c_str(), col);
 	sdt->bindNumberByName((string(prefix) + "row").c_str(), row);
 }
@@ -369,20 +373,21 @@ double TravelPath::calculateTotalDistance(AStarNavigator * nav)
 	for (size_t i = 1; i < size(); i++) {
 		AStarPathEntry& from = operator [](i - 1);
 		AStarPathEntry& to = operator [](i);
+		Grid* grid = nav->getGrid(from.cell);
 		if (from.bridgeIndex >= 0) {
 			AStarNodeExtraData* nodeData = nav->getExtraData(from.cell);
 			AStarNodeExtraData::BridgeEntry& entry = nodeData->bridges[from.bridgeIndex];
 			Bridge* bridge = entry.bridge;
-			dist += bridge->travelDistance + nav->nodeWidth;
+			dist += bridge->travelDistance + grid->nodeWidth;
 		} else {
 			bool isDeepDiagonal = (abs(from.cell.row - to.cell.row) >= 2 || abs(from.cell.col - to.cell.col) >= 2);
 			if (isDeepDiagonal)
-				dist += nav->nodeWidth * 2.236067977499789696409;
+				dist += grid->nodeWidth * 2.236067977499789696409;
 			else {
 				bool isDiagonal = from.cell.row != to.cell.row && from.cell.col != to.cell.col;
 				if (isDiagonal)
-					dist += nav->nodeWidth * 1.4142135623730950488;
-				else dist += nav->nodeWidth;
+					dist += grid->nodeWidth * 1.4142135623730950488;
+				else dist += grid->nodeWidth;
 			}
 		}
 	}

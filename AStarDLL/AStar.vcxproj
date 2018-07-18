@@ -172,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AStarClasses.h" />
+    <ClInclude Include="Grid.h" />
     <ClInclude Include="AStarNavigator.h" />
     <ClInclude Include="AStarTypes.h" />
     <ClInclude Include="TemporaryBarrier.h" />
@@ -211,6 +212,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AStar.cpp" />
+    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="AStarNavigator.cpp" />
     <ClCompile Include="AStarTypes.cpp" />
     <ClCompile Include="Barrier.cpp" />

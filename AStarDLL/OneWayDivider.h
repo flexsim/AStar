@@ -14,7 +14,7 @@ public:
 	virtual void bind(void);
 
 	// See Barrier.h for a description of these methods
-	virtual void addBarriersToTable(AStarNavigator* nav) override;
+	virtual void addBarriersToTable(Grid* grid) override;
 	virtual void addVertices(Mesh* barrierMesh, float z) override;
 	virtual OneWayDivider* toOneWayDivider() override { return this; }
 };

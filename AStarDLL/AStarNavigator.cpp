@@ -37,21 +37,11 @@ std::vector<Vec4f> AStarNavigator::heatMapColorProgression =
 
 
 AStarNavigator::AStarNavigator()
-	: edgeTable(NULL)
-	, xOffset(0)
-	, yOffset(0)
-	, edgeTableXSize(0)
-	, edgeTableYSize(0)
 {
-	return;
 }
 
 AStarNavigator::~AStarNavigator()
 {
-	if (edgeTable) {
-		delete [] edgeTable;
-		edgeTable = 0;
-	}
 }
 
 void AStarNavigator::bindVariables(void)
@@ -60,7 +50,6 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(defaultPathWeight);
 	bindVariable(drawMode);
 	bindVariable(showAllocations);
-	bindVariable(nodeWidth);
 	bindVariable(surroundDepth);
 	bindVariable(deepSearch);
 
@@ -95,7 +84,6 @@ void AStarNavigator::bindVariables(void)
 
 	bindVariable(showHeatMap);
 	bindVariable(heatMapMode);
-	bindVariable(maxHeatValue);
 	bindVariable(transparentBaseColor);
 
 	bindVariable(collisionUpdateIntervalFactor);
@@ -106,6 +94,12 @@ void AStarNavigator::bindVariables(void)
 
 	bindVariable(debugRoutingAlgorithm);
 	bindVariable(routingAlgorithmCompletionRatio);
+
+	bindVariable(grids);
+	if (grids.size() == 0)
+		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
+
+	bindStateVariable(minNodeWidth);
 
 	bindVariableByName("extraData", extraDataNode, ODT_BIND_STATE_VARIABLE);
 
@@ -158,9 +152,90 @@ double AStarNavigator::onCreate(double dropx, double dropy, double dropz, int is
 	return 0;
 }
 
+void AStarNavigator::resetGrids()
+{
+
+	if (grids.size() == 0)
+		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
+
+	std::vector<Grid*> tempGrids;
+	for (Grid* grid : grids) {
+		grid->isLowestGrid = false;
+		grid->reset(this);
+		tempGrids.push_back(grid);
+	}
+
+	std::sort(tempGrids.begin(), tempGrids.end(), [&](Grid* left, Grid* right) { return left->minPoint.z < right->minPoint.z; });
+
+	double lowestZ = tempGrids[0]->minPoint.x;
+
+	for (auto iter = tempGrids.begin(); iter != tempGrids.end();) {
+		Grid* grid = *iter;
+		auto nextGreaterZIter = iter + 1;
+		while (nextGreaterZIter != tempGrids.end() && (*nextGreaterZIter)->minPoint.z <= grid->minPoint.z) {
+			nextGreaterZIter++;
+		}
+
+		bool isBounded = nextGreaterZIter - iter > 1;
+		for (; iter < nextGreaterZIter; iter++) {
+			Grid* grid = *iter;
+			if (grid->minPoint.z == lowestZ)
+				grid->isLowestGrid = true;
+			grid->isBounded = isBounded;
+			grid->maxPoint.z = (nextGreaterZIter != tempGrids.end() ? std::nextafter((*nextGreaterZIter)->minPoint.z, -DBL_MAX) : DBL_MAX);
+			if (!isBounded) {
+				grid->minPoint.x = grid->minPoint.y = DBL_MAX;
+				grid->maxPoint.x = grid->maxPoint.y = -DBL_MAX;
+			}
+		}
+	}
+
+	// Clear custom barriers
+	customBarriers = Array();
+
+	// populate array of custom barriers
+	for (int i = 0; i < objectBarrierList.size(); i++) {
+		TreeNode* theObj = objectBarrierList[i]->holder;
+		if (function_s(theObj, "customizeAStarGrid", holder, minNodeWidth))
+			continue;
+		addObjectBarrierToTable(theObj);
+	}
+
+	for (Grid* grid : grids) {
+		grid->buildNodeTable();
+	}
+
+	areGridNodeTablesBuilt = true;
+}
+
+
 double AStarNavigator::onReset()
 {
-	heatMapBuffer.reset(nullptr);
+
+	isGridDirty = true;
+	isBoundsDirty = true;
+	areGridNodeTablesBuilt = false;
+
+	pathCache.clear();
+	pathCount = 0;
+	requestCount = 0;
+	cacheUseCount = 0;
+
+	directionChangePenalty = 0.05;
+	if (deepSearch)
+		directionChangePenalty = 0.025;
+
+	minNodeWidth = DBL_MAX;
+	for (Grid* grid : grids) {
+		minNodeWidth = min(grid->nodeWidth, minNodeWidth);
+	}
+
+	maxPathWeight = 0.0;
+	for (int i = 0; i < barrierList.size(); i++) {
+		PreferredPath* path = barrierList[i]->toPreferredPath();
+		if (path)
+			maxPathWeight = max(path->pathWeight, maxPathWeight);
+	}
 
 	activeTravelers.clear();
 
@@ -175,12 +250,13 @@ double AStarNavigator::onReset()
 		sumSpeed += travelers[i]->te->v_maxspeed;
 	}
 
+	resetGrids();
 
 	SimulationStartEvent::addObject(this);
 
 	edgeTableExtraData.clear();
 	extraDataNode->subnodes.clear();
-	buildEdgeTable();
+
 	setDirty();
 
 	for (Barrier* barrier : barrierList)
@@ -188,7 +264,7 @@ double AStarNavigator::onReset()
 
 	if (enableCollisionAvoidance && collisionUpdateIntervalFactor > 0 && travelers.size() > 0) {
 		double avgSpeed = sumSpeed / travelers.size();
-		double avgNodeMoveTime = nodeWidth / avgSpeed;
+		double avgNodeMoveTime = minNodeWidth / avgSpeed;
 		collisionUpdateInterval = collisionUpdateIntervalFactor * avgNodeMoveTime;
 	}
 	else {
@@ -243,7 +319,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 		// Semi highlight hovered barrier
 		if (objectexists(hovered)) {
 			Barrier* b = hovered->objectAs(Barrier);
-			if (!objectexists(activeBarrier) || !(activeBarrier->objectAs(Barrier)->mode & BARRIER_MODE_CREATE)) {
+			if (!objectexists(activeBarrier) || !(activeBarrier->objectAs(Barrier)->mode & Barrier::CREATE)) {
 				b->isHovered = true;
 				isBarrierDirty = true;
 			}
@@ -315,12 +391,16 @@ double AStarNavigator::onDraw(TreeNode* view)
 		fglDisable(GL_TEXTURE_2D);
 		fglDisable(GL_LIGHTING);
 
-		if (isGridMeshBuilt && (drawMode & ASTAR_DRAW_MODE_GRID))
-			gridMesh.draw(GL_LINES);
+		if (isGridMeshBuilt && (drawMode & ASTAR_DRAW_MODE_GRID)) {
+			for (Grid* grid : grids)
+				grid->gridMesh.draw(GL_LINES);
+		}
 
 		glPolygonOffset(offset - 0.010, -2);
-		if (isBoundsMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BOUNDS))
-			boundsMesh.draw(GL_TRIANGLES);
+		if (isBoundsMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BOUNDS)) {
+			for (Grid* grid : grids)
+				grid->boundsMesh.draw(GL_TRIANGLES);
+		}
 
 		glPolygonOffset(offset - 0.025, -5);
 		if (isBarrierMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BARRIERS))
@@ -331,7 +411,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		glPolygonOffset(offset - 0.005, -1);
 		if (showHeatMap != 0 && heatMapMode != 0)
-			drawHeatMap(0, view);
+			drawHeatMap(view);
 
 		glPolygonOffset(offset - 0.015, -3);
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
@@ -369,13 +449,12 @@ double AStarNavigator::onDraw(TreeNode* view)
 		fglDisable(GL_TEXTURE_2D);
 		fglDisable(GL_LIGHTING);
 
-		glPolygonOffset(offset - 0.025, -5);
 		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
 			for(int i = 0; i < barrierList.size(); i++) {
 				Barrier* barrier = barrierList[i];
 
-				double x1, y1, x2, y2;
-				if (!barrier->getBoundingBox(x1, y1, x2, y2))
+				Vec3 min, max;
+				if (!barrier->getBoundingBox(min, max))
 					continue;
 
 				setpickingdrawfocus(view, holder, 0, barrier->holder);
@@ -383,10 +462,11 @@ double AStarNavigator::onDraw(TreeNode* view)
 			}
 		}
 
-		glPolygonOffset(offset - 0.010, -2);
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS) {
-			setpickingdrawfocus(view, holder, PICK_TYPE_BOUNDS);
-			boundsMesh.draw(GL_TRIANGLES);
+			for (Grid* grid : grids) {
+				setpickingdrawfocus(view, holder, PICK_TYPE_BOUNDS, grid->holder);
+				grid->boundsMesh.draw(GL_TRIANGLES);
+			}
 		}
 
 		fglEnable(GL_TEXTURE_2D);
@@ -405,7 +485,7 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
 	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
 
-	if (objectexists(secondary)) {
+	if (objectexists(secondary) && pickType != PICK_TYPE_BOUNDS) {
 		Barrier* barrier = secondary->objectAs(Barrier);
 
 		// is there a current barrier
@@ -414,7 +494,7 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 			// is the clicked barrier different than the current barrier
 			if (b != barrier) {
 				// Send the click to the activeBarrier if it's in create mode
-				if(b->mode & BARRIER_MODE_CREATE)
+				if(b->mode & Barrier::CREATE)
 					return b->onClick(view, (int)clickcode, cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
 
 				// then reset the current barrier to be "not active"
@@ -443,7 +523,7 @@ double AStarNavigator::onUndo(bool isUndo, treenode undoRecord)
 	if (objectexists(activeBarrier)) {
 		Barrier* b = activeBarrier->objectAs(Barrier);
 		// Stop barrier creation
-		if (b->mode & BARRIER_MODE_CREATE) {
+		if (b->mode & Barrier::CREATE) {
 			if (b->pointList.size() > 2) {
 				b->removePoint(min(b->activePointIndex, b->pointList.size() - 1));
 				b->activePointIndex = b->pointList.size();
@@ -482,49 +562,15 @@ double AStarNavigator::onDrag(TreeNode* view)
 
 	// Move all attached barriers
 	if (pickType == PICK_TYPE_BOUNDS) {
-		for (int i = 0; i < barrierList.size(); i++) {
-			Barrier* barrier = barrierList[i];
+		secondary->objectAs(Grid)->onDrag(view, Vec3(dx, dy, dz));
 
-			for (int i = 0; i < barrier->pointList.size(); i++) {
-				Point* point = barrier->pointList[i];
-				// add undo tracking for the x and y values
-				applicationcommand("addundotracking", view, node("x", point->holder));
-				applicationcommand("addundotracking", view, node("y", point->holder));
-				// move point x and y
-				point->x += dx;
-				point->y += dy;
-			}
-		}
-		//Don't move objects associated with AStar, just the barriers
-		/*
-		for (int i = 0; i < objectBarrierList.size(); i++) {
-			TreeNode* obj = objectBarrierList[i]->holder;
-			inc(spatialx(obj), dx);
-			inc(spatialy(obj), dy);
-		}
-		
-		TreeNode* travelers = node_v_travelmembers;
-		for (int i = 1; i <= content(travelers); i++) {
-			TreeNode* traveler = ownerobject(tonode(get(rank(travelers, i))));
-			inc(spatialx(traveler), dx);
-			inc(spatialy(traveler), dy);
-		}
-
-		travelers = node_v_activetravelmembers;
-		for (int i = 1; i <= content(travelers); i++) {
-			TreeNode* traveler = ownerobject(tonode(get(rank(travelers, i))));
-			inc(spatialx(traveler), dx);
-			inc(spatialy(traveler), dy);
-		}
-		*/
-		savedXOffset += dx / savedNodeWidth;
-		savedYOffset += dy / savedNodeWidth;
 		setDirty();
 		isBoundsDirty = true;
+		isGridDirty = true;
 		return 1;
 	}
 
-	if (objectexists(secondary)) {
+	if (objectexists(secondary) && pickType != PICK_TYPE_BOUNDS) {
 		Barrier* barrier = secondary->objectAs(Barrier);
 		barrier->onMouseMove(Vec3(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), 0), Vec3(dx, dy, dz));
 		setDirty();
@@ -632,7 +678,7 @@ double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destinatio
 	vectorproject(destination, 0.5 * size.x, -0.5 * size.y, 0, model(), loc);
 
 	Traveler* t = getTraveler(traveler->objectAs(TaskExecuter));
-	t->destThreshold = DestinationThreshold(destination, nodeWidth);
+	t->destThreshold = DestinationThreshold(destination, minNodeWidth);
 	t->destNode = destination;
 	return navigateToLoc(t, loc, endSpeed);
 }
@@ -691,7 +737,7 @@ void AStarNavigator::onCollisionIntervalUpdate()
 	createevent(new CollisionIntervalUpdateEvent(this, nextCollisionUpdateTime));
 }
 
-AStarSearchEntry* AStarNavigator::checkExpandOpenSet(AStarNode* node, AStarSearchEntry* entryIn, Direction direction, 
+AStarSearchEntry* AStarNavigator::checkExpandOpenSet(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn, Direction direction, 
 	float rotDirection, double distFactor, double bonusMod, AStarNodeExtraData* extraData)
 {
 	if (node->canGo(direction)) {
@@ -701,12 +747,12 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSet(AStarNode* node, AStarSearc
 		if (extraData && extraData->getBonus(direction) != 0) {
 			distance *= 1.0 - (bonusMod * (double)(int)extraData->getBonus(direction)) / 127;
 		}
-		return expandOpenSet(theRow, theCol, distance, rotDirection);
+		return expandOpenSet(grid, theRow, theCol, distance, rotDirection);
 	}
 	return nullptr;
 }
 
-AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(AStarNode* node, AStarSearchEntry* entryIn,
+AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn,
 	Direction dir1, Direction dir2, float rotDirection, double dist, AStarNodeExtraData* extraData)
 {
 	if (!node->canGo(dir1) || !node->canGo(dir2))
@@ -719,8 +765,8 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(AStarNode* node, AS
 		auto iter = entryHash.find(cell.colRow);
 		if (iter != entryHash.end()) {
 			AStarSearchEntry* vert = &totalSet[iter->second];
-			AStarNode* vertNode = &DeRefEdgeTable(vert->cell.row, vert->cell.col);
-			e1 = checkExpandOpenSet(vertNode, vert, dir2, rotDirection, dist, ROOT2_DIV2, extraData);
+			AStarNode* vertNode = grid->getNode(cell);
+			e1 = checkExpandOpenSet(grid, vertNode, vert, dir2, rotDirection, dist, ROOT2_DIV2, extraData);
 		}
 	}
 	if (e1 == nullptr) {
@@ -730,25 +776,25 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(AStarNode* node, AS
 			auto iter = entryHash.find(cell.colRow);
 			if (iter != entryHash.end()) {
 				AStarSearchEntry* hrz = &totalSet[iter->second];
-				AStarNode* hrzNode = &DeRefEdgeTable(hrz->cell.row, hrz->cell.col);
-				e1 = checkExpandOpenSet(hrzNode, hrz, dir1, rotDirection, dist, ROOT2_DIV2, extraData);
+				AStarNode* hrzNode = grid->getNode(hrz->cell);
+				e1 = checkExpandOpenSet(grid, hrzNode, hrz, dir1, rotDirection, dist, ROOT2_DIV2, extraData);
 			}
 		}
 	}
 
 	if (e1 && deepSearch == SEARCH_DEEP_DIAGONALS) {
-		AStarNode* n1 = &DeRefEdgeTable(e1->cell.row, e1->cell.col);
+		AStarNode* n1 = grid->getNode(e1->cell);
 		AStarSearchEntry e1StackCopy = *e1;
 
 		float deepDiagonalUpRotOffset = 22.5f;
 		if (rotDirection == 135.0f || rotDirection == -45.0f)
 			deepDiagonalUpRotOffset = -22.5f;
 
-		checkExpandOpenSet(n1, (&e1StackCopy), dir1, 
+		checkExpandOpenSet(grid, n1, (&e1StackCopy), dir1, 
 			clampDirection(rotDirection + deepDiagonalUpRotOffset), 
 			ROOT5_DIVROOT2 * dist, ROOT5_DIV5, extraData);
 		
-		checkExpandOpenSet(n1, (&e1StackCopy), dir2, 
+		checkExpandOpenSet(grid, n1, (&e1StackCopy), dir2, 
 			clampDirection(rotDirection - deepDiagonalUpRotOffset),
 			ROOT5_DIVROOT2 * dist, ROOT5_DIV5, extraData);
 	}
@@ -774,22 +820,16 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	double centery = 0.5 * ysize(travelerNode);
 
 	double outputVector[3];
-	vectorproject(travelerNode, centerx, - centery, 0, model(), outputVector);
-	xStart = outputVector[0];
-	yStart = outputVector[1];
+	vectorproject(travelerNode, centerx, - centery, 0, model(), startLoc);
 	
-	double x = tempDestLoc[0];
-	double y = tempDestLoc[1];
-	destLoc.x = x;
-	destLoc.y = y;
+	destLoc.x = tempDestLoc[0];
+	destLoc.y = tempDestLoc[1];
+	destLoc.z = tempDestLoc[2];
+	Vec3 clampedDestLoc = destLoc;
 
 	TaskExecuter* te = traveler->te;
-	
-	// get the x/y location of the bottom left corner of my grid
-	gridOrigin.x = (xOffset + 0.5) * nodeWidth;
-	gridOrigin.y = (yOffset + 0.5) * nodeWidth;
 
-	AStarCell startCell = getCellFromLoc(Vec2(xStart, yStart));
+	AStarCell startCell = getCellFromLoc(startLoc);
 	AStarCell destCell = getCellFromLoc(destLoc);
 
 	// This will either be generated by the search, or looked up by the cache
@@ -812,13 +852,14 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 		}
 	}
 
-	// set xStart/yStart to the center of the start grid point
-	xStart = gridOrigin.x + startCell.col * nodeWidth;
-	yStart = gridOrigin.y + startCell.row * nodeWidth;
+	Grid* startGrid = getGrid(startCell);
+	startLoc.x = startGrid->gridOrigin.x + startCell.col * startGrid->nodeWidth;
+	startLoc.y = startGrid->gridOrigin.y + startCell.row * startGrid->nodeWidth;
 
+	Grid* destGrid = getGrid(destCell);
 	// set x/y to the cetner of the dest grid point
-	x = gridOrigin.x + destCell.col * nodeWidth;
-	y = gridOrigin.y + destCell.row * nodeWidth;
+	clampedDestLoc.x = destGrid->gridOrigin.x + destCell.col * destGrid->nodeWidth;
+	clampedDestLoc.y = destGrid->gridOrigin.y + destCell.row * destGrid->nodeWidth;
 
 	// total set includes all resolved and open nodes in the graph
 	totalSet.clear();
@@ -842,7 +883,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	checkGetOutOfBarrier(start->cell, te, destCell.row, destCell.col, nullptr);
 
 	start->g = 0;
-	start->h = (1.0 - maxPathWeight) * sqrt(sqr(x-xStart)+sqr(y-yStart));
+	start->h = (1.0 - maxPathWeight) * sqrt(sqr(clampedDestLoc.x - startLoc.x) + sqr(clampedDestLoc.y - startLoc.y) + sqr(clampedDestLoc.z - startLoc.z));
 	start->f = start->g + start->h;
 	start->previous = ~0;
 	start->closed = 0;
@@ -890,11 +931,12 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 		// close the node
 		entry->closed = true;
 		shortest.closed = true;
-		n = &(DeRefEdgeTable(shortest.cell.row, shortest.cell.col));
+		n = getNode(shortest.cell);
 		n->open = false;
 
 		// if I am at the destination, then break out of the solve loop
-		if ((shortest.cell.col == destCell.col && shortest.cell.row == destCell.row) || traveler->destThreshold.isWithinThreshold(shortest.cell, gridOrigin, destLoc, nodeWidth)) {
+		if ((shortest.cell.col == destCell.col && shortest.cell.row == destCell.row) 
+				|| traveler->destThreshold.isWithinThreshold(shortest.cell, Vec2(destGrid->gridOrigin.x, destGrid->gridOrigin.y), destLoc, destGrid->nodeWidth)) {
 			final = &shortest;
 			break;
 		}
@@ -928,16 +970,17 @@ the outside 8 nodes.
 			if (found != edgeTableExtraData.end())
 				extraData = found->second;
 		}
-		checkExpandOpenSet(n, (&shortest), Up, 90.0f, 1.0, 1.0, extraData);
-		checkExpandOpenSet(n, (&shortest), Right, 0.0f, 1.0, 1.0, extraData);
-		checkExpandOpenSet(n, (&shortest), Down, -90.0f, 1.0, 1.0, extraData);
-		checkExpandOpenSet(n, (&shortest), Left, 180.0f, 1.0, 1.0, extraData);
+		Grid* grid = getGrid(shortest.cell);
+		checkExpandOpenSet(grid, n, (&shortest), Up, 90.0f, 1.0, 1.0, extraData);
+		checkExpandOpenSet(grid, n, (&shortest), Right, 0.0f, 1.0, 1.0, extraData);
+		checkExpandOpenSet(grid, n, (&shortest), Down, -90.0f, 1.0, 1.0, extraData);
+		checkExpandOpenSet(grid, n, (&shortest), Left, 180.0f, 1.0, 1.0, extraData);
 
 		if (deepSearch != SEARCH_RIGHT_ANGLES_ONLY) {
-			checkExpandOpenSetDiagonal(n, (&shortest), Up, Right, 45.0f, ROOT2, extraData);
-			checkExpandOpenSetDiagonal(n, (&shortest), Up, Left, 135.0f, ROOT2, extraData);
-			checkExpandOpenSetDiagonal(n, (&shortest), Down, Right, -45.0f, ROOT2, extraData);
-			checkExpandOpenSetDiagonal(n, (&shortest), Down, Left, -135.0f, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(grid, n, (&shortest), Up, Right, 45.0f, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(grid, n, (&shortest), Up, Left, 135.0f, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(grid, n, (&shortest), Down, Right, -45.0f, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(grid, n, (&shortest), Down, Left, -135.0f, ROOT2, extraData);
 		}
 
 		if (n->hasExtraData) {
@@ -946,11 +989,11 @@ the outside 8 nodes.
 			if (e != edgeTableExtraData.end() && extra->bridges.size() > 0) {
 				for (int i = 0; i < extra->bridges.size(); i++) {
 					auto& entry = extra->bridges[i];
-					double addedDist = entry.bridge->travelDistance + nodeWidth;
+					double addedDist = entry.bridge->travelDistance + grid->nodeWidth;
 					Point* endPoint = entry.isAtBridgeStart ? entry.bridge->pointList.back() : entry.bridge->pointList.front();
 					AStarCell endCell = getCellFromLoc(Vec2(endPoint->x, endPoint->y));
 					AStarNode* node = getNode(endCell);
-					expandOpenSet(endCell.row, endCell.col, addedDist / nodeWidth, 0, i);
+					expandOpenSet(getGrid(endCell), endCell.row, endCell.col, addedDist / grid->nodeWidth, 0, i);
 				}
 			}
 		}
@@ -994,18 +1037,18 @@ the outside 8 nodes.
 			int colDiff = startCell.col - curCell.col;
 			bool isMovedVertical = false;
 			if (rowDiff != 0) {
-				curCell.row += sign(rowDiff);
+				curCell.row += (short)sign(rowDiff);
 				isMovedVertical = true;
 			}
 			if (colDiff != 0 && (deepSearch != SEARCH_RIGHT_ANGLES_ONLY || !isMovedVertical)) {
-				curCell.col += sign(colDiff);
+				curCell.col += (short)sign(colDiff);
 			}
 
 			if (colDiff != 0 && rowDiff != 0 && deepSearch == SEARCH_DEEP_DIAGONALS) {
 				if (abs(colDiff) > 1 && abs(colDiff) > abs(rowDiff))
-					curCell.col += sign(colDiff);
+					curCell.col += (short)sign(colDiff);
 				else if (abs(rowDiff) > 1 && abs(rowDiff) > abs(colDiff))
-					curCell.row += sign(rowDiff);
+					curCell.row += (short)sign(rowDiff);
 			}
 
 			travelPath.push_back(AStarPathEntry(curCell, -1));
@@ -1015,7 +1058,7 @@ the outside 8 nodes.
 	int totalsetsize = totalSet.size();
 	for (int i = 0; i < totalsetsize; i++) {
 		AStarSearchEntry & e = totalSet[i];
-		AStarNode* n = &DeRefEdgeTable(e.cell.row, e.cell.col);
+		AStarNode* n = getNode(e.cell);
 		n->isInTotalSet = false;
 		n->open = true;
 	}
@@ -1057,66 +1100,17 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 	double destLoc[3];
 	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), destLoc);
 
-	DestinationThreshold destThreshold(destination->holder, nodeWidth);
+	DestinationThreshold destThreshold(destination->holder, minNodeWidth);
 	TravelPath path = calculateRoute(traveler, destLoc, destThreshold, 0, true);
 	return path.calculateTotalDistance(this);
 }
 
-void AStarNavigator::checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold)
-{
-	AStarNode* node = &DeRefEdgeTable(cell.row, cell.col);
-	int dy = rowDest - cell.row;
-	int dx = colDest - cell.col;
-	AStarCell originalCell(cell);
-
-	static const int up = 0;
-	static const int left = 1;
-	static const int down = 2;
-	static const int right = 3;
-
-	int startDir = up;
-	if (dx > 0 && dx * dx > dy * dy)
-		startDir = left;
-	else if (dx < 0 && dx * dx > dy * dy) 
-		startDir = right;
-	else if (dy < 0 && dy * dy > dx * dx)
-		startDir = down;
-
-	int currRow = cell.row;
-	int currCol = cell.col;
-	int currDir = (startDir + 3) % 4; // start one direction back 
-	int distance = 0;
-	int counter = 4; // counter is used to find the distance
-
-	while (!(node->canGoUp || node->canGoDown || node->canGoRight || node->canGoLeft)) {
-		currDir = (currDir + 1) % 4;
-		distance = (counter++) / 4;
-		switch (currDir) {
-		case 0: currRow = cell.row + distance; currCol = cell.col; break;
-		case 1: currCol = cell.col + distance; currRow = cell.row; break;
-		case 2: currRow = cell.row - distance; currCol = cell.col; break;
-		case 3: currCol = cell.col - distance; currRow = cell.row; break;
-		}
-
-		if(currRow >= 0 && currRow < edgeTableYSize && currCol >= 0 && currCol < edgeTableXSize)
-			node = &DeRefEdgeTable(currRow, currCol);
-	}
-
-	cell.row = currRow;
-	cell.col = currCol;
-	if (threshold && cell != originalCell) {
-		double newRadius = nodeWidth * (0.9 + sqrt(sqr(cell.row - originalCell.row) + sqr(cell.col - originalCell.col)));
-		if (newRadius > threshold->anyThresholdRadius)
-			threshold->anyThresholdRadius = newRadius;
-	}
-}
-
-AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, float rotDirection, char bridgeIndex)
+AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float multiplier, float rotDirection, char bridgeIndex)
 {
 	AStarSearchEntry* entry = NULL;
 	int closed = 0;
 	int totalSetIndex;
-	AStarNode* n = &DeRefEdgeTable(r, c);
+	AStarNode* n = grid->getNode(r, c);
 	// is he already in the total set
 	if (n->isInTotalSet) {
 		// if he's in the total set and he's closed, then abort
@@ -1131,7 +1125,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 		entry = &(totalSet[totalSetIndex]);
 	}
 	float speedScale = routeByTravelTime ? 1.0 / routingTraveler->te->v_maxspeed : 1.0;
-	float newG = shortest.g + multiplier * nodeWidth * speedScale;
+	float newG = shortest.g + multiplier * grid->nodeWidth * speedScale;
 
 	float rotationTime = 0.0f;
 	/*  Check if the guy is changing directions. If so, I want to increase the distance so it will be a penalty to make turns*/
@@ -1148,10 +1142,10 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 			rotationTime += fabs(diff) / routingTraveler->turnSpeed;
 			newG += rotationTime;
 		} else {
-			newG += directionChangePenalty * nodeWidth;
+			newG += directionChangePenalty * grid->nodeWidth;
 			// if it's a right angle turn or more, then add more penalty
 			if (fabs(diff) >= 90.0f)
-				newG += directionChangePenalty * nodeWidth;
+				newG += directionChangePenalty * grid->nodeWidth;
 		}
 	}
 
@@ -1192,7 +1186,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 	}
 	*/
 	
-	if (!entry || newG < entry->g - 0.01*nodeWidth) {
+	if (!entry || newG < entry->g - 0.01 * grid->nodeWidth) {
 		// if entry is NULL, that means he's not in the total set yet,
 		// so I need to add him.
 		if (!entry) {
@@ -1203,8 +1197,8 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(int r, int c, float multiplier, 
 			entry->cell.row = r;
 			entryHash[entry->cell.colRow] = totalSetIndex;
 			// calculate the distance heuristic h
-			double diffx = destLoc.x - (gridOrigin.x + entry->cell.col * nodeWidth);
-			double diffy = destLoc.y - (gridOrigin.y + entry->cell.row * nodeWidth);
+			double diffx = destLoc.x - (grid->gridOrigin.x + entry->cell.col * grid->nodeWidth);
+			double diffy = destLoc.y - (grid->gridOrigin.y + entry->cell.row * grid->nodeWidth);
 			entry->h = (1.0 - maxPathWeight) * sqrt(diffx*diffx + diffy*diffy) * speedScale;
 			entry->closed = 0;
 			n->isInTotalSet = true;
@@ -1247,307 +1241,39 @@ double AStarNavigator::updateLocations(TaskExecuter* te)
 	return 0;
 }
 
-void AStarNavigator::buildEdgeTable()
-{
-	isGridDirty = true;
-	isBoundsDirty = true;
-
-	heatMapBuffer.reset(nullptr);
-	// Determine the grid bounds
-	Vec2 min = Vec2(FLT_MAX,FLT_MAX);
-	Vec2 max = Vec2(-FLT_MAX,-FLT_MAX);
-
-	pathCache.clear();
-	pathCount = 0;
-	requestCount = 0;
-	cacheUseCount = 0;
-
-	directionChangePenalty = 0.05;
-	if (deepSearch)
-		directionChangePenalty = 0.025;
-
-	savedNodeWidth = nodeWidth;
-
-	// Clear edge table
-	if (edgeTable)
-		delete[] edgeTable;
-	edgeTable = 0;
-
-	// Don't build edgeTable if there are no barriers
-	if (content(barriers) == 0 && objectBarrierList.size() == 0)
-		return;
-
-	// go through the barriers to determine bounds
-	for (int i = 0; i < barrierList.size(); i++) {
-		Barrier* barrier = barrierList[i];
-		double x1, y1, x2, y2;
-		barrier->getBoundingBox(x1, y1, x2, y2);
-
-		if(x1 < min.x) min.x = x1;
-		if(x1 > max.x) max.x = x1;
-		if(y1 < min.y) min.y = y1;
-		if(y1 > max.y) max.y = y1;
-		if(x2 < min.x) min.x = x2;
-		if(x2 > max.x) max.x = x2;
-		if(y2 < min.y) min.y = y2;
-		if(y2 > max.y) max.y = y2;
-	}
-
-	// Clear custom barriers
-	customBarriers = Array();
-
-	// populate array of custom barriers
-	for (int i = 0; i < objectBarrierList.size(); i++) {
-		TreeNode* theObj = objectBarrierList[i]->holder;
-		if (function_s(theObj, "customizeAStarGrid", holder, nodeWidth))
-			continue;
-		addObjectBarrierToTable(theObj);
-	}
-
-	// go through objects to determine bounds
-	for (int i = 1; i <= customBarriers.size(); i++) {
-		if (customBarriers[i].size() == 1) {
-			// spatialx/y are the top left corner
-			// Treat objects as a solid barrier
-			checkBounds(customBarriers[i][1], min, max);
-		}
-		else if (customBarriers[i].size() == 3) {
-			// blockGridModelPos
-			double halfNodeWidth = 0.5 * nodeWidth;
-
-			if (customBarriers[i][1] + halfNodeWidth < min.x)
-				min.x = customBarriers[i][1] + halfNodeWidth;
-			if (customBarriers[i][1] - halfNodeWidth > max.x)
-				max.x = customBarriers[i][1] - halfNodeWidth;
-			if (customBarriers[i][2] + halfNodeWidth < min.y)
-				min.y = customBarriers[i][2] + halfNodeWidth;
-			if (customBarriers[i][2] - halfNodeWidth > max.y)
-				max.y = customBarriers[i][2] - halfNodeWidth;
-		}
-		else if (customBarriers[i].size() == 7) {
-			// divideGridModelLine
-			double halfNodeWidth = 0.5 * nodeWidth;
-
-			if (customBarriers[i][1] + halfNodeWidth < min.x)
-				min.x = customBarriers[i][1] + halfNodeWidth;
-			if (customBarriers[i][1] - halfNodeWidth > max.x)
-				max.x = customBarriers[i][1] - halfNodeWidth;
-			if (customBarriers[i][2] + halfNodeWidth < min.y)
-				min.y = customBarriers[i][2] + halfNodeWidth;
-			if (customBarriers[i][2] - halfNodeWidth > max.y)
-				max.y = customBarriers[i][2] - halfNodeWidth;
-
-			if (customBarriers[i][4] + halfNodeWidth < min.x)
-				min.x = customBarriers[i][4] + halfNodeWidth;
-			if (customBarriers[i][4] - halfNodeWidth > max.x)
-				max.x = customBarriers[i][4] - halfNodeWidth;
-			if (customBarriers[i][5] + halfNodeWidth < min.y)
-				min.y = customBarriers[i][5] + halfNodeWidth;
-			if (customBarriers[i][5] - halfNodeWidth > max.y)
-				max.y = customBarriers[i][5] - halfNodeWidth;
-		}
-	}
-
-	xOffset = (int)(floor(min.x / nodeWidth) - surroundDepth);
-	yOffset = (int)(floor(min.y / nodeWidth) - surroundDepth);
-	savedXOffset = (float)xOffset;
-	savedYOffset = (float)yOffset;
-
-	edgeTableXSize = (int)(ceil((max.x - min.x) / nodeWidth) + surroundDepth * 2 + 1);
-	edgeTableYSize = (int)(ceil((max.y - min.y) / nodeWidth) + surroundDepth * 2 + 1);
-
-	double col0xloc = (xOffset + 0.5) * nodeWidth;
-	double row0yloc = (yOffset + 0.5) * nodeWidth;
-	gridOrigin.x = col0xloc;
-	gridOrigin.y = row0yloc;
-
-	// Create a new fully connected table
-	unsigned int tableSize = edgeTableYSize * edgeTableXSize;
-	edgeTable = new AStarNode[tableSize];
-	memset(edgeTable, 0xFFFFFFFF, tableSize * sizeof(AStarNode));
-
-	for (int i = 0; i < edgeTableYSize; i++) {
-		getNode(i, 0)->canGoLeft = 0;
-		getNode(i, edgeTableXSize - 1)->canGoRight = 0;
-	}
-	for (int i = 0; i < edgeTableXSize; i++) {
-		getNode(0, i)->canGoDown = 0;
-		getNode(edgeTableYSize - 1, i)->canGoUp = 0;
-	}
-
-	// The maxPathWeight ensures that the estimated distance
-	// to the goal is not overestimated.
-	maxPathWeight = 0.0;
-	for(int i = 0; i < barrierList.size(); i++) {
-		Barrier* barrier = barrierList[i];
-		barrier->addBarriersToTable(this);
-	}
-
-	// add custom barriers
-	for (int i = 1; i <= customBarriers.size(); i++) {
-		if (customBarriers[i].size() == 1) {
-			// Treat objects as a solid barrier
-			addObjectBarrierToTable(customBarriers[i][1]);
-		}
-		else if (customBarriers[i].size() == 3) {
-			// blockGridModelPos
-			blockGridModelPos(
-				Vec3(customBarriers[i][1], customBarriers[i][2], customBarriers[i][3]));
-		}
-		else if (customBarriers[i].size() == 7) {
-			// divideGridModelLine
-			divideGridModelLine(
-				Vec3(customBarriers[i][1], customBarriers[i][2], customBarriers[i][3]),
-				Vec3(customBarriers[i][4], customBarriers[i][5], customBarriers[i][6]),
-				customBarriers[i][7].operator int());
-		}
-	}
-
-	for (int i = 0; i < barrierList.size(); i++) {
-		Barrier* barrier = barrierList[i];
-		barrier->addPassagesToTable(this);
-		PreferredPath* path = barrier->toPreferredPath();
-		if (path)
-			maxPathWeight = max(path->pathWeight, maxPathWeight);
-	}
-}
-
 void AStarNavigator::addObjectBarrierToTable(TreeNode* theObj)
 {
-	if (!edgeTable) {
+	if (!areGridNodeTablesBuilt) {
 		Array customBarrier = Array(1);
 		customBarrier[1] = theObj;
 		customBarriers.push(customBarrier);
 		return;
 	}
 
-	Vec2 objMin(FLT_MAX, FLT_MAX), objMax(-FLT_MAX, -FLT_MAX);
-	int rotation = ((int)round(zrot(theObj) / 90) * 90);
-	// if the object is rotated at 0, 90, 180 or 270, then do simple stuff
-	if (fabs(zrot(theObj) - rotation) < 5 && fabs(xrot(theObj)) < 5 && fabs(yrot(theObj)) < 5 && up(theObj) == model()) {
-
-		double halfXSize = 0.5 * xsize(theObj);
-		double halfYSize = 0.5 * ysize(theObj);
-
-		Vec3 modelCenter;
-		vectorproject(theObj, halfXSize, -halfYSize, 0, model(), modelCenter);
-		double objSX = maxof(xsize(theObj), nodeWidth);
-		double objSY = maxof(ysize(theObj), nodeWidth);
-
-
-		if (rotation != 0 && rotation % 180 != 0 && rotation % 90 == 0) {
-			objMin.x = modelCenter.x - halfYSize;
-			objMax.x = objMin.x + objSY;
-			objMax.y = modelCenter.y + halfXSize;
-			objMin.y = objMax.y - objSX;
-		}
-		else {
-			objMin.x = modelCenter.x - halfXSize;
-			objMax.x = objMin.x + objSX;
-			objMax.y = modelCenter.y + halfYSize;
-			objMin.y = objMax.y - objSY;
-		}
-		// Shrink the bounding box for objects
-		double halfNodeWidth = 0.5 * nodeWidth;
-		objMin.x += halfNodeWidth;
-		objMax.x -= halfNodeWidth;
-		objMin.y += halfNodeWidth;
-		objMax.y -= halfNodeWidth;
-
-		int colleft = (int)round((objMin.x - gridOrigin.x) / nodeWidth);
-		int rowbottom = (int)round((objMin.y - gridOrigin.y) / nodeWidth);
-		int colright = (int)round((objMax.x - gridOrigin.x) / nodeWidth);
-		int rowtop = (int)round((objMax.y - gridOrigin.y) / nodeWidth);
-		for (int row = rowbottom; row <= rowtop; row++)
-		{
-			AStarNode * left = &(DeRefEdgeTable(row, colleft - 1));
-			left->canGoRight = 0;
-			AStarNode * right = &(DeRefEdgeTable(row, colright + 1));
-			right->canGoLeft = 0;
-		}
-
-		for (int col = colleft; col <= colright; col++)
-		{
-			AStarNode * top = &(DeRefEdgeTable(rowtop + 1, col));
-			top->canGoDown = 0;
-			AStarNode * bottom = &(DeRefEdgeTable(rowbottom - 1, col));
-			bottom->canGoUp = 0;
-		}
-
-		for (int row = rowbottom; row <= rowtop; row++) {
-			for (int col = colleft; col <= colright; col++) {
-				AStarNode* theNode = &(DeRefEdgeTable(row, col));
-				theNode->canGoUp = 0;
-				theNode->canGoDown = 0;
-				theNode->canGoLeft = 0;
-				theNode->canGoRight = 0;
-			}
-		}
-	}
-	else {
-		// in this case, the object is rotated weird, so I need to manually go through and apply each 
-
-		checkBounds(theObj, objMin, objMax);
-
-		int minCol = (int)((objMin.x - gridOrigin.x) / nodeWidth);
-		int maxCol = (int)((objMax.x - gridOrigin.x) / nodeWidth) + 1;
-		int minRow = (int)((objMin.y - gridOrigin.y) / nodeWidth);
-		int maxRow = (int)((objMax.y - gridOrigin.y) / nodeWidth) + 1;
-
-		Vec2 minThreshold(0, -ysize(theObj));
-		Vec2 maxThreshold(xsize(theObj), 0);
-		double yPadding = nodeWidth - ysize(theObj);
-		if (yPadding > 0) {
-			minThreshold.y -= 0.5 * yPadding;
-			maxThreshold.y += 0.5 * yPadding;
-		}
-		double xPadding = nodeWidth - xsize(theObj);
-		if (xPadding > 0) {
-			minThreshold.x -= 0.5 * xPadding;
-			maxThreshold.x += 0.5 * xPadding;
-		}
-
-		for (int row = minRow; row <= maxRow; row++) {
-			for (int col = minCol; col <= maxCol; col++) {
-				Vec3 modelPos(gridOrigin.x + col * nodeWidth, gridOrigin.y + row * nodeWidth, 0);
-				Vec3 objPos;
-				vectorproject(model(), modelPos.x, modelPos.y, modelPos.z, theObj, objPos);
-				if (objPos.x > minThreshold.x && objPos.x < maxThreshold.x && objPos.y > minThreshold.y && objPos.y < maxThreshold.y) {
-					AStarNode& theNode = DeRefEdgeTable(row, col);
-					theNode.canGoUp = false;
-					theNode.canGoDown = false;
-					theNode.canGoLeft = false;
-					theNode.canGoRight = false;
-
-					if (col > 0)
-						DeRefEdgeTable(row, col - 1).canGoRight = false;
-					if (col < edgeTableXSize - 1)
-						DeRefEdgeTable(row, col + 1).canGoLeft = false;
-					if (row > 0)
-						DeRefEdgeTable(row - 1, col).canGoUp = false;
-					if (row < edgeTableYSize)
-						DeRefEdgeTable(row + 1, col).canGoDown = false;
-				}
-			}
-		}
-	}
+	for (Grid* grid : grids)
+		grid->addObjectBarrierToTable(theObj);
 }
 
-void AStarNavigator::checkBounds(TreeNode* theObj, Vec2& min, Vec2& max)
+void AStarNavigator::getBoundingBox(TreeNode* theObj, Vec3& min, Vec3& max)
 {
+	min = Vec3(DBL_MAX, DBL_MAX, DBL_MAX);
+	max = Vec3(-DBL_MAX, -DBL_MAX, -DBL_MAX);
 	// Shrink the bounding box for objects
-	double halfNodeWidth = 0.5 * nodeWidth;
-	auto checkBound = [halfNodeWidth, theObj, &min, &max](double x, double y, double z) {
+	auto checkBound = [theObj, &min, &max](double x, double y, double z) {
 		Vec3 outVec;
 		vectorproject(theObj, x, y, z, model(), outVec);
-		if (outVec.x + halfNodeWidth < min.x)
-			min.x = outVec.x + halfNodeWidth;
-		if (outVec.x - halfNodeWidth > max.x)
-			max.x = outVec.x - halfNodeWidth;
-		if (outVec.y + halfNodeWidth < min.y)
-			min.y = outVec.y + halfNodeWidth;
-		if (outVec.y - halfNodeWidth > max.y)
-			max.y = outVec.y - halfNodeWidth;
+		if (outVec.x < min.x)
+			min.x = outVec.x;
+		if (outVec.x > max.x)
+			max.x = outVec.x;
+		if (outVec.y < min.y)
+			min.y = outVec.y;
+		if (outVec.y > max.y)
+			max.y = outVec.y;
+		if (outVec.z < min.z)
+			min.z = outVec.z;
+		if (outVec.z > max.z)
+			max.z = outVec.z;
 	};
 	
 	checkBound(0, 0, 0);
@@ -1563,72 +1289,14 @@ void AStarNavigator::checkBounds(TreeNode* theObj, Vec2& min, Vec2& max)
 
 void AStarNavigator::buildBoundsMesh(float z)
 {
-	boundsMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
 
-	if (!edgeTable) {
+	for (Grid* grid : grids)
+		grid->buildBoundsMesh();
+
+	if (!areGridNodeTablesBuilt) {
 		isBoundsMeshBuilt = false;
 		return;
 	}
-
-	float up[3] = {0.0f, 0.0f, 1.0f};
-	TreeNode* color = node_b_color;
-	float boundsColor[4] = {
-		(float)get(rank(color, 1)), 
-		(float)get(rank(color, 2)), 
-		(float)get(rank(color, 3)), 
-		0.75f
-	};
-	float black[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-
-	boundsMesh.setMeshAttrib(MESH_NORMAL, up);
-	boundsMesh.setMeshAttrib(MESH_DIFFUSE4, boundsColor);
-
-	float width = edgeTableXSize * savedNodeWidth;
-	float height = edgeTableYSize * savedNodeWidth;
-	float borderWidth = savedNodeWidth;
-
-	float midBW = 0.4 * borderWidth;
-	float bottomLeft[3] = {savedXOffset * savedNodeWidth, savedYOffset * savedNodeWidth, z};
-	float topRight[3] = {bottomLeft[0] + width, bottomLeft[1] + height, z};
-	float topLeft[3] = {bottomLeft[0], topRight[1], z};
-	float bottomRight[3] = {topRight[0], bottomLeft[1], z};
-
-	float oBottomLeft[3] = {bottomLeft[0] - borderWidth, bottomLeft[1] - borderWidth, z};
-	float oTopRight[3] = {topRight[0] + borderWidth, topRight[1] + borderWidth, z};
-	float oTopLeft[3] = {topLeft[0] - borderWidth, topLeft[1] + borderWidth, z};
-	float oBottomRight[3] = {bottomRight[0] + borderWidth, bottomRight[1] - borderWidth, z};
-
-	float mBottomLeft[3] = {bottomLeft[0] - midBW, bottomLeft[1] - midBW, z};
-	float mTopRight[3] = {topRight[0] + midBW, topRight[1] + midBW, z};
-	float mTopLeft[3] = {topLeft[0] - midBW, topLeft[1] + midBW, z};
-	float mBottomRight[3] = {bottomRight[0] + midBW, bottomRight[1] - midBW, z};
-
-#define ADD_VERTEX(point)\
-	{\
-		int newVertex = boundsMesh.addVertex();\
-		boundsMesh.setVertexAttrib(newVertex, MESH_POSITION, point);\
-	}\
-
-#define ADD_PLAIN_QUAD(p1, p2, p3, p4)\
-	ADD_VERTEX(p1);\
-	ADD_VERTEX(p2);\
-	ADD_VERTEX(p3);\
-	ADD_VERTEX(p1);\
-	ADD_VERTEX(p3);\
-	ADD_VERTEX(p4);
-
-	// left border (GL_QUADS)
-	ADD_PLAIN_QUAD(bottomLeft, topLeft, oTopLeft, oBottomLeft);
-
-	// top border
-	ADD_PLAIN_QUAD(topLeft, topRight, oTopRight, oTopLeft);
-
-	// right border
-	ADD_PLAIN_QUAD(topRight, bottomRight, oBottomRight, oTopRight);
-
-	// bottom border
-	ADD_PLAIN_QUAD(bottomRight, bottomLeft, oBottomLeft, oBottomRight);
-
 	isBoundsMeshBuilt = true;
 }
 
@@ -1638,130 +1306,17 @@ void AStarNavigator::buildBarrierMesh(float z)
 	float up[3] = {0.0f, 0.0f, 1.0f};
 	barrierMesh.setMeshAttrib(MESH_NORMAL, up);
 	for (int i = 0; i < barrierList.size(); i++) {
-		barrierList[i]->nodeWidth = nodeWidth;
+		barrierList[i]->nodeWidth = minNodeWidth;
 		barrierList[i]->addVertices(&barrierMesh, z);
 	}
 
 	isBarrierMeshBuilt = true;
 }
 
-void AStarNavigator::drawHeatMap(float z, TreeNode* view)
+void AStarNavigator::drawHeatMap(TreeNode* view)
 {
-	if (heatMapMode == 0 || statisticaltime() <= 0)
-		return;
-	if (maxHeatValue <= 0)
-		return;
-
-	int pickMode = getpickingmode(view);
-	if (pickMode)
-		return;
-
-	int width = (edgeTableXSize + 2);
-	int height = (edgeTableYSize + 2);
-	int numPixels = width * height;
-	int bufferSize = 4 * numPixels;
-
-	if (!heatMapBuffer) {
-		heatMapBuffer = std::unique_ptr<unsigned int[]>(new unsigned int[numPixels]);
-		Vec4f baseColor = heatMapColorProgression[0];
-		if (transparentBaseColor)
-			baseColor.a = 0;
-		int baseColorInt = (((int)(baseColor.a * 255)) << 24)
-			| (((int)(baseColor.b * 255)) << 16)
-			| (((int)(baseColor.g * 255)) << 8)
-			| (((int)(baseColor.r * 255)));
-
-		unsigned int* buffer = heatMapBuffer.get();
-		memset(buffer, 0, width * 4);
-		memset(buffer + (height - 1) * width * 4, 0, width * 4);
-		for (int i = 1; i <= edgeTableYSize; i++) {
-			buffer[i * width] = 0;
-			buffer[(i + 1) * width - 1] = 0;
-			for (int j = 1; j <= edgeTableXSize; j++) {
-				buffer[i * width + j] = baseColorInt;
-			}
-		}
-	}
-
-	unsigned int* buffer = heatMapBuffer.get();
-	//memset(buffer, 0, bufferSize);
-	for (auto& node : edgeTableExtraData) {
-		AStarNodeExtraData* data = node.second;
-		if (data->totalTraversals <= 0)
-			continue;
-		double weight;
-		switch ((int)heatMapMode) {
-			case HEAT_MAP_TRAVERSALS_PER_TIME: default:
-				weight = (data->totalTraversals / statisticaltime());
-				break;
-			case HEAT_MAP_BLOCKAGE_TIME_PER_TRAVERSAL: 
-				weight = (data->totalBlockedTime / max(1, data->totalTraversals));
-				break;
-			case HEAT_MAP_BLOCKAGE_TIME_PERCENT:
-				weight = 100.0 * data->totalBlockedTime / statisticaltime();
-				break;
-		}
-		weight /= maxHeatValue;
-		weight = max(0, weight);
-		weight = min(0.9999, weight);
-
-		double progressionFactor = (double)(heatMapColorProgression.size() - 1) * weight;
-		Vec4f lowColor = heatMapColorProgression[(int)floor(progressionFactor)];
-		Vec4f highColor = heatMapColorProgression[(int)ceil(progressionFactor)];
-		Vec4f lerpColor = lowColor + ((highColor - lowColor) * frac(progressionFactor));
-
-		buffer[(data->cell.row + 1) * width + data->cell.col + 1] =
-			(((int)(lerpColor.a * 255)) << 24)
-			| (((int)(lerpColor.b * 255)) << 16)
-			| (((int)(lerpColor.g * 255)) << 8)
-			| (((int)(lerpColor.r * 255)));
-	}
-
-
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glGenerateTextureMipMap(GL_TEXTURE_2D);
-	
-	Mesh trafficMesh;
-	trafficMesh.init(6, MESH_POSITION | MESH_TEX_COORD2, MESH_DYNAMIC_DRAW);
-	Vec3f verts[] = {
-		Vec3f(gridOrigin.x - 1.5 * nodeWidth, gridOrigin.y - 1.5 * nodeWidth, z),
-		Vec3f(gridOrigin.x - 1.5 * nodeWidth, gridOrigin.y + (edgeTableYSize + 0.5) * nodeWidth, z),
-		Vec3f(gridOrigin.x + (edgeTableXSize + 0.5) * nodeWidth, gridOrigin.y - 1.5 * nodeWidth, z),
-		Vec3f(gridOrigin.x - 1.5 * nodeWidth, gridOrigin.y + (edgeTableYSize + 0.5) * nodeWidth, z),
-		Vec3f(gridOrigin.x + (edgeTableXSize + 0.5) * nodeWidth, gridOrigin.y + (edgeTableYSize + 0.5) * nodeWidth, z),
-		Vec3f(gridOrigin.x + (edgeTableXSize + 0.5) * nodeWidth, gridOrigin.y - 1.5 * nodeWidth, z),
-	};
-
-	Vec2f texCoords[] = {
-		Vec2f(0.0, 0.0),
-		Vec2f(0.0, 1.0),
-		Vec2f(1.0, 0.0),
-		Vec2f(0.0, 1.0),
-		Vec2f(1.0, 1.0),
-		Vec2f(1.0, 0.0)
-	};
-
-	fglColor(1.0, 1.0, 1.0, 1.0);
-	fglEnable(GL_TEXTURE_2D);
-	fglDisable(GL_LIGHTING);
-
-	trafficMesh.defineVertexAttribs(MESH_POSITION, verts[0]);
-	trafficMesh.defineVertexAttribs(MESH_TEX_COORD2, texCoords[0]);
-	trafficMesh.draw(GL_TRIANGLES);
-
-	fglEnable(GL_LIGHTING);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDeleteTextures(1, &textureID);
-
+	for (Grid* grid : grids)
+		grid->drawHeatMap(view);
 }
 
 float AStarNavigator::clampDirection(float rotDirection)
@@ -1931,91 +1486,15 @@ void AStarNavigator::drawMembers(float z)
 	fglEnable(GL_TEXTURE_2D);
 }
 
-void AStarNavigator::buildGridMesh(float z)
+void AStarNavigator::buildGridMesh(float zOffset)
 {
-	gridMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_FORCE_CLEANUP);
+	for (Grid* grid : grids)
+		grid->buildGridMesh(zOffset);
 
-	if (!edgeTable) {
+	if (!areGridNodeTablesBuilt) {
 		isGridMeshBuilt = false;
 		return;
 	}
-	
-	double quarterNodeWidth = 0.25 * nodeWidth;
-	float gold[4] = {0.8f,0.8f,0.0f, 1.0f};
-	float red[4] = {1.0f, 0.0f, 0.0f, 1.0f};
-
-	for(int row = 0; row < edgeTableYSize; row++) {
-		for(int col = 0; col < edgeTableXSize; col++) {
-			AStarNode* n = &DeRefEdgeTable(row, col);
-			AStarSearchEntry s;
-			s.cell.col = col;
-			s.cell.row = row;
-			AStarNodeExtraData* e = NULL;
-			if(n->hasExtraData)
-				e = edgeTableExtraData[s.cell.colRow];
-			double x = (xOffset + col + 0.5) * nodeWidth;
-			double y = (yOffset + row + 0.5) * nodeWidth;
-
-#define ADD_GRID_LINE(dir, x1, y1, z1, x2, y2, z2)\
-	if (n->canGo##dir) {\
-		int newVertex1 = gridMesh.addVertex();\
-		int newVertex2 = gridMesh.addVertex();\
-		\
-		if (e && e->bonus##dir) {\
-			float green[4] = {0.0f, e->bonus##dir, 0.0f, 1.0f};\
-			gridMesh.setVertexAttrib(newVertex1, MESH_DIFFUSE4, green);\
-			gridMesh.setVertexAttrib(newVertex2, MESH_DIFFUSE4, green);\
-		} else {\
-			gridMesh.setVertexAttrib(newVertex1, MESH_DIFFUSE4, gold);\
-			gridMesh.setVertexAttrib(newVertex2, MESH_DIFFUSE4, gold);\
-		}\
-		\
-		float pos1[3] = {(float)x1, (float)y1, (float)z1};\
-		float pos2[3] = {(float)x2, (float)y2, (float)z2};\
-		gridMesh.setVertexAttrib(newVertex1, MESH_POSITION, pos1);\
-		gridMesh.setVertexAttrib(newVertex2, MESH_POSITION, pos2);\
-	}
-			if (n->canGoUp && n->canGoDown && n->canGoLeft && n->canGoRight && n->noExtraData) {
-				ADD_GRID_LINE(Up, x, y - quarterNodeWidth, z, x, y + quarterNodeWidth, z);
-				ADD_GRID_LINE(Right, x - quarterNodeWidth, y, z, x + quarterNodeWidth, y, z);
-				continue;
-			}
-
-			if (n->canGoUp && n->canGoDown && n->noExtraData) {
-				ADD_GRID_LINE(Up, x, y - quarterNodeWidth, z, x, y + quarterNodeWidth, z);
-				ADD_GRID_LINE(Right, x, y, z, x + 0.25 * nodeWidth, y,z);
-				ADD_GRID_LINE(Left, x, y, z, x - 0.25 * nodeWidth, y, z);
-				continue;
-			}
-
-			if (n->canGoLeft && n->canGoRight && n->noExtraData) {
-				ADD_GRID_LINE(Right, x - quarterNodeWidth, y, z, x + quarterNodeWidth, y, z);
-				ADD_GRID_LINE(Up, x, y, z, x, y + 0.25 * nodeWidth, z);
-				ADD_GRID_LINE(Down, x, y, z, x, y - 0.25 * nodeWidth, z);
-				continue;
-			}
-
-			ADD_GRID_LINE(Up, x, y, z, x, y + 0.25 * nodeWidth, z);
-			ADD_GRID_LINE(Down, x, y, z, x, y - 0.25 * nodeWidth, z);
-			ADD_GRID_LINE(Right, x, y, z, x + 0.25 * nodeWidth, y, z);
-			ADD_GRID_LINE(Left, x, y, z, x - 0.25 * nodeWidth, y, z);
-			
-			if(n->isInTotalSet) {
-				mpt("Grid error at x ");mpd(col);mpt(" y ");mpd(row);mpr();
-				int newVertex1 = gridMesh.addVertex();
-				int newVertex2 = gridMesh.addVertex();
-
-				gridMesh.setVertexAttrib(newVertex1, MESH_DIFFUSE4, red);
-				gridMesh.setVertexAttrib(newVertex2, MESH_DIFFUSE4, red);
-
-				float pos1[3] = {(float)x, (float)y, z};
-				float pos2[3] = {(float)(x + 0.25 * nodeWidth), (float)(y + 0.25 * nodeWidth), z};
-				gridMesh.setVertexAttrib(newVertex1, MESH_POSITION, pos1);
-				gridMesh.setVertexAttrib(newVertex2, MESH_POSITION, pos2);
-			}
-		}
-	}
-
 	isGridMeshBuilt = true;
 }
 
@@ -2025,7 +1504,7 @@ void AStarNavigator::drawAllocations(float z)
 		return;
 	Mesh allocMesh;
 	Mesh lineMesh;
-	double diamondRadius = 0.2 * nodeWidth;
+	double diamondRadius = 0.2 * minNodeWidth;
 	fglColor(0.8f, 0.5f, 0.0f, 1.0f);
 	Vec4f fullClr(0.8f, 0.4f, 0.0f, 1.0f);
 	Vec4f partialClr(0.8f, 0.4f, 0.0f, 0.4f);
@@ -2091,69 +1570,15 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 {
 	if (!objectexists(destination))
 		return;
-	if (!edgeTable)
+	if (!areGridNodeTablesBuilt)
 		return;
 
-	DestinationThreshold dt = DestinationThreshold(destination, nodeWidth);
-	double loc[3];
+	Vec3 loc;
 	Vec3 size = destination->objectAs(ObjectDataType)->size;
 	vectorproject(destination, 0.5 * size.x, -0.5 * size.y, 0, model(), loc);
 
-	// Set the desination outside a barrier if necessary
-	if (ignoreDestBarrier) {
-		AStarCell destCell = getCellFromLoc(Vec2(loc));
-		checkGetOutOfBarrier(destCell, nullptr, 0, 0, &dt);
-	}
+	getGrid(getCellFromLoc(loc))->drawDestinationThreshold(destination, loc, size);
 
-	Mesh mesh, mesh2;
-	mesh.init(0, MESH_POSITION, MESH_DYNAMIC_DRAW);
-	mesh2.init(0, MESH_POSITION, MESH_DYNAMIC_DRAW);
-	double diamondRadius = 0.1 * nodeWidth;
-	for (int row = 0; row < edgeTableYSize; row++) {
-		for (int col = 0; col < edgeTableXSize; col++) {
-			AStarNode* n = &DeRefEdgeTable(row, col);
-			AStarCell cell;
-			cell.col = col;
-			cell.row = row;
-
-			int withinArrivalThreshold = 0;
-			if (dt.xAxisThreshold > 0 || dt.yAxisThreshold > 0) {
-				double threshold = sqrt(dt.xAxisThreshold * dt.xAxisThreshold + dt.yAxisThreshold * dt.yAxisThreshold);		
-				
-				Vec3 pos = getLocFromCell(cell);
-				Vec3 diff = pos - Vec3(loc[0], loc[1], 0);
-				if (diff.magnitude < threshold)
-					withinArrivalThreshold = 1;
-			}
-
-			bool withinTravelThreshold = dt.isWithinThreshold(cell, gridOrigin, loc, nodeWidth);
-			if (withinTravelThreshold || withinArrivalThreshold) {
-				Mesh* theMesh = withinTravelThreshold ? &mesh : &mesh2;
-				Vec3 centerPos = getLocFromCell(cell);
-				int vert = theMesh->addVertex();
-				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
-				vert = theMesh->addVertex();
-				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y + diamondRadius, z));
-				vert = theMesh->addVertex();
-				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, z));
-				vert = theMesh->addVertex();
-				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, z));
-				vert = theMesh->addVertex();
-				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y - diamondRadius, z));
-				vert = theMesh->addVertex();
-				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
-			}
-		}
-	}
-
-	fglDisable(GL_LIGHTING);
-	fglDisable(GL_TEXTURE_2D);
-	fglColor(0.8f, 0.2f, 0.2f, 1.0f);
-	mesh.draw(GL_TRIANGLES);
-	fglColor(0.2f, 0.2f, 0.8f, 1.0f);
-	mesh2.draw(GL_TRIANGLES);
-	fglEnable(GL_LIGHTING);
-	fglEnable(GL_TEXTURE_2D);
 }
 
 void AStarNavigator::setDirty()
@@ -2161,17 +1586,31 @@ void AStarNavigator::setDirty()
 	isBarrierDirty = true;
 }
 
-AStarCell AStarNavigator::getCellFromLoc(const Vec2& modelLoc)
+AStarCell AStarNavigator::getCellFromLoc(const Vec3& modelLoc)
 {
 	// get the x/y location of the bottom left corner of my grid
-	AStarCell cell;
-	cell.col = (int)round((modelLoc.x - gridOrigin.x) / nodeWidth);
-	cell.col = max(0, cell.col);
-	cell.col = min(edgeTableXSize - 1, cell.col);
-	cell.row = (int)round((modelLoc.y - gridOrigin.y) / nodeWidth);
-	cell.row = max(0, cell.row);
-	cell.row = min(edgeTableYSize - 1, cell.row);
-	return cell;
+	for (Grid* grid : grids) {
+		if (grid->isLocWithinBounds(modelLoc, false)) {
+			return grid->getCellFromLoc(modelLoc);
+		}
+	}
+	return grids[0]->getCellFromLoc(modelLoc);
+}
+
+Vec3 AStarNavigator::getLocFromCell(const AStarCell & cell)
+{
+	return grids[max(1, cell.grid) - 1]->getLocFromCell(cell);
+}
+
+AStarNode * AStarNavigator::getNode(const AStarCell & cell)
+{
+	return grids[max(1, cell.grid) - 1]->getNode(cell);
+}
+
+
+Grid* AStarNavigator::getGrid(const AStarCell& cell) 
+{ 
+	return grids[max(1, cell.grid) - 1];
 }
 
 unsigned int AStarNavigator::getClassType()
@@ -2181,7 +1620,7 @@ unsigned int AStarNavigator::getClassType()
 
 void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 {
-	if (!edgeTable) {
+	if (!areGridNodeTablesBuilt) {
 		Array customBarrier = Array(3);
 		customBarrier[1] = modelPos.x;
 		customBarrier[2] = modelPos.y;
@@ -2190,29 +1629,13 @@ void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 		return;
 	}
 
-	AStarCell cell = getCellFromLoc(Vec2(modelPos.x, modelPos.y));
-
-	if (cell.col >= 0 && cell.col < edgeTableXSize && cell.row >= 0 && cell.row < edgeTableYSize) {
-		AStarNode& node = DeRefEdgeTable(cell.row, cell.col);
-		node.canGoDown = false;
-		node.canGoUp = false;
-		node.canGoRight = false;
-		node.canGoLeft = false;
-
-		if (cell.col > 0)
-			DeRefEdgeTable(cell.row, cell.col - 1).canGoRight = 0;
-		if (cell.col < edgeTableXSize - 1)
-			DeRefEdgeTable(cell.row, cell.col + 1).canGoLeft = 0;
-		if (cell.row > 0)
-			DeRefEdgeTable(cell.row - 1, cell.col).canGoUp = 0;
-		if (cell.row < edgeTableYSize - 1)
-			DeRefEdgeTable(cell.row + 1, cell.col).canGoDown = 0;
-	}
+	AStarCell cell = getCellFromLoc(modelPos);
+	grids[max(1, cell.grid) - 1]->blockGridModelPos(modelPos);
 }
 
 void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay)
 {
-	if (!edgeTable) {
+	if (!areGridNodeTablesBuilt) {
 		Array customBarrier = Array(7);
 		customBarrier[1] = modelPos1.x;
 		customBarrier[2] = modelPos1.y;
@@ -2225,77 +1648,9 @@ void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& mode
 		return;
 	}
 
-	double low, high, step, pos;
 
-	// calculate columns and rows from the model points
-	double col = (modelPos1.x - gridOrigin.x) / nodeWidth;
-	double row = (modelPos1.y - gridOrigin.y) / nodeWidth;
-	double nextCol = (modelPos2.x - gridOrigin.x) / nodeWidth;
-	double nextRow = (modelPos2.y - gridOrigin.y) / nodeWidth;
-
-	// x-axis grid cross
-	low = 1;
-	high = 0;
-	step = (nextRow - row) / (nextCol - col);
-	if (nextCol > col) {
-		low = ceil(col);
-		high = floor(nextCol);
-		pos = row + (low - col) * step + 1;
-	}
-	else if (nextCol < col) {
-		low = ceil(nextCol);
-		high = floor(col);
-		pos = nextRow + (low - nextCol) * step + 1;
-	}
-	if (low <= high) {
-		double currCol = low;
-		for (int i = 0; i <= fabs(high - low); i++) {
-			double currRow = nextRow < row ? pos - FLT_EPSILON : pos + FLT_EPSILON;
-
-			// Block down and up
-			if (currCol >= 0 && currCol < edgeTableXSize) {
-				if ((!oneWay || nextCol > col) && currRow >= 0 && currRow < edgeTableYSize)
-					getNode(currRow, currCol)->canGoDown = 0;
-				if ((!oneWay || nextCol < col) && currRow - 1 >= 0 && currRow - 1 < edgeTableYSize)
-					getNode(currRow - 1, currCol)->canGoUp = 0;
-			}
-
-			currCol++;
-			pos += step;
-		}
-	}
-
-	// y-axis grid cross
-	low = 1;
-	high = 0;
-	step = (nextCol - col) / (nextRow - row);
-	if (nextRow > row) {
-		low = ceil(row);
-		high = floor(nextRow);
-		pos = col + (low - row) * step + 1;
-	}
-	else if (nextRow < row) {
-		low = ceil(nextRow);
-		high = floor(row);
-		pos = nextCol + (low - nextRow) * step + 1;
-	}
-	if (low <= high) {
-		double currRow = low;
-		for (int i = 0; i <= fabs(high - low); i++) {
-			double currCol = nextCol > col ? pos - FLT_EPSILON : pos + FLT_EPSILON;
-
-			// Block left and right
-			if (currRow >= 0 && currRow < edgeTableYSize) {
-				if ((!oneWay || nextRow < row) && currCol >= 0 && currCol < edgeTableXSize)
-					getNode(currRow, currCol)->canGoLeft = 0;
-				if ((!oneWay || nextRow > row) && currCol - 1 >= 0 && currCol - 1 < edgeTableXSize)
-					getNode(currRow, currCol - 1)->canGoRight = 0;
-			}
-
-			currRow++;
-			pos += step;
-		}
-	}
+	for (Grid* grid : grids)
+		grid->divideGridModelLine(modelPos1, modelPos2, oneWay);
 }
 
 
@@ -2403,7 +1758,7 @@ void AStarNavigator::drawRoutingAlgorithm(Traveler * traveler, treenode view)
 	if (traveler->routingAlgorithmSnapshots.size() == 0)
 		return;
 
-	double diamondRadius = 0.1 * nodeWidth;
+	float diamondRadius = 0.1f * (float)minNodeWidth;
 
 	size_t index = (size_t)(routingAlgorithmCompletionRatio * traveler->routingAlgorithmSnapshots.size());
 	if (index >= traveler->routingAlgorithmSnapshots.size())
@@ -2516,7 +1871,7 @@ ASTAR_FUNCTION Variant AStarNavigator_addBarrier(FLEXSIMINTERFACE)
 	case EDITMODE_BRIDGE: newBarrier = a->barrierList.add(new Bridge); break;
 	}
 
-	newBarrier->init(a->nodeWidth, param(1), param(2), param(3), param(4));
+	newBarrier->init(a->minNodeWidth, param(1), param(2), param(3), param(4));
 	newBarrier->activePointIndex = 1;
 	newBarrier->isActive = 1;
 	if (objectexists(a->activeBarrier)) {
@@ -2605,7 +1960,7 @@ ASTAR_FUNCTION Variant AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
 	AStarNavigator* a = navNode->objectAs(AStarNavigator);
 	if (objectexists(a->activeBarrier)) {
 		Barrier* b = a->activeBarrier->objectAs(Barrier);
-		b->onMouseMove(Vec3(param(1), param(2), 0), Vec3(param(3), param(4), 0));
+		b->onMouseMove(Vec3(param(1), param(2), param(3)), Vec3(param(4), param(5), 0));
 		a->setDirty();
 	}
 
@@ -2667,7 +2022,7 @@ ASTAR_FUNCTION Variant AStarNavigator_rebuildEdgeTable(FLEXSIMINTERFACE)
 		return 0;
 
 	AStarNavigator* a = navNode->objectAs(AStarNavigator);
-	a->buildEdgeTable();
+	a->resetGrids();
 	return 1;
 }
 

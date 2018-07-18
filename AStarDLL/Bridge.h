@@ -14,8 +14,8 @@ public:
 	virtual const char * getClassFactory(void);
 	virtual void bind(void);
 
-	virtual void addBarriersToTable(AStarNavigator* nav) override {}
-	virtual void addPassagesToTable(AStarNavigator* nav) override;
+	virtual void addBarriersToTable(Grid* grid) override {}
+	virtual void addPassagesToTable(Grid* grid) override;
 	virtual void addVertices(Mesh* barrierMesh, float z) override;
 	virtual void onReset(AStarNavigator* nav) override;
 	virtual Bridge* toBridge() override { return this; }
@@ -81,6 +81,8 @@ public:
 		virtual const char* getClassFactory() override { return "AStar::Bridge::AvailableEvent"; }
 		virtual void execute() { partner()->objectAs(Bridge)->onAvailable(); }
 	};
+
+	Grid* getGrid(Traveler* traveler);
 
 
 };

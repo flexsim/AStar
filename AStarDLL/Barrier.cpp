@@ -12,7 +12,7 @@ Barrier::Barrier()
 	, activePointIndex(0)
 	, mode(0)
 	, lastMode(0)
-	, nodeWidth(1.0)
+	//, nodeWidth(1.0)
 {
 	return;
 }
@@ -36,7 +36,7 @@ void Barrier::bind(void)
 	bindNumber(isActive);
 	bindNumber(activePointIndex);
 	bindNumber(mode);
-	bindDouble(nodeWidth, 0);
+	//bindDouble(nodeWidth, 0);
 
 	bindSubNode(points, 0);
 	pointList.init(points);
@@ -44,66 +44,60 @@ void Barrier::bind(void)
 
 void Barrier::init(double nodeWidth, double x1, double y1, double x2, double y2)
 {
-	this->nodeWidth = nodeWidth;
+	//this->nodeWidth = nodeWidth;
 	addPoint(x1, y1);
 	addPoint(x2, y2);
 
 	arrow = 0;
 }
 
-bool Barrier::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
+bool Barrier::getBoundingBox(Vec3& min, Vec3& max)
 {
 	if (pointList.size() < 2) 
 		return false;
 	
-	getPointCoords(0, x0, y0);
-	getPointCoords(1, x1, y1);
+	Vec3 p0, p1;
+	getPointCoords(0, p0);
+	getPointCoords(1, p1);
 
-	double xmin = min(x0, x1);
-	double xmax = max(x0, x1);
-	double ymin = min(y0, y1);
-	double ymax = max(y0, y1);
-
-	x0 = xmin;
-	x1 = xmax;
-	y0 = ymin;
-	y1 = ymax;
+	min = Vec3(min(p0.x, p1.x), min(p0.y, p1.y), min(p0.z, p1.z));
+	max = Vec3(max(p0.x, p1.x), max(p0.y, p1.y), max(p0.z, p1.z));
 	return true;
 }
 
-void Barrier::addBarriersToTable(AStarNavigator* nav)
+void Barrier::addBarriersToTable(Grid* grid)
 	//AStarNode* edgeTable, 
 	//					  std::unordered_map<unsigned int, AStarNodeExtraData>* extraData, 
 	//					  double c0, double r0, unsigned int edgeTableXSize, unsigned int edgeTableYSize)
 {
-	double xmin, ymin, xmax, ymax;
-	if (!getBoundingBox(xmin, ymin, xmax, ymax))
+	Vec3 myMin, myMax;
+	if (!getBoundingBox(myMin, myMax))
 		return;
 
-	double c0 = nav->gridOrigin.x;
-	double r0 = nav->gridOrigin.y;
+	double c0 = grid->minPoint.x;
+	double r0 = grid->minPoint.y;
 
-	int colleft = (int)round((xmin - c0) / nodeWidth);
-	int rowbottom = (int)round((ymin - r0) / nodeWidth);
-	int colright = (int)round((xmax - c0) / nodeWidth);
-	int rowtop = (int)round((ymax - r0) / nodeWidth);
+	int colleft = (int)round((myMin.x - c0) / grid->nodeWidth);
+	int rowbottom = (int)round((myMin.y - r0) / grid->nodeWidth);
+	int colright = (int)round((myMax.x - c0) / grid->nodeWidth);
+	int rowtop = (int)round((myMax.y - r0) / grid->nodeWidth);
 	for(int row = rowbottom; row <= rowtop; row++) {
-		AStarNode * left = nav->getNode(row, colleft-1);
+		AStarNode * left = grid->getNode(row, colleft-1);
 		left->canGoRight = 0;
-		AStarNode * right = nav->getNode(row, colright + 1);
+		AStarNode * right = grid->getNode(row, colright + 1);
 		right->canGoLeft = 0;
 	}
 
 	for(int col = colleft; col <= colright; col++) {
-		AStarNode * top = nav->getNode(rowtop + 1, col);
+		AStarNode * top = grid->getNode(rowtop + 1, col);
 		top->canGoDown = 0;
-		AStarNode * bottom = nav->getNode(rowbottom - 1, col);
+		AStarNode * bottom = grid->getNode(rowbottom - 1, col);
 		bottom->canGoUp = 0;
 	}
 
 	for (int row = rowbottom; row <= rowtop; row++) {
 		for (int col = colleft; col <= colright; col++) {
-			AStarNode* theNode = nav->getNode(row, col);
+			AStarNode* theNode = grid->getNode(row, col);
 			theNode->canGoUp = 0;
 			theNode->canGoDown = 0;
 			theNode->canGoLeft = 0;
@@ -117,12 +111,12 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 	meshOffset = 0;
 	nrVerts = 0;
 
-	double xmin, ymin, xmax, ymax;
-	if (!getBoundingBox(xmin, ymin, xmax, ymax))
+	Vec3 myMin, myMax;
+	if (!getBoundingBox(myMin, myMax))
 		return;
 
-	double width = xmax - xmin;
-	double height = ymax - ymin;
+	double width = myMax.x - myMin.x;
+	double height = myMax.y - myMin.y;
 
 	meshOffset = barrierMesh->numVerts;
 
@@ -144,30 +138,30 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 	float scale = max(this->nodeWidth, 0.15 * max(height, width));
 
 	Vec3f left[3] = {
-		Vec3f(xmin, ymin + height *0.5f + 0.25f * scale, z),
-		Vec3f(xmin, ymin + height *0.5f - 0.25f * scale, z),
-		Vec3f(xmin - 0.5f * scale, ymin + height *0.5f, z)
+		Vec3f(myMin.x, myMin.y + height *0.5f + 0.25f * scale, z),
+		Vec3f(myMin.x, myMin.y + height *0.5f - 0.25f * scale, z),
+		Vec3f(myMin.x - 0.5f * scale, myMin.y + height *0.5f, z)
 	};
 	Vec3f right[3] = {
-		Vec3f(xmax, ymin + height *0.5f + 0.25f * scale, z),
-		Vec3f(xmax, ymin + height *0.5f - 0.25f * scale, z),
-		Vec3f(xmax + 0.5f * scale, ymin + height *0.5f, z)
+		Vec3f(myMax.x, myMin.y + height *0.5f + 0.25f * scale, z),
+		Vec3f(myMax.x, myMin.y + height *0.5f - 0.25f * scale, z),
+		Vec3f(myMax.x + 0.5f * scale, myMin.y + height *0.5f, z)
 	};
 	Vec3f top[3] = {
-		Vec3f(xmin + width * 0.5f - 0.25f * scale, ymax, z),
-		Vec3f(xmin + width * 0.5f + 0.25f * scale, ymax, z),
-		Vec3f(xmin + width * 0.5f, ymax + 0.5f * scale, z)
+		Vec3f(myMin.x + width * 0.5f - 0.25f * scale, myMax.y, z),
+		Vec3f(myMin.x + width * 0.5f + 0.25f * scale, myMax.y, z),
+		Vec3f(myMin.x + width * 0.5f, myMax.y + 0.5f * scale, z)
 	};
 	Vec3f bottom[3] = {
-		Vec3f(xmin + width * 0.5f - 0.25f * scale, ymin, z),
-		Vec3f(xmin + width * 0.5f + 0.25f * scale, ymin, z),
-		Vec3f(xmin + width * 0.5f, ymin - 0.5f * scale, z)
+		Vec3f(myMin.x + width * 0.5f - 0.25f * scale, myMin.y, z),
+		Vec3f(myMin.x + width * 0.5f + 0.25f * scale, myMin.y, z),
+		Vec3f(myMin.x + width * 0.5f, myMin.y - 0.5f * scale, z)
 	};
 
-	float bottomLeft[3] = {xmin, ymin, z};
-	float topRight[3] = { xmax, ymax, z }; 
-	float topLeft[3] = { xmin, ymax, z };
-	float bottomRight[3] = {xmax, ymin, z};
+	float bottomLeft[3] = {myMin.x, myMin.y, z};
+	float topRight[3] = { myMax.x, myMax.y, z }; 
+	float topLeft[3] = { myMin.x, myMax.y, z };
+	float bottomRight[3] = {myMax.x, myMin.y, z};
 	
 #define ABV(point, color) {\
 		int newVertex = barrierMesh->addVertex();\
@@ -196,7 +190,7 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 	Point* bottomLeft = pointList[0];
 	Point* topRight = pointList[1];
 
-	if (clickCode == LEFT_PRESS && mode & BARRIER_MODE_CREATE) {
+	if (clickCode == LEFT_PRESS && (mode & Barrier::CREATE)) {
 		// Set activePoint to current mouse position
 		activePoint->x = x;
 		activePoint->y = y;
@@ -214,41 +208,41 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 		topRight->y = bottomLeftY;
 	}
 
-	if (clickCode == LEFT_PRESS && !(mode & BARRIER_MODE_CREATE)) {
+	if (clickCode == LEFT_PRESS && !(mode & Barrier::CREATE)) {
 		for (int i = 0; i < pointList.size(); i++) {
 			applicationcommand("addundotracking", view, node("x", pointList[i]->holder));
 			applicationcommand("addundotracking", view, node("y", pointList[i]->holder));
 		}
 
 		double z = 0;
-		double xmin, ymin, xmax, ymax;
-		if (!getBoundingBox(xmin, ymin, xmax, ymax))
+		Vec3 myMin, myMax;
+		if (!getBoundingBox(myMin, myMax))
 			return 0;
 
-		double width = xmax - xmin;
-		double height = ymax - ymin;
+		double width = myMax.x - myMin.x;
+		double height = myMax.y - myMin.y;
 
 		float scale = max(this->nodeWidth, 0.15 * max(height, width));
 
 		Vec3f left[3] = {
-			Vec3f(xmin, ymin + height *0.5f + 0.25f * scale, z),
-			Vec3f(xmin, ymin + height *0.5f - 0.25f * scale, z),
-			Vec3f(xmin - 0.5f * scale, ymin + height *0.5f, z)
+			Vec3f(myMin.x, myMin.y + height *0.5f + 0.25f * scale, z),
+			Vec3f(myMin.x, myMin.y + height *0.5f - 0.25f * scale, z),
+			Vec3f(myMin.x - 0.5f * scale, myMin.y + height *0.5f, z)
 		};
 		Vec3f right[3] = {
-			Vec3f(xmax, ymin + height *0.5f + 0.25f * scale, z),
-			Vec3f(xmax, ymin + height *0.5f - 0.25f * scale, z),
-			Vec3f(xmax + 0.5f * scale, ymin + height *0.5f, z)
+			Vec3f(myMax.x, myMin.y + height *0.5f + 0.25f * scale, z),
+			Vec3f(myMax.x, myMin.y + height *0.5f - 0.25f * scale, z),
+			Vec3f(myMax.x + 0.5f * scale, myMin.y + height *0.5f, z)
 		};
 		Vec3f top[3] = {
-			Vec3f(xmin + width * 0.5f - 0.25f * scale, ymax, z),
-			Vec3f(xmin + width * 0.5f + 0.25f * scale, ymax, z),
-			Vec3f(xmin + width * 0.5f, ymax + 0.5f * scale, z)
+			Vec3f(myMin.x + width * 0.5f - 0.25f * scale, myMax.y, z),
+			Vec3f(myMin.x + width * 0.5f + 0.25f * scale, myMax.y, z),
+			Vec3f(myMin.x + width * 0.5f, myMax.y + 0.5f * scale, z)
 		};
 		Vec3f bottom[3] = {
-			Vec3f(xmin + width * 0.5f - 0.25f * scale, ymin, z),
-			Vec3f(xmin + width * 0.5f + 0.25f * scale, ymin, z),
-			Vec3f(xmin + width * 0.5f, ymin - 0.5f * scale, z)
+			Vec3f(myMin.x + width * 0.5f - 0.25f * scale, myMin.y, z),
+			Vec3f(myMin.x + width * 0.5f + 0.25f * scale, myMin.y, z),
+			Vec3f(myMin.x + width * 0.5f, myMin.y - 0.5f * scale, z)
 		};
 		
 		auto PointInTriangle = [](Vec3f P, Vec3f A, Vec3f B, Vec3f C) {
@@ -284,35 +278,35 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 		// Left Arrow
 		if (PointInTriangle(point, left[0], left[1], left[2])) {
 			activePointIndex = 0;
-			mode = BARRIER_MODE_POINT_EDIT;
-			arrow = 1;
+			mode = Barrier::POINT_EDIT;
+			arrow = ARROW_LEFT;
 		
 		// Right Arrow
 		} else if (PointInTriangle(point, right[0], right[1], right[2])) {
 			activePointIndex = 1;
-			mode = BARRIER_MODE_POINT_EDIT;
-			arrow = 2;
+			mode = Barrier::POINT_EDIT;
+			arrow = ARROW_RIGHT;
 		
 		// Top Arrow
 		} else if (PointInTriangle(point, top[0], top[1], top[2])) {
 			activePointIndex = 1;
-			mode = BARRIER_MODE_POINT_EDIT;
-			arrow = 3;
+			mode = Barrier::POINT_EDIT;
+			arrow = ARROW_TOP;
 		
 		// Bottom Arrow
 		} else if (PointInTriangle(point, bottom[0], bottom[1], bottom[2])) {
 			activePointIndex = 0;
-			mode = BARRIER_MODE_POINT_EDIT;
-			arrow = 4;
+			mode = Barrier::POINT_EDIT;
+			arrow = ARROW_BOTTOM;
 
 		} else {
 			activePointIndex = 0;
-			mode = BARRIER_MODE_MOVE;
+			mode = Barrier::MOVE;
 		}
 	}
 
 	if (clickCode == LEFT_RELEASE) {
-		if (mode & BARRIER_MODE_POINT_EDIT) {
+		if (mode & Barrier::POINT_EDIT) {
 			double width = topRight->x - bottomLeft->x;
 			double height = topRight->y - bottomLeft->y;
 
@@ -338,7 +332,7 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 
 	if (clickCode == RIGHT_RELEASE) {
 		// Right click -> abort barrier creation
-		if (mode & BARRIER_MODE_CREATE) {
+		if (mode & Barrier::CREATE) {
 			destroyobject(holder);
 		}
 	}
@@ -348,19 +342,19 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 
 double Barrier::onMouseMove(const Vec3& pos, const Vec3& diff)
 {
-	if ((mode & BARRIER_MODE_POINT_EDIT) && activePointIndex < pointList.size()) {
+	if ((mode & Barrier::POINT_EDIT) && activePointIndex < pointList.size()) {
 		Point* activePoint = pointList[(int)activePointIndex];
 
-		if (arrow <= 2) {
+		if (arrow == ARROW_LEFT || arrow == ARROW_RIGHT) {
 			activePoint->x += diff.x;
 		}
-		if (arrow == 0 || arrow > 2) {
+		if (arrow == 0 || arrow == ARROW_TOP || arrow == ARROW_BOTTOM) {
 			activePoint->y += diff.y;
 		}
 	}
-	else if (mode & BARRIER_MODE_MOVE) {
-		if (mode & BARRIER_MODE_CREATE) {
-			mode = BARRIER_MODE_MOVE;
+	else if (mode & Barrier::MOVE) {
+		if (mode & Barrier::CREATE) {
+			mode = Barrier::MOVE;
 			modeleditmode(0);
 		}
 		for (int i = 0; i < pointList.size(); i++) {
@@ -396,45 +390,25 @@ void Barrier::swapPoints(int index1, int index2)
 	pointList.swap(index1, index2);
 }
 
-bool Barrier::getPointCoords(int pointIndex, double& x, double& y)
+bool Barrier::getPointCoords(int pointIndex, Vec3& point)
 {
 	if (pointIndex >= pointList.size())
 		return false;
 
-	x = pointList[pointIndex]->x;
-	y = pointList[pointIndex]->y;
+	point.x = pointList[pointIndex]->x;
+	point.y = pointList[pointIndex]->y;
+	point.z = pointList[pointIndex]->z;
 	return true;
 }
 
-bool Barrier::getPointCoords(int pointIndex, double& x, double& y, double& z)
+bool Barrier::setPointCoords(int pointIndex, const Vec3& point)
 {
 	if (pointIndex >= pointList.size())
 		return false;
 
-	x = pointList[pointIndex]->x;
-	y = pointList[pointIndex]->y;
-	z = pointList[pointIndex]->z;
-	return true;
-}
-
-bool Barrier::setPointCoords(int pointIndex, double x, double y)
-{
-	if (pointIndex >= pointList.size())
-		return false;
-
-	pointList[pointIndex]->x = x;
-	pointList[pointIndex]->y = y;
-	return true;
-}
-
-bool Barrier::setPointCoords(int pointIndex, double x, double y, double z)
-{
-	if (pointIndex >= pointList.size())
-		return false;
-
-	pointList[pointIndex]->x = x;
-	pointList[pointIndex]->y = y;
-	pointList[pointIndex]->z = z;
+	pointList[pointIndex]->x = point.x;
+	pointList[pointIndex]->y = point.y;
+	pointList[pointIndex]->z = point.z;
 	return true;
 }
 
@@ -709,9 +683,9 @@ ASTAR_FUNCTION Variant Barrier_setPointCoords(FLEXSIMINTERFACE)
 	try {
 		Barrier* b = barNode->objectAs(Barrier);
 		if(parqty() == 5)
-			b->setPointCoords((int)param(2), param(3), param(4), param(5));
+			b->setPointCoords((int)param(2), Vec3(param(3), param(4), param(5)));
 		else
-			b->setPointCoords((int)param(2), param(3), param(4));
+			b->setPointCoords((int)param(2), Vec3(param(3), param(4), 0.0));
 	} catch (...) {
 		return 0;
 	}
@@ -725,25 +699,23 @@ ASTAR_FUNCTION Variant Barrier_getPointCoord(FLEXSIMINTERFACE)
 		return 0;
 
 	TreeNode* barNode = param(1);
-	double x = 0;
-	double y = 0;
-	double z = 0;
+	Vec3 point;
 
 	try {
 		Barrier* b = barNode->objectAs(Barrier);
-		b->getPointCoords((int)param(2), x, y, z);
+		b->getPointCoords((int)param(2), point);
 	} catch (...) {
 		return 0;
 	}
 
 	if ((int)param(3) == POINT_X)
-		return x;
+		return point.x;
 
 	if ((int)param(3) == POINT_Y)
-		return y;
+		return point.y;
 
 	if ((int)param(3) == POINT_Z)
-		return z;
+		return point.z;
 
 	return 1;
 }

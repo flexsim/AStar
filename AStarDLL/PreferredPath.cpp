@@ -30,12 +30,12 @@ void PreferredPath::bind(void)
 	bindDouble(pathWeight, 0);
 }
 
-void PreferredPath::addPassagesToTable(AStarNavigator* nav)
+void PreferredPath::addPassagesToTable(Grid* grid)
 {
 	double x = pointList[0]->x;
 	double y = pointList[0]->y;
-	double c0 = nav->gridOrigin.x;
-	double r0 = nav->gridOrigin.y;
+	double c0 = grid->gridOrigin.x;
+	double r0 = grid->gridOrigin.y;
 
 	// here I assume the row/column number represents the tile of the row and column
 	int col = (int)round((x - c0) / nodeWidth);
@@ -85,9 +85,9 @@ void PreferredPath::addPassagesToTable(AStarNavigator* nav)
 		// under the line
 		while(currCol != nextCol || currRow != nextRow) {
 
-			AStarCell cell(currCol, currRow);
-			AStarNode* node = nav->getNode(cell);
-			AStarNodeExtraData * extra = nav->assertExtraData(cell);
+			AStarCell cell((unsigned int)grid, currCol, currRow);
+			AStarNode* node = grid->getNode(cell);
+			AStarNodeExtraData * extra = grid->navigator->assertExtraData(cell);
 			
 			extra->bonusRight = (char)maxof(-128,minof(127, extra->bonusRight + horizontalWeight));
 			extra->bonusLeft = (char)maxof(-128,minof(127, extra->bonusLeft - horizontalWeight));

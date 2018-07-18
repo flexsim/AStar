@@ -26,26 +26,28 @@ void Divider::init(double nodeWidth, double x1, double y1, double x2, double y2)
 	Barrier::init(nodeWidth, x1, y1, x2, y2);
 }
 
-bool Divider::getBoundingBox(double& x0, double& y0, double& x1, double& y1)
+bool Divider::getBoundingBox(Vec3& min, Vec3& max)
 {
 	if (pointList.size() < 2)
 		return false;
 
-	getPointCoords(0, x0, y0);
-	getPointCoords(1, x1, y1);
+	min = Vec3(DBL_MAX, DBL_MAX, DBL_MAX);
+	max = Vec3(-DBL_MAX, -DBL_MAX, -DBL_MAX);
 	for (int i = 0; i < pointList.size(); i++) {
-		double x, y;
-		getPointCoords(i, x, y);
+		Vec3 point;
+		getPointCoords(i, point);
 
-		x0 = min(x, x0);
-		x1 = max(x, x1);
-		y0 = min(y, y0);
-		y1 = max(y, y1);
+		min.x = min(min.x, point.x);
+		max.x = max(max.x, point.x);
+		min.y = min(min.y, point.y);
+		max.y = max(max.y, point.y);
+		min.z = min(min.z, point.z);
+		max.z = max(max.z, point.z);
 	}
 
 	return true;
 }
-void Divider::addBarriersToTable(AStarNavigator* nav)
+void Divider::addBarriersToTable(Grid* grid)
 {
 	Point* point = pointList[0];
 	Point* nextPoint;
@@ -54,9 +56,10 @@ void Divider::addBarriersToTable(AStarNavigator* nav)
 	for (int i = 0; i < pointList.size() - 1; i++, point = nextPoint) {
 		nextPoint = pointList[i + 1];
 		
-		nav->divideGridModelLine(
+		grid->divideGridModelLine(
 			Vec3(point->x, point->y, point->z),
-			Vec3(nextPoint->x, nextPoint->y, nextPoint->z)
+			Vec3(nextPoint->x, nextPoint->y, nextPoint->z),
+			false
 		);
 	}
 }
@@ -188,7 +191,7 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 
 double Divider::onClick(treenode view, int clickCode, double x, double y)
 {
-	if (clickCode == LEFT_PRESS && !(mode & BARRIER_MODE_CREATE)) {
+	if (clickCode == LEFT_PRESS && !(mode & Barrier::CREATE)) {
 		// If the click is on a node, make that the active node
 		int clickedIndex = -1;
 		for (int i = 0; i < pointList.size(); i++) {
@@ -209,17 +212,17 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 
 		if (clickedIndex > -1) {
 			activePointIndex = clickedIndex;
-			mode = BARRIER_MODE_POINT_EDIT;
+			mode = Barrier::POINT_EDIT;
 		
 		} else {
 			activePointIndex = pointList.size();
-			mode = BARRIER_MODE_MOVE;
+			mode = Barrier::MOVE;
 		}
 	}
 
 	if (clickCode == LEFT_RELEASE) {
 		// If creating, make a new point, and make it the active one
-		if (mode & BARRIER_MODE_CREATE) {
+		if (mode & Barrier::CREATE) {
 			// Snap between grid points
 			if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge()) {
 				x = floor((x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
@@ -228,7 +231,7 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 
 			if (activePointIndex == 0) {
 				// Add undo record
-				if (pointList.size() > 2 && lastMode & BARRIER_MODE_CREATE)
+				if (pointList.size() > 2 && lastMode & Barrier::CREATE)
 					addCreatePointRecord(view, pointList[activePointIndex]);
 				// Add to the start of the pointlist
 				pointList.unshift(new Point(x, y, 0));
@@ -236,7 +239,7 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 			}
 			else if (activePointIndex == pointList.size() - 1) {
 				// Add undo record
-				if (pointList.size() > 2 && lastMode & BARRIER_MODE_CREATE)
+				if (pointList.size() > 2 && lastMode & Barrier::CREATE)
 					addCreatePointRecord(view, pointList[activePointIndex]);
 				// Add to the end of the pointlist
 				addPoint(x, y);
@@ -252,7 +255,7 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 
 	if (clickCode == RIGHT_RELEASE) {
 		// Right click -> abort barrier creation
-		if (mode & BARRIER_MODE_CREATE) {
+		if (mode & Barrier::CREATE) {
 			removePoint(activePointIndex);
 			mode = 0;
 			activePointIndex = pointList.size();
@@ -268,7 +271,7 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 
 double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 {
-	if (mode & BARRIER_MODE_POINT_EDIT && activePointIndex < pointList.size()) {
+	if (mode & Barrier::POINT_EDIT && activePointIndex < pointList.size()) {
 		Point* activePoint = pointList[(int)activePointIndex];
 		// Snap between grid points
 		if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge()) {
@@ -282,7 +285,7 @@ double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 		if (toBridge())
 			activePoint->z += diff.z;
 	}
-	else if (mode & BARRIER_MODE_MOVE) {
+	else if (mode & Barrier::MOVE) {
 		double diffX = diff.x;
 		double diffY = diff.y;
 		for (int i = 0; i < pointList.size(); i++) {
