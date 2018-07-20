@@ -1673,7 +1673,7 @@ void AStarNavigator::drawHeatMap(float z, TreeNode* view)
 
 		unsigned int* buffer = heatMapBuffer.get();
 		memset(buffer, 0, width * 4);
-		memset(buffer + (height - 1) * width * 4, 0, width * 4);
+		memset(buffer + (height - 1) * width, 0, width * 4);
 		for (int i = 1; i <= edgeTableYSize; i++) {
 			buffer[i * width] = 0;
 			buffer[(i + 1) * width - 1] = 0;
