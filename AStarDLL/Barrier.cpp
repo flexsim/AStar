@@ -42,11 +42,11 @@ void Barrier::bind(void)
 	pointList.init(points);
 }
 
-void Barrier::init(double nodeWidth, double x1, double y1, double x2, double y2)
+void Barrier::init(double nodeWidth, const Vec3& pos1, const Vec3& pos2)
 {
-	//this->nodeWidth = nodeWidth;
-	addPoint(x1, y1);
-	addPoint(x2, y2);
+	this->nodeWidth = nodeWidth;
+	addPoint(pos1);
+	addPoint(pos2);
 
 	arrow = 0;
 }
@@ -184,7 +184,7 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 #undef ABV
 }
 
-double Barrier::onClick(treenode view, int clickCode, double x, double y)
+double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 {
 	Point* activePoint = pointList[(int)activePointIndex];
 	Point* bottomLeft = pointList[0];
@@ -192,11 +192,11 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 
 	if (clickCode == LEFT_PRESS && (mode & Barrier::CREATE)) {
 		// Set activePoint to current mouse position
-		activePoint->x = x;
-		activePoint->y = y;
+		activePoint->x = pos.x;
+		activePoint->y = pos.y;
 	}
 
-	// Fix the points
+	// Swap point coordinates if they are not actually the bottom left and top right points
 	if (bottomLeft->x > topRight->x) {
 		double bottomLeftX = bottomLeft->x;
 		bottomLeft->x = topRight->x;
@@ -208,6 +208,10 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 		topRight->y = bottomLeftY;
 	}
 
+	// Test to see if the user is clicking on a scaling arrow of the barrier 
+	// to resize it. This technically should be done just using FlexSim's 
+	// picking features, but I guess Jacob didn't know how to do that at the 
+	// time, so he did the math.
 	if (clickCode == LEFT_PRESS && !(mode & Barrier::CREATE)) {
 		for (int i = 0; i < pointList.size(); i++) {
 			applicationcommand("addundotracking", view, node("x", pointList[i]->holder));
@@ -274,7 +278,7 @@ double Barrier::onClick(treenode view, int clickCode, double x, double y)
 			return (r + t <= 1);
 		};
 
-		Vec3f point = Vec3f(x, y, 0);
+		Vec3f point = Vec3f(pos.x, pos.y, 0);
 		// Left Arrow
 		if (PointInTriangle(point, left[0], left[1], left[2])) {
 			activePointIndex = 0;
@@ -366,9 +370,9 @@ double Barrier::onMouseMove(const Vec3& pos, const Vec3& diff)
 	return 1;
 }
 
-void Barrier::addPoint(double x, double y, double z)
+void Barrier::addPoint(const Vec3& pos)
 {
-	pointList.add(new Point(x, y, z));
+	pointList.add(new Point(pos.x, pos.y, pos.z));
 }
 
 void Barrier::removePoint(int pointIndex)
@@ -628,10 +632,7 @@ ASTAR_FUNCTION Variant Barrier_addPoint(FLEXSIMINTERFACE)
 
 	try {
 		Barrier* b = barNode->objectAs(Barrier);
-		if (parqty() == 4)
-			b->addPoint(param(2), param(3), param(4));
-		else
-			b->addPoint(param(2), param(3));
+		b->addPoint(Vec3(param(2), param(3), param(4)));
 	} catch (...) {
 		return 0;
 	}

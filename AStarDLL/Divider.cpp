@@ -21,9 +21,9 @@ void Divider::bind(void)
 	Barrier::bind();
 }
 
-void Divider::init(double nodeWidth, double x1, double y1, double x2, double y2)
+void Divider::init(double nodeWidth, const Vec3& pos1, const Vec3& pos2)
 {
-	Barrier::init(nodeWidth, x1, y1, x2, y2);
+	Barrier::init(nodeWidth, pos1, pos2);
 }
 
 bool Divider::getBoundingBox(Vec3& min, Vec3& max)
@@ -189,7 +189,7 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 	}
 }
 
-double Divider::onClick(treenode view, int clickCode, double x, double y)
+double Divider::onClick(treenode view, int clickCode, Vec3& pos)
 {
 	if (clickCode == LEFT_PRESS && !(mode & Barrier::CREATE)) {
 		// If the click is on a node, make that the active node
@@ -200,8 +200,8 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 
 			double pointX = pointList[i]->x;
 			double pointY = pointList[i]->y;
-			double dx = x - pointX;
-			double dy = y - pointY;
+			double dx = pos.x - pointX;
+			double dy = pos.y - pointY;
 
 			double radius = nodeWidth * 0.15;
 			if (sqrt(dx * dx + dy * dy) <= radius) {
@@ -225,8 +225,8 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 		if (mode & Barrier::CREATE) {
 			// Snap between grid points
 			if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge()) {
-				x = floor((x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-				y = floor((y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+				pos.x = floor((pos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+				pos.y = floor((pos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 			}
 
 			if (activePointIndex == 0) {
@@ -234,7 +234,7 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 				if (pointList.size() > 2 && lastMode & Barrier::CREATE)
 					addCreatePointRecord(view, pointList[activePointIndex]);
 				// Add to the start of the pointlist
-				pointList.unshift(new Point(x, y, 0));
+				pointList.unshift(new Point(pos.x, pos.y, pos.z));
 				activePointIndex = 0;
 			}
 			else if (activePointIndex == pointList.size() - 1) {
@@ -242,7 +242,7 @@ double Divider::onClick(treenode view, int clickCode, double x, double y)
 				if (pointList.size() > 2 && lastMode & Barrier::CREATE)
 					addCreatePointRecord(view, pointList[activePointIndex]);
 				// Add to the end of the pointlist
-				addPoint(x, y);
+				addPoint(pos);
 				activePointIndex = pointList.size() - 1;
 			}
 			else {

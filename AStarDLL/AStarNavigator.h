@@ -12,6 +12,16 @@
 
 namespace AStar {
 
+enum class EditMode : unsigned int {
+	NONE = 0,
+	PREFERRED_PATH = 35,
+	DIVIDER = 36,
+	ONE_WAY_DIVIDER = 37,
+	SOLID_BARRIER = 38,
+	BRIDGE = 39,
+	GRID = 40
+};
+
 class AStarNavigator : public Navigator
 {
 	friend class Traveler;
@@ -108,7 +118,8 @@ public:
 	TreeNode* extraDataNode;
 	std::unordered_map<unsigned long long, AStarNodeExtraData*> edgeTableExtraData; // A mapping from colRow to an ExtraData object
 
-	static unsigned int editMode;
+
+	static EditMode editMode;
 	static AStarNavigator* globalASN;
 	double defaultPathWeight;
 	double minNodeWidth;
@@ -177,7 +188,10 @@ public:
 
 	TreeNode* barriers;
 	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
+	/// <summary>	The barrier that is currently being edited by the user. </summary>
 	NodeRef activeBarrier;
+	/// <summary>	The grid that is currently being edited by the user. </summary>
+	NodeRef activeGrid;
 	/// <summary>	Defines a set of custom barriers that are filled by objects that are barrier members of the astar navigator.
 	/// 			Each element of this array may be one of the following:
 	/// 			1. If the element is a single non-array, it is a single reference to an object.  
@@ -201,7 +215,7 @@ public:
 	virtual double onDrag(TreeNode* view) override;
 	virtual double onClick(TreeNode* view, int clickcode) override;
 	virtual double onUndo(bool isUndo, treenode undoRecord) override;
-	void addCreateRecord(treenode view, Barrier* barrier);
+	void addCreateRecord(treenode view, SimpleDataType* barrier, const char* name);
 	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType) override;
 	virtual double onDestroy(TreeNode* view) override;
 	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed) override;
@@ -251,6 +265,7 @@ public:
 
 	AStarNode* getNode(const AStarCell& cell);
 	Grid* getGrid(const AStarCell& cell);
+	Grid* getGrid(const Vec3& modelPos);
 
 	AStarNodeExtraData* assertExtraData(const AStarCell& cell);
 	AStarNodeExtraData* getExtraData(const AStarCell& cell) {
@@ -274,6 +289,11 @@ public:
 
 	bool areGridNodeTablesBuilt = false;
 	NodeListArray<Grid>::SdtSubNodeType grids;
+
+	void resolveMinNodeWidth();
+
+	double hasCustomUserGrids;
+	TreeNode* addObject(const Vec3& pos1, const Vec3& pos2, EditMode mode);
 };
 
 }

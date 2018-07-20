@@ -25,7 +25,7 @@ int AStarNode::colInc[]
 	0 // down
 };
 
-unsigned int AStarNavigator::editMode = 0;
+EditMode AStarNavigator::editMode = EditMode::NONE;
 std::vector<Vec4f> AStarNavigator::heatMapColorProgression =
 {
 	Vec4f(0.110f, 0.280f, 0.467f, 1.0f),
@@ -100,6 +100,7 @@ void AStarNavigator::bindVariables(void)
 		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
 
 	bindStateVariable(minNodeWidth);
+	bindVariable(hasCustomUserGrids);
 
 	bindVariableByName("extraData", extraDataNode, ODT_BIND_STATE_VARIABLE);
 
@@ -225,10 +226,7 @@ double AStarNavigator::onReset()
 	if (deepSearch)
 		directionChangePenalty = 0.025;
 
-	minNodeWidth = DBL_MAX;
-	for (Grid* grid : grids) {
-		minNodeWidth = min(grid->nodeWidth, minNodeWidth);
-	}
+	resolveMinNodeWidth();
 
 	maxPathWeight = 0.0;
 	for (int i = 0; i < barrierList.size(); i++) {
@@ -305,11 +303,12 @@ double AStarNavigator::onDraw(TreeNode* view)
 	treenode hovered = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, -1));
 	if (hovered->ownerObject != holder)
 		hovered = NULL;
+	treenode selObj = selectedobject(view);
 
 	if (!pickingmode) {
 		// Show the activeBarrier if the AStarNavigator is highlighted
 		if (objectexists(activeBarrier)) {
-			bool showActiveBarrier = selectedobject(view) == this->holder;
+			bool showActiveBarrier = selObj == this->holder;
 			Barrier* b = activeBarrier->objectAs(Barrier);
 			b->isActive = showActiveBarrier;
 			if (showActiveBarrier != isActiveBarrierBuilt)
@@ -494,8 +493,10 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 			// is the clicked barrier different than the current barrier
 			if (b != barrier) {
 				// Send the click to the activeBarrier if it's in create mode
-				if(b->mode & Barrier::CREATE)
-					return b->onClick(view, (int)clickcode, cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
+				if (b->mode & Barrier::CREATE) {
+					Vec3 pos(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), cursorinfo(view, 2, 3, 1));
+					return b->onClick(view, (int)clickcode, pos);
+				}
 
 				// then reset the current barrier to be "not active"
 				b->activePointIndex = 0;
@@ -506,7 +507,8 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 		activeBarrier = barrier->holder;
 		barrier->isActive = 1;
 		setDirty();
-		return barrier->onClick(view, (int)clickcode, cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1));
+		Vec3 pos(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), cursorinfo(view, 2, 3, 1));
+		return barrier->onClick(view, (int)clickcode, pos);
 	}
 	if (objectexists(activeBarrier)) {
 		Barrier* b = activeBarrier->objectAs(Barrier);
@@ -543,11 +545,11 @@ double AStarNavigator::onUndo(bool isUndo, treenode undoRecord)
 	return 0;
 }
 
-void AStarNavigator::addCreateRecord(treenode view, Barrier* barrier)
+void AStarNavigator::addCreateRecord(treenode view, SimpleDataType* object, const char* name)
 {
 	int undoId = beginaggregatedundo(view, "Create Barrier");
 	createundorecord(view, holder, UNDO_UPDATE_LINKS_ON_UNDO, 0, 0, 0);
-	createundorecord(view, barrier->holder, UNDO_CREATE_OBJECT, 0, 0, 0);
+	createundorecord(view, object->holder, UNDO_CREATE_OBJECT, 0, 0, 0);
 	createundorecord(view, holder, UNDO_UPDATE_LINKS_ON_REDO, 0, 0, 0);
 	endaggregatedundo(view, undoId);
 }
@@ -1302,12 +1304,15 @@ void AStarNavigator::buildBoundsMesh(float z)
 
 void AStarNavigator::buildBarrierMesh(float z)
 {
+	resolveMinNodeWidth();
 	barrierMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, 0);
 	float up[3] = {0.0f, 0.0f, 1.0f};
 	barrierMesh.setMeshAttrib(MESH_NORMAL, up);
 	for (int i = 0; i < barrierList.size(); i++) {
-		barrierList[i]->nodeWidth = minNodeWidth;
-		barrierList[i]->addVertices(&barrierMesh, z);
+		Barrier* barrier = barrierList[i];
+		if (barrier->nodeWidth <= 0)
+			barrier->nodeWidth = minNodeWidth;
+		barrier->addVertices(&barrierMesh, z);
 	}
 
 	isBarrierMeshBuilt = true;
@@ -1594,6 +1599,11 @@ AStarCell AStarNavigator::getCellFromLoc(const Vec3& modelLoc)
 			return grid->getCellFromLoc(modelLoc);
 		}
 	}
+	for (Grid* grid : grids) {
+		if (grid->isLocWithinBounds(modelLoc, true)) {
+			return grid->getCellFromLoc(modelLoc);
+		}
+	}
 	return grids[0]->getCellFromLoc(modelLoc);
 }
 
@@ -1611,6 +1621,17 @@ AStarNode * AStarNavigator::getNode(const AStarCell & cell)
 Grid* AStarNavigator::getGrid(const AStarCell& cell) 
 { 
 	return grids[max(1, cell.grid) - 1];
+}
+
+Grid * AStarNavigator::getGrid(const Vec3 & modelPos)
+{
+	return getGrid(getCellFromLoc(modelPos));
+}
+
+ASTAR_FUNCTION Variant AStarNavigator_getGrid(FLEXSIMINTERFACE)
+{
+	o(AStarNavigator, c).getGrid(Vec3(param(1), param(2), param(3)))->holder;
+	return 0;
 }
 
 unsigned int AStarNavigator::getClassType()
@@ -1804,6 +1825,82 @@ void AStarNavigator::drawRoutingAlgorithm(Traveler * traveler, treenode view)
 
 }
 
+void AStarNavigator::resolveMinNodeWidth()
+{
+	minNodeWidth = DBL_MAX;
+	for (Grid* grid : grids) {
+		minNodeWidth = min(grid->nodeWidth, minNodeWidth);
+	}
+	if (minNodeWidth == DBL_MAX)
+		minNodeWidth = 1.0;
+}
+
+TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode barrierType) 
+{
+	EditMode editMode = barrierType != EditMode::NONE ? barrierType : AStarNavigator::editMode;
+	Barrier* newBarrier = nullptr;
+	Grid* newGrid = nullptr;
+	switch (editMode) {
+	default:
+	case EditMode::SOLID_BARRIER: newBarrier = barrierList.add(new Barrier); break;
+	case EditMode::DIVIDER: newBarrier = barrierList.add(new Divider); break;
+	case EditMode::ONE_WAY_DIVIDER: newBarrier = barrierList.add(new OneWayDivider); break;
+	case EditMode::PREFERRED_PATH: newBarrier = barrierList.add(new PreferredPath(defaultPathWeight)); break;
+	case EditMode::BRIDGE: newBarrier = barrierList.add(new Bridge); break;
+	case EditMode::GRID: {
+		if (!hasCustomUserGrids && fabs(pos1.z - grids[0]->minPoint.z) < 0.01 * grids[0]->nodeWidth) {
+			newGrid = grids[0];
+			setname(newGrid->holder, "");
+		}
+		else {
+			newGrid = grids.add(new Grid);
+		}
+		hasCustomUserGrids = 1.0;
+		break;
+	}
+	}
+	TreeNode* newNode = nullptr;
+	if (activeBarrier) {
+		activeBarrier->objectAs(Barrier)->isActive = 0;
+		activeBarrier = nullptr;
+	}
+	if (activeGrid) {
+		activeGrid = nullptr;
+	}
+	string className;
+	if (newBarrier) {
+		newBarrier->init(minNodeWidth, pos1, pos2);
+		newBarrier->activePointIndex = 1;
+		newBarrier->isActive = 1;
+		newNode = newBarrier->holder;
+		className = newBarrier->getClassFactory();
+		className = className.substr(strlen("AStar::"));
+		activeBarrier = newNode;
+	} else if (newGrid) {
+		newNode = newGrid->holder;
+		className = newBarrier->getClassFactory();
+		className = className.substr(strlen("AStar::"));
+		activeGrid = newNode;
+	}
+	std::stringstream ss;
+	int num = content(barriers);
+	ss << className << num;
+	while (objectexists(newNode->up->find(ss.str().c_str()))) {
+		num++;
+		ss.str("");
+		ss << className << num;
+	}
+
+	setname(newNode, ss.str().c_str());
+	setDirty();
+
+	// Create undo record on the active view
+	addCreateRecord(nodefromwindow(activedocumentview()), newBarrier, "Create Barrier");
+
+	return newNode;
+
+}
+
 ASTAR_FUNCTION Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)
 {
 	c->objectAs(AStarNavigator)->dumpBlockageData(param(1));
@@ -1846,58 +1943,18 @@ ASTAR_FUNCTION Variant AStarNavigator_setEditMode(FLEXSIMINTERFACE)
 	int mode = (int)param(1);
 	if (mode < 0)
 		mode = 0;
-	AStarNavigator::editMode = mode;
+	AStarNavigator::editMode = (EditMode)mode;
 
 	return 0;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_addBarrier(FLEXSIMINTERFACE)
+ASTAR_FUNCTION Variant AStarNavigator_addObject(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
-	int barrierType = (int)param(5);
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
 		return 0;
-
-	int editMode = barrierType ? barrierType : AStarNavigator::editMode;
-
 	AStarNavigator* a = navNode->objectAs(AStarNavigator);
-	Barrier* newBarrier = NULL;
-	switch (editMode) {
-	default:
-	case EDITMODE_SOLID_BARRIER: newBarrier = a->barrierList.add(new Barrier); break;
-	case EDITMODE_DIVIDER: newBarrier = a->barrierList.add(new Divider); break;
-	case EDITMODE_ONE_WAY_DIVIDER: newBarrier = a->barrierList.add(new OneWayDivider); break;
-	case EDITMODE_PREFERRED_PATH: newBarrier = a->barrierList.add(new PreferredPath(a->defaultPathWeight)); break;
-	case EDITMODE_BRIDGE: newBarrier = a->barrierList.add(new Bridge); break;
-	}
-
-	newBarrier->init(a->minNodeWidth, param(1), param(2), param(3), param(4));
-	newBarrier->activePointIndex = 1;
-	newBarrier->isActive = 1;
-	if (objectexists(a->activeBarrier)) {
-		Barrier* activeBarrier = a->activeBarrier->objectAs(Barrier);
-		activeBarrier->isActive = 0;
-	}
-	TreeNode* newNode = newBarrier->holder;
-	std::string name = newBarrier->getClassFactory();
-	name = name.substr(strlen("AStar::"));
-	std::stringstream ss;
-	int num = content(a->barriers);
-	ss << name << num;
-	while (objectexists(node(ss.str().c_str(), a->barriers))) {
-		num++;
-		ss.str("");
-		ss << name << num;
-	}
-
-	setname(newNode, ss.str().c_str());
-	a->activeBarrier = newNode;
-	a->setDirty();
-
-	// Create undo record on the active view
-	a->addCreateRecord(nodefromwindow(activedocumentview()), newBarrier);
-
-	return newNode;
+	return a->addObject(Vec3(param(1), param(2), param(3)), Vec3(param(4), param(5), param(6)), (EditMode)(unsigned int) param(7));
 }
 
 ASTAR_FUNCTION Variant AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
@@ -1945,7 +2002,12 @@ ASTAR_FUNCTION Variant AStarNavigator_onClick(FLEXSIMINTERFACE)
 	AStarNavigator* a = navNode->objectAs(AStarNavigator);
 	if (objectexists(a->activeBarrier)) {
 		Barrier* b = a->activeBarrier->objectAs(Barrier);
-		b->onClick(param(1), (int)param(2), param(3), param(4));
+		b->onClick(param(1), (int)param(2), Vec3(param(3), param(4), param(5)));
+		a->setDirty();
+	}
+	if (objectexists(a->activeGrid)) {
+		Grid* g = a->activeGrid->objectAs(Grid);
+		g->onClick(param(1), (int)param(2), Vec3(param(3), param(4), param(5)));
 		a->setDirty();
 	}
 	return 1;

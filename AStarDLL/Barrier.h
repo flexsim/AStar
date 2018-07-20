@@ -64,21 +64,19 @@ public:
 	virtual void bind(void);
 
 	// This function adds two initial points to a barrier
-	virtual void init(double nodeWidth, double x1, double y1, double x2, double y2);
+	virtual void init(double nodeWidth, const Vec3& pos1, const Vec3& pos2);
 
 	// This function is used by the AStarNavigator to determine the size of the grid.
 	// It should return the bottom left [x0, y0, z0] and top right [x1, y1, z1] corners
 	// of the barrier's 3D bounding box.
 	virtual bool getBoundingBox(Vec3& min, Vec3& max);
 
-	// This function is used by the AStarNavigator to determine the effect a barrier
-	// will have on the nodes it influences. [c0, r0] are the coords of the bottom left
-	// corner of the grid.
+	// This function is called by the AStarNavigator to determine the effect a barrier
+	// will have on the nodes it influences.
 	virtual void addBarriersToTable(Grid* grid);
 
-	// This function is used by the AStarNavigator to determine the effect a barrier
-	// will have on the nodes it influences. [c0, r0] are the coords of the bottom left
-	// corner of the grid.
+	// This function is called by the AStarNavigator to add "passages" to the AStar grid
+	// This is used by preferred paths to add preferred weights on the nodes in the node table.
 	virtual void addPassagesToTable(Grid* grid){}
 
 	// This function is called by the AStarNavigator class to add vertices to the 
@@ -87,12 +85,12 @@ public:
 	virtual void addVertices(Mesh* barrierMesh, float z);
 
 	// These functions handle mouse events. [x, y] are model coords
-	virtual double onClick(treenode view, int clickCode, double x, double y);
+	virtual double onClick(treenode view, int clickCode, Vec3& pos);
 	virtual double onMouseMove(const Vec3& pos, const Vec3& diff);
 
 	// These functions are for modifying barrier points. They each 
 	// check bounds before making any modifications.
-	void addPoint(double x, double y, double z = 0);
+	void addPoint(const Vec3& pos);
 	void removePoint(int pointIndex);
 	void swapPoints(int index1, int index2);
 	bool getPointCoords(int pointIndex, Vec3& point);
