@@ -567,31 +567,39 @@ protected:
 		T stackBuffer[BUFFER_SIZE];
 		std::unique_ptr<T[]> bigBuffer;
 
+		T* buffer = stackBuffer;
 		int _size = 0;
 		int maxSize = BUFFER_SIZE;
 
 	public:
-		T* __getBuffer() { if (maxSize > BUFFER_SIZE) return bigBuffer.get(); return stackBuffer; }
-		__declspec(property (get = __getBuffer)) T* buffer;
-
-		T& operator[](int index) { return buffer[index]; }
-
-		T* begin() { return buffer; }
-		T* end() { return buffer + _size; }
+		T& operator[](int index) { 
+#ifdef _DEBUG
+			if (index < 0 || index > _size)
+				throw "index out of bounds";
+#endif
+			return buffer[index]; 
+		}
 
 		void reserve(int count) {
+#ifdef _DEBUG
 			if (_size > 0)
 				throw "must reserve before entries are added";
-
+#endif
 			if (count > maxSize)  {
 				bigBuffer = std::make_unique<T[]>(count);
+				buffer = bigBuffer.get();
 				maxSize = count;
 			}
 		}
 
-		void push_back(T value) { if (_size == maxSize) throw "cannot add more values to buffer"; buffer[_size++] = value; }
+		void push_back(T value) { 
+#ifdef _DEBUG
+			if (_size == maxSize) 
+				throw "cannot add more values to buffer"; 
+#endif
+			buffer[_size++] = value; 
+		}
 		int size() { return _size; }
-		int capacity() { return maxSize; }
 	};
 
 public:
