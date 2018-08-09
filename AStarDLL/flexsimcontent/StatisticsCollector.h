@@ -304,9 +304,25 @@ protected:
 	SDTMember<NodeMapBinder> nodeRowMapData;
 	SDTMember<VariantMapBinder> varRowMapData;
 
-	std::pair<int, bool> getRowForVariant(const Variant& value);
+	std::pair<int, bool> getRowForVariant(const Variant& value, bool stopTracking);
+	int addNewRow(const Variant& value);
 	double willSort = 0;
-	void updateRowOrder(int& newRow, const Variant& rowValue);
+	
+	// This list keeps track of which rows are "active"
+	// It is a list for quick removal and insertion;
+	// a vector would be faster insertion, but much slower removal, and
+	// removal happens very often.
+	// Search may be O(n), but it is most likely that the 
+	// search will look for elements at the begining
+	// because earlier rows will deactivate before later rows.
+	std::list<std::pair<int, Variant>> activeRowValueSet;
+	TreeNode* _activeRowValueSetNode;
+	double willDeactivate = 0;
+
+	// This vector keeps a list of all rows that can be reused
+	std::vector<int> reusableRows;
+	TreeNode* _reusableRowsNode;
+	double willReuseUntrackedRows = 0;
 
 public:
 	class EventReference;
@@ -389,6 +405,7 @@ public:
 		NodeListArray<CollectedDataProperty>::SdtSubNodeBindingType collectedProperties;
 
 		TreeNode* condition;
+		double stopTrackingRowValue = 0;
 
 		static void columnAdder(TreeNode* x, Column* column);
 		static Column* columnGetter(TreeNode* x);
@@ -609,6 +626,7 @@ public:
 	double changeCount;
 	double saved = 0;
 	double storeDataOnDrive = 0;
+	double reuseUntrackedRows = 0;
 
 	double resetRowMode = 0;
 	ByteBlock resetRowProperty;
