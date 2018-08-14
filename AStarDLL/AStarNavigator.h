@@ -28,7 +28,7 @@ class AStarNavigator : public Navigator
 protected:
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
-	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from colRow to index in totalSet
+	std::unordered_map<unsigned long long, unsigned int> entryHash; // A mapping from colRow to index in totalSet
 	std::unordered_map<CachedPathID, TravelPath, CachedPathID::Hash > pathCache;
 
 	struct HeapEntry {
