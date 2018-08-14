@@ -1599,6 +1599,7 @@ windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
             <node f="42"><name>Traversals Per Time</name></node>
             <node f="42"><name>Average Blockage Time Per Traversal</name></node>
             <node f="42"><name>Percent of Total Time Blocked</name></node>
+            <node f="42"><name>Percent of Total Traversals</name></node>
            </node>
            <node f="42" dt="1"><name>itemcurrent</name><data>0000000040080000</data></node>
           </data></node>

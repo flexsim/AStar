@@ -102,6 +102,7 @@ void AStarNavigator::bindVariables(void)
 
 	bindStateVariable(collisionUpdateInterval);
 	bindStateVariable(nextCollisionUpdateTime);
+	bindStateVariable(heatMapTotalTraversals);
 
 
 	bindVariable(debugRoutingAlgorithm);
@@ -161,7 +162,7 @@ double AStarNavigator::onCreate(double dropx, double dropy, double dropz, int is
 double AStarNavigator::onReset()
 {
 	heatMapBuffer.reset(nullptr);
-
+	heatMapTotalTraversals = 0;
 	activeTravelers.clear();
 
 	for (size_t i = 1; i <= content(node_v_travelmembers); i++) {
@@ -1693,6 +1694,9 @@ void AStarNavigator::drawHeatMap(float z, TreeNode* view)
 		switch ((int)heatMapMode) {
 			case HEAT_MAP_TRAVERSALS_PER_TIME: default:
 				weight = (data->totalTraversals / statisticaltime());
+				break;
+			case HEAT_MAP_PERCENT_OF_TOTAL_TRAVERSALS:
+				weight = 100.0 * data->totalTraversals / heatMapTotalTraversals;
 				break;
 			case HEAT_MAP_BLOCKAGE_TIME_PER_TRAVERSAL: 
 				weight = (data->totalBlockedTime / max(1, data->totalTraversals));
