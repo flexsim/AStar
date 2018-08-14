@@ -90,6 +90,7 @@ void AStarNavigator::bindVariables(void)
 
 	bindStateVariable(collisionUpdateInterval);
 	bindStateVariable(nextCollisionUpdateTime);
+	bindStateVariable(heatMapTotalTraversals);
 
 
 	bindVariable(debugRoutingAlgorithm);
@@ -213,6 +214,7 @@ void AStarNavigator::resetGrids()
 double AStarNavigator::onReset()
 {
 
+	heatMapTotalTraversals = 0;
 	isGridDirty = true;
 	isBoundsDirty = true;
 	areGridNodeTablesBuilt = false;
@@ -234,7 +236,6 @@ double AStarNavigator::onReset()
 		if (path)
 			maxPathWeight = max(path->pathWeight, maxPathWeight);
 	}
-
 	activeTravelers.clear();
 
 	for (size_t i = 1; i <= content(node_v_travelmembers); i++) {
@@ -1322,6 +1323,7 @@ void AStarNavigator::drawHeatMap(TreeNode* view)
 {
 	for (Grid* grid : grids)
 		grid->drawHeatMap(view);
+
 }
 
 float AStarNavigator::clampDirection(float rotDirection)

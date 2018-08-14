@@ -186,6 +186,8 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 
 double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 {
+	if (activePointIndex > 1) activePointIndex = 0;
+
 	Point* activePoint = pointList[(int)activePointIndex];
 	Point* bottomLeft = pointList[0];
 	Point* topRight = pointList[1];

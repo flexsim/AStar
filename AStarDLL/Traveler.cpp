@@ -340,9 +340,11 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 
 		//Traffic info
 		nav->assertExtraData(e.cell)->totalTraversals++;
+		nav->heatMapTotalTraversals++;
 		if (step.isVerticalDeepSearch || step.isHorizontalDeepSearch) {
 			nav->assertExtraData(step.intermediateCell1)->totalTraversals += 0.5;
 			nav->assertExtraData(step.intermediateCell2)->totalTraversals += 0.5;
+			nav->heatMapTotalTraversals++;
 		}
 
 		if (enableCollisionAvoidance && endTime > nav->nextCollisionUpdateTime) {
@@ -564,8 +566,11 @@ void Traveler::clearAllocations(TravelerAllocations::iterator fromPoint, bool de
 	int numToRemove = allocations.end() - fromPoint;
 	for (int i = 0; i < numToRemove; i++) {
 		auto iter = allocations.end() - 1;
-		if (decrementTraversalStats)
-			navigator->getExtraData((*iter)->cell)->totalTraversals -= (*iter)->traversalWeight;
+		if (decrementTraversalStats) {
+			double weight = (*iter)->traversalWeight;
+			navigator->getExtraData((*iter)->cell)->totalTraversals -= weight;
+			navigator->heatMapTotalTraversals -= weight;
+		}
 		removeAllocation(iter);
 	}
 }

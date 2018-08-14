@@ -1693,6 +1693,7 @@ windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
             <node f="42"><name>Traversals Per Time</name></node>
             <node f="42"><name>Average Blockage Time Per Traversal</name></node>
             <node f="42"><name>Percent of Total Time Blocked</name></node>
+            <node f="42"><name>Percent of Total Traversals</name></node>
            </node>
            <node f="42" dt="1"><name>itemcurrent</name><data>0000000040080000</data></node>
           </data></node>
@@ -3367,7 +3368,7 @@ return 0;
    </node>
   </node>
  </node>
- <node f="42" dt="2"><name>release</name><data>18.2</data></node>
+ <node f="42" dt="2"><name>release</name><data>19.0</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
- <node f="42" dt="2"><name>flexsim release</name><data>18.2</data></node>
+ <node f="42" dt="2"><name>flexsim release</name><data>19.0</data></node>
 </node></flexsim-tree>
