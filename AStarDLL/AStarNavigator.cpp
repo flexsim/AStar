@@ -762,24 +762,25 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 		return nullptr;
 	AStarCell cell;
 	AStarSearchEntry* e1 = nullptr;
+	cell.grid = grid->rank;
 	cell.row = entryIn->cell.row + AStarNode::rowInc[dir1];
 	cell.col = entryIn->cell.col;
-	if (getNode(cell)->canGo(dir2)) {
+	AStarNode* vertNode = grid->getNode(cell);
+	if (vertNode->canGo(dir2)) {
 		auto iter = entryHash.find(cell.colRow);
 		if (iter != entryHash.end()) {
 			AStarSearchEntry* vert = &totalSet[iter->second];
-			AStarNode* vertNode = grid->getNode(cell);
 			e1 = checkExpandOpenSet(grid, vertNode, vert, dir2, rotDirection, dist, ROOT2_DIV2, extraData);
 		}
 	}
 	if (e1 == nullptr) {
 		cell.row = entryIn->cell.row;
 		cell.col = entryIn->cell.col + AStarNode::colInc[dir2];
-		if (getNode(cell)->canGo(dir1)) {
+		AStarNode* hrzNode = grid->getNode(cell);
+		if (hrzNode->canGo(dir1)) {
 			auto iter = entryHash.find(cell.colRow);
 			if (iter != entryHash.end()) {
 				AStarSearchEntry* hrz = &totalSet[iter->second];
-				AStarNode* hrzNode = grid->getNode(hrz->cell);
 				e1 = checkExpandOpenSet(grid, hrzNode, hrz, dir1, rotDirection, dist, ROOT2_DIV2, extraData);
 			}
 		}
@@ -1151,43 +1152,6 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 				newG += directionChangePenalty * grid->nodeWidth;
 		}
 	}
-
-	/* The initial release of the route by travel time feature will not take allocations into account
-	if (routeByTravelTime && enableCollisionAvoidance) {
-		AStarNodeExtraData* extra = getExtraData(AStarCell(c, r));
-		if (extra) {
-			double allocTime = routingTravelStartTime + shortest.g + rotationTime;
-			auto found = std::find_if(extra->allocations.begin(), extra->allocations.end(), 
-				[&] (NodeAllocation& alloc) -> bool {
-					return alloc.acquireTime <= allocTime
-						&& alloc.releaseTime > allocTime
-						&& alloc.traveler != routingTraveler;
-				});
-			if (found != extra->allocations.end()) {
-				double releaseTime = found->releaseTime;
-				// find the last iteration
-				
-				AStarCell prevCell = getPrevCell(AStarCell(c, r), rotDirection);
-				bool foundDeadlock = Traveler::findPredictedDeadlockCycle(prevCell, *found, allocTime, releaseTime);
-				while (releaseTime != DBL_MAX 
-					&& (found = std::find_if(extra->allocations.begin(), extra->allocations.end(),
-						[&](NodeAllocation& alloc) -> bool { return alloc.acquireTime == releaseTime; })) != extra->allocations.end()) 
-				{
-					releaseTime = found->releaseTime;
-				}
-				if (foundDeadlock) {
-					newG += (double)deadlockPenalty->evaluate(routingTraveler->te->holder, allocTime, releaseTime - allocTime, c, r);
-				} else {
-					if (releaseTime == DBL_MAX) {
-						newG += (double)indefiniteAllocTimePenalty->evaluate(routingTraveler->te->holder);
-					} else {
-						newG += releaseTime - allocTime;
-					}
-				}
-			}
-		}
-	}
-	*/
 	
 	if (!entry || newG < entry->g - 0.01 * grid->nodeWidth) {
 		// if entry is NULL, that means he's not in the total set yet,
@@ -1196,6 +1160,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 			totalSetIndex = totalSet.size();
 			totalSet.push_back(AStarSearchEntry());
 			entry = &totalSet.back();
+			entry->cell.grid = grid->rank;
 			entry->cell.col = c;
 			entry->cell.row = r;
 			entryHash[entry->cell.colRow] = totalSetIndex;

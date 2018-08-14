@@ -15,11 +15,13 @@ void AStarCell::bind(TreeNode* x, const char* prefix)
 	string rowName = string(prefix) + "row";
 	string colName = string(prefix) + "col";
 	switch (SimpleDataType::getBindMode()) {
-		case SDT_BIND_ON_LOAD:
-			grid = x->subnodes[gridName.c_str()]->value;
+		case SDT_BIND_ON_LOAD: {
+			treenode gridNode = x->subnodes[gridName.c_str()];
+			grid = gridNode ? gridNode->value : 1;
 			col = x->subnodes[colName.c_str()]->value;
 			row = x->subnodes[rowName.c_str()]->value;
 			break;
+			}
 		case SDT_BIND_ON_SAVE:
 			assertsubnode(x, (char*)gridName.c_str())->value = grid;
 			assertsubnode(x, (char*)colName.c_str())->value = col;
