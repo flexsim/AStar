@@ -816,7 +816,7 @@ iterate(1, content(tabcontrol), 1){
          <node f="42" dt="2"><name>tooltip</name><data>Source pages</data></node>
         </data>
          <node f="40"><name></name></node>
-         <node f="42" dt="4"><name>General</name><data>
+         <node f="42" dt="4"><name>Setup</name><data>
           <node f="40"><name>object</name></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
