@@ -12,7 +12,6 @@ void Traveler::bind()
 	bindNumber(isBlocked);
 	bindObjRef(arrivalEvent, false);
 	bindObjRef(blockEvent, false);
-	bindNumber(nodeWidth); 
 	bindNumber(destLoc.x);
 	bindNumber(destLoc.y);
 	bindNumber(destLoc.z);
@@ -83,7 +82,6 @@ void Traveler::onReset()
 	lastBlockTime = 0;
 	isNavigatingAroundDeadlock = false;
 	blockedAtTravelPathIndex = -1;
-	nodeWidth = navigator->nodeWidth;
 	allocations.clear();
 	request = nullptr;
 	te->moveToResetPosition();
@@ -91,7 +89,7 @@ void Traveler::onReset()
 	AStarCell resetCell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
 	travelPath.clear();
 	travelPath.push_back(AStarPathEntry(resetCell, -1));
-	tinyTime = 0.001 * nodeWidth / te->v_maxspeed;
+	tinyTime = 0.001 * navigator->minNodeWidth / te->v_maxspeed;
 	nextCollisionUpdateEndTime = 0.0;
 	nextCollisionUpdateTravelIndex = -1;
 	needsContinueTrigger = false;
@@ -215,8 +213,14 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 	int i;
 	double deallocTimeOffset = nav->deallocTimeOffset;
 	double firstCellDeallocTime = time() + deallocTimeOffset;
+	Grid* grid = nullptr;
+	int lastGridNum = -1;
 	for (i = startAtPathIndex + 1; i < numNodes; i++) {
 		e = travelPath[i];
+		if (e.cell.grid != lastGridNum) {
+			lastGridNum = e.cell.grid;
+			grid = navigator->getGrid(e.cell);
+		}
 		AllocationStep step(laste.cell, e.cell);
 		double totalTravelDist;
 		bridgeArrival = nullptr;
@@ -235,8 +239,8 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 			Vec3 diff;
 			double startTime = endTime;
 			if (!isExitingBridge) {
-				diff.x = (e.cell.col - laste.cell.col)*nodeWidth;
-				diff.y = (e.cell.row - laste.cell.row)*nodeWidth;
+				diff.x = (e.cell.col - laste.cell.col) * grid->nodeWidth;
+				diff.y = (e.cell.row - laste.cell.row) * grid->nodeWidth;
 				diff.z = 0;
 				if(containerRot)
 					diff.rotateXY(-containerRot);
@@ -646,14 +650,14 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 		struct ShimmyInfo {
 			AStarCell cell;
 			bool isValid = true;
-			ShimmyInfo(unsigned short col, unsigned short row, bool isValid) : cell(col, row), isValid(isValid) {}
+			ShimmyInfo(unsigned int grid, unsigned short col, unsigned short row, bool isValid) : cell(grid, col, row), isValid(isValid) {}
 			ShimmyInfo() {}
 		};
 		AStarNode* curNode = navigator->getNode(curCell);
-		ShimmyInfo leftCell(curCell.col - 1, curCell.row, curNode->canGoLeft);
-		ShimmyInfo rightCell(curCell.col + 1, curCell.row, curNode->canGoRight);
-		ShimmyInfo upCell(curCell.col, curCell.row + 1, curNode->canGoUp);
-		ShimmyInfo downCell(curCell.col, curCell.row - 1, curNode->canGoDown);
+		ShimmyInfo leftCell(curCell.grid, curCell.col - 1, curCell.row, curNode->canGoLeft);
+		ShimmyInfo rightCell(curCell.grid, curCell.col + 1, curCell.row, curNode->canGoRight);
+		ShimmyInfo upCell(curCell.grid, curCell.col, curCell.row + 1, curNode->canGoUp);
+		ShimmyInfo downCell(curCell.grid, curCell.col, curCell.row - 1, curNode->canGoDown);
 
 		ShimmyInfo check[4];
 		if (blockingCell.col > curCell.col) {
@@ -678,8 +682,10 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 			check[3] = downCell;
 		}
 
+		Grid* grid = navigator->getGrid(check[i].cell);
+
 		for (int i = 0; i < 4; i++) {
-			if (!check[i].isValid || check[i].cell.col >= navigator->edgeTableXSize || check[i].cell.row > navigator->edgeTableYSize)
+			if (!check[i].isValid || check[i].cell.col >= grid->numCols || check[i].cell.row >= grid->numRows)
 				continue;
 
 			AStarNodeExtraData* extra = navigator->getExtraData(check[i].cell);

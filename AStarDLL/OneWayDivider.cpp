@@ -20,7 +20,7 @@ void OneWayDivider::bind(void)
 	Divider::bind();
 }
 
-void OneWayDivider::addBarriersToTable(AStarNavigator* nav)
+void OneWayDivider::addBarriersToTable(Grid* grid)
 {
 	Point* point = pointList[0];
 	Point* nextPoint;
@@ -29,7 +29,7 @@ void OneWayDivider::addBarriersToTable(AStarNavigator* nav)
 	for (int i = 0; i < pointList.size() - 1; i++, point = nextPoint) {
 		nextPoint = pointList[i + 1];
 
-		nav->divideGridModelLine(
+		grid->divideGridModelLine(
 			Vec3(point->x, point->y, point->z),
 			Vec3(nextPoint->x, nextPoint->y, nextPoint->z),
 			true
