@@ -249,12 +249,12 @@ double AStarNavigator::onReset()
 		sumSpeed += travelers[i]->te->v_maxspeed;
 	}
 
+	edgeTableExtraData.clear();
+	extraDataNode->subnodes.clear();
+
 	resetGrids();
 
 	SimulationStartEvent::addObject(this);
-
-	edgeTableExtraData.clear();
-	extraDataNode->subnodes.clear();
 
 	setDirty();
 
@@ -823,7 +823,6 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	double centerx = 0.5 * xsize(travelerNode);
 	double centery = 0.5 * ysize(travelerNode);
 
-	double outputVector[3];
 	vectorproject(travelerNode, centerx, - centery, 0, model(), startLoc);
 	
 	destLoc.x = tempDestLoc[0];
@@ -1123,6 +1122,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 		}
 
 		AStarSearchEntry hashEntry;
+		hashEntry.cell.grid = grid->rank;
 		hashEntry.cell.row = r;
 		hashEntry.cell.col = c;
 		totalSetIndex = entryHash[hashEntry.cell.colRow];
