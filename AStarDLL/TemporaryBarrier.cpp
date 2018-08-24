@@ -5,15 +5,18 @@ namespace AStar {
 
 void TemporaryBarrier::addEntry(const AStarCell& cell, const AStarNode& newValue)
 {
-	auto found = std::find_if(entries.begin(), entries.end(), [&](ChangeEntry& existing) { return existing.cell == cell; });
-	if (found == entries.end()) {
-		entries.push_back(ChangeEntry());
-		entries.back().cell = cell;
-		entries.back().newValue = newValue;
-		entries.back().savedValue = *navigator->getNode(cell);
-	} else {
-		found->newValue.value &= newValue.value;
-	}
+	if (!isApplied)
+		apply();
+	entries.push_back(ChangeEntry());
+	entries.back().cell = cell;
+	entries.back().newValue = newValue;
+	AStarNode& node = *navigator->getNode(cell);
+	entries.back().savedValue = node;
+	node.canGoUp = newValue.canGoUp;
+	node.canGoDown = newValue.canGoDown;
+	node.canGoLeft = newValue.canGoLeft;
+	node.canGoRight = newValue.canGoRight;
+
 }
 
 void TemporaryBarrier::apply()

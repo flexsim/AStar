@@ -11,4 +11,5 @@ class Bridge;
 class Traveler;
 struct AStarPathEntry;
 class Grid;
+class TemporaryBarrier;
 }

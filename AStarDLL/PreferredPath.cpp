@@ -104,6 +104,11 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 			if (dy < 0)
 				node->canGoDown = true;
 
+			if (condition) {
+				node->hasConditionalBarrier = true;
+				extra->addConditionalBarrier(this);
+			}
+
 			// the way that I essentially move along the line
 			// is at each grid point, I do a test step horizontally, 
 			// and a test step vertically, and then test the new slope of the line to the 

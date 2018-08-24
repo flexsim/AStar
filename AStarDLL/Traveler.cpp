@@ -2,7 +2,6 @@
 #include "AStarNavigator.h"
 #include "Bridge.h"
 #include "macros.h"
-#include "TemporaryBarrier.h"
 
 namespace AStar {
 

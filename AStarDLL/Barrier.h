@@ -49,19 +49,14 @@ public:
 	unsigned int arrow;
 
 	double nodeWidth;
-	NodeListArray<Grid>::SdtSubSubNodeCouplingType grids;
-	bool isMemberOfGrid(Grid* grid) {
-		return std::find(grids.begin(), grids.end(), grid) != grids.end();
-	}
-	bool isMemberOfGrid(int gridRank) {
-		return std::find_if(grids.begin(), grids.end(), [&](Grid* grid) { return grid->rank == gridRank; }) != grids.end();
-	}
+	treenode condition = nullptr;
 
 	Barrier();
 	virtual ~Barrier();
 
 	virtual const char * getClassFactory(void);
 	virtual void bind(void);
+	virtual void bindEvents() override;
 
 	// This function adds two initial points to a barrier
 	virtual void init(double nodeWidth, const Vec3& pos1, const Vec3& pos2);

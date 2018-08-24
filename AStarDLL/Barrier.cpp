@@ -42,6 +42,12 @@ void Barrier::bind(void)
 	pointList.init(points);
 }
 
+
+void Barrier::bindEvents()
+{
+	bindEventByName("condition", condition, "Condition", EVENT_TYPE_VALUE_GETTER);
+}
+
 void Barrier::init(double nodeWidth, const Vec3& pos1, const Vec3& pos2)
 {
 	this->nodeWidth = nodeWidth;
@@ -74,36 +80,7 @@ void Barrier::addBarriersToTable(Grid* grid)
 	if (!getBoundingBox(myMin, myMax))
 		return;
 
-	double c0 = grid->minPoint.x;
-	double r0 = grid->minPoint.y;
-
-	int colleft = (int)round((myMin.x - c0) / grid->nodeWidth);
-	int rowbottom = (int)round((myMin.y - r0) / grid->nodeWidth);
-	int colright = (int)round((myMax.x - c0) / grid->nodeWidth);
-	int rowtop = (int)round((myMax.y - r0) / grid->nodeWidth);
-	for(int row = rowbottom; row <= rowtop; row++) {
-		AStarNode * left = grid->getNode(row, colleft-1);
-		left->canGoRight = 0;
-		AStarNode * right = grid->getNode(row, colright + 1);
-		right->canGoLeft = 0;
-	}
-
-	for(int col = colleft; col <= colright; col++) {
-		AStarNode * top = grid->getNode(rowtop + 1, col);
-		top->canGoDown = 0;
-		AStarNode * bottom = grid->getNode(rowbottom - 1, col);
-		bottom->canGoUp = 0;
-	}
-
-	for (int row = rowbottom; row <= rowtop; row++) {
-		for (int col = colleft; col <= colright; col++) {
-			AStarNode* theNode = grid->getNode(row, col);
-			theNode->canGoUp = 0;
-			theNode->canGoDown = 0;
-			theNode->canGoLeft = 0;
-			theNode->canGoRight = 0;
-		}
-	}
+	grid->addSolidBarrierToTable(myMin, myMax, this);
 }
 
 void Barrier::addVertices(Mesh* barrierMesh, float z)
