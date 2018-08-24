@@ -31,6 +31,7 @@ struct AStarCell {
 	AStarCell(unsigned long long colRow) : colRow(colRow) {}
 	bool operator == (const AStarCell& other) const { return colRow == other.colRow; }
 	bool operator != (const AStarCell& other) const { return colRow != other.colRow; }
+	bool operator < (const AStarCell& other) const { return colRow < other.colRow; }
 	void bind(TreeNode* x, const char* prefix);
 	void bind(SimpleDataType* sdt, const char* prefix = "");
 };
@@ -40,7 +41,8 @@ enum ExtraDataReason : char {
 	AllocationData = 1,
 	BridgeData = 2,
 	PreferredPathData = 3,
-	MandatoryPathData = 4
+	MandatoryPathData = 4,
+	ConditionalBarrierData = 5
 };
 
 class AStarNode
@@ -70,6 +72,8 @@ public:
 			bool hasPreferredPathWeight : 1;
 			/// <summary>	True if this node is part of a mandatory path. </summary>
 			bool isOnMandatoryPath : 1;
+
+			bool hasConditionalBarrier : 1;
 			// 3 unused bits here
 		};
 		unsigned short value;
@@ -136,6 +140,9 @@ struct AStarNodeExtraData : public SimpleDataType
 	};
 
 	std::vector<BridgeEntry> bridges;
+
+	std::vector<Barrier*> conditionalBarriers;
+	void addConditionalBarrier(Barrier* barrier);
 
 	NodeAllocationList allocations;
 	NodeAllocationList requests;

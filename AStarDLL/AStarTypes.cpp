@@ -124,6 +124,15 @@ void AStarNodeExtraData::bind()
 	bindStlContainer(allocations);
 	bindStlContainer(requests);
 	bindObjRef(continueEvent, false);
+
+	bindStlContainer(conditionalBarriers);
+}
+
+void AStarNodeExtraData::addConditionalBarrier(Barrier * barrier)
+{
+	auto found = std::find(conditionalBarriers.begin(), conditionalBarriers.end(), barrier);
+	if (found == conditionalBarriers.end())
+		conditionalBarriers.push_back(barrier);
 }
 
 void AStarNodeExtraData::removeAllocation(NodeAllocationIterator allocIter)

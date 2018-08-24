@@ -226,9 +226,9 @@ public:
 	virtual void onMemberDestroyed(TaskExecuter* te) override;
 	virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
 
-	AStarSearchEntry* checkExpandOpenSet(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn, Direction direction, float rotDirection, double dist, double bonusMod, AStarNodeExtraData* extraData);
+	AStarSearchEntry* checkExpandOpenSet(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn, Direction direction, float rotDirection, double dist, double bonusMod, AStarNodeExtraData* preferredPathData);
 	AStarSearchEntry* checkExpandOpenSetDiagonal(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn,
-		Direction dir1, Direction dir2, float rotDirection, double dist, AStarNodeExtraData* extraData);
+		Direction dir1, Direction dir2, float rotDirection, double dist, AStarNodeExtraData* preferredPathData);
 
 	/// <summary>Calculates the route.</summary>
 	///
@@ -296,6 +296,9 @@ public:
 
 	double hasCustomUserGrids;
 	TreeNode* addObject(const Vec3& pos1, const Vec3& pos2, EditMode mode);
+
+	TemporaryBarrier* applyToTemporaryBarrier = nullptr;
+	double hasConditionalBarriers = 0.0;
 };
 
 }

@@ -5,6 +5,7 @@
 #include "macros.h"
 #include "Bridge.h"
 #include "Traveler.h"
+#include "TemporaryBarrier.h"
 
 #include <sstream>
 
@@ -102,6 +103,7 @@ void AStarNavigator::bindVariables(void)
 
 	bindStateVariable(minNodeWidth);
 	bindVariable(hasCustomUserGrids);
+	bindStateVariable(hasConditionalBarriers);
 
 	bindVariableByName("extraData", extraDataNode, ODT_BIND_STATE_VARIABLE);
 
@@ -156,7 +158,7 @@ double AStarNavigator::onCreate(double dropx, double dropy, double dropz, int is
 
 void AStarNavigator::resetGrids()
 {
-
+	hasConditionalBarriers = 0.0;
 	if (grids.size() == 0)
 		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
 
@@ -218,6 +220,7 @@ double AStarNavigator::onReset()
 	isGridDirty = true;
 	isBoundsDirty = true;
 	areGridNodeTablesBuilt = false;
+	applyToTemporaryBarrier = nullptr;
 
 	pathCache.clear();
 	pathCount = 0;
@@ -741,14 +744,14 @@ void AStarNavigator::onCollisionIntervalUpdate()
 }
 
 AStarSearchEntry* AStarNavigator::checkExpandOpenSet(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn, Direction direction, 
-	float rotDirection, double distFactor, double bonusMod, AStarNodeExtraData* extraData)
+	float rotDirection, double distFactor, double bonusMod, AStarNodeExtraData* preferredPathData)
 {
 	if (node->canGo(direction)) {
 		int theCol = entryIn->cell.col + AStarNode::colInc[direction];
 		int theRow = entryIn->cell.row + AStarNode::rowInc[direction];
 		double distance = distFactor;
-		if (extraData && extraData->getBonus(direction) != 0) {
-			distance *= 1.0 - (bonusMod * (double)(int)extraData->getBonus(direction)) / 127;
+		if (preferredPathData && preferredPathData->getBonus(direction) != 0) {
+			distance *= 1.0 - (bonusMod * (double)(int)preferredPathData->getBonus(direction)) / 127;
 		}
 		return expandOpenSet(grid, theRow, theCol, distance, rotDirection);
 	}
@@ -756,7 +759,7 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSet(Grid* grid, AStarNode* node
 }
 
 AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn,
-	Direction dir1, Direction dir2, float rotDirection, double dist, AStarNodeExtraData* extraData)
+	Direction dir1, Direction dir2, float rotDirection, double dist, AStarNodeExtraData* preferredPathData)
 {
 	if (!node->canGo(dir1) || !node->canGo(dir2))
 		return nullptr;
@@ -770,7 +773,7 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 		auto iter = entryHash.find(cell.colRow);
 		if (iter != entryHash.end()) {
 			AStarSearchEntry* vert = &totalSet[iter->second];
-			e1 = checkExpandOpenSet(grid, vertNode, vert, dir2, rotDirection, dist, ROOT2_DIV2, extraData);
+			e1 = checkExpandOpenSet(grid, vertNode, vert, dir2, rotDirection, dist, ROOT2_DIV2, preferredPathData);
 		}
 	}
 	if (e1 == nullptr) {
@@ -781,7 +784,7 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 			auto iter = entryHash.find(cell.colRow);
 			if (iter != entryHash.end()) {
 				AStarSearchEntry* hrz = &totalSet[iter->second];
-				e1 = checkExpandOpenSet(grid, hrzNode, hrz, dir1, rotDirection, dist, ROOT2_DIV2, extraData);
+				e1 = checkExpandOpenSet(grid, hrzNode, hrz, dir1, rotDirection, dist, ROOT2_DIV2, preferredPathData);
 			}
 		}
 	}
@@ -796,11 +799,11 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 
 		checkExpandOpenSet(grid, n1, (&e1StackCopy), dir1, 
 			clampDirection(rotDirection + deepDiagonalUpRotOffset), 
-			ROOT5_DIVROOT2 * dist, ROOT5_DIV5, extraData);
+			ROOT5_DIVROOT2 * dist, ROOT5_DIV5, preferredPathData);
 		
 		checkExpandOpenSet(grid, n1, (&e1StackCopy), dir2, 
 			clampDirection(rotDirection - deepDiagonalUpRotOffset),
-			ROOT5_DIVROOT2 * dist, ROOT5_DIV5, extraData);
+			ROOT5_DIVROOT2 * dist, ROOT5_DIV5, preferredPathData);
 	}
 	return e1;
 }
@@ -870,6 +873,9 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	// the value is the solution of f(x,y) for that node in the set
 	openSetHeap = std::priority_queue<HeapEntry, std::vector<HeapEntry>, HeapEntryCompare>();
 
+	std::set<Barrier*> visitedConditionalBarriers;
+	TemporaryBarrier tempBarrier(this);
+	applyToTemporaryBarrier = &tempBarrier;
 	entryHash.clear();
 	// add the first node to the "open set"
 	totalSet.push_back(AStarSearchEntry());
@@ -967,23 +973,36 @@ the outside 8 nodes.
 
 */
 
-		AStarNodeExtraData* extraData = nullptr;
+		Grid* grid = getGrid(shortest.cell);
+		AStarNodeExtraData* preferredPathData = nullptr;
 		if (n->hasPreferredPathWeight) {
 			auto found = edgeTableExtraData.find(shortest.cell.colRow);
 			if (found != edgeTableExtraData.end())
-				extraData = found->second;
+				preferredPathData = found->second;
 		}
-		Grid* grid = getGrid(shortest.cell);
-		checkExpandOpenSet(grid, n, (&shortest), Up, 90.0f, 1.0, 1.0, extraData);
-		checkExpandOpenSet(grid, n, (&shortest), Right, 0.0f, 1.0, 1.0, extraData);
-		checkExpandOpenSet(grid, n, (&shortest), Down, -90.0f, 1.0, 1.0, extraData);
-		checkExpandOpenSet(grid, n, (&shortest), Left, 180.0f, 1.0, 1.0, extraData);
+		if (n->hasConditionalBarrier) {
+			AStarNodeExtraData* barrierData = edgeTableExtraData[shortest.cell.colRow];
+			for (Barrier* barrier : barrierData->conditionalBarriers) {
+				auto found = visitedConditionalBarriers.find(barrier);
+				if (found == visitedConditionalBarriers.end()) {
+					visitedConditionalBarriers.insert(barrier);
+					if (barrier->condition->evaluate(te->holder)) {
+						barrier->addBarriersToTable(grid);
+					}
+				}
+			}
+		}
+
+		checkExpandOpenSet(grid, n, (&shortest), Up, 90.0f, 1.0, 1.0, preferredPathData);
+		checkExpandOpenSet(grid, n, (&shortest), Right, 0.0f, 1.0, 1.0, preferredPathData);
+		checkExpandOpenSet(grid, n, (&shortest), Down, -90.0f, 1.0, 1.0, preferredPathData);
+		checkExpandOpenSet(grid, n, (&shortest), Left, 180.0f, 1.0, 1.0, preferredPathData);
 
 		if (deepSearch != SEARCH_RIGHT_ANGLES_ONLY) {
-			checkExpandOpenSetDiagonal(grid, n, (&shortest), Up, Right, 45.0f, ROOT2, extraData);
-			checkExpandOpenSetDiagonal(grid, n, (&shortest), Up, Left, 135.0f, ROOT2, extraData);
-			checkExpandOpenSetDiagonal(grid, n, (&shortest), Down, Right, -45.0f, ROOT2, extraData);
-			checkExpandOpenSetDiagonal(grid, n, (&shortest), Down, Left, -135.0f, ROOT2, extraData);
+			checkExpandOpenSetDiagonal(grid, n, (&shortest), Up, Right, 45.0f, ROOT2, preferredPathData);
+			checkExpandOpenSetDiagonal(grid, n, (&shortest), Up, Left, 135.0f, ROOT2, preferredPathData);
+			checkExpandOpenSetDiagonal(grid, n, (&shortest), Down, Right, -45.0f, ROOT2, preferredPathData);
+			checkExpandOpenSetDiagonal(grid, n, (&shortest), Down, Left, -135.0f, ROOT2, preferredPathData);
 		}
 
 		if (n->hasBridgeStartPoint) {
@@ -1008,6 +1027,8 @@ the outside 8 nodes.
 			entry.totalSet = totalSet;
 		}
 	} // End of the while loop
+
+	applyToTemporaryBarrier = nullptr;
 
 	// remake the start pointer (totalSet may reallocate due to push_back)
 	start = totalSet.data();
@@ -1645,23 +1666,27 @@ AStarNodeExtraData*  AStarNavigator::assertExtraData(const AStarCell& cell, Extr
 {
 	AStarNodeExtraData* extra;
 	auto extraIter = edgeTableExtraData.find(cell.colRow);
+	AStarNode* node = getNode(cell);
 	if (extraIter == edgeTableExtraData.end()) {
-		AStarNode* node = getNode(cell);
 		treenode newNode = extraDataNode->subnodes.add();
 		extra = new AStarNodeExtraData;
 		newNode->addSimpleData(extra, false);
 		edgeTableExtraData[cell.colRow] = extra;
-		switch (reason) {
-			case TraversalData		: node->hasTraversalData = true; break;
-			case AllocationData		: node->hasAllocationData = true; break;
-			case BridgeData			: node->hasBridgeStartPoint = true; break;
-			case PreferredPathData	: node->hasPreferredPathWeight = true; break;
-			case MandatoryPathData	: node->hasAllocationData = true; break;
-			default: break;
-		}
 		extra->cell = cell;
 	} else {
 		extra = extraIter->second;
+	}
+	switch (reason) {
+		case TraversalData		: node->hasTraversalData = true; break;
+		case AllocationData		: node->hasAllocationData = true; break;
+		case BridgeData			: node->hasBridgeStartPoint = true; break;
+		case PreferredPathData	: node->hasPreferredPathWeight = true; break;
+		case MandatoryPathData	: node->hasAllocationData = true; break;
+		case ConditionalBarrierData  : 
+			node->hasConditionalBarrier = true; 
+			hasConditionalBarriers = 1.0;
+			break;
+		default: break;
 	}
 	return extra;
 }
