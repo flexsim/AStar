@@ -968,7 +968,7 @@ the outside 8 nodes.
 */
 
 		AStarNodeExtraData* extraData = nullptr;
-		if (!n->noExtraData) {
+		if (n->hasPreferredPathWeight) {
 			auto found = edgeTableExtraData.find(shortest.cell.colRow);
 			if (found != edgeTableExtraData.end())
 				extraData = found->second;
@@ -986,7 +986,7 @@ the outside 8 nodes.
 			checkExpandOpenSetDiagonal(grid, n, (&shortest), Down, Left, -135.0f, ROOT2, extraData);
 		}
 
-		if (n->hasExtraData) {
+		if (n->hasBridgeStartPoint) {
 			auto e = edgeTableExtraData.find(shortest.cell.colRow);
 			AStarNodeExtraData* extra = e->second;
 			if (e != edgeTableExtraData.end() && extra->bridges.size() > 0) {
@@ -1058,8 +1058,7 @@ the outside 8 nodes.
 		}
 	}
 
-	int totalsetsize = totalSet.size();
-	for (int i = 0; i < totalsetsize; i++) {
+	for (int i = 0, totalSetSize = totalSet.size(); i < totalSetSize; i++) {
 		AStarSearchEntry & e = totalSet[i];
 		AStarNode* n = getNode(e.cell);
 		n->isInTotalSet = false;
@@ -1642,7 +1641,7 @@ void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& mode
 }
 
 
-AStarNodeExtraData*  AStarNavigator::assertExtraData(const AStarCell& cell)
+AStarNodeExtraData*  AStarNavigator::assertExtraData(const AStarCell& cell, ExtraDataReason reason)
 {
 	AStarNodeExtraData* extra;
 	auto extraIter = edgeTableExtraData.find(cell.colRow);
@@ -1652,8 +1651,15 @@ AStarNodeExtraData*  AStarNavigator::assertExtraData(const AStarCell& cell)
 		extra = new AStarNodeExtraData;
 		newNode->addSimpleData(extra, false);
 		edgeTableExtraData[cell.colRow] = extra;
+		switch (reason) {
+			case TraversalData		: node->hasTraversalData = true; break;
+			case AllocationData		: node->hasAllocationData = true; break;
+			case BridgeData			: node->hasBridgeStartPoint = true; break;
+			case PreferredPathData	: node->hasPreferredPathWeight = true; break;
+			case MandatoryPathData	: node->hasAllocationData = true; break;
+			default: break;
+		}
 		extra->cell = cell;
-		node->noExtraData = 0;
 	} else {
 		extra = extraIter->second;
 	}

@@ -87,7 +87,8 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 
 			AStarCell cell((unsigned int)grid, currCol, currRow);
 			AStarNode* node = grid->getNode(cell);
-			AStarNodeExtraData * extra = grid->navigator->assertExtraData(cell);
+			AStarNodeExtraData * extra = grid->navigator->assertExtraData(cell, PreferredPathData);
+			node->hasPreferredPathWeight = true;
 			
 			extra->bonusRight = (char)maxof(-128,minof(127, extra->bonusRight + horizontalWeight));
 			extra->bonusLeft = (char)maxof(-128,minof(127, extra->bonusLeft - horizontalWeight));

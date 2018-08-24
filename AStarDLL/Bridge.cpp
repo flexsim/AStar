@@ -46,8 +46,8 @@ void Bridge::addPassagesToTable(Grid* grid)
 
 	// add bridge data to cells
 	auto addExtraData = [&](const AStarCell& cell, bool isAtStart) {
-		AStarNodeExtraData* entry = grid->navigator->assertExtraData(cell);
-
+		AStarNodeExtraData* entry = grid->navigator->assertExtraData(cell, BridgeData);
+		grid->navigator->getNode(cell)->hasBridgeStartPoint = true;
 		entry->bridges.push_back(AStarNodeExtraData::BridgeEntry());
 		entry->bridges.back().bridge = this;
 		entry->bridges.back().isAtBridgeStart = isAtStart;

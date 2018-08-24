@@ -35,6 +35,14 @@ struct AStarCell {
 	void bind(SimpleDataType* sdt, const char* prefix = "");
 };
 
+enum ExtraDataReason : char {
+	TraversalData = 0,
+	AllocationData = 1,
+	BridgeData = 2,
+	PreferredPathData = 3,
+	MandatoryPathData = 4
+};
+
 class AStarNode
 {
 public:
@@ -44,19 +52,30 @@ public:
 			bool canGoLeft : 1;
 			bool canGoUp : 1;
 			bool canGoDown : 1;
-			bool noExtraData : 1;
-			bool notInTotalSet : 1;
+			/// <summary>	True if this node is in total search set. </summary>
+			bool isInTotalSet : 1;
+			/// <summary>	True if the node is still open (not closed) the path finding search 
+			/// 			set, i.e. it is still in the open set. </summary>
 			bool open : 1;
+			bool unusedLowOrder1 : 1; // 2 bits to fill out low order byte
+			bool unusedLowOrder2 : 1; 
+
+			/// <summary>	True if this object has traversal tracking data, etc. Note that  </summary>
+			bool hasTraversalData : 1;
+			/// <summary>	True if this object has traversal tracking data, etc. Note that  </summary>
+			bool hasAllocationData : 1;
+			/// <summary>	True if this node is a start point for a bridge. Bridge information is stored in extra data </summary>
+			bool hasBridgeStartPoint : 1;
+			/// <summary>	True if this node is part of a preferred path and has a weight value stored in extra data. </summary>
+			bool hasPreferredPathWeight : 1;
+			/// <summary>	True if this node is part of a mandatory path. </summary>
+			bool isOnMandatoryPath : 1;
+			// 3 unused bits here
 		};
-		unsigned char value;
+		unsigned short value;
 	};
-	AStarNode() {}
-	AStarNode(char value) : value(value) {}
-	bool __extraData() { return !noExtraData; }
-	bool __inTotalSet() { return !notInTotalSet; }
-	void __setInTotalSet(bool toVal) { notInTotalSet = !toVal; }
-	__declspec(property(get = __extraData)) bool hasExtraData;
-	__declspec(property(get = __inTotalSet, put = __setInTotalSet)) bool isInTotalSet;
+	AStarNode() { value = 0; canGoRight = canGoLeft = canGoUp = canGoDown = open = true; }
+	AStarNode(unsigned short value) : value(value) {}
 	static int rowInc[];
 	static int colInc[];
 	bool canGo(Direction direction) { return ((0x1 << (int)direction) & value) != 0; }
@@ -117,6 +136,7 @@ struct AStarNodeExtraData : public SimpleDataType
 	};
 
 	std::vector<BridgeEntry> bridges;
+
 	NodeAllocationList allocations;
 	NodeAllocationList requests;
 	void removeAllocation(NodeAllocationIterator allocation);

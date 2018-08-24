@@ -339,11 +339,11 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 		te->v_totaltraveldist += totalTravelDist;
 
 		//Traffic info
-		nav->assertExtraData(e.cell)->totalTraversals++;
+		nav->assertExtraData(e.cell, TraversalData)->totalTraversals++;
 		nav->heatMapTotalTraversals++;
 		if (step.isVerticalDeepSearch || step.isHorizontalDeepSearch) {
-			nav->assertExtraData(step.intermediateCell1)->totalTraversals += 0.5;
-			nav->assertExtraData(step.intermediateCell2)->totalTraversals += 0.5;
+			nav->assertExtraData(step.intermediateCell1, TraversalData)->totalTraversals += 0.5;
+			nav->assertExtraData(step.intermediateCell2, TraversalData)->totalTraversals += 0.5;
 			nav->heatMapTotalTraversals++;
 		}
 
@@ -418,7 +418,7 @@ void Traveler::onBridgeArrival(Bridge* bridge, int pathIndex)
 NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, bool notifyPendingAllocations)
 {
 	XS
-	AStarNodeExtraData* nodeData = navigator->assertExtraData(allocation.cell);
+	AStarNodeExtraData* nodeData = navigator->assertExtraData(allocation.cell, AllocationData);
 
 	if (!force || notifyPendingAllocations) {
 		NodeAllocation* collideWith = findCollision(nodeData, allocation, false);

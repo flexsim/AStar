@@ -269,7 +269,7 @@ public:
 	Grid* getGrid(const AStarCell& cell);
 	Grid* getGrid(const Vec3& modelPos);
 
-	AStarNodeExtraData* assertExtraData(const AStarCell& cell);
+	AStarNodeExtraData* assertExtraData(const AStarCell& cell, ExtraDataReason reason);
 	AStarNodeExtraData* getExtraData(const AStarCell& cell) {
 		auto extraIter = edgeTableExtraData.find(cell.colRow);
 		return extraIter != edgeTableExtraData.end() ? extraIter->second : nullptr;

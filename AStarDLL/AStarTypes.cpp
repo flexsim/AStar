@@ -317,14 +317,14 @@ bool AllocationStep::isImmediatelyBlocked(Traveler* traveler)
 	NodeAllocation* collision;
 	if (isDiagonal) {
 		allocation.cell = intermediateCell1;
-		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell1), allocation, true))
+		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell1, AllocationData), allocation, true))
 			return true;
 		allocation.cell = intermediateCell2;
-		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell2), allocation, true))
+		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell2, AllocationData), allocation, true))
 			return true;
 	}
 	allocation.cell = toCell;
-	if (Traveler::findCollision(traveler->navigator->assertExtraData(toCell), allocation, true))
+	if (Traveler::findCollision(traveler->navigator->assertExtraData(toCell, AllocationData), allocation, true))
 		return true;
 	return false;
 
