@@ -21,17 +21,17 @@ struct AStarCell {
 		struct{
 			/// <summary>	The 1-based rank of the grid. Zero means undefined grid. </summary>
 			unsigned int grid;
-			unsigned short col;
 			unsigned short row;
+			unsigned short col;
 		};
-		unsigned long long colRow;
+		unsigned long long value;
 	};
 	AStarCell() {}
-	AStarCell(unsigned int grid, unsigned short col, unsigned short row) : grid(grid), col(col), row(row) {}
-	AStarCell(unsigned long long colRow) : colRow(colRow) {}
-	bool operator == (const AStarCell& other) const { return colRow == other.colRow; }
-	bool operator != (const AStarCell& other) const { return colRow != other.colRow; }
-	bool operator < (const AStarCell& other) const { return colRow < other.colRow; }
+	AStarCell(unsigned int grid, unsigned short row, unsigned short col) : grid(grid), row(row), col(col) {}
+	AStarCell(unsigned long long value) : value(value) {}
+	bool operator == (const AStarCell& other) const { return value == other.value; }
+	bool operator != (const AStarCell& other) const { return value != other.value; }
+	bool operator < (const AStarCell& other) const { return value < other.value; }
 	void bind(TreeNode* x, const char* prefix);
 	void bind(SimpleDataType* sdt, const char* prefix = "");
 };
@@ -244,21 +244,21 @@ struct AllocationStep {
 			isVerticalDeepSearch = abs(toCell.row - fromCell.row) == 2;
 			isHorizontalDeepSearch = abs(toCell.col - fromCell.col) == 2;
 			if (isVerticalDeepSearch) {
-				intermediateCell1 = AStarCell(fromCell.grid, fromCell.col, (toCell.row + fromCell.row) / 2);
-				intermediateCell2 = AStarCell(fromCell.grid, toCell.col, intermediateCell1.row);
+				intermediateCell1 = AStarCell(fromCell.grid, (toCell.row + fromCell.row) / 2, fromCell.col);
+				intermediateCell2 = AStarCell(fromCell.grid, intermediateCell1.row, toCell.col);
 			} else if (isHorizontalDeepSearch) {
-				intermediateCell1 = AStarCell(fromCell.grid, (toCell.col + fromCell.col) / 2, fromCell.row);
-				intermediateCell2 = AStarCell(fromCell.grid, intermediateCell1.col, toCell.row);
+				intermediateCell1 = AStarCell(fromCell.grid, fromCell.row, (toCell.col + fromCell.col) / 2);
+				intermediateCell2 = AStarCell(fromCell.grid, toCell.row, intermediateCell1.col);
 			} else {
 				if (sign(toCell.col - fromCell.col) == sign(toCell.row - fromCell.row)) {
 					// it's a "forward-slash diagonal"
-					intermediateCell1 = AStarCell(fromCell.grid, min(toCell.col, fromCell.col), max(toCell.row, fromCell.row));
-					intermediateCell2 = AStarCell(fromCell.grid, max(toCell.col, fromCell.col), min(toCell.row, fromCell.row));
+					intermediateCell1 = AStarCell(fromCell.grid, max(toCell.row, fromCell.row), min(toCell.col, fromCell.col));
+					intermediateCell2 = AStarCell(fromCell.grid, min(toCell.row, fromCell.row), max(toCell.col, fromCell.col));
 				}
 				else {
 					// it's a "back-slash diagonal"
-					intermediateCell1 = AStarCell(fromCell.grid, min(toCell.col, fromCell.col), min(toCell.row, fromCell.row));
-					intermediateCell2 = AStarCell(fromCell.grid, max(toCell.col, fromCell.col), max(toCell.row, fromCell.row));
+					intermediateCell1 = AStarCell(fromCell.grid, min(toCell.row, fromCell.row), min(toCell.col, fromCell.col));
+					intermediateCell2 = AStarCell(fromCell.grid, max(toCell.row, fromCell.row), max(toCell.col, fromCell.col));
 				}
 
 			}

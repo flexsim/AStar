@@ -85,7 +85,7 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 		// under the line
 		while(currCol != nextCol || currRow != nextRow) {
 
-			AStarCell cell((unsigned int)grid, currCol, currRow);
+			AStarCell cell((unsigned int)grid, currRow, currCol);
 			AStarNode* node = grid->getNode(cell);
 			AStarNodeExtraData * extra = grid->navigator->assertExtraData(cell, PreferredPathData);
 			node->hasPreferredPathWeight = true;

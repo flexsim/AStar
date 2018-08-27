@@ -156,16 +156,14 @@ double AStarNavigator::onCreate(double dropx, double dropy, double dropz, int is
 	return 0;
 }
 
-void AStarNavigator::resetGrids()
+void AStarNavigator::resolveGridBounds()
 {
-	hasConditionalBarriers = 0.0;
 	if (grids.size() == 0)
 		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
 
 	std::vector<Grid*> tempGrids;
 	for (Grid* grid : grids) {
 		grid->isLowestGrid = false;
-		grid->reset(this);
 		tempGrids.push_back(grid);
 	}
 
@@ -193,6 +191,18 @@ void AStarNavigator::resetGrids()
 			}
 		}
 	}
+
+}
+
+void AStarNavigator::resetGrids()
+{
+	hasConditionalBarriers = 0.0;
+
+	for (Grid* grid : grids) {
+		grid->reset(this);
+	}
+
+	resolveGridBounds();
 
 	// Clear custom barriers
 	customBarriers = Array();
@@ -770,7 +780,7 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 	cell.col = entryIn->cell.col;
 	AStarNode* vertNode = grid->getNode(cell);
 	if (vertNode->canGo(dir2)) {
-		auto iter = entryHash.find(cell.colRow);
+		auto iter = entryHash.find(cell.value);
 		if (iter != entryHash.end()) {
 			AStarSearchEntry* vert = &totalSet[iter->second];
 			e1 = checkExpandOpenSet(grid, vertNode, vert, dir2, rotDirection, dist, ROOT2_DIV2, preferredPathData);
@@ -781,7 +791,7 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 		cell.col = entryIn->cell.col + AStarNode::colInc[dir2];
 		AStarNode* hrzNode = grid->getNode(cell);
 		if (hrzNode->canGo(dir1)) {
-			auto iter = entryHash.find(cell.colRow);
+			auto iter = entryHash.find(cell.value);
 			if (iter != entryHash.end()) {
 				AStarSearchEntry* hrz = &totalSet[iter->second];
 				e1 = checkExpandOpenSet(grid, hrzNode, hrz, dir1, rotDirection, dist, ROOT2_DIV2, preferredPathData);
@@ -899,7 +909,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 
 	start->rotOnArrival = traveler->te->b_spatialrz;
 
-	entryHash[start->cell.colRow] = 0;
+	entryHash[start->cell.value] = 0;
 
 	// the open set stores:
 	// 1. the index into totalset that references the AStarSearchEntry that i'm going to resolve
@@ -976,19 +986,29 @@ the outside 8 nodes.
 		Grid* grid = getGrid(shortest.cell);
 		AStarNodeExtraData* preferredPathData = nullptr;
 		if (n->hasPreferredPathWeight) {
-			auto found = edgeTableExtraData.find(shortest.cell.colRow);
-			if (found != edgeTableExtraData.end())
-				preferredPathData = found->second;
+			preferredPathData = edgeTableExtraData.find(shortest.cell.value)->second;
 		}
+
 		if (n->hasConditionalBarrier) {
-			AStarNodeExtraData* barrierData = edgeTableExtraData[shortest.cell.colRow];
+			AStarNodeExtraData* barrierData = edgeTableExtraData[shortest.cell.value];
 			for (Barrier* barrier : barrierData->conditionalBarriers) {
-				auto found = visitedConditionalBarriers.find(barrier);
-				if (found == visitedConditionalBarriers.end()) {
+				if (visitedConditionalBarriers.find(barrier) == visitedConditionalBarriers.end()) {
 					visitedConditionalBarriers.insert(barrier);
-					if (barrier->condition->evaluate(te->holder)) {
+					bool shouldApplyBarrier = (bool)barrier->condition->evaluate(te->holder);
+					if (shouldApplyBarrier) {
 						barrier->addBarriersToTable(grid);
 					}
+					if (preferredPathData != nullptr) {
+						PreferredPath* path = barrier->toPreferredPath();
+						if (path)
+							path->shouldApplyConditionalBarrier = shouldApplyBarrier;
+					}
+				}
+
+				if (preferredPathData != nullptr) {
+					PreferredPath* path = barrier->toPreferredPath(); 
+					if (path && !path->shouldApplyConditionalBarrier)
+						preferredPathData = nullptr;
 				}
 			}
 		}
@@ -1006,7 +1026,7 @@ the outside 8 nodes.
 		}
 
 		if (n->hasBridgeStartPoint) {
-			auto e = edgeTableExtraData.find(shortest.cell.colRow);
+			auto e = edgeTableExtraData.find(shortest.cell.value);
 			AStarNodeExtraData* extra = e->second;
 			if (e != edgeTableExtraData.end() && extra->bridges.size() > 0) {
 				for (int i = 0; i < extra->bridges.size(); i++) {
@@ -1145,7 +1165,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 		hashEntry.cell.grid = grid->rank;
 		hashEntry.cell.row = r;
 		hashEntry.cell.col = c;
-		totalSetIndex = entryHash[hashEntry.cell.colRow];
+		totalSetIndex = entryHash[hashEntry.cell.value];
 		entry = &(totalSet[totalSetIndex]);
 	}
 	float speedScale = routeByTravelTime ? 1.0 / routingTraveler->te->v_maxspeed : 1.0;
@@ -1183,7 +1203,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 			entry->cell.grid = grid->rank;
 			entry->cell.col = c;
 			entry->cell.row = r;
-			entryHash[entry->cell.colRow] = totalSetIndex;
+			entryHash[entry->cell.value] = totalSetIndex;
 			// calculate the distance heuristic h
 			double diffx = destLoc.x - (grid->gridOrigin.x + entry->cell.col * grid->nodeWidth);
 			double diffy = destLoc.y - (grid->gridOrigin.y + entry->cell.row * grid->nodeWidth);
@@ -1580,18 +1600,7 @@ void AStarNavigator::setDirty()
 
 AStarCell AStarNavigator::getCellFromLoc(const Vec3& modelLoc)
 {
-	// get the x/y location of the bottom left corner of my grid
-	for (Grid* grid : grids) {
-		if (grid->isLocWithinBounds(modelLoc, false)) {
-			return grid->getCellFromLoc(modelLoc);
-		}
-	}
-	for (Grid* grid : grids) {
-		if (grid->isLocWithinBounds(modelLoc, true)) {
-			return grid->getCellFromLoc(modelLoc);
-		}
-	}
-	return grids[0]->getCellFromLoc(modelLoc);
+	return getGrid(modelLoc)->getCellFromLoc(modelLoc);
 }
 
 Vec3 AStarNavigator::getLocFromCell(const AStarCell & cell)
@@ -1612,13 +1621,25 @@ Grid* AStarNavigator::getGrid(const AStarCell& cell)
 
 Grid * AStarNavigator::getGrid(const Vec3 & modelPos)
 {
-	return getGrid(getCellFromLoc(modelPos));
+	for (Grid* grid : grids) {
+		if (grid->isLocWithinBounds(modelPos, false)) {
+			return grid;
+		}
+	}
+	for (Grid* grid : grids) {
+		if (grid->isLocWithinBounds(modelPos, true)) {
+			return grid;
+		}
+	}
+	// if I get this far, then something's wrong with grid bounds, so resolve grid bounds and try again
+	resolveGridBounds();
+	// believe me when I say this is not infinite recursioin
+	return getGrid(modelPos);
 }
 
 ASTAR_FUNCTION Variant AStarNavigator_getGrid(FLEXSIMINTERFACE)
 {
-	o(AStarNavigator, c).getGrid(Vec3(param(1), param(2), param(3)))->holder;
-	return 0;
+	return o(AStarNavigator, c).getGrid(Vec3(param(1), param(2), param(3)))->holder;
 }
 
 unsigned int AStarNavigator::getClassType()
@@ -1665,13 +1686,13 @@ void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& mode
 AStarNodeExtraData*  AStarNavigator::assertExtraData(const AStarCell& cell, ExtraDataReason reason)
 {
 	AStarNodeExtraData* extra;
-	auto extraIter = edgeTableExtraData.find(cell.colRow);
+	auto extraIter = edgeTableExtraData.find(cell.value);
 	AStarNode* node = getNode(cell);
 	if (extraIter == edgeTableExtraData.end()) {
 		treenode newNode = extraDataNode->subnodes.add();
 		extra = new AStarNodeExtraData;
 		newNode->addSimpleData(extra, false);
-		edgeTableExtraData[cell.colRow] = extra;
+		edgeTableExtraData[cell.value] = extra;
 		extra->cell = cell;
 	} else {
 		extra = extraIter->second;

@@ -20,7 +20,10 @@ public:
 
 	AStarNavigator* navigator = nullptr;
 	double nodeWidth = 1.0;
+	/// <summary>	True if there is no grid below this grid on the z axis. </summary>
 	bool isLowestGrid = false;
+	/// <summary>	True if this object is bounded on its xy plane, meaning there is another 
+	/// 			grid on the same z plane as this grid. </summary>
 	bool isBounded = false;
 	/// <summary>	The minimum point. This is the minimum point of all matched barriers and objects. </summary>
 	Vec3 minPoint;
@@ -62,8 +65,27 @@ public:
 	int __getNumCols() { return nodes.size() > 0 ? nodes[0].size() : 0; }
 	__declspec(property(get = __getNumCols)) int numCols;
 
-	AStarNode* getNode(const AStarCell& cell) { return &nodes[cell.row][cell.col]; }
-	AStarNode* getNode(int row, int col) { return &nodes[row][col]; }
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>	Gets the A* node associated with the given cell. </summary>
+	/// <remarks>	 </remarks>
+	/// <param name="cell">	The cell. </param>
+	/// <returns>	Null if it fails, else the node. </returns>
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	AStarNode* getNode(const AStarCell& cell) { 
+		return getNode(cell.row, cell.col);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>	Gets the A* node associated with the given row and column in the table. </summary>
+	/// <remarks>
+	/// Note that this is a "safe" returning method, meaning it will always return a valid node even
+	/// if it is an incorrect node.
+	/// </remarks>
+	/// <param name="row">	The cell. </param>
+	/// <param name="col">	The col. </param>
+	/// <returns>	Null if it fails, else the node. </returns>
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	AStarNode* getNode(int row, int col);
 
 	void addSolidBarrierToTable(const Vec3 & min, const Vec3 & max, Barrier* barrier = nullptr);
 	void addObjectBarrierToTable(treenode obj);

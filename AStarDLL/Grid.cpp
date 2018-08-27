@@ -27,7 +27,7 @@ void Grid::bind()
 bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand) const
 {
 	double z = modelLoc.z + 0.001 * nodeWidth;
-	if ((z < minPoint.z && !isLowestGrid) || z >= maxPoint.z)
+	if ((z < minPoint.z && !isLowestGrid) || (z >= maxPoint.z && isBounded))
 		return false;
 	return (canExpand && !isBounded)
 		|| ((modelLoc.x >= minPoint.x && modelLoc.y >= minPoint.y)
@@ -250,15 +250,24 @@ void Grid::resolveGridOrigin()
 }
 
 
+AStarNode * Grid::getNode(int rowNum, int colNum)
+{
+	if (rowNum < nodes.size()) {
+		auto& row = nodes[rowNum];
+		if (colNum < row.size())
+			return &row[colNum];
+	}
+	static AStarNode node;
+	node.value = 0;
+	return &node;
+}
+
 void Grid::addSolidBarrierToTable(const Vec3 & min, const Vec3 & max, Barrier* barrier)
 {
-	double c0 = gridOrigin.x;
-	double r0 = gridOrigin.y;
-
-	int colleft = (int)round((min.x - c0) / nodeWidth);
-	int rowbottom = (int)round((min.y - r0) / nodeWidth);
-	int colright = (int)round((max.x - c0) / nodeWidth);
-	int rowtop = (int)round((max.y - r0) / nodeWidth);
+	int colleft = (int)round((min.x - gridOrigin.x) / nodeWidth);
+	int rowbottom = (int)round((min.y - gridOrigin.y) / nodeWidth);
+	int colright = (int)round((max.x - gridOrigin.x) / nodeWidth);
+	int rowtop = (int)round((max.y - gridOrigin.y) / nodeWidth);
 	int gridRank = rank;
 
 	for (int row = rowbottom; row <= rowtop; row++) {
@@ -471,9 +480,9 @@ void Grid::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, boo
 			// Block down and up
 			if (currCol >= 0 && currCol < numCols) {
 				if ((!oneWay || nextCol > col) && currRow >= 0 && currRow < numRows)
-					blockNodeDirection(AStarCell(gridRank, (int)currCol, (int)currRow), Down, barrier);
+					blockNodeDirection(AStarCell(gridRank, (int)currRow, (int)currCol), Down, barrier);
 				if ((!oneWay || nextCol < col) && currRow - 1 >= 0 && currRow - 1 < numRows)
-					blockNodeDirection(AStarCell(gridRank, (int)currCol, (int)currRow - 1), Up, barrier);
+					blockNodeDirection(AStarCell(gridRank, (int)currRow - 1, (int)currCol), Up, barrier);
 			}
 
 			currCol++;
@@ -503,9 +512,9 @@ void Grid::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, boo
 			// Block left and right
 			if (currRow >= 0 && currRow < numRows) {
 				if ((!oneWay || nextRow < row) && currCol >= 0 && currCol < numCols)
-					blockNodeDirection(AStarCell(gridRank, (int)currCol, (int)currRow), Left, barrier);
+					blockNodeDirection(AStarCell(gridRank, (int)currRow, (int)currCol), Left, barrier);
 				if ((!oneWay || nextRow > row) && currCol - 1 >= 0 && currCol - 1 < numCols)
-					blockNodeDirection(AStarCell(gridRank, (int)currCol - 1, (int)currRow), Right, barrier);
+					blockNodeDirection(AStarCell(gridRank, (int)currRow, (int)currCol - 1), Right, barrier);
 			}
 
 			currRow++;
@@ -600,7 +609,7 @@ void Grid::buildGridMesh(float zOffset)
 			s.cell.row = row;
 			AStarNodeExtraData* e = NULL;
 			if (n->hasPreferredPathWeight)
-				e = navigator->edgeTableExtraData[s.cell.colRow];
+				e = navigator->edgeTableExtraData[s.cell.value];
 			double x = gridOrigin.x + col * nodeWidth;
 			double y = gridOrigin.y + row * nodeWidth;
 

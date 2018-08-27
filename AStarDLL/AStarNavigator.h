@@ -259,6 +259,8 @@ public:
 	void addObjectBarrierToTable(TreeNode* obj);
 
 	void setDirty();
+
+	void resolveGridBounds();
 	void resetGrids();
 
 	AStarCell getCellFromLoc(const Vec2& modelLoc) { return getCellFromLoc(Vec3(modelLoc.x, modelLoc.y, 0.0)); }
@@ -271,7 +273,7 @@ public:
 
 	AStarNodeExtraData* assertExtraData(const AStarCell& cell, ExtraDataReason reason);
 	AStarNodeExtraData* getExtraData(const AStarCell& cell) {
-		auto extraIter = edgeTableExtraData.find(cell.colRow);
+		auto extraIter = edgeTableExtraData.find(cell.value);
 		return extraIter != edgeTableExtraData.end() ? extraIter->second : nullptr;
 	}
 	static AStarCell getPrevCell(AStarCell& toCell, float rotDirection);
