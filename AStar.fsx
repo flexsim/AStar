@@ -34,6 +34,28 @@
         <node f="42" dt="1"><name>deepSearch</name><data>000000003ff00000</data></node>
         <node f="42" dt="1"><name>ignoreDestBarrier</name><data>000000003ff00000</data></node>
         <node f="42" dt="1"><name>hasEdgeTable</name><data>0000000000000000</data></node>
+        <node f="42"><name>grids</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="7"><name>MainGrid</name><data/>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>nodeWidth</name><data>000000003ff00000</data></node>
+          <node f="42" dt="1"><name>minPointX</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>minPointY</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>minPointZ</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>maxPointX</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>maxPointY</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>maxPointZ</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>gridOriginX</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>gridOriginY</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>gridOriginZ</name><data>0000000000000000</data></node>
+          <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Grid</data>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>navigator</name><data><coupling>/installdata/add/1/data/astar/AStarNavigator</coupling></data></node>
+           <node f="42" dt="1"><name>isBounded</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>isLowestGrid</name><data>0000000000000000</data></node>
+          </node>
+         </node>
+        </node>
         <node f="42"><name>barriers</name></node>
         <node f="42" dt="3"><name>activeBarrier</name><data><coupling>null</coupling></data></node>
         <node f="42"><name>fixedResourceBarriers</name></node>
@@ -57,29 +79,6 @@
         <node f="42" dt="1"><name>estimatedIndefiniteAllocTimeDelay</name><data>0000000040240000</data></node>
         <node f="42" dt="1"><name>routeByTravelTime</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>deallocTimeOffset</name><data>0000000000000000</data></node>
-        <node f="42"><name>grids</name>
-         <node f="40"><name></name></node>
-         <node f="42" dt="7"><name>MainGrid</name><data/>
-          <node f="40"><name></name></node>
-          <node f="42" dt="1"><name>nodeWidth</name><data>000000003ff00000</data></node>
-          <node f="42" dt="1"><name>minPointX</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>minPointY</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>minPointZ</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>maxPointX</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>maxPointY</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>maxPointZ</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>gridOriginX</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>gridOriginY</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>gridOriginZ</name><data>0000000000000000</data></node>
-          <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Grid</data>
-           <node f="40"><name></name></node>
-           <node f="42" dt="3"><name>navigator</name><data><coupling>/installdata/add/1/data/astar/AStarNavigator</coupling></data></node>
-           <node f="42" dt="1"><name>isBounded</name><data>0000000000000000</data></node>
-           <node f="42" dt="1"><name>isLowestGrid</name><data>0000000000000000</data></node>
-          </node>
-         </node>
-        </node>
-        <node f="42"><name></name></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node>
@@ -87,25 +86,15 @@
          <node f="40"><name></name></node>
          <node f="1000042" dt="2"><name>addObject</name><data>dll:"module:AStar" func:"AStarNavigator_addObject"</data></node>
          <node f="1000042" dt="2"><name>addMember</name><data>dll:"module:AStar" func:"AStarNavigator_addMember"</data></node>
-         <node f="1000042" dt="2"><name>addPoint</name><data>dll:"module:AStar" func:"Barrier_addPoint"</data></node>
          <node f="1000042" dt="2"><name>getActiveBarrierMode</name><data>dll:"module:AStar" func:"AStarNavigator_getActiveBarrierMode"</data></node>
-         <node f="1000042" dt="2"><name>getBarrierType</name><data>dll:"module:AStar" func:"Barrier_getBarrierType"</data></node>
          <node f="1000042" dt="2"><name>getGrid</name><data>dll:"module:AStar" func:"AStarNavigator_getGrid"</data></node>
-         <node f="1000042" dt="2"><name>getPathWeight</name><data>dll:"module:AStar" func:"PreferredPath_getWeight"</data></node>
-         <node f="1000042" dt="2"><name>getPointCoord</name><data>dll:"module:AStar" func:"Barrier_getPointCoord"</data></node>
          <node f="1000042" dt="2"><name>rebuildMeshes</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildMeshes"</data></node>
          <node f="1000042" dt="2"><name>rebuildEdgeTable</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildEdgeTable"</data></node>
          <node f="1000042" dt="2"><name>removeBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_removeBarrier"</data></node>
          <node f="1000042" dt="2"><name>removeMember</name><data>dll:"module:AStar" func:"AStarNavigator_removeMember"</data></node>
-         <node f="1000042" dt="2"><name>removePoint</name><data>dll:"module:AStar" func:"Barrier_removePoint"</data></node>
          <node f="1000042" dt="2"><name>setActiveBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_setActiveBarrier"</data></node>
-         <node f="1000042" dt="2"><name>setActiveIndex</name><data>dll:"module:AStar" func:"Barrier_setActiveIndex"</data></node>
-         <node f="1000042" dt="2"><name>setPathWeight</name><data>dll:"module:AStar" func:"PreferredPath_setWeight"</data></node>
-         <node f="1000042" dt="2"><name>setPointCoords</name><data>dll:"module:AStar" func:"Barrier_setPointCoords"</data></node>
          <node f="1000042" dt="2"><name>swapBarriers</name><data>dll:"module:AStar" func:"AStarNavigator_swapBarriers"</data></node>
-         <node f="1000042" dt="2"><name>swapPoints</name><data>dll:"module:AStar" func:"Barrier_swapPoints"</data></node>
          <node f="1000042" dt="2"><name>setEditMode</name><data>dll:"module:AStar" func:"AStarNavigator_setEditMode"</data></node>
-         <node f="1000042" dt="2"><name>setBarrierMode</name><data>dll:"module:AStar" func:"Barrier_setMode"</data></node>
          <node f="1000042" dt="2"><name>onMouseMove</name><data>dll:"module:AStar" func:"AStarNavigator_onMouseMove"</data></node>
          <node f="1000042" dt="2"><name>onClick</name><data>dll:"module:AStar" func:"AStarNavigator_onClick"</data></node>
          <node f="1000042" dt="2"><name>blockGridModelPos</name><data>dll:"module:AStar" func:"AStarNavigator_blockGridModelPos"</data></node>
@@ -218,7 +207,7 @@
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Bridge</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Preferred Path</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -235,7 +224,7 @@
         <node f="42" dt="1"><name>dragging</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelY</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>lastModelZ</name><data>bdc0f9203fedebda</data></node>
+        <node f="42" dt="1"><name>lastModelZ</name><data>4d24cfe9c00d9b4a</data></node>
         <node f="42" dt="1"><name>creating</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mode</name><data>0000000000000000</data></node>
@@ -301,7 +290,7 @@ if (!objectexists(selobj)) {
 				
 				treenode activeObject = function_s(activeNavigator, "addObject", mouseX, mouseY, mouseZ, mouseX, mouseY, mouseZ, mode);
 				if (mode != EDITMODE_GRID)
-					function_s(activeNavigator, "setBarrierMode", activeObject, BARRIER_MODE_DYNAMIC_CREATE);
+					function_s(activeObject, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
 				setselectedobject(i, activeNavigator);
 				nodepoint(getvarnode(c, "curObjectNode"), activeObject); 
 				return 0;
@@ -467,18 +456,18 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
 treenode handler = tonode(get(objectfocus(c)));
-treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
+treenode barrier = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
 
-if(objectexists(secondary)) {
+if(objectexists(barrier)) {
 	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
 	if (!objectexists(activeNavigator))
 		activeNavigator = function_s(handler, "findNavigator");
 	
 	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
-		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(secondary, getname(c))) {
+		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(barrier, getname(c))) {
 		// Add to an existing
-		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "curObjectNode"), secondary);
+		function_s(barrier, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "curObjectNode"), barrier);
 		
 		setvarnum(handler, "creating", 1);
 		setvarnum(handler, "editing", 0);
@@ -526,18 +515,18 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
 treenode handler = tonode(get(objectfocus(c)));
-treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
+treenode barrier = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
 
-if(objectexists(secondary)) {
+if(objectexists(barrier)) {
 	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
 	if (!objectexists(activeNavigator))
 		activeNavigator = function_s(handler, "findNavigator");
 	
 	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
-		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(secondary, getname(c))) {
+		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(barrier, getname(c))) {
 		// Add to an existing
-		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "curObjectNode"), secondary);
+		function_s(barrier, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "curObjectNode"), barrier);
 		
 		setvarnum(handler, "creating", 1);
 		setvarnum(handler, "editing", 0);
@@ -585,18 +574,18 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
 treenode handler = tonode(get(objectfocus(c)));
-treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
+treenode barrier = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
 
-if(objectexists(secondary)) {
+if(objectexists(barrier)) {
 	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
 	if (!objectexists(activeNavigator))
 		activeNavigator = function_s(handler, "findNavigator");
 	
 	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
-		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(secondary, getname(c))) {
+		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(barrier, getname(c))) {
 		// Add to an existing
-		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "curObjectNode"), secondary);
+		function_s(barrier, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "curObjectNode"), barrier);
 		
 		setvarnum(handler, "creating", 1);
 		setvarnum(handler, "editing", 0);
@@ -644,18 +633,18 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
 treenode handler = tonode(get(objectfocus(c)));
-treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
+treenode barrier = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
 
-if(objectexists(secondary)) {
+if(objectexists(barrier)) {
 	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
 	if (!objectexists(activeNavigator))
 		activeNavigator = function_s(handler, "findNavigator");
 	
 	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
-		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(secondary, getname(c))) {
+		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(barrier, getname(c))) {
 		// Add to an existing
-		function_s(activeNavigator, "setBarrierMode", secondary, BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "curObjectNode"), secondary);
+		function_s(barrier, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "curObjectNode"), barrier);
 		
 		setvarnum(handler, "creating", 1);
 		setvarnum(handler, "editing", 0);
@@ -803,13 +792,13 @@ return asn;
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\onewaydivider.bmp</data></node>
        </data></node>
-       <node f="42" dt="4"><name>Preferred Path</name><data>
+       <node f="10000042" dt="4"><name>Preferred Path</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::PreferredPath")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
        </data></node>
-       <node f="10000042" dt="4"><name>Bridge</name><data>
+       <node f="42" dt="4"><name>Bridge</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Bridge")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -2079,7 +2068,7 @@ repaintview(TheTable);
              <node f="442" dt="2"><name>add</name><data>int type = param(1);
 treenode focus = node("@&gt;objectfocus+", c);
 
-function_s(focus, "addBarrier", 0, 0, 10, 10, type);
+function_s(focus, "addObject", 0, 0, 0, 10, 10, 0, type);
 function_s(focus, "rebuildMeshes");
 treenode selectBarrier = node("../SelectBarrier", c);
 function_s(selectBarrier, "refreshList");
@@ -2308,12 +2297,11 @@ nodepoint(node("../Attributes&gt;objectfocus", c), barrierNode);
 function_s(node("../Attributes", c), "refreshData");</data></node>
              <node f="442" dt="2"><name>filterList</name><data>string type = param(1);
 
-treenode result = node("&gt;result", c);
 treenode barriers = node("@&gt;objectfocus+&gt;variables/barriers", c);
 
 for (int i = 1; i &lt;= content(barriers); i++) {
-	function_s(ownerobject(barriers), "getBarrierType", rank(barriers, i), result);
-	if (comparetext(type, gets(result)) || stringlen(type) == 0) {
+	string barrierType = function_s(rank(barriers, i), "getType");
+	if (type == barrierType || stringlen(type) == 0) {
 		treenode itm = nodeadddata(nodeinsertinto(items(c)), DATATYPE_NUMBER);
 		setname(itm, getname(rank(barriers, i)));
 		set(itm, i);
@@ -2356,20 +2344,17 @@ repaintall();</data></node>
              <node f="40"><name></name></node>
              <node f="442" dt="2"><name>refreshData</name><data>treenode focus = node("&gt;objectfocus+", c);
 int enable = objectexists(focus);
-
 int path = 0;
 int bridge = 0;
 int useVirtualDistance = 0;
 if (enable) {
 	treenode pointsEdit = node("/PointsEdit", c);
 	
-	treenode result = node("&gt;result", c);
-	function_s(ownerobject(focus), "getBarrierType", focus, result);
-	string type = gets(result);
+	string type = function_s(focus, "getType");
 	
 	path = comparetext(type, "AStar::PreferredPath");
 	if (path) {
-		double pathWeight = function_s(ownerobject(focus), "getPathWeight", focus);
+		double pathWeight = function_s(focus, "getWeight");
 		setvarnum(node("/PathWeight/editPathWeight", c), "weight", pathWeight);
 	} else {
 		setvarnum(node("/PathWeight/editPathWeight", c), "weight", 0);
@@ -2397,6 +2382,8 @@ windowgray(windowfromnode(node("/Name", c)), !enable);
 windowgray(windowfromnode(node("/editName", c)), !enable);
 windowgray(windowfromnode(node("/VirtualDistance/Virtual Distance", c)), !enable || !bridge);
 
+function_s(c, "grayCondition");
+
 forobjecttreeunder(node("/PathWeight", c))
 	windowgray(windowfromnode(a), !enable || !path);
 
@@ -2408,6 +2395,13 @@ forobjecttreeunder(node("/PointsEdit", c))
 
 forobjecttreeunder(node("/BarrierPoints", c))
 	windowgray(windowfromnode(a), !enable);</data></node>
+             <node f="442" dt="2"><name>grayCondition</name><data>treenode focus = c.find("&gt;objectfocus+");
+treenode conditionCheckbox = c.find("Condition");
+int useCondition = focus != NULL &amp;&amp; getchecked(conditionCheckbox);
+forobjecttreeunder(c.find("EditCondition")) {
+	windowgray(windowfromnode(a), !useCondition);
+}
+windowgray(windowfromnode(conditionCheckbox), focus == NULL);</data></node>
             </node>
             <node f="42" dt="1"><name>alignrightposition</name><data>0000000040736000</data></node>
             <node f="42" dt="1"><name>alignbottommargin</name><data>0000000040240000</data></node>
@@ -2424,7 +2418,7 @@ forobjecttreeunder(node("/BarrierPoints", c))
             <node f="42" dt="4"><name>editName</name><data>
              <node f="40"><name>object</name></node>
              <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-             <node f="42" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
+             <node f="42" dt="1"><name>spatialx</name><data>000000004055c000</data></node>
              <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
              <node f="42" dt="1"><name>spatialsx</name><data>00000000406b2000</data></node>
              <node f="42" dt="1"><name>spatialsy</name><data>0000000040340000</data></node>
@@ -2443,11 +2437,47 @@ if (objectexists(focus)) {
 	}
 }</data></node>
             </data></node>
+            <node f="42" dt="4"><name>Condition</name><data>
+             <node f="40"><name>object</name></node>
+             <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+             <node f="42" dt="1"><name>spatialx</name><data>0000000040310000</data></node>
+             <node f="42" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
+             <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
+             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+             <node f="42" dt="2"><name>tooltip</name><data></data></node>
+             <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+/useCondition</data></node>
+             <node f="42" dt="2"><name>OnPress</name><data>function_s(c.up, "grayCondition");</data></node>
+            </data></node>
+            <node f="42" dt="4"><name>EditCondition</name><data>
+             <node f="40"><name>object</name></node>
+             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+             <node f="42" dt="1"><name>spatialx</name><data>000000004055c000</data></node>
+             <node f="42" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
+             <node f="42" dt="1"><name>spatialsx</name><data>0000000040715000</data></node>
+             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+             <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
+             <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeEdit</data></node>
+             <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/condition</data></node>
+             <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which the barrier will be applied</data></node>
+             <node f="42"><name>variables</name>
+              <node f="40"><name></name></node>
+              <node f="42" dt="2"><name>codedescription</name><data>Barrier Condition</data></node>
+              <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/BarrierCondition</data>
+               <node f="40"><name></name></node></node>
+              <node f="42" dt="1"><name>hasDragTarget</name><data>0000000000000000</data></node>
+              <node f="42" dt="1"><name>valType</name><data>000000003ff00000</data>
+               <node f="40"><name></name></node>
+               <node f="42"><name>number</name></node>
+              </node>
+              <node f="42" dt="2"><name>codefocus</name><data>../..&gt;objectfocus+</data></node>
+             </node>
+            </data>
+             <node f="40"><name></name></node></node>
             <node f="42" dt="4"><name>PathWeight</name><data>
              <node f="40"><name>object</name></node>
              <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
              <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-             <node f="42" dt="1"><name>spatialy</name><data>0000000040458000</data></node>
+             <node f="42" dt="1"><name>spatialy</name><data>000000004051c000</data></node>
              <node f="42" dt="1"><name>spatialsx</name><data>000000004072e000</data></node>
              <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
              <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data>
@@ -2466,7 +2496,7 @@ if (objectexists(focus)) {
              <node f="42" dt="4"><name>editPathWeight</name><data>
               <node f="40"><name>object</name></node>
               <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-              <node f="42" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>000000004055c000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
               <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
               <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
@@ -2484,7 +2514,7 @@ if (objectexists(focus)) {
                <node f="42" dt="1"><name>weight</name><data>0000000000000000</data></node>
                <node f="442" dt="2"><name>OnKillFocus</name><data>treenode focus = node("../../../..&gt;objectfocus+", c);
 
- function_s(ownerobject(focus), "setPathWeight", focus, getvarnum(up(up(c)), "weight"));</data></node>
+ function_s(focus, "setWeight", getvarnum(up(up(c)), "weight"));</data></node>
               </node>
              </data>
               <node f="40"><name></name></node></node>
@@ -2493,7 +2523,7 @@ if (objectexists(focus)) {
              <node f="40"><name>object</name></node>
              <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
              <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-             <node f="42" dt="1"><name>spatialy</name><data>0000000040458000</data></node>
+             <node f="42" dt="1"><name>spatialy</name><data>000000004051c000</data></node>
              <node f="42" dt="1"><name>spatialsx</name><data>000000004072e000</data></node>
              <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
              <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data>
@@ -2504,7 +2534,7 @@ if (objectexists(focus)) {
              <node f="42" dt="4"><name>Virtual Distance</name><data>
               <node f="40"><name>object</name></node>
               <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
-              <node f="42" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>000000004055c000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
               <node f="42" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
               <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
@@ -2519,7 +2549,7 @@ forobjecttreeunder(node("../editVirtualDistance", c))
              <node f="42" dt="4"><name>editVirtualDistance</name><data>
               <node f="40"><name>object</name></node>
               <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-              <node f="42" dt="1"><name>spatialx</name><data>000000004067c000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>000000004068a000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
               <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
               <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
@@ -2546,7 +2576,7 @@ node("/virtualDistance", focus).value = getvarnum(up(up(c)), "virtualDistance");
              <node f="40"><name>object</name></node>
              <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
              <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-             <node f="42" dt="1"><name>spatialy</name><data>0000000040524000</data></node>
+             <node f="42" dt="1"><name>spatialy</name><data>0000000040594000</data></node>
              <node f="42" dt="1"><name>spatialsx</name><data>000000004072e000</data></node>
              <node f="42" dt="1"><name>spatialsy</name><data>aaaaaaab40726aaa</data></node>
              <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
@@ -2565,7 +2595,7 @@ node("/virtualDistance", focus).value = getvarnum(up(up(c)), "virtualDistance");
              <node f="42" dt="4"><name>Add</name><data>
               <node f="40"><name>object</name></node>
               <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
-              <node f="42" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>000000004055c000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
               <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
               <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
@@ -2575,10 +2605,10 @@ treenode pointsNode = node("/points", barrier);
 double x = get(node("/x", last(pointsNode)));
 double y = get(node("/y", last(pointsNode)));
 
-function_s(ownerobject(barrier), "addPoint", barrier, x +2, y +2);
+function_s(barrier, "addPoint", x +2, y +2);
 applylinks(table, 1);
 refreshview(table);
-function_s(ownerobject(barrier), "setActiveIndex", barrier, content(pointsNode) -1);
+function_s(barrier, "setActiveIndex", content(pointsNode) -1);
 function_s(ownerobject(barrier), "rebuildMeshes");
 repaintall();
 </data>
@@ -2590,7 +2620,7 @@ repaintall();
              <node f="42" dt="4"><name>Remove</name><data>
               <node f="40"><name>object</name></node>
               <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
-              <node f="42" dt="1"><name>spatialx</name><data>00000000405b4000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>00000000405d0000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
               <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
               <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
@@ -2609,10 +2639,10 @@ treenode selected = rank(pointsNode, index);
 if (!objectexists(selected))
 	return 0;
 
-function_s(ownerobject(barrier), "removePoint", barrier, index-1);
+function_s(barrier, "removePoint", index-1);
 applylinks(table, 1);
 refreshview(table);
-function_s(ownerobject(barrier), "setActiveIndex", barrier, index -2);
+function_s(barrier, "setActiveIndex", index -2);
 function_s(ownerobject(barrier), "rebuildMeshes");
 repaintall();
 settableviewselection(table, maxof(1, index -1), 0, maxof(1, index -1), 2);
@@ -2623,7 +2653,7 @@ repaintview(table);</data></node>
              <node f="42" dt="4"><name>Up</name><data>
               <node f="40"><name>object</name></node>
               <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
-              <node f="42" dt="1"><name>spatialx</name><data>0000000040614000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>0000000040622000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
               <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
               <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
@@ -2641,10 +2671,10 @@ if (!objectexists(selected))
 if (index &lt;= 1)
 	return 0;
 
-function_s(ownerobject(barrier), "swapPoints", barrier, index -1, index -2);
+function_s(barrier, "swapPoints", index -1, index -2);
 applylinks(table, 1);
 refreshview(table);
-function_s(ownerobject(barrier), "setActiveIndex", barrier, index -2);
+function_s(barrier, "setActiveIndex", index -2);
 function_s(ownerobject(barrier), "rebuildMeshes");
 repaintall();
 settableviewselection(table, index -1, 0, index -1, 2);
@@ -2654,7 +2684,7 @@ repaintview(table);</data></node>
              <node f="42" dt="4"><name>Down</name><data>
               <node f="40"><name>object</name></node>
               <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
-              <node f="42" dt="1"><name>spatialx</name><data>000000004064e000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>000000004065c000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
               <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
               <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
@@ -2672,10 +2702,10 @@ if (!objectexists(selected))
 if (index == 0 || index &gt;= content(node("&gt;viewfocus+", table)))
 	return 0;
 
-function_s(ownerobject(barrier), "swapPoints", barrier, index -1, index);
+function_s(barrier, "swapPoints", index -1, index);
 applylinks(table, 1);
 refreshview(table);
-function_s(ownerobject(barrier), "setActiveIndex", barrier, index);
+function_s(barrier, "setActiveIndex", index);
 function_s(ownerobject(barrier), "rebuildMeshes");
 repaintall();
 settableviewselection(table, index +1, 0, index +1, 2);
@@ -2688,7 +2718,7 @@ repaintview(table);</data></node>
               <node f="42"><name>table</name>
                <node f="40"><name></name></node></node>
               <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040140000</data></node>
-              <node f="42" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>000000004055c000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000040380000</data></node>
               <node f="42" dt="1"><name>spatialsx</name><data>00000000406b2000</data></node>
               <node f="42" dt="1"><name>spatialsy</name><data>aaaaaaab40709aaa</data></node>
@@ -2711,8 +2741,8 @@ if (gets(result) == "AStar::Barrier")
 if (!eventdata) {
 	clearcontents(table);
 	for (int i = 0; i &lt; content(node("/points", focus)); i++) {
-		double x = function_s(astarNavigator, "getPointCoord", focus, i, POINT_X);
-		double y = function_s(astarNavigator, "getPointCoord", focus, i, POINT_Y);
+		double x = function_s(focus, "getPointCoord", i, POINT_X);
+		double y = function_s(focus, "getPointCoord", i, POINT_Y);
 		
 		treenode parent = nodeinsertinto(table);
 		treenode xNode = nodeadddata(nodeinsertinto(parent), DATATYPE_NUMBER);
@@ -2721,7 +2751,7 @@ if (!eventdata) {
 		set(yNode, y);
 		
 		if (gets(result) == "AStar::Bridge") {
-			double z = function_s(astarNavigator, "getPointCoord", focus, i, POINT_Z);
+			double z = function_s(focus, "getPointCoord", i, POINT_Z);
 			treenode zNode = nodeadddata(nodeinsertinto(parent), DATATYPE_NUMBER);
 			set(zNode, z);
 		}
@@ -2735,8 +2765,8 @@ if (!eventdata) {
 } else {
 	int rebuildMeshes = 0;
 	for (int i = 0; i &lt; content(node("/points", focus)); i++) {
-		double x = function_s(astarNavigator, "getPointCoord", focus, i, POINT_X);
-		double y = function_s(astarNavigator, "getPointCoord", focus, i, POINT_Y);
+		double x = function_s(focus, "getPointCoord", i, POINT_X);
+		double y = function_s(focus, "getPointCoord", i, POINT_Y);
 		double z = 0;
 		
 		treenode newpoints = rank(table, i+1);
@@ -2745,13 +2775,13 @@ if (!eventdata) {
 		double newz = 0;
 		
 		if (gets(result) == "AStar::Bridge") {
-			z = function_s(astarNavigator, "getPointCoord", focus, i, POINT_Z);
+			z = function_s(focus, "getPointCoord", i, POINT_Z);
 			newz = get(newpoints.subnodes[POINT_Z]);
 		}
 		
 		if (x != newx || y != newy || z != newz) {
 			rebuildMeshes = 1;
-			function_s(astarNavigator, "setPointCoords", focus, i, newx, newy, newz);
+			function_s(focus, "setPointCoords", i, newx, newy, newz);
 		}
 	}
 	
@@ -2782,7 +2812,7 @@ if (lastkeydown() == VK_RETURN) {
 			return 0;
 		set(itemcurrent(c), index);
 		
-		function_s(ownerobject(barrier), "setActiveIndex", barrier, index -1);
+		function_s(barrier, "setActiveIndex", index -1);
 		function_s(ownerobject(barrier), "rebuildMeshes");
 		repaintall();
 	}
@@ -2835,7 +2865,7 @@ repaintview(TheTable);
              <node f="42" dt="1"><name>viewwindowopen</name><data>000000003ff00000</data></node>
              <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
              <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-             <node f="42" dt="1"><name>spatialy</name><data>0000000040524000</data></node>
+             <node f="42" dt="1"><name>spatialy</name><data>0000000040594000</data></node>
              <node f="42" dt="1"><name>spatialsx</name><data>000000004072e000</data></node>
              <node f="42" dt="1"><name>spatialsy</name><data>000000004057c000</data></node>
              <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
@@ -2871,16 +2901,16 @@ if (eventdata) {
 	double y2 = sizey + y1;
 	
 	if (x1 != getvarnum(c, "x1") || y1 != getvarnum(c, "y1") || x2 != getvarnum(c, "x2") || y2 != getvarnum(c, "y2")) {
-		function_s(astarNavigator, "setPointCoords", focus, 0, x1, y1);
-		function_s(astarNavigator, "setPointCoords", focus, 1, x2, y2);
+		function_s(focus, "setPointCoords", 0, x1, y1);
+		function_s(focus, "setPointCoords", 1, x2, y2);
 		function_s(astarNavigator, "rebuildMeshes");
 		repaintall();
 	}
 } else {
-	double x1 = function_s(astarNavigator, "getPointCoord", focus, 0, POINT_X);
-	double y1 = function_s(astarNavigator, "getPointCoord", focus, 0, POINT_Y);
-	double x2 = function_s(astarNavigator, "getPointCoord", focus, 1, POINT_X);
-	double y2 = function_s(astarNavigator, "getPointCoord", focus, 1, POINT_Y);
+	double x1 = function_s(focus, "getPointCoord", 0, POINT_X);
+	double y1 = function_s(focus, "getPointCoord", 0, POINT_Y);
+	double x2 = function_s(focus, "getPointCoord", 1, POINT_X);
+	double y2 = function_s(focus, "getPointCoord", 1, POINT_Y);
 	
 	setvarnum(c, "posx", x1);
 	setvarnum(c, "posy", y1);
@@ -2922,7 +2952,7 @@ if (eventdata) {
              <node f="42" dt="4"><name>Labels</name><data>
               <node f="40"><name>object</name></node>
               <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-              <node f="42" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>000000004055c000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
               <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data>
                <node f="40"><name></name></node></node>
@@ -2954,7 +2984,7 @@ if (eventdata) {
              <node f="42" dt="4"><name>X</name><data>
               <node f="40"><name>object</name></node>
               <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-              <node f="42" dt="1"><name>spatialx</name><data>0000000040580000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>000000004059c000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
               <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data>
                <node f="40"><name></name></node></node>
@@ -3027,7 +3057,7 @@ applylinks(parent);</data></node>
              <node f="42" dt="4"><name>Y</name><data>
               <node f="40"><name>object</name></node>
               <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-              <node f="42" dt="1"><name>spatialx</name><data>0000000040686000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>0000000040694000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
               <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data>
                <node f="40"><name></name></node></node>
@@ -3143,6 +3173,14 @@ applylinks(parent);</data></node>
          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/BottomButtons</data></node>
         </data></node>
+       </node>
+      </node>
+      <node f="42"><name>PickLists</name>
+       <node f="40"><name></name></node>
+       <node f="42" dt="2"><name>BarrierCondition</name><data>treenode traveler = param(1);
+</data>
+        <node f="40"><name></name></node>
+        <node f="42" dt="2"><name>By Traveler Label</name><data>return /**/traveler.type == 1/**direct*/;</data></node>
        </node>
       </node>
      </node>

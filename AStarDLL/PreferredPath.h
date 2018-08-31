@@ -21,6 +21,9 @@ public:
 	virtual void addVertices(Mesh* barrierMesh, float z) override;
 	virtual PreferredPath* toPreferredPath() override { return this; }
 
+	ASTAR_FUNCTION Variant getWeight(FLEXSIMINTERFACE) { return pathWeight; }
+	ASTAR_FUNCTION Variant setWeight(FLEXSIMINTERFACE) { pathWeight = param(1); return Variant(); }
+
 	/// <summary>	True if the navigator should apply this preferred path as a conditional barrier. 
 	/// 			This is set when the navigator first encounters the preferred path as part of a 
 	/// 			route calculation, and is then used on subsequent encounters of the same preferred

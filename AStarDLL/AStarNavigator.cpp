@@ -169,7 +169,7 @@ void AStarNavigator::resolveGridBounds()
 
 	std::sort(tempGrids.begin(), tempGrids.end(), [&](Grid* left, Grid* right) { return left->minPoint.z < right->minPoint.z; });
 
-	double lowestZ = tempGrids[0]->minPoint.x;
+	double lowestZ = tempGrids[0]->minPoint.z;
 
 	for (auto iter = tempGrids.begin(); iter != tempGrids.end();) {
 		Grid* grid = *iter;
@@ -853,7 +853,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	// Figure out if this path is in the cache
 	bool shouldUseCache = false;
 	CachedPathID p;
-	if (cachePaths && !doFullSearch && !routeByTravelTime) {
+	if (cachePaths && !doFullSearch && !routeByTravelTime && !hasConditionalBarriers) {
 		requestCount++;
 		p.startRow = startCell.row;
 		p.startCol = startCell.col;
@@ -883,9 +883,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	// the value is the solution of f(x,y) for that node in the set
 	openSetHeap = std::priority_queue<HeapEntry, std::vector<HeapEntry>, HeapEntryCompare>();
 
-	std::set<Barrier*> visitedConditionalBarriers;
-	TemporaryBarrier tempBarrier(this);
-	applyToTemporaryBarrier = &tempBarrier;
+	visitedConditionalBarriers.clear();
 	entryHash.clear();
 	// add the first node to the "open set"
 	totalSet.push_back(AStarSearchEntry());
@@ -915,6 +913,12 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	// 1. the index into totalset that references the AStarSearchEntry that i'm going to resolve
 	// 2. the solution f(x, y) of that AStarSearchEntry
 	openSetHeap.push(HeapEntry(start->f, 0));
+
+	AStarNode* startNode = getNode(start->cell);
+	if (startNode->hasConditionalBarrier) {
+		shortest = *start;
+		updateConditionalBarrierDataOnOpenSetExpanded(start->cell, startNode);
+	}
 
 	closestSoFar = 10000000000000.0f;
 	closestIndex = 0;
@@ -988,28 +992,12 @@ the outside 8 nodes.
 		if (n->hasPreferredPathWeight) {
 			preferredPathData = edgeTableExtraData.find(shortest.cell.value)->second;
 		}
-
-		if (n->hasConditionalBarrier) {
+		if (n->hasConditionalBarrier && preferredPathData) {
 			AStarNodeExtraData* barrierData = edgeTableExtraData[shortest.cell.value];
 			for (Barrier* barrier : barrierData->conditionalBarriers) {
-				if (visitedConditionalBarriers.find(barrier) == visitedConditionalBarriers.end()) {
-					visitedConditionalBarriers.insert(barrier);
-					bool shouldApplyBarrier = (bool)barrier->condition->evaluate(te->holder);
-					if (shouldApplyBarrier) {
-						barrier->addBarriersToTable(grid);
-					}
-					if (preferredPathData != nullptr) {
-						PreferredPath* path = barrier->toPreferredPath();
-						if (path)
-							path->shouldApplyConditionalBarrier = shouldApplyBarrier;
-					}
-				}
-
-				if (preferredPathData != nullptr) {
-					PreferredPath* path = barrier->toPreferredPath(); 
-					if (path && !path->shouldApplyConditionalBarrier)
-						preferredPathData = nullptr;
-				}
+				PreferredPath* path = barrier->toPreferredPath();
+				if (path && !path->shouldApplyConditionalBarrier)
+					preferredPathData = nullptr;
 			}
 		}
 
@@ -1048,7 +1036,14 @@ the outside 8 nodes.
 		}
 	} // End of the while loop
 
-	applyToTemporaryBarrier = nullptr;
+	if (visitedConditionalBarriers.size() > 0) {
+		for (auto iter = visitedConditionalBarriers.rbegin(); iter != visitedConditionalBarriers.rend(); iter++) {
+			Barrier* barrier = *iter;
+			if (barrier->conditionalBarrierChanges.isApplied)
+				barrier->conditionalBarrierChanges.unapply();
+		}
+		visitedConditionalBarriers.clear();
+	}
 
 	// remake the start pointer (totalSet may reallocate due to push_back)
 	start = totalSet.data();
@@ -1148,6 +1143,26 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 	return path.calculateTotalDistance(this);
 }
 
+void AStarNavigator::updateConditionalBarrierDataOnOpenSetExpanded(const AStarCell& cell, AStarNode* n)
+{
+	AStarNodeExtraData* barrierData = edgeTableExtraData[cell.value];
+	for (Barrier* barrier : barrierData->conditionalBarriers) {
+		if (visitedConditionalBarriers.find(barrier) == visitedConditionalBarriers.end()) {
+			visitedConditionalBarriers.insert(barrier);
+			bool shouldApplyBarrier = (bool)barrier->condition->evaluate(routingTraveler->te->holder);
+			if (shouldApplyBarrier) {
+				barrier->conditionalBarrierChanges.apply();
+			}
+
+			if (n->hasPreferredPathWeight) {
+				PreferredPath* path = barrier->toPreferredPath();
+				if (path)
+					path->shouldApplyConditionalBarrier = shouldApplyBarrier;
+			}
+		}
+	}
+}
+
 AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float multiplier, float rotDirection, char bridgeIndex)
 {
 	AStarSearchEntry* entry = NULL;
@@ -1168,6 +1183,11 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 		totalSetIndex = entryHash[hashEntry.cell.value];
 		entry = &(totalSet[totalSetIndex]);
 	}
+
+	if (n->hasConditionalBarrier) {
+		updateConditionalBarrierDataOnOpenSetExpanded(AStarCell(grid->rank, r, c), n);
+	}
+
 	float speedScale = routeByTravelTime ? 1.0 / routingTraveler->te->v_maxspeed : 1.0;
 	float newG = shortest.g + multiplier * grid->nodeWidth * speedScale;
 

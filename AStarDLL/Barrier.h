@@ -3,6 +3,7 @@
 #include "AStarClasses.h"
 #include "Point.h"
 #include "Grid.h"
+#include "TemporaryBarrier.h"
 #include <vector>
 #include <unordered_map>
 
@@ -49,7 +50,10 @@ public:
 	unsigned int arrow;
 
 	double nodeWidth;
+	double useCondition = 0.0;
 	treenode condition = nullptr;
+
+	TemporaryBarrier conditionalBarrierChanges;
 
 	Barrier();
 	virtual ~Barrier();
@@ -86,10 +90,18 @@ public:
 	// These functions are for modifying barrier points. They each 
 	// check bounds before making any modifications.
 	void addPoint(const Vec3& pos);
+	ASTAR_FUNCTION Variant addPoint(FLEXSIMINTERFACE) { addPoint(Vec3(param(1), param(2), param(3))); return Variant(); }
 	void removePoint(int pointIndex);
+	ASTAR_FUNCTION Variant removePoint(FLEXSIMINTERFACE) { removePoint((int)param(1));  return Variant(); }
 	void swapPoints(int index1, int index2);
-	bool getPointCoords(int pointIndex, Vec3& point);
+	ASTAR_FUNCTION Variant swapPoints(FLEXSIMINTERFACE) { swapPoints((int)param(1), (int)param(2)); return Variant(); }
+	Vec3 getPointCoords(int pointIndex);
+	ASTAR_FUNCTION Variant getPointCoord(FLEXSIMINTERFACE);
 	bool setPointCoords(int pointIndex, const Vec3& point);
+	ASTAR_FUNCTION Variant setPointCoords(FLEXSIMINTERFACE) { 
+		setPointCoords((int)param(1), Vec3(param(2), param(3), param(4)));
+		return Variant();
+	}
 
 	// These functions are for checking if the barrier is subclassed
 	virtual Divider* toDivider() { return nullptr; }
@@ -99,6 +111,18 @@ public:
 
 	void addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color);
 	virtual void onReset(AStarNavigator* nav) {}
+
+	std::string getType() { return getClassFactory(); }
+	ASTAR_FUNCTION Variant getType(FLEXSIMINTERFACE) { return getType(); }
+
+	void setEditMode(int toMode) { mode = toMode; }
+	ASTAR_FUNCTION Variant setEditMode(FLEXSIMINTERFACE) { setEditMode((int)param(1)); return Variant(); }
+
+	void setActiveIndex(int toIndex) { activePointIndex = toIndex; }
+	ASTAR_FUNCTION Variant setActiveIndex(FLEXSIMINTERFACE) { setActiveIndex((int)param(1)); return Variant(); }
+
+
+
 };
 
 }

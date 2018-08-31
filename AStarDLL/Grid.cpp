@@ -211,7 +211,18 @@ void Grid::buildNodeTable()
 	// to the goal is not overestimated.
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
-		barrier->addBarriersToTable(this);
+		bool isConditional = barrier->useCondition && rank == 1;
+		if (isConditional) {
+			barrier->conditionalBarrierChanges.reset(navigator);
+			navigator->applyToTemporaryBarrier = &barrier->conditionalBarrierChanges;
+		}
+		Vec3 min, max;
+		barrier->getBoundingBox(min, max);
+		if (isLocWithinVerticalBounds(min.z) || isConditional) {
+			barrier->addBarriersToTable(this);
+		}
+		if (isConditional)
+			navigator->applyToTemporaryBarrier = nullptr;
 	}
 
 	// add custom barriers
@@ -236,7 +247,11 @@ void Grid::buildNodeTable()
 
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
-		barrier->addPassagesToTable(this);
+		Vec3 min, max;
+		barrier->getBoundingBox(min, max);
+		if (isLocWithinVerticalBounds(min.z)) {
+			barrier->addPassagesToTable(this);
+		}
 	}
 }
 
@@ -434,17 +449,14 @@ void Grid::blockGridModelPos(const AStarCell& cell)
 
 void Grid::blockNodeDirection(const AStarCell& cell, Direction direction, Barrier* barrier) {
 	AStarNode* node = getNode(cell);
-	if (navigator->applyToTemporaryBarrier == nullptr) {
-		bool isConditionalBarrier = barrier && barrier->condition;
-		if (isConditionalBarrier) {
-			navigator->assertExtraData(cell, ConditionalBarrierData)->addConditionalBarrier(barrier);
-		} else {
-			node->setCanGo(direction, false);
-		}
+	bool isConditionalBarrier = barrier && barrier->useCondition;
+	if (navigator->applyToTemporaryBarrier == nullptr || !isConditionalBarrier) {
+		node->setCanGo(direction, false);
 	} else {
 		AStarNode copy(*node);
 		copy.setCanGo(direction, false);
 		navigator->applyToTemporaryBarrier->addEntry(cell, copy);
+		navigator->assertExtraData(cell, ConditionalBarrierData)->addConditionalBarrier(barrier);
 	}
 }
 

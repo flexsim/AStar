@@ -30,6 +30,7 @@ protected:
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
 	std::unordered_map<unsigned long long, unsigned int> entryHash; // A mapping from colRow to index in totalSet
 	std::unordered_map<CachedPathID, TravelPath, CachedPathID::Hash > pathCache;
+	std::set<Barrier*> visitedConditionalBarriers;
 
 	struct HeapEntry {
 		HeapEntry(float f, unsigned int totalSetIndex) : f(f), totalSetIndex(totalSetIndex) {}
@@ -75,6 +76,7 @@ protected:
 	bool isActiveBarrierBuilt = false;
 	bool isHoveredBarrierBuilt = false;
 
+	void updateConditionalBarrierDataOnOpenSetExpanded(const AStarCell& cell, AStarNode* n);
 	inline AStarSearchEntry* expandOpenSet(Grid* grid, int r, int c, float multiplier, float rotOnArrival, char bridgeIndex = -1);
 
 	void buildBoundsMesh(float z);

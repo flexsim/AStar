@@ -28,6 +28,8 @@ void PreferredPath::bind(void)
 {
 	Divider::bind();
 	bindDouble(pathWeight, 0);
+	bindCallback(getWeight, PreferredPath);
+	bindCallback(setWeight, PreferredPath);
 }
 
 void PreferredPath::addPassagesToTable(Grid* grid)
@@ -85,7 +87,7 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 		// under the line
 		while(currCol != nextCol || currRow != nextRow) {
 
-			AStarCell cell((unsigned int)grid, currRow, currCol);
+			AStarCell cell(grid->rank, currRow, currCol);
 			AStarNode* node = grid->getNode(cell);
 			AStarNodeExtraData * extra = grid->navigator->assertExtraData(cell, PreferredPathData);
 			node->hasPreferredPathWeight = true;
@@ -104,7 +106,7 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 			if (dy < 0)
 				node->canGoDown = true;
 
-			if (condition) {
+			if (useCondition) {
 				node->hasConditionalBarrier = true;
 				extra->addConditionalBarrier(this);
 			}
@@ -148,36 +150,4 @@ void PreferredPath::addVertices(Mesh* barrierMesh, float z)
 }
 
 
-}
-
-using namespace AStar;
-
-ASTAR_FUNCTION Variant PreferredPath_setWeight(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	TreeNode* pathNode = param(1);
-	
-	try {
-		PreferredPath* path = pathNode->objectAs(PreferredPath);
-		path->pathWeight = param(2);
-	} catch (...) {;}
-
-	return 0;
-}
-
-ASTAR_FUNCTION Variant PreferredPath_getWeight(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	TreeNode* pathNode = param(1);
-	try {
-		PreferredPath* path = pathNode->objectAs(PreferredPath);
-		return path->pathWeight;
-	} catch (...) {;}
-	return 0;
 }

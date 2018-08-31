@@ -36,10 +36,28 @@ void Barrier::bind(void)
 	bindNumber(isActive);
 	bindNumber(activePointIndex);
 	bindNumber(mode);
-	//bindDouble(nodeWidth, 0);
 
 	bindSubNode(points, 0);
 	pointList.init(points);
+
+	bindDouble(useCondition, 1);
+	bindSubNode(condition, DATATYPE_STRING);
+
+	bindCallback(addPoint, Barrier);
+	bindCallback(removePoint, Barrier);
+	bindCallback(swapPoints, Barrier);
+	bindCallback(getPointCoord, Barrier);
+	bindCallback(setPointCoords, Barrier);
+	bindCallback(getType, Barrier);
+	bindCallback(setEditMode, Barrier);
+	bindCallback(setActiveIndex, Barrier);
+
+	int bindMode = getBindMode();
+	if (bindMode == SDT_BIND_ON_LOAD || bindMode == SDT_BIND_ON_CREATE) {
+		if (condition->value == "") {
+			condition->value = "treenode traveler = param(1);\r\nreturn /**/traveler.type == 1/**direct*/;\r\n";
+		}
+	}
 }
 
 
@@ -62,9 +80,8 @@ bool Barrier::getBoundingBox(Vec3& min, Vec3& max)
 	if (pointList.size() < 2) 
 		return false;
 	
-	Vec3 p0, p1;
-	getPointCoords(0, p0);
-	getPointCoords(1, p1);
+	Vec3 p0 = getPointCoords(0);
+	Vec3 p1 = getPointCoords(1);
 
 	min = Vec3(min(p0.x, p1.x), min(p0.y, p1.y), min(p0.z, p1.z));
 	max = Vec3(max(p0.x, p1.x), max(p0.y, p1.y), max(p0.z, p1.z));
@@ -373,15 +390,27 @@ void Barrier::swapPoints(int index1, int index2)
 	pointList.swap(index1, index2);
 }
 
-bool Barrier::getPointCoords(int pointIndex, Vec3& point)
+Vec3 Barrier::getPointCoords(int pointIndex)
 {
 	if (pointIndex >= pointList.size())
-		return false;
+		throw "Invalid Barrier point index";
 
-	point.x = pointList[pointIndex]->x;
-	point.y = pointList[pointIndex]->y;
-	point.z = pointList[pointIndex]->z;
-	return true;
+	Point* point = pointList[pointIndex];
+	return Vec3(point->x, point->y, point->z);
+}
+
+ASTAR_FUNCTION Variant Barrier::getPointCoord(FLEXSIMINTERFACE)
+{
+	Vec3 coord = getPointCoords((int)param(1));
+	int coordID = param(2);
+	if (coordID == POINT_X)
+		return coord.x;
+	if (coordID == POINT_Y)
+		return coord.y;
+	if (coordID == POINT_Z)
+		return coord.z;
+
+	return 0.0;
 }
 
 bool Barrier::setPointCoords(int pointIndex, const Vec3& point)
@@ -580,161 +609,3 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 }
 
 }
-
-using namespace AStar;
-
-
-ASTAR_FUNCTION Variant Barrier_setMode(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	TreeNode* barNode = param(1);
-
-	try {
-		Barrier* b = barNode->objectAs(Barrier);
-		b->mode = (int)param(2);
-	} catch (...) {
-		return 0;
-	}
-	return 1;
-}
-
-ASTAR_FUNCTION Variant Barrier_addPoint(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	TreeNode* barNode = param(1);
-
-	try {
-		Barrier* b = barNode->objectAs(Barrier);
-		b->addPoint(Vec3(param(2), param(3), param(4)));
-	} catch (...) {
-		return 0;
-	}
-	return 1;
-}
-
-ASTAR_FUNCTION Variant Barrier_removePoint(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	TreeNode* barNode = param(1);
-
-	try {
-		Barrier* b = barNode->objectAs(Barrier);
-		b->removePoint((int)param(2));
-	} catch (...) {
-		return 0;
-	}
-	return 1;
-}
-
-ASTAR_FUNCTION Variant Barrier_swapPoints(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	TreeNode* barNode = param(1);
-
-	try {
-		Barrier* b = barNode->objectAs(Barrier);
-		b->swapPoints((int)param(2), (int)param(3));
-	} catch (...) {
-		return 0;
-	}
-	return 1;
-}
-
-ASTAR_FUNCTION Variant Barrier_setPointCoords(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	TreeNode* barNode = param(1);
-
-	try {
-		Barrier* b = barNode->objectAs(Barrier);
-		if(parqty() == 5)
-			b->setPointCoords((int)param(2), Vec3(param(3), param(4), param(5)));
-		else
-			b->setPointCoords((int)param(2), Vec3(param(3), param(4), 0.0));
-	} catch (...) {
-		return 0;
-	}
-	return 1;
-}
-
-ASTAR_FUNCTION Variant Barrier_getPointCoord(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	TreeNode* barNode = param(1);
-	Vec3 point;
-
-	try {
-		Barrier* b = barNode->objectAs(Barrier);
-		b->getPointCoords((int)param(2), point);
-	} catch (...) {
-		return 0;
-	}
-
-	if ((int)param(3) == POINT_X)
-		return point.x;
-
-	if ((int)param(3) == POINT_Y)
-		return point.y;
-
-	if ((int)param(3) == POINT_Z)
-		return point.z;
-
-	return 1;
-}
-
-ASTAR_FUNCTION Variant Barrier_getBarrierType(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	TreeNode* barNode = param(1);
-	TreeNode* resultNode = param(2);
-
-	if (!validlink(resultNode, ""))
-		return 0;
-
-	try {
-		Barrier* b = barNode->objectAs(Barrier);
-		sets(resultNode, b->getClassFactory());
-	} catch (...) {
-		return 0;
-	}
-	return 1;
-}
-
-ASTAR_FUNCTION Variant Barrier_setActiveIndex(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	TreeNode* barNode = param(1);
-
-	try {
-		Barrier* b = barNode->objectAs(Barrier);
-		b->activePointIndex = (int)param(2);
-	} catch (...) {
-		return 0;
-	}
-	return 1;
-}
-

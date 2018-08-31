@@ -34,8 +34,7 @@ bool Divider::getBoundingBox(Vec3& min, Vec3& max)
 	min = Vec3(DBL_MAX, DBL_MAX, DBL_MAX);
 	max = Vec3(-DBL_MAX, -DBL_MAX, -DBL_MAX);
 	for (int i = 0; i < pointList.size(); i++) {
-		Vec3 point;
-		getPointCoords(i, point);
+		Vec3 point = getPointCoords(i);
 
 		min.x = min(min.x, point.x);
 		max.x = max(max.x, point.x);
@@ -59,7 +58,7 @@ void Divider::addBarriersToTable(Grid* grid)
 		grid->divideGridModelLine(
 			Vec3(point->x, point->y, point->z),
 			Vec3(nextPoint->x, nextPoint->y, nextPoint->z),
-			false
+			false, this
 		);
 	}
 }
