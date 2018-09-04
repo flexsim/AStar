@@ -34,9 +34,9 @@ public:
 	double lastUpdateTime = -1.0;
 	double nodeWidth = 1.0;
 	bool isAvailable = true;
-	Traveler* firstTraveler;
-	Traveler* lastTraveler;
-	Traveler* blockedTraveler;
+	Traveler* firstTraveler = nullptr;
+	Traveler* lastTraveler = nullptr;
+	Traveler* blockedTraveler = nullptr;
 	int blockedPathIndex;
 
 	double calculateDistance() const;

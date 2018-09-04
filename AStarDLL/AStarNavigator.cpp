@@ -1019,6 +1019,8 @@ the outside 8 nodes.
 			if (e != edgeTableExtraData.end() && extra->bridges.size() > 0) {
 				for (int i = 0; i < extra->bridges.size(); i++) {
 					auto& entry = extra->bridges[i];
+					if (entry.bridge->useCondition && !entry.bridge->condition->evaluate(routingTraveler->te->holder))
+						continue;
 					double addedDist = entry.bridge->travelDistance + grid->nodeWidth;
 					Point* endPoint = entry.isAtBridgeStart ? entry.bridge->pointList.back() : entry.bridge->pointList.front();
 					AStarCell endCell = getCellFromLoc(Vec2(endPoint->x, endPoint->y));

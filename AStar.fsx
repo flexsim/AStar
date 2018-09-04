@@ -207,7 +207,7 @@
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Preferred Path</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Bridge</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -224,7 +224,7 @@
         <node f="42" dt="1"><name>dragging</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelY</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>lastModelZ</name><data>4d24cfe9c00d9b4a</data></node>
+        <node f="42" dt="1"><name>lastModelZ</name><data>441b8f88c01849d0</data></node>
         <node f="42" dt="1"><name>creating</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mode</name><data>0000000000000000</data></node>
@@ -257,7 +257,7 @@ nodepoint(getvarnode(c, "activeNavigator"), activeNavigator);
 
 double mouseX = cursorinfo(i, 2, 1, 1);
 double mouseY = cursorinfo(i, 2, 2, 1);
-double mouseZ = cursorinfo(i, 2, 2, 1);
+double mouseZ = cursorinfo(i, 2, 3, 1);
 setvarnum(c, "lastMouseX", cursorinfo(i, 1, 1, 1));
 setvarnum(c, "lastMouseY", cursorinfo(i, 1, 2, 1));
 setvarnum(c, "lastModelX", mouseX);
@@ -287,7 +287,6 @@ if (!objectexists(selobj)) {
 						mouseY = floor((mouseY + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 					}
 				}
-				
 				treenode activeObject = function_s(activeNavigator, "addObject", mouseX, mouseY, mouseZ, mouseX, mouseY, mouseZ, mode);
 				if (mode != EDITMODE_GRID)
 					function_s(activeObject, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
@@ -792,13 +791,13 @@ return asn;
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\onewaydivider.bmp</data></node>
        </data></node>
-       <node f="10000042" dt="4"><name>Preferred Path</name><data>
+       <node f="42" dt="4"><name>Preferred Path</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::PreferredPath")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
        </data></node>
-       <node f="42" dt="4"><name>Bridge</name><data>
+       <node f="10000042" dt="4"><name>Bridge</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Bridge")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
