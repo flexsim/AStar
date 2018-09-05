@@ -24,6 +24,7 @@
     <ComponentGroup Id="group_cursors">
       <ComponentRef Id="comp_F9C4998801D64BEC8024E312B35721E7" />
       <ComponentRef Id="comp_D5362E48995D4F00BB6E0B2987EDDB0C" />
+      <ComponentRef Id="comp_A7054EE58F30457996E21EF0552248C2" />
       <ComponentRef Id="comp_8BA37A1CA489467D8AA0FF4A91547DBA" />
       <ComponentRef Id="comp_C82608410D1D4A1D988DDA13240FFA14" />
       <ComponentRef Id="comp_EB62955DB0274573A2155A9309CAC80E" />
@@ -45,6 +46,14 @@
 </Program GUIDs-->
         <Component Id="comp_D5362E48995D4F00BB6E0B2987EDDB0C" Guid="C2A80D85-1928-4E06-B795-5DA5081F6E52">
           <File Id="file_702232241A574BDEBAAE3259DB596D2A" KeyPath="yes" Source="$(var.ProjectDir)cursors\dividertool.cur" />
+        </Component>
+ <!--Program GUIDs>
+<FlexSim="051D3D84-EC44-4DD4-B0DA-CF02CD98DBF5">
+<FlexSimHC="BB31ADF6-34A0-4D7F-AD7C-558BD215C2FE">
+<FlexSimChinese="FC521777-2308-4B08-B3D2-9EF24658E2AF">
+</Program GUIDs-->
+        <Component Id="comp_A7054EE58F30457996E21EF0552248C2" Guid="D9FA015C-3393-4FD4-B5EE-B4E51EF063BE">
+          <File Id="file_1D7A338DBD1D42BF9990560EBFF406F9" KeyPath="yes" Source="$(var.ProjectDir)cursors\gridtool.cur" />
         </Component>
 <!--Program GUIDs>
 <FlexSim="F28443E5-7968-4B05-AB47-B97D8898E174">

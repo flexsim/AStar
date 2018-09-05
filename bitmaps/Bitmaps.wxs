@@ -28,6 +28,7 @@
       <ComponentRef Id="comp_2881CE12D03142FCBD02258753F0827B" />
       <ComponentRef Id="comp_B1749A877D0B4B6FB43AE2AAD4AB6A95" />
       <ComponentRef Id="comp_3B0057ECC4894946924DEAFF562B9C8E" />
+      <ComponentRef Id="comp_4F275985CAB54E86AC960C6A08941421" />
       <ComponentRef Id="comp_1E7E82B2EA3C4B07A4F07643A1A476ED" />
       <ComponentRef Id="comp_DD4D094F678F4049A71E098DDFBA1B8C" />
       <ComponentRef Id="comp_5C38210AD23446E190165C28BE68CD85" />
@@ -81,6 +82,14 @@
 </Program GUIDs-->
         <Component Id="comp_3B0057ECC4894946924DEAFF562B9C8E" Guid="C200248F-3102-4447-93D0-526A6D423D41">
           <File Id="file_26196AE85BB34757B56A6B5AA96ED5EF" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\divider.bmp" />
+        </Component>
+<!--Program GUIDs>
+<FlexSim="6D0BCC58-F2F0-450D-B7B5-A6749E45CA82">
+<FlexSimHC="2E2ADAE8-D52C-4FC8-902E-35D8D5425177">
+<FlexSimChinese="3DA8EC0B-A7A6-466B-B40A-A16E611BAC9D">
+</Program GUIDs-->
+        <Component Id="comp_4F275985CAB54E86AC960C6A08941421" Guid="A747A8CD-3AE9-4014-81C9-CC9E5C5A45DC">
+          <File Id="file_7FD4EDFCD8424F0485CA368FE34AF57C" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\grid.bmp" />
         </Component>
 <!--Program GUIDs>
 <FlexSim="930B6BFD-D0D2-485F-A4B0-781B23E1A31F">
