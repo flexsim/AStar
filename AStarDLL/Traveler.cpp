@@ -46,6 +46,8 @@ void Traveler::bind()
 
 	bindNumber(turnSpeed);
 	bindNumber(turnDelay);
+
+	bindDouble(useMandatoryPath, 1);
 	//bindNumber(estimatedIndefiniteAllocTimeDelay);
 	//bindStlContainer(allocations);
 }
@@ -86,6 +88,23 @@ void Traveler::onReset()
 	te->moveToResetPosition();
 	Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
 	AStarCell resetCell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
+
+	if (useMandatoryPath) {
+		Grid* grid = navigator->getGrid(resetCell);
+		AStarCell originalResetCell = resetCell;
+		grid->visitCellsWidening(resetCell, [&](const AStarCell& cell) -> bool {
+			AStarNode* node = navigator->getNode(cell);
+			if (node->isOnMandatoryPath) {
+				resetCell = cell;
+				return false;
+			}
+			return true;
+		});
+		if (originalResetCell != resetCell) {
+			te->setLocation(grid->getLocFromCell(resetCell), Vec3(0.5, 0.5, 0.0));
+		}
+	}
+
 	travelPath.clear();
 	travelPath.push_back(AStarPathEntry(resetCell, -1));
 	tinyTime = 0.001 * navigator->minNodeWidth / te->v_maxspeed;

@@ -4,8 +4,7 @@
 
 namespace AStar {
 
-class Divider :
-	public Barrier
+class Divider : public Barrier
 {
 public:
 	Divider();

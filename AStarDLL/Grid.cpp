@@ -533,7 +533,129 @@ void Grid::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, boo
 			pos += step;
 		}
 	}
+}
 
+
+void Grid::visitGridModelLine(const Vec3& fromPos, const Vec3& toPos, std::function<void(const AStarCell& cell)> callback)
+{
+	int fromCol = (int)round((fromPos.x - gridOrigin.x) / nodeWidth);
+	int fromRow = (int)round((fromPos.y - gridOrigin.y) / nodeWidth);
+
+	// calculate the column and row numbers for that point
+	int toCol = (int)round((toPos.x - gridOrigin.x) / nodeWidth);
+	int toRow = (int)round((toPos.y - gridOrigin.y) / nodeWidth);
+
+	// set dx and dy, the differences between the rows and columns
+	double dx = toCol - fromCol;
+	double dy = toRow - fromRow;
+
+	// figure out the unit increment (either -1 or 1) for traversing from the
+	// current point to the next point
+	int colInc = (int)sign(dx);
+	if (colInc == 0)
+		colInc = 1;
+
+	int rowInc = (int)sign(dy);
+	if (rowInc == 0)
+		rowInc = 1;
+
+	// prevent divide by zero errors
+	if (dx == 0) dx = 0.01;
+	// get the slope of the line
+	double goalSlope = dy / dx;
+
+	int currCol = fromCol;
+	int currRow = fromRow;
+	// now step through the line, essentially walking along the edges of the grid tiles
+	// under the line
+	while (true) {
+		AStarCell cell(rank, currRow, currCol);
+		callback(cell);
+
+		// the way that I essentially move along the line
+		// is at each grid point, I do a test step horizontally, 
+		// and a test step vertically, and then test the new slope of the line to the 
+		// destination for each of those test steps. Whichever line's slope is closest
+		// to the actual slope represents the step I want to take.
+		int testCol = currCol + colInc;
+		int testRow = currRow + rowInc;
+		double dxTestCol = toCol - testCol;
+		if (dxTestCol == 0) dxTestCol = 0.01;
+		double dxTestRow = toCol - currCol;
+		if (dxTestRow == 0) dxTestRow = 0.01;
+
+		double colIncSlope = (toRow - currRow) / dxTestCol;
+		double rowIncSlope = (toRow - testRow) / dxTestRow;
+
+		int nextCurrCol, nextCurrRow;
+		if (fabs(colIncSlope - goalSlope) <= fabs(rowIncSlope - goalSlope)) {
+			// move over one column
+			nextCurrCol = testCol;
+			nextCurrRow = currRow;
+		}
+		else {
+			nextCurrCol = currCol;
+			nextCurrRow = testRow;
+		}
+
+		if (currRow == toRow && currCol == toCol)
+			break;
+
+		currCol = nextCurrCol;
+		currRow = nextCurrRow;
+
+
+	}
+}
+
+
+void Grid::visitCellsWidening(const AStarCell& centerCell, std::function<bool(const AStarCell& cell)> callback)
+{
+	if (!callback(centerCell))
+		return;
+
+	bool continueWidening = true;
+	for (int i = 1; continueWidening; i++) {
+		if (centerCell.col < i && centerCell.row < i && centerCell.col + i >= numCols && centerCell.row + i >= numRows)
+			break;
+		AStarCell right(centerCell.grid, centerCell.row - i, centerCell.col + i);
+		AStarCell left(centerCell.grid, centerCell.row - i, centerCell.col - i);
+		AStarCell top(centerCell.grid, centerCell.row + i, centerCell.col - i + 1);
+		AStarCell bottom(centerCell.grid, centerCell.row - i, centerCell.col - i + 1);
+
+		for (; right.row <= top.row; right.row++, left.row++) {
+			if (right.row >= numRows)
+				break;
+			if (left.col >= 0) {
+				if (!callback(left)) {
+					continueWidening = false;
+					break;
+				}
+			}
+			if (right.col < numCols) {
+				if (!callback(right)) {
+					continueWidening = false;
+					break;
+				}
+			}
+		}
+		for (; top.col < right.col; top.col++, bottom.col++) {
+			if (top.col >= numCols)
+				break;
+			if (bottom.row >= 0) {
+				if (!callback(bottom)) {
+					continueWidening = false;
+					break;
+				}
+			}
+			if (top.row < numRows) {
+				if (!callback(top)) {
+					continueWidening = false;
+					break;
+				}
+			}
+		}
+	}
 }
 
 void Grid::buildBoundsMesh()

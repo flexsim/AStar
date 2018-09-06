@@ -19,7 +19,8 @@ enum class EditMode : unsigned int {
 	ONE_WAY_DIVIDER = 37,
 	SOLID_BARRIER = 38,
 	BRIDGE = 39,
-	GRID = 40
+	MANDATORY_PATH = 40,
+	GRID = 41
 };
 
 class AStarNavigator : public Navigator
@@ -67,6 +68,7 @@ protected:
 	// Drawing variables
 	Mesh barrierMesh;
 	Mesh memberMesh;
+	Mesh mandatoryPathMemberMesh;
 	bool isGridDirty = false;
 	bool isBoundsDirty = true;
 	bool isBarrierDirty = true;
@@ -281,7 +283,7 @@ public:
 	static AStarCell getPrevCell(AStarCell& toCell, float rotDirection);
 
 
-	NodeListArray<Traveler>::CouplingSdtSubNodeType travelers;
+	NodeListArray<Traveler>::CouplingSdtSubNodeBindingType travelers;
 	std::list<Traveler*> activeTravelers;
 	void buildActiveTravelerList();
 
@@ -303,6 +305,9 @@ public:
 
 	TemporaryBarrier* applyToTemporaryBarrier = nullptr;
 	double hasConditionalBarriers = 0.0;
+
+	treenode addMember(TaskExecuter* te);
+	void addObjectBarrier(ObjectDataType* object);
 };
 
 }

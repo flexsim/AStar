@@ -175,6 +175,7 @@
     <ClInclude Include="Grid.h" />
     <ClInclude Include="AStarNavigator.h" />
     <ClInclude Include="AStarTypes.h" />
+    <ClInclude Include="MandatoryPath.h" />
     <ClInclude Include="TemporaryBarrier.h" />
     <ClInclude Include="Traveler.h" />
     <ClInclude Include="Barrier.h" />
@@ -219,6 +220,7 @@
     <ClCompile Include="Bridge.cpp" />
     <ClCompile Include="Divider.cpp" />
     <ClCompile Include="flexsimcontent\dllmain.cpp" />
+    <ClCompile Include="MandatoryPath.cpp" />
     <ClCompile Include="OneWayDivider.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="PreferredPath.cpp" />

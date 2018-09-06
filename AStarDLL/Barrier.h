@@ -108,6 +108,7 @@ public:
 	virtual OneWayDivider* toOneWayDivider() { return nullptr; }
 	virtual PreferredPath* toPreferredPath() { return nullptr; }
 	virtual Bridge* toBridge() { return nullptr; }
+	virtual MandatoryPath* toMandatoryPath() { return nullptr; }
 
 	void addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color);
 	virtual void onReset(AStarNavigator* nav) {}

@@ -165,7 +165,7 @@ public:
 	};
 	std::vector<RoutingAlgorithmSnapshot> routingAlgorithmSnapshots;
 
-
+	double useMandatoryPath = 0.0;
 };
 
 

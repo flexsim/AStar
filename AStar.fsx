@@ -205,7 +205,7 @@
      <node f="40"><name></name></node>
      <node f="42"><name>AStar</name>
       <node f="40"><name></name></node>
-      <node f="42" dt="4"><name>AStar::Create</name><data>
+      <node f="10000042" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
        <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Bridge</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
@@ -224,7 +224,7 @@
         <node f="42" dt="1"><name>dragging</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelY</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>lastModelZ</name><data>441b8f88c01849d0</data></node>
+        <node f="42" dt="1"><name>lastModelZ</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>creating</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mode</name><data>0000000000000000</data></node>
@@ -673,6 +673,65 @@ executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
 nodepoint(objectfocus(c), 0);</data></node>
        </node>
       </data></node>
+      <node f="42" dt="4"><name>AStar::MandatoryPath</name><data>
+       <node f="40"><name></name></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~2/1/data/AStar/AStar::Create</coupling></data></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>state</name><data>0000000000000000</data></node>
+        <node f="42" dt="2"><name>type</name><data>Clicker</data></node>
+        <node f="42" dt="2"><name>cursor</name><data>modules\AStar\cursors\mandatorypathtool.cur</data></node>
+        <node f="42"><name>views</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>Spatial</name></node>
+        </node>
+        <node f="42" dt="2"><name>mode</name><data>EDITMODE_MANDATORY_PATH</data></node>
+       </node>
+       <node f="42"><name>eventfunctions</name>
+        <node f="40"><name></name></node>
+        <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
+treenode handler = tonode(get(objectfocus(c)));
+treenode barrier = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
+
+if(objectexists(barrier)) {
+	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
+	if (!objectexists(activeNavigator))
+		activeNavigator = function_s(handler, "findNavigator");
+	
+	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
+		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(barrier, getname(c))) {
+		// Add to an existing
+		function_s(barrier, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
+		nodepoint(getvarnode(handler, "curObjectNode"), barrier);
+		
+		setvarnum(handler, "creating", 1);
+		setvarnum(handler, "editing", 0);
+		
+		double mouseX = cursorinfo(i, 2, 1, 1);
+		double mouseY = cursorinfo(i, 2, 2, 1);
+		function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY);
+		
+		postwindowmessage(windowfromnode(i/*The view*/),
+			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
+			node("checkStatus", eventfunctions(handler)), 0);
+		
+		return 0;
+	}
+}
+
+executefsnode(OnClick(handler), handler, i, eventdata);
+</data></node>
+        <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
+executefsnode(OnMouseMove(handler), handler, i, eventdata);
+</data></node>
+        <node f="442" dt="2"><name>OnEntering</name><data>treenode handler = node("../AStar::Create", c);
+nodepoint(objectfocus(c), handler);
+setvarnum(handler, "mode", executestring(getvarstr(c, "mode")));
+executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
+        <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
+nodepoint(objectfocus(c), 0);</data></node>
+       </node>
+      </data></node>
       <node f="42" dt="4"><name>AStar::Grid</name><data>
        <node f="40"><name></name></node>
        <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
@@ -802,6 +861,12 @@ return asn;
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Bridge")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\bridge.bmp</data></node>
+       </data></node>
+       <node f="42" dt="4"><name>Mandatory Path</name><data>
+        <node f="40"><name></name></node>
+        <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::MandatoryPath")</data></node>
+        <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
+        <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\mandatorypath.bmp</data></node>
        </data></node>
        <node f="42" dt="4"><name>Grid</name><data>
         <node f="40"><name></name></node>
@@ -3200,7 +3265,8 @@ applylinks(parent);</data></node>
 #define EDITMODE_ONE_WAY_DIVIDER 37
 #define EDITMODE_SOLID_BARRIER 38
 #define EDITMODE_BRIDGE 39
-#define EDITMODE_GRID 40
+#define EDITMODE_MANDATORY_PATH 40
+#define EDITMODE_GRID 41
 </data></node>
     </node>
    </node>

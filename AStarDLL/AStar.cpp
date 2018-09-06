@@ -6,6 +6,7 @@
 #include "AStarNavigator.h"
 #include "AStar.h"
 #include "Bridge.h"
+#include "MandatoryPath.h"
 #include "Traveler.h"
 
 namespace AStar {
@@ -24,6 +25,7 @@ visible SimpleDataType* createsdtderivative(char* classname)
 	if(strcmp(classname, "Point")==0) return new Point;
 	if (strcmp(classname, "Barrier") == 0) return new Barrier;
 	if (strcmp(classname, "Bridge") == 0) return new Bridge;
+	if (strcmp(classname, "MandatoryPath") == 0) return new MandatoryPath;
 	if (strcmp(classname, "Bridge::ArrivalEvent") == 0) return new Bridge::ArrivalEvent;
 	if (strcmp(classname, "Bridge::EndArrivalEvent") == 0) return new Bridge::EndArrivalEvent;
 	if (strcmp(classname, "Bridge::AvailableEvent") == 0) return new Bridge::AvailableEvent;

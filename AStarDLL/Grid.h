@@ -1,5 +1,5 @@
 #pragma once
-#pragma once
+
 #include "FlexsimDefs.h"
 #include "AStarClasses.h"
 #include "AStarTypes.h"
@@ -93,6 +93,23 @@ public:
 	void blockGridModelPos(const Vec3& pos) { blockGridModelPos(getCellFromLoc(pos)); }
 	void blockNodeDirection(const AStarCell& cell, Direction direction, Barrier* barrier);
 	void divideGridModelLine(const Vec3& fromPos, const Vec3& toPos, bool isOneWay, Barrier* barrier = nullptr);
+	void visitGridModelLine(const Vec3& fromPos, const Vec3& toPos, std::function<void(const AStarCell& cell)>);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>	Visits cells around a given cell, expanding outward from the cell. </summary>
+	///
+	/// <remarks>	Anthony Johnson, 9/5/2018. </remarks>
+	///
+	/// <param name="centerCell">	The center cell. </param>
+	/// <param name="callback">  	The cellback. If this callback returns false, the visiting loop 
+	/// 							will be discontinued. </param>
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	void visitCellsWidening(const AStarCell& centerCell, std::function<bool(const AStarCell& cell)> callback);
+	void visitCellsWidening(const Vec3& center, std::function<bool(const AStarCell& cell)> callback)
+	{
+		visitCellsWidening(getCellFromLoc(center), callback);
+	}
+
 
 	Mesh boundsMesh;
 	Mesh gridMesh;

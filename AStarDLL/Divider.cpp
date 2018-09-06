@@ -273,7 +273,7 @@ double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 	if (mode & Barrier::POINT_EDIT && activePointIndex < pointList.size()) {
 		Point* activePoint = pointList[(int)activePointIndex];
 		// Snap between grid points
-		if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge()) {
+		if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge() && !toMandatoryPath()) {
 			activePoint->x = floor((pos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 			activePoint->y = floor((pos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 		}
@@ -283,13 +283,12 @@ double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
 		}
 		if (toBridge())
 			activePoint->z += diff.z;
-	}
-	else if (mode & Barrier::MOVE) {
+	} else if (mode & Barrier::MOVE) {
 		double diffX = diff.x;
 		double diffY = diff.y;
 		for (int i = 0; i < pointList.size(); i++) {
 			// Snap between grid points
-			if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge()) {
+			if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge() && !toMandatoryPath()) {
 				diffX = floor((pos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth
 					- floor((pos.x - diffX + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 				diffY = floor((pos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth

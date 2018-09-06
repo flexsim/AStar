@@ -121,8 +121,7 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 		black[1] += 0.2f;
 		black[2] += 0.2f;
 		z += 0.001 / getmodelunit(LENGTH_MULTIPLE);
-	}
-	else if (isHovered) {
+	} else if (isHovered) {
 		black[0] += 0.3f;
 		black[1] += 0.3f;
 		black[2] += 0.3f;
