@@ -3,14 +3,22 @@
 #include "AStarNavigator.h"
 
 namespace AStar {
-void MandatoryPath::bind(void)
+
+
+void MandatoryPath::onReset(AStarNavigator* nav) 
 {
-	__super::bind();
+	__super::onReset(nav);
+	if (useCondition) {
+		conditionalBarrierChanges.valueMask.isOnMandatoryPath = true;
+		nav->hasConditionalBarriers = 1.0;
+	}
 }
+
 
 void MandatoryPath::addPassagesToTable(Grid * grid)
 {
 	grid->navigator->hasMandatoryPaths = 1.0;
+
 	for (int i = 0; i < pointList.size() - 1; i++) {
 
 		Point* fromPoint = pointList[i];
@@ -21,8 +29,10 @@ void MandatoryPath::addPassagesToTable(Grid * grid)
 
 		grid->visitGridModelLine(fromPos, toPos, [this, grid, direction](const AStarCell& cell) -> void {
 			AStarNode* node = grid->getNode(cell);
-			node->isOnMandatoryPath = true;
 			AStarNode newValue(*node);
+			if (!useCondition)
+				node->isOnMandatoryPath = true;
+			else newValue.isOnMandatoryPath = true;
 			if (direction > 135.0 || direction < -135.0)
 				newValue.setCanGo(Right, false);
 			else if (direction < 45.0 && direction > -45.0)

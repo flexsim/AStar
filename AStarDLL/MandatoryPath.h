@@ -9,7 +9,7 @@ class MandatoryPath : public Divider
 public:
 
 	virtual const char * getClassFactory(void) { return "AStar::MandatoryPath"; }
-	virtual void bind(void) override;
+	virtual void onReset(AStarNavigator* nav) override;
 
 	virtual void addBarriersToTable(Grid* grid) override {}
 	virtual void addPassagesToTable(Grid* grid) override;

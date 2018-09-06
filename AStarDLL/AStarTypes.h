@@ -221,15 +221,16 @@ struct CachedPathID {
 		};
 		unsigned long long gridID;
 	};
+	bool isUsingMandatoryPaths;
 	treenode destination;
-	bool operator == (const CachedPathID& other) const { return gridID == other.gridID && destination == other.destination; }
+	bool operator == (const CachedPathID& other) const { return gridID == other.gridID && destination == other.destination && isUsingMandatoryPaths == other.isUsingMandatoryPaths; }
 	struct Hash {
 		size_t operator()(const CachedPathID& key) const
 		{	// hash _Keyval to size_t value by pseudorandomizing transform
 #ifdef _M_X64
-			return (size_t)key.gridID ^ (size_t)key.destination;
+			return (size_t)key.gridID ^ (size_t)key.destination ^ (size_t)key.isUsingMandatoryPaths;
 #else
-			return key.startID ^ key.endID ^ (size_t)key.destination;
+			return key.startID ^ key.endID ^ (size_t)key.destination ^ (size_t)key.isUsingMandatoryPaths;
 #endif
 		}
 	};

@@ -205,9 +205,9 @@
      <node f="40"><name></name></node>
      <node f="42"><name>AStar</name>
       <node f="40"><name></name></node>
-      <node f="10000042" dt="4"><name>AStar::Create</name><data>
+      <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Bridge</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Mandatory Path</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -675,7 +675,7 @@ nodepoint(objectfocus(c), 0);</data></node>
       </data></node>
       <node f="42" dt="4"><name>AStar::MandatoryPath</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~2/1/data/AStar/AStar::Create</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
         <node f="42" dt="1"><name>state</name><data>0000000000000000</data></node>
@@ -856,13 +856,13 @@ return asn;
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
        </data></node>
-       <node f="10000042" dt="4"><name>Bridge</name><data>
+       <node f="42" dt="4"><name>Bridge</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Bridge")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\bridge.bmp</data></node>
        </data></node>
-       <node f="42" dt="4"><name>Mandatory Path</name><data>
+       <node f="10000042" dt="4"><name>Mandatory Path</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::MandatoryPath")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -1865,6 +1865,7 @@ windowshow(windowfromnode(node("/Edit Table", parent)), 0);
 windowshow(windowfromnode(editor), 1);
 </data></node>
           <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
+          <node f="42" dt="2"><name>windowtitle</name><data>Barriers/Paths</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>editor view</name><data>
@@ -2375,7 +2376,7 @@ for (int i = 1; i &lt;= content(barriers); i++) {
 treenode barriers = getvarnode(focus, "barriers");
 string name = getname(rank(items(c), get(itemcurrent(c))));
 treenode barrierNode;
-
+applylinks(c.find("../Attributes"));
 for (int i = 1; i &lt;= content(barriers); i++) {
 	if (comparetext(getname(rank(barriers, i)), name)) {
 		barrierNode = rank(barriers, i);
@@ -3466,6 +3467,91 @@ return 0;
        </node>
        <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object is rerouted along a different path on the AStar network</data></node>
       </data></node>
+     </node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040428000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AGV Type</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42" dt="4"><name>AStar Traveler</name><data>
+      <node f="40"><name>object</name></node>
+      <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040180000</data>
+       <node f="40"><name></name></node></node>
+      <node f="42" dt="2"><name>guifocusclass</name><data>../../..&gt;variables/QuickPropertiesPanel</data></node>
+      <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+      <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+      <node f="42" dt="1"><name>spatialsx</name><data>0000000040634000</data></node>
+      <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+      <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+     </data>
+      <node f="40"><name></name></node>
+      <node f="42" dt="4"><name>AStar Traveler</name><data>
+       <node f="40"><name>object</name></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
+       <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
+       <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+       <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+       <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
+       <node f="42" dt="1"><name>spatialsx</name><data>000000004062c000</data></node>
+       <node f="42" dt="1"><name>spatialsy</name><data>0000000040418000</data></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>isExpanded</name><data>000000003ff00000</data></node>
+        <node f="42" dt="1"><name>showRequirements</name><data>0000000000000000</data>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>selObj</name><data>treenode te = param(1);
+if (!objectexists(te) || !isclasstype(te, "TaskExecuter"))
+	return 0;
+treenode nav = node("&gt;variables/navigator/1+/~", te);
+if (objectexists(nav) &amp;&amp; isclasstype(nav, "AStar::AStarNavigator"))
+	return 1;
+return 0;
+</data></node>
+         <node f="442" dt="2"><name>docType</name><data>string docType = gets(documentwindow(param(1)));
+return docType == "3D" || docType == "Tree";</data></node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>undohistory</name><data>..&gt;viewfocus+</data></node>
+       <node f="42"><name>eventfunctions</name>
+        <node f="40"><name></name></node>
+        <node f="442" dt="2"><name>onSelObjChange</name><data>nodepoint(objectfocus(c), node("&gt;variables/navigator/1+", param(1)));
+applylinks(c, 1);
+</data></node>
+        <node f="442" dt="2"><name>onPropsApply</name><data>applylinks(c, 1);</data></node>
+        <node f="442" dt="2"><name>onExpand</name><data>if (param(1)) {// expanded
+	applylinks(c, 1);
+}
+</data></node>
+        <node f="42" dt="2"><name>OnUndo</name><data>applylinks(c, 1);
+</data></node>
+        <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata &amp;&amp; eventcode == APPLY_LINKS_ON_OPEN)
+	function_s(node("/ChooseType", c), "refreshList");</data></node>
+       </node>
+       <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+       <node f="42" dt="2"><name>tooltip</name><data></data></node>
+       <node f="42" dt="2"><name>windowtitle</name><data>A* Traveler</data></node>
+       <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+      </data>
+       <node f="40"><name></name></node>
+       <node f="42" dt="4"><name>Use Mandatory Paths</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data>When checked, the A* traveler will always travel along mandatory paths</data></node>
+        <node f="42" dt="2"><name>coldlink</name><data>../../..&gt;objectfocus+&gt;useMandatoryPath</data></node>
+        <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);</data></node>
+       </data></node>
+      </node>
      </node>
     </node>
    </node>

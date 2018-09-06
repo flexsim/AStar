@@ -21,10 +21,7 @@ void TemporaryBarrier::apply()
 		AStarNode* toNode = navigator->getNode(entries[i].cell);
 		AStarNode& fromNode = entries[i].newValue;
 		entries[i].savedValue = *toNode;
-		toNode->canGoUp = fromNode.canGoUp;
-		toNode->canGoDown = fromNode.canGoDown;
-		toNode->canGoLeft = fromNode.canGoLeft;
-		toNode->canGoRight = fromNode.canGoRight;
+		toNode->value = (toNode->value & ~valueMask.value) | (fromNode.value & valueMask.value);
 	}
 	isApplied = true;
 }
@@ -36,12 +33,27 @@ void TemporaryBarrier::unapply()
 	for (int i = entries.size() - 1; i >= 0; i--) {
 		AStarNode* toNode = navigator->getNode(entries[i].cell);
 		AStarNode& fromNode = entries[i].savedValue;
-		toNode->canGoUp = fromNode.canGoUp;
-		toNode->canGoDown = fromNode.canGoDown;
-		toNode->canGoLeft = fromNode.canGoLeft;
-		toNode->canGoRight = fromNode.canGoRight;
+		toNode->value = (toNode->value & ~valueMask.value) | (fromNode.value & valueMask.value);
 	}
 	isApplied = false;
+}
+
+TemporaryBarrier::TemporaryBarrier()
+{
+	valueMask.value = 0;
+	valueMask.canGoDown = true;
+	valueMask.canGoUp = true;
+	valueMask.canGoLeft = true;
+	valueMask.canGoRight = true;
+}
+
+TemporaryBarrier::TemporaryBarrier(AStarNavigator * nav) : navigator(nav)
+{
+	valueMask.value = 0;
+	valueMask.canGoDown = true;
+	valueMask.canGoUp = true;
+	valueMask.canGoLeft = true;
+	valueMask.canGoRight = true;
 }
 
 }

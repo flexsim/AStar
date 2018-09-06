@@ -610,11 +610,33 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 
 		switch(keyPressed & 0x7f) {
 			case 'A': {
-				addMember(te);
+				Traveler* t = addMember(te)->objectAs(Traveler);
+				treenode view = nodefromwindow(activedocumentview());
+				if (objectexists(view)) {
+					TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
+					if (!secondary)
+						secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, -2));
+					if (secondary && isclasstype(secondary, "AStar::MandatoryPath"))
+						t->useMandatoryPath = 1.0;
+				}
+
 				break;
 			}
 
 			case 'Q': {
+				treenode view = nodefromwindow(activedocumentview());
+				if (objectexists(view)) {
+					TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
+					if (!secondary)
+						secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, -2));
+					if (secondary && isclasstype(secondary, "AStar::MandatoryPath")) {
+						auto found = std::find_if(travelers.begin(), travelers.end(), [te](Traveler* t) -> bool { return t->te == te; });
+						if (found != travelers.end()) {
+							(*found)->useMandatoryPath = 0.0;
+							break;
+						}
+					}
+				}
 				clearcontents(navigatorNode);
 				TaskExecuter* te = connectTo->objectAs(TaskExecuter);
 				Navigator* navigator = te->findDefaultNavigator()->objectAs(Navigator);
@@ -877,6 +899,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 		p.endRow = destCell.row;
 		p.endCol = destCell.col;
 		p.destination = traveler->destNode;
+		p.isUsingMandatoryPaths = traveler->useMandatoryPath != 0;
 	
 		auto e = pathCache.find(p);
 		if (e != pathCache.end()) {
@@ -1541,7 +1564,12 @@ void AStarNavigator::drawMembers(float z)
 				z
 			};
 
-			ABT(center, pos1, pos2, memberMesh);
+			if (t->useMandatoryPath) {
+				ABT(center, pos1, pos2, mandatoryPathMemberMesh);
+			}
+			else {
+				ABT(center, pos1, pos2, memberMesh);
+			}
 		}
 	}
 

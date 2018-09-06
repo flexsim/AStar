@@ -11,19 +11,19 @@ class TemporaryBarrier
 		AStarNode savedValue;
 		AStarNode newValue;
 	};
-
 	AStarNavigator* navigator = nullptr;
 	std::vector<ChangeEntry> entries;
 
 public:
+	AStarNode valueMask;
 	bool isApplied = false;
 	void addEntry(const AStarCell& cell, const AStarNode& newValue);
 	void apply();
 	void unapply();
 	void reset(AStarNavigator* nav) { navigator = nav; entries.clear(); isApplied = false; }
 
-	TemporaryBarrier() {}
-	TemporaryBarrier(AStarNavigator* nav) : navigator(nav) {}
+	TemporaryBarrier();
+	TemporaryBarrier(AStarNavigator* nav);
 	~TemporaryBarrier() { if (isApplied) unapply(); }
 
 
