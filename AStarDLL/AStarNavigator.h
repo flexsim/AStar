@@ -305,6 +305,7 @@ public:
 
 	TemporaryBarrier* applyToTemporaryBarrier = nullptr;
 	double hasConditionalBarriers = 0.0;
+	double hasMandatoryPaths = 0.0;
 
 	treenode addMember(TaskExecuter* te);
 	void addObjectBarrier(ObjectDataType* object);

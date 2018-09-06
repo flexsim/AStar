@@ -111,7 +111,7 @@ public:
 	virtual MandatoryPath* toMandatoryPath() { return nullptr; }
 
 	void addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color);
-	virtual void onReset(AStarNavigator* nav) {}
+	virtual void onReset(AStarNavigator* nav);
 
 	std::string getType() { return getClassFactory(); }
 	ASTAR_FUNCTION Variant getType(FLEXSIMINTERFACE) { return getType(); }

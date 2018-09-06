@@ -618,38 +618,56 @@ void Grid::visitCellsWidening(const AStarCell& centerCell, std::function<bool(co
 	for (int i = 1; continueWidening; i++) {
 		if (centerCell.col < i && centerCell.row < i && centerCell.col + i >= numCols && centerCell.row + i >= numRows)
 			break;
-		AStarCell right(centerCell.grid, centerCell.row - i, centerCell.col + i);
-		AStarCell left(centerCell.grid, centerCell.row - i, centerCell.col - i);
-		AStarCell top(centerCell.grid, centerCell.row + i, centerCell.col - i + 1);
-		AStarCell bottom(centerCell.grid, centerCell.row - i, centerCell.col - i + 1);
+		AStarCell right(centerCell.grid, centerCell.row, centerCell.col + i);
+		AStarCell left(centerCell.grid, centerCell.row, centerCell.col - i);
+		AStarCell top(centerCell.grid, centerCell.row + i, centerCell.col);
+		AStarCell bottom(centerCell.grid, centerCell.row - i, centerCell.col);
 
-		for (; right.row <= top.row; right.row++, left.row++) {
-			if (right.row >= numRows)
-				break;
-			if (left.col >= 0) {
-				if (!callback(left)) {
+		for (int j = 0; j <= i; j++) {
+			if (right.row >= j) {
+				AStarCell rightBottom(right.grid, right.row - j, right.col);
+				if (!callback(rightBottom)) {
+					continueWidening = false;
+					break;
+				}
+				AStarCell leftBottom(left.grid, left.row - j, left.col);
+				if (!callback(leftBottom)) {
 					continueWidening = false;
 					break;
 				}
 			}
-			if (right.col < numCols) {
-				if (!callback(right)) {
+			if (j != 0 && right.row + j < numRows) {
+				AStarCell rightTop(right.grid, right.row + j, right.col);
+				if (!callback(rightTop)) {
+					continueWidening = false;
+					break;
+				}
+				AStarCell leftTop(left.grid, left.row + j, left.col);
+				if (!callback(leftTop)) {
 					continueWidening = false;
 					break;
 				}
 			}
-		}
-		for (; top.col < right.col; top.col++, bottom.col++) {
-			if (top.col >= numCols)
-				break;
-			if (bottom.row >= 0) {
-				if (!callback(bottom)) {
+			if (top.col >= j + 1) {
+				AStarCell topLeft(top.grid, top.row, top.col - j);
+				if (!callback(topLeft)) {
+					continueWidening = false;
+					break;
+				}
+				AStarCell bottomLeft(bottom.grid, bottom.row, bottom.col - j);
+				if (!callback(bottomLeft)) {
 					continueWidening = false;
 					break;
 				}
 			}
-			if (top.row < numRows) {
-				if (!callback(top)) {
+			if (j != 0 && top.col + j < numCols) {
+				AStarCell topRight(top.grid, top.row, top.col + j);
+				if (!callback(topRight)) {
+					continueWidening = false;
+					break;
+				}
+				AStarCell bottomRight(bottom.grid, bottom.row, bottom.col + j);
+				if (!callback(bottomRight)) {
 					continueWidening = false;
 					break;
 				}

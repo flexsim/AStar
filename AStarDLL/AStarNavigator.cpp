@@ -105,6 +105,7 @@ void AStarNavigator::bindVariables(void)
 	bindStateVariable(minNodeWidth);
 	bindVariable(hasCustomUserGrids);
 	bindStateVariable(hasConditionalBarriers);
+	bindStateVariable(hasMandatoryPaths);
 
 	bindVariableByName("extraData", extraDataNode, ODT_BIND_STATE_VARIABLE);
 
@@ -198,6 +199,7 @@ void AStarNavigator::resolveGridBounds()
 void AStarNavigator::resetGrids()
 {
 	hasConditionalBarriers = 0.0;
+	hasMandatoryPaths = 0.0;
 
 	for (Grid* grid : grids) {
 		grid->reset(this);
@@ -256,23 +258,24 @@ double AStarNavigator::onReset()
 		teNode->objectAs(TaskExecuter)->moveToResetPosition();
 	}
 
-	double sumSpeed = 0.0;
-	for (int i = 0; i < travelers.size(); i++) {
-		travelers[i]->onReset();
-		sumSpeed += travelers[i]->te->v_maxspeed;
-	}
+	for (Barrier* barrier : barrierList)
+		barrier->onReset(this);
 
 	edgeTableExtraData.clear();
 	extraDataNode->subnodes.clear();
 
 	resetGrids();
 
+	double sumSpeed = 0.0;
+	for (int i = 0; i < travelers.size(); i++) {
+		travelers[i]->onReset();
+		sumSpeed += travelers[i]->te->v_maxspeed;
+	}
+
+
 	SimulationStartEvent::addObject(this);
 
 	setDirty();
-
-	for (Barrier* barrier : barrierList)
-		barrier->onReset(this);
 
 	if (enableCollisionAvoidance && collisionUpdateIntervalFactor > 0 && travelers.size() > 0) {
 		double avgSpeed = sumSpeed / travelers.size();
@@ -838,16 +841,21 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	if (traveler->useMandatoryPath) {
 		AStarNode* node = getNode(startCell);
 		if (!node->isOnMandatoryPath) {
+			bool foundMandatoryPath = false;
 			Grid* grid = getGrid(startCell);
 			grid->visitCellsWidening(startCell, [&](const AStarCell& cell) -> bool {
 				if (getNode(startCell)->isOnMandatoryPath) {
 					startCell = cell;
+					foundMandatoryPath = true;
 					return false;
 				}
 				return true;
 			});
+			if (!foundMandatoryPath) {
+				string message = string(traveler->holder->name.c_str()) + " is set to use mandatory paths, but no mandatory paths were found.";
+				EX(message.c_str(), "", 1);
+			}
 		}
-
 		for (int i = 0; i < barrierList.size(); i++) {
 			MandatoryPath* path = barrierList[i]->toMandatoryPath();
 			if (path) {

@@ -10,6 +10,7 @@ void MandatoryPath::bind(void)
 
 void MandatoryPath::addPassagesToTable(Grid * grid)
 {
+	grid->navigator->hasMandatoryPaths = 1.0;
 	for (int i = 0; i < pointList.size() - 1; i++) {
 
 		Point* fromPoint = pointList[i];
@@ -40,10 +41,5 @@ void MandatoryPath::addPassagesToTable(Grid * grid)
 void MandatoryPath::addVertices(Mesh * barrierMesh, float z)
 {
 	addPathVertices(barrierMesh, z, Vec4f(0.75f, 0.61f, 0.25f, 1.0f));
-}
-
-void MandatoryPath::onReset(AStarNavigator * nav)
-{
-	__super::onReset(nav);
 }
 }

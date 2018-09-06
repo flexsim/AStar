@@ -14,7 +14,6 @@ public:
 	virtual void addBarriersToTable(Grid* grid) override {}
 	virtual void addPassagesToTable(Grid* grid) override;
 	virtual void addVertices(Mesh* barrierMesh, float z) override;
-	virtual void onReset(AStarNavigator* nav) override;
 	virtual MandatoryPath* toMandatoryPath() override { return this; }
 };
 

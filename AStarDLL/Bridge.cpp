@@ -65,6 +65,7 @@ void Bridge::addVertices(Mesh* barrierMesh, float z)
 
 void Bridge::onReset(AStarNavigator* nav)
 {
+	__super::onReset(nav);
 	blockedTraveler = nullptr;
 	firstTraveler = nullptr;
 	lastTraveler = nullptr;

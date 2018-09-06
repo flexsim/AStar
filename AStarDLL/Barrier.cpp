@@ -151,10 +151,10 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 		Vec3f(myMin.x + width * 0.5f, myMin.y - 0.5f * scale, z)
 	};
 
-	float bottomLeft[3] = {myMin.x, myMin.y, z};
-	float topRight[3] = { myMax.x, myMax.y, z }; 
-	float topLeft[3] = { myMin.x, myMax.y, z };
-	float bottomRight[3] = {myMax.x, myMin.y, z};
+	float bottomLeft[3] = {(float)myMin.x, (float)myMin.y, z};
+	float topRight[3] = { (float)myMax.x, (float)myMax.y, z };
+	float topLeft[3] = { (float)myMin.x, (float)myMax.y, z };
+	float bottomRight[3] = { (float)myMax.x, (float)myMin.y, z};
 	
 #define ABV(point, color) {\
 		int newVertex = barrierMesh->addVertex();\
@@ -471,7 +471,7 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 	bool isBridge = toBridge() ? true : false;
 
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = { pointList[i]->x, pointList[i]->y, (isBridge ? pointList[i]->z + z : z) + 0.001 / getmodelunit(LENGTH_MULTIPLE)};
+		float center[3] = { (float)pointList[i]->x, (float)pointList[i]->y, (isBridge ? (float)pointList[i]->z + z : z) + 0.001f / (float)getmodelunit(LENGTH_MULTIPLE)};
 
 		// For each side, draw a triangle
 		for (int j = 0; j < numSides - 1; j++) {
@@ -542,8 +542,8 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 		float tw = triangleWidth;
 
 		// Use the bottomleft corner of the rectangle to get every other corner
-		float bottomLeft[3] = { distToCorner * cos(theta - dTheta) + point->x,
-			distToCorner * sin(theta - dTheta) + point->y, pointZ };
+		float bottomLeft[3] = { distToCorner * cos(theta - dTheta) + (float)point->x,
+			distToCorner * sin(theta - dTheta) + (float)point->y, pointZ };
 
 		float topLeft[3] = { bottomLeft[0] - height * sinTheta,
 			bottomLeft[1] + height * cosTheta, pointZ };
@@ -605,6 +605,11 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 #undef ABT
 #undef ABV
 #undef ROTATE_POINT
+}
+
+void Barrier::onReset(AStarNavigator * nav)
+{
+	conditionalBarrierChanges = TemporaryBarrier(nav);
 }
 
 }

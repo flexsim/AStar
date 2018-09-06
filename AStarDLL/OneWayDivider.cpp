@@ -81,7 +81,7 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 	float dTheta = TWO_PI / numSides;
 
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = {pointList[i]->x, pointList[i]->y, z + 0.001 / getmodelunit(LENGTH_MULTIPLE)};
+		float center[3] = { (float)pointList[i]->x, (float)pointList[i]->y, z + 0.001f / (float)getmodelunit(LENGTH_MULTIPLE)};
 
 		// For each side, draw a triangle
 		for (int j = 0; j < numSides - 1; j++) {
@@ -151,8 +151,8 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 		
 
 		// Use the bottomleft corner of the rectangle to get every other corner
-		float bottomLeft[3] = {distToCorner * cos(theta - dTheta) + point->x, 
-			distToCorner * sin(theta - dTheta) + point->y, z};
+		float bottomLeft[3] = {distToCorner * cos(theta - dTheta) + (float)point->x,
+			distToCorner * sin(theta - dTheta) + (float)point->y, z};
 
 		float topLeft[3] = {bottomLeft[0] - height * sinTheta, 
 			bottomLeft[1] + height * cosTheta, z};
@@ -164,10 +164,10 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 			bottomRight[1] + height * cosTheta, z};
 
 		float pos0[3] = {bottomLeft[0], bottomLeft[1], bottomLeft[2]};
-		float pos1[3] = {bottomLeft[0] + 0.5 * ltw *cosTheta - height * sinTheta, 
-			topLeft[1] + 0.5 * ltw * sinTheta, z};
+		float pos1[3] = {bottomLeft[0] + 0.5f * ltw * cosTheta - height * sinTheta, 
+			topLeft[1] + 0.5f * ltw * sinTheta, z};
 		float pos2[3] = {topLeft[0], topLeft[1], topLeft[2]};
-		float currentX = 0.5 * ltw;
+		float currentX = 0.5f * ltw;
 		// Draw the triangles in a triangle strip fashion, keeping the
 		// in common points between light and dark triangles
 		for (int j = 0; j < numTriangles; j++) {

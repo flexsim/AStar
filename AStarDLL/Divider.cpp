@@ -102,7 +102,7 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 	float dTheta = TWO_PI / numSides;
 
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = {pointList[i]->x, pointList[i]->y, z + 0.001 / getmodelunit(LENGTH_MULTIPLE)};
+		float center[3] = { (float)pointList[i]->x, (float)pointList[i]->y, z + 0.001f / (float)getmodelunit(LENGTH_MULTIPLE)};
 
 		// For each side, draw a triangle
 		for (int j = 0; j < numSides - 1; j++) {
@@ -159,8 +159,8 @@ void Divider::addVertices(Mesh* barrierMesh, float z)
 		float height = 2 * radius;
 
 		// Use the bottomleft corner of the rectangle to get every other corner
-		float bottomLeft[3] = {distToCorner * cos(theta - dTheta) + point->x, 
-			distToCorner * sin(theta - dTheta) + point->y, z};
+		float bottomLeft[3] = {distToCorner * cos(theta - dTheta) + (float)point->x,
+			distToCorner * sin(theta - dTheta) + (float)point->y, z};
 
 		float topLeft[3] = {bottomLeft[0] - height * sin(theta), 
 			bottomLeft[1] + height * cos(theta), z};
