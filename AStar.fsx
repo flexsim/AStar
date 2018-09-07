@@ -224,7 +224,7 @@
         <node f="42" dt="1"><name>dragging</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelY</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>lastModelZ</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>lastModelZ</name><data>000000003cf00000</data></node>
         <node f="42" dt="1"><name>creating</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mode</name><data>0000000000000000</data></node>
@@ -1865,7 +1865,6 @@ windowshow(windowfromnode(node("/Edit Table", parent)), 0);
 windowshow(windowfromnode(editor), 1);
 </data></node>
           <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
-          <node f="42" dt="2"><name>windowtitle</name><data>Barriers/Paths</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>editor view</name><data>
@@ -3122,7 +3121,7 @@ applylinks(parent);</data></node>
              <node f="42" dt="4"><name>Y</name><data>
               <node f="40"><name>object</name></node>
               <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-              <node f="42" dt="1"><name>spatialx</name><data>0000000040694000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>000000004068a000</data></node>
               <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
               <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data>
                <node f="40"><name></name></node></node>
@@ -3134,7 +3133,7 @@ applylinks(parent);</data></node>
                <node f="40"><name>object</name></node>
                <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
                <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-               <node f="42" dt="1"><name>spatialx</name><data>aaaaaaab404aaaaa</data></node>
+               <node f="42" dt="1"><name>spatialx</name><data>00000000404a8000</data></node>
                <node f="42" dt="1"><name>aligncenterx</name><data>0000000040240000</data></node>
                <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
                <node f="42" dt="1"><name>spatialsx</name><data>00000000402c0000</data></node>
@@ -3545,10 +3544,10 @@ applylinks(c, 1);
         <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
         <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
-        <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>000000004062c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>When checked, the A* traveler will always travel along mandatory paths</data></node>
-        <node f="42" dt="2"><name>coldlink</name><data>../../..&gt;objectfocus+&gt;useMandatoryPath</data></node>
+        <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+&gt;useMandatoryPath</data></node>
         <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);</data></node>
        </data></node>
       </node>
