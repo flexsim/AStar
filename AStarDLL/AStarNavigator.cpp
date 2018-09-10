@@ -317,7 +317,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 		return 0;
 
 	int pickingmode = getpickingmode(view);
-	treenode hovered = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, -1));
+	treenode hovered = tonode(getpickingdrawfocus(view, PICK_OBJECT, -1));
 	if (hovered->ownerObject != holder)
 		hovered = NULL;
 	treenode selObj = selectedobject(view);
@@ -325,7 +325,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 	if (!pickingmode) {
 		// Show the activeBarrier if the AStarNavigator is highlighted
 		if (objectexists(activeBarrier)) {
-			bool showActiveBarrier = selObj == this->holder;
+			bool showActiveBarrier = objectexists(selObj) && selObj->up == barriers;
 			Barrier* b = activeBarrier->objectAs(Barrier);
 			b->isActive = showActiveBarrier;
 			if (showActiveBarrier != isActiveBarrierBuilt)
@@ -473,14 +473,14 @@ double AStarNavigator::onDraw(TreeNode* view)
 				if (!barrier->getBoundingBox(min, max))
 					continue;
 
-				setpickingdrawfocus(view, holder, 0, barrier->holder);
+				setpickingdrawfocus(view, barrier->holder, 0);
 				barrierMesh.draw(GL_TRIANGLES, barrier->meshOffset, barrier->nrVerts);
 			}
 		}
 
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS) {
 			for (Grid* grid : grids) {
-				setpickingdrawfocus(view, holder, PICK_TYPE_BOUNDS, grid->holder);
+				setpickingdrawfocus(view, grid->holder, PICK_TYPE_BOUNDS);
 				grid->boundsMesh.draw(GL_TRIANGLES);
 			}
 		}
@@ -501,32 +501,6 @@ double AStarNavigator::onClick(TreeNode* view, int clickcode)
 	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
 	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
 
-	if (objectexists(secondary) && pickType != PICK_TYPE_BOUNDS) {
-		Barrier* barrier = secondary->objectAs(Barrier);
-
-		// is there a current barrier
-		if (objectexists(activeBarrier)) {
-			Barrier* b = activeBarrier->objectAs(Barrier);
-			// is the clicked barrier different than the current barrier
-			if (b != barrier) {
-				// Send the click to the activeBarrier if it's in create mode
-				if (b->mode & Barrier::CREATE) {
-					Vec3 pos(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), cursorinfo(view, 2, 3, 1));
-					return b->onClick(view, (int)clickcode, pos);
-				}
-
-				// then reset the current barrier to be "not active"
-				b->activePointIndex = 0;
-				b->isActive = 0;
-			}
-		}
-		// set the active barrier to the clicked barrier
-		activeBarrier = barrier->holder;
-		barrier->isActive = 1;
-		setDirty();
-		Vec3 pos(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), cursorinfo(view, 2, 3, 1));
-		return barrier->onClick(view, (int)clickcode, pos);
-	}
 	if (objectexists(activeBarrier)) {
 		Barrier* b = activeBarrier->objectAs(Barrier);
 		b->activePointIndex = 0;
@@ -541,21 +515,7 @@ double AStarNavigator::onUndo(bool isUndo, treenode undoRecord)
 {
 	if (objectexists(activeBarrier)) {
 		Barrier* b = activeBarrier->objectAs(Barrier);
-		// Stop barrier creation
-		if (b->mode & Barrier::CREATE) {
-			if (b->pointList.size() > 2) {
-				b->removePoint(min(b->activePointIndex, b->pointList.size() - 1));
-				b->activePointIndex = b->pointList.size();
-				b->mode = 0;
-			}
-			else
-				destroyobject(b->holder);
-		}
-		else {
-			// Fix active point index
-			if(b->activePointIndex > b->pointList.size())
-				b->activePointIndex = b->pointList.size();
-		}
+		b->onUndo(isUndo, undoRecord);
 	}
 	// Redraw barriers
 	setDirty();
@@ -571,35 +531,9 @@ void AStarNavigator::addCreateRecord(treenode view, SimpleDataType* object, cons
 	endaggregatedundo(view, undoId);
 }
 
-double AStarNavigator::onDrag(TreeNode* view)
-{
-	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
-	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
-	double dx = draginfo(DRAG_INFO_DX);
-	double dy = draginfo(DRAG_INFO_DY);
-	double dz = draginfo(DRAG_INFO_DZ);
 
-	// Move all attached barriers
-	if (pickType == PICK_TYPE_BOUNDS) {
-		secondary->objectAs(Grid)->onDrag(view, Vec3(dx, dy, dz));
 
-		setDirty();
-		isBoundsDirty = true;
-		isGridDirty = true;
-		return 1;
-	}
-
-	if (objectexists(secondary) && pickType != PICK_TYPE_BOUNDS) {
-		Barrier* barrier = secondary->objectAs(Barrier);
-		barrier->onMouseMove(Vec3(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), 0), Vec3(dx, dy, dz));
-		setDirty();
-		return 1;
-	} 
-	
-	return FlexSimObject::onDrag(view);
-}
-
-double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType)
+double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType, Barrier* barrier)
 {
 	if (!objectexists(connectTo))
 		return 0;
@@ -611,30 +545,17 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 		switch(keyPressed & 0x7f) {
 			case 'A': {
 				Traveler* t = addMember(te)->objectAs(Traveler);
-				treenode view = nodefromwindow(activedocumentview());
-				if (objectexists(view)) {
-					TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
-					if (!secondary)
-						secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, -2));
-					if (secondary && isclasstype(secondary, "AStar::MandatoryPath"))
-						t->useMandatoryPath = 1.0;
-				}
-
+				if (barrier && barrier->toMandatoryPath())
+					t->useMandatoryPath = 1.0;
 				break;
 			}
 
 			case 'Q': {
-				treenode view = nodefromwindow(activedocumentview());
-				if (objectexists(view)) {
-					TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
-					if (!secondary)
-						secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, -2));
-					if (secondary && isclasstype(secondary, "AStar::MandatoryPath")) {
-						auto found = std::find_if(travelers.begin(), travelers.end(), [te](Traveler* t) -> bool { return t->te == te; });
-						if (found != travelers.end()) {
-							(*found)->useMandatoryPath = 0.0;
-							break;
-						}
+				if (barrier && barrier->toMandatoryPath()) {
+					auto found = std::find_if(travelers.begin(), travelers.end(), [te](Traveler* t) -> bool { return t->te == te; });
+					if (found != travelers.end()) {
+						(*found)->useMandatoryPath = 0.0;
+						break;
 					}
 				}
 				clearcontents(navigatorNode);

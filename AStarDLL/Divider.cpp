@@ -313,4 +313,19 @@ void Divider::addCreatePointRecord(treenode view, Point* point)
 	endaggregatedundo(view, undoId);
 }
 
+double Divider::onDestroy(TreeNode * view)
+{
+	navigator->setDirty();
+	if (mode == 0 && pointList.size() > 2
+		&& activePointIndex != pointList.size()) {
+		// Remove a divider point
+		removePoint(activePointIndex);
+		// Set the previous point as the active
+		if (activePointIndex != 0)
+			activePointIndex -= 1;
+		return 1.0;
+	}
+	return 0.0;
+}
+
 }

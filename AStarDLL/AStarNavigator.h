@@ -26,6 +26,7 @@ enum class EditMode : unsigned int {
 class AStarNavigator : public Navigator
 {
 	friend class Traveler;
+	friend class Grid;
 protected:
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
@@ -218,11 +219,14 @@ public:
 	virtual double onStartSimulation() override;
 	virtual double onRunWarm() override;
 	virtual double onDraw(TreeNode* view) override;
-	virtual double onDrag(TreeNode* view) override;
 	virtual double onClick(TreeNode* view, int clickcode) override;
 	virtual double onUndo(bool isUndo, treenode undoRecord) override;
 	void addCreateRecord(treenode view, SimpleDataType* barrier, const char* name);
-	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType) override;
+	double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType, Barrier* path);
+	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType) override
+	{
+		return dragConnection(connectTo, keyPressed, classType, nullptr);
+	}
 	virtual double onDestroy(TreeNode* view) override;
 	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed) override;
 	double navigateToLoc(Traveler* traveler, double* destLoc, double endSpeed);

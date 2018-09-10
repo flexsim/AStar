@@ -3,7 +3,6 @@
 #include "macros.h"
 
 namespace AStar {
-
 Barrier::Barrier()
 	: meshOffset(0)
 	, nrVerts(0)
@@ -42,6 +41,7 @@ void Barrier::bind(void)
 
 	bindDouble(useCondition, 1);
 	bindSubNode(condition, DATATYPE_STRING);
+	bindSubNode(patternTable, 0);
 
 	bindCallback(addPoint, Barrier);
 	bindCallback(removePoint, Barrier);
@@ -60,6 +60,10 @@ void Barrier::bind(void)
 	}
 }
 
+AStarNavigator * Barrier::__getNavigator()
+{
+	return ownerobject(holder)->objectAs(AStarNavigator);
+}
 
 void Barrier::bindEvents()
 {
@@ -339,6 +343,33 @@ double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 	return 1;
 }
 
+double Barrier::onClick(treenode view, int clickCode)
+{
+	AStarNavigator* nav = navigator;
+	// is there a current barrier
+	if (objectexists(nav->activeBarrier)) {
+		Barrier* b = nav->activeBarrier->objectAs(Barrier);
+		// is the clicked barrier different than the current barrier
+		if (b != this) {
+			// Send the click to the activeBarrier if it's in create mode
+			if (mode & Barrier::CREATE) {
+				Vec3 pos(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), cursorinfo(view, 2, 3, 1));
+				return b->onClick(view, (int)clickcode, pos);
+			}
+
+			// then reset the current barrier to be "not active"
+			b->activePointIndex = 0;
+			b->isActive = 0;
+		}
+	}
+	// set the active barrier to the clicked barrier
+	nav->activeBarrier = holder;
+	isActive = 1;
+	nav->setDirty();
+	Vec3 pos(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), cursorinfo(view, 2, 3, 1));
+	return onClick(view, clickCode, pos);
+}
+
 double Barrier::onMouseMove(const Vec3& pos, const Vec3& diff)
 {
 	if ((mode & Barrier::POINT_EDIT) && activePointIndex < pointList.size()) {
@@ -363,6 +394,56 @@ double Barrier::onMouseMove(const Vec3& pos, const Vec3& diff)
 	}
 
 	return 1;
+}
+
+double Barrier::onDrag(treenode view)
+{
+	double dx = draginfo(DRAG_INFO_DX);
+	double dy = draginfo(DRAG_INFO_DY);
+	double dz = draginfo(DRAG_INFO_DZ);
+	onMouseMove(Vec3(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), 0), Vec3(dx, dy, dz));
+	navigator->setDirty();
+	return 1;
+}
+
+unsigned int Barrier::getClassType()
+{
+	return CLASSTYPE_WANTCONNECTLOGIC;
+}
+
+double Barrier::dragConnection(TreeNode * connectTo, char keyPressed, unsigned int classType)
+{
+	return navigator->dragConnection(connectTo, keyPressed, classType, this);
+}
+
+double Barrier::onDestroy(TreeNode * view)
+{
+	navigator->setDirty();
+	return 0.0;
+}
+
+double Barrier::onUndo(bool isUndo, treenode undoRecord)
+{
+	AStarNavigator* nav = navigator;
+	if (nav)
+		nav->setDirty();
+
+	// Stop barrier creation
+	if (mode & Barrier::CREATE) {
+		if (pointList.size() > 2) {
+			removePoint(min(activePointIndex, pointList.size() - 1));
+			activePointIndex = pointList.size();
+			mode = 0;
+		}
+		else
+			destroyobject(holder);
+	}
+	else {
+		// Fix active point index
+		if (activePointIndex > pointList.size())
+			activePointIndex = pointList.size();
+	}
+	return 0.0;
 }
 
 void Barrier::addPoint(const Vec3& pos)
@@ -610,6 +691,59 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 void Barrier::onReset(AStarNavigator * nav)
 {
 	conditionalBarrierChanges = TemporaryBarrier(nav);
+}
+
+
+void Barrier::addPatternRow()
+{
+	Table table(patternTable);
+	int numRowsBefore = table.numRows;
+	table.addRow();
+	if (table.numCols == 0)
+		table.addCol();
+
+	for (int col = 1; col <= table.numCols; col++) {
+		treenode cell = table.cell(table.numRows, col);
+		cell->addSimpleData(new PatternCell, true);
+	}
+}
+
+void Barrier::addPatternCol()
+{
+	Table table(patternTable);
+	int numRowsBefore = table.numRows;
+	if (table.numRows == 0)
+		table.addRow();
+	table.addCol();
+
+	for (int row = 1; row <= table.numRows; row++) {
+		treenode cell = table.cell(row, table.numCols);
+		cell->addSimpleData(new PatternCell, true);
+	}
+}
+
+void Barrier::deletePatternRow()
+{
+	Table table(patternTable);
+	if (table.numRows > 0)
+		table.deleteRow(table.numRows);
+}
+
+void Barrier::deletePatternCol()
+{
+	Table table(patternTable);
+	if (table.numCols > 0)
+		table.deleteCol(table.numCols);
+}
+
+void Barrier::PatternCell::bind()
+{
+	bindDouble(width, 1);
+	bindDouble(height, 1);
+	bindDouble(canGoUp, 1);
+	bindDouble(canGoDown, 1);
+	bindDouble(canGoLeft, 1);
+	bindDouble(canGoRight, 1);
 }
 
 }

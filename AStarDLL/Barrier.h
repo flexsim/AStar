@@ -23,8 +23,13 @@ private:
 	float triangleEdgeLength;
 
 public:
-	TreeNode* points;
+	AStarNavigator * __getNavigator();
+	__declspec(property(get = __getNavigator)) AStarNavigator* navigator;
+	TreeNode * points;
 	NodeListArray<Point>::SdtSubNodeBindingType pointList;
+	TreeNode* patternTable;
+	double patternTotalWidth;
+	double patternTotalHeight;
 	unsigned int meshOffset;
 	unsigned int nrVerts;
 	unsigned int isActive;
@@ -76,7 +81,7 @@ public:
 
 	// This function is called by the AStarNavigator to add "passages" to the AStar grid
 	// This is used by preferred paths to add preferred weights on the nodes in the node table.
-	virtual void addPassagesToTable(Grid* grid){}
+	virtual void addPassagesToTable(Grid* grid) {}
 
 	// This function is called by the AStarNavigator class to add vertices to the 
 	// given mesh. This mesh draws GL_TRIANGLES at z height and has an emissive per-vertex attribute.
@@ -85,7 +90,14 @@ public:
 
 	// These functions handle mouse events. [x, y] are model coords
 	virtual double onClick(treenode view, int clickCode, Vec3& pos);
+	virtual double onClick(treenode view, int clickCode) override;
 	virtual double onMouseMove(const Vec3& pos, const Vec3& diff);
+	virtual double onDrag(treenode view) override; 
+	unsigned int getClassType() override;
+	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType) override;
+	double onDestroy(TreeNode* view) override;
+	double onUndo(bool isUndo, treenode undoRecord) override;
+
 
 	// These functions are for modifying barrier points. They each 
 	// check bounds before making any modifications.
@@ -98,7 +110,7 @@ public:
 	Vec3 getPointCoords(int pointIndex);
 	ASTAR_FUNCTION Variant getPointCoord(FLEXSIMINTERFACE);
 	bool setPointCoords(int pointIndex, const Vec3& point);
-	ASTAR_FUNCTION Variant setPointCoords(FLEXSIMINTERFACE) { 
+	ASTAR_FUNCTION Variant setPointCoords(FLEXSIMINTERFACE) {
 		setPointCoords((int)param(1), Vec3(param(2), param(3), param(4)));
 		return Variant();
 	}
@@ -123,6 +135,26 @@ public:
 	ASTAR_FUNCTION Variant setActiveIndex(FLEXSIMINTERFACE) { setActiveIndex((int)param(1)); return Variant(); }
 
 
+	class PatternCell : public SimpleDataType
+	{
+	public:
+		virtual const char* getClassFactory() override { return "AStar::Barrier::PatternCell"; }
+		virtual void bind() override;
+		double width = 1.0;
+		double height = 1.0;
+		double canGoUp = 0.0;
+		double canGoDown = 0.0;
+		double canGoLeft = 0.0;
+		double canGoRight = 0.0;
+	};
+	void addPatternRow();
+	Variant addPatternRow(FLEXSIMINTERFACE) { addPatternRow(); }
+	void addPatternCol();
+	Variant addPatternCol(FLEXSIMINTERFACE) { addPatternCol(); }
+	void deletePatternRow();
+	Variant deletePatternRow(FLEXSIMINTERFACE) { deletePatternRow(); }
+	void deletePatternCol();
+	Variant deletePatternCol(FLEXSIMINTERFACE) { deletePatternCol(); }
 
 };
 

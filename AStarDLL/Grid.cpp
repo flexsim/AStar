@@ -1095,8 +1095,29 @@ void Grid::onDrag(treenode view, Vec3& offset)
 	resolveGridOrigin();
 }
 
+double Grid::onDrag(treenode view)
+{
+	double dx = draginfo(DRAG_INFO_DX);
+	double dy = draginfo(DRAG_INFO_DY);
+	double dz = draginfo(DRAG_INFO_DZ);
+
+	// Move all attached barriers
+	onDrag(view, Vec3(dx, dy, dz));
+
+	navigator->setDirty();
+	navigator->isBoundsDirty = true;
+	navigator->isGridDirty = true;
+	return 1;
+}
+
 void Grid::onClick(treenode view, int clickCode, const Vec3 & pos)
 {
+
+}
+
+double Grid::onClick(treenode view, int clickCode)
+{
+	return 0.0;
 }
 
 }

@@ -121,7 +121,9 @@ public:
 	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold);
 
 	void onDrag(treenode view, Vec3& offset);
+	double onDrag(treenode view) override;
 	void onClick(treenode view, int clickCode, const Vec3& pos);
+	double onClick(treenode view, int clickCode) override;
 };
 
 }

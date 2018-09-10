@@ -24,6 +24,7 @@ visible SimpleDataType* createsdtderivative(char* classname)
 	if(strcmp(classname, "Divider")==0) return new Divider;
 	if(strcmp(classname, "Point")==0) return new Point;
 	if (strcmp(classname, "Barrier") == 0) return new Barrier;
+	if (strcmp(classname, "Barrier::PatternCell") == 0) return new Barrier::PatternCell;
 	if (strcmp(classname, "Bridge") == 0) return new Bridge;
 	if (strcmp(classname, "MandatoryPath") == 0) return new MandatoryPath;
 	if (strcmp(classname, "Bridge::ArrivalEvent") == 0) return new Bridge::ArrivalEvent;

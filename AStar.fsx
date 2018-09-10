@@ -207,7 +207,7 @@
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Mandatory Path</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Bridge</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -224,7 +224,7 @@
         <node f="42" dt="1"><name>dragging</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelY</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>lastModelZ</name><data>000000003cf00000</data></node>
+        <node f="42" dt="1"><name>lastModelZ</name><data>73c42ec6bf91c0a0</data></node>
         <node f="42" dt="1"><name>creating</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mode</name><data>0000000000000000</data></node>
@@ -318,8 +318,8 @@ if (clickCode == LEFT_RELEASE) {
 			setvarnum(c, "creating", 0);
 			setvarnum(c, "editing", 1);
 		}
-		treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
-		if (!objectexists(secondary)) {
+		treenode object = getpickingdrawfocus(i/*The view*/, PICK_OBJECT, 0);
+		if (!objectexists(object)) {
 			function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY, mouseZ);
 			setselectedobject(i/*The view*/, activeNavigator);
 		}
@@ -856,13 +856,13 @@ return asn;
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
        </data></node>
-       <node f="42" dt="4"><name>Bridge</name><data>
+       <node f="10000042" dt="4"><name>Bridge</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Bridge")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\bridge.bmp</data></node>
        </data></node>
-       <node f="10000042" dt="4"><name>Mandatory Path</name><data>
+       <node f="42" dt="4"><name>Mandatory Path</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::MandatoryPath")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>

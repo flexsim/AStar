@@ -22,6 +22,7 @@ public:
 	virtual Divider* toDivider() override { return this; }
 
 	void addCreatePointRecord(treenode view, Point* point);
+	double onDestroy(TreeNode* view) override;
 };
 
 }
