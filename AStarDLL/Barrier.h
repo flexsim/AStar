@@ -51,6 +51,7 @@ public:
 	static const int ARROW_RIGHT = 2;
 	static const int ARROW_TOP = 3;
 	static const int ARROW_BOTTOM = 4;
+	static const int DIVIDER_POINT = 5;
 	/// <summary>	For a standard rectangular barrier, arrow tells which arrow . </summary>
 	unsigned int arrow;
 
@@ -59,6 +60,8 @@ public:
 	treenode condition = nullptr;
 
 	TemporaryBarrier conditionalBarrierChanges;
+
+	Mesh drawMesh;
 
 	Barrier();
 	virtual ~Barrier();
@@ -83,6 +86,11 @@ public:
 	// This is used by preferred paths to add preferred weights on the nodes in the node table.
 	virtual void addPassagesToTable(Grid* grid) {}
 
+	static void addMeshVertex(Mesh* mesh, float* pos, float* color, unsigned int* incNumVerts = nullptr);
+	static void addMeshTriangle(Mesh* mesh, float* p1, float* p2, float* p3, float* color, unsigned int* incNumVerts = nullptr);
+
+	virtual void drawManipulationHandles(treenode view);
+	virtual void drawHoverHighlights(treenode view);
 	// This function is called by the AStarNavigator class to add vertices to the 
 	// given mesh. This mesh draws GL_TRIANGLES at z height and has an emissive per-vertex attribute.
 	// It should also store the offset into the mesh as well as the number of vertices it stores.
@@ -148,13 +156,13 @@ public:
 		double canGoRight = 0.0;
 	};
 	void addPatternRow();
-	Variant addPatternRow(FLEXSIMINTERFACE) { addPatternRow(); }
+	Variant addPatternRow(FLEXSIMINTERFACE) { addPatternRow(); return Variant(); }
 	void addPatternCol();
-	Variant addPatternCol(FLEXSIMINTERFACE) { addPatternCol(); }
+	Variant addPatternCol(FLEXSIMINTERFACE) { addPatternCol(); return Variant(); }
 	void deletePatternRow();
-	Variant deletePatternRow(FLEXSIMINTERFACE) { deletePatternRow(); }
+	Variant deletePatternRow(FLEXSIMINTERFACE) { deletePatternRow(); return Variant(); }
 	void deletePatternCol();
-	Variant deletePatternCol(FLEXSIMINTERFACE) { deletePatternCol(); }
+	Variant deletePatternCol(FLEXSIMINTERFACE) { deletePatternCol(); return Variant(); }
 
 };
 

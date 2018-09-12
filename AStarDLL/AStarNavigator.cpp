@@ -317,9 +317,9 @@ double AStarNavigator::onDraw(TreeNode* view)
 		return 0;
 
 	int pickingmode = getpickingmode(view);
-	treenode hovered = tonode(getpickingdrawfocus(view, PICK_OBJECT, -1));
-	if (hovered->ownerObject != holder)
-		hovered = NULL;
+	treenode hoveredBarrier = tonode(getpickingdrawfocus(view, PICK_OBJECT, -1));
+	if (hoveredBarrier && (hoveredBarrier->ownerObject != holder || hoveredBarrier->up != barriers))
+		hoveredBarrier = nullptr;
 	treenode selObj = selectedobject(view);
 
 	if (!pickingmode) {
@@ -333,8 +333,8 @@ double AStarNavigator::onDraw(TreeNode* view)
 		}
 
 		// Semi highlight hovered barrier
-		if (objectexists(hovered)) {
-			Barrier* b = hovered->objectAs(Barrier);
+		if (objectexists(hoveredBarrier)) {
+			Barrier* b = hoveredBarrier->objectAs(Barrier);
 			if (!objectexists(activeBarrier) || !(activeBarrier->objectAs(Barrier)->mode & Barrier::CREATE)) {
 				b->isHovered = true;
 				isBarrierDirty = true;
@@ -376,8 +376,8 @@ double AStarNavigator::onDraw(TreeNode* view)
 			isActiveBarrierBuilt = false;
 
 		// unset hovered barrier
-		if (objectexists(hovered)) {
-			Barrier* b = hovered->objectAs(Barrier);
+		if (objectexists(hoveredBarrier)) {
+			Barrier* b = hoveredBarrier->objectAs(Barrier);
 			isHoveredBarrierBuilt = b->isHovered;
 			if (b->isHovered)
 				b->isHovered = false;
@@ -403,9 +403,19 @@ double AStarNavigator::onDraw(TreeNode* view)
 		vpRadius = maxof(get(spatialsx(view)), get(spatialsy(view))) / get(viewmagnification(view));
 	double offset = max(-1, -50 / (vpRadius * getmodelunit(LENGTH_MULTIPLE)));
 
+	fglDisable(GL_TEXTURE_2D);
+	fglDisable(GL_LIGHTING);
+
+	bool drawSelected = objectexists(selObj) && selObj->up == barriers;
+	if (drawSelected || hoveredBarrier) {
+		glPolygonOffset(offset - 0.05, -5);
+		if (drawSelected)
+			selObj->objectAs(Barrier)->drawManipulationHandles(view);
+		if (hoveredBarrier)
+			hoveredBarrier->objectAs(Barrier)->drawHoverHighlights(view);
+	}
+
 	if (!pickingmode) {
-		fglDisable(GL_TEXTURE_2D);
-		fglDisable(GL_LIGHTING);
 
 		if (isGridMeshBuilt && (drawMode & ASTAR_DRAW_MODE_GRID)) {
 			for (Grid* grid : grids)
@@ -458,12 +468,8 @@ double AStarNavigator::onDraw(TreeNode* view)
 				if (switch_selected(traveler->te->holder, -1))
 					drawRoutingAlgorithm(traveler, view);
 			}
-			fglEnable(GL_TEXTURE_2D);
-			fglEnable(GL_LIGHTING);
 		}
 	} else {
-		fglDisable(GL_TEXTURE_2D);
-		fglDisable(GL_LIGHTING);
 
 		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
 			for(int i = 0; i < barrierList.size(); i++) {
@@ -485,9 +491,9 @@ double AStarNavigator::onDraw(TreeNode* view)
 			}
 		}
 
-		fglEnable(GL_TEXTURE_2D);
-		fglEnable(GL_LIGHTING);
 	}
+	fglEnable(GL_TEXTURE_2D);
+	fglEnable(GL_LIGHTING);
 
 	glPolygonOffset(factor, units);
 	if (polyOffsetFill == false)

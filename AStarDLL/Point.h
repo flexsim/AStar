@@ -14,6 +14,8 @@ public:
 	Point(double x, double y, double z) : x(x), y(y), z(z) {}
 	virtual const char * getClassFactory(void);
 	virtual void bind(void);
+
+	void addVertices(Mesh* mesh, float radius, float* color, float zOffset, unsigned int * incNumVerts = nullptr);
 };
 
 }

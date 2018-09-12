@@ -16,6 +16,9 @@ public:
 	virtual void init(double nodeWidth, const Vec3& pos1, const Vec3& pos2) override;
 	virtual bool getBoundingBox(Vec3& min, Vec3& max) override;
 	virtual void addBarriersToTable(Grid* grid) override;
+	void drawManipulationHandles(treenode view, float zOffset);
+	virtual void drawManipulationHandles(treenode view) override;
+	virtual void drawHoverHighlights(treenode view) override;
 	virtual void addVertices(Mesh* barrierMesh, float z) override;
 	virtual double onClick(treenode view, int clickCode, Vec3& pos) override;
 	virtual double onMouseMove(const Vec3& pos, const Vec3& diff) override;

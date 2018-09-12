@@ -51,6 +51,10 @@ void Barrier::bind(void)
 	bindCallback(getType, Barrier);
 	bindCallback(setEditMode, Barrier);
 	bindCallback(setActiveIndex, Barrier);
+	bindCallback(addPatternRow, Barrier);
+	bindCallback(addPatternCol, Barrier);
+	bindCallback(deletePatternRow, Barrier);
+	bindCallback(deletePatternCol, Barrier);
 
 	int bindMode = getBindMode();
 	if (bindMode == SDT_BIND_ON_LOAD || bindMode == SDT_BIND_ON_CREATE) {
@@ -104,6 +108,75 @@ void Barrier::addBarriersToTable(Grid* grid)
 	grid->addSolidBarrierToTable(myMin, myMax, this);
 }
 
+void Barrier::addMeshVertex(Mesh* mesh, float* pos, float* color, unsigned int* incNumVerts)
+{
+	int newVertex = mesh->addVertex();
+	mesh->setVertexAttrib(newVertex, MESH_POSITION, pos);
+	mesh->setVertexAttrib(newVertex, MESH_DIFFUSE4, color);
+	if (incNumVerts)
+		(*incNumVerts)++;
+}
+
+void Barrier::addMeshTriangle(Mesh * mesh, float * p1, float * p2, float * p3, float * color, unsigned int* incNumVerts)
+{
+	addMeshVertex(mesh, p1, color, incNumVerts);
+	addMeshVertex(mesh, p2, color, incNumVerts);
+	addMeshVertex(mesh, p3, color, incNumVerts);
+}
+
+void Barrier::drawManipulationHandles(treenode view)
+{
+	Vec3 myMin, myMax;
+	if (!getBoundingBox(myMin, myMax))
+		return;
+
+	float width = (float)(myMax.x - myMin.x);
+	float height = (float)(myMax.y - myMin.y);
+	float scale = max(this->nodeWidth, 0.15 * max(height, width));
+	float z = (float)myMin.z;
+
+	Mesh mesh;
+	mesh.init(0, MESH_POSITION | MESH_DIFFUSE4);
+	Vec3f left[3] = {
+		Vec3f(myMin.x, myMin.y + height * 0.5f + 0.25f * scale, z),
+		Vec3f(myMin.x, myMin.y + height * 0.5f - 0.25f * scale, z),
+		Vec3f(myMin.x - 0.5f * scale, myMin.y + height * 0.5f, z)
+	};
+	Vec3f right[3] = {
+		Vec3f(myMax.x, myMin.y + height * 0.5f + 0.25f * scale, z),
+		Vec3f(myMax.x, myMin.y + height * 0.5f - 0.25f * scale, z),
+		Vec3f(myMax.x + 0.5f * scale, myMin.y + height * 0.5f, z)
+	};
+	Vec3f top[3] = {
+		Vec3f(myMin.x + width * 0.5f - 0.25f * scale, myMax.y, z),
+		Vec3f(myMin.x + width * 0.5f + 0.25f * scale, myMax.y, z),
+		Vec3f(myMin.x + width * 0.5f, myMax.y + 0.5f * scale, z)
+	};
+	Vec3f bottom[3] = {
+		Vec3f(myMin.x + width * 0.5f - 0.25f * scale, myMin.y, z),
+		Vec3f(myMin.x + width * 0.5f + 0.25f * scale, myMin.y, z),
+		Vec3f(myMin.x + width * 0.5f, myMin.y - 0.5f * scale, z)
+	};
+	float red[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+	addMeshTriangle(&mesh, left[0], left[1], left[2], red);
+	addMeshTriangle(&mesh, right[0], right[1], right[2], red);
+	addMeshTriangle(&mesh, top[0], top[1], top[2], red);
+	addMeshTriangle(&mesh, bottom[0], bottom[1], bottom[2], red);
+
+	setpickingdrawfocus(view, holder, ARROW_LEFT);
+	mesh.draw(GL_TRIANGLES, 0, 3);
+	setpickingdrawfocus(view, holder, ARROW_RIGHT);
+	mesh.draw(GL_TRIANGLES, 3, 3);
+	setpickingdrawfocus(view, holder, ARROW_TOP);
+	mesh.draw(GL_TRIANGLES, 6, 3);
+	setpickingdrawfocus(view, holder, ARROW_BOTTOM);
+	mesh.draw(GL_TRIANGLES, 9, 3);
+}
+
+void Barrier::drawHoverHighlights(treenode view)
+{
+}
+
 void Barrier::addVertices(Mesh* barrierMesh, float z)
 {
 	meshOffset = 0;
@@ -118,7 +191,6 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 
 	meshOffset = barrierMesh->numVerts;
 
-	float red[4] = {1.0f, 0.0f, 0.0f, 1.0f};
 	float black[4] = {0.4f, 0.4f, 0.4f, 1.0f};
 	if (isActive) {
 		black[0] += 0.2f;
@@ -132,53 +204,14 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 		z += 0.002 / getmodelunit(LENGTH_MULTIPLE);
 	}
 
-	float scale = max(this->nodeWidth, 0.15 * max(height, width));
-
-	Vec3f left[3] = {
-		Vec3f(myMin.x, myMin.y + height *0.5f + 0.25f * scale, z),
-		Vec3f(myMin.x, myMin.y + height *0.5f - 0.25f * scale, z),
-		Vec3f(myMin.x - 0.5f * scale, myMin.y + height *0.5f, z)
-	};
-	Vec3f right[3] = {
-		Vec3f(myMax.x, myMin.y + height *0.5f + 0.25f * scale, z),
-		Vec3f(myMax.x, myMin.y + height *0.5f - 0.25f * scale, z),
-		Vec3f(myMax.x + 0.5f * scale, myMin.y + height *0.5f, z)
-	};
-	Vec3f top[3] = {
-		Vec3f(myMin.x + width * 0.5f - 0.25f * scale, myMax.y, z),
-		Vec3f(myMin.x + width * 0.5f + 0.25f * scale, myMax.y, z),
-		Vec3f(myMin.x + width * 0.5f, myMax.y + 0.5f * scale, z)
-	};
-	Vec3f bottom[3] = {
-		Vec3f(myMin.x + width * 0.5f - 0.25f * scale, myMin.y, z),
-		Vec3f(myMin.x + width * 0.5f + 0.25f * scale, myMin.y, z),
-		Vec3f(myMin.x + width * 0.5f, myMin.y - 0.5f * scale, z)
-	};
 
 	float bottomLeft[3] = {(float)myMin.x, (float)myMin.y, z};
 	float topRight[3] = { (float)myMax.x, (float)myMax.y, z };
 	float topLeft[3] = { (float)myMin.x, (float)myMax.y, z };
 	float bottomRight[3] = { (float)myMax.x, (float)myMin.y, z};
-	
-#define ABV(point, color) {\
-		int newVertex = barrierMesh->addVertex();\
-		barrierMesh->setVertexAttrib(newVertex, MESH_POSITION, point);\
-		barrierMesh->setVertexAttrib(newVertex, MESH_DIFFUSE4, color);\
-		nrVerts++;\
-	}\
 
-#define ABT(p1, p2, p3, color) ABV(p1, color) ABV(p2, color) ABV(p3, color)
-	if (isActive) {
-		ABT(left[0], left[1], left[2], red);
-		ABT(right[0], right[1], right[2], red);
-		ABT(top[0], top[1], top[2], red);
-		ABT(bottom[0], bottom[1], bottom[2], red);
-	}
-	ABT(bottomRight, topLeft, bottomLeft, black);
-	ABT(bottomRight, topRight, topLeft, black);
-	
-#undef ABT
-#undef ABV
+	addMeshTriangle(barrierMesh, bottomRight, topLeft, bottomLeft, black, &nrVerts);
+	addMeshTriangle(barrierMesh, bottomRight, topRight, topLeft, black, &nrVerts);
 }
 
 double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
@@ -222,86 +255,16 @@ double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 		if (!getBoundingBox(myMin, myMax))
 			return 0;
 
-		double width = myMax.x - myMin.x;
-		double height = myMax.y - myMin.y;
-
-		float scale = max(this->nodeWidth, 0.15 * max(height, width));
-
-		Vec3f left[3] = {
-			Vec3f(myMin.x, myMin.y + height *0.5f + 0.25f * scale, z),
-			Vec3f(myMin.x, myMin.y + height *0.5f - 0.25f * scale, z),
-			Vec3f(myMin.x - 0.5f * scale, myMin.y + height *0.5f, z)
-		};
-		Vec3f right[3] = {
-			Vec3f(myMax.x, myMin.y + height *0.5f + 0.25f * scale, z),
-			Vec3f(myMax.x, myMin.y + height *0.5f - 0.25f * scale, z),
-			Vec3f(myMax.x + 0.5f * scale, myMin.y + height *0.5f, z)
-		};
-		Vec3f top[3] = {
-			Vec3f(myMin.x + width * 0.5f - 0.25f * scale, myMax.y, z),
-			Vec3f(myMin.x + width * 0.5f + 0.25f * scale, myMax.y, z),
-			Vec3f(myMin.x + width * 0.5f, myMax.y + 0.5f * scale, z)
-		};
-		Vec3f bottom[3] = {
-			Vec3f(myMin.x + width * 0.5f - 0.25f * scale, myMin.y, z),
-			Vec3f(myMin.x + width * 0.5f + 0.25f * scale, myMin.y, z),
-			Vec3f(myMin.x + width * 0.5f, myMin.y - 0.5f * scale, z)
-		};
-		
-		auto PointInTriangle = [](Vec3f P, Vec3f A, Vec3f B, Vec3f C) {
-			// Prepare our barycentric variables
-			Vec3f u = B - A;
-			Vec3f v = C - A;
-			Vec3f w = P - A;
-
-			Vec3f vCrossW = v.cross(w);
-			Vec3f vCrossU = v.cross(u);
-
-			// Test sign of r
-			if (vCrossW.dot(vCrossU) < 0)
-				return false;
-
-			Vec3f uCrossW = u.cross(w);
-			Vec3f uCrossV = u.cross(v);
-
-			// Test sign of t
-			if (uCrossW.dot(uCrossV) < 0)
-				return false;
-
-			// At this point, we know that r and t and both > 0.
-			// Therefore, as long as their sum is <= 1, each must be less <= 1
-			float denom = uCrossV.getLength();
-			float r = vCrossW.getLength() / denom;
-			float t = uCrossW.getLength() / denom;
-
-			return (r + t <= 1);
-		};
-
-		Vec3f point = Vec3f(pos.x, pos.y, 0);
-		// Left Arrow
-		if (PointInTriangle(point, left[0], left[1], left[2])) {
-			activePointIndex = 0;
+		int pickType = getpickingdrawfocus(view, PICK_TYPE, 0);
+		if (pickType != 0) {
+			arrow = pickType;
 			mode = Barrier::POINT_EDIT;
-			arrow = ARROW_LEFT;
-		
-		// Right Arrow
-		} else if (PointInTriangle(point, right[0], right[1], right[2])) {
-			activePointIndex = 1;
-			mode = Barrier::POINT_EDIT;
-			arrow = ARROW_RIGHT;
-		
-		// Top Arrow
-		} else if (PointInTriangle(point, top[0], top[1], top[2])) {
-			activePointIndex = 1;
-			mode = Barrier::POINT_EDIT;
-			arrow = ARROW_TOP;
-		
-		// Bottom Arrow
-		} else if (PointInTriangle(point, bottom[0], bottom[1], bottom[2])) {
-			activePointIndex = 0;
-			mode = Barrier::POINT_EDIT;
-			arrow = ARROW_BOTTOM;
-
+			switch (pickType) {
+				case ARROW_LEFT: activePointIndex = 0; break;
+				case ARROW_RIGHT: activePointIndex = 1; break;
+				case ARROW_TOP: activePointIndex = 1; break;
+				case ARROW_BOTTOM: activePointIndex = 0; break;
+			}
 		} else {
 			activePointIndex = 0;
 			mode = Barrier::MOVE;
@@ -508,8 +471,6 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 {
 	float theColor[4] = { min(1.0f, color.r + 0.2f), min(1.0f, color.g + 0.2f), min(1.0f, color.b + 0.2f), color.a };
 	float lightGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
-	float darkGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
-	float black[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
 	if (isActive) {
 		theColor[0] = color.r;
 		theColor[1] = color.g;
@@ -517,12 +478,6 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 		lightGray[0] = 0.6f;
 		lightGray[1] = 0.6f;
 		lightGray[2] = 0.6f;
-		darkGray[0] = 0.3f;
-		darkGray[1] = 0.3f;
-		darkGray[2] = 0.3f;
-		black[0] = 0.0f;
-		black[1] = 0.0f;
-		black[2] = 0.0f;
 		z += 0.001 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	else if (isHovered) {
@@ -532,71 +487,25 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 		lightGray[0] = 0.7f;
 		lightGray[1] = 0.7f;
 		lightGray[2] = 0.7f;
-		darkGray[0] = 0.45f;
-		darkGray[1] = 0.45f;
-		darkGray[2] = 0.45f;
-		black[0] = 0.45f;
-		black[1] = 0.45f;
-		black[2] = 0.45f;
 		z += 0.002 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	nrVerts = 0;
 	meshOffset = barrierMesh->numVerts;
 
 	// Add circles at each node
-	const float TWO_PI = 2 * 3.1415926536f;
-	int numSides = 20;
 	float radius = nodeWidth * 0.15;
-	float dTheta = TWO_PI / numSides;
-
-	bool isBridge = toBridge() ? true : false;
-
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = { (float)pointList[i]->x, (float)pointList[i]->y, (isBridge ? (float)pointList[i]->z + z : z) + 0.001f / (float)getmodelunit(LENGTH_MULTIPLE)};
-
-		// For each side, draw a triangle
-		for (int j = 0; j < numSides - 1; j++) {
-			float theta = j * dTheta;
-			float x = radius * cos(theta) + center[0];
-			float y = radius * sin(theta) + center[1];
-			float x2 = radius * cos(theta + dTheta) + center[0];
-			float y2 = radius * sin(theta + dTheta) + center[1];
-
-			float pos1[3] = { x, y, center[2] };
-			float pos2[3] = { x2, y2, center[2] };
-
-#define ABV(pos, color, activeColor) {\
-			int vertName = barrierMesh->addVertex();\
-			nrVerts++;\
-			if (i == activePointIndex)\
-				barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, activeColor);\
-				else\
-				barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, color);\
-			barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
-							}
-
-			ABV(center, darkGray, black);
-			ABV(pos1, darkGray, black);
-			ABV(pos2, darkGray, black);
-
-		}
-
-		// Draw the last triangle using first and last coords
-		float lastTheta = (numSides - 1) * dTheta;
-		float pos2[3] = { radius + center[0], center[1], center[2] };
-		float pos1[3] = { radius * cos(lastTheta) + center[0], radius * sin(lastTheta) + center[1], center[2] };
-		ABV(center, darkGray, black);
-		ABV(pos1, darkGray, black);
-		ABV(pos2, darkGray, black);
+		pointList[i]->addVertices(barrierMesh, radius, lightGray, z, &nrVerts);
 	}
-#undef ABV
 
 	// Draw a series of triangles
 	float maxTriangleWidth = nodeWidth;
 	float distToRect = 0;// 0.4 * nodeWidth;
 	float distToCorner = sqrt(distToRect * distToRect + radius * radius);
 	float height = 2 * radius;
-	dTheta = atan2(radius, distToRect);
+	bool isBridge = toBridge() ? true : false;
+	float dTheta = atan2(radius, distToRect);
+
 	for (int i = 0; i < pointList.size() - 1; i++) {
 		Point* point = pointList[i];
 		Point* next = pointList[i + 1];

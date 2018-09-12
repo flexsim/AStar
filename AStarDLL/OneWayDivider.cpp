@@ -41,20 +41,12 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 {
 	float green[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
 	float lightGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
-	float darkGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
-	float black[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
 	if (isActive) {
 		green[0] = 0.2f;
 		green[2] = 0.2f;
 		lightGray[0] = 0.6f;
 		lightGray[1] = 0.6f;
 		lightGray[2] = 0.6f;
-		darkGray[0] = 0.3f;
-		darkGray[1] = 0.3f;
-		darkGray[2] = 0.3f;
-		black[0] = 0.0f;
-		black[1] = 0.0f;
-		black[2] = 0.0f;
 		z += 0.001 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	else if (isHovered) {
@@ -63,69 +55,24 @@ void OneWayDivider::addVertices(Mesh* barrierMesh, float z)
 		lightGray[0] = 0.7f;
 		lightGray[1] = 0.7f;
 		lightGray[2] = 0.7f;
-		darkGray[0] = 0.45f;
-		darkGray[1] = 0.45f;
-		darkGray[2] = 0.45f;
-		black[0] = 0.45f;
-		black[1] = 0.45f;
-		black[2] = 0.45f;
 		z += 0.002 / getmodelunit(LENGTH_MULTIPLE);
 	}
 	nrVerts = 0;
 	meshOffset = barrierMesh->numVerts;
 
 	// Add circles at each node
-	const float TWO_PI = 2 * 3.1415926536f;
-	int numSides = 20;
 	float radius = nodeWidth * 0.15;
-	float dTheta = TWO_PI / numSides;
 
 	for (int i = 0; i < pointList.size(); i++) {
-		float center[3] = { (float)pointList[i]->x, (float)pointList[i]->y, z + 0.001f / (float)getmodelunit(LENGTH_MULTIPLE)};
-
-		// For each side, draw a triangle
-		for (int j = 0; j < numSides - 1; j++) {
-			float theta = j * dTheta;
-			float x = radius * cos(theta) + center[0];
-			float y = radius * sin(theta) + center[1];
-			float x2 = radius * cos(theta + dTheta) + center[0];
-			float y2 = radius * sin(theta + dTheta) + center[1];
-			
-			float pos1[3] = {x, y, z};
-			float pos2[3] = {x2, y2, z};
-
-#define ABV(pos, color, activeColor) {\
-			int vertName = barrierMesh->addVertex();\
-			nrVerts++;\
-			if (i == activePointIndex)\
-				barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, activeColor);\
-			else\
-				barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, color);\
-			barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
-		}
-
-			ABV(center, darkGray, black);
-			ABV(pos1, darkGray, black);
-			ABV(pos2, darkGray, black);
-
-		}
-
-		// Draw the last triangle using first and last coords
-		float lastTheta = (numSides - 1) * dTheta;
-		float pos2[3] = {radius + center[0], center[1], z};
-		float pos1[3] = {radius * cos(lastTheta) + center[0], radius * sin(lastTheta) + center[1], z};
-		ABV(center, darkGray, black);
-		ABV(pos1, darkGray, black);
-		ABV(pos2, darkGray, black);
+		pointList[i]->addVertices(barrierMesh, radius, lightGray, z, &nrVerts);
 	}
-#undef ABV
 	// Draw alternating light and dark triangles
 
 	float maxTriangleWidth = 2 * nodeWidth;
 	float distToRect = 0;// 0.4 * nodeWidth;
 	float distToCorner = sqrt(distToRect * distToRect + radius * radius);
 	float height = 2 * radius;
-	dTheta = atan2(radius, distToRect);
+	float dTheta = atan2(radius, distToRect);
 	for (int i = 0; i < pointList.size() - 1; i++) {
 		Point* point = pointList[i];
 		Point* next = pointList[i + 1];
