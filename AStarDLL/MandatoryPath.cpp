@@ -3,9 +3,13 @@
 #include "AStarNavigator.h"
 
 namespace AStar {
+void MandatoryPath::bind()
+{
+	__super::bind();
+	bindDouble(isTwoWay, 1);
+}
 
-
-void MandatoryPath::onReset(AStarNavigator* nav) 
+void MandatoryPath::onReset(AStarNavigator* nav)
 {
 	__super::onReset(nav);
 	if (useCondition) {

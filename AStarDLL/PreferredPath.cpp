@@ -28,6 +28,7 @@ void PreferredPath::bind(void)
 {
 	Divider::bind();
 	bindDouble(pathWeight, 0);
+	bindDouble(isTwoWay, 1);
 	bindCallback(getWeight, PreferredPath);
 	bindCallback(setWeight, PreferredPath);
 }
@@ -64,10 +65,17 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 			AStarNodeExtraData * extra = grid->navigator->assertExtraData(cell, PreferredPathData);
 			node->hasPreferredPathWeight = true;
 
-			extra->bonusRight = (char)maxof(-128, minof(127, extra->bonusRight + horizontalWeight));
-			extra->bonusLeft = (char)maxof(-128, minof(127, extra->bonusLeft - horizontalWeight));
-			extra->bonusUp = (char)maxof(-128, minof(127, extra->bonusUp + verticalWeight));
-			extra->bonusDown = (char)maxof(-128, minof(127, extra->bonusDown - verticalWeight));
+			if (!isTwoWay) {
+				extra->bonusRight = (char)maxof(-128, minof(127, extra->bonusRight + horizontalWeight));
+				extra->bonusLeft = (char)maxof(-128, minof(127, extra->bonusLeft - horizontalWeight));
+				extra->bonusUp = (char)maxof(-128, minof(127, extra->bonusUp + verticalWeight));
+				extra->bonusDown = (char)maxof(-128, minof(127, extra->bonusDown - verticalWeight));
+			} else {
+				extra->bonusRight = (char)maxof(-128, minof(127, extra->bonusRight + fabs(horizontalWeight)));
+				extra->bonusLeft = (char)maxof(-128, minof(127, extra->bonusLeft + fabs(horizontalWeight)));
+				extra->bonusUp = (char)maxof(-128, minof(127, extra->bonusUp + fabs(verticalWeight)));
+				extra->bonusDown = (char)maxof(-128, minof(127, extra->bonusDown + fabs(verticalWeight)));
+			}
 
 			if (dx > 0)
 				node->canGoRight = true;

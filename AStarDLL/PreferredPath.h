@@ -8,6 +8,7 @@ class PreferredPath : public Divider
 {
 public:
 	double pathWeight;
+	double isTwoWay = 0.0;
 
 	PreferredPath();
 	PreferredPath(double pathWeight);
