@@ -30,6 +30,7 @@ public:
 	TreeNode* patternTable;
 	double patternTotalWidth;
 	double patternTotalHeight;
+	void resolvePatternBounds();
 	unsigned int meshOffset;
 	unsigned int nrVerts;
 	unsigned int isActive;
@@ -47,11 +48,24 @@ public:
 	/// <summary>	The index of the point that is being edited by the user. </summary>
 	unsigned int activePointIndex;
 
-	static const int ARROW_LEFT = 1;
-	static const int ARROW_RIGHT = 2;
-	static const int ARROW_TOP = 3;
-	static const int ARROW_BOTTOM = 4;
-	static const int DIVIDER_POINT = 5;
+	static const int PICK_ARROW_LEFT = 1;
+	static const int PICK_ARROW_RIGHT = 2;
+	static const int PICK_ARROW_TOP = 3;
+	static const int PICK_ARROW_BOTTOM = 4;
+
+	static const int PICK_DIVIDER_POINT = 5;
+
+	static const int PICK_ADD_PATTERN_COL = 6;
+	static const int PICK_ADD_PATTERN_ROW = 7;
+	static const int PICK_DELETE_PATTERN_COL = 8;
+	static const int PICK_DELETE_PATTERN_ROW = 9;
+	static const int PICK_PATTERN_SIZER_X = 10;
+	static const int PICK_PATTERN_SIZER_Y = 11;
+	static const int PICK_PATTERN_DIRECTION_LEFT = 12;
+	static const int PICK_PATTERN_DIRECTION_RIGHT= 13;
+	static const int PICK_PATTERN_DIRECTION_UP = 14;
+	static const int PICK_PATTERN_DIRECTION_DOWN = 15;
+
 	/// <summary>	For a standard rectangular barrier, arrow tells which arrow . </summary>
 	unsigned int arrow;
 

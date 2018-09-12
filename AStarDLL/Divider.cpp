@@ -73,7 +73,7 @@ void Divider::drawManipulationHandles(treenode view, float zOffset)
 	for (int i = 0; i < pointList.size(); i++) {
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4);
 		pointList[i]->addVertices(&mesh, radius, black, zOffset);
-		setpickingdrawfocus(view, holder, DIVIDER_POINT, pointList[i]->holder);
+		setpickingdrawfocus(view, holder, PICK_DIVIDER_POINT, pointList[i]->holder);
 		mesh.draw(GL_TRIANGLES);
 	}
 }
@@ -154,7 +154,7 @@ double Divider::onClick(treenode view, int clickCode, Vec3& pos)
 		int clickedIndex = -1;
 
 		int pickType = getpickingdrawfocus(view, PICK_TYPE, 0);
-		if (pickType == DIVIDER_POINT) {
+		if (pickType == PICK_DIVIDER_POINT) {
 			treenode point = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
 			applicationcommand("addundotracking", view, node("x", point));
 			applicationcommand("addundotracking", view, node("y", point));
