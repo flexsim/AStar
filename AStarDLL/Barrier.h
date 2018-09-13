@@ -28,9 +28,6 @@ public:
 	TreeNode * points;
 	NodeListArray<Point>::SdtSubNodeBindingType pointList;
 	TreeNode* patternTable;
-	double patternTotalWidth;
-	double patternTotalHeight;
-	void resolvePatternBounds();
 	unsigned int meshOffset;
 	unsigned int nrVerts;
 	unsigned int isActive;
@@ -164,10 +161,10 @@ public:
 		virtual void bind() override;
 		double width = 1.0;
 		double height = 1.0;
-		double canGoUp = 0.0;
+		double canGoUp = 1.0;
 		double canGoDown = 0.0;
-		double canGoLeft = 0.0;
-		double canGoRight = 0.0;
+		double canGoLeft = 1.0;
+		double canGoRight = 1.0;
 	};
 	void addPatternRow();
 	Variant addPatternRow(FLEXSIMINTERFACE) { addPatternRow(); return Variant(); }
@@ -177,6 +174,19 @@ public:
 	Variant deletePatternRow(FLEXSIMINTERFACE) { deletePatternRow(); return Variant(); }
 	void deletePatternCol();
 	Variant deletePatternCol(FLEXSIMINTERFACE) { deletePatternCol(); return Variant(); }
+	void scalePatternRowsOnSizeChange(double oldYSize, double newYSize);
+	void scalePatternColsOnSizeChange(double oldXSize, double newXSize);
+
+	PatternCell* getPatternCell(Vec3& modelPos);
+	PatternCell* getPatternCell(const AStarCell& cell);
+
+	void dragPatternCellSizer(PatternCell* cell, double diff, bool isXSizer);
+	void dragPatternCellSizerY(PatternCell* cell, double diff);
+
+	static const int VISIT_FIRST_ROW_ONLY = 0x1;
+	static const int VISIT_FIRST_COL_ONLY = 0x2;
+	static const int VISIT_BACKWARDS = 0x4;
+	void visitPatternCells(std::function<void(PatternCell*)> func, int flags = 0);
 
 };
 

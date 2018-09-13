@@ -418,8 +418,11 @@ double AStarNavigator::onDraw(TreeNode* view)
 	if (!pickingmode) {
 
 		if (isGridMeshBuilt && (drawMode & ASTAR_DRAW_MODE_GRID)) {
-			for (Grid* grid : grids)
-				grid->gridMesh.draw(GL_LINES);
+			bool isPatternBarrierSelected = objectexists(selObj) && selObj->parent == barrierList && selObj->objectAs(Barrier)->patternTable->subnodes.length > 0;
+			if (!isPatternBarrierSelected) {
+				for (Grid* grid : grids)
+					grid->gridMesh.draw(GL_LINES);
+			}
 		}
 
 		glPolygonOffset(offset - 0.010, -2);
