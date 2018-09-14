@@ -279,24 +279,22 @@ AStarNode * Grid::getNode(int rowNum, int colNum)
 
 void Grid::addSolidBarrierToTable(const Vec3 & min, const Vec3 & max, Barrier* barrier)
 {
-	int colleft = (int)round((min.x - gridOrigin.x) / nodeWidth);
-	int rowbottom = (int)round((min.y - gridOrigin.y) / nodeWidth);
-	int colright = (int)round((max.x - gridOrigin.x) / nodeWidth);
-	int rowtop = (int)round((max.y - gridOrigin.y) / nodeWidth);
+	AStarCell minCell = getCellFromLoc(min + Vec3(0.5 * nodeWidth, 0.5 * nodeWidth, 0.0));
+	AStarCell maxCell = getCellFromLoc(max + Vec3(-0.5 * nodeWidth, -0.5 * nodeWidth, 0.0));
 	int gridRank = rank;
 
-	for (int row = rowbottom; row <= rowtop; row++) {
-		blockNodeDirection(AStarCell(gridRank, row, colleft - 1), Right, barrier);
-		blockNodeDirection(AStarCell(gridRank, row, colright + 1), Left, barrier);
+	for (int row = minCell.row; row <= maxCell.row; row++) {
+		blockNodeDirection(AStarCell(gridRank, row, minCell.col - 1), Right, barrier);
+		blockNodeDirection(AStarCell(gridRank, row, maxCell.col + 1), Left, barrier);
 	}
 
-	for (int col = colleft; col <= colright; col++) {
-		blockNodeDirection(AStarCell(gridRank, rowtop + 1, col), Down, barrier);
-		blockNodeDirection(AStarCell(gridRank, rowbottom - 1, col), Up, barrier);
+	for (int col = minCell.col; col <= maxCell.col; col++) {
+		blockNodeDirection(AStarCell(gridRank, maxCell.row + 1, col), Down, barrier);
+		blockNodeDirection(AStarCell(gridRank, minCell.row - 1, col), Up, barrier);
 	}
 
-	for (int row = rowbottom; row <= rowtop; row++) {
-		for (int col = colleft; col <= colright; col++) {
+	for (int row = minCell.row; row <= maxCell.row; row++) {
+		for (int col = minCell.col; col <= maxCell.col; col++) {
 			AStarNode* theNode = getNode(row, col);
 			AStarCell cell(gridRank, row, col);
 			blockNodeDirection(cell, Up, barrier);

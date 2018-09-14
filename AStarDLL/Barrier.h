@@ -52,10 +52,10 @@ public:
 
 	static const int PICK_DIVIDER_POINT = 5;
 
-	static const int PICK_ADD_PATTERN_COL = 6;
-	static const int PICK_ADD_PATTERN_ROW = 7;
-	static const int PICK_DELETE_PATTERN_COL = 8;
-	static const int PICK_DELETE_PATTERN_ROW = 9;
+	static const int PICK_SPLIT_PATTERN_COL = 6;
+	static const int PICK_SPLIT_PATTERN_ROW = 7;
+	static const int PICK_MERGE_PATTERN_COLS = 8;
+	static const int PICK_MERGE_PATTERN_ROWS = 9;
 	static const int PICK_PATTERN_SIZER_X = 10;
 	static const int PICK_PATTERN_SIZER_Y = 11;
 	static const int PICK_PATTERN_DIRECTION_LEFT = 12;
@@ -98,7 +98,9 @@ public:
 	virtual void addPassagesToTable(Grid* grid) {}
 
 	static void addMeshVertex(Mesh* mesh, float* pos, float* color, unsigned int* incNumVerts = nullptr);
+	static void addMeshVertex(Mesh* mesh, Vec3f& pos, Vec2f& tex, Vec4f& color, unsigned int* incNumVerts = nullptr);
 	static void addMeshTriangle(Mesh* mesh, float* p1, float* p2, float* p3, float* color, unsigned int* incNumVerts = nullptr);
+	static void addMeshTriangle(Mesh* mesh, Vec3f& p1, Vec2f& tex1, Vec3f& p2, Vec2f& tex2, Vec3f& p3, Vec2f& tex3, Vec4f& color, unsigned int* incNumVerts = nullptr);
 
 	virtual void drawManipulationHandles(treenode view);
 	virtual void drawHoverHighlights(treenode view);
@@ -140,6 +142,7 @@ public:
 	virtual PreferredPath* toPreferredPath() { return nullptr; }
 	virtual Bridge* toBridge() { return nullptr; }
 	virtual MandatoryPath* toMandatoryPath() { return nullptr; }
+	bool isBasicBarrier() { return toDivider() == nullptr && toPreferredPath() == nullptr && toBridge() == nullptr && toMandatoryPath() == nullptr; }
 
 	void addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color);
 	virtual void onReset(AStarNavigator* nav);
@@ -161,19 +164,19 @@ public:
 		virtual void bind() override;
 		double width = 1.0;
 		double height = 1.0;
-		double canGoUp = 1.0;
+		double canGoUp = 0.0;
 		double canGoDown = 0.0;
-		double canGoLeft = 1.0;
-		double canGoRight = 1.0;
+		double canGoLeft = 0.0;
+		double canGoRight = 0.0;
 	};
-	void addPatternRow();
-	Variant addPatternRow(FLEXSIMINTERFACE) { addPatternRow(); return Variant(); }
-	void addPatternCol();
-	Variant addPatternCol(FLEXSIMINTERFACE) { addPatternCol(); return Variant(); }
-	void deletePatternRow();
-	Variant deletePatternRow(FLEXSIMINTERFACE) { deletePatternRow(); return Variant(); }
-	void deletePatternCol();
-	Variant deletePatternCol(FLEXSIMINTERFACE) { deletePatternCol(); return Variant(); }
+	void splitPatternRow(int row);
+	Variant splitPatternRow(FLEXSIMINTERFACE) { splitPatternRow((int)param(1)); return Variant(); }
+	void splitPatternCol(int col);
+	Variant splitPatternCol(FLEXSIMINTERFACE) { splitPatternCol((int)param(1)); return Variant(); }
+	void mergePatternRows(int firstRow);
+	Variant mergePatternRows(FLEXSIMINTERFACE) { mergePatternRows((int)param(1)); return Variant(); }
+	void mergePatternCols(int firstCol);
+	Variant mergePatternCols(FLEXSIMINTERFACE) { mergePatternCols((int)param(1)); return Variant(); }
 	void scalePatternRowsOnSizeChange(double oldYSize, double newYSize);
 	void scalePatternColsOnSizeChange(double oldXSize, double newXSize);
 
@@ -181,7 +184,7 @@ public:
 	PatternCell* getPatternCell(const AStarCell& cell);
 
 	void dragPatternCellSizer(PatternCell* cell, double diff, bool isXSizer);
-	void dragPatternCellSizerY(PatternCell* cell, double diff);
+	void assertValidPatternTable();
 
 	static const int VISIT_FIRST_ROW_ONLY = 0x1;
 	static const int VISIT_FIRST_COL_ONLY = 0x2;

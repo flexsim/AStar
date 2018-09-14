@@ -149,8 +149,16 @@
         </node>
         <node f="42" dt="2"><name>shape</name><data>modules\AStar\shapes\AStar.3ds</data></node>
         <node f="42" dt="1"><name>shapeindex</name><data>0000000000000000</data></node>
-        <node f="42" dt="2"><name>imageobject</name><data>***</data></node>
-        <node f="42" dt="1"><name>imageindexobject</name><data>0000000000000000</data></node>
+        <node f="42" dt="2"><name>imageobject</name><data>***</data>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>split</name><data>modules\AStar\bitmaps\scissors.png</data></node>
+         <node f="42" dt="2"><name>merge</name><data>buttons\remove.png</data></node>
+        </node>
+        <node f="42" dt="1"><name>imageindexobject</name><data>0000000000000000</data>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name>split</name><data>0000000040360000</data></node>
+         <node f="42" dt="1"><name>merge</name><data>0000000040370000</data></node>
+        </node>
         <node f="42" dt="2"><name>imagebase</name><data>***</data></node>
         <node f="42" dt="1"><name>imageindexbase</name><data>0000000000000000</data></node>
        </node>
@@ -207,7 +215,7 @@
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Bridge</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Barrier</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -224,7 +232,7 @@
         <node f="42" dt="1"><name>dragging</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelY</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>lastModelZ</name><data>73c42ec6bf91c0a0</data></node>
+        <node f="42" dt="1"><name>lastModelZ</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>creating</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mode</name><data>0000000000000000</data></node>
@@ -832,7 +840,7 @@ return asn;
         <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
         <node f="42" dt="2"><name>windowtitle</name><data>A* Navigator</data></node>
        </data></node>
-       <node f="42" dt="4"><name>Barrier</name><data>
+       <node f="10000042" dt="4"><name>Barrier</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Barrier")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
@@ -856,7 +864,7 @@ return asn;
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
        </data></node>
-       <node f="10000042" dt="4"><name>Bridge</name><data>
+       <node f="42" dt="4"><name>Bridge</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Bridge")</data></node>
         <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
