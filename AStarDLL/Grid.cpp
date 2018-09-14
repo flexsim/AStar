@@ -279,6 +279,8 @@ AStarNode * Grid::getNode(int rowNum, int colNum)
 
 void Grid::addSolidBarrierToTable(const Vec3 & min, const Vec3 & max, Barrier* barrier)
 {
+	// minCell and maxCell are based on the min and max bounds, offset half a node with 
+	// into the boundary. This makes it so it doesn't affect stuff outside the barrier
 	AStarCell minCell = getCellFromLoc(min + Vec3(0.5 * nodeWidth, 0.5 * nodeWidth, 0.0));
 	AStarCell maxCell = getCellFromLoc(max + Vec3(-0.5 * nodeWidth, -0.5 * nodeWidth, 0.0));
 	int gridRank = rank;
