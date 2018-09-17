@@ -169,14 +169,14 @@ public:
 		double canGoLeft = 0.0;
 		double canGoRight = 0.0;
 	};
-	void splitPatternRow(int row);
-	Variant splitPatternRow(FLEXSIMINTERFACE) { splitPatternRow((int)param(1)); return Variant(); }
-	void splitPatternCol(int col);
-	Variant splitPatternCol(FLEXSIMINTERFACE) { splitPatternCol((int)param(1)); return Variant(); }
-	void mergePatternRows(int firstRow);
-	Variant mergePatternRows(FLEXSIMINTERFACE) { mergePatternRows((int)param(1)); return Variant(); }
-	void mergePatternCols(int firstCol);
-	Variant mergePatternCols(FLEXSIMINTERFACE) { mergePatternCols((int)param(1)); return Variant(); }
+	void splitPatternRow(int row, treenode view);
+	Variant splitPatternRow(FLEXSIMINTERFACE) { splitPatternRow((int)param(1), param(2)); return Variant(); }
+	void splitPatternCol(int col, treenode view);
+	Variant splitPatternCol(FLEXSIMINTERFACE) { splitPatternCol((int)param(1), param(2)); return Variant(); }
+	void mergePatternRows(int firstRow, treenode view);
+	Variant mergePatternRows(FLEXSIMINTERFACE) { mergePatternRows((int)param(1), param(2)); return Variant(); }
+	void mergePatternCols(int firstCol, treenode view);
+	Variant mergePatternCols(FLEXSIMINTERFACE) { mergePatternCols((int)param(1), param(2)); return Variant(); }
 	void scalePatternRowsOnSizeChange(double oldYSize, double newYSize);
 	void scalePatternColsOnSizeChange(double oldXSize, double newXSize);
 

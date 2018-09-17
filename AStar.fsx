@@ -151,8 +151,8 @@
         <node f="42" dt="1"><name>shapeindex</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>imageobject</name><data>***</data>
          <node f="40"><name></name></node>
-         <node f="42" dt="2"><name>split</name><data>modules\AStar\bitmaps\scissors.png</data></node>
-         <node f="42" dt="2"><name>merge</name><data>buttons\remove.png</data></node>
+         <node f="42" dt="2"><name>split</name><data>modules\AStar\bitmaps\split.png</data></node>
+         <node f="42" dt="2"><name>merge</name><data>modules\AStar\bitmaps\merge.png</data></node>
         </node>
         <node f="42" dt="1"><name>imageindexobject</name><data>0000000000000000</data>
          <node f="40"><name></name></node>
