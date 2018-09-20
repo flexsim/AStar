@@ -3,10 +3,10 @@
 #include "AStarNavigator.h"
 
 namespace AStar {
-void MandatoryPath::bind()
+void MandatoryPath::bindVariables()
 {
-	__super::bind();
-	bindDouble(isTwoWay, 1);
+	__super::bindVariables();
+	bindVariable(isTwoWay);
 }
 
 void MandatoryPath::onReset(AStarNavigator* nav)
@@ -52,8 +52,8 @@ void MandatoryPath::addPassagesToTable(Grid * grid)
 	}
 }
 
-void MandatoryPath::addVertices(Mesh * barrierMesh, float z)
+void MandatoryPath::addVertices(treenode view, Mesh * barrierMesh, float z, DrawStyle drawStyle)
 {
-	addPathVertices(barrierMesh, z, Vec4f(0.75f, 0.61f, 0.25f, 1.0f));
+	addPathVertices(barrierMesh, z, Vec4f(0.75f, 0.61f, 0.25f, 1.0f), drawStyle);
 }
 }

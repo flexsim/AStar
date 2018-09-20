@@ -11,16 +11,14 @@ public:
 
 	Bridge();
 
-	virtual const char * getClassFactory(void);
-	virtual void bind(void);
+	virtual void bindVariables(void);
 
 	virtual void addBarriersToTable(Grid* grid) override {}
 	virtual void addPassagesToTable(Grid* grid) override;
-	virtual void addVertices(Mesh* barrierMesh, float z) override;
+	virtual void addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle) override;
 	virtual void onReset(AStarNavigator* nav) override;
 	virtual Bridge* toBridge() override { return this; }
 
-	double isTwoWay = 0.0;
 	double useVirtualDistance = 0.0;
 	double virtualDistance = 0.0;
 	double geometricDistance = 0.0;
@@ -33,11 +31,11 @@ public:
 	double filledDistance = 0.0;
 	double lastUpdateTime = -1.0;
 	double nodeWidth = 1.0;
-	bool isAvailable = true;
-	Traveler* firstTraveler = nullptr;
-	Traveler* lastTraveler = nullptr;
-	Traveler* blockedTraveler = nullptr;
-	int blockedPathIndex;
+	double isAvailable = true;
+	ObjRef<Traveler> firstTraveler = nullptr;
+	ObjRef<Traveler> lastTraveler = nullptr;
+	ObjRef<Traveler> blockedTraveler = nullptr;
+	double blockedPathIndex;
 
 	double calculateDistance() const;
 	double getTravelToGeomDistScale();
@@ -45,7 +43,7 @@ public:
 	void onExit(Traveler* traveler);
 	void onEndArrival(Traveler* traveler, int pathIndex);
 	void onAvailable();
-	void updateLocations();
+	void updateBridgeLocations();
 	void updateLocation(Traveler* t, double geomDistAlongBridge);
 
 	class ArrivalEvent : public FlexSimEvent

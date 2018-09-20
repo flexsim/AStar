@@ -15,7 +15,7 @@
      <node f="40"><name></name></node>
      <node f="42"><name>astar</name>
       <node f="40"><name></name></node>
-      <node f="10100042" dt="4"><name>AStarNavigator</name><data>
+      <node f="10000042" dt="4"><name>AStarNavigator</name><data>
        <node f="40"><name></name></node>
        <node f="42"><name>superclasses</name>
         <node f="40"><name></name></node>
@@ -86,7 +86,6 @@
          <node f="40"><name></name></node>
          <node f="1000042" dt="2"><name>addObject</name><data>dll:"module:AStar" func:"AStarNavigator_addObject"</data></node>
          <node f="1000042" dt="2"><name>addMember</name><data>dll:"module:AStar" func:"AStarNavigator_addMember"</data></node>
-         <node f="1000042" dt="2"><name>getActiveBarrierMode</name><data>dll:"module:AStar" func:"AStarNavigator_getActiveBarrierMode"</data></node>
          <node f="1000042" dt="2"><name>getGrid</name><data>dll:"module:AStar" func:"AStarNavigator_getGrid"</data></node>
          <node f="1000042" dt="2"><name>rebuildMeshes</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildMeshes"</data></node>
          <node f="1000042" dt="2"><name>rebuildEdgeTable</name><data>dll:"module:AStar" func:"AStarNavigator_rebuildEdgeTable"</data></node>
@@ -147,7 +146,7 @@
          <node f="42" dt="1"><name>green</name><data>525252523fd25252</data></node>
          <node f="42" dt="1"><name>blue</name><data>3a3a3a3a3fea3a3a</data></node>
         </node>
-        <node f="42" dt="2"><name>shape</name><data>modules\AStar\shapes\AStar.3ds</data></node>
+        <node f="42" dt="2"><name>shape</name><data>***</data></node>
         <node f="42" dt="1"><name>shapeindex</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>imageobject</name><data>***</data>
          <node f="40"><name></name></node>
@@ -161,6 +160,52 @@
         </node>
         <node f="42" dt="2"><name>imagebase</name><data>***</data></node>
         <node f="42" dt="1"><name>imageindexbase</name><data>0000000000000000</data></node>
+        <node f="42"><name>drawsurrogate</name>
+         <node f="40"><name></name></node>
+         <node f="100062" dt="4"><name>Shape</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>spatial</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>spatialz</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>9999999a3ff19999</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>000000003ff00000</data></node>
+           <node f="42" dt="1"><name>spatialsz</name><data>9999999a3fc99999</data></node>
+           <node f="42" dt="1"><name>spatialrx</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>centroid</name><data>000000003ff00000</data></node>
+           <node f="42" dt="1"><name>offsetx</name><data>000000003fe00000</data></node>
+           <node f="42" dt="1"><name>offsety</name><data>e00000003fdffffd</data></node>
+           <node f="42" dt="1"><name>offsetz</name><data>000000003fe00000</data></node>
+           <node f="42" dt="1"><name>offsetsx</name><data>0a3d70a43fe8a3d7</data></node>
+           <node f="42" dt="1"><name>offsetsy</name><data>a3d70a3d3fea3d70</data></node>
+           <node f="42" dt="1"><name>offsetsz</name><data>3333333340133333</data></node>
+           <node f="42" dt="1"><name>offsetrx</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>offsetry</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>offsetrz</name><data>0000000000000000</data></node>
+          </node>
+          <node f="42"><name>visual</name>
+           <node f="40"><name></name></node>
+           <node f="42"><name>color</name>
+            <node f="40"><name></name></node>
+            <node f="42" dt="1"><name>red</name><data>1d1d1d1d3fcd1d1d</data></node>
+            <node f="42" dt="1"><name>green</name><data>525252523fd25252</data></node>
+            <node f="42" dt="1"><name>blue</name><data>3a3a3a3a3fea3a3a</data></node>
+           </node>
+           <node f="42" dt="2"><name>shape</name><data>modules\AStar\shapes\AStar.3ds</data></node>
+           <node f="42" dt="1"><name>shapeindex</name><data>0000000000000000</data></node>
+           <node f="42" dt="2"><name>imageobject</name><data>***</data>
+            <node f="40"><name></name></node></node>
+           <node f="42" dt="1"><name>imageindexobject</name><data>0000000000000000</data>
+            <node f="40"><name></name></node></node>
+           <node f="42" dt="2"><name>imagebase</name><data>***</data></node>
+           <node f="42" dt="1"><name>imageindexbase</name><data>0000000000000000</data></node>
+          </node>
+         </data>
+          <node f="40"><name></name></node></node>
+        </node>
        </node>
        <node f="42"><name>special</name>
         <node f="40"><name></name></node>
@@ -174,30 +219,220 @@
         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>spatialz</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>spatialsx</name><data>8f5c28f63ff0f5c2</data></node>
-        <node f="42" dt="1"><name>spatialsy</name><data>8f5c28f63ff0f5c2</data></node>
-        <node f="42" dt="1"><name>spatialsz</name><data>0a3d70a43fe0a3d7</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>000000003ff00000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>000000003ff00000</data></node>
+        <node f="42" dt="1"><name>spatialsz</name><data>000000003ff00000</data></node>
         <node f="42" dt="1"><name>spatialrx</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>centroid</name><data>000000003ff00000</data></node>
-        <node f="42" dt="1"><name>offsetx</name><data>000000003fe00000</data></node>
-        <node f="42" dt="1"><name>offsety</name><data>e00000003fdffffd</data></node>
-        <node f="42" dt="1"><name>offsetz</name><data>400000003fba6f5d</data></node>
-        <node f="42" dt="1"><name>offsetsx</name><data>e00000003fee53a9</data></node>
-        <node f="42" dt="1"><name>offsetsy</name><data>400000003fee53aa</data></node>
-        <node f="42" dt="1"><name>offsetsz</name><data>600000003ffeb86a</data></node>
-        <node f="42" dt="1"><name>offsetrx</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>offsetry</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>offsetrz</name><data>0000000000000000</data></node>
        </node>
-       <node f="42"><name>objectinfo</name>
-        <node f="40"><name></name></node>
-        <node f="42"><name>info1</name></node>
-        <node f="42"><name>info2</name></node>
-       </node>
-       <node f="42" dt="1"><name>ignoredraw</name><data>0000000000000000</data></node>
       </data></node>
+      <node f="10100062" dt="4"><name>Barrier</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>classes</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>AStar::Barrier</name><data><coupling>/installdata/add/1/data/astar/Barrier</coupling></data></node>
+       </node>
+       <node f="42"><name>superclasses</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>FlexSimEventHandler</name><data><coupling>null</coupling></data></node>
+       </node>
+       <node f="42"><name>variables</name>
+        <node f="80000040"><name></name></node>
+        <node f="42" dt="1"><name>points</name><data>0000000000000000</data>
+         <node f="40"><name></name></node>
+         <node f="42" dt="7"><name>p1</name><data/>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>x</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>y</name><data>00000000c0140000</data></node>
+          <node f="42" dt="1"><name>z</name><data>0000000000000000</data></node>
+          <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Point</data>
+           <node f="40"><name></name></node></node>
+         </node>
+         <node f="42" dt="7"><name>p2</name><data/>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>x</name><data>0000000040140000</data></node>
+          <node f="42" dt="1"><name>y</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>z</name><data>0000000000000000</data></node>
+          <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Point</data>
+           <node f="40"><name></name></node></node>
+         </node>
+        </node>
+        <node f="42" dt="1"><name>patternTable</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>useCondition</name><data>0000000000000000</data></node>
+        <node f="42" dt="2"><name>condition</name><data>treenode traveler = param(1);
+return /**/traveler.type == 1/**direct*/;
+</data></node>
+       </node>
+       <node f="42"><name>behaviour</name>
+        <node f="40"><name></name></node></node>
+       <node f="42"><name>stats</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>navigator</name></node>
+        <node f="42" dt="1"><name>nodeWidth</name><data>000000003ff00000</data></node>
+       </node>
+       <node f="42"><name>spatial</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialz</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040140000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040140000</data></node>
+        <node f="42" dt="1"><name>spatialsz</name><data>47ae147b3f847ae1</data></node>
+        <node f="42" dt="1"><name>spatialrx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
+       </node>
+       <node f="42"><name>stored</name></node>
+      </data>
+       <node f="40"><name></name></node></node>
+      <node f="10100062" dt="4"><name>Divider</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>classes</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add/1/data/astar/Divider</coupling></data></node>
+       </node>
+       <node f="42"><name>superclasses</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>AStar::Barrier</name><data><coupling>/installdata/add/1/data/astar/Barrier</coupling></data></node>
+       </node>
+       <node f="42"><name>variables</name>
+        <node f="80000040"><name></name></node>
+        <node f="42" dt="1"><name>isTwoWay</name><data>0000000000000000</data></node>
+       </node>
+       <node f="42"><name>behaviour</name>
+        <node f="40"><name></name></node></node>
+       <node f="42"><name>stats</name>
+        <node f="40"><name></name></node></node>
+       <node f="42"><name>spatial</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialz</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040140000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040140000</data></node>
+        <node f="42" dt="1"><name>spatialsz</name><data>47ae147b3f847ae1</data></node>
+        <node f="42" dt="1"><name>spatialrx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
+       </node>
+       <node f="42"><name>stored</name></node>
+      </data>
+       <node f="40"><name></name></node></node>
+      <node f="10100062" dt="4"><name>PreferredPath</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>classes</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>AStar::PreferredPath</name><data><coupling>/installdata/add/1/data/astar/PreferredPath</coupling></data></node>
+       </node>
+       <node f="42"><name>superclasses</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add/1/data/astar/Divider</coupling></data></node>
+       </node>
+       <node f="42"><name>variables</name>
+        <node f="80000040"><name></name></node>
+        <node f="42" dt="1"><name>pathWeight</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>isTwoWay</name><data>0000000000000000</data></node>
+       </node>
+       <node f="42"><name>behaviour</name>
+        <node f="40"><name></name></node></node>
+       <node f="42"><name>stats</name>
+        <node f="40"><name></name></node></node>
+       <node f="42"><name>spatial</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialz</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040140000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040140000</data></node>
+        <node f="42" dt="1"><name>spatialsz</name><data>47ae147b3f847ae1</data></node>
+        <node f="42" dt="1"><name>spatialrx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
+       </node>
+       <node f="42"><name>stored</name></node>
+      </data>
+       <node f="40"><name></name></node></node>
+      <node f="100062" dt="4"><name>Bridge</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>classes</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>AStar::PreferredPath</name><data><coupling>/installdata/add/1/data/astar/PreferredPath</coupling></data></node>
+       </node>
+       <node f="42"><name>superclasses</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add/1/data/astar/Divider</coupling></data></node>
+       </node>
+       <node f="42"><name>variables</name>
+        <node f="80000040"><name></name></node>
+        <node f="42" dt="1"><name>useVirtualDistance</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>virtualDistance</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>isTwoWay</name><data>0000000000000000</data></node>
+       </node>
+       <node f="42"><name>behaviour</name>
+        <node f="40"><name></name></node></node>
+       <node f="42"><name>stats</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>geometricDistance</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>travelDistance</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>filledDistance</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>isAvailable</name><data>0000000000000000</data></node>
+        <node f="42" dt="3"><name>blockedTraveler</name><data><coupling>null</coupling></data></node>
+        <node f="42" dt="3"><name>firstTraveler</name><data><coupling>null</coupling></data></node>
+        <node f="42" dt="3"><name>lastTraveler</name><data><coupling>null</coupling></data></node>
+        <node f="42" dt="1"><name>blockedPathIndex</name><data>0000000000000000</data></node>
+       </node>
+       <node f="42"><name>spatial</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialz</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040140000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040140000</data></node>
+        <node f="42" dt="1"><name>spatialsz</name><data>47ae147b3f847ae1</data></node>
+        <node f="42" dt="1"><name>spatialrx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
+       </node>
+       <node f="42"><name>stored</name></node>
+      </data>
+       <node f="40"><name></name></node></node>
+      <node f="10100062" dt="4"><name>MandatoryPath</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>classes</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>AStar::MandatoryPath</name><data><coupling>/installdata/add/1/data/astar/MandatoryPath</coupling></data></node>
+       </node>
+       <node f="42"><name>superclasses</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add/1/data/astar/Divider</coupling></data></node>
+       </node>
+       <node f="42"><name>variables</name>
+        <node f="80000040"><name></name></node>
+        <node f="42" dt="1"><name>isTwoWay</name><data>0000000000000000</data></node>
+       </node>
+       <node f="42"><name>behaviour</name>
+        <node f="40"><name></name></node></node>
+       <node f="42"><name>stats</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>navigator</name></node>
+       </node>
+       <node f="42"><name>spatial</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialz</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040140000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040140000</data></node>
+        <node f="42" dt="1"><name>spatialsz</name><data>47ae147b3f847ae1</data></node>
+        <node f="42" dt="1"><name>spatialrx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
+       </node>
+       <node f="42"><name>stored</name></node>
+      </data>
+       <node f="40"><name></name></node></node>
      </node>
     </node>
    </node>
@@ -215,7 +450,7 @@
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>AStar::Create</name><data>
        <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>/installdata/add~3/1/data/AStar/LibraryGroup/Barrier</coupling></data></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -238,6 +473,8 @@
         <node f="42" dt="1"><name>mode</name><data>0000000000000000</data></node>
         <node f="42" dt="3"><name>activeNavigator</name><data><coupling>null</coupling></data></node>
         <node f="42" dt="3"><name>curObjectNode</name><data><coupling>null</coupling></data></node>
+        <node f="42" dt="2"><name>class</name><data></data></node>
+        <node f="42" dt="1"><name>barrierEditMode</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -281,27 +518,39 @@ if (!objectexists(selobj)) {
 		int dx = getvarnum(c, "dragX");
 		int dy = getvarnum(c, "dragY");
 		
-		// Allow the user to pan the view
-		if (fabs(dx) &lt; 2 &amp;&amp; fabs(dy) &lt; 2) {
-			if (!getvarnum(c, "creating")) {
-				setvarnum(c, "creating", 1);
-				setvarnum(c, "editing", 0);
-				
-				if (mode != EDITMODE_GRID) {
-					// Snap between grid points
-					double nodeWidth = function_s(activeNavigator, "getGrid", mouseX, mouseY, mouseZ).find("nodeWidth").value;
-					if (getvarnum(activeNavigator, "snapBetweenGrid") &amp;&amp; (mode == EDITMODE_DIVIDER || mode == EDITMODE_ONE_WAY_DIVIDER)) {
-						mouseX = floor((mouseX + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-						mouseY = floor((mouseY + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-					}
+		// I only create a new object on the left release if the user did not drag the mouse (pan the view)
+		// and if I'm not in "creating" mode, i.e. I have not yet created the object
+		if (fabs(dx) &lt; 2 &amp;&amp; fabs(dy) &lt; 2 &amp;&amp; !getvarnum(c, "creating")) {
+			setvarnum(c, "creating", 1);
+			setvarnum(c, "editing", 0);
+			
+			if (mode != EDITMODE_GRID) {
+				// Snap between grid points
+				double nodeWidth = function_s(activeNavigator, "getGrid", mouseX, mouseY, mouseZ).find("nodeWidth").value;
+				if (getvarnum(activeNavigator, "snapBetweenGrid") &amp;&amp; (mode == EDITMODE_DIVIDER || mode == EDITMODE_ONE_WAY_DIVIDER)) {
+					mouseX = floor((mouseX + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+					mouseY = floor((mouseY + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 				}
-				treenode activeObject = function_s(activeNavigator, "addObject", mouseX, mouseY, mouseZ, mouseX, mouseY, mouseZ, mode);
-				if (mode != EDITMODE_GRID)
-					function_s(activeObject, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
-				setselectedobject(i, activeNavigator);
-				nodepoint(getvarnode(c, "curObjectNode"), activeObject); 
-				return 0;
 			}
+			string classPath = getvarstr(c, "class");
+			treenode activeObject;
+			if (classPath.length &gt; 0) {
+				activeObject = createinstance(library().find(classPath), activeNavigator);
+				activeObject.as(Object).setLocation(mouseX, mouseY, mouseZ);
+				setselectedobject(i, activeNavigator);
+				treenode firstPoint = first(getvarnode(activeObject, "points"));
+				treenode lastPoint = last(getvarnode(activeObject, "points"));
+				firstPoint.find("y").value = -1;
+				lastPoint.find("x").value = 1;
+				setpickingdrawfocus(i, activeObject, PICK_ASTAR_POINT, lastPoint, OVERRIDE_SET_MOUSE_DOWN_PICK);
+			} else {
+				activeObject = function_s(activeNavigator, "addObject", mouseX, mouseY, mouseZ, mouseX, mouseY, mouseZ, mode);
+				setselectedobject(i, activeNavigator);
+			}
+			if (mode != EDITMODE_GRID)
+				function_s(activeObject, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
+			nodepoint(getvarnode(c, "curObjectNode"), activeObject); 
+			return 0;
 		}
 	}
 } else {
@@ -346,8 +595,8 @@ if (getvarnum(c, "creating")) {
 	setvarnum(c, "lastModelX", mouseX);
 	setvarnum(c, "lastModelY", mouseY);
 	
-	function_s(tonode(getvarnum(c, "activeNavigator")), "onMouseMove", 
-		mouseX, mouseY, mouseZ, dx, dy);
+	function_s(tonode(getvarnum(c, "curObjectNode")), "onMouseMove", 
+		i, mouseX, mouseY, mouseZ, dx, dy);
 	
 	#define WM_PAINT 0x000F
 	postwindowmessage(windowfromnode(i), WM_PAINT,0,0);
@@ -382,24 +631,31 @@ setvarnum(c, "lastMouseY", 0);
 setvarnum(c, "dragging", 0);
 setvarnum(c, "lastModelX", 0);
 setvarnum(c, "lastModelY", 0);
+setvarnum(c, "lastModelZ", 0);
 setvarnum(c, "dragX", 0);
 setvarnum(c, "dragY", 0);
+setvarstr(c, "class", "");
 nodepoint(getvarnode(c, "curObjectNode"), 0);
 
+treenode activeObj = tonode(getvarnum(c, "activeNavigator"));
+if (objectexists(activeObj))
+	function_s(activeObj, "setEditMode", 0);
+
 treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
-if (!objectexists(activeNav))
-	return 0;
-function_s(activeNav, "onClick", activedocumentnode(), RIGHT_RELEASE, 0, 0);
-function_s(activeNav, "rebuildMeshes");
-function_s(activeNav, "setEditMode", getvarnum(c, "mode"));</data></node>
+if (objectexists(activeNav)) {
+	function_s(activeNav, "onClick", activedocumentnode(), RIGHT_RELEASE, 0, 0);
+	function_s(activeNav, "rebuildMeshes");
+}
+</data></node>
         <node f="442" dt="2"><name>checkStatus</name><data>#define BARRIER_MODE_CREATE 0x2
 
-treenode activeNavigator = tonode(getvarnum(ownerobject(c), "activeNavigator"));
+treenode theEditMode = ownerobject(c);
+treenode activeNavigator = tonode(getvarnum(theEditMode, "activeNavigator"));
 if (!objectexists(activeNavigator))
 	return 0;
 
-treenode theEditMode = ownerobject(c);
-int barrierEditMode = function_s(activeNavigator, "getActiveBarrierMode");
+treenode object = tonode(getvarnum(theEditMode, "curObjectNode"));
+int barrierEditMode = function_s(object, "getEditMode");
 
 if (barrierEditMode &amp; BARRIER_MODE_CREATE)
 	return 0;
@@ -429,6 +685,7 @@ setvarnum(theEditMode, "editing", 1);
          <node f="42"><name>Spatial</name></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_SOLID_BARRIER</data></node>
+        <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/Barrier</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -440,6 +697,7 @@ executefsnode(OnMouseMove(handler), handler, i, eventdata);
         <node f="442" dt="2"><name>OnEntering</name><data>treenode handler = node("../AStar::Create", c);
 nodepoint(objectfocus(c), handler);
 setvarnum(handler, "mode", executestring(getvarstr(c, "mode")));
+setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
@@ -458,6 +716,7 @@ nodepoint(objectfocus(c), 0);</data></node>
          <node f="42"><name>Spatial</name></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_DIVIDER</data></node>
+        <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/Divider</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -499,65 +758,7 @@ executefsnode(OnMouseMove(handler), handler, i, eventdata);
         <node f="442" dt="2"><name>OnEntering</name><data>treenode handler = node("../AStar::Create", c);
 nodepoint(objectfocus(c), handler);
 setvarnum(handler, "mode", executestring(getvarstr(c, "mode")));
-executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
-        <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
-nodepoint(objectfocus(c), 0);</data></node>
-       </node>
-      </data></node>
-      <node f="42" dt="4"><name>AStar::OneWayDivider</name><data>
-       <node f="40"><name></name></node>
-       <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
-       <node f="42"><name>variables</name>
-        <node f="40"><name></name></node>
-        <node f="42" dt="1"><name>state</name><data>0000000000000000</data></node>
-        <node f="42" dt="2"><name>type</name><data>Clicker</data></node>
-        <node f="42" dt="2"><name>cursor</name><data>modules\AStar\cursors\onewaydividertool.cur</data></node>
-        <node f="42"><name>views</name>
-         <node f="40"><name></name></node>
-         <node f="42"><name>Spatial</name></node>
-        </node>
-        <node f="42" dt="2"><name>mode</name><data>EDITMODE_ONE_WAY_DIVIDER</data></node>
-       </node>
-       <node f="42"><name>eventfunctions</name>
-        <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
-treenode handler = tonode(get(objectfocus(c)));
-treenode barrier = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
-
-if(objectexists(barrier)) {
-	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
-	if (!objectexists(activeNavigator))
-		activeNavigator = function_s(handler, "findNavigator");
-	
-	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
-		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(barrier, getname(c))) {
-		// Add to an existing
-		function_s(barrier, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "curObjectNode"), barrier);
-		
-		setvarnum(handler, "creating", 1);
-		setvarnum(handler, "editing", 0);
-		
-		double mouseX = cursorinfo(i, 2, 1, 1);
-		double mouseY = cursorinfo(i, 2, 2, 1);
-		function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY);
-		
-		postwindowmessage(windowfromnode(i/*The view*/),
-			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
-			node("checkStatus", eventfunctions(handler)), 0);
-		
-		return 0;
-	}
-}
-
-executefsnode(OnClick(handler), handler, i, eventdata);
-</data></node>
-        <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
-executefsnode(OnMouseMove(handler), handler, i, eventdata);
-</data></node>
-        <node f="442" dt="2"><name>OnEntering</name><data>treenode handler = node("../AStar::Create", c);
-nodepoint(objectfocus(c), handler);
-setvarnum(handler, "mode", executestring(getvarstr(c, "mode")));
+setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
@@ -576,6 +777,7 @@ nodepoint(objectfocus(c), 0);</data></node>
          <node f="42"><name>Spatial</name></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_PREFERRED_PATH</data></node>
+        <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/PreferredPath</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -617,6 +819,7 @@ executefsnode(OnMouseMove(handler), handler, i, eventdata);
         <node f="442" dt="2"><name>OnEntering</name><data>treenode handler = node("../AStar::Create", c);
 nodepoint(objectfocus(c), handler);
 setvarnum(handler, "mode", executestring(getvarstr(c, "mode")));
+setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
@@ -635,6 +838,7 @@ nodepoint(objectfocus(c), 0);</data></node>
          <node f="42"><name>Spatial</name></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_BRIDGE</data></node>
+        <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/Bridge</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -676,6 +880,7 @@ executefsnode(OnMouseMove(handler), handler, i, eventdata);
         <node f="442" dt="2"><name>OnEntering</name><data>treenode handler = node("../AStar::Create", c);
 nodepoint(objectfocus(c), handler);
 setvarnum(handler, "mode", executestring(getvarstr(c, "mode")));
+setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
@@ -694,6 +899,7 @@ nodepoint(objectfocus(c), 0);</data></node>
          <node f="42"><name>Spatial</name></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_MANDATORY_PATH</data></node>
+        <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/MandatoryPath</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -735,6 +941,7 @@ executefsnode(OnMouseMove(handler), handler, i, eventdata);
         <node f="442" dt="2"><name>OnEntering</name><data>treenode handler = node("../AStar::Create", c);
 nodepoint(objectfocus(c), handler);
 setvarnum(handler, "mode", executestring(getvarstr(c, "mode")));
+setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
@@ -817,10 +1024,7 @@ nodepoint(objectfocus(c), 0);</data></node>
        <node f="40"><name></name></node>
        <node f="42" dt="4"><name>AStarNavigator</name><data>
         <node f="40"><name></name></node>
-        <node f="42"><name>visual</name>
-         <node f="40"><name></name></node>
-         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\astarnavigatorsmall.png</data></node>
-        </node>
+        <node f="42"><name></name></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObject = param(1);
 double x = param(2);
 double y = param(3);
@@ -839,47 +1043,58 @@ return asn;
 </data></node>
         <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
         <node f="42" dt="2"><name>windowtitle</name><data>A* Navigator</data></node>
+        <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\astarnavigatorsmall.png</data></node>
        </data></node>
-       <node f="10000042" dt="4"><name>Barrier</name><data>
+       <node f="42" dt="4"><name>Barrier</name><data>
         <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Barrier")</data></node>
-        <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
+        <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
+	modeleditmode("AStar::Barrier");</data></node>
+        <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/Barrier</data>
+         <node f="2000040"><name></name></node></node>
+        <node f="42" dt="2"><name>tooltip</name><data>An area where travelers cannot go 
+or where travel direction is constrained</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
        </data></node>
        <node f="42" dt="4"><name>Divider</name><data>
         <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Divider")</data></node>
-        <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
+        <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
+	modeleditmode("AStar::Divider");</data></node>
+        <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/Divider</data>
+         <node f="2000040"><name></name></node></node>
+        <node f="42" dt="2"><name>tooltip</name><data>A line or set of lines that blocks travel
+like a wall</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\divider.bmp</data></node>
-       </data></node>
-       <node f="42" dt="4"><name>One-Way Divider</name><data>
-        <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::OneWayDivider")</data></node>
-        <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
-        <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\onewaydivider.bmp</data></node>
        </data></node>
        <node f="42" dt="4"><name>Preferred Path</name><data>
         <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::PreferredPath")</data></node>
-        <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
+        <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
+	modeleditmode("AStar::PreferredPath");</data></node>
+        <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/PreferredPath</data>
+         <node f="2000040"><name></name></node></node>
+        <node f="42" dt="2"><name>tooltip</name><data>A path that acts as a "magnet" for travelers to travel on</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
        </data></node>
        <node f="42" dt="4"><name>Bridge</name><data>
         <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Bridge")</data></node>
-        <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
+        <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
+	modeleditmode("AStar::Bridge");</data></node>
+        <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/Bridge</data>
+         <node f="2000040"><name></name></node></node>
+        <node f="42" dt="2"><name>tooltip</name><data>A path that directly connects one location to another.</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\bridge.bmp</data></node>
        </data></node>
        <node f="42" dt="4"><name>Mandatory Path</name><data>
         <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::MandatoryPath")</data></node>
-        <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
+        <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
+	modeleditmode("AStar::MandatoryPath");</data></node>
+        <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/MandatoryPath</data>
+         <node f="2000040"><name></name></node></node>
+        <node f="42" dt="2"><name>tooltip</name><data>A path that designated travelers must travel on</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\mandatorypath.bmp</data></node>
        </data></node>
        <node f="42" dt="4"><name>Grid</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Grid")</data></node>
-        <node f="42" dt="1"><name>viewwindowsource</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\grid.bmp</data></node>
        </data></node>
       </node>
@@ -3268,7 +3483,9 @@ applylinks(parent);</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
-     <node f="42" dt="2"><name>AStar</name><data>#define EDITMODE_PREFERRED_PATH 35
+     <node f="42" dt="2"><name>AStar</name><data>#define PICK_ASTAR_POINT 6
+
+#define EDITMODE_PREFERRED_PATH 35
 #define EDITMODE_DIVIDER 36
 #define EDITMODE_ONE_WAY_DIVIDER 37
 #define EDITMODE_SOLID_BARRIER 38
@@ -3290,11 +3507,17 @@ applylinks(parent);</data></node>
      <node f="40"><name></name></node>
      <node f="42" dt="2"><name>AStarNavigator</name><data>/?AStarNavigator</data>
       <node f="40"><name></name></node>
-      <node f="42"><name>size</name>
+      <node f="42"><name>substructure</name>
        <node f="40"><name></name></node>
-       <node f="42" dt="1"><name></name><data>8f5c28f63ff0f5c2</data></node>
-       <node f="42" dt="1"><name></name><data>8f5c28f63ff0f5c2</data></node>
-       <node f="42" dt="1"><name></name><data>0a3d70a43fe0a3d7</data></node>
+       <node f="42" dt="2"><name>Shape</name><data>&gt;visual/drawsurrogate/1</data>
+        <node f="40"><name></name></node>
+        <node f="42"><name>size</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name></name><data>9999999a3ff19999</data></node>
+         <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
+         <node f="42" dt="1"><name></name><data>9999999a3fc99999</data></node>
+        </node>
+       </node>
       </node>
       <node f="42"><name>length</name>
        <node f="40"><name></name></node>
@@ -3560,6 +3783,45 @@ applylinks(c, 1);
        </data></node>
       </node>
      </node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels/GeneralProperties/GeneralProperties&gt;variables/ignoreClasses</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040140000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AGV::ControlArea</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStar::AStarNavigator</name></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels/Labels/Labels&gt;variables/ignoreClasses</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStar::AStarNavigator</name></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels/Statistics/Statistics&gt;variables/ignoreClasses</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStar::AStarNavigator</name></node>
     </node>
    </node>
   </node>

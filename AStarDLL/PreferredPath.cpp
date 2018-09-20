@@ -18,17 +18,17 @@ PreferredPath::PreferredPath(double pathWeight)
 	return;
 }
 
-const char * PreferredPath::getClassFactory(void)
+
+void PreferredPath::bindVariables(void)
 {
-	return "AStar::PreferredPath";
+	__super::bindVariables();
+	bindVariable(pathWeight);
 }
 
 
 void PreferredPath::bind(void)
 {
-	Divider::bind();
-	bindDouble(pathWeight, 0);
-	bindDouble(isTwoWay, 1);
+	__super::bind();
 	bindCallback(getWeight, PreferredPath);
 	bindCallback(setWeight, PreferredPath);
 }
@@ -95,9 +95,9 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 	}
 }
 
-void PreferredPath::addVertices(Mesh* barrierMesh, float z)
+void PreferredPath::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle)
 {
-	addPathVertices(barrierMesh, z, Vec4f(0.0f, 1.0f, 0.0f, 1.0f));
+	addPathVertices(barrierMesh, z, Vec4f(0.0f, 1.0f, 0.0f, 1.0f), drawStyle);
 }
 
 

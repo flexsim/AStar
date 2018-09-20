@@ -7,8 +7,6 @@ namespace AStar {
 Barrier::Barrier()
 	: meshOffset(0)
 	, nrVerts(0)
-	, isActive(0)
-	, isHovered(0)
 	, activePointIndex(0)
 	, mode(0)
 	, lastMode(0)
@@ -22,34 +20,38 @@ Barrier::~Barrier()
 	return;
 }
 
-const char * Barrier::getClassFactory(void)
+void Barrier::bindVariables(void)
 {
-	return "AStar::Barrier";
+	__super::bindVariables();
+	
+	//bindNumber(meshOffset);
+	//bindNumber(nrVerts);
+	//bindNumber(isActive);
+	//bindNumber(activePointIndex);
+	//bindNumber(mode);
+
+	bindVariableByName("navigator", navigatorCoupling, ODT_BIND_STATE_VARIABLE);
+
+	bindVariable(points);
+	pointList.init(points);
+
+	bindVariable(useCondition);
+	bindVariable(condition);
+	bindVariable(patternTable);
+	bindStateVariable(nodeWidth);
 }
 
 void Barrier::bind(void)
 {
-	SimpleDataType::bind();
-	
-	bindNumber(meshOffset);
-	bindNumber(nrVerts);
-	bindNumber(isActive);
-	bindNumber(activePointIndex);
-	bindNumber(mode);
-
-	bindSubNode(points, 0);
-	pointList.init(points);
-
-	bindDouble(useCondition, 1);
-	bindSubNode(condition, DATATYPE_STRING);
-	bindSubNode(patternTable, 0);
-
+	__super::bind();
+	bindCallback(onMouseMove, Barrier);
 	bindCallback(addPoint, Barrier);
 	bindCallback(removePoint, Barrier);
 	bindCallback(swapPoints, Barrier);
 	bindCallback(getPointCoord, Barrier);
 	bindCallback(setPointCoords, Barrier);
 	bindCallback(getType, Barrier);
+	bindCallback(getEditMode, Barrier);
 	bindCallback(setEditMode, Barrier);
 	bindCallback(setActiveIndex, Barrier);
 	bindCallback(splitPatternRow, Barrier);
@@ -57,17 +59,20 @@ void Barrier::bind(void)
 	bindCallback(mergePatternRows, Barrier);
 	bindCallback(mergePatternCols, Barrier);
 
-	int bindMode = getBindMode();
-	if (bindMode == SDT_BIND_ON_LOAD || bindMode == SDT_BIND_ON_CREATE) {
-		if (condition->value == "") {
-			condition->value = "treenode traveler = param(1);\r\nreturn /**/traveler.type == 1/**direct*/;\r\n";
-		}
-	}
+	//int bindMode = getBindMode();
+	//if (bindMode == SDT_BIND_ON_LOAD || bindMode == SDT_BIND_ON_CREATE) {
+	//	if (condition->value == "") {
+	//		condition->value = "treenode traveler = param(1);\r\nreturn /**/traveler.type == 1/**direct*/;\r\n";
+	//	}
+	//}
 }
 
 AStarNavigator * Barrier::__getNavigator()
 {
-	return ownerobject(holder)->objectAs(AStarNavigator);
+	auto subnodes = navigatorCoupling->subnodes;
+	if (subnodes.length > 0)
+		return ownerobject(subnodes[1]->value)->objectAs(AStarNavigator);
+	return nullptr;
 }
 
 void Barrier::bindEvents()
@@ -75,19 +80,32 @@ void Barrier::bindEvents()
 	bindEventByName("condition", condition, "Condition", EVENT_TYPE_VALUE_GETTER);
 }
 
+void Barrier::assertNavigator()
+{
+	if (navigator != nullptr)
+		return;
+
+	treenode navNode = model()->find("AStarNavigator");
+	if (!navNode) {
+		navNode = createinstance(library()->find("?AStarNavigator"), model());
+	}
+	navNode->objectAs(AStarNavigator)->barrierList.add(this);
+}
+
 void Barrier::init(double nodeWidth, const Vec3& pos1, const Vec3& pos2)
 {
 	this->nodeWidth = nodeWidth;
+	pointList.clear();
 	addPoint(pos1);
 	addPoint(pos2);
 
 	if (isBasicBarrier()) {
 		assertValidPatternTable();
 	}
-	arrow = 0;
 }
 
-bool Barrier::getBoundingBox(Vec3& min, Vec3& max)
+
+bool Barrier::getLocalBoundingBox(Vec3& min, Vec3& max) 
 {
 	if (pointList.size() < 2) 
 		return false;
@@ -97,6 +115,22 @@ bool Barrier::getBoundingBox(Vec3& min, Vec3& max)
 
 	min = Vec3(min(p0.x, p1.x), min(p0.y, p1.y), min(p0.z, p1.z));
 	max = Vec3(max(p0.x, p1.x), max(p0.y, p1.y), max(p0.z, p1.z));
+	return true;
+}
+
+bool Barrier::getBoundingBox(Vec3& min, Vec3& max, bool inLocalCoords)
+{
+	if (!getLocalBoundingBox(min, max))
+		return false;
+
+	if (!inLocalCoords) {
+		Vec3 pos(b_spatialx, b_spatialy, b_spatialz);
+		if (holder->up != model() && holder->up != navigator->holder)
+			pos = pos.project(holder->up, model());
+		min += pos;
+		max += pos;
+	}
+
 	return true;
 }
 
@@ -124,14 +158,16 @@ void Barrier::addBarriersToTable(Grid* grid)
 		for (AStarCell cell = minCell; cell.row <= maxCell.row; cell.row++) {
 			for (cell.col = minCell.col; cell.col <= maxCell.col; cell.col++) {
 				PatternCell* patternCell = getPatternCell(grid->getLocFromCell(cell));
-				if (!patternCell->canGoUp)
-					grid->blockNodeDirection(cell, Up, this);
-				if (!patternCell->canGoDown)
-					grid->blockNodeDirection(cell, Down, this);
-				if (!patternCell->canGoRight)
-					grid->blockNodeDirection(cell, Right, this);
-				if (!patternCell->canGoLeft)
-					grid->blockNodeDirection(cell, Left, this);
+				if (patternCell) {
+					if (!patternCell->canGoUp)
+						grid->blockNodeDirection(cell, Up, this);
+					if (!patternCell->canGoDown)
+						grid->blockNodeDirection(cell, Down, this);
+					if (!patternCell->canGoRight)
+						grid->blockNodeDirection(cell, Right, this);
+					if (!patternCell->canGoLeft)
+						grid->blockNodeDirection(cell, Left, this);
+				}
 			}
 		}
 	}
@@ -170,15 +206,27 @@ void Barrier::addMeshTriangle(Mesh * mesh, Vec3f & p1, Vec2f & tex1, Vec3f & p2,
 	addMeshVertex(mesh, p3, tex3, color, incNumVerts);
 }
 
+void Barrier::addMeshLine(Mesh * mesh, Vec3f & p1, Vec3f & p2, Vec4f & color, unsigned int * incNumVerts)
+{
+	addMeshVertex(mesh, p1, color, incNumVerts);
+	addMeshVertex(mesh, p2, color, incNumVerts);
+}
+
 void Barrier::drawManipulationHandles(treenode view)
 {
 	Vec3 myMin, myMax;
-	if (!getBoundingBox(myMin, myMax))
+	if (!getBoundingBox(myMin, myMax, true))
 		return;
 
+	Vec3 pos(b_spatialx, b_spatialy, b_spatialz);
+	if (holder->up != model() && holder->up != navigator->holder)
+		pos = pos.project(holder->up, model());
+	Vec3 myModelMin(myMin + pos), myModelMax(myMax + pos);
+
 	Grid* grid = navigator->getGrid(myMin);
-	grid->growToEncompassBoundingBox(myMin, myMax, false);
+	grid->growToEncompassBoundingBox(myModelMin, myModelMax, false);
 	grid->resolveGridOrigin();
+	nodeWidth = grid->nodeWidth;
 	Vec3 size = myMax - myMin;
 	float width = (float)(myMax.x - myMin.x);
 	float height = (float)(myMax.y - myMin.y);
@@ -199,8 +247,8 @@ void Barrier::drawManipulationHandles(treenode view)
 	setpickingdrawfocus(view, holder, 0);
 	mesh.draw(GL_TRIANGLES);
 
-	int hoverType = getpickingdrawfocus(view, PICK_TYPE, -3);
-	treenode hoverSecondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, -3));
+	int hoverType = getpickingdrawfocus(view, PICK_TYPE, PICK_HOVERED);
+	treenode hoverSecondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_HOVERED));
 
 	mesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
 	Vec3f left[3] = {
@@ -233,13 +281,13 @@ void Barrier::drawManipulationHandles(treenode view)
 	addMeshTriangle(&mesh, top[0], top[1], top[2], red);
 	addMeshTriangle(&mesh, bottom[0], bottom[1], bottom[2], red);
 
-	setpickingdrawfocus(view, holder, PICK_ARROW_LEFT);
+	setpickingdrawfocus(view, holder, PICK_ARROW_LEFT, pointList[0]->holder);
 	mesh.draw(GL_TRIANGLES, 0, 3);
-	setpickingdrawfocus(view, holder, PICK_ARROW_RIGHT);
+	setpickingdrawfocus(view, holder, PICK_ARROW_RIGHT, pointList[1]->holder);
 	mesh.draw(GL_TRIANGLES, 3, 3);
-	setpickingdrawfocus(view, holder, PICK_ARROW_TOP);
+	setpickingdrawfocus(view, holder, PICK_ARROW_TOP, pointList[1]->holder);
 	mesh.draw(GL_TRIANGLES, 6, 3);
-	setpickingdrawfocus(view, holder, PICK_ARROW_BOTTOM);
+	setpickingdrawfocus(view, holder, PICK_ARROW_BOTTOM, pointList[0]->holder);
 	mesh.draw(GL_TRIANGLES, 9, 3);
 
 	Vec3f colAddPos(myMax.x + 0.5 * nodeWidth, myMax.y - 0.5 * nodeWidth, z);
@@ -434,29 +482,33 @@ void Barrier::drawManipulationHandles(treenode view)
 		Mesh gridPointsMesh;
 		gridPointsMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
 		Vec4f lightGray(0.7f, 0.7f, 0.7f, 1.0f);
-		AStarCell minCell = grid->getCellFromLoc(myMin + Vec3(0.5 * nodeWidth, 0.5 * nodeWidth, 0.0));
-		AStarCell maxCell = grid->getCellFromLoc(myMax + Vec3(-0.5 * nodeWidth, -0.5 * nodeWidth, 0.0));
+		AStarCell minCell = grid->getCellFromLoc(myModelMin + Vec3(0.5 * nodeWidth, 0.5 * nodeWidth, 0.0));
+		AStarCell maxCell = grid->getCellFromLoc(myModelMax + Vec3(-0.5 * nodeWidth, -0.5 * nodeWidth, 0.0));
+		Vec3f offset(-b_spatialx, -b_spatialy, -b_spatialz);
 		for (AStarCell cell = minCell; cell.row <= maxCell.row; cell.row++) {
 			for (cell.col = minCell.col; cell.col <= maxCell.col; cell.col++) {
-				Vec3f pos = Vec3f(grid->getLocFromCell(cell));
-				pos.z = gridZ;
-				addMeshVertex(&gridPointsMesh, pos, lightGray);
-				PatternCell* patternCell = getPatternCell(Vec3(pos));
-				if (patternCell->canGoUp) {
-					addMeshVertex(&mesh, pos, lightGray);
-					addMeshVertex(&mesh, pos + Vec3f(0.0f, 0.2 * nodeWidth, 0.0f), lightGray);
-				}
-				if (patternCell->canGoDown) {
-					addMeshVertex(&mesh, pos, lightGray);
-					addMeshVertex(&mesh, pos + Vec3f(0.0f, -0.2 * nodeWidth, 0.0f), lightGray);
-				}
-				if (patternCell->canGoRight) {
-					addMeshVertex(&mesh, pos, lightGray);
-					addMeshVertex(&mesh, pos + Vec3f(0.2 * nodeWidth, 0.0f, 0.0f), lightGray);
-				}
-				if (patternCell->canGoLeft) {
-					addMeshVertex(&mesh, pos, lightGray);
-					addMeshVertex(&mesh, pos + Vec3f(-0.2 * nodeWidth, 0.0f, 0.0f), lightGray);
+				Vec3f modelPos = Vec3f(grid->getLocFromCell(cell));
+				modelPos.z = gridZ;
+				Vec3f localPos = modelPos + offset;
+				addMeshVertex(&gridPointsMesh, localPos, lightGray);
+				PatternCell* patternCell = getPatternCell(Vec3(modelPos));
+				if (patternCell) {
+					if (patternCell->canGoUp) {
+						addMeshVertex(&mesh, localPos, lightGray);
+						addMeshVertex(&mesh, localPos + Vec3f(0.0f, 0.2 * nodeWidth, 0.0f), lightGray);
+					}
+					if (patternCell->canGoDown) {
+						addMeshVertex(&mesh, localPos, lightGray);
+						addMeshVertex(&mesh, localPos + Vec3f(0.0f, -0.2 * nodeWidth, 0.0f), lightGray);
+					}
+					if (patternCell->canGoRight) {
+						addMeshVertex(&mesh, localPos, lightGray);
+						addMeshVertex(&mesh, localPos + Vec3f(0.2 * nodeWidth, 0.0f, 0.0f), lightGray);
+					}
+					if (patternCell->canGoLeft) {
+						addMeshVertex(&mesh, localPos, lightGray);
+						addMeshVertex(&mesh, localPos + Vec3f(-0.2 * nodeWidth, 0.0f, 0.0f), lightGray);
+					}
 				}
 			}
 		}
@@ -467,17 +519,13 @@ void Barrier::drawManipulationHandles(treenode view)
 	}
 }
 
-void Barrier::drawHoverHighlights(treenode view)
-{
-}
-
-void Barrier::addVertices(Mesh* barrierMesh, float z)
+void Barrier::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle)
 {
 	meshOffset = 0;
 	nrVerts = 0;
 
 	Vec3 myMin, myMax;
-	if (!getBoundingBox(myMin, myMax))
+	if (!getBoundingBox(myMin, myMax, true))
 		return;
 
 	double width = myMax.x - myMin.x;
@@ -485,28 +533,34 @@ void Barrier::addVertices(Mesh* barrierMesh, float z)
 
 	meshOffset = barrierMesh->numVerts;
 
-	float black[4] = {0.4f, 0.4f, 0.4f, 1.0f};
-	if (isActive) {
-		black[0] += 0.2f;
-		black[1] += 0.2f;
-		black[2] += 0.2f;
+	if (drawStyle == Highlighted) {
 		z += 0.001 / getmodelunit(LENGTH_MULTIPLE);
-	} else if (isHovered) {
-		black[0] += 0.3f;
-		black[1] += 0.3f;
-		black[2] += 0.3f;
+	} else if (drawStyle == Hovered) {
 		z += 0.002 / getmodelunit(LENGTH_MULTIPLE);
+	} else if (drawStyle == Selected) {
+		z += 0.003 / getmodelunit(LENGTH_MULTIPLE);
 	}
 
+	Vec3f bottomLeft((float)myMin.x, (float)myMin.y, z);
+	Vec3f topRight((float)myMax.x, (float)myMax.y, z );
+	Vec3f topLeft((float)myMin.x, (float)myMax.y, z );
+	Vec3f bottomRight((float)myMax.x, (float)myMin.y, z);
 
-	float bottomLeft[3] = {(float)myMin.x, (float)myMin.y, z};
-	float topRight[3] = { (float)myMax.x, (float)myMax.y, z };
-	float topLeft[3] = { (float)myMin.x, (float)myMax.y, z };
-	float bottomRight[3] = { (float)myMax.x, (float)myMin.y, z};
-
-	addMeshTriangle(barrierMesh, bottomRight, topLeft, bottomLeft, black, &nrVerts);
-	addMeshTriangle(barrierMesh, bottomRight, topRight, topLeft, black, &nrVerts);
+	if (drawStyle == Basic) {
+		Vec4f black(0.4f, 0.4f, 0.4f, 1.0f);
+		addMeshTriangle(barrierMesh, bottomRight, topLeft, bottomLeft, black, &nrVerts);
+		addMeshTriangle(barrierMesh, bottomRight, topRight, topLeft, black, &nrVerts);
+	} else {
+		Vec4f red(1.0f, 0.0f, 0.0f, 1.0f);
+		Vec4f yellow(1.0f, 1.0f, 0.0f, drawStyle == Hovered ? 0.5f : 1.0f);
+		Vec4f& color = drawStyle == Selected ? red : yellow;
+		addMeshLine(barrierMesh, bottomLeft, bottomRight, color);
+		addMeshLine(barrierMesh, bottomRight, topRight, color);
+		addMeshLine(barrierMesh, topRight, topLeft, color);
+		addMeshLine(barrierMesh, topLeft, bottomLeft, color);
+	}
 }
+
 
 double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 {
@@ -518,12 +572,6 @@ double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 	Point* activePoint = pointList[(int)activePointIndex];
 	Point* bottomLeft = pointList[0];
 	Point* topRight = pointList[1];
-
-	if (clickCode == LEFT_PRESS && (mode & Barrier::CREATE)) {
-		// Set activePoint to current mouse position
-		activePoint->x = pos.x;
-		activePoint->y = pos.y;
-	}
 
 	// Swap point coordinates if they are not actually the bottom left and top right points
 	if (bottomLeft->x > topRight->x) {
@@ -552,9 +600,8 @@ double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 		if (!getBoundingBox(myMin, myMax))
 			return 0;
 
-		int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
+		int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, PICK_PRESSED);
 		if (pickType != 0) {
-			arrow = pickType;
 			mode = Barrier::POINT_EDIT;
 			bool shouldTrackPatternCellSizes = false;
 			switch (pickType) {
@@ -598,13 +645,11 @@ double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 			}
 		
 			activePointIndex = 0;
-			mode = 0;
-			arrow = 0;
 		}
 
-		int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, -2);
-		if (pickType != 0 && getpickingdrawfocus(view, PICK_TYPE, 0) == pickType) {
-			TreeNode* cellNode = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, -2));
+		int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, PICK_RELEASED);
+		if (pickType != 0 && getpickingdrawfocus(view, PICK_TYPE, PICK_PRESSED) == pickType) {
+			TreeNode* cellNode = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_RELEASED));
 			PatternCell* cell = cellNode ? cellNode->objectAs(PatternCell) : nullptr;
 			cursorinfo(view, 4, 0, 0); // update the hover (I think)
 			switch (pickType) {
@@ -616,12 +661,14 @@ double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 				case PICK_PATTERN_DIRECTION_UP:
 				case PICK_PATTERN_DIRECTION_LEFT:
 				case PICK_PATTERN_DIRECTION_RIGHT: {
+					int undoID = beginaggregatedundo(view, "Change Barrier Pattern Cell");
 					switch (pickType) {
-					case PICK_PATTERN_DIRECTION_DOWN: cell->canGoDown = !cell->canGoDown; break;
-					case PICK_PATTERN_DIRECTION_UP: cell->canGoUp = !cell->canGoUp; break;
-					case PICK_PATTERN_DIRECTION_LEFT: cell->canGoLeft = !cell->canGoLeft; break;
-					case PICK_PATTERN_DIRECTION_RIGHT: cell->canGoRight = !cell->canGoRight; break;
+					case PICK_PATTERN_DIRECTION_DOWN: cell->holder->find("canGoDown")->value = !cell->canGoDown; break;
+					case PICK_PATTERN_DIRECTION_UP: cell->holder->find("canGoUp")->value = !cell->canGoUp; break;
+					case PICK_PATTERN_DIRECTION_LEFT: cell->holder->find("canGoLeft")->value = !cell->canGoLeft; break;
+					case PICK_PATTERN_DIRECTION_RIGHT: cell->holder->find("canGoRight")->value = !cell->canGoRight; break;
 					}
+					endaggregatedundo(view, undoID);
 					break;
 				}
 				default: break;
@@ -643,59 +690,54 @@ double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 double Barrier::onClick(treenode view, int clickCode)
 {
 	AStarNavigator* nav = navigator;
-	// is there a current barrier
-	if (objectexists(nav->activeBarrier)) {
-		Barrier* b = nav->activeBarrier->objectAs(Barrier);
-		// is the clicked barrier different than the current barrier
-		if (b != this) {
-			// Send the click to the activeBarrier if it's in create mode
-			if (mode & Barrier::CREATE) {
-				Vec3 pos(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), cursorinfo(view, 2, 3, 1));
-				return b->onClick(view, (int)clickcode, pos);
-			}
-
-			// then reset the current barrier to be "not active"
-			b->activePointIndex = 0;
-			b->isActive = 0;
-		}
-	}
-	// set the active barrier to the clicked barrier
-	nav->activeBarrier = holder;
-	isActive = 1;
-	nav->setDirty();
+	isMeshDirty = true;
 	Vec3 pos(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), cursorinfo(view, 2, 3, 1));
 	return onClick(view, clickCode, pos);
 }
 
-double Barrier::onMouseMove(const Vec3& pos, const Vec3& diff)
+double Barrier::onMouseMove(treenode view, Vec3& pos, Vec3& diff)
 {
-	if ((mode & Barrier::POINT_EDIT) && activePointIndex < pointList.size()) {
-		Point* activePoint = pointList[(int)activePointIndex];
-
-		if (arrow == 0 || arrow == PICK_ARROW_LEFT || arrow == PICK_ARROW_RIGHT) {
+	int pickType = getpickingdrawfocus(view, PICK_TYPE, PICK_PRESSED);
+	treenode pointNode = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED));
+	bool isPointEdit = pointNode != nullptr 
+		&& (pickType == PICK_POINT || pickType == PICK_ARROW_LEFT || pickType == PICK_ARROW_RIGHT 
+			|| pickType == PICK_ARROW_TOP || pickType == PICK_ARROW_BOTTOM);
+	isMeshDirty = true;
+	if (isPointEdit) {
+		Point* activePoint = pointNode->objectAs(Point);
+		Point* activeXPoint = activePoint, *activeYPoint = activePoint;
+		if (pickType == PICK_POINT) {
+			Vec3 min, max;
+			getBoundingBox(min, max);
+			Vec3 center = (min + max) * 0.5;
+			if (pos.x < center.x)
+				activeXPoint = pointList[0];
+			else activeXPoint = pointList[1];
+			if (pos.y < center.y)
+				activeYPoint = pointList[0];
+			else activeYPoint = pointList[1];
+			//diff.x = pos.x - activeXPoint->x;
+			//diff.y = pos.y - activeYPoint->y;
+		}
+		if (pickType == PICK_POINT || pickType == PICK_ARROW_LEFT || pickType == PICK_ARROW_RIGHT) {
 			double oldXSize = fabs(pointList[1]->x - pointList[0]->x);
-			activePoint->x += diff.x;
+			activeXPoint->x += diff.x;
 			scalePatternColsOnSizeChange(oldXSize, fabs(pointList[1]->x - pointList[0]->x));
 		}
-		if (arrow == 0 || arrow == PICK_ARROW_TOP || arrow == PICK_ARROW_BOTTOM) {
+		if (pickType == PICK_POINT || pickType == PICK_ARROW_TOP || pickType == PICK_ARROW_BOTTOM) {
 			double oldYSize = fabs(pointList[1]->y - pointList[0]->y);
-			activePoint->y += diff.y;
+			activeYPoint->y += diff.y;
 			scalePatternRowsOnSizeChange(oldYSize, fabs(pointList[1]->y - pointList[0]->y));
 		}
-
-
-	} else if (mode & Barrier::MOVE) {
+		updateSpatialsToEncompassPoints();
+		return 1;
+	} else if (pickType == 0) {
 		if (mode & Barrier::CREATE) {
 			mode = Barrier::MOVE;
 			modeleditmode(0);
 		}
-		for (int i = 0; i < pointList.size(); i++) {
-			pointList[i]->x += diff.x;
-			pointList[i]->y += diff.y;
-		}
+		return 0;
 	}
-
-	return 1;
 }
 
 double Barrier::onDrag(treenode view)
@@ -703,22 +745,98 @@ double Barrier::onDrag(treenode view)
 	double dx = draginfo(DRAG_INFO_DX);
 	double dy = draginfo(DRAG_INFO_DY);
 	double dz = draginfo(DRAG_INFO_DZ);
-	onMouseMove(Vec3(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), 0), Vec3(dx, dy, dz));
-	int pickType = getpickingdrawfocus(view, PICK_TYPE, 0);
+	double returnVal = onMouseMove(view, Vec3(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), 0), Vec3(dx, dy, dz));
+	int pickType = getpickingdrawfocus(view, PICK_TYPE, PICK_PRESSED);
 	if (pickType != 0) {
 		switch (pickType) {
 		case PICK_PATTERN_SIZER_X: {
-			dragPatternCellSizer(tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0))->objectAs(PatternCell), dx, true);
+			dragPatternCellSizer(tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED))->objectAs(PatternCell), dx, true);
 			break;
 		}
 		case PICK_PATTERN_SIZER_Y: {
-			dragPatternCellSizer(tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0))->objectAs(PatternCell), -dy, false);
+			dragPatternCellSizer(tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED))->objectAs(PatternCell), -dy, false);
 			break;
 		}
 		}
 	}
-	navigator->setDirty();
-	return 1;
+	isMeshDirty = true;
+	return returnVal;
+}
+
+double Barrier::onPreDraw(treenode view)
+{
+	b_spatialrx = b_spatialry = b_spatialrz = 0.0;
+	return 0.0;
+}
+
+double Barrier::onDraw(treenode view)
+{
+	float factor, units;
+	bool polyOffsetFill = glIsEnabled(GL_POLYGON_OFFSET_FILL);
+	glGetFloatv(GL_POLYGON_OFFSET_FACTOR, &factor);
+	glGetFloatv(GL_POLYGON_OFFSET_UNITS, &units);
+	fglEnable(GL_POLYGON_OFFSET_FILL);
+
+	double vpRadius = get(viewpointradius(view));
+	if (get(viewprojectiontype(view)) == 1)
+		vpRadius = maxof(get(spatialsx(view)), get(spatialsy(view))) / get(viewmagnification(view));
+	double offset = max(-1, -50 / (vpRadius * getmodelunit(LENGTH_MULTIPLE)));
+
+	glPolygonOffset(offset - 0.025, -5);
+
+	if (isMeshDirty) {
+		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4);
+		addVertices(view, &mesh, 0.0f, Basic);
+		isMeshDirty = false;
+	}
+
+	setpickingdrawfocus(view, holder, 0, 0, OVERRIDE_DRAW_ALL);
+	fglDisable(GL_TEXTURE_2D);
+	fglDisable(GL_LIGHTING);
+
+	fglRotate(-90.0f, 1.0f, 0.0f, 0.0f);
+	fglScale(1.0 / b_spatialsx, 1.0 / b_spatialsy, 1.0 / b_spatialsz);
+	if (holder->up == navigator->holder) {
+		fglTranslate(-navigator->b_spatialx, -navigator->b_spatialy, -navigator->b_spatialz);
+	}
+
+	int pickingMode = getpickingmode(view);
+	if (pickingMode) {
+		drawPickObjects(view);
+	}
+
+	treenode selObj = selectedobject(view);
+	treenode hoverObj = tonode(getpickingdrawfocus(view, PICK_OBJECT, PICK_HOVERED));
+	if (selObj == holder || hoverObj == holder || switch_selected(holder, -1)) {
+		glLineWidth(5.0f);
+		Mesh temp;
+		if (selObj == holder || hoverObj == holder) {
+			temp.init(0, MESH_POSITION | MESH_DIFFUSE4);
+			addVertices(view, &temp, 0.0f, selObj == holder ? Highlighted : Hovered);
+			temp.draw(GL_LINES);
+		}
+
+		if (switch_selected(holder, -1)) {
+			temp.init(0, MESH_POSITION | MESH_DIFFUSE4);
+			addVertices(view, &temp, 0.0f, Selected);
+			temp.draw(GL_LINES);
+		}
+		glLineWidth(1.0f);
+
+		if (selObj == holder) {
+			drawManipulationHandles(view);
+		}
+	}
+	
+	mesh.draw(GL_TRIANGLES);
+
+	fglEnable(GL_TEXTURE_2D);
+	fglEnable(GL_LIGHTING);
+
+	glPolygonOffset(factor, units);
+	if (polyOffsetFill == false)
+		fglDisable(GL_POLYGON_OFFSET_FILL);
+	return 0;
 }
 
 unsigned int Barrier::getClassType()
@@ -733,15 +851,14 @@ double Barrier::dragConnection(TreeNode * connectTo, char keyPressed, unsigned i
 
 double Barrier::onDestroy(TreeNode * view)
 {
-	navigator->setDirty();
+	isMeshDirty = true;
 	return 0.0;
 }
 
 double Barrier::onUndo(bool isUndo, treenode undoRecord)
 {
 	AStarNavigator* nav = navigator;
-	if (nav)
-		nav->setDirty();
+	isMeshDirty = true;
 
 	// Stop barrier creation
 	if (mode & Barrier::CREATE) {
@@ -759,6 +876,35 @@ double Barrier::onUndo(bool isUndo, treenode undoRecord)
 			activePointIndex = pointList.size();
 	}
 	return 0.0;
+}
+
+double Barrier::onCreate(double dropx, double dropy, double dropz, int iscopy)
+{
+	assertNavigator();
+
+	if (holder->up == model()) {
+		holder->up = navigator->holder;
+	}
+	if (isBasicBarrier())
+		assertValidPatternTable();
+	return 0.0;
+}
+
+void Barrier::updateSpatialsToEncompassPoints()
+{
+	Vec3 min, max;
+	getLocalBoundingBox(min, max);
+	node_b_spatialsx->value = max.x - min.x;
+	node_b_spatialsy->value = max.y - min.y;
+	if (min.x == 0.0 && max.y == 0.0)
+		return;
+	node_b_spatialx->value += min.x;
+	node_b_spatialy->value += max.y;
+
+	for (Point* point : pointList) {
+		point->holder->find("x")->value -= min.x;
+		point->holder->find("y")->value -= max.y;
+	}
 }
 
 void Barrier::addPoint(const Vec3& pos)
@@ -833,11 +979,11 @@ bool Barrier::setPointCoords(int pointIndex, const Vec3& point)
 	return true;
 }
 
-void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
+void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color, DrawStyle drawStyle)
 {
 	float theColor[4] = { min(1.0f, color.r + 0.2f), min(1.0f, color.g + 0.2f), min(1.0f, color.b + 0.2f), color.a };
 	float lightGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
-	if (isActive) {
+	if (drawStyle == Highlighted) {
 		theColor[0] = color.r;
 		theColor[1] = color.g;
 		theColor[2] = color.b;
@@ -846,7 +992,7 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 		lightGray[2] = 0.6f;
 		z += 0.001 / getmodelunit(LENGTH_MULTIPLE);
 	}
-	else if (isHovered) {
+	else if (drawStyle == Hovered) {
 		theColor[0] = min(1.0f, color.r + 0.1f);
 		theColor[1] = min(1.0f, color.g + 0.1f);
 		theColor[2] = min(1.0f, color.b + 0.1f);
@@ -965,6 +1111,10 @@ void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color)
 
 void Barrier::onReset(AStarNavigator * nav)
 {
+	Vec3 min, max;
+	getBoundingBox(min, max);
+	nodeWidth = nav->getGrid(min)->nodeWidth;
+	isMeshDirty = true;
 	if (isBasicBarrier()) {
 		assertValidPatternTable();
 	}

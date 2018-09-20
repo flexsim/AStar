@@ -1104,7 +1104,6 @@ double Grid::onDrag(treenode view)
 	// Move all attached barriers
 	onDrag(view, Vec3(dx, dy, dz));
 
-	navigator->setDirty();
 	navigator->isBoundsDirty = true;
 	navigator->isGridDirty = true;
 	return 1;

@@ -182,7 +182,6 @@
     <ClInclude Include="Bridge.h" />
     <ClInclude Include="Divider.h" />
     <ClInclude Include="macros.h" />
-    <ClInclude Include="OneWayDivider.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="PreferredPath.h" />
     <ClInclude Include="AStar.h" />
@@ -221,7 +220,6 @@
     <ClCompile Include="Divider.cpp" />
     <ClCompile Include="flexsimcontent\dllmain.cpp" />
     <ClCompile Include="MandatoryPath.cpp" />
-    <ClCompile Include="OneWayDivider.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="PreferredPath.cpp" />
     <ClCompile Include="TemporaryBarrier.cpp" />

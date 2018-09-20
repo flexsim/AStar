@@ -1,6 +1,5 @@
 #include "AStarNavigator.h"
 #include "Divider.h"
-#include "OneWayDivider.h"
 #include "PreferredPath.h"
 #include "macros.h"
 #include "Bridge.h"
@@ -69,7 +68,6 @@ void AStarNavigator::bindVariables(void)
 
 	bindVariable(barriers);
 	barrierList.init(barriers);
-	bindVariable(activeBarrier);
 
 	bindVariable(fixedResourceBarriers);
 	objectBarrierList.init(fixedResourceBarriers);
@@ -275,8 +273,6 @@ double AStarNavigator::onReset()
 
 	SimulationStartEvent::addObject(this);
 
-	setDirty();
-
 	if (enableCollisionAvoidance && collisionUpdateIntervalFactor > 0 && travelers.size() > 0) {
 		double avgSpeed = sumSpeed / travelers.size();
 		double avgNodeMoveTime = minNodeWidth / avgSpeed;
@@ -310,39 +306,16 @@ double AStarNavigator::onRunWarm()
 
 double AStarNavigator::onDraw(TreeNode* view)
 {
+	treenode hoveredObj = tonode(getpickingdrawfocus(view, PICK_OBJECT, -1));
+	treenode selObj = selectedobject(view);
+
 	// Based on the drawMode, this function
 	// draws the grid, barriers, and traffic
 	int drawMode = (int)this->drawMode;
-	if (drawMode == 0 && (showHeatMap == 0 || heatMapMode == 0) && showAllocations == 0 && showTravelThreshold == 0)
+	if (drawMode == 0 && (showHeatMap == 0 || heatMapMode == 0) && showAllocations == 0 && showTravelThreshold == 0 && selObj != holder && hoveredObj != holder)
 		return 0;
 
-	int pickingmode = getpickingmode(view);
-	treenode hoveredBarrier = tonode(getpickingdrawfocus(view, PICK_OBJECT, -1));
-	if (hoveredBarrier && (hoveredBarrier->ownerObject != holder || hoveredBarrier->up != barriers))
-		hoveredBarrier = nullptr;
-	treenode selObj = selectedobject(view);
-
-	if (!pickingmode) {
-		// Show the activeBarrier if the AStarNavigator is highlighted
-		if (objectexists(activeBarrier)) {
-			bool showActiveBarrier = objectexists(selObj) && selObj->up == barriers;
-			Barrier* b = activeBarrier->objectAs(Barrier);
-			b->isActive = showActiveBarrier;
-			if (showActiveBarrier != isActiveBarrierBuilt)
-				isBarrierDirty = true;
-		}
-
-		// Semi highlight hovered barrier
-		if (objectexists(hoveredBarrier)) {
-			Barrier* b = hoveredBarrier->objectAs(Barrier);
-			if (!objectexists(activeBarrier) || !(activeBarrier->objectAs(Barrier)->mode & Barrier::CREATE)) {
-				b->isHovered = true;
-				isBarrierDirty = true;
-			}
-		}
-		else if (isHoveredBarrierBuilt)
-			isBarrierDirty = true;
-	}
+	int pickingMode = getpickingmode(view);
 
 	double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 	if (isGridDirty) {
@@ -357,40 +330,39 @@ double AStarNavigator::onDraw(TreeNode* view)
 		if (isBoundsMeshBuilt)
 			isBoundsDirty = false;
 	}
-	if (isBarrierDirty) {
-		if (drawMode & ASTAR_DRAW_MODE_BARRIERS)
-			buildBarrierMesh(0);
-		if (isBarrierMeshBuilt)
-			isBarrierDirty = false;
-	}
 
-	if (!pickingmode) {
-		// Save if the active barrier is built in the barrier mesh
-		if (objectexists(activeBarrier)) {
-			Barrier* b = activeBarrier->objectAs(Barrier);
-			if (isBarrierMeshBuilt)
-				isActiveBarrierBuilt = b->isActive;
-			b->isActive = true;
+	fglDisable(GL_TEXTURE_2D);
+	fglDisable(GL_LIGHTING);
+
+	if (selObj == holder || hoveredObj == holder) {
+		treenode surrogate = node_b_drawsurrogate ? node_b_drawsurrogate->subnodes[1] : nullptr;
+		if (surrogate) {
+			ObjectDataType* odt = surrogate->objectAs(ObjectDataType);
+			fglPushMatrix();
+			Vec3f loc(odt->location);
+			fglTranslate(loc.x, loc.y, loc.z);
+			fglRotate(90.0f, 1.0f, 0.0f, 0.0f);
+			fglEnable(GL_LIGHTING);
+			setpickingdrawfocus(view, holder, PICK_SIZERX);
+			drawobjectpart(view, surrogate, OBJECT_PART_SIZER_X);
+			setpickingdrawfocus(view, holder, PICK_SIZERXNEG);
+			drawobjectpart(view, surrogate, OBJECT_PART_SIZER_X_NEG);
+			setpickingdrawfocus(view, holder, PICK_SIZERY);
+			drawobjectpart(view, surrogate, OBJECT_PART_SIZER_Y);
+			setpickingdrawfocus(view, holder, PICK_SIZERYNEG);
+			drawobjectpart(view, surrogate, OBJECT_PART_SIZER_Y_NEG);
+			fglDisable(GL_LIGHTING);
+			glLineWidth(3.0f);
+			if (selObj == holder)
+				drawobjectpart(view, surrogate, OBJECT_PART_YELLOW_HIGHLIGHT);
+			else if (hoveredObj == holder)
+				drawobjectpart(view, surrogate, OBJECT_PART_HOVER_HIGHLIGHT);
+
+			fglPopMatrix();
+			glLineWidth(1.0f);
+			fglDisable(GL_LIGHTING);
 		}
-		else if (isBarrierMeshBuilt)
-			isActiveBarrierBuilt = false;
-
-		// unset hovered barrier
-		if (objectexists(hoveredBarrier)) {
-			Barrier* b = hoveredBarrier->objectAs(Barrier);
-			isHoveredBarrierBuilt = b->isHovered;
-			if (b->isHovered)
-				b->isHovered = false;
-		}
-		else
-			isHoveredBarrierBuilt = false;
 	}
-	
-	double loc[3];
-	vectorproject(holder, 0, 0, 0, model(), loc);
-
-	fglScale(1.0/b_spatialsx, 1.0/b_spatialsy, 1.0/b_spatialsz);
-	fglTranslate(-loc[0], -loc[1], -loc[2]);
 
 	float factor, units;
 	bool polyOffsetFill = glIsEnabled(GL_POLYGON_OFFSET_FILL);
@@ -403,22 +375,11 @@ double AStarNavigator::onDraw(TreeNode* view)
 		vpRadius = maxof(get(spatialsx(view)), get(spatialsy(view))) / get(viewmagnification(view));
 	double offset = max(-1, -50 / (vpRadius * getmodelunit(LENGTH_MULTIPLE)));
 
-	fglDisable(GL_TEXTURE_2D);
-	fglDisable(GL_LIGHTING);
 
-	bool drawSelected = objectexists(selObj) && selObj->up == barriers;
-	if (drawSelected || hoveredBarrier) {
-		glPolygonOffset(offset - 0.05, -5);
-		if (drawSelected)
-			selObj->objectAs(Barrier)->drawManipulationHandles(view);
-		if (hoveredBarrier)
-			hoveredBarrier->objectAs(Barrier)->drawHoverHighlights(view);
-	}
-
-	if (!pickingmode) {
+	if (!pickingMode) {
 
 		if (isGridMeshBuilt && (drawMode & ASTAR_DRAW_MODE_GRID)) {
-			bool isPatternBarrierSelected = objectexists(selObj) && selObj->parent == barrierList && selObj->objectAs(Barrier)->patternTable->subnodes.length > 0;
+			bool isPatternBarrierSelected = objectexists(selObj) && isclasstype(selObj, "AStar::Barrier") && selObj->objectAs(Barrier)->patternTable->subnodes.length > 0;
 			if (!isPatternBarrierSelected) {
 				for (Grid* grid : grids)
 					grid->gridMesh.draw(GL_LINES);
@@ -430,10 +391,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 			for (Grid* grid : grids)
 				grid->boundsMesh.draw(GL_TRIANGLES);
 		}
-
-		glPolygonOffset(offset - 0.025, -5);
-		if (isBarrierMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BARRIERS))
-			barrierMesh.draw(GL_TRIANGLES);
 
 		fglEnable(GL_TEXTURE_2D);
 		fglEnable(GL_LIGHTING);
@@ -473,27 +430,12 @@ double AStarNavigator::onDraw(TreeNode* view)
 			}
 		}
 	} else {
-
-		if(drawMode & ASTAR_DRAW_MODE_BARRIERS) {
-			for(int i = 0; i < barrierList.size(); i++) {
-				Barrier* barrier = barrierList[i];
-
-				Vec3 min, max;
-				if (!barrier->getBoundingBox(min, max))
-					continue;
-
-				setpickingdrawfocus(view, barrier->holder, 0);
-				barrierMesh.draw(GL_TRIANGLES, barrier->meshOffset, barrier->nrVerts);
-			}
-		}
-
 		if (drawMode & ASTAR_DRAW_MODE_BOUNDS) {
 			for (Grid* grid : grids) {
 				setpickingdrawfocus(view, grid->holder, PICK_TYPE_BOUNDS);
 				grid->boundsMesh.draw(GL_TRIANGLES);
 			}
 		}
-
 	}
 	fglEnable(GL_TEXTURE_2D);
 	fglEnable(GL_LIGHTING);
@@ -502,32 +444,29 @@ double AStarNavigator::onDraw(TreeNode* view)
 	if (polyOffsetFill == false)
 		fglDisable(GL_POLYGON_OFFSET_FILL);
 	
+
+	setpickingdrawfocus(view, holder, 0, 0, OVERRIDE_DRAW_ALL);
+
 	return 0;
 }
 
 double AStarNavigator::onClick(TreeNode* view, int clickcode)
 {
-	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
-	TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
-
-	if (objectexists(activeBarrier)) {
-		Barrier* b = activeBarrier->objectAs(Barrier);
-		b->activePointIndex = 0;
-		b->isActive = 0;
-		setDirty();
+	treenode surrogate = first(node_b_drawsurrogate);
+	if (clickcode == LEFT_PRESS) {
+		applicationcommand("addundotracking", view, spatialx(surrogate));
+		applicationcommand("addundotracking", view, spatialy(surrogate));
+		applicationcommand("addundotracking", view, spatialz(surrogate));
+		applicationcommand("addundotracking", view, spatialsx(surrogate));
+		applicationcommand("addundotracking", view, spatialsy(surrogate));
+		applicationcommand("addundotracking", view, spatialsz(surrogate));
 	}
-	activeBarrier = 0;
+
 	return FlexSimObject::onClick(view, (int)clickcode);
 }
 
 double AStarNavigator::onUndo(bool isUndo, treenode undoRecord)
 {
-	if (objectexists(activeBarrier)) {
-		Barrier* b = activeBarrier->objectAs(Barrier);
-		b->onUndo(isUndo, undoRecord);
-	}
-	// Redraw barriers
-	setDirty();
 	return 0;
 }
 
@@ -599,25 +538,8 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 
 double AStarNavigator::onDestroy(TreeNode* view)
 {
-	if (objectexists(view)) {
-		if (objectexists(activeBarrier)) {
-			Divider* divider = activeBarrier->objectAs(Barrier)->toDivider();
-			if (divider && divider->mode == 0 && divider->pointList.size() > 2
-				&& divider->activePointIndex != divider->pointList.size()) {
-				// Remove a divider point
-				divider->removePoint(divider->activePointIndex);
-				// Set the previous point as the active
-				if (divider->activePointIndex != 0)
-					divider->activePointIndex -= 1;
-			}
-			else
-				destroyobject(activeBarrier);
-			setDirty();
-		} else {
-			destroyobject(holder);
-		}
-		return 1;
-	}
+	for (int i = 0; i < barrierList.size(); i++)
+		destroyobject(barrierList[i]->holder);
 	return 0;
 }
 
@@ -693,6 +615,14 @@ void AStarNavigator::onCollisionIntervalUpdate()
 	}
 
 	createevent(new CollisionIntervalUpdateEvent(this, nextCollisionUpdateTime));
+}
+
+void AStarNavigator::addBarrier(treenode x, Barrier * newBarrier)
+{
+	treenode otherSide = newBarrier->navigatorCoupling->subnodes.add()->addData(DATATYPE_COUPLING);
+	x->addData(DATATYPE_COUPLING);
+	x->joinTo(otherSide);
+
 }
 
 AStarSearchEntry* AStarNavigator::checkExpandOpenSet(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn, Direction direction, 
@@ -1238,6 +1168,24 @@ double AStarNavigator::abortTravel(TreeNode* travelerNode, TreeNode* newTS)
 
 double AStarNavigator::updateLocations()
 {
+	Vec3 pos(this->location);
+	Vec3 size(this->size);
+	switch_hidelabel(holder, 1);
+	switch_selected(holder, 0);
+	if ((pos.x != 0.0 || pos.y != 0.0 || pos.z != 0.0 || size.x != 1.0 || size.y != 1.0 || size.z != 1.0) && node_b_drawsurrogate) {
+		treenode surrogate = node_b_drawsurrogate ? node_b_drawsurrogate->subnodes[1] : nullptr;
+		if (surrogate) {
+			b_spatialx = b_spatialy = b_spatialz = 0;
+			b_spatialsx = b_spatialsy = b_spatialsz = 1.0;
+			inc(spatialx(surrogate), pos.x);
+			inc(spatialy(surrogate), pos.y);
+			inc(spatialz(surrogate), pos.z);
+			inc(spatialsx(surrogate), size.x - 1.0);
+			inc(spatialsy(surrogate), size.y - 1.0);
+			inc(spatialsz(surrogate), size.z - 1.0);
+		}
+	}
+	b_spatialrx = b_spatialry = b_spatialrz = 0;
 	for (auto iter = activeTravelers.begin(); iter != activeTravelers.end(); iter++)
 		(*iter)->updateLocation();
 	return 0;
@@ -1311,22 +1259,6 @@ void AStarNavigator::buildBoundsMesh(float z)
 		return;
 	}
 	isBoundsMeshBuilt = true;
-}
-
-void AStarNavigator::buildBarrierMesh(float z)
-{
-	resolveMinNodeWidth();
-	barrierMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, 0);
-	float up[3] = {0.0f, 0.0f, 1.0f};
-	barrierMesh.setMeshAttrib(MESH_NORMAL, up);
-	for (int i = 0; i < barrierList.size(); i++) {
-		Barrier* barrier = barrierList[i];
-		if (barrier->nodeWidth <= 0)
-			barrier->nodeWidth = minNodeWidth;
-		barrier->addVertices(&barrierMesh, z);
-	}
-
-	isBarrierMeshBuilt = true;
 }
 
 void AStarNavigator::drawHeatMap(TreeNode* view)
@@ -1609,11 +1541,6 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 
 }
 
-void AStarNavigator::setDirty()
-{
-	isBarrierDirty = true;
-}
-
 AStarCell AStarNavigator::getCellFromLoc(const Vec3& modelLoc)
 {
 	return getGrid(modelLoc)->getCellFromLoc(modelLoc);
@@ -1879,7 +1806,6 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	default:
 	case EditMode::SOLID_BARRIER: newBarrier = barrierList.add(new Barrier); break;
 	case EditMode::DIVIDER: newBarrier = barrierList.add(new Divider); break;
-	case EditMode::ONE_WAY_DIVIDER: newBarrier = barrierList.add(new OneWayDivider); break;
 	case EditMode::PREFERRED_PATH: newBarrier = barrierList.add(new PreferredPath(defaultPathWeight)); break;
 	case EditMode::BRIDGE: newBarrier = barrierList.add(new Bridge); break;
 	case EditMode::MANDATORY_PATH: newBarrier = barrierList.add(new MandatoryPath); break;
@@ -1896,10 +1822,6 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	}
 	}
 	TreeNode* newNode = nullptr;
-	if (activeBarrier) {
-		activeBarrier->objectAs(Barrier)->isActive = 0;
-		activeBarrier = nullptr;
-	}
 	if (activeGrid) {
 		activeGrid = nullptr;
 	}
@@ -1907,14 +1829,13 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	if (newBarrier) {
 		newBarrier->init(minNodeWidth, pos1, pos2);
 		newBarrier->activePointIndex = 1;
-		newBarrier->isActive = 1;
 		newNode = newBarrier->holder;
 		className = newBarrier->getClassFactory();
 		className = className.substr(strlen("AStar::"));
-		activeBarrier = newNode;
+		newBarrier->isMeshDirty = true;
 	} else if (newGrid) {
 		newNode = newGrid->holder;
-		className = newBarrier->getClassFactory();
+		className = newGrid->getClassFactory();
 		className = className.substr(strlen("AStar::"));
 		activeGrid = newNode;
 	}
@@ -1928,7 +1849,6 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	}
 
 	setname(newNode, ss.str().c_str());
-	setDirty();
 
 	// Create undo record on the active view
 	addCreateRecord(nodefromwindow(activedocumentview()), newBarrier, "Create Barrier");
@@ -2031,7 +1951,6 @@ ASTAR_FUNCTION Variant AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
 		return 0;
 
 	a->barrierList.remove((int)param(1));
-	a->setDirty();
 
 	return 1;
 }
@@ -2062,15 +1981,10 @@ ASTAR_FUNCTION Variant AStarNavigator_onClick(FLEXSIMINTERFACE)
 		return 0;
 
 	AStarNavigator* a = navNode->objectAs(AStarNavigator);
-	if (objectexists(a->activeBarrier)) {
-		Barrier* b = a->activeBarrier->objectAs(Barrier);
-		b->onClick(param(1), (int)param(2), Vec3(param(3), param(4), param(5)));
-		a->setDirty();
-	}
+	
 	if (objectexists(a->activeGrid)) {
 		Grid* g = a->activeGrid->objectAs(Grid);
 		g->onClick(param(1), (int)param(2), Vec3(param(3), param(4), param(5)));
-		a->setDirty();
 	}
 	return 1;
 }
@@ -2082,26 +1996,6 @@ ASTAR_FUNCTION Variant AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
 		return 0;
 
 	AStarNavigator* a = navNode->objectAs(AStarNavigator);
-	if (objectexists(a->activeBarrier)) {
-		Barrier* b = a->activeBarrier->objectAs(Barrier);
-		b->onMouseMove(Vec3(param(1), param(2), param(3)), Vec3(param(4), param(5), 0));
-		a->setDirty();
-	}
-
-	return 1;
-}
-
-ASTAR_FUNCTION Variant AStarNavigator_getActiveBarrierMode(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	AStarNavigator* a = navNode->objectAs(AStarNavigator);
-	if (objectexists(a->activeBarrier)) {
-		Barrier* b = a->activeBarrier->objectAs(Barrier);
-		return b->mode;
-	}
 
 	return 1;
 }
@@ -2114,16 +2008,6 @@ ASTAR_FUNCTION Variant AStarNavigator_setActiveBarrier(FLEXSIMINTERFACE)
 		return 0;
 	if (!isclasstype(ownerobject(barrierNode), "AStar::AStarNavigator"))
 		return 0;
-
-	AStarNavigator* a = navNode->objectAs(AStarNavigator);
-	if (objectexists(a->activeBarrier)) {
-		Barrier* b = a->activeBarrier->objectAs(Barrier);
-		b->activePointIndex = 0;
-		b->isActive = 0;
-	}
-	Barrier* b = barrierNode->objectAs(Barrier);
-	b->isActive = 1;
-	a->activeBarrier = b->holder;
 
 	return 1;
 }

@@ -11,27 +11,21 @@ Bridge::Bridge()
 	return;
 }
 
-const char * Bridge::getClassFactory(void)
-{
-	return "AStar::Bridge";
-}
 
-
-void Bridge::bind(void)
+void Bridge::bindVariables(void)
 {
-	Divider::bind();
-	bindDouble(isTwoWay, 1);
-	bindDouble(useVirtualDistance, 1);
-	bindDouble(virtualDistance, 1);
-	bindNumber(geometricDistance);
-	bindNumber(travelDistance);
-	bindNumber(filledDistance);
-	bindNumber(isAvailable);
-	bindObjPtr(blockedTraveler);
-	bindObjPtr(firstTraveler);
-	bindObjPtr(lastTraveler);
-	bindNumber(blockedPathIndex);
-	bindNumber(nodeWidth);
+	__super::bindVariables();
+	bindVariable(useVirtualDistance);
+	bindVariable(virtualDistance);
+	bindStateVariable(geometricDistance);
+	bindStateVariable(travelDistance);
+	bindStateVariable(filledDistance);
+	bindStateVariable(isAvailable);
+	bindStateVariable(blockedTraveler);
+	bindStateVariable(firstTraveler);
+	bindStateVariable(lastTraveler);
+	bindStateVariable(blockedPathIndex);
+	bindStateVariable(nodeWidth);
 }
 
 void Bridge::addPassagesToTable(Grid* grid)
@@ -58,9 +52,9 @@ void Bridge::addPassagesToTable(Grid* grid)
 		addExtraData(toCell, false);
 }
 
-void Bridge::addVertices(Mesh* barrierMesh, float z)
+void Bridge::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle)
 {
-	addPathVertices(barrierMesh, z, Vec4f(0.0f, 0.3f, 1.0f, 1.0f));
+	addPathVertices(barrierMesh, z, Vec4f(0.0f, 0.3f, 1.0f, 1.0f), drawStyle);
 }
 
 void Bridge::onReset(AStarNavigator* nav)
@@ -179,7 +173,7 @@ void Bridge::onAvailable()
 	}
 }
 
-void Bridge::updateLocations()
+void Bridge::updateBridgeLocations()
 {
 	if (lastUpdateTime == time() || !firstTraveler)
 		return;
