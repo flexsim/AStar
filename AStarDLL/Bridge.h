@@ -44,7 +44,7 @@ public:
 	void onEndArrival(Traveler* traveler, int pathIndex);
 	void onAvailable();
 	void updateBridgeLocations();
-	void updateLocation(Traveler* t, double geomDistAlongBridge);
+	void updateLocation(Traveler* t, double geomDistAlongBridge, Vec3* offset = nullptr);
 
 	class ArrivalEvent : public FlexSimEvent
 	{

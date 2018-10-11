@@ -922,7 +922,7 @@ the outside 8 nodes.
 						continue;
 					double addedDist = entry.bridge->travelDistance + grid->nodeWidth;
 					Point* endPoint = entry.isAtBridgeStart ? entry.bridge->pointList.back() : entry.bridge->pointList.front();
-					AStarCell endCell = getCellFromLoc(Vec2(endPoint->x, endPoint->y));
+					AStarCell endCell = getCellFromLoc(*endPoint + entry.bridge->getPointToModelOffset());
 					AStarNode* node = getNode(endCell);
 					expandOpenSet(getGrid(endCell), endCell.row, endCell.col, addedDist / grid->nodeWidth, 0, i);
 				}

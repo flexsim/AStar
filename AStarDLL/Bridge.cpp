@@ -179,6 +179,7 @@ void Bridge::updateBridgeLocations()
 		return;
 	lastUpdateTime = time();
 
+	Vec3 offset = getPointToModelOffset();
 	Traveler* t = firstTraveler;
 	Grid* grid = getGrid(t);
 	double distScale = getTravelToGeomDistScale();
@@ -186,24 +187,24 @@ void Bridge::updateBridgeLocations()
 	double curTime = time();
 	while (t) {
 		double dist = min(curMax, (curTime - t->bridgeData.entryTime) * t->te->v_maxspeed);
-		updateLocation(t, dist * distScale);
+		updateLocation(t, dist * distScale, &offset);
 		curMax = dist - grid->nodeWidth;
 
 		t = t->bridgeData.nextTraveler;
 	}
 }
 
-void Bridge::updateLocation(Traveler* traveler, double geomDist)
+void Bridge::updateLocation(Traveler* traveler, double geomDist, Vec3* passedOffset)
 {
+	Vec3 offset;
+	if (passedOffset)
+		offset = *passedOffset;
+	else {
+		offset = getPointToModelOffset();
+	}
 	for (int j = 1; j < pointList.size(); j++) {
-		Vec3 fromLoc(
-			pointList[j - 1]->x,
-			pointList[j - 1]->y,
-			pointList[j - 1]->z);
-		Vec3 toLoc(
-			pointList[j]->x,
-			pointList[j]->y,
-			pointList[j]->z);
+		Vec3 fromLoc((Vec3)*(pointList[j - 1]) + offset);
+		Vec3 toLoc((Vec3)*(pointList[j]) + offset);
 		Vec3 diff = toLoc - fromLoc;
 		double dist = diff.magnitude;
 

@@ -49,6 +49,7 @@ void Barrier::bind(void)
 	bindCallback(mergePatternCols, Barrier);
 	bindCallback(updateSpatialsToEncompassPoints, Barrier);
 	bindCallback(assertNavigator, Barrier);
+	bindCallback(setSizeComponent, Barrier);
 
 	//int bindMode = getBindMode();
 	//if (bindMode == SDT_BIND_ON_LOAD || bindMode == SDT_BIND_ON_CREATE) {
@@ -101,8 +102,8 @@ bool Barrier::getLocalBoundingBox(Vec3& min, Vec3& max)
 	if (pointList.size() < 2) 
 		return false;
 	
-	Vec3 p0 = getPointCoords(0);
-	Vec3 p1 = getPointCoords(1);
+	Vec3 p0 = getLocalPointCoords(0);
+	Vec3 p1 = getLocalPointCoords(1);
 
 	min = Vec3(min(p0.x, p1.x), min(p0.y, p1.y), min(p0.z, p1.z));
 	max = Vec3(max(p0.x, p1.x), max(p0.y, p1.y), max(p0.z, p1.z));
@@ -880,14 +881,17 @@ void Barrier::updateSpatialsToEncompassPoints()
 	double oneMillimeter = 0.001 / getmodelunit(LENGTH_MULTIPLE);
 	node_b_spatialsx->value = maxof(oneMillimeter, max.x - min.x);
 	node_b_spatialsy->value = maxof(oneMillimeter, max.y - min.y);
-	if (min.x == 0.0 && max.y == 0.0)
+	node_b_spatialsz->value = maxof(oneMillimeter, max.z - min.z);
+	if (min.x == 0.0 && max.y == 0.0 && min.z == 0.0)
 		return;
 	node_b_spatialx->value += min.x;
 	node_b_spatialy->value += max.y;
+	node_b_spatialz->value += min.z;
 
 	for (Point* point : pointList) {
 		point->holder->find("x")->value -= min.x;
 		point->holder->find("y")->value -= max.y;
+		point->holder->find("z")->value -= min.z;
 	}
 }
 
@@ -918,12 +922,17 @@ void Barrier::swapPoints(int index1, int index2)
 	pointList.swap(index1, index2);
 }
 
-Vec3 Barrier::getPointCoords(int pointIndex)
+Vec3 Barrier::getLocalPointCoords(int pointIndex)
 {
 	if (pointIndex >= pointList.size())
 		throw "Invalid Barrier point index";
 
 	return *pointList[pointIndex];
+}
+
+Vec3 Barrier::getPointCoords(int pointIndex)
+{
+	return getLocalPointCoords(pointIndex) + getPointToModelOffset();
 }
 
 ASTAR_FUNCTION Variant Barrier::getPointCoord(FLEXSIMINTERFACE)
@@ -940,8 +949,9 @@ ASTAR_FUNCTION Variant Barrier::getPointCoord(FLEXSIMINTERFACE)
 	return 0.0;
 }
 
-bool Barrier::setPointCoords(int pointIndex, const Vec3& point)
+bool Barrier::setPointCoords(int pointIndex, const Vec3& modelPoint)
 {
+	Vec3 localPoint = modelPoint - getPointToModelOffset();
 	if (pointIndex >= pointList.size())
 		return false;
 
@@ -950,9 +960,15 @@ bool Barrier::setPointCoords(int pointIndex, const Vec3& point)
 		oldSize = Vec2(pointList[1]->x - pointList[0]->x, pointList[1]->y - pointList[0]->y);
 	}
 
-	pointList[pointIndex]->x = point.x;
-	pointList[pointIndex]->y = point.y;
-	pointList[pointIndex]->z = point.z;
+	pointList[pointIndex]->x = localPoint.x;
+	pointList[pointIndex]->y = localPoint.y;
+	bool applyToAllZ = fabs(localPoint.z != pointList[pointIndex]->z) > 0.0001 && !toBridge();
+	// for anything but a bridge, z locations should be the same for all points
+	if (applyToAllZ) {
+		for (int i = 0; i < pointList.size(); i++)
+			pointList[i]->z = localPoint.z;
+	} else 
+		pointList[pointIndex]->z = localPoint.z;
 
 	if (pointList.size() > 1 && isBasicBarrier()) {
 		Vec2 newSize(pointList[1]->x - pointList[0]->x, pointList[1]->y - pointList[0]->y);
@@ -961,7 +977,8 @@ bool Barrier::setPointCoords(int pointIndex, const Vec3& point)
 		if (oldSize.y != newSize.y)
 			scalePatternRowsOnSizeChange(oldSize.y, newSize.y);
 	}
-
+	updateSpatialsToEncompassPoints();
+	isMeshDirty = true;
 	return true;
 }
 
@@ -986,7 +1003,7 @@ void Barrier::addPathVertices(treenode view, Mesh* barrierMesh, float z, const V
 		Point* point = pointList[i];
 		bool shouldDraw = drawStyle == Basic;
 		if (!shouldDraw) {
-			int pickType = getpickingdrawfocus(view, PICK_TYPE, PICK_HOVERED);
+			int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, PICK_HOVERED);
 			if (pickType == PICK_POINT) {
 				treenode hovered = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_HOVERED));
 				if (point->holder == hovered)
@@ -1320,6 +1337,30 @@ void Barrier::visitPatternCells(std::function<void(PatternCell*)> callback, int 
 			callback(patterns.cell(row, col)->objectAs(PatternCell));
 		}
 	}
+}
+
+Vec3 Barrier::getPointToModelOffset()
+{
+	Vec3 offset(b_spatialx, b_spatialy, b_spatialz);
+	if (holder->up != navigator->holder && holder->up != model())
+		offset = offset.project(holder->up, model());
+	return offset;
+}
+
+void Barrier::setSizeComponent(treenode sizeAtt, double toSize)
+{
+	if (toSize <= 0)
+		toSize = 1;
+	double oldSize = sizeAtt->value;
+	if (sizeAtt == node_b_spatialsy) {
+		pointList.front()->holder->find("y")->value = pointList.back()->y - toSize;
+		scalePatternRowsOnSizeChange(oldSize, fabs(pointList[1]->y - pointList[0]->y));
+	} else if (sizeAtt == node_b_spatialsx) {
+		pointList.back()->holder->find("x")->value = pointList.front()->x + toSize;
+		scalePatternColsOnSizeChange(oldSize, fabs(pointList[1]->x - pointList[0]->x));
+	}
+	updateSpatialsToEncompassPoints();
+	isMeshDirty = true;
 }
 
 void Barrier::PatternCell::bind()

@@ -217,7 +217,7 @@
         <node f="40"><name></name></node>
         <node f="42" dt="2"><name>title</name><data>AStar Navigator</data></node>
         <node f="42" dt="2"><name>description</name><data></data></node>
-        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/modules/AStar/Pages/AStarParameters</data></node>
+        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/modules/AStar/Pages/AStarProperties</data></node>
         <node f="42" dt="2"><name>tooltip</name><data></data></node>
        </node>
        <node f="42"><name>spatial</name>
@@ -322,6 +322,13 @@ return /**/traveler.type == 1/**direct*/;
         <node f="42" dt="1"><name>spatialrx</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
+       </node>
+       <node f="42"><name>special</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="2"><name>title</name><data>AStar Divider</data></node>
+        <node f="42" dt="2"><name>description</name><data></data></node>
+        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/modules/AStar/Pages/DividerProperties</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data></data></node>
        </node>
        <node f="42"><name>stored</name></node>
       </data>
@@ -953,7 +960,7 @@ like a wall</data></node>
       </node>
       <node f="42"><name>Pages</name>
        <node f="40"><name></name></node>
-       <node f="42" dt="4"><name>AStarParameters</name><data>
+       <node f="42" dt="4"><name>AStarProperties</name><data>
         <node f="40"><name>object</name></node>
         <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
         <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
@@ -3314,6 +3321,572 @@ applylinks(parent);</data></node>
          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/BottomButtons</data></node>
         </data></node>
        </node>
+       <node f="42" dt="4"><name>DividerProperties</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
+        <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
+        <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040100000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>00000000406e0000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040606000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>000000004077c000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>00000000407e5000</data></node>
+        <node f="42" dt="2"><name>windowtitle</name><data></data></node>
+        <node f="442" dt="2"><name>OnOpen</name><data>treenode tabcontrol = node("/tabcontrol",c);
+iterate(1, content(tabcontrol), 1){
+  if (objectexists(node("&gt;PageOnOpen",rank(tabcontrol,count))))
+     nodefunction(node("&gt;PageOnOpen",rank(tabcontrol,count)));
+}
+
+executefsnode(node("VIEW:/nodefunctions/setparameterstitle"),c,0,0);
+repaintview(c);</data></node>
+        <node f="42" dt="2"><name>OnPreOpen</name><data>standardpreopen(c);
+</data>
+         <node f="40"><name></name></node></node>
+        <node f="42" dt="2"><name>OnClose</name><data></data></node>
+        <node f="442" dt="2"><name>OnApply</name><data>treenode tabcontrol = node("../tabcontrol",c);
+iterate(1, content(tabcontrol), 1){
+  if (objectexists(node("&gt;PageOnApply",rank(tabcontrol,count))))
+     nodefunction(node("&gt;PageOnApply",rank(tabcontrol,count)));
+}</data></node>
+       </data>
+        <node f="40"><name></name></node>
+        <node f="42" dt="4"><name>overlay</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="2"><name>viewfocus</name><data>../..</data></node>
+         <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040080000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>000000003ff00000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000040dfffc0</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040903000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040886000</data></node>
+         <node f="42" dt="1"><name>viewpointx</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>viewpointy</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>viewpointz</name><data>7f8ca81a407c965f</data></node>
+         <node f="42" dt="1"><name>hidden</name><data>000000003ff00000</data></node>
+         <node f="42" dt="1"><name>viewhidealllabels</name><data>000000003ff00000</data></node>
+         <node f="42" dt="1"><name>transparent</name><data>000000003ff00000</data></node>
+         <node f="42" dt="1"><name>viewhideallbases</name><data>000000003ff00000</data></node>
+         <node f="42" dt="1"><name>gridx</name><data>00000000401c0000</data></node>
+         <node f="42" dt="1"><name>gridy</name><data>00000000401c0000</data></node>
+         <node f="42" dt="1"><name>viewsnaptogrid</name><data>000000003ff00000</data></node>
+        </data>
+         <node f="40"><name></name></node></node>
+        <node f="42" dt="4"><name>editname</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>00000000402c0000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040760000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
+         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EditObjectName</data></node>
+        </data></node>
+        <node f="42" dt="4"><name>Attributes</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+</data></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000040450000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040762000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040771000</data></node>
+         <node f="42" dt="2"><name>tooltip</name><data></data></node>
+         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+         <node f="42" dt="2"><name>result</name><data></data></node>
+         <node f="42"><name>eventfunctions</name>
+          <node f="40"><name></name></node>
+          <node f="442" dt="2"><name>refreshData</name><data>treenode focus = node("&gt;objectfocus+", c);
+int enable = objectexists(focus);
+int path = 0;
+int bridge = 0;
+int useVirtualDistance = 0;
+if (enable) {
+	treenode pointsEdit = node("/PointsEdit", c);
+	
+	string type = function_s(focus, "getType");
+	
+	path = comparetext(type, "AStar::PreferredPath");
+	if (path) {
+		double pathWeight = function_s(focus, "getWeight");
+		setvarnum(node("/PathWeight/editPathWeight", c), "weight", pathWeight);
+	} else {
+		setvarnum(node("/PathWeight/editPathWeight", c), "weight", 0);
+	}
+	
+	int showPoints = !comparetext(type, "AStar::Barrier");
+	windowshow(windowfromnode(pointsEdit), showPoints);
+	windowshow(windowfromnode(node("/BarrierPoints", c)), !showPoints);
+	
+	bridge = comparetext(type, "AStar::Bridge");
+	windowshow(windowfromnode(node("/VirtualDistance", c)), bridge);
+	windowshow(windowfromnode(node("/PathWeight", c)), !bridge);
+	if (bridge) {
+		useVirtualDistance = get(node("/useVirtualDistance", focus));
+		double virtualDistance = node("/virtualDistance", focus).value;
+		setvarnum(node("/VirtualDistance/editVirtualDistance", c), "virtualDistance", virtualDistance);
+	} else {
+		setvarnum(node("/VirtualDistance/editVirtualDistance", c), "weight", 0);
+	}
+	
+	applylinks(c, 1);
+}
+
+windowgray(windowfromnode(node("/Name", c)), !enable);
+windowgray(windowfromnode(node("/editName", c)), !enable);
+windowgray(windowfromnode(node("/VirtualDistance/Virtual Distance", c)), !enable || !bridge);
+
+function_s(c, "grayCondition");
+
+forobjecttreeunder(node("/PathWeight", c))
+	windowgray(windowfromnode(a), !enable || !path);
+
+forobjecttreeunder(node("/VirtualDistance/editVirtualDistance", c))
+	windowgray(windowfromnode(a), !useVirtualDistance);
+
+forobjecttreeunder(node("/PointsEdit", c))
+	windowgray(windowfromnode(a), !enable);
+
+forobjecttreeunder(node("/BarrierPoints", c))
+	windowgray(windowfromnode(a), !enable);</data></node>
+          <node f="442" dt="2"><name>grayCondition</name><data>treenode focus = c.find("&gt;objectfocus+");
+treenode conditionCheckbox = c.find("Condition");
+int useCondition = focus != NULL &amp;&amp; getchecked(conditionCheckbox);
+forobjecttreeunder(c.find("EditCondition")) {
+	windowgray(windowfromnode(a), !useCondition);
+}
+windowgray(windowfromnode(conditionCheckbox), focus == NULL);</data></node>
+         </node>
+         <node f="42" dt="1"><name>alignbottommargin</name><data>0000000040418000</data></node>
+         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040240000</data></node>
+        </data>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>Condition</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+&gt;variables/useCondition</data></node>
+          <node f="42" dt="2"><name>OnPress</name><data>function_s(c.up, "grayCondition");</data></node>
+         </data></node>
+         <node f="42" dt="4"><name>EditCondition</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000040534000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040710000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
+          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeEdit</data></node>
+          <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/condition</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which the barrier will be applied</data></node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>codedescription</name><data>Barrier Condition</data></node>
+           <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/BarrierCondition</data>
+            <node f="40"><name></name></node></node>
+           <node f="42" dt="1"><name>hasDragTarget</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>valType</name><data>000000003ff00000</data>
+            <node f="40"><name></name></node>
+            <node f="42"><name>number</name></node>
+           </node>
+           <node f="42" dt="2"><name>codefocus</name><data>../..&gt;objectfocus+</data></node>
+          </node>
+         </data>
+          <node f="40"><name></name></node></node>
+         <node f="42" dt="4"><name>PointsEdit</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>00000000c0240000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>000000004076c000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040728000</data></node>
+          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>alignbottommargin</name><data>0000000040418000</data></node>
+         </data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="4"><name>Points</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040310000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040440000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>Add</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>000000004055c000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
+treenode barrier = node("../..&gt;objectfocus+", c);
+treenode pointsNode = node("&gt;variables/points", barrier);
+double x = get(node("/x", last(pointsNode)));
+double y = get(node("/y", last(pointsNode)));
+
+function_s(barrier, "addPoint", x +2, y +2);
+applylinks(table, 1);
+refreshview(table);
+function_s(barrier, "setActiveIndex", content(pointsNode) -1);
+function_s(ownerobject(barrier), "rebuildMeshes");
+repaintall();
+</data>
+            <node f="40"><name></name></node></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Add a new point</data></node>
+           <node f="42" dt="2"><name>bitmap</name><data>buttons\add.png</data></node>
+          </data>
+           <node f="40"><name></name></node></node>
+          <node f="42" dt="4"><name>Remove</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000405d0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
+treenode barrier = node("../..&gt;objectfocus+", c);
+treenode pointsNode = node("&gt;variables/points", barrier);
+
+if (content(node("&gt;viewfocus+", table)) &lt;= 2) {
+	msg("Error", "You must have at least 2 points.", 1);
+	return 0;
+}
+
+int index = gettableviewselection(table,1);
+
+treenode selected = rank(pointsNode, index);
+if (!objectexists(selected))
+	return 0;
+
+function_s(barrier, "removePoint", index-1);
+applylinks(table, 1);
+refreshview(table);
+function_s(barrier, "setActiveIndex", index -2);
+function_s(ownerobject(barrier), "rebuildMeshes");
+repaintall();
+settableviewselection(table, maxof(1, index -1), 0, maxof(1, index -1), 2);
+repaintview(table);</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Remove the selected point</data></node>
+           <node f="42" dt="2"><name>bitmap</name><data>buttons\remove.png</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>Up</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040622000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>bitmap</name><data>buttons\uparrow_blue.png</data></node>
+           <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
+treenode barrier = node("../..&gt;objectfocus+", c);
+treenode pointsNode = node("&gt;variables/points", barrier);
+
+int index = gettableviewselection(table,1);
+
+treenode selected = rank(pointsNode, index);
+if (!objectexists(selected))
+	return 0;
+
+if (index &lt;= 1)
+	return 0;
+
+function_s(barrier, "swapPoints", index -1, index -2);
+applylinks(table, 1);
+refreshview(table);
+function_s(barrier, "setActiveIndex", index -2);
+function_s(ownerobject(barrier), "rebuildMeshes");
+repaintall();
+settableviewselection(table, index -1, 0, index -1, 2);
+repaintview(table);</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Move the selected point up in the list</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>Down</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>000000004065c000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>bitmap</name><data>buttons\downarrow_blue.png</data></node>
+           <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
+treenode barrier = node("../..&gt;objectfocus+", c);
+treenode pointsNode = node("&gt;variables/points", barrier);
+
+int index = gettableviewselection(table,1);
+
+treenode selected = rank(pointsNode, index);
+if (!objectexists(selected))
+	return 0;
+	
+if (index == 0 || index &gt;= content(node("&gt;viewfocus+", table)))
+	return 0;
+
+function_s(barrier, "swapPoints", index -1, index);
+applylinks(table, 1);
+refreshview(table);
+function_s(barrier, "setActiveIndex", index);
+function_s(ownerobject(barrier), "rebuildMeshes");
+repaintall();
+settableviewselection(table, index +1, 0, index +1, 2);
+repaintview(table);</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Move the selected point down in the list</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>PointsTable</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="2"><name>viewfocus</name><data>..&gt;table</data></node>
+           <node f="42"><name>table</name>
+            <node f="40"><name></name></node></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040140000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>000000004055c000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040380000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040710000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>000000004070b000</data></node>
+           <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+           <node f="42" dt="2"><name>hotlinkx</name><data>#define POINT_X 1
+#define POINT_Y 2
+#define POINT_Z 3
+
+treenode focus = node("../..&gt;objectfocus+", c);
+treenode table = node("&gt;table", c);
+
+if (!objectexists(focus))
+	return 0;
+
+if (!eventdata) {
+	clearcontents(table);
+	for (int i = 0; i &lt; content(node("&gt;variables/points", focus)); i++) {
+		double x = function_s(focus, "getPointCoord", i, POINT_X);
+		double y = function_s(focus, "getPointCoord", i, POINT_Y);
+		double z = function_s(focus, "getPointCoord", i, POINT_Z);
+		
+		treenode parent = nodeinsertinto(table);
+		treenode xNode = nodeadddata(nodeinsertinto(parent), DATATYPE_NUMBER);
+		set(xNode, x);
+		treenode yNode = nodeadddata(nodeinsertinto(parent), DATATYPE_NUMBER);
+		set(yNode, y);
+		treenode zNode = nodeadddata(nodeinsertinto(parent), DATATYPE_NUMBER);
+		set(zNode, z);
+	}
+	if (content(table) &gt;= 1) {
+		setname(rank(first(table), POINT_X), "X");
+		setname(rank(first(table), POINT_Y), "Y");
+		setname(rank(first(table), POINT_Z), "Z");
+	}
+} else {
+	int rebuildMeshes = 0;
+	int haveSetZ = 0; // only get to set z once because it a z change applies to everyone
+	for (int i = 0; i &lt; content(node("&gt;variables/points", focus)); i++) {
+		double x = function_s(focus, "getPointCoord", i, POINT_X);
+		double y = function_s(focus, "getPointCoord", i, POINT_Y);
+		double z = function_s(focus, "getPointCoord", i, POINT_Z);
+		treenode newpoints = rank(table, i+1);
+		double newx = get(newpoints.subnodes[POINT_X]);
+		double newy = get(newpoints.subnodes[POINT_Y]);
+		double newz = get(newpoints.subnodes[POINT_Z]);
+		
+		if (x != newx || y != newy) {
+			rebuildMeshes = 1;
+			function_s(focus, "setPointCoords", i, newx, newy, newz);
+		} else if (z != newz &amp;&amp; !haveSetZ) {
+			rebuildMeshes = 1;
+			haveSetZ = 1;
+			function_s(focus, "setPointCoords", i, newx, newy, newz);
+		}
+	}
+	
+	if (rebuildMeshes) {
+		repaintall();
+	}	
+}</data></node>
+           <node f="42" dt="2"><name>OnKeyUp</name><data>#define VK_RETURN 13
+if (lastkeydown() == VK_RETURN) {
+	applylinks(c);
+}</data></node>
+           <node f="42" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE) {
+	applylinks(c);
+
+	treenode barrier = node("../..&gt;objectfocus+", c);
+	treenode focus = node("&gt;table", c);
+	treenode selected = selectedobject(c);
+
+	if (objectexists(selected)) {
+		int index;
+		if (up(selected) == focus) {
+			index = getrank(selected);
+		} else if (up(up(selected)) == focus) {
+			index = getrank(up(selected));
+		}
+		if (get(itemcurrent(c)) == index) 
+			return 0;
+		set(itemcurrent(c), index);
+		
+		function_s(barrier, "setActiveIndex", index - 1);
+		repaintall();
+	}
+}
+</data></node>
+           <node f="42" dt="2"><name>OnFocus</name><data>if (!objectexists(i) || i != c)
+	applylinks(c, 1);</data></node>
+           <node f="42" dt="2"><name>OnMouseWheel</name><data>treenode TheTable = ownerobject(c);
+
+double vert_nMin = scrollinfo(TheTable,0,1,1);
+double vert_nMax = scrollinfo(TheTable,0,1,2);
+double vert_nPage = scrollinfo(TheTable,0,1,3);
+double vert_nPos = scrollinfo(TheTable,0,1,4);
+
+// OnMouseWheelDelta is set to an amount when you scroll the wheel
+// this amount is about 1/4 of a page size to scroll each time the mousewheel clicks once
+double amount = get(node("&gt;OnMouseWheelDelta",TheTable))/480*vert_nPage;
+
+// set the position based on the wheeled amount
+scrollinfo(TheTable,1,1,4,vert_nPos-amount);
+repaintview(TheTable);
+
+
+</data></node>
+           <node f="42" dt="1"><name>OnMouseWheelDelta</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>cellwidth</name><data>0000000040540000</data>
+            <node f="40"><name></name></node>
+            <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+            <node f="42" dt="1"><name></name><data>0000000040504000</data></node>
+            <node f="42" dt="1"><name></name><data>0000000040504000</data></node>
+            <node f="42" dt="1"><name></name><data>00000000404e0000</data></node>
+           </node>
+           <node f="42" dt="1"><name>cellheight</name><data>0000000040320000</data>
+            <node f="40"><name></name></node>
+            <node f="42" dt="1"><name></name><data>0000000040320000</data></node>
+           </node>
+           <node f="42" dt="1"><name>alignbottommargin</name><data>0000000040140000</data></node>
+           <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
+           <node f="42" dt="1"><name>dataentry</name><data>0000000000000000</data></node>
+           <node f="42"><name>noformat</name></node>
+           <node f="42"><name>undohistory</name>
+            <node f="40"><name></name></node>
+            <node f="42" dt="1"><name>undo limit</name><data>0000000040900000</data></node>
+            <node f="42" dt="3"><name>history</name><data><coupling>null</coupling></data></node>
+            <node f="42" dt="1"><name>bin</name><data>0000000000000000</data></node>
+           </node>
+          </data>
+           <node f="40"><name></name></node></node>
+         </node>
+         <node f="42" dt="4"><name>PathWeight</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>00000000c0240000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040755000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>000000004076c000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data>
+           <node f="40"><name></name></node></node>
+          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>alignbottomposition</name><data>00000000403c0000</data></node>
+         </data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="4"><name>Path Weight</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040310000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>editPathWeight</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>000000004055c000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
+           <node f="42" dt="2"><name>objectfocus</name><data>../../..&gt;objectfocus+&gt;variables/weight</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Path Weight</data></node>
+           <node f="42"><name>variables</name>
+            <node f="40"><name></name></node>
+            <node f="42" dt="2"><name>valuetype</name><data></data></node>
+            <node f="42" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
+            <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
+            <node f="42" dt="1"><name>ishotlink</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>conversion</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>eternalSpinner</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>weight</name><data>0000000000000000</data></node>
+           </node>
+          </data>
+           <node f="40"><name></name></node></node>
+         </node>
+         <node f="42" dt="4"><name>VirtualDistance</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>00000000c0240000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040755000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>000000004076c000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data>
+           <node f="40"><name></name></node></node>
+          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>alignbottomposition</name><data>00000000403c0000</data></node>
+         </data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="4"><name>Virtual Distance</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>000000004055c000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+           <node f="42" dt="2"><name>coldlink</name><data>../../..&gt;objectfocus+/useVirtualDistance</data></node>
+           <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);
+
+int gray = !getchecked(c);
+forobjecttreeunder(node("../editVirtualDistance", c))
+	windowgray(windowfromnode(a), gray);</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Use a virtual distance instead of the actual bridge distance.</data></node>
+          </data></node>
+          <node f="42" dt="4"><name>editVirtualDistance</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>000000004068a000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
+           <node f="42" dt="2"><name>objectfocus</name><data>../../..&gt;objectfocus+&gt;variables/virtualDistance</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Virtual Distance</data></node>
+           <node f="42"><name>variables</name>
+            <node f="40"><name></name></node>
+            <node f="42" dt="2"><name>valuetype</name><data></data></node>
+            <node f="42" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
+            <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
+            <node f="42" dt="1"><name>ishotlink</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>conversion</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>eternalSpinner</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>virtualDistance</name><data>0000000000000000</data></node>
+            <node f="442" dt="2"><name>OnKillFocus</name><data>treenode focus = node("../../../..&gt;objectfocus+", c);
+
+node("&gt;variables/virtualDistance", focus).value = getvarnum(up(up(c)), "virtualDistance");</data></node>
+           </node>
+          </data>
+           <node f="40"><name></name></node></node>
+         </node>
+        </node>
+        <node f="42" dt="4"><name>BottomButtons</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>00000000407a2000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>000000004076c000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040360000</data></node>
+         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>alignbottomposition</name><data>00000000403c0000</data></node>
+         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/BottomButtons</data></node>
+        </data></node>
+       </node>
       </node>
       <node f="42"><name>PickLists</name>
        <node f="40"><name></name></node>
@@ -3638,6 +4211,1046 @@ applylinks(c, 1);
      </node>
     </node>
    </node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040440000</data></node>
+    <node f="42" dt="2"><name>after</name><data>TestQueries</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42" dt="4"><name>BarrierProperties</name><data>
+      <node f="40"><name>object</name></node>
+      <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040180000</data></node>
+      <node f="42" dt="2"><name>guifocusclass</name><data>../../..&gt;variables/QuickPropertiesPanel</data></node>
+      <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+      <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+      <node f="42" dt="1"><name>spatialsx</name><data>0000000040634000</data></node>
+      <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+      <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+     </data>
+      <node f="40"><name></name></node>
+      <node f="42" dt="4"><name>BarrierProperties</name><data>
+       <node f="40"><name>object</name></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
+       <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
+       <node f="42" dt="2"><name>resizefocus</name><data></data></node>
+       <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040100000</data>
+        <node f="40"><name></name></node>
+        <node f="42" dt="2"><name>GeneralProperties</name><data>VIEW:/active&gt;Tools/GeneralProperties</data></node>
+       </node>
+       <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+       <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
+       <node f="42" dt="1"><name>spatialsx</name><data>000000004066c000</data></node>
+       <node f="42" dt="1"><name>spatialsy</name><data>0000000040604000</data></node>
+       <node f="42" dt="2"><name>undohistory</name><data>..&gt;viewfocus+</data></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>isExpanded</name><data>000000003ff00000</data></node>
+        <node f="42" dt="1"><name>showRequirements</name><data>0000000000000000</data>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>selObj</name><data>treenode selObj = param(1);
+if (!objectexists(selObj) 
+		|| getdatatype(selObj) != DATATYPE_OBJECT 
+		|| getpickingdrawfocus(activedocumentnode(), PICK_SECONDARY_OBJECT, 0) != 0)
+	return 0;
+
+treenode classAtt = selObj.find("&gt;classes/1");
+if (classAtt &amp;&amp; classAtt.name == "AStar::Barrier") {
+	return 1; 
+}
+
+return 0;
+</data></node>
+         <node f="442" dt="2"><name>docType</name><data>string docType = gets(documentwindow(param(1)));
+return docType == "3D" || docType == "Tree";</data></node>
+        </node>
+       </node>
+       <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+       <node f="42"><name>eventfunctions</name>
+        <node f="40"><name></name></node>
+        <node f="442" dt="2"><name>onSelObjChange</name><data>treenode selObj = param(1);
+
+nodepoint(objectfocus(c), selObj);
+if (getvarnum(c, "isExpanded")) {
+	applylinks(c, 1);
+	if (content(node("../../SelectedList/SelectedPanel/selectedList&gt;items", c))) {
+		windowgray(windowfromnode(node("RenameAll", c)), 0);
+	} else {
+		windowgray(windowfromnode(node("RenameAll", c)), 1);
+	}
+}</data></node>
+        <node f="442" dt="2"><name>onDocViewClick</name><data>if (getvarnum(c, "isExpanded"))
+	applylinks(c, 1);</data></node>
+        <node f="442" dt="2"><name>onExpand</name><data>if (param(1)) {// expanded
+	applylinks(c, 1);
+	
+	if (content(node("../../SelectedList/SelectedPanel/selectedList&gt;items", c))) {
+		windowgray(windowfromnode(node("RenameAll", c)), 0);
+	} else {
+		windowgray(windowfromnode(node("RenameAll", c)), 1);
+	}
+}
+</data></node>
+       </node>
+       <node f="42" dt="2"><name>tooltip</name><data></data></node>
+       <node f="42" dt="2"><name>windowtitle</name><data>General Properties</data></node>
+      </data>
+       <node f="40"><name></name></node>
+       <node f="42" dt="4"><name>EditName</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>00000000405e4000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data>Set the Object's Name</data></node>
+        <node f="442" dt="2"><name>hotlinkx</name><data>treenode focus = node("..&gt;objectfocus+", c);
+
+if (eventdata) {
+	if (!comparetext(getviewtext(c), getname(focus))) {
+		int undo_id = beginaggregatedundo(c, "Modify Object Name");
+			setname(focus, getviewtext(c));
+			validatename(c, 1, focus);
+			if(getname(focus) != getviewtext(c))
+				setname(focus, getviewtext(c));
+		endaggregatedundo(c, undo_id);
+		applytoedits(node("..&gt;viewfocus+", c), focus);
+	}
+} else {
+	string name = getnodename(focus);
+	if (comparetext(name,"NULL"))
+		setviewtext(c, "");
+	else
+		setviewtext(c, name);
+}	</data></node>
+        <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
+        <node f="42" dt="2"><name>OnKeyUp</name><data>int k = lastkeyup();
+
+if (k==13) {  // enter
+	executefsnode(OnKillFocus(c), c);
+} </data></node>
+        <node f="42" dt="2"><name>OnKillFocus</name><data>if (!content(c))
+	applylinks(c);
+
+//Update flow item name
+treenode activeDoc = activedocumentnode();
+if (objectexists(activeDoc) &amp;&amp; objectexists(documentwindow(activeDoc))) {
+	string docType = gets(documentwindow(activeDoc));
+	if (comparetext(docType, "FlowItem Bin"))
+		applicationcommand("notifydoclistenersonpropsapply", node("..&gt;objectfocus+", c));
+}
+</data></node>
+        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040440000</data></node>
+        <node f="42"><name>variables</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name>renameNum</name><data>000000003ff00000</data></node>
+         <node f="42" dt="2"><name>renameText</name><data></data></node>
+        </node>
+        <node f="42"><name>eventfunctions</name>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>showRenamePopup</name><data>treenode selected = node("/SelectedList/SelectedPanel/selectedList&gt;items", up(up(up(c))));
+setvarstr(c, "renameText", getviewtext(c));
+if (content(selected)) {
+	createpopup("VIEW:/popups/RenameWarning", nodetopath(c, 1), nodetopath(c, 1), c, 0, 0, 260, 55);	
+	applylinks(c, 1);
+}
+
+</data></node>
+         <node f="442" dt="2"><name>renameSelectedObjects</name><data>int renameNum = getvarnum(c, "renameNum");
+string name = getvarstr(c, "renameText");
+
+treenode selected = node("/SelectedList/SelectedPanel/selectedList&gt;items", up(up(up(c))));
+for (int r = 1; r &lt;= content(selected); r++) {
+	treenode actualObject = tonode(get(rank(selected, r)));
+	string newName = concat(name, numtostring(renameNum));
+	setname(actualObject, newName);
+	renameNum++;
+}
+applytoedits(node("..&gt;viewfocus+", c), node("..&gt;objectfocus+", c));
+repaintall();</data></node>
+        </node>
+       </data>
+        <node f="40"><name></name></node></node>
+       <node f="42" dt="4"><name>RenameAll</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000040140000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040180000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040428000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
+        <node f="42" dt="1"><name>alignrightposition</name><data>0000000040440000</data></node>
+        <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
+        <node f="42" dt="2"><name>OnPress</name><data>function_s(node("../EditName", c), "showRenamePopup");</data>
+         <node f="40"><name></name></node></node>
+        <node f="42" dt="2"><name>tooltip</name><data>Rename all selected objects</data></node>
+        <node f="42" dt="2"><name>bitmap</name><data>buttons\_rename.bmp</data></node>
+       </data></node>
+       <node f="42" dt="4"><name>SizingPanel</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>00000000403b0000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name>min</name><data>0000000040590000</data></node>
+        </node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040520000</data></node>
+        <node f="42"><name>variables</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>X</name>
+          <node f="40"><name></name></node>
+          <node f="442" dt="2"><name>loc</name><data>return spatialx(param(1));</data></node>
+          <node f="442" dt="2"><name>rot</name><data>return spatialrx(param(1));</data></node>
+          <node f="442" dt="2"><name>size</name><data>return spatialsx(param(1));</data></node>
+         </node>
+         <node f="42"><name>Y</name>
+          <node f="40"><name></name></node>
+          <node f="442" dt="2"><name>loc</name><data>return spatialy(param(1));</data></node>
+          <node f="442" dt="2"><name>rot</name><data>return spatialry(param(1));</data></node>
+          <node f="442" dt="2"><name>size</name><data>return spatialsy(param(1));</data></node>
+         </node>
+         <node f="42"><name>Z</name>
+          <node f="40"><name></name></node>
+          <node f="442" dt="2"><name>loc</name><data>return spatialz(param(1));</data></node>
+          <node f="442" dt="2"><name>rot</name><data>return spatialrz(param(1));</data></node>
+          <node f="442" dt="2"><name>size</name><data>return spatialsz(param(1));</data></node>
+         </node>
+         <node f="42" dt="1"><name>isDirect</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>selectedGroup</name><data>0000000040080000</data></node>
+         <node f="42" dt="1"><name>selectedIcon</name><data>0000000040180000</data></node>
+         <node f="42" dt="1"><name>xCoordFactor</name><data>000000003fe00000</data></node>
+         <node f="42" dt="1"><name>yCoordFactor</name><data>000000003fe00000</data></node>
+         <node f="42" dt="1"><name>zCoordFactor</name><data>0000000000000000</data></node>
+         <node f="42" dt="2"><name>cantSampleText</name><data>This is a calculated value that can't be sampled.
+Switch to Direct Spatials mode before sampling.</data></node>
+         <node f="42" dt="2"><name>changeMessage</name><data></data></node>
+        </node>
+        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+        <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
+        <node f="42"><name>splitterx</name></node>
+        <node f="42"><name>eventfunctions</name>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>convertCoord</name><data>string axis = param(1);
+treenode obj = param(2);
+
+double xFactor = getvarnum(c, "xCoordFactor") * xsize(obj); 
+double yFactor = -getvarnum(c, "yCoordFactor") * ysize(obj);
+double zFactor = getvarnum(c, "zCoordFactor") * zsize(obj);
+
+if (axis == "x")
+	return vectorprojectx(obj, xFactor, yFactor, zFactor, up(obj));
+if (axis == "y")
+	return vectorprojecty(obj, xFactor, yFactor, zFactor, up(obj));
+if (axis == "z")
+	return vectorprojectz(obj, xFactor, yFactor, zFactor, up(obj));</data></node>
+        </node>
+       </data>
+        <node f="40"><name></name></node>
+        <node f="42" dt="4"><name>Labels</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040390000</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>min</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>max</name><data>0000000040390000</data></node>
+          <node f="42" dt="1"><name>desired</name><data>0000000040390000</data></node>
+         </node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040590000</data></node>
+         <node f="42" dt="1"><name>alignbottommargin</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+         <node f="42" dt="2"><name>undohistory</name><data>../../..</data></node>
+        </data>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>Loc</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040390000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040390000</data></node>
+          <node f="42" dt="1"><name>aligncenterx</name><data>0000000000000000</data></node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>OnPress</name><data>createpopup("VIEW:/popups/CoordinateSystem", nodetopath(up(up(c))), nodetopath(c), c, -260, 0, 260, 642);</data>
+            <node f="40"><name></name></node></node>
+          </node>
+          <node f="42" dt="2"><name>bitmap</name><data>bitmaps/CoordinateSystems/Mid6_small.png</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data>Select the point on the object where the location will be measured</data></node>
+         </data></node>
+         <node f="42" dt="4"><name>Size</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040480000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040390000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040390000</data></node>
+          <node f="42" dt="1"><name>aligncenterx</name><data>0000000000000000</data></node>
+          <node f="42" dt="2"><name>bitmap</name><data>buttons\resize.png</data></node>
+         </data></node>
+        </node>
+        <node f="42" dt="4"><name>X</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+         <node f="42" dt="2"><name>focus</name><data>../..&gt;variables/X</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000040390000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>min</name><data>00000000403e0000</data></node>
+          <node f="42" dt="1"><name>desired</name><data>00000000404e0000</data></node>
+         </node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040590000</data></node>
+         <node f="42" dt="1"><name>alignbottommargin</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+         <node f="42" dt="2"><name>undohistory</name><data>../../..</data></node>
+        </data>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>Label</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+          <node f="42" dt="1"><name>aligncenterx</name><data>0000000040140000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040140000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000402c0000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>00000000402c0000</data></node>
+          <node f="42" dt="2"><name>coldlinkname</name><data>../..</data></node>
+         </data></node>
+         <node f="42" dt="4"><name>EditLoc</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+          <node f="42" dt="2"><name>undohistory</name><data>../../../..</data></node>
+          <node f="42" dt="2"><name>focus</name><data>../..&gt;focus+/loc</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000405dc000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
+          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040280000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
+           <node f="442" dt="2"><name>onSample</name><data>treenode panel = up(up(c));
+
+if(getvarnum(panel, "isDirect"))
+	return 1;	
+
+applicationcommand("setcursortext", getvarstr(panel, "cantSampleText"));
+return 0;</data></node>
+           <node f="42" dt="1"><name>onFocusVal</name><data>0000000000000000</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>coldlinkx</name><data>treenode obj = node("../../..&gt;objectfocus+", c);
+treenode sizePanel = node("../..", c);
+if(getvarnum(sizePanel, "isDirect"))
+	return nodefunction(node("&gt;focus+",c), obj);
+
+if(!eventdata) {
+	int precision = get(node("MAIN:/project/environment/settings/precision"));
+	setviewtext(c, numtostring(function_s(sizePanel, "convertCoord", "x", obj), 0, precision));
+} else
+	function_s(c, "applyUndoable");</data></node>
+           <node f="42" dt="2"><name>OnKeyUp</name><data>int k = lastkeyup();
+
+if (k==13) {  // enter
+	function_s(c, "applyUndoable", 1);
+} </data></node>
+           <node f="42" dt="2"><name>OnKillFocus</name><data>function_s(c, "applyUndoable");</data></node>
+           <node f="442" dt="2"><name>applyUndoable</name><data>treenode obj = node("../../..&gt;objectfocus+", c);
+treenode sizePanel = node("../..", c);
+treenode focus = nodefunction(node("&gt;focus+",c), obj);
+int precision = get(node("MAIN:/project/environment/settings/precision"));
+double toVal = function_s(sizePanel, "convertCoord", "x", obj);
+int isChanged = (numtostring(toVal, 0, precision) != getviewtext(c) &amp;&amp; fabs(stringtonum(getviewtext(c)) - toVal) &gt; 0.0000001)
+	|| param(1) == 1;
+if (isChanged) {
+	set(focus, getvarnum(c, "onFocusVal"));
+	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
+	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
+	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
+	double data = stringtonum(getviewtext(c));
+	function_s(up(up(c)), "ApplyChangesToSelected", data, 0, 0, c);
+	if(!getvarnum(sizePanel, "isDirect"))
+		data = xloc(obj) + data - function_s(sizePanel, "convertCoord", "x", obj);
+	set(focus, data);
+	function_s(ownerobject(focus), "updateResetPosition");
+	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
+	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
+	endaggregatedundo(c, undoId);
+	repaintall();
+}
+</data></node>
+           <node f="42" dt="2"><name>OnFocus</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
+setvarnum(c, "onFocusVal", get(focus));</data></node>
+          </node>
+         </data>
+          <node f="40"><name></name></node></node>
+         <node f="42" dt="4"><name>Spinner</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ec000</data></node>
+          <node f="42" dt="2"><name>viewfocus</name><data>../../EditLoc</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000040624000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040280000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
+          <node f="42" dt="1"><name>alignrightposition</name><data>0000000040280000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
+          <node f="42" dt="1"><name>coefficient</name><data>47ae147b3f847ae1</data></node>
+          <node f="42" dt="1"><name>exponent</name><data>333333333ff33333</data></node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_PRESS) {
+	set(itemcurrent(c),stringtonum(getviewtext(node("&gt;viewfocus+",c))));
+	executefsnode(OnFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
+}
+if (clickcode() == LEFT_RELEASE) {
+	setcursor(1);
+	set(node("&gt;editing",c),0);
+	executefsnode(OnKillFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
+}
+</data></node>
+           <node f="442" dt="2"><name>OnMouseMove</name><data>if (i) {  // off the spinner
+	int y = cursorinfo(c, 6, 2, 0);
+	if (get(node("&gt;editing",c))==0) {  // first time falling off the spinner
+		setcursor(11);
+		set(node("&gt;lastval",c),get(itemcurrent(c)));
+		set(node("&gt;lasty",c),y);
+		set(node("&gt;editing",c),1);
+	}
+	
+	int monitortop = getsystemmetric(5);
+	int monitorbottom = getsystemmetric(6);
+	if (y &lt;= monitortop+1) {
+		double newy = monitorbottom - 2;
+		cursorinfo(0, 7, 2, newy);
+		inc(node("&gt;lasty",c), newy - y);
+		y = newy;
+	} else if (y &gt;= monitorbottom-1) {
+		double newy = monitortop + 2;
+		cursorinfo(0, 7, 2, newy);
+		inc(node("&gt;lasty", c), newy - y);
+		y = newy;
+	}
+	int dy = -(y - get(node("&gt;lasty",c)));
+	
+	double prevvalue = get(node("&gt;lastval",c));
+	double newvalue;
+	double coefficient = getnodenum(node("&gt;coefficient",c));
+	double exponent = getnodenum(node("&gt;exponent",c));
+	if (dy &gt; 0)
+		newvalue = prevvalue + coefficient*pow(dy,exponent);
+	else newvalue = prevvalue - coefficient*pow(-dy,exponent);
+	
+	if (objectexists(rangemin(c)) &amp;&amp; newvalue&lt;get(rangemin(c)))
+		newvalue = get(rangemin(c));
+	if (objectexists(rangemax(c)) &amp;&amp; newvalue&gt;get(rangemax(c)))
+		newvalue = get(rangemax(c));
+	set(itemcurrent(c),newvalue);
+	setviewtext(node("&gt;viewfocus+",c), numtostring(newvalue,0,2));
+	applylinks(node("&gt;viewfocus+", c));
+}
+</data></node>
+          </node>
+          <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>lastval</name><data>47ae147b3fc47ae1</data></node>
+          <node f="42" dt="1"><name>lasty</name><data>00000000407c4000</data></node>
+         </data></node>
+         <node f="42" dt="4"><name>EditSize</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+          <node f="42" dt="2"><name>undohistory</name><data>../../../..</data></node>
+          <node f="42" dt="2"><name>focus</name><data>../..&gt;focus+/size</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040488000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000405dc000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
+          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040280000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
+           <node f="42" dt="1"><name>onFocusVal</name><data>0000000000000000</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>coldlinkx</name><data>if (eventdata)
+	function_s(c, "applyUndoable");
+else return nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));</data></node>
+           <node f="42" dt="2"><name>OnKeyUp</name><data>int k = lastkeyup();
+
+if (k==13) {  // enter
+	function_s(c, "applyUndoable", 1);
+} </data></node>
+           <node f="42" dt="2"><name>OnKillFocus</name><data>function_s(c, "applyUndoable");</data></node>
+           <node f="442" dt="2"><name>applyUndoable</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
+int precision = get(node("MAIN:/project/environment/settings/precision"));
+double toVal = stringtonum(getviewtext(c));
+if ((numtostring(get(focus), 0, precision) != getviewtext(c) &amp;&amp; toVal != get(focus)) || param(1) == 1) {
+	set(focus, getvarnum(c, "onFocusVal"));
+	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
+	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
+	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
+	set(focus, toVal);
+	function_s(ownerobject(focus), "setSizeComponent", focus, toVal);
+	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
+	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
+	endaggregatedundo(c, undoId);
+	repaintall();
+}
+</data></node>
+           <node f="42" dt="2"><name>OnFocus</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
+setvarnum(c, "onFocusVal", get(focus));</data></node>
+          </node>
+         </data>
+          <node f="40"><name></name></node></node>
+         <node f="42" dt="4"><name>Spinner</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ec000</data></node>
+          <node f="42" dt="2"><name>viewfocus</name><data>../../EditSize</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000040624000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040488000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040280000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
+          <node f="42" dt="1"><name>alignrightposition</name><data>0000000040280000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
+          <node f="42" dt="1"><name>coefficient</name><data>47ae147b3f847ae1</data></node>
+          <node f="42" dt="1"><name>exponent</name><data>333333333ff33333</data></node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_PRESS) {
+	set(itemcurrent(c),stringtonum(getviewtext(node("&gt;viewfocus+",c))));
+	executefsnode(OnFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
+}
+if (clickcode() == LEFT_RELEASE) {
+	setcursor(1);
+	set(node("&gt;editing",c),0);
+	executefsnode(OnKillFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
+}
+</data></node>
+           <node f="442" dt="2"><name>OnMouseMove</name><data>if (i) {  // off the spinner
+	int y = cursorinfo(c, 6, 2, 0);
+	if (get(node("&gt;editing",c))==0) {  // first time falling off the spinner
+		setcursor(11);
+		set(node("&gt;lastval",c),get(itemcurrent(c)));
+		set(node("&gt;lasty",c),y);
+		set(node("&gt;editing",c),1);
+	}
+	
+	int monitortop = getsystemmetric(5);
+	int monitorbottom = getsystemmetric(6);
+	if (y &lt;= monitortop+1) {
+		double newy = monitorbottom - 2;
+		cursorinfo(0, 7, 2, newy);
+		inc(node("&gt;lasty",c), newy - y);
+		y = newy;
+	} else if (y &gt;= monitorbottom-1) {
+		double newy = monitortop + 2;
+		cursorinfo(0, 7, 2, newy);
+		inc(node("&gt;lasty", c), newy - y);
+		y = newy;
+	}
+	int dy = -(y - get(node("&gt;lasty",c)));
+	
+	double prevvalue = get(node("&gt;lastval",c));
+	double newvalue;
+	double coefficient = getnodenum(node("&gt;coefficient",c));
+	double exponent = getnodenum(node("&gt;exponent",c));
+	if (dy &gt; 0)
+		newvalue = prevvalue + coefficient*pow(dy,exponent);
+	else newvalue = prevvalue - coefficient*pow(-dy,exponent);
+	
+	if (objectexists(rangemin(c)) &amp;&amp; newvalue&lt;get(rangemin(c)))
+		newvalue = get(rangemin(c));
+	if (objectexists(rangemax(c)) &amp;&amp; newvalue&gt;get(rangemax(c)))
+		newvalue = get(rangemax(c));
+	set(itemcurrent(c),newvalue);
+	setviewtext(node("&gt;viewfocus+",c), numtostring(newvalue,0,2));
+	applylinks(node("&gt;viewfocus+", c));
+}
+</data></node>
+          </node>
+          <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>lastval</name><data>47ae147b3fc47ae1</data></node>
+          <node f="42" dt="1"><name>lasty</name><data>00000000407c4000</data></node>
+         </data></node>
+        </node>
+        <node f="42" dt="4"><name>Y</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+         <node f="42" dt="2"><name>focus</name><data>../..&gt;variables/Y</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>000000004054c000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>min</name><data>00000000403e0000</data></node>
+          <node f="42" dt="1"><name>desired</name><data>00000000404e0000</data></node>
+         </node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040590000</data></node>
+         <node f="42" dt="1"><name>alignbottommargin</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+         <node f="42" dt="2"><name>undohistory</name><data>../../..</data></node>
+        </data>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>Label</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+          <node f="42" dt="1"><name>aligncenterx</name><data>0000000040140000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040140000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000402c0000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>00000000402c0000</data></node>
+          <node f="42" dt="2"><name>coldlinkname</name><data>../..</data></node>
+         </data></node>
+         <node f="42" dt="4"><name>EditLoc</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+          <node f="42" dt="2"><name>undohistory</name><data>../../../..</data></node>
+          <node f="42" dt="2"><name>focus</name><data>../..&gt;focus+/loc</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000405dc000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
+          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040280000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
+           <node f="442" dt="2"><name>onSample</name><data>treenode panel = up(up(c));
+
+if(getvarnum(panel, "isDirect"))
+	return 1;	
+
+applicationcommand("setcursortext", getvarstr(panel, "cantSampleText"));
+return 0;</data></node>
+           <node f="42" dt="1"><name>onFocusVal</name><data>0000000000000000</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>coldlinkx</name><data>treenode obj = node("../../..&gt;objectfocus+", c);
+treenode sizePanel = node("../..", c);
+if(getvarnum(sizePanel, "isDirect"))
+	return nodefunction(node("&gt;focus+",c), obj);
+
+if(!eventdata) {
+	int precision = get(node("MAIN:/project/environment/settings/precision"));								
+	setviewtext(c, numtostring(function_s(sizePanel, "convertCoord", "y", obj), 0, precision));
+} else
+	function_s(c, "applyUndoable");</data></node>
+           <node f="42" dt="2"><name>OnKeyUp</name><data>int k = lastkeyup();
+
+if (k==13) {  // enter
+	function_s(c, "applyUndoable", 1);
+} </data></node>
+           <node f="42" dt="2"><name>OnKillFocus</name><data>function_s(c, "applyUndoable");</data></node>
+           <node f="442" dt="2"><name>applyUndoable</name><data>treenode obj = node("../../..&gt;objectfocus+", c);
+treenode sizePanel = node("../..", c);
+treenode focus = nodefunction(node("&gt;focus+",c), obj);
+int precision = get(node("MAIN:/project/environment/settings/precision"));
+double toVal = function_s(sizePanel, "convertCoord", "y", obj);
+int isChanged = (numtostring(toVal, 0, precision) != getviewtext(c) &amp;&amp; stringtonum(getviewtext(c)) != toVal)
+	|| param(1) == 1;
+if (isChanged) {
+	set(focus, getvarnum(c, "onFocusVal"));
+	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
+	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
+	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
+	double data = stringtonum(getviewtext(c));
+	function_s(up(up(c)), "ApplyChangesToSelected", data, 1, 0, c);
+	if(!getvarnum(sizePanel, "isDirect"))
+		data = yloc(obj) + data - function_s(sizePanel, "convertCoord", "y", obj);
+	set(focus, data);
+	function_s(ownerobject(focus), "updateResetPosition");
+	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
+	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
+	endaggregatedundo(c, undoId);
+	repaintall();
+}
+</data></node>
+           <node f="42" dt="2"><name>OnFocus</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
+setvarnum(c, "onFocusVal", get(focus));</data></node>
+          </node>
+         </data>
+          <node f="40"><name></name></node></node>
+         <node f="42" dt="4"><name>Spinner</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ec000</data></node>
+          <node f="42" dt="2"><name>viewfocus</name><data>../../EditLoc</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000040624000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040280000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
+          <node f="42" dt="1"><name>alignrightposition</name><data>0000000040280000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
+          <node f="42" dt="1"><name>coefficient</name><data>47ae147b3f847ae1</data></node>
+          <node f="42" dt="1"><name>exponent</name><data>333333333ff33333</data></node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_PRESS) {
+	set(itemcurrent(c),stringtonum(getviewtext(node("&gt;viewfocus+",c))));
+	executefsnode(OnFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
+}
+if (clickcode() == LEFT_RELEASE) {
+	setcursor(1);
+	set(node("&gt;editing",c),0);
+	executefsnode(OnKillFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
+}
+</data></node>
+           <node f="442" dt="2"><name>OnMouseMove</name><data>if (i) {  // off the spinner
+	int y = cursorinfo(c, 6, 2, 0);
+	if (get(node("&gt;editing",c))==0) {  // first time falling off the spinner
+		setcursor(11);
+		set(node("&gt;lastval",c),get(itemcurrent(c)));
+		set(node("&gt;lasty",c),y);
+		set(node("&gt;editing",c),1);
+	}
+	
+	int monitortop = getsystemmetric(5);
+	int monitorbottom = getsystemmetric(6);
+	if (y &lt;= monitortop+1) {
+		double newy = monitorbottom - 2;
+		cursorinfo(0, 7, 2, newy);
+		inc(node("&gt;lasty",c), newy - y);
+		y = newy;
+	} else if (y &gt;= monitorbottom-1) {
+		double newy = monitortop + 2;
+		cursorinfo(0, 7, 2, newy);
+		inc(node("&gt;lasty", c), newy - y);
+		y = newy;
+	}
+	int dy = -(y - get(node("&gt;lasty",c)));
+	
+	double prevvalue = get(node("&gt;lastval",c));
+	double newvalue;
+	double coefficient = getnodenum(node("&gt;coefficient",c));
+	double exponent = getnodenum(node("&gt;exponent",c));
+	if (dy &gt; 0)
+		newvalue = prevvalue + coefficient*pow(dy,exponent);
+	else newvalue = prevvalue - coefficient*pow(-dy,exponent);
+	
+	if (objectexists(rangemin(c)) &amp;&amp; newvalue&lt;get(rangemin(c)))
+		newvalue = get(rangemin(c));
+	if (objectexists(rangemax(c)) &amp;&amp; newvalue&gt;get(rangemax(c)))
+		newvalue = get(rangemax(c));
+	set(itemcurrent(c),newvalue);
+	setviewtext(node("&gt;viewfocus+",c), numtostring(newvalue,0,2));
+	applylinks(node("&gt;viewfocus+", c));
+}
+</data></node>
+          </node>
+          <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>lastval</name><data>47ae147b3fc47ae1</data></node>
+          <node f="42" dt="1"><name>lasty</name><data>00000000407c4000</data></node>
+         </data></node>
+         <node f="42" dt="4"><name>EditSize</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+          <node f="42" dt="2"><name>undohistory</name><data>../../../..</data></node>
+          <node f="42" dt="2"><name>focus</name><data>../..&gt;focus+/size</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040488000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000405dc000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
+          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040280000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
+           <node f="42" dt="1"><name>onFocusVal</name><data>0000000000000000</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>coldlinkx</name><data>if (eventdata)
+	function_s(c, "applyUndoable");
+else return nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));</data></node>
+           <node f="42" dt="2"><name>OnKeyUp</name><data>int k = lastkeyup();
+
+if (k==13) {  // enter
+	function_s(c, "applyUndoable", 1);
+} </data></node>
+           <node f="42" dt="2"><name>OnKillFocus</name><data>function_s(c, "applyUndoable");</data></node>
+           <node f="442" dt="2"><name>applyUndoable</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
+int precision = get(node("MAIN:/project/environment/settings/precision"));
+double toVal = stringtonum(getviewtext(c));
+if ((numtostring(get(focus), 0, precision) != getviewtext(c) &amp;&amp; toVal != get(focus)) || param(1) == 1) {
+	set(focus, getvarnum(c, "onFocusVal"));
+	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
+	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
+	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
+	set(focus, toVal);
+	function_s(ownerobject(focus), "setSizeComponent", focus, toVal);
+	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
+	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
+	endaggregatedundo(c, undoId);
+	repaintall();
+}
+</data></node>
+           <node f="42" dt="2"><name>OnFocus</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
+setvarnum(c, "onFocusVal", get(focus));</data></node>
+          </node>
+         </data>
+          <node f="40"><name></name></node></node>
+         <node f="42" dt="4"><name>Spinner</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ec000</data></node>
+          <node f="42" dt="2"><name>viewfocus</name><data>../../EditSize</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000040624000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040488000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040280000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
+          <node f="42" dt="1"><name>alignrightposition</name><data>0000000040280000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
+          <node f="42" dt="1"><name>coefficient</name><data>47ae147b3f847ae1</data></node>
+          <node f="42" dt="1"><name>exponent</name><data>333333333ff33333</data></node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_PRESS) {
+	set(itemcurrent(c),stringtonum(getviewtext(node("&gt;viewfocus+",c))));
+	executefsnode(OnFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
+}
+if (clickcode() == LEFT_RELEASE) {
+	setcursor(1);
+	set(node("&gt;editing",c),0);
+	executefsnode(OnKillFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
+}
+</data></node>
+           <node f="442" dt="2"><name>OnMouseMove</name><data>if (i) {  // off the spinner
+	int y = cursorinfo(c, 6, 2, 0);
+	if (get(node("&gt;editing",c))==0) {  // first time falling off the spinner
+		setcursor(11);
+		set(node("&gt;lastval",c),get(itemcurrent(c)));
+		set(node("&gt;lasty",c),y);
+		set(node("&gt;editing",c),1);
+	}
+	
+	int monitortop = getsystemmetric(5);
+	int monitorbottom = getsystemmetric(6);
+	if (y &lt;= monitortop+1) {
+		double newy = monitorbottom - 2;
+		cursorinfo(0, 7, 2, newy);
+		inc(node("&gt;lasty",c), newy - y);
+		y = newy;
+	} else if (y &gt;= monitorbottom-1) {
+		double newy = monitortop + 2;
+		cursorinfo(0, 7, 2, newy);
+		inc(node("&gt;lasty", c), newy - y);
+		y = newy;
+	}
+	int dy = -(y - get(node("&gt;lasty",c)));
+	
+	double prevvalue = get(node("&gt;lastval",c));
+	double newvalue;
+	double coefficient = getnodenum(node("&gt;coefficient",c));
+	double exponent = getnodenum(node("&gt;exponent",c));
+	if (dy &gt; 0)
+		newvalue = prevvalue + coefficient*pow(dy,exponent);
+	else newvalue = prevvalue - coefficient*pow(-dy,exponent);
+	
+	if (objectexists(rangemin(c)) &amp;&amp; newvalue&lt;get(rangemin(c)))
+		newvalue = get(rangemin(c));
+	if (objectexists(rangemax(c)) &amp;&amp; newvalue&gt;get(rangemax(c)))
+		newvalue = get(rangemax(c));
+	set(itemcurrent(c),newvalue);
+	setviewtext(node("&gt;viewfocus+",c), numtostring(newvalue,0,2));
+	applylinks(node("&gt;viewfocus+", c));
+}
+</data></node>
+          </node>
+          <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>lastval</name><data>47ae147b3fc47ae1</data></node>
+          <node f="42" dt="1"><name>lasty</name><data>00000000407c4000</data></node>
+         </data></node>
+        </node>
+        <node f="42" dt="4"><name>Z</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+         <node f="42" dt="2"><name>focus</name><data>../..&gt;variables/Z</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>000000004061e000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>min</name><data>00000000403e0000</data></node>
+          <node f="42" dt="1"><name>desired</name><data>00000000404e0000</data></node>
+         </node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040590000</data></node>
+         <node f="42" dt="1"><name>alignbottommargin</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+         <node f="42" dt="2"><name>undohistory</name><data>../../..</data></node>
+        </data>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>Label</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+          <node f="42" dt="1"><name>aligncenterx</name><data>0000000040140000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040140000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000402c0000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>00000000402c0000</data></node>
+          <node f="42" dt="2"><name>coldlinkname</name><data>../..</data></node>
+         </data></node>
+         <node f="42" dt="4"><name>EditLoc</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+          <node f="42" dt="2"><name>undohistory</name><data>../../../..</data></node>
+          <node f="42" dt="2"><name>focus</name><data>../..&gt;focus+/loc</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000405dc000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
+          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040280000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
+           <node f="442" dt="2"><name>onSample</name><data>treenode panel = up(up(c));
+
+if(getvarnum(panel, "isDirect"))
+	return 1;	
+
+applicationcommand("setcursortext", getvarstr(panel, "cantSampleText"));
+return 0;</data></node>
+           <node f="42" dt="1"><name>onFocusVal</name><data>0000000000000000</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>coldlinkx</name><data>treenode obj = node("../../..&gt;objectfocus+", c);
+treenode sizePanel = node("../..", c);
+if(getvarnum(sizePanel, "isDirect"))
+	return nodefunction(node("&gt;focus+",c), obj);
+
+if(!eventdata) {
+	int precision = get(node("MAIN:/project/environment/settings/precision"));
+	setviewtext(c, numtostring(function_s(sizePanel, "convertCoord", "z", obj), 0, precision));
+} else
+	function_s(c, "applyUndoable");</data></node>
+           <node f="42" dt="2"><name>OnKeyUp</name><data>int k = lastkeyup();
+
+if (k==13) {  // enter
+	function_s(c, "applyUndoable", 1);
+} </data></node>
+           <node f="42" dt="2"><name>OnKillFocus</name><data>function_s(c, "applyUndoable");</data></node>
+           <node f="442" dt="2"><name>applyUndoable</name><data>treenode obj = node("../../..&gt;objectfocus+", c);
+treenode sizePanel = node("../..", c);
+treenode focus = nodefunction(node("&gt;focus+",c), obj);
+int precision = get(node("MAIN:/project/environment/settings/precision"));
+double toVal = function_s(sizePanel, "convertCoord", "z", obj);
+int isChanged = (numtostring(toVal, 0, precision) != getviewtext(c) &amp;&amp; stringtonum(getviewtext(c)) != toVal)
+	|| param(1) == 1;
+if (isChanged) {
+	set(focus, getvarnum(c, "onFocusVal"));
+	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
+	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
+	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
+	double data = stringtonum(getviewtext(c));
+	function_s(up(up(c)), "ApplyChangesToSelected", data, 2, 0, c);
+	if(!getvarnum(sizePanel, "isDirect"))
+		data = zloc(obj) + data - function_s(sizePanel, "convertCoord", "z", obj);
+	set(focus, data);
+	function_s(ownerobject(focus), "updateResetPosition");
+	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
+	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
+	endaggregatedundo(c, undoId);
+	repaintall();
+}
+</data></node>
+           <node f="42" dt="2"><name>OnFocus</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
+setvarnum(c, "onFocusVal", get(focus));</data></node>
+          </node>
+         </data>
+          <node f="40"><name></name></node></node>
+         <node f="42" dt="4"><name>Spinner</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ec000</data></node>
+          <node f="42" dt="2"><name>viewfocus</name><data>../../EditLoc</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000040624000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040280000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
+          <node f="42" dt="1"><name>alignrightposition</name><data>0000000040280000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
+          <node f="42" dt="1"><name>coefficient</name><data>47ae147b3f847ae1</data></node>
+          <node f="42" dt="1"><name>exponent</name><data>333333333ff33333</data></node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_PRESS) {
+	set(itemcurrent(c),stringtonum(getviewtext(node("&gt;viewfocus+",c))));
+	executefsnode(OnFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
+}
+if (clickcode() == LEFT_RELEASE) {
+	setcursor(1);
+	set(node("&gt;editing",c),0);
+	executefsnode(OnKillFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
+}
+</data></node>
+           <node f="442" dt="2"><name>OnMouseMove</name><data>if (i) {  // off the spinner
+	int y = cursorinfo(c, 6, 2, 0);
+	if (get(node("&gt;editing",c))==0) {  // first time falling off the spinner
+		setcursor(11);
+		set(node("&gt;lastval",c),get(itemcurrent(c)));
+		set(node("&gt;lasty",c),y);
+		set(node("&gt;editing",c),1);
+	}
+	
+	int monitortop = getsystemmetric(5);
+	int monitorbottom = getsystemmetric(6);
+	if (y &lt;= monitortop+1) {
+		double newy = monitorbottom - 2;
+		cursorinfo(0, 7, 2, newy);
+		inc(node("&gt;lasty",c), newy - y);
+		y = newy;
+	} else if (y &gt;= monitorbottom-1) {
+		double newy = monitortop + 2;
+		cursorinfo(0, 7, 2, newy);
+		inc(node("&gt;lasty", c), newy - y);
+		y = newy;
+	}
+	int dy = -(y - get(node("&gt;lasty",c)));
+	
+	double prevvalue = get(node("&gt;lastval",c));
+	double newvalue;
+	double coefficient = getnodenum(node("&gt;coefficient",c));
+	double exponent = getnodenum(node("&gt;exponent",c));
+	if (dy &gt; 0)
+		newvalue = prevvalue + coefficient*pow(dy,exponent);
+	else newvalue = prevvalue - coefficient*pow(-dy,exponent);
+	
+	if (objectexists(rangemin(c)) &amp;&amp; newvalue&lt;get(rangemin(c)))
+		newvalue = get(rangemin(c));
+	if (objectexists(rangemax(c)) &amp;&amp; newvalue&gt;get(rangemax(c)))
+		newvalue = get(rangemax(c));
+	set(itemcurrent(c),newvalue);
+	setviewtext(node("&gt;viewfocus+",c), numtostring(newvalue,0,2));
+	applylinks(node("&gt;viewfocus+", c));
+}
+</data></node>
+          </node>
+          <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>lastval</name><data>47ae147b3fc47ae1</data></node>
+          <node f="42" dt="1"><name>lasty</name><data>00000000407c4000</data></node>
+         </data></node>
+        </node>
+       </node>
+      </node>
+     </node>
+    </node>
+   </node>
   </node>
   <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels/GeneralProperties/GeneralProperties&gt;variables/ignoreClasses</data>
    <node f="40"><name></name></node>
@@ -3649,6 +5262,56 @@ applylinks(c, 1);
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
      <node f="42"><name>AStar::AStarNavigator</name></node>
+    </node>
+   </node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040180000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AStar::AStarNavigator</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStar::Barrier</name></node>
+    </node>
+   </node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000401c0000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AStar::Barrier</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStar::Divider</name></node>
+    </node>
+   </node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040200000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AStar::Divider</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStar::PreferredPath</name></node>
+    </node>
+   </node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040220000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AStar::PreferredPath</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStar::Bridge</name></node>
+    </node>
+   </node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040240000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AStar::Bridge</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStar::MandatoryPath</name></node>
     </node>
    </node>
   </node>
@@ -3705,7 +5368,10 @@ Object libNavigator = astarFolder.find("AStarNavigator");
 createcopy(libNavigator.find("&gt;visual/drawsurrogate"), navigator.find("&gt;visual"), 1);
 navigator.attrs.shape.value = "***";
 navigator.attrs.shapeindex.value = 0;
+navigator.attrs.guifocusclass.value = "VIEW:/modules/AStar/Pages/AStarProperties";
 switch_hidecontents(navigator, 0);
+createcopy(libNavigator.attrs.imageindexobject, navigator.attrs.imageindexobject, 1, 0, 0, 1);
+createcopy(libNavigator.attrs.imageobject, navigator.attrs.imageobject, 1, 0, 0, 1);
 rebindobjectattributes(navigator);
 
 treenode barriers = getvarnode(navigator, "barriers");
@@ -3726,15 +5392,17 @@ for (int i = 1; i &lt;= barriers.subnodes.length; i++) {
 	} else if (class == "AStar::Bridge") {
 		newObj = createinstance(astarFolder.find("Bridge"), navigator);
 	}
-	
 	if (newObj) {
 		newObjects.push(newObj);
 		newObj.location = Vec3(0.0, 0.0, 0.0);
 		treenode fromPoints = barrier.find("points");
 		treenode toPoints = newObj.attrs.variables.find("points");
 		toPoints.subnodes.clear();
-		while (fromPoints.subnodes.length &gt; 0)
+		while (fromPoints.subnodes.length &gt; 0) {
+			if (class != "AStar::Bridge")
+				fromPoints.first.find("z").value = 0;
 			fromPoints.first.up = toPoints;
+		}
 			
 		function_s(newObj, "updateSpatialsToEncompassPoints");
 	}

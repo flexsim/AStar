@@ -168,6 +168,7 @@ public:
 	ASTAR_FUNCTION Variant removePoint(FLEXSIMINTERFACE) { removePoint((int)param(1));  return Variant(); }
 	void swapPoints(int index1, int index2);
 	ASTAR_FUNCTION Variant swapPoints(FLEXSIMINTERFACE) { swapPoints((int)param(1), (int)param(2)); return Variant(); }
+	Vec3 getLocalPointCoords(int pointIndex);
 	Vec3 getPointCoords(int pointIndex);
 	ASTAR_FUNCTION Variant getPointCoord(FLEXSIMINTERFACE);
 	bool setPointCoords(int pointIndex, const Vec3& point);
@@ -232,6 +233,10 @@ public:
 	static const int VISIT_FIRST_COL_ONLY = 0x2;
 	static const int VISIT_BACKWARDS = 0x4;
 	void visitPatternCells(std::function<void(PatternCell*)> func, int flags = 0);
+
+	Vec3 getPointToModelOffset();
+	void setSizeComponent(treenode sizeAtt, double toSize);
+	ASTAR_FUNCTION Variant setSizeComponent(FLEXSIMINTERFACE) { setSizeComponent(param(1), param(2)); return Variant(); }
 };
 
 }

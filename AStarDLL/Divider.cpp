@@ -30,7 +30,7 @@ bool Divider::getLocalBoundingBox(Vec3& min, Vec3& max)
 	min = Vec3(DBL_MAX, DBL_MAX, DBL_MAX);
 	max = Vec3(-DBL_MAX, -DBL_MAX, -DBL_MAX);
 	for (int i = 0; i < pointList.size(); i++) {
-		Vec3 point = getPointCoords(i);
+		Vec3 point = getLocalPointCoords(i);
 
 		min.x = min(min.x, point.x);
 		max.x = max(max.x, point.x);
@@ -118,38 +118,34 @@ void Divider::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle d
 		}
 
 		// For each pair of points, draw a rectangle in between
-		float distToRect = 0;// 0.4 * nodeWidth;
-		float distToCorner = sqrt(distToRect * distToRect + radius * radius);
-		float dTheta = atan2(radius, distToRect);
+		float distToCorner = radius;
+		float dTheta = atan2(radius, 0);
 		for (int i = 0; i < pointList.size() - 1; i++) {
 			Point* point = pointList[i];
 			Point* next = pointList[i + 1];
 
 			float dx = next->x - point->x;
 			float dy = next->y - point->y;
-			float theta = atan2(dy, dx);
+			float angle = radianstodegrees(atan2(dy, dx));
 
-			float length = sqrt(dx * dx + dy * dy) - 2 * distToRect;
-			if (length <= 0)
+			float lengthXY = sqrt(dx * dx + dy * dy);
+			if (lengthXY <= 0)
 				continue;
 			float height = 2 * radius;
 
 			// Use the bottomleft corner of the rectangle to get every other corner
-			Vec3f bottomLeft( distToCorner * cos(theta - dTheta) + (float)point->x,
-				distToCorner * sin(theta - dTheta) + (float)point->y, (float)point->z + z );
-
-			Vec3f topLeft( bottomLeft[0] - height * sin(theta),
-				bottomLeft[1] + height * cos(theta), (float)point->z + z );
-
-			Vec3f bottomRight( bottomLeft[0] + length * cos(theta),
-				bottomLeft[1] + length * sin(theta), (float)point->z + z );
-
-			Vec3f topRight( bottomRight[0] - height * sin(theta),
-				bottomRight[1] + height * cos(theta), (float)point->z + z );
+			Vec3f bottomLeft = Vec3f(0.0f, -radius, 0.0f).rotateXY(angle) + Vec3f(*point);
+			Vec3f topLeft = Vec3f(0.0f, radius, 0.0f).rotateXY(angle) + Vec3f(*point);
+			Vec3f centerLeft = Vec3f(radius, 0.0f, 0.0f).rotateXY(angle) + Vec3f(*point);
+			Vec3f bottomRight = Vec3f(lengthXY, -radius, next->z - point->z).rotateXY(angle) + Vec3f(*point);
+			Vec3f topRight = Vec3f(lengthXY, radius, next->z - point->z).rotateXY(angle) + Vec3f(*point);
+			Vec3f centerRight = Vec3f(lengthXY - radius, 0.0f, next->z - point->z).rotateXY(angle) + Vec3f(*point);
 
 			if (drawStyle == Basic) {
-				addMeshTriangle(barrierMesh, bottomLeft, topRight, topLeft, baseColor);
-				addMeshTriangle(barrierMesh, bottomLeft, bottomRight, topRight, baseColor);
+				addMeshTriangle(barrierMesh, centerLeft, topRight, topLeft, baseColor);
+				addMeshTriangle(barrierMesh, centerLeft, centerRight, topRight, baseColor);
+				addMeshTriangle(barrierMesh, bottomLeft, bottomRight, centerRight, baseColor);
+				addMeshTriangle(barrierMesh, bottomLeft, centerRight, centerLeft, baseColor);
 			} else {
 				addMeshLine(barrierMesh, topLeft, topRight, baseColor);
 				addMeshLine(barrierMesh, bottomRight, bottomLeft, baseColor);
