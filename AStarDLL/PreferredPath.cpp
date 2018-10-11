@@ -40,8 +40,8 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 		
 		Point* fromPoint = pointList[i];
 		Point* toPoint = pointList[i + 1];
-		Vec3 fromPos(fromPoint->x, fromPoint->y, fromPoint->z);
-		Vec3 toPos(toPoint->x, toPoint->y, toPoint->z);
+		Vec3 fromPos = fromPoint->project(holder, model());
+		Vec3 toPos = toPoint->project(holder, model());
 
 		// calculate the column and row numbers for that point
 		int fromCol = (int)round((fromPos.x - grid->gridOrigin.x) / nodeWidth);
@@ -97,7 +97,7 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 
 void PreferredPath::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle)
 {
-	addPathVertices(barrierMesh, z, Vec4f(0.0f, 1.0f, 0.0f, 1.0f), drawStyle);
+	addPathVertices(view, barrierMesh, z, Vec4f(0.0f, 1.0f, 0.0f, 1.0f), drawStyle);
 }
 
 

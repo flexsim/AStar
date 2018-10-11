@@ -1109,11 +1109,6 @@ double Grid::onDrag(treenode view)
 	return 1;
 }
 
-void Grid::onClick(treenode view, int clickCode, const Vec3 & pos)
-{
-
-}
-
 double Grid::onClick(treenode view, int clickCode)
 {
 	return 0.0;

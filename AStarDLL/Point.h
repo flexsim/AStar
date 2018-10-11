@@ -13,7 +13,7 @@ public:
 	virtual const char * getClassFactory(void);
 	virtual void bind(void);
 
-	void addVertices(Mesh* mesh, float radius, float* color, float zOffset, bool linesOnly, unsigned int * incNumVerts = nullptr);
+	void addVertices(Mesh* mesh, float radius, float* color, float zOffset, bool linesOnly);
 };
 
 }

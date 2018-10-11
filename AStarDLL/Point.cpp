@@ -18,7 +18,7 @@ void Point::bind(void)
 	bindDouble(z, 1);
 }
 
-void Point::addVertices(Mesh * mesh, float radius, float * color, float zOffset, bool linesOnly, unsigned int* incNumVerts)
+void Point::addVertices(Mesh * mesh, float radius, float * color, float zOffset, bool linesOnly)
 {
 	const float TWO_PI = 2 * 3.1415926536f;
 	int numSides = 20;
@@ -38,9 +38,9 @@ void Point::addVertices(Mesh * mesh, float radius, float * color, float zOffset,
 		float pos2[3] = { x2, y2, z };
 
 		if (!linesOnly)
-			Barrier::addMeshVertex(mesh, center, color, incNumVerts);
-		Barrier::addMeshVertex(mesh, pos1, color, incNumVerts);
-		Barrier::addMeshVertex(mesh, pos2, color, incNumVerts);
+			Barrier::addMeshVertex(mesh, center, color);
+		Barrier::addMeshVertex(mesh, pos1, color);
+		Barrier::addMeshVertex(mesh, pos2, color);
 	}
 
 	// Draw the last triangle using first and last coords
@@ -48,9 +48,9 @@ void Point::addVertices(Mesh * mesh, float radius, float * color, float zOffset,
 	float pos2[3] = { radius + center[0], center[1], z };
 	float pos1[3] = { radius * cos(lastTheta) + center[0], radius * sin(lastTheta) + center[1], z };
 	if (!linesOnly)
-		Barrier::addMeshVertex(mesh, center, color, incNumVerts);
-	Barrier::addMeshVertex(mesh, pos1, color, incNumVerts);
-	Barrier::addMeshVertex(mesh, pos2, color, incNumVerts);
+		Barrier::addMeshVertex(mesh, center, color);
+	Barrier::addMeshVertex(mesh, pos1, color);
+	Barrier::addMeshVertex(mesh, pos2, color);
 
 }
 

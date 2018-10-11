@@ -54,6 +54,6 @@ void MandatoryPath::addPassagesToTable(Grid * grid)
 
 void MandatoryPath::addVertices(treenode view, Mesh * barrierMesh, float z, DrawStyle drawStyle)
 {
-	addPathVertices(barrierMesh, z, Vec4f(0.75f, 0.61f, 0.25f, 1.0f), drawStyle);
+	addPathVertices(view, barrierMesh, z, Vec4f(0.75f, 0.61f, 0.25f, 1.0f), drawStyle);
 }
 }

@@ -19,7 +19,7 @@ public:
 	virtual void drawManipulationHandles(treenode view) override;
 	virtual void addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle) override;
 	virtual double onClick(treenode view, int clickCode, Vec3& pos) override;
-	virtual double onMouseMove(treenode view, Vec3& pos, Vec3& diff) override;
+	virtual double dragPressedPick(treenode view, Vec3& pos, Vec3& diff) override;
 	virtual Divider* toDivider() override { return this; }
 
 	void addCreatePointRecord(treenode view, Point* point);

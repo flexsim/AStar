@@ -79,6 +79,10 @@
         <node f="42" dt="1"><name>estimatedIndefiniteAllocTimeDelay</name><data>0000000040240000</data></node>
         <node f="42" dt="1"><name>routeByTravelTime</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>deallocTimeOffset</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>transparentBaseColor</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>debugRoutingAlgorithm</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>routingAlgorithmCompletionRatio</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>hasCustomUserGrids</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node>
@@ -93,9 +97,6 @@
          <node f="1000042" dt="2"><name>removeMember</name><data>dll:"module:AStar" func:"AStarNavigator_removeMember"</data></node>
          <node f="1000042" dt="2"><name>setActiveBarrier</name><data>dll:"module:AStar" func:"AStarNavigator_setActiveBarrier"</data></node>
          <node f="1000042" dt="2"><name>swapBarriers</name><data>dll:"module:AStar" func:"AStarNavigator_swapBarriers"</data></node>
-         <node f="1000042" dt="2"><name>setEditMode</name><data>dll:"module:AStar" func:"AStarNavigator_setEditMode"</data></node>
-         <node f="1000042" dt="2"><name>onMouseMove</name><data>dll:"module:AStar" func:"AStarNavigator_onMouseMove"</data></node>
-         <node f="1000042" dt="2"><name>onClick</name><data>dll:"module:AStar" func:"AStarNavigator_onClick"</data></node>
          <node f="1000042" dt="2"><name>blockGridModelPos</name><data>dll:"module:AStar" func:"AStarNavigator_blockGridModelPos"</data></node>
          <node f="1000042" dt="2"><name>divideGridModelLine</name><data>dll:"module:AStar" func:"AStarNavigator_divideGridModelLine"</data></node>
          <node f="1000042" dt="2"><name>dumpBlockageData</name><data>dll:"module:AStar" func:"AStarNavigator_dumpBlockageData"</data></node>
@@ -137,6 +138,11 @@
         </node>
         <node f="42" dt="1"><name>collisionUpdateInterval</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>nextCollisionUpdateTime</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>heatMapTotalTraversals</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>minNodeWidth</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>hasConditionalBarriers</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>hasMandatoryPaths</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>extraData</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>visual</name>
         <node f="40"><name></name></node>
@@ -299,7 +305,7 @@ return /**/traveler.type == 1/**direct*/;
        </node>
        <node f="42"><name>variables</name>
         <node f="80000040"><name></name></node>
-        <node f="42" dt="1"><name>isTwoWay</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>isTwoWay</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node></node>
@@ -354,11 +360,11 @@ return /**/traveler.type == 1/**direct*/;
        <node f="42"><name>stored</name></node>
       </data>
        <node f="40"><name></name></node></node>
-      <node f="100062" dt="4"><name>Bridge</name><data>
+      <node f="10100062" dt="4"><name>Bridge</name><data>
        <node f="40"><name></name></node>
        <node f="42"><name>classes</name>
         <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>AStar::PreferredPath</name><data><coupling>/installdata/add/1/data/astar/PreferredPath</coupling></data></node>
+        <node f="42" dt="3"><name>AStar::Bridge</name><data><coupling>/installdata/add/1/data/astar/Bridge</coupling></data></node>
        </node>
        <node f="42"><name>superclasses</name>
         <node f="40"><name></name></node>
@@ -460,11 +466,12 @@ return /**/traveler.type == 1/**direct*/;
          <node f="40"><name></name></node>
          <node f="42"><name>Spatial</name></node>
         </node>
+        <node f="42" dt="1"><name>mouseDownScreenX</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>mouseDownScreenY</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastMouseX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastMouseY</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>dragX</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>dragY</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>dragging</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>mouseState</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>state</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelY</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelZ</name><data>0000000000000000</data></node>
@@ -488,145 +495,126 @@ if (gets(documentwindow(i)) != "3D")
 	return 0;
 
 int mode = getvarnum(c, "mode");
-treenode selobj = selectedobject(i/*The view*/);
 treenode curObjectNode = tonode(getvarnum(c, "curObjectNode"));
 
+applicationcommand("assertmoduledependency", "AStar");
 treenode activeNavigator = tonode(getvarnum(c, "activeNavigator"));
 if (!objectexists(activeNavigator))
 	activeNavigator = function_s(c, "findNavigator");
 if (!objectexists(activeNavigator))
 	activeNavigator = createinstance(node("/?AStarNavigator", library()), model());
 
-applicationcommand("assertmoduledependency", "AStar");
 nodepoint(getvarnode(c, "activeNavigator"), activeNavigator);
 
-double mouseX = cursorinfo(i, 2, 1, 1);
-double mouseY = cursorinfo(i, 2, 2, 1);
-double mouseZ = cursorinfo(i, 2, 3, 1);
-setvarnum(c, "lastMouseX", cursorinfo(i, 1, 1, 1));
-setvarnum(c, "lastMouseY", cursorinfo(i, 1, 2, 1));
-setvarnum(c, "lastModelX", mouseX);
-setvarnum(c, "lastModelY", mouseY);
-setvarnum(c, "lastModelZ", mouseZ);
+Vec3 modelPos = Vec3(cursorinfo(i, 2, 1, 1), cursorinfo(i, 2, 2, 1), cursorinfo(i, 2, 3, 1));
+double screenX = cursorinfo(i, 1, 1, 1);
+double screenY = cursorinfo(i, 1, 2, 1);
+setvarnum(c, "lastModelX", modelPos.x);
+setvarnum(c, "lastModelY", modelPos.y);
+setvarnum(c, "lastModelZ", modelPos.z);
 int clickCode = clickcode();
 
 //pt("SelectedObject: "); pt(nodetomodelpath(selobj, 1)); 
 //pt(" clickcode: "); pd(clickCode); pr();
 
-if (!objectexists(selobj)) {
-	if (clickCode == LEFT_RELEASE) {
-		int dx = getvarnum(c, "dragX");
-		int dy = getvarnum(c, "dragY");
-		
-		// I only create a new object on the left release if the user did not drag the mouse (pan the view)
-		// and if I'm not in "creating" mode, i.e. I have not yet created the object
-		if (fabs(dx) &lt; 2 &amp;&amp; fabs(dy) &lt; 2 &amp;&amp; !getvarnum(c, "creating")) {
-			setvarnum(c, "creating", 1);
-			setvarnum(c, "editing", 0);
-			
-			if (mode != EDITMODE_GRID) {
-				// Snap between grid points
-				double nodeWidth = function_s(activeNavigator, "getGrid", mouseX, mouseY, mouseZ).find("nodeWidth").value;
-				if (getvarnum(activeNavigator, "snapBetweenGrid") &amp;&amp; (mode == EDITMODE_DIVIDER || mode == EDITMODE_ONE_WAY_DIVIDER)) {
-					mouseX = floor((mouseX + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-					mouseY = floor((mouseY + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-				}
-			}
-			string classPath = getvarstr(c, "class");
-			treenode activeObject;
-			if (classPath.length &gt; 0) {
-				activeObject = createinstance(library().find(classPath), activeNavigator);
-				activeObject.as(Object).setLocation(mouseX, mouseY, mouseZ);
-				setselectedobject(i, activeNavigator);
-				treenode firstPoint = first(getvarnode(activeObject, "points"));
-				treenode lastPoint = last(getvarnode(activeObject, "points"));
-				firstPoint.find("y").value = -1;
-				lastPoint.find("x").value = 1;
-				setpickingdrawfocus(i, activeObject, PICK_ASTAR_POINT, lastPoint, OVERRIDE_SET_MOUSE_DOWN_PICK);
+switch (clickCode) {
+	case LEFT_PRESS:
+		setvarnum(c, "mouseDownScreenX", screenX);
+		setvarnum(c, "mouseDownScreenY", screenY);
+		setvarnum(c, "mouseState", LEFT_PRESS);
+		break;
+	
+	case LEFT_RELEASE:
+		setvarnum(c, "mouseState", 0);
+		if (curObjectNode) {
+			// if I'm currently editing a solid barrier or grid, (it's the second up click)
+			// then I should set curObjectNode to 0, meaning I'm done editing the barrier
+			if (mode == EDITMODE_SOLID_BARRIER || mode == EDITMODE_GRID) {
+				function_s(curObjectNode, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
+				nodepoint(getvarnode(c, "curObjectNode"), 0); // on a sold barrier, on
 			} else {
-				activeObject = function_s(activeNavigator, "addObject", mouseX, mouseY, mouseZ, mouseX, mouseY, mouseZ, mode);
-				setselectedobject(i, activeNavigator);
+				// if I'm editing a multi-point object, then subsequent left-releases should add
+				// a new point.
+				treenode newPoint = function_s(curObjectNode, "addPoint", modelPos.x, modelPos.y, modelPos.z);
+				setpickingdrawfocus(i, curObjectNode, PICK_ASTAR_POINT, newPoint, OVERRIDE_SET_MOUSE_DOWN_PICK);
 			}
-			if (mode != EDITMODE_GRID)
-				function_s(activeObject, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
-			nodepoint(getvarnode(c, "curObjectNode"), activeObject); 
-			return 0;
+		} else {
+			// on an up-click where there's no currently editing object, then I should see about creating one
+			int dx = fabs(screenX - getvarnum(c, "mouseDownScreenX"));
+			int dy = fabs(screenY - getvarnum(c, "mouseDownScreenY"));
+			
+			// I only create a new object on the left release if the user did not drag the mouse (pan the view)
+			// and if I'm not in "creating" mode, i.e. I have not yet created the object
+			if (fabs(dx) &lt; 2 &amp;&amp; fabs(dy) &lt; 2) {
+				
+				if (mode != EDITMODE_GRID) {
+					// Snap between grid points
+					double nodeWidth = function_s(activeNavigator, "getGrid", modelPos.x, modelPos.y, modelPos.z).find("nodeWidth").value;
+					if (getvarnum(activeNavigator, "snapBetweenGrid") &amp;&amp; (mode == EDITMODE_DIVIDER || mode == EDITMODE_ONE_WAY_DIVIDER)) {
+						modelPos.x = floor((modelPos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+						modelPos.y = floor((modelPos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+					}
+				}
+				string classPath = getvarstr(c, "class");
+				if (classPath.length &gt; 0) {
+					curObjectNode = createinstance(library().find(classPath), activeNavigator);
+					curObjectNode.as(Object).setLocation(modelPos.x, modelPos.y, modelPos.z);
+					treenode firstPoint = first(getvarnode(curObjectNode, "points"));
+					treenode lastPoint = last(getvarnode(curObjectNode, "points"));
+					firstPoint.find("y").value = -0.01;
+					lastPoint.find("x").value = 0.01;
+					function_s(curObjectNode, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
+					setpickingdrawfocus(i, curObjectNode, PICK_ASTAR_POINT, lastPoint, OVERRIDE_SET_MOUSE_DOWN_PICK);
+				} else {
+					curObjectNode = function_s(activeNavigator, "addObject", modelPos.x, modelPos.y, modelPos.z, modelPos.x, modelPos.y, modelPos.z, mode);
+				}
+				nodepoint(getvarnode(c, "curObjectNode"), curObjectNode);
+			}
+
 		}
-	}
-} else {
-	if (clickCode == LEFT_PRESS) {
-		postwindowmessage(windowfromnode(i/*The view*/),
-			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
-			node("checkStatus", eventfunctions(c)), 0);	
-	}	
+		break;
 }
-
-
-if (clickCode == LEFT_PRESS) {
-	setvarnum(c, "dragX", 0);
-	setvarnum(c, "dragY", 0);
-	setvarnum(c, "dragging", 1);
-}
-
-if (clickCode == LEFT_RELEASE) {
-	setvarnum(c, "dragging", 0);
-	if (getvarnum(c, "creating")) {
-		if(mode == EDITMODE_SOLID_BARRIER) {
-			setvarnum(c, "creating", 0);
-			setvarnum(c, "editing", 1);
-		}
-		treenode object = getpickingdrawfocus(i/*The view*/, PICK_OBJECT, 0);
-		if (!objectexists(object)) {
-			function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY, mouseZ);
-			setselectedobject(i/*The view*/, activeNavigator);
-		}
-	}
-}</data></node>
+</data></node>
         <node f="442" dt="2"><name>OnMouseMove</name><data>if (!objectexists(i))
 		return 0;
-		
-if (getvarnum(c, "creating")) {
-	double mouseX = cursorinfo(i, 2, 1, 1);
-	double mouseY = cursorinfo(i, 2, 2, 1);
-	double mouseZ = cursorinfo(i, 2, 3, 1);
-	double dx = mouseX - getvarnum(c, "lastModelX");
-	double dy = mouseY - getvarnum(c, "lastModelY");
-	
-	setvarnum(c, "lastModelX", mouseX);
-	setvarnum(c, "lastModelY", mouseY);
-	
-	function_s(tonode(getvarnum(c, "curObjectNode")), "onMouseMove", 
-		i, mouseX, mouseY, mouseZ, dx, dy);
-	
-	#define WM_PAINT 0x000F
-	postwindowmessage(windowfromnode(i), WM_PAINT,0,0);
 
+treenode createdObj = tonode(getvarnum(c, "curObjectNode"));
+int mouseState = getvarnum(c, "mouseState");
+Vec3 modelPos = Vec3(cursorinfo(i, 2, 1, 1), cursorinfo(i, 2, 2, 1), cursorinfo(i, 2, 3, 1));
+if (mouseState == 0) {
+	if (createdObj) {
+		double dx = modelPos.x - getvarnum(c, "lastModelX");
+		double dy = modelPos.y - getvarnum(c, "lastModelY");
+		function_s(createdObj, "dragPressedPick", i, modelPos.x, modelPos.y, modelPos.z, dx, dy);
+		
+		#define WM_PAINT 0x000F
+		postwindowmessage(windowfromnode(i), WM_PAINT,0,0);
+	} else {
+		treenode iconGrid = tonode(get(viewfocus(c)));
+		if (!objectexists(iconGrid) 
+				|| !objectexists(selectedobject(iconGrid)) 
+				|| selectedobject(iconGrid) != tonode(get(objectfocus(c)))) 
+		{
+			modeleditmode(0);
+		}
+	}
 }
 
-if (getvarnum(c, "dragging")) { 
-	double mouseX = cursorinfo(i, 1, 1, 1);
-	double mouseY = cursorinfo(i, 1, 2, 1);
-	double dx = mouseX - getvarnum(c, "lastMouseX");
-	double dy = mouseY - getvarnum(c, "lastMouseY");
-	
-	setvarnum(c, "dragX", dx);
-	setvarnum(c, "dragY", dy);
-}</data></node>
+setvarnum(c, "lastModelX", modelPos.x);
+setvarnum(c, "lastModelY", modelPos.y);
+
+</data></node>
         <node f="442" dt="2"><name>OnEntering</name><data>treenode iconGrid = nodefromwindow(keyboardfocus());
-treenode activeNavigator = tonode(getvarnum(c, "activeNavigator"));
-if (!objectexists(activeNavigator))
-	activeNavigator = function_s(c, "findNavigator");
-if (!objectexists(activeNavigator))
-	return 0;
-function_s(activeNavigator, "setEditMode", getvarnum(c, "mode"));
 nodepoint(viewfocus(c), iconGrid);
 nodepoint(objectfocus(c), selectedobject(iconGrid));</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
 
+
 setvarnum(c, "editing", 0);
 setvarnum(c, "creating", 0);
 setvarnum(c, "mode", 0);
-setvarnum(c, "lastMouseX", 0);
+setvarnum(c, "mouseDownScreenX", 0);
+setvarnum(c, "mouseDownScreenY", 0);
 setvarnum(c, "lastMouseY", 0);
 setvarnum(c, "dragging", 0);
 setvarnum(c, "lastModelX", 0);
@@ -635,17 +623,21 @@ setvarnum(c, "lastModelZ", 0);
 setvarnum(c, "dragX", 0);
 setvarnum(c, "dragY", 0);
 setvarstr(c, "class", "");
-nodepoint(getvarnode(c, "curObjectNode"), 0);
+setvarnum(c, "mouseState", 0);
 
-treenode activeObj = tonode(getvarnum(c, "activeNavigator"));
-if (objectexists(activeObj))
-	function_s(activeObj, "setEditMode", 0);
-
+treenode curObjectNode = tonode(getvarnum(c, "curObjectNode"));
+if (curObjectNode)
+	function_s(curObjectNode, "abortCreationMode");
+	
 treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
 if (objectexists(activeNav)) {
-	function_s(activeNav, "onClick", activedocumentnode(), RIGHT_RELEASE, 0, 0);
 	function_s(activeNav, "rebuildMeshes");
 }
+
+nodepoint(getvarnode(c, "activeNavigator"), 0);
+nodepoint(getvarnode(c, "curObjectNode"), 0);
+nodepoint(objectfocus(c), 0);
+nodepoint(viewfocus(c), 0);
 </data></node>
         <node f="442" dt="2"><name>checkStatus</name><data>#define BARRIER_MODE_CREATE 0x2
 
@@ -722,34 +714,6 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
 treenode handler = tonode(get(objectfocus(c)));
-treenode barrier = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
-
-if(objectexists(barrier)) {
-	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
-	if (!objectexists(activeNavigator))
-		activeNavigator = function_s(handler, "findNavigator");
-	
-	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
-		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(barrier, getname(c))) {
-		// Add to an existing
-		function_s(barrier, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "curObjectNode"), barrier);
-		
-		setvarnum(handler, "creating", 1);
-		setvarnum(handler, "editing", 0);
-		
-		double mouseX = cursorinfo(i, 2, 1, 1);
-		double mouseY = cursorinfo(i, 2, 2, 1);
-		function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY);
-		
-		postwindowmessage(windowfromnode(i/*The view*/),
-			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
-			node("checkStatus", eventfunctions(handler)), 0);
-		
-		return 0;
-	}
-}
-
 executefsnode(OnClick(handler), handler, i, eventdata);
 </data></node>
         <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
@@ -783,34 +747,6 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
 treenode handler = tonode(get(objectfocus(c)));
-treenode barrier = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
-
-if(objectexists(barrier)) {
-	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
-	if (!objectexists(activeNavigator))
-		activeNavigator = function_s(handler, "findNavigator");
-	
-	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
-		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(barrier, getname(c))) {
-		// Add to an existing
-		function_s(barrier, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "curObjectNode"), barrier);
-		
-		setvarnum(handler, "creating", 1);
-		setvarnum(handler, "editing", 0);
-		
-		double mouseX = cursorinfo(i, 2, 1, 1);
-		double mouseY = cursorinfo(i, 2, 2, 1);
-		function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY);
-		
-		postwindowmessage(windowfromnode(i/*The view*/),
-			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
-			node("checkStatus", eventfunctions(handler)), 0);
-		
-		return 0;
-	}
-}
-
 executefsnode(OnClick(handler), handler, i, eventdata);
 </data></node>
         <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
@@ -844,34 +780,6 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
 treenode handler = tonode(get(objectfocus(c)));
-treenode barrier = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
-
-if(objectexists(barrier)) {
-	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
-	if (!objectexists(activeNavigator))
-		activeNavigator = function_s(handler, "findNavigator");
-	
-	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
-		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(barrier, getname(c))) {
-		// Add to an existing
-		function_s(barrier, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "curObjectNode"), barrier);
-		
-		setvarnum(handler, "creating", 1);
-		setvarnum(handler, "editing", 0);
-		
-		double mouseX = cursorinfo(i, 2, 1, 1);
-		double mouseY = cursorinfo(i, 2, 2, 1);
-		function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY);
-		
-		postwindowmessage(windowfromnode(i/*The view*/),
-			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
-			node("checkStatus", eventfunctions(handler)), 0);
-		
-		return 0;
-	}
-}
-
 executefsnode(OnClick(handler), handler, i, eventdata);
 </data></node>
         <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
@@ -905,34 +813,6 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
 treenode handler = tonode(get(objectfocus(c)));
-treenode barrier = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
-
-if(objectexists(barrier)) {
-	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
-	if (!objectexists(activeNavigator))
-		activeNavigator = function_s(handler, "findNavigator");
-	
-	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
-		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(barrier, getname(c))) {
-		// Add to an existing
-		function_s(barrier, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
-		nodepoint(getvarnode(handler, "curObjectNode"), barrier);
-		
-		setvarnum(handler, "creating", 1);
-		setvarnum(handler, "editing", 0);
-		
-		double mouseX = cursorinfo(i, 2, 1, 1);
-		double mouseY = cursorinfo(i, 2, 2, 1);
-		function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY);
-		
-		postwindowmessage(windowfromnode(i/*The view*/),
-			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
-			node("checkStatus", eventfunctions(handler)), 0);
-		
-		return 0;
-	}
-}
-
 executefsnode(OnClick(handler), handler, i, eventdata);
 </data></node>
         <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
@@ -965,33 +845,6 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
 treenode handler = tonode(get(objectfocus(c)));
-treenode secondary = getpickingdrawfocus(i/*The view*/, PICK_SECONDARY_OBJECT, 0);
-
-if(objectexists(secondary)) {
-	treenode activeNavigator = tonode(getvarnum(handler, "activeNavigator"));
-	if (!objectexists(activeNavigator))
-		activeNavigator = function_s(handler, "findNavigator");
-	
-	if (clickcode() == LEFT_RELEASE &amp;&amp; objectexists(activeNavigator)
-		&amp;&amp; !getvarnum(handler, "creating") &amp;&amp; isclasstype(secondary, getname(c))) {
-		// Add to an existing
-		nodepoint(getvarnode(handler, "curObjectNode"), secondary);
-		
-		setvarnum(handler, "creating", 1);
-		setvarnum(handler, "editing", 0);
-		
-		double mouseX = cursorinfo(i, 2, 1, 1);
-		double mouseY = cursorinfo(i, 2, 2, 1);
-		function_s(activeNavigator, "onClick", i/*The view*/, LEFT_RELEASE, mouseX, mouseY);
-		
-		postwindowmessage(windowfromnode(i/*The view*/),
-			FLEXSIM_MESSAGE_USER_NODEFUNCTION,
-			node("checkStatus", eventfunctions(handler)), 0);
-		
-		return 0;
-	}
-}
-
 executefsnode(OnClick(handler), handler, i, eventdata);
 </data></node>
         <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
@@ -3822,6 +3675,77 @@ applylinks(c, 1);
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
      <node f="42"><name>AStar::AStarNavigator</name></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add</name><data>MAIN:/project/events/OnUpdateModel/Update to 19.0</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>update AStarNavigator structure</name><data>treenode updaterootnode = param(1);
+double oldVersion = param(2);
+
+if (oldVersion &gt;= 19.0)
+	return 0;
+
+if (updaterootnode != model())
+	return 0;
+
+Object navigator = Model.find("AStarNavigator");
+if (!navigator)
+	return 0;
+
+treenode astarFolder = Model.find("MAIN:/project/library/astar");
+Object libNavigator = astarFolder.find("AStarNavigator");
+createcopy(libNavigator.find("&gt;visual/drawsurrogate"), navigator.find("&gt;visual"), 1);
+navigator.attrs.shape.value = "***";
+navigator.attrs.shapeindex.value = 0;
+switch_hidecontents(navigator, 0);
+rebindobjectattributes(navigator);
+
+treenode barriers = getvarnode(navigator, "barriers");
+Array newObjects;
+for (int i = 1; i &lt;= barriers.subnodes.length; i++) {
+	treenode barrier = barriers.subnodes[i];
+	string class = barrier.find("sdt::attributetree")?.value;
+	Object newObj = 0;
+	if (class == "AStar::Barrier") {
+		newObj = createinstance(astarFolder.find("Barrer"), navigator);
+	} else if (class == "AStar::Divider") {
+		newObj = createinstance(astarFolder.find("Divider"), navigator);
+	} else if (class == "AStar::OneWayDivider") {
+		newObj = createinstance(astarFolder.find("Divider"), navigator);
+		newObj.attrs.variables.find("isTwoWay").value = 0;
+	} else if (class == "AStar::PreferredPath") {
+		newObj = createinstance(astarFolder.find("PreferredPath"), navigator);
+	} else if (class == "AStar::Bridge") {
+		newObj = createinstance(astarFolder.find("Bridge"), navigator);
+	}
+	
+	if (newObj) {
+		newObjects.push(newObj);
+		newObj.location = Vec3(0.0, 0.0, 0.0);
+		treenode fromPoints = barrier.find("points");
+		treenode toPoints = newObj.attrs.variables.find("points");
+		toPoints.subnodes.clear();
+		while (fromPoints.subnodes.length &gt; 0)
+			fromPoints.first.up = toPoints;
+			
+		function_s(newObj, "updateSpatialsToEncompassPoints");
+	}
+}
+
+barriers.subnodes.clear();
+for (int i = 1; i &lt;= newObjects.length; i++)
+	function_s(newObjects[i], "assertNavigator");
+
+return 1;
+</data></node>
     </node>
    </node>
   </node>

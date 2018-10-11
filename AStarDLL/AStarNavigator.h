@@ -121,7 +121,7 @@ public:
 	std::unordered_map<unsigned long long, AStarNodeExtraData*> edgeTableExtraData; // A mapping from colRow to an ExtraData object
 
 
-	static EditMode editMode;
+	//static EditMode editMode;
 	static AStarNavigator* globalASN;
 	double defaultPathWeight;
 	double minNodeWidth;

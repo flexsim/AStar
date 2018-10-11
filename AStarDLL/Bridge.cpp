@@ -33,8 +33,8 @@ void Bridge::addPassagesToTable(Grid* grid)
 	if (pointList.size() < 2)
 		return;
 
-	AStarCell fromCell = grid->getCellFromLoc(Vec3(pointList[0]->x, pointList[0]->y, pointList[0]->z));
-	AStarCell toCell = grid->getCellFromLoc(Vec3(pointList.back()->x, pointList.back()->y, pointList.back()->z));
+	AStarCell fromCell = grid->getCellFromLoc(pointList.front()->project(holder, model()));
+	AStarCell toCell = grid->getCellFromLoc(pointList.back()->project(holder, model()));
 	if (fromCell == toCell)
 		return;
 
@@ -54,7 +54,7 @@ void Bridge::addPassagesToTable(Grid* grid)
 
 void Bridge::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle)
 {
-	addPathVertices(barrierMesh, z, Vec4f(0.0f, 0.3f, 1.0f, 1.0f), drawStyle);
+	addPathVertices(view, barrierMesh, z, Vec4f(0.0f, 0.3f, 1.0f, 1.0f), drawStyle);
 }
 
 void Bridge::onReset(AStarNavigator* nav)

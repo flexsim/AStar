@@ -5,12 +5,6 @@
 
 namespace AStar {
 Barrier::Barrier()
-	: meshOffset(0)
-	, nrVerts(0)
-	, activePointIndex(0)
-	, mode(0)
-	, lastMode(0)
-	//, nodeWidth(1.0)
 {
 	return;
 }
@@ -23,12 +17,6 @@ Barrier::~Barrier()
 void Barrier::bindVariables(void)
 {
 	__super::bindVariables();
-	
-	//bindNumber(meshOffset);
-	//bindNumber(nrVerts);
-	//bindNumber(isActive);
-	//bindNumber(activePointIndex);
-	//bindNumber(mode);
 
 	bindVariableByName("navigator", navigatorCoupling, ODT_BIND_STATE_VARIABLE);
 
@@ -44,7 +32,7 @@ void Barrier::bindVariables(void)
 void Barrier::bind(void)
 {
 	__super::bind();
-	bindCallback(onMouseMove, Barrier);
+	bindCallback(dragPressedPick, Barrier);
 	bindCallback(addPoint, Barrier);
 	bindCallback(removePoint, Barrier);
 	bindCallback(swapPoints, Barrier);
@@ -53,11 +41,14 @@ void Barrier::bind(void)
 	bindCallback(getType, Barrier);
 	bindCallback(getEditMode, Barrier);
 	bindCallback(setEditMode, Barrier);
+	bindCallback(abortCreationMode, Barrier);
 	bindCallback(setActiveIndex, Barrier);
 	bindCallback(splitPatternRow, Barrier);
 	bindCallback(splitPatternCol, Barrier);
 	bindCallback(mergePatternRows, Barrier);
 	bindCallback(mergePatternCols, Barrier);
+	bindCallback(updateSpatialsToEncompassPoints, Barrier);
+	bindCallback(assertNavigator, Barrier);
 
 	//int bindMode = getBindMode();
 	//if (bindMode == SDT_BIND_ON_LOAD || bindMode == SDT_BIND_ON_CREATE) {
@@ -173,43 +164,39 @@ void Barrier::addBarriersToTable(Grid* grid)
 	}
 }
 
-void Barrier::addMeshVertex(Mesh* mesh, float* pos, float* color, unsigned int* incNumVerts)
+void Barrier::addMeshVertex(Mesh* mesh, float* pos, float* color)
 {
 	int newVertex = mesh->addVertex();
 	mesh->setVertexAttrib(newVertex, MESH_POSITION, pos);
 	mesh->setVertexAttrib(newVertex, MESH_DIFFUSE4, color);
-	if (incNumVerts)
-		(*incNumVerts)++;
 }
 
-void Barrier::addMeshVertex(Mesh * mesh, Vec3f & pos, Vec2f & tex, Vec4f & color, unsigned int * incNumVerts)
+void Barrier::addMeshVertex(Mesh * mesh, Vec3f & pos, Vec2f & tex, Vec4f & color)
 {
 	int newVertex = mesh->addVertex();
 	mesh->setVertexAttrib(newVertex, MESH_POSITION, pos);
 	mesh->setVertexAttrib(newVertex, MESH_TEX_COORD2, tex);
 	mesh->setVertexAttrib(newVertex, MESH_DIFFUSE4, color);
-	if (incNumVerts)
-		(*incNumVerts)++;
 }
 
-void Barrier::addMeshTriangle(Mesh * mesh, float * p1, float * p2, float * p3, float * color, unsigned int* incNumVerts)
+void Barrier::addMeshTriangle(Mesh * mesh, float * p1, float * p2, float * p3, float * color)
 {
-	addMeshVertex(mesh, p1, color, incNumVerts);
-	addMeshVertex(mesh, p2, color, incNumVerts);
-	addMeshVertex(mesh, p3, color, incNumVerts);
+	addMeshVertex(mesh, p1, color);
+	addMeshVertex(mesh, p2, color);
+	addMeshVertex(mesh, p3, color);
 }
 
-void Barrier::addMeshTriangle(Mesh * mesh, Vec3f & p1, Vec2f & tex1, Vec3f & p2, Vec2f & tex2, Vec3f & p3, Vec2f & tex3, Vec4f & color, unsigned int * incNumVerts)
+void Barrier::addMeshTriangle(Mesh * mesh, Vec3f & p1, Vec2f & tex1, Vec3f & p2, Vec2f & tex2, Vec3f & p3, Vec2f & tex3, Vec4f & color)
 {
-	addMeshVertex(mesh, p1, tex1, color, incNumVerts);
-	addMeshVertex(mesh, p2, tex2, color, incNumVerts);
-	addMeshVertex(mesh, p3, tex3, color, incNumVerts);
+	addMeshVertex(mesh, p1, tex1, color);
+	addMeshVertex(mesh, p2, tex2, color);
+	addMeshVertex(mesh, p3, tex3, color);
 }
 
-void Barrier::addMeshLine(Mesh * mesh, Vec3f & p1, Vec3f & p2, Vec4f & color, unsigned int * incNumVerts)
+void Barrier::addMeshLine(Mesh * mesh, Vec3f & p1, Vec3f & p2, Vec4f & color)
 {
-	addMeshVertex(mesh, p1, color, incNumVerts);
-	addMeshVertex(mesh, p2, color, incNumVerts);
+	addMeshVertex(mesh, p1, color);
+	addMeshVertex(mesh, p2, color);
 }
 
 void Barrier::drawManipulationHandles(treenode view)
@@ -247,7 +234,7 @@ void Barrier::drawManipulationHandles(treenode view)
 	setpickingdrawfocus(view, holder, 0);
 	mesh.draw(GL_TRIANGLES);
 
-	int hoverType = getpickingdrawfocus(view, PICK_TYPE, PICK_HOVERED);
+	int hoverType = (int)getpickingdrawfocus(view, PICK_TYPE, PICK_HOVERED);
 	treenode hoverSecondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_HOVERED));
 
 	mesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
@@ -364,8 +351,8 @@ void Barrier::drawManipulationHandles(treenode view)
 		}
 	};
 
-	int scissorTexture = get(navigator->node_b_imageindexobject->find("split"));
-	int stitchesTexture = get(navigator->node_b_imageindexobject->find("merge"));
+	int scissorTexture = (int)get(navigator->node_b_imageindexobject->find("split"));
+	int stitchesTexture = (int)get(navigator->node_b_imageindexobject->find("merge"));
 
 	if (pickingMode)
 		glLineWidth(5.0); // make it so the pattern divider lines are easier to grab
@@ -521,8 +508,6 @@ void Barrier::drawManipulationHandles(treenode view)
 
 void Barrier::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle)
 {
-	meshOffset = 0;
-	nrVerts = 0;
 
 	Vec3 myMin, myMax;
 	if (!getBoundingBox(myMin, myMax, true))
@@ -530,8 +515,6 @@ void Barrier::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle d
 
 	double width = myMax.x - myMin.x;
 	double height = myMax.y - myMin.y;
-
-	meshOffset = barrierMesh->numVerts;
 
 	if (drawStyle == Highlighted) {
 		z += 0.001 / getmodelunit(LENGTH_MULTIPLE);
@@ -548,8 +531,8 @@ void Barrier::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle d
 
 	if (drawStyle == Basic) {
 		Vec4f black(0.4f, 0.4f, 0.4f, 1.0f);
-		addMeshTriangle(barrierMesh, bottomRight, topLeft, bottomLeft, black, &nrVerts);
-		addMeshTriangle(barrierMesh, bottomRight, topRight, topLeft, black, &nrVerts);
+		addMeshTriangle(barrierMesh, bottomRight, topLeft, bottomLeft, black);
+		addMeshTriangle(barrierMesh, bottomRight, topRight, topLeft, black);
 	} else {
 		Vec4f red(1.0f, 0.0f, 0.0f, 1.0f);
 		Vec4f yellow(1.0f, 1.0f, 0.0f, drawStyle == Hovered ? 0.5f : 1.0f);
@@ -695,9 +678,9 @@ double Barrier::onClick(treenode view, int clickCode)
 	return onClick(view, clickCode, pos);
 }
 
-double Barrier::onMouseMove(treenode view, Vec3& pos, Vec3& diff)
+double Barrier::dragPressedPick(treenode view, Vec3& pos, Vec3& diff)
 {
-	int pickType = getpickingdrawfocus(view, PICK_TYPE, PICK_PRESSED);
+	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, PICK_PRESSED);
 	treenode pointNode = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED));
 	bool isPointEdit = pointNode != nullptr 
 		&& (pickType == PICK_POINT || pickType == PICK_ARROW_LEFT || pickType == PICK_ARROW_RIGHT 
@@ -738,23 +721,25 @@ double Barrier::onMouseMove(treenode view, Vec3& pos, Vec3& diff)
 		}
 		return 0;
 	}
+	return 0;
 }
 
 double Barrier::onDrag(treenode view)
 {
-	double dx = draginfo(DRAG_INFO_DX);
-	double dy = draginfo(DRAG_INFO_DY);
-	double dz = draginfo(DRAG_INFO_DZ);
-	double returnVal = onMouseMove(view, Vec3(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), 0), Vec3(dx, dy, dz));
-	int pickType = getpickingdrawfocus(view, PICK_TYPE, PICK_PRESSED);
+	Vec3 diff(draginfo(DRAG_INFO_DX), draginfo(DRAG_INFO_DY), draginfo(DRAG_INFO_DZ));
+	Vec3 pos(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), cursorinfo(view, 2, 3, 1));
+	double returnVal = dragPressedPick(view, pos, diff);
+	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, PICK_PRESSED);
 	if (pickType != 0) {
 		switch (pickType) {
 		case PICK_PATTERN_SIZER_X: {
-			dragPatternCellSizer(tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED))->objectAs(PatternCell), dx, true);
+			dragPatternCellSizer(tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED))->objectAs(PatternCell), diff.x, true);
+			returnVal = 1;
 			break;
 		}
 		case PICK_PATTERN_SIZER_Y: {
-			dragPatternCellSizer(tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED))->objectAs(PatternCell), -dy, false);
+			dragPatternCellSizer(tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED))->objectAs(PatternCell), -diff.y, false);
+			returnVal = 1;
 			break;
 		}
 		}
@@ -784,30 +769,27 @@ double Barrier::onDraw(treenode view)
 
 	glPolygonOffset(offset - 0.025, -5);
 
-	if (isMeshDirty) {
+	if (isMeshDirty || mode != 0) {
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4);
 		addVertices(view, &mesh, 0.0f, Basic);
 		isMeshDirty = false;
 	}
 
-	setpickingdrawfocus(view, holder, 0, 0, OVERRIDE_DRAW_ALL);
 	fglDisable(GL_TEXTURE_2D);
 	fglDisable(GL_LIGHTING);
 
 	fglRotate(-90.0f, 1.0f, 0.0f, 0.0f);
 	fglScale(1.0 / b_spatialsx, 1.0 / b_spatialsy, 1.0 / b_spatialsz);
-	if (holder->up == navigator->holder) {
-		fglTranslate(-navigator->b_spatialx, -navigator->b_spatialy, -navigator->b_spatialz);
-	}
 
 	int pickingMode = getpickingmode(view);
 	if (pickingMode) {
 		drawPickObjects(view);
+		setpickingdrawfocus(view, holder, 0, 0, 0);
 	}
 
 	treenode selObj = selectedobject(view);
 	treenode hoverObj = tonode(getpickingdrawfocus(view, PICK_OBJECT, PICK_HOVERED));
-	if (selObj == holder || hoverObj == holder || switch_selected(holder, -1)) {
+	if ((selObj == holder || hoverObj == holder || switch_selected(holder, -1)) && !pickingMode) {
 		glLineWidth(5.0f);
 		Mesh temp;
 		if (selObj == holder || hoverObj == holder) {
@@ -823,11 +805,12 @@ double Barrier::onDraw(treenode view)
 		}
 		glLineWidth(1.0f);
 
-		if (selObj == holder) {
-			drawManipulationHandles(view);
-		}
 	}
-	
+	if (selObj == holder) {
+		drawManipulationHandles(view);
+	}
+
+	setpickingdrawfocus(view, holder, 0, 0, OVERRIDE_DRAW_ALL);
 	mesh.draw(GL_TRIANGLES);
 
 	fglEnable(GL_TEXTURE_2D);
@@ -894,8 +877,9 @@ void Barrier::updateSpatialsToEncompassPoints()
 {
 	Vec3 min, max;
 	getLocalBoundingBox(min, max);
-	node_b_spatialsx->value = max.x - min.x;
-	node_b_spatialsy->value = max.y - min.y;
+	double oneMillimeter = 0.001 / getmodelunit(LENGTH_MULTIPLE);
+	node_b_spatialsx->value = maxof(oneMillimeter, max.x - min.x);
+	node_b_spatialsy->value = maxof(oneMillimeter, max.y - min.y);
 	if (min.x == 0.0 && max.y == 0.0)
 		return;
 	node_b_spatialx->value += min.x;
@@ -907,9 +891,12 @@ void Barrier::updateSpatialsToEncompassPoints()
 	}
 }
 
-void Barrier::addPoint(const Vec3& pos)
+Point* Barrier::addPoint(const Vec3& modelPos)
 {
-	pointList.add(new Point(pos.x, pos.y, pos.z));
+	Vec3 pos = modelPos.project(model(), holder);
+	Point* point = new Point(pos.x, pos.y, pos.z);
+	pointList.add(point);
+	return point;
 }
 
 void Barrier::removePoint(int pointIndex)
@@ -936,8 +923,7 @@ Vec3 Barrier::getPointCoords(int pointIndex)
 	if (pointIndex >= pointList.size())
 		throw "Invalid Barrier point index";
 
-	Point* point = pointList[pointIndex];
-	return Vec3(point->x, point->y, point->z);
+	return *pointList[pointIndex];
 }
 
 ASTAR_FUNCTION Variant Barrier::getPointCoord(FLEXSIMINTERFACE)
@@ -979,134 +965,105 @@ bool Barrier::setPointCoords(int pointIndex, const Vec3& point)
 	return true;
 }
 
-void Barrier::addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color, DrawStyle drawStyle)
+void Barrier::addPathVertices(treenode view, Mesh* barrierMesh, float z, const Vec4f& color, DrawStyle drawStyle)
 {
-	float theColor[4] = { min(1.0f, color.r + 0.2f), min(1.0f, color.g + 0.2f), min(1.0f, color.b + 0.2f), color.a };
-	float lightGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
+	Vec4f theColor( min(1.0f, color.r + 0.2f), min(1.0f, color.g + 0.2f), min(1.0f, color.b + 0.2f), color.a );
+	Vec4f lightGray( 0.4f, 0.4f, 0.4f, 1.0f );
+	Vec4f highlightColor(1.0f, 1.0f, 0.0f, 1.0f);
 	if (drawStyle == Highlighted) {
-		theColor[0] = color.r;
-		theColor[1] = color.g;
-		theColor[2] = color.b;
-		lightGray[0] = 0.6f;
-		lightGray[1] = 0.6f;
-		lightGray[2] = 0.6f;
 		z += 0.001 / getmodelunit(LENGTH_MULTIPLE);
-	}
-	else if (drawStyle == Hovered) {
-		theColor[0] = min(1.0f, color.r + 0.1f);
-		theColor[1] = min(1.0f, color.g + 0.1f);
-		theColor[2] = min(1.0f, color.b + 0.1f);
-		lightGray[0] = 0.7f;
-		lightGray[1] = 0.7f;
-		lightGray[2] = 0.7f;
+	} else if (drawStyle == Hovered) {
+		highlightColor.a = 0.5f;
 		z += 0.002 / getmodelunit(LENGTH_MULTIPLE);
 	}
-	nrVerts = 0;
-	meshOffset = barrierMesh->numVerts;
+	else if (drawStyle == Selected) {
+		highlightColor.g = 0.0f;
+	}
 
 	// Add circles at each node
 	float radius = nodeWidth * 0.15;
 	for (int i = 0; i < pointList.size(); i++) {
-		pointList[i]->addVertices(barrierMesh, radius, lightGray, z, &nrVerts);
+		Point* point = pointList[i];
+		bool shouldDraw = drawStyle == Basic;
+		if (!shouldDraw) {
+			int pickType = getpickingdrawfocus(view, PICK_TYPE, PICK_HOVERED);
+			if (pickType == PICK_POINT) {
+				treenode hovered = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_HOVERED));
+				if (point->holder == hovered)
+					shouldDraw = true;
+			}
+		}
+		if (shouldDraw)
+			point->addVertices(barrierMesh, radius, drawStyle == Basic ? lightGray : highlightColor, z, drawStyle != Basic);
 	}
 
 	// Draw a series of triangles
 	float maxTriangleWidth = nodeWidth;
-	float distToRect = 0;// 0.4 * nodeWidth;
-	float distToCorner = sqrt(distToRect * distToRect + radius * radius);
+	float distToCorner = radius;
 	float height = 2 * radius;
 	bool isBridge = toBridge() ? true : false;
-	float dTheta = atan2(radius, distToRect);
+	float dTheta = atan2(radius, 0);
 
 	for (int i = 0; i < pointList.size() - 1; i++) {
 		Point* point = pointList[i];
 		Point* next = pointList[i + 1];
-		float pointZ = isBridge ? point->z + z : z;
-		float nextZ = isBridge ? next->z + z : z;
 
-		float dx = next->x - point->x;
-		float dy = next->y - point->y;
-		float dz = pointZ - nextZ;
-		float theta = atan2(dy, dx);
+		Vec3f fromPoint(*point);
+		Vec3f toPoint(*next);
+		Vec3f diff = toPoint - fromPoint;
+		float angle = radianstodegrees(atan2(diff.y, diff.x));
 
-		float length = sqrt(dx * dx + dy * dy) - 2 * distToRect;
-		if (length <= 0)
+		float lengthXY = sqrt(diff.x * diff.x + diff.y * diff.y);
+		if (lengthXY <= 2 * radius)
 			continue;
 
-		float sinTheta = sin(theta);
-		float cosTheta = cos(theta);
+		double radiusRatio = radius / lengthXY;
+		fromPoint.x += diff.x * radiusRatio;
+		fromPoint.y += diff.y * radiusRatio;
+		toPoint.x -= diff.x * radiusRatio;
+		toPoint.y -= diff.y * radiusRatio;
+		diff = toPoint - fromPoint;
+		lengthXY -= 2 * radius;
+
 		// Find how many will fit, and stretch them to fit.
-		int numTriangles = (int)(length / maxTriangleWidth);
+		int numTriangles = (int)(lengthXY / maxTriangleWidth);
 		if (numTriangles < 1) {
 			numTriangles = 1;
 		}
-		float triangleWidth = length / numTriangles;
-		float tw = triangleWidth;
+		float triangleWidth = lengthXY / numTriangles;
+		Vec3f diffPerTriangle = diff / (float)numTriangles;
+		
+		Vec3f triangleTip(triangleWidth, 0.0f, diffPerTriangle.z);
+		triangleTip.rotateXY(angle);
+		triangleTip += fromPoint;
 
-		// Use the bottomleft corner of the rectangle to get every other corner
-		float bottomLeft[3] = { distToCorner * cos(theta - dTheta) + (float)point->x,
-			distToCorner * sin(theta - dTheta) + (float)point->y, pointZ };
+		Vec3f triangleTop(0.0f, 0.5f * height, 0.0f);
+		triangleTop.rotateXY(angle);
+		triangleTop += fromPoint;
 
-		float topLeft[3] = { bottomLeft[0] - height * sinTheta,
-			bottomLeft[1] + height * cosTheta, pointZ };
-
-		float pos0[3] = { 0.0f, 0.0f, pointZ };
-		float pos1[3] = { 0.0f, 0.0f, pointZ };
-		float pos2[3] = { 0.0f, 0.0f, pointZ };
+		Vec3f triangleBottom(0.0f, -0.5f * height, 0.0f);
+		triangleBottom.rotateXY(angle);
+		triangleBottom += fromPoint;
 
 		for (int j = 0; j < numTriangles; j++) {
-
-#define ROTATE_POINT(rx, ry, x, y) \
-	rx = x * cosTheta - y * sinTheta;\
-	ry = x * sinTheta + y * cosTheta;
-
-#define ABV(pos, color)  {\
-	int vertName = barrierMesh->addVertex();\
-	nrVerts++;\
-	barrierMesh->setVertexAttrib(vertName, MESH_DIFFUSE4, color);\
-	barrierMesh->setVertexAttrib(vertName, MESH_POSITION, pos);\
+			if (drawStyle == Basic) {
+				addMeshVertex(barrierMesh, triangleTip, theColor);
+				addMeshVertex(barrierMesh, triangleTop, lightGray);
+				addMeshVertex(barrierMesh, triangleBottom, lightGray);
+			} else {
+				addMeshVertex(barrierMesh, triangleTip, highlightColor);
+				addMeshVertex(barrierMesh, triangleTop, highlightColor);
+				addMeshVertex(barrierMesh, triangleTop, highlightColor);
+				addMeshVertex(barrierMesh, triangleBottom, highlightColor);
+				addMeshVertex(barrierMesh, triangleBottom, highlightColor);
+				addMeshVertex(barrierMesh, triangleTip, highlightColor);
 			}
 
-#define ABT(pos1, pos2, pos3, dark, color) ABV(pos1, color) ABV(pos2, dark) ABV(pos3, dark)
-
-
-			float triangleTipX = (j + 1) * tw;
-			float triangleTipY = height / 2.0;
-			float triangleTopX = j * tw;
-			float triangleTopY = height;
-			float triangleBottomX = triangleTopX;
-			float triangleBottomY = 0;
-
-			float rtX, rtY;
-
-			ROTATE_POINT(rtX, rtY, triangleTipX, triangleTipY);
-			triangleTipX = rtX + bottomLeft[0];
-			triangleTipY = rtY + bottomLeft[1];
-
-			ROTATE_POINT(rtX, rtY, triangleTopX, triangleTopY);
-			triangleTopX = rtX + bottomLeft[0];
-			triangleTopY = rtY + bottomLeft[1];
-
-			ROTATE_POINT(rtX, rtY, triangleBottomX, triangleBottomY);
-			triangleBottomX = rtX + bottomLeft[0];
-			triangleBottomY = rtY + bottomLeft[1];
-
-			pos0[0] = triangleTipX;
-			pos0[1] = triangleTipY;
-			pos0[2] = pointZ + dz * (j + 1) / numTriangles;
-			pos1[0] = triangleTopX;
-			pos1[1] = triangleTopY;
-			pos1[2] = pointZ + dz * j / numTriangles;
-			pos2[0] = triangleBottomX;
-			pos2[1] = triangleBottomY;
-			pos2[2] = pointZ + dz * j / numTriangles;
-
-			ABT(pos0, pos1, pos2, lightGray, theColor);
+			triangleTip += diffPerTriangle;
+			triangleTop += diffPerTriangle;
+			triangleBottom += diffPerTriangle;
 		}
 	}
-#undef ABT
-#undef ABV
-#undef ROTATE_POINT
 }
 
 void Barrier::onReset(AStarNavigator * nav)
@@ -1119,6 +1076,18 @@ void Barrier::onReset(AStarNavigator * nav)
 		assertValidPatternTable();
 	}
 	conditionalBarrierChanges = TemporaryBarrier(nav);
+}
+
+void Barrier::abortCreationMode()
+{
+	mode = 0;
+	if (pointList.size() <= 2)
+		destroyobject(holder);
+	else {
+		Point* lastPoint = pointList.back();
+		destroyobject(lastPoint->holder);
+		isMeshDirty = true;
+	}
 }
 
 

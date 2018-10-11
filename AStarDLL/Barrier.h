@@ -28,8 +28,6 @@ public:
 	TreeNode * points;
 	NodeListArray<Point>::SdtSubNodeBindingType pointList;
 	TreeNode* patternTable;
-	unsigned int meshOffset;
-	unsigned int nrVerts;
 	bool isMeshDirty = true;
 
 	static const int POINT_EDIT = 0x1;
@@ -37,11 +35,9 @@ public:
 	static const int DYNAMIC_CREATE = 0x3;
 	static const int MOVE = 0x4;
 	/// <summary>	The current editing mode. If non-zero, one of POINT_EDIT, CREATE, DYNAMIC_CREATE, and MOVE. </summary>
-	unsigned int mode;
-
-	unsigned int lastMode;
+	unsigned int mode = 0;
 	/// <summary>	The index of the point that is being edited by the user. </summary>
-	unsigned int activePointIndex;
+	unsigned int activePointIndex = 0;
 
 	static const int PICK_ARROW_LEFT = 1;
 	static const int PICK_ARROW_RIGHT = 2;
@@ -77,16 +73,28 @@ public:
 	virtual void bindEvents() override;
 
 	void assertNavigator();
+	ASTAR_FUNCTION Variant assertNavigator(FLEXSIMINTERFACE) { assertNavigator(); return Variant(); }
 
 	// This function adds two initial points to a barrier
 	virtual void init(double nodeWidth, const Vec3& pos1, const Vec3& pos2);
 
 protected:
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>	Gets the object's bounding box in local coordinates. </summary>
+	///
+	/// <remarks>	Anthony Johnson, 10/10/2018. </remarks>
+	///
+	/// <param name="min">	[in,out] The minimum. </param>
+	/// <param name="max">	[in,out] The maximum. </param>
+	///
+	/// <returns>	True if it succeeds, false if it fails. </returns>
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	virtual bool getLocalBoundingBox(Vec3& min, Vec3& max);
 public:
 	// This function is used by the AStarNavigator to determine the size of the grid.
 	// It should return the bottom left [x0, y0, z0] and top right [x1, y1, z1] corners
-	// of the barrier's 3D bounding box.
+	// of the barrier's 3D bounding box, in model coordinates.
 	bool getBoundingBox(Vec3& min, Vec3& max, bool inLocalCoords = false);
 
 	// This function is called by the AStarNavigator to determine the effect a barrier
@@ -97,12 +105,19 @@ public:
 	// This is used by preferred paths to add preferred weights on the nodes in the node table.
 	virtual void addPassagesToTable(Grid* grid) {}
 
-	static void addMeshVertex(Mesh* mesh, float* pos, float* color, unsigned int* incNumVerts = nullptr);
-	static void addMeshVertex(Mesh* mesh, Vec3f& pos, Vec2f& tex, Vec4f& color, unsigned int* incNumVerts = nullptr);
-	static void addMeshTriangle(Mesh* mesh, float* p1, float* p2, float* p3, float* color, unsigned int* incNumVerts = nullptr);
-	static void addMeshTriangle(Mesh* mesh, Vec3f& p1, Vec2f& tex1, Vec3f& p2, Vec2f& tex2, Vec3f& p3, Vec2f& tex3, Vec4f& color, unsigned int* incNumVerts = nullptr);
-	static void addMeshLine(Mesh* mesh, Vec3f& p1, Vec3f& p2, Vec4f& color, unsigned int* incNumVerts = nullptr);
+	static void addMeshVertex(Mesh* mesh, float* pos, float* color);
+	static void addMeshVertex(Mesh* mesh, Vec3f& pos, Vec2f& tex, Vec4f& color);
+	static void addMeshTriangle(Mesh* mesh, float* p1, float* p2, float* p3, float* color);
+	static void addMeshTriangle(Mesh* mesh, Vec3f& p1, Vec2f& tex1, Vec3f& p2, Vec2f& tex2, Vec3f& p3, Vec2f& tex3, Vec4f& color);
+	static void addMeshLine(Mesh* mesh, Vec3f& p1, Vec3f& p2, Vec4f& color);
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>	Draw manipulation handles. Called when the object is the view's selected object. </summary>
+	///
+	/// <remarks>	Anthony Johnson, 9/25/2018. </remarks>
+	///
+	/// <param name="view">	The view. </param>
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	virtual void drawManipulationHandles(treenode view);
 
 	enum DrawStyle {
@@ -116,13 +131,23 @@ public:
 	// It should also store the offset into the mesh as well as the number of vertices it stores.
 	virtual void addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle);
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>	Draw the picking mode elements. </summary>
+	///
+	/// <remarks>	This is only called when picking mode is on, and it draws each of the 
+	/// 			different pickable elements of the object separately. The divider overrides 
+	/// 			this to draw each point.</remarks>
+	///
+	/// <param name="view">	The view. </param>
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	virtual void drawPickObjects(treenode view) {}
 
 	// These functions handle mouse events. [x, y] are model coords
 	virtual double onClick(treenode view, int clickCode, Vec3& pos);
 	virtual double onClick(treenode view, int clickCode) override;
-	virtual double onMouseMove(treenode view, Vec3& pos, Vec3& diff);
-	ASTAR_FUNCTION Variant onMouseMove(FLEXSIMINTERFACE) { return onMouseMove(param(1), Vec3(param(2), param(3), param(4)), Vec3(param(5), param(6), param(7))); }
+	virtual double dragPressedPick(treenode view, Vec3& pos, Vec3& diff);
+	ASTAR_FUNCTION Variant dragPressedPick(FLEXSIMINTERFACE) { return dragPressedPick(param(1), Vec3(param(2), param(3), param(4)), Vec3(param(5), param(6), param(7))); }
 	virtual double onDrag(treenode view) override;
 	double onPreDraw(treenode view);
 	double onDraw(treenode view);
@@ -133,11 +158,12 @@ public:
 	double onCreate(double dropx, double dropy, double dropz, int iscopy) override;
 
 	void updateSpatialsToEncompassPoints();
+	ASTAR_FUNCTION Variant updateSpatialsToEncompassPoints(FLEXSIMINTERFACE) { updateSpatialsToEncompassPoints(); return Variant(); }
 
 	// These functions are for modifying barrier points. They each 
 	// check bounds before making any modifications.
-	void addPoint(const Vec3& pos);
-	ASTAR_FUNCTION Variant addPoint(FLEXSIMINTERFACE) { addPoint(Vec3(param(1), param(2), param(3))); return Variant(); }
+	Point* addPoint(const Vec3& pos);
+	ASTAR_FUNCTION Variant addPoint(FLEXSIMINTERFACE) { return addPoint(Vec3(param(1), param(2), param(3)))->holder; }
 	void removePoint(int pointIndex);
 	ASTAR_FUNCTION Variant removePoint(FLEXSIMINTERFACE) { removePoint((int)param(1));  return Variant(); }
 	void swapPoints(int index1, int index2);
@@ -157,7 +183,7 @@ public:
 	virtual MandatoryPath* toMandatoryPath() { return nullptr; }
 	bool isBasicBarrier() { return toDivider() == nullptr && toPreferredPath() == nullptr && toBridge() == nullptr && toMandatoryPath() == nullptr; }
 
-	void addPathVertices(Mesh* barrierMesh, float z, const Vec4f& color, DrawStyle drawStyle);
+	void addPathVertices(treenode view, Mesh* barrierMesh, float z, const Vec4f& color, DrawStyle drawStyle);
 	virtual void onReset(AStarNavigator* nav);
 
 	std::string getType() { return node_b_classes->subnodes[1]->name.c_str(); }
@@ -166,6 +192,8 @@ public:
 	Variant getEditMode(FLEXSIMINTERFACE) { return mode; }
 	void setEditMode(int toMode) { mode = toMode; }
 	ASTAR_FUNCTION Variant setEditMode(FLEXSIMINTERFACE) { setEditMode((int)param(1)); return Variant(); }
+	void abortCreationMode();
+	ASTAR_FUNCTION Variant abortCreationMode(FLEXSIMINTERFACE) { abortCreationMode(); return Variant(); }
 
 	void setActiveIndex(int toIndex) { activePointIndex = toIndex; }
 	ASTAR_FUNCTION Variant setActiveIndex(FLEXSIMINTERFACE) { setActiveIndex((int)param(1)); return Variant(); }

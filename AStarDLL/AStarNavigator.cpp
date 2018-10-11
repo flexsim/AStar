@@ -26,7 +26,6 @@ int AStarNode::colInc[]
 	0 // down
 };
 
-EditMode AStarNavigator::editMode = EditMode::NONE;
 std::vector<Vec4f> AStarNavigator::heatMapColorProgression =
 {
 	Vec4f(0.110f, 0.280f, 0.467f, 1.0f),
@@ -47,7 +46,7 @@ AStarNavigator::~AStarNavigator()
 
 void AStarNavigator::bindVariables(void)
 {
-	Navigator::bindVariables();
+	__super::bindVariables();
 	bindVariable(defaultPathWeight);
 	bindVariable(drawMode);
 	bindVariable(showAllocations);
@@ -1799,7 +1798,7 @@ void AStarNavigator::resolveMinNodeWidth()
 
 TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode barrierType) 
 {
-	EditMode editMode = barrierType != EditMode::NONE ? barrierType : AStarNavigator::editMode;
+	EditMode editMode = barrierType;
 	Barrier* newBarrier = nullptr;
 	Grid* newGrid = nullptr;
 	switch (editMode) {
@@ -1916,20 +1915,6 @@ ASTAR_FUNCTION Variant AStarNavigator_addObjectBarrierToTable(FLEXSIMINTERFACE)
 	return 0;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_setEditMode(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	int mode = (int)param(1);
-	if (mode < 0)
-		mode = 0;
-	AStarNavigator::editMode = (EditMode)mode;
-
-	return 0;
-}
-
 ASTAR_FUNCTION Variant AStarNavigator_addObject(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
@@ -1971,21 +1956,6 @@ ASTAR_FUNCTION Variant AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
 		return 0;
 
 	a->barrierList.swap(index1, index2);
-	return 1;
-}
-
-ASTAR_FUNCTION Variant AStarNavigator_onClick(FLEXSIMINTERFACE)
-{
-	TreeNode* navNode = c;
-	if (!isclasstype(navNode, "AStar::AStarNavigator"))
-		return 0;
-
-	AStarNavigator* a = navNode->objectAs(AStarNavigator);
-	
-	if (objectexists(a->activeGrid)) {
-		Grid* g = a->activeGrid->objectAs(Grid);
-		g->onClick(param(1), (int)param(2), Vec3(param(3), param(4), param(5)));
-	}
 	return 1;
 }
 
