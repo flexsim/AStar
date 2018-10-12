@@ -10,15 +10,11 @@ Divider::Divider()
 	return;
 }
 
-const char * Divider::getClassFactory(void)
-{
-	return "AStar::Divider";
-}
 
-
-void Divider::bind(void)
+void Divider::bindVariables(void)
 {
-	Barrier::bind();
+	__super::bindVariables();
+	bindVariable(isTwoWay);
 }
 
 void Divider::init(double nodeWidth, const Vec3& pos1, const Vec3& pos2)
@@ -26,7 +22,7 @@ void Divider::init(double nodeWidth, const Vec3& pos1, const Vec3& pos2)
 	Barrier::init(nodeWidth, pos1, pos2);
 }
 
-bool Divider::getBoundingBox(Vec3& min, Vec3& max)
+bool Divider::getLocalBoundingBox(Vec3& min, Vec3& max)
 {
 	if (pointList.size() < 2)
 		return false;
@@ -34,7 +30,7 @@ bool Divider::getBoundingBox(Vec3& min, Vec3& max)
 	min = Vec3(DBL_MAX, DBL_MAX, DBL_MAX);
 	max = Vec3(-DBL_MAX, -DBL_MAX, -DBL_MAX);
 	for (int i = 0; i < pointList.size(); i++) {
-		Vec3 point = getPointCoords(i);
+		Vec3 point = getLocalPointCoords(i);
 
 		min.x = min(min.x, point.x);
 		max.x = max(max.x, point.x);
@@ -46,6 +42,7 @@ bool Divider::getBoundingBox(Vec3& min, Vec3& max)
 
 	return true;
 }
+
 void Divider::addBarriersToTable(Grid* grid)
 {
 	Point* point = pointList[0];
@@ -56,9 +53,9 @@ void Divider::addBarriersToTable(Grid* grid)
 		nextPoint = pointList[i + 1];
 		
 		grid->divideGridModelLine(
-			Vec3(point->x, point->y, point->z),
-			Vec3(nextPoint->x, nextPoint->y, nextPoint->z),
-			false, this
+			point->project(holder, model()),
+			nextPoint->project(holder, model()),
+			!isTwoWay, this
 		);
 	}
 }
@@ -72,78 +69,145 @@ void Divider::drawManipulationHandles(treenode view, float zOffset)
 
 	for (int i = 0; i < pointList.size(); i++) {
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4);
-		pointList[i]->addVertices(&mesh, radius, black, zOffset);
-		setpickingdrawfocus(view, holder, PICK_DIVIDER_POINT, pointList[i]->holder);
+		pointList[i]->addVertices(&mesh, radius, black, false, zOffset);
+		setpickingdrawfocus(view, holder, PICK_POINT, pointList[i]->holder);
 		mesh.draw(GL_TRIANGLES);
 	}
 }
 
 void Divider::drawManipulationHandles(treenode view)
 {
-	drawManipulationHandles(view, 0.001 / getmodelunit(LENGTH_MULTIPLE));
+	drawManipulationHandles(view, 0.005 / getmodelunit(LENGTH_MULTIPLE));
 }
 
-void Divider::drawHoverHighlights(treenode view)
+void Divider::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle)
 {
-	drawManipulationHandles(view, 0.002 / getmodelunit(LENGTH_MULTIPLE));
-}
-
-void Divider::addVertices(Mesh* barrierMesh, float z)
-{
-	float lightGray[4] = { 0.4f, 0.4f, 0.4f, 1.0f };
-	if (isActive) {
-		lightGray[0] = 0.6f;
-		lightGray[1] = 0.6f;
-		lightGray[2] = 0.6f;
-		z += 0.001 / getmodelunit(LENGTH_MULTIPLE);
-	} else if (isHovered) {
-		lightGray[0] = 0.7f;
-		lightGray[1] = 0.7f;
-		lightGray[2] = 0.7f;
-		z += 0.002 / getmodelunit(LENGTH_MULTIPLE);
+	Vec4f baseColor(0.4f, 0.4f, 0.4f, 1.0f);
+	Vec4f black(0.0f, 0.0f, 0.0f, 1.0f);
+	float oneMillimeter = 0.001 / getmodelunit(LENGTH_MULTIPLE);
+	switch (drawStyle) {
+		case Highlighted: 
+		case Hovered:
+			baseColor = Vec4f(1.0f, 1.0f, 0.0f, drawStyle == Highlighted ? 1.0f : 0.5f);
+			z += 3 * oneMillimeter;
+			break;
+		case Selected:
+			baseColor = Vec4f(1.0f, 0.0f, 0.0f, 1.0f);
+			z += 6 * oneMillimeter;
+			break;
+		default: break;
 	}
-	nrVerts = 0;
-	meshOffset = barrierMesh->numVerts;
-
-	// Add circles at each node
 	float radius = nodeWidth * 0.15;
+	if (isTwoWay || drawStyle != Basic) {
 
-	for (int i = 0; i < pointList.size(); i++) {
-		pointList[i]->addVertices(barrierMesh, radius, lightGray, z, &nrVerts);
-	}
+		// Add circles at each node
 
-	// For each pair of points, draw a rectangle in between
-	float distToRect = 0;// 0.4 * nodeWidth;
-	float distToCorner = sqrt(distToRect * distToRect + radius * radius);
-	float dTheta = atan2(radius, distToRect);
-	for (int i = 0; i < pointList.size() - 1; i++) {
-		Point* point = pointList[i];
-		Point* next = pointList[i + 1];
+		for (int i = 0; i < pointList.size(); i++) {
+			Point* point = pointList[i];
+			bool shouldDraw = drawStyle == Basic;
+			if (!shouldDraw) {
+				int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, PICK_HOVERED);
+				if (pickType == PICK_POINT) {
+					treenode hovered = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_HOVERED));
+					if (point->holder == hovered)
+						shouldDraw = true;
+				}
+			}
+			if (shouldDraw)
+				point->addVertices(barrierMesh, radius, drawStyle == Basic ? black : baseColor, z + 3 * oneMillimeter, drawStyle != Basic);
+		}
 
-		float dx = next->x - point->x;
-		float dy = next->y - point->y;
-		float theta = atan2(dy, dx);
-		
-		float length = sqrt(dx * dx + dy * dy) - 2 * distToRect;
-		if (length <= 0)
-			continue;
+		// For each pair of points, draw a rectangle in between
+		float distToCorner = radius;
+		float dTheta = atan2(radius, 0);
+		for (int i = 0; i < pointList.size() - 1; i++) {
+			Point* point = pointList[i];
+			Point* next = pointList[i + 1];
+
+			float dx = next->x - point->x;
+			float dy = next->y - point->y;
+			float angle = radianstodegrees(atan2(dy, dx));
+
+			float lengthXY = sqrt(dx * dx + dy * dy);
+			if (lengthXY <= 0)
+				continue;
+			float height = 2 * radius;
+
+			// Use the bottomleft corner of the rectangle to get every other corner
+			Vec3f bottomLeft = Vec3f(0.0f, -radius, 0.0f).rotateXY(angle) + Vec3f(*point);
+			Vec3f topLeft = Vec3f(0.0f, radius, 0.0f).rotateXY(angle) + Vec3f(*point);
+			Vec3f centerLeft = Vec3f(radius, 0.0f, 0.0f).rotateXY(angle) + Vec3f(*point);
+			Vec3f bottomRight = Vec3f(lengthXY, -radius, next->z - point->z).rotateXY(angle) + Vec3f(*point);
+			Vec3f topRight = Vec3f(lengthXY, radius, next->z - point->z).rotateXY(angle) + Vec3f(*point);
+			Vec3f centerRight = Vec3f(lengthXY - radius, 0.0f, next->z - point->z).rotateXY(angle) + Vec3f(*point);
+
+			if (drawStyle == Basic) {
+				addMeshTriangle(barrierMesh, centerLeft, topRight, topLeft, baseColor);
+				addMeshTriangle(barrierMesh, centerLeft, centerRight, topRight, baseColor);
+				addMeshTriangle(barrierMesh, bottomLeft, bottomRight, centerRight, baseColor);
+				addMeshTriangle(barrierMesh, bottomLeft, centerRight, centerLeft, baseColor);
+			} else {
+				addMeshLine(barrierMesh, topLeft, topRight, baseColor);
+				addMeshLine(barrierMesh, bottomRight, bottomLeft, baseColor);
+			}
+		}
+	} else {
+		// draw one-way barrier
+		Vec4f green( 0.0f, 1.0f, 0.0f, 1.0f );
+		Vec4f lightGray( 0.5f, 0.5f, 0.5f, 1.0f );
+
+		for (int i = 0; i < pointList.size(); i++) {
+			pointList[i]->addVertices(barrierMesh, radius, lightGray, z + 3 * oneMillimeter, false);
+		}
+		// Draw alternating light and dark triangles
+
+		float maxTriangleWidth = 2 * nodeWidth;
+		float distToCorner = radius;
 		float height = 2 * radius;
+		float dTheta = atan2(radius, 0.0f);
+		for (int i = 0; i < pointList.size() - 1; i++) {
+			Point* point = pointList[i];
+			Point* next = pointList[i + 1];
 
-		// Use the bottomleft corner of the rectangle to get every other corner
-		float bottomLeft[3] = {distToCorner * cos(theta - dTheta) + (float)point->x,
-			distToCorner * sin(theta - dTheta) + (float)point->y, point->z + z};
+			Vec3f fromPoint(*point);
+			Vec3f toPoint(*next);
+			Vec3f diff = toPoint - fromPoint;
+			float angle = radianstodegrees(atan2(diff.y, diff.x));
 
-		float topLeft[3] = {bottomLeft[0] - height * sin(theta), 
-			bottomLeft[1] + height * cos(theta), point->z + z};
+			float lengthXY = sqrt(diff.x * diff.x + diff.y * diff.y);
+			if (lengthXY <= 0)
+				continue;
 
-		float bottomRight[3] = {bottomLeft[0] + length * cos(theta),
-			bottomLeft[1] + length * sin(theta), point->z + z};
+			// Find how many will fit, and stretch them to fit.
+			int numLightTriangles = (int)(lengthXY / maxTriangleWidth);
+			if (numLightTriangles < 1) {
+				numLightTriangles = 1;
+			}
+			float lightTriangleWidth = lengthXY / numLightTriangles;
+			Vec3f diffPerTriangle = diff / numLightTriangles;
 
-		float topRight[3] = {bottomRight[0] - height * sin(theta),
-			bottomRight[1] + height * cos(theta), point->z + z};
+			Vec3f topLeft = Vec3f(0.0f, radius, fromPoint.z).rotateXY(angle) + fromPoint;
+			Vec3f bottomLeft = Vec3f(0.0f, -radius, fromPoint.z).rotateXY(angle) + fromPoint;
+			Vec3f topRight = Vec3f(lightTriangleWidth, radius, fromPoint.z).rotateXY(angle) + fromPoint;
+			Vec3f bottomRight = Vec3f(lightTriangleWidth, -radius, fromPoint.z).rotateXY(angle) + fromPoint;
+			Vec3f topCenter = Vec3f(0.5f * lightTriangleWidth, radius, fromPoint.z).rotateXY(angle) + fromPoint;
 
-		addMeshTriangle(barrierMesh, bottomLeft, topRight, topLeft, lightGray, &nrVerts);
-		addMeshTriangle(barrierMesh, bottomLeft, bottomRight, topRight, lightGray, &nrVerts);
+
+			for (int i = 0; i < numLightTriangles; i++) {
+				addMeshTriangle(barrierMesh, topCenter, topLeft, bottomLeft, lightGray);
+				addMeshTriangle(barrierMesh, topCenter, bottomRight, topRight, lightGray);
+				
+				addMeshVertex(barrierMesh, bottomLeft, green);
+				addMeshVertex(barrierMesh, bottomRight, lightGray);
+				addMeshVertex(barrierMesh, topCenter, lightGray);
+
+				topLeft += diffPerTriangle;
+				bottomLeft += diffPerTriangle;
+				topRight += diffPerTriangle;
+				bottomRight += diffPerTriangle;
+				topCenter += diffPerTriangle;
+			}
+		}
 	}
 }
 
@@ -153,9 +217,9 @@ double Divider::onClick(treenode view, int clickCode, Vec3& pos)
 		// If the click is on a node, make that the active node
 		int clickedIndex = -1;
 
-		int pickType = getpickingdrawfocus(view, PICK_TYPE, 0);
-		if (pickType == PICK_DIVIDER_POINT) {
-			treenode point = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, 0));
+		int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, PICK_PRESSED);
+		if (pickType == PICK_POINT) {
+			treenode point = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED));
 			applicationcommand("addundotracking", view, node("x", point));
 			applicationcommand("addundotracking", view, node("y", point));
 			clickedIndex = point->rank - 1;
@@ -176,39 +240,6 @@ double Divider::onClick(treenode view, int clickCode, Vec3& pos)
 		}
 	}
 
-	if (clickCode == LEFT_RELEASE) {
-		// If creating, make a new point, and make it the active one
-		if (mode & Barrier::CREATE) {
-			// Snap between grid points
-			if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge()) {
-				pos.x = floor((pos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-				pos.y = floor((pos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-			}
-
-			if (activePointIndex == 0) {
-				// Add undo record
-				if (pointList.size() > 2 && lastMode & Barrier::CREATE)
-					addCreatePointRecord(view, pointList[activePointIndex]);
-				// Add to the start of the pointlist
-				pointList.unshift(new Point(pos.x, pos.y, pos.z));
-				activePointIndex = 0;
-			}
-			else if (activePointIndex == pointList.size() - 1) {
-				// Add undo record
-				if (pointList.size() > 2 && lastMode & Barrier::CREATE)
-					addCreatePointRecord(view, pointList[activePointIndex]);
-				// Add to the end of the pointlist
-				addPoint(pos);
-				activePointIndex = pointList.size() - 1;
-			}
-			else {
-				mode = 0;
-			}
-		} else {
-			mode = 0;
-		}
-	}
-
 	if (clickCode == RIGHT_RELEASE) {
 		// Right click -> abort barrier creation
 		if (mode & Barrier::CREATE) {
@@ -220,45 +251,44 @@ double Divider::onClick(treenode view, int clickCode, Vec3& pos)
 		}
 	}
 
-	lastMode = mode;
-
 	return 0;
 }
 
-double Divider::onMouseMove(const Vec3& pos, const Vec3& diff)
+double Divider::dragPressedPick(treenode view, Vec3& modelPos, Vec3& diff)
 {
-	if ((mode & Barrier::POINT_EDIT) && activePointIndex < pointList.size()) {
-		Point* activePoint = pointList[(int)activePointIndex];
+	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
+	Vec3 localPos = modelPos.project(model(), holder);
+	treenode pointNode = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED));
+	if (pickType == PICK_POINT && pointNode) {
+		Point* activePoint = pointNode->objectAs(Point);
 		// Snap between grid points
 		if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge() && !toMandatoryPath()) {
-			activePoint->x = floor((pos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-			activePoint->y = floor((pos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-		}
-		else {
+			activePoint->x = floor((localPos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+			activePoint->y = floor((localPos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+		} else {
 			activePoint->x += diff.x;
 			activePoint->y += diff.y;
 		}
 		if (toBridge())
 			activePoint->z += diff.z;
-	} else if (mode & Barrier::MOVE) {
-		double diffX = diff.x;
-		double diffY = diff.y;
+	} else {
+		// Snap between grid points
+		if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge() && !toMandatoryPath()) {
+			diff.x = floor((localPos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth
+				- floor((localPos.x - diff.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+			diff.y = floor((localPos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth
+				- floor((localPos.y - diff.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
+		}
 		for (int i = 0; i < pointList.size(); i++) {
-			// Snap between grid points
-			if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge() && !toMandatoryPath()) {
-				diffX = floor((pos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth
-					- floor((pos.x - diffX + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-				diffY = floor((pos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth
-					- floor((pos.y - diffY + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
-			}
-			pointList[i]->x += diffX;
-			pointList[i]->y += diffY;
-			if (toBridge())
-				pointList[i]->z += diff.z;
+			pointList[i]->x += diff.x;
+			pointList[i]->y += diff.y;
+			pointList[i]->z += diff.z;
 		}
 	}
+	updateSpatialsToEncompassPoints();
+	isMeshDirty = true;
 
-	return 0;
+	return 1;
 }
 
 void Divider::addCreatePointRecord(treenode view, Point* point)
@@ -272,7 +302,7 @@ void Divider::addCreatePointRecord(treenode view, Point* point)
 
 double Divider::onDestroy(TreeNode * view)
 {
-	navigator->setDirty();
+	isMeshDirty = true;
 	if (mode == 0 && pointList.size() > 2
 		&& activePointIndex != pointList.size()) {
 		// Remove a divider point
@@ -283,6 +313,21 @@ double Divider::onDestroy(TreeNode * view)
 		return 1.0;
 	}
 	return 0.0;
+}
+
+void Divider::drawPickObjects(treenode view)
+{
+	Mesh mesh;
+	float radius = 0.15 * nodeWidth;
+	float zOffset = 0.004 / getmodelunit(LENGTH_MULTIPLE);
+	Vec4f color(0.0f, 0.0f, 0.0f, 1.0f);
+	for (int i = 0; i < pointList.length; i++) {
+		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4);
+		Point* point = pointList[i];
+		point->addVertices(&mesh, radius, color, zOffset, false);
+		setpickingdrawfocus(view, holder, PICK_POINT, point->holder);
+		mesh.draw(GL_TRIANGLES);
+	}
 }
 
 }

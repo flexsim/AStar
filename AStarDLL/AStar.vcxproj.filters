@@ -113,9 +113,6 @@
     <ClInclude Include="macros.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="OneWayDivider.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Point.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -155,9 +152,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Divider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OneWayDivider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PreferredPath.cpp">

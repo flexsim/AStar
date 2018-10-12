@@ -872,7 +872,7 @@ void Traveler::updateLocation()
 	double updateTime = time();
 
 	if (bridgeData.bridge && bridgeData.entryTime <= updateTime) {
-		bridgeData.bridge->updateLocations();
+		bridgeData.bridge->updateBridgeLocations();
 	} else {
 		TreeNode* kinematics = te->node_v_kinematics;
 		updatekinematics(kinematics, te->holder, updateTime);

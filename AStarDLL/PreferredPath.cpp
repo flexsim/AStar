@@ -18,17 +18,17 @@ PreferredPath::PreferredPath(double pathWeight)
 	return;
 }
 
-const char * PreferredPath::getClassFactory(void)
+
+void PreferredPath::bindVariables(void)
 {
-	return "AStar::PreferredPath";
+	__super::bindVariables();
+	bindVariable(pathWeight);
 }
 
 
 void PreferredPath::bind(void)
 {
-	Divider::bind();
-	bindDouble(pathWeight, 0);
-	bindDouble(isTwoWay, 1);
+	__super::bind();
 	bindCallback(getWeight, PreferredPath);
 	bindCallback(setWeight, PreferredPath);
 }
@@ -40,8 +40,8 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 		
 		Point* fromPoint = pointList[i];
 		Point* toPoint = pointList[i + 1];
-		Vec3 fromPos(fromPoint->x, fromPoint->y, fromPoint->z);
-		Vec3 toPos(toPoint->x, toPoint->y, toPoint->z);
+		Vec3 fromPos = fromPoint->project(holder, model());
+		Vec3 toPos = toPoint->project(holder, model());
 
 		// calculate the column and row numbers for that point
 		int fromCol = (int)round((fromPos.x - grid->gridOrigin.x) / nodeWidth);
@@ -95,9 +95,9 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 	}
 }
 
-void PreferredPath::addVertices(Mesh* barrierMesh, float z)
+void PreferredPath::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle)
 {
-	addPathVertices(barrierMesh, z, Vec4f(0.0f, 1.0f, 0.0f, 1.0f));
+	addPathVertices(view, barrierMesh, z, Vec4f(0.0f, 1.0f, 0.0f, 1.0f), drawStyle);
 }
 
 

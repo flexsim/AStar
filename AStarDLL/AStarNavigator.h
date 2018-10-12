@@ -16,7 +16,7 @@ enum class EditMode : unsigned int {
 	NONE = 0,
 	PREFERRED_PATH = 35,
 	DIVIDER = 36,
-	ONE_WAY_DIVIDER = 37,
+	UNUSED_ONE_WAY_DIVIDER = 37,
 	SOLID_BARRIER = 38,
 	BRIDGE = 39,
 	MANDATORY_PATH = 40,
@@ -67,27 +67,22 @@ protected:
 	double directionChangePenalty;
 
 	// Drawing variables
-	Mesh barrierMesh;
 	Mesh memberMesh;
 	Mesh mandatoryPathMemberMesh;
 	bool isGridDirty = false;
 	bool isBoundsDirty = true;
-	bool isBarrierDirty = true;
 	bool isBoundsMeshBuilt = false;
-	bool isBarrierMeshBuilt = false;
 	bool isGridMeshBuilt = false;
-	bool isActiveBarrierBuilt = false;
-	bool isHoveredBarrierBuilt = false;
 
 	void updateConditionalBarrierDataOnOpenSetExpanded(const AStarCell& cell, AStarNode* n);
 	inline AStarSearchEntry* expandOpenSet(Grid* grid, int r, int c, float multiplier, float rotOnArrival, char bridgeIndex = -1);
 
 	void buildBoundsMesh(float z);
-	void buildBarrierMesh(float z);
 	void drawMembers(float z);
 	void buildGridMesh(float zOffset);
-
 public:
+	void setDirty() { isGridDirty = isBoundsDirty = true; }
+
 	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold)
 	{
 		getGrid(cell)->checkGetOutOfBarrier(cell, traveler, rowDest, colDest, threshold);
@@ -126,7 +121,7 @@ public:
 	std::unordered_map<unsigned long long, AStarNodeExtraData*> edgeTableExtraData; // A mapping from colRow to an ExtraData object
 
 
-	static EditMode editMode;
+	//static EditMode editMode;
 	static AStarNavigator* globalASN;
 	double defaultPathWeight;
 	double minNodeWidth;
@@ -193,10 +188,10 @@ public:
 		virtual void execute() override { partner()->objectAs(AStarNavigator)->onCollisionIntervalUpdate(); }
 	};
 
+	static void addBarrier(treenode x, Barrier* newBarrier);
 	TreeNode* barriers;
-	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
-	/// <summary>	The barrier that is currently being edited by the user. </summary>
-	NodeRef activeBarrier;
+	NodeListArray<Barrier, addBarrier>::ObjCouplingType barrierList;
+
 	/// <summary>	The grid that is currently being edited by the user. </summary>
 	NodeRef activeGrid;
 	/// <summary>	Defines a set of custom barriers that are filled by objects that are barrier members of the astar navigator.
@@ -265,8 +260,6 @@ public:
 	void blockGridModelPos(const Vec3& modelPos);
 	void divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay = false);
 	void addObjectBarrierToTable(TreeNode* obj);
-
-	void setDirty();
 
 	void resolveGridBounds();
 	void resetGrids();

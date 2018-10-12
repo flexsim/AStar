@@ -11,27 +11,21 @@ Bridge::Bridge()
 	return;
 }
 
-const char * Bridge::getClassFactory(void)
-{
-	return "AStar::Bridge";
-}
 
-
-void Bridge::bind(void)
+void Bridge::bindVariables(void)
 {
-	Divider::bind();
-	bindDouble(isTwoWay, 1);
-	bindDouble(useVirtualDistance, 1);
-	bindDouble(virtualDistance, 1);
-	bindNumber(geometricDistance);
-	bindNumber(travelDistance);
-	bindNumber(filledDistance);
-	bindNumber(isAvailable);
-	bindObjPtr(blockedTraveler);
-	bindObjPtr(firstTraveler);
-	bindObjPtr(lastTraveler);
-	bindNumber(blockedPathIndex);
-	bindNumber(nodeWidth);
+	__super::bindVariables();
+	bindVariable(useVirtualDistance);
+	bindVariable(virtualDistance);
+	bindStateVariable(geometricDistance);
+	bindStateVariable(travelDistance);
+	bindStateVariable(filledDistance);
+	bindStateVariable(isAvailable);
+	bindStateVariable(blockedTraveler);
+	bindStateVariable(firstTraveler);
+	bindStateVariable(lastTraveler);
+	bindStateVariable(blockedPathIndex);
+	bindStateVariable(nodeWidth);
 }
 
 void Bridge::addPassagesToTable(Grid* grid)
@@ -39,8 +33,8 @@ void Bridge::addPassagesToTable(Grid* grid)
 	if (pointList.size() < 2)
 		return;
 
-	AStarCell fromCell = grid->getCellFromLoc(Vec3(pointList[0]->x, pointList[0]->y, pointList[0]->z));
-	AStarCell toCell = grid->getCellFromLoc(Vec3(pointList.back()->x, pointList.back()->y, pointList.back()->z));
+	AStarCell fromCell = grid->getCellFromLoc(pointList.front()->project(holder, model()));
+	AStarCell toCell = grid->getCellFromLoc(pointList.back()->project(holder, model()));
 	if (fromCell == toCell)
 		return;
 
@@ -58,9 +52,9 @@ void Bridge::addPassagesToTable(Grid* grid)
 		addExtraData(toCell, false);
 }
 
-void Bridge::addVertices(Mesh* barrierMesh, float z)
+void Bridge::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle)
 {
-	addPathVertices(barrierMesh, z, Vec4f(0.0f, 0.3f, 1.0f, 1.0f));
+	addPathVertices(view, barrierMesh, z, Vec4f(0.0f, 0.3f, 1.0f, 1.0f), drawStyle);
 }
 
 void Bridge::onReset(AStarNavigator* nav)
@@ -179,12 +173,13 @@ void Bridge::onAvailable()
 	}
 }
 
-void Bridge::updateLocations()
+void Bridge::updateBridgeLocations()
 {
 	if (lastUpdateTime == time() || !firstTraveler)
 		return;
 	lastUpdateTime = time();
 
+	Vec3 offset = getPointToModelOffset();
 	Traveler* t = firstTraveler;
 	Grid* grid = getGrid(t);
 	double distScale = getTravelToGeomDistScale();
@@ -192,24 +187,24 @@ void Bridge::updateLocations()
 	double curTime = time();
 	while (t) {
 		double dist = min(curMax, (curTime - t->bridgeData.entryTime) * t->te->v_maxspeed);
-		updateLocation(t, dist * distScale);
+		updateLocation(t, dist * distScale, &offset);
 		curMax = dist - grid->nodeWidth;
 
 		t = t->bridgeData.nextTraveler;
 	}
 }
 
-void Bridge::updateLocation(Traveler* traveler, double geomDist)
+void Bridge::updateLocation(Traveler* traveler, double geomDist, Vec3* passedOffset)
 {
+	Vec3 offset;
+	if (passedOffset)
+		offset = *passedOffset;
+	else {
+		offset = getPointToModelOffset();
+	}
 	for (int j = 1; j < pointList.size(); j++) {
-		Vec3 fromLoc(
-			pointList[j - 1]->x,
-			pointList[j - 1]->y,
-			pointList[j - 1]->z);
-		Vec3 toLoc(
-			pointList[j]->x,
-			pointList[j]->y,
-			pointList[j]->z);
+		Vec3 fromLoc((Vec3)*(pointList[j - 1]) + offset);
+		Vec3 toLoc((Vec3)*(pointList[j]) + offset);
 		Vec3 diff = toLoc - fromLoc;
 		double dist = diff.magnitude;
 
