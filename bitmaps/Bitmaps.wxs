@@ -29,9 +29,13 @@
       <ComponentRef Id="comp_B1749A877D0B4B6FB43AE2AAD4AB6A95" />
       <ComponentRef Id="comp_3B0057ECC4894946924DEAFF562B9C8E" />
       <ComponentRef Id="comp_4F275985CAB54E86AC960C6A08941421" />
+      <ComponentRef Id="comp_CDCD41827E234B33AF61493F3A7D437B" />
+      <ComponentRef Id="comp_CD5AE16FFD8F45758A829327B130862F" />
+      <ComponentRef Id="comp_0FA13B94098E41D494B9C71581E0CD0E" />
       <ComponentRef Id="comp_1E7E82B2EA3C4B07A4F07643A1A476ED" />
       <ComponentRef Id="comp_DD4D094F678F4049A71E098DDFBA1B8C" />
       <ComponentRef Id="comp_5C38210AD23446E190165C28BE68CD85" />
+      <ComponentRef Id="comp_E6E7E70DAC6B41ACB12B92A6EEDD3F4B" />
     </ComponentGroup>
     <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_A176FC447D6648E183B977CAB8113C08" Name="bitmaps">
@@ -92,6 +96,30 @@
           <File Id="file_7FD4EDFCD8424F0485CA368FE34AF57C" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\grid.bmp" />
         </Component>
 <!--Program GUIDs>
+<FlexSim="02167270-9F42-4E96-A5C6-40BAEA406F90">
+<FlexSimHC="724E24B8-70B4-4C0C-8FBC-9292BA571A5B">
+<FlexSimChinese="876C63ED-8CE8-41A9-BFA2-C4F51E9A152F">
+</Program GUIDs-->
+        <Component Id="comp_CDCD41827E234B33AF61493F3A7D437B" Guid="58F94A34-B4E7-4EC1-8E51-9072812D2679">
+          <File Id="file_AC53E64E3AAE4AAAAC6E44C767935033" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\mandatorypath.bmp" />
+        </Component>
+<!--Program GUIDs>
+<FlexSim="504453E9-5A34-47B0-BCA9-C6709A74E336">
+<FlexSimHC="796BAC41-139D-4A8F-BC91-DD9E4A88FED5">
+<FlexSimChinese="71F2DEB5-EAED-4EC2-AB95-9195B9F237EF">
+</Program GUIDs-->
+        <Component Id="comp_CD5AE16FFD8F45758A829327B130862F" Guid="FADE8732-302B-47AD-A40D-6CD839E7E403">
+          <File Id="file_28ED2A9C9C5D4FEDA37E78CBCFD3F5D5" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\merge.png" />
+        </Component>
+<!--Program GUIDs>
+<FlexSim="9E4ADB88-7065-4AA8-A360-BF1CBE8B251F">
+<FlexSimHC="1F09F5FA-9396-44A5-9ADB-34CB464DC698">
+<FlexSimChinese="58D96647-7155-4A4D-B845-7FA7F0E4DFB7">
+</Program GUIDs-->
+        <Component Id="comp_0FA13B94098E41D494B9C71581E0CD0E" Guid="50C93870-D89A-4ABC-9690-D4A62EBD9251">
+          <File Id="file_19E745D492F242B78C5F9AAC2876FFCB" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\mergeicon.svg" />
+        </Component>
+<!--Program GUIDs>
 <FlexSim="930B6BFD-D0D2-485F-A4B0-781B23E1A31F">
 <FlexSimHC="900CE111-417C-427D-A94C-281B877E30A7">
 <FlexSimChinese="D86E0E21-AC86-4953-95E4-04C06CD8069D">
@@ -114,6 +142,14 @@
 </Program GUIDs-->
         <Component Id="comp_5C38210AD23446E190165C28BE68CD85" Guid="4FD894A1-4806-4B4F-8404-A5E3FCE6A74F">
           <File Id="file_AC198C4A3A204FD29865A49CBDEDF111" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\solidbarrier.bmp" />
+        </Component>
+<!--Program GUIDs>
+<FlexSim="52CE6146-F2BD-406A-BC83-EC6FC4799051">
+<FlexSimHC="DC80DEF2-7F6B-44B2-8324-13D29AC45047">
+<FlexSimChinese="DEE761C5-1A8F-4FF4-AC32-438709A537D8">
+</Program GUIDs-->
+        <Component Id="comp_E6E7E70DAC6B41ACB12B92A6EEDD3F4B" Guid="AADD8330-71C9-4583-BCF7-34FB538F87C9">
+          <File Id="file_4032AF4D8C25423FA117C96F6791FF46" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\split.png" />
         </Component>
       </Directory>
     </DirectoryRef>
