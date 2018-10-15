@@ -650,10 +650,12 @@ public:
 	bool operator ==(const ObjRef<ObjType>& other) const { return get() == other.get(); }
 	bool operator ==(ObjType* other) const { return get() == other; }
 	bool operator ==(ObjRef<ObjType>& other) const { return get() == other.get(); }
+	bool operator ==(nullptr_t other) const { return get() == nullptr; }
 	bool operator !=(const ObjType* other) const { return get() != other; }
 	bool operator !=(const ObjRef<ObjType>& other) const { return get() != other.get(); }
 	bool operator !=(ObjType* other) const { return get() != other; }
 	bool operator !=(ObjRef<ObjType>& other) const { return get() != other.get(); }
+	bool operator !=(nullptr_t other) const { return get() != nullptr; }
 	ObjType* operator->() const { return get(); };
 	ObjType& operator *() const { return *(get()); }
 	inline operator ObjType*() const
@@ -2449,17 +2451,20 @@ public:
 		a = cosRads * temp.a - sinRads * temp.b; \
 		b = sinRads * temp.a + cosRads * temp.b;
 
-	void rotateXY(Number degrees)
+	Vec4Generic& rotateXY(Number degrees)
 	{
 		VEC4_ROTATE_A_B(degrees, x, y)
+		return *this;
 	}
-	void rotateYZ(Number degrees)
+	Vec4Generic& rotateYZ(Number degrees)
 	{
 		VEC4_ROTATE_A_B(degrees, y, z)
+		return *this;
 	}
-	void rotateZX(Number degrees)
+	Vec4Generic& rotateZX(Number degrees)
 	{
 		VEC4_ROTATE_A_B(degrees, z, x)
+		return *this;
 	}
 	static Vec4Generic fromRotAndDist(Number degs, Number length, Number zComp = 0)
 	{
@@ -2561,7 +2566,7 @@ public:
 	__declspec(property(get = __magnitude)) Number magnitude;
 
 	Number dot(const Vec3Generic& other) const { return getDotProduct(other); }
-	Vec3Generic cross(const Vec3Generic& other)
+	Vec3Generic cross(const Vec3Generic& other) const
 	{
 		const Vec3Generic& u = *this;
 		const Vec3Generic& v = other;
@@ -2571,7 +2576,7 @@ public:
 		r.z = u.x * v.y - u.y * v.x;
 		return r;
 	}
-	Number angle(const Vec3Generic& other)
+	Number angle(const Vec3Generic& other) const
 	{
 		Number thisMagnitude = magnitude;
 		if (thisMagnitude == 0)
@@ -2586,7 +2591,7 @@ public:
 		Number degrees = theta * 180 / 3.14159265358979;
 		return degrees;
 	}
-	Vec3Generic lerp(const Vec3Generic& other, double t)
+	Vec3Generic lerp(const Vec3Generic& other, double t) const
 	{
 		double omt = 1 - t;
 		return Vec3Generic(
@@ -2595,7 +2600,7 @@ public:
 			(Number)(z * omt + other.z * t)
 			);
 	}
-	Vec3Generic project(TreeNode* from, TreeNode* to)
+	Vec3Generic project(TreeNode* from, TreeNode* to) const
 	{
 		double newVec[3] = { 0, 0, 0 };
 #if !defined FLEXSIM_ENGINE_COMPILE || defined FLEXSIM_COMMANDS
@@ -2618,17 +2623,21 @@ public:
 		a = cosRads * temp.a - sinRads * temp.b; \
 		b = sinRads * temp.a + cosRads * temp.b;
 
-	void rotateXY(Number degrees)
+
+	Vec3Generic& rotateXY(Number degrees)
 	{
 		VEC3_ROTATE_A_B(degrees, x, y)
+		return *this;
 	}
-	void rotateYZ(Number degrees)
+	Vec3Generic& rotateYZ(Number degrees)
 	{
 		VEC3_ROTATE_A_B(degrees, y, z)
+		return *this;
 	}
-	void rotateZX(Number degrees)
+	Vec3Generic& rotateZX(Number degrees)
 	{
 		VEC3_ROTATE_A_B(degrees, z, x)
+		return *this;
 	}
 	static Vec3Generic fromRotAndDist(Number degs, Number length, Number zComp = 0)
 	{
@@ -2699,7 +2708,7 @@ public:
 		x /= length;
 		y /= length;
 	}
-	void rotate(Number degrees)
+	Vec2Generic rotate(Number degrees)
 	{
 		Number rads = degreestoradians(degrees);
 		Number cosRads = cos(rads);
@@ -2707,6 +2716,7 @@ public:
 		Vec2Generic temp = *this;
 		x = cosRads * temp.x - sinRads * temp.y;
 		y = sinRads * temp.x + cosRads * temp.y;
+		return *this;
 	}
 	static Vec2Generic fromRotAndDist(Number degs, Number length)
 	{
@@ -2991,6 +3001,31 @@ private:
 		engine_export virtual Variant getValue(int row, int col);
 		engine_export virtual void setValue(int row, int col, const Variant& val);
 	};
+	class ArrayDataSource : public TableDataSource
+	{
+		Array * _focus;
+		Array& __getFocus() { return *_focus; }
+		__declspec(property(get = __getFocus)) Array& focus;
+	public:
+		ArrayDataSource(Array& array) : _focus(&array) {}
+		engine_export virtual int __numRows() const override;
+		engine_export virtual int __numCols() const override;
+
+		engine_export virtual void addCol(int col, int datatype) override;
+		engine_export virtual void addRow(int row, int datatype) override;
+		engine_export virtual TreeNode* cell(const Variant& row, const Variant& col) override;
+		engine_export virtual void clear(int recursive = 0) override;
+		engine_export virtual void deleteCol(int col);
+		engine_export virtual void deleteRow(int row);
+		engine_export virtual std::string getColHeader(int colNum) override;
+		engine_export virtual std::string getRowHeader(int rowNum) override;
+		engine_export virtual void setRowHeader(int rowNum, const char* name);
+		engine_export virtual void setColHeader(int colNum, const char* name);
+
+		engine_export virtual Variant getValue(int row, int col);
+		engine_export virtual void setValue(int row, int col, const Variant& val);
+		engine_export virtual std::string __name() const override;
+	};
 public:
 	TableDataSource* dataSource;
 	TableDataSource treeTableSource;
@@ -3000,6 +3035,7 @@ public:
 	engine_export Table();
 	engine_export Table& operator =(const Table&);
 	Table(std::shared_ptr<TableDataSource> source) : extendedDataSource(source) { dataSource = source.get(); }
+	engine_export Table(Array& array);
 
 	engine_export Table& operator = (TreeNode* node);
 	engine_export operator TreeNode*();

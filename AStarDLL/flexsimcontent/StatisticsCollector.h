@@ -130,7 +130,7 @@ public:
 
 	int isValueID(double id);
 	TreeNode* getObjectFromID(double id);
-	const char* getPathFromID(double id);
+	const char* getPathFromID(double id, const unsigned int maxDepth);
 
 	void mergeWith(IDServiceCore* other);
 
@@ -173,10 +173,9 @@ public:
 
 	engine_export static int isValueID(double id);
 	engine_export static TreeNode* getObjectFromID(double id);
-	engine_export static const char* getPathFromID(double id);
-	const char* getPathFromIDLocal(double id);
-
-	engine_export static Array getIDsAndPathsInBundle(TreeNode* bundleNode, const Variant& columns, int startEntry = 0);
+	engine_export static const char* getPathFromID(double id, int maxDepth);
+	
+	engine_export static Array getIDsAndPathsInBundle(TreeNode* bundleNode, const Variant& columns, int startEntry, int maxDepth);
 
 	engine_export static void clear();
 	engine_export void mergeWith(IDService* other);
@@ -204,6 +203,7 @@ public:
 class StatisticsCollector : public ColumnFormatter
 {
 protected:
+	typedef std::map<std::string, Variant> PropertyMap;
 	class CollectedData
 	{
 	public:
@@ -226,10 +226,12 @@ protected:
 
 		bool colDataAvailable = false;
 		// Then the row function iterates through all columns, setting the col number
+		Variant colValue;
 		int colNum;
+		int colValueIndex;
 
 		// Any additional properties are stored here
-		std::map<std::string, Variant> properties;
+		PropertyMap properties;
 
 		// This is called after every event is handled
 		void clear();
@@ -254,7 +256,10 @@ protected:
 		Variant __getRowValue();
 		int __getRowNumber();
 		int __getRowValueIndex();
+		Variant __getColValue();
 		int __getColNumber();
+		int __getColValueIndex();
+
 		Variant __getCurrentValue();
 
 		__declspec(property(get = __getGroup)) Group* group;
@@ -264,7 +269,9 @@ protected:
 		__declspec(property(get = __getRowObject)) Variant rowObject;
 		__declspec(property(get = __getRowNumber)) int rowNumber;
 		__declspec(property(get = __getRowValueIndex)) int rowValueIndex;
+		__declspec(property(get = __getColValue)) Variant colValue;
 		__declspec(property(get = __getColNumber)) int colNumber;
+		__declspec(property(get = __getColValueIndex)) int colValueIndex;
 		__declspec(property(get = __getCurrentValue)) Variant currentValue;
 
 		Variant getProperty(const char* name, unsigned nameHash, bool dieHard);
@@ -326,6 +333,7 @@ protected:
 
 public:
 	class EventReference;
+	class ColumnSet;
 	class Column : public SimpleDataType
 	{
 	public:
@@ -338,18 +346,17 @@ public:
 		double bundleFieldType = 1;
 		double valueFormat = DATA_FORMAT_NONE;
 		TreeNode* valueNode;
+		Variant columnValue;
+		double columnValueIndex = 0;
 
 		virtual void bind() override;
 		virtual const char* getClassFactory() override { return "StatisticsCollectorColumn"; }
-
-		const static int NO_INDEX = -1;
 
 		StatisticsCollector* __getCollector();
 		__declspec(property(get = __getCollector)) StatisticsCollector* collector;
 
 		double valueApplicationMode = (double)OnEventOnly;
-		double bundleIndex = NO_INDEX;
-
+		
 		Variant getValue() { return valueNode->evaluate(); }
 		int getBundleFieldType() { return (int)bundleFieldType;	};
 
@@ -360,9 +367,31 @@ public:
 			return strcmp(className, "StatisticsCollectorColumn") == 0;
 		}
 
-		static void eventAdder(TreeNode* x, EventReference* column);
+		static void eventAdder(TreeNode* x, EventReference* event);
+		static void liveEventAdder(TreeNode* x, EventReference* event);
 		static EventReference* eventGetter(TreeNode* x);
 		NodeListArray<EventReference, eventAdder, eventGetter, 0> events;
+		NodeListArray<EventReference, liveEventAdder, eventGetter, 0> liveEvents;
+
+		virtual ColumnSet* toColumnSet() { return nullptr; }
+
+		engine_export Variant isColumnSet(FLEXSIMINTERFACE) { return 0; }
+	};
+
+	class ColumnSet : public Column
+	{
+	public:
+		TreeNode* setValue;
+
+		virtual bool isClassType(const char* className) override {
+			return strcmp(className, "StatisticsCollectorColumnSet") == 0;
+		}
+
+		virtual void bind() override;
+		virtual const char* getClassFactory() override { return "StatisticsCollectorColumnSet"; }
+		virtual ColumnSet* toColumnSet() override { return this; }
+
+		engine_export Variant isColumnSet(FLEXSIMINTERFACE) { return 1; }
 	};
 
 	class EventParamProperty : public SimpleDataType
@@ -384,9 +413,31 @@ public:
 		virtual void bind() override;
 		virtual const char* getClassFactory() override { return "StatisticsCollectorCollectedDataProperty"; }
 	};
+	
+	// This class represents the interface into OnEventOccurred in the StatisticsCollector
+	// The listener classes should all have one of these (usually)
+	class EventOccurredInfo : public SimpleDataType
+	{
+	public:
+		NodeRef eventObject;
+		ByteBlock eventName;
+		ObjRef<Group> group;
+		NodeRef instanceObject;
+		NodeListArray<EventParamProperty>::ObjPtrType eventProperties;
+		NodeRef condition;
+		NodeListArray<CollectedDataProperty>::ObjPtrType collectedProperties;
+		double stopTrackingRowValue = 0.0;
+		NodeListArray<Column>::ObjPtrType columns;
+		double flags = 0;
+
+		TreeNode* savedProperties;
+
+		virtual void bind() override;
+		virtual const char* getClassFactory() override { return "StatisticsCollectorEventOccurredInfo"; }
+	};
 
 	class TimerEventReference;
-	
+	class TransientEventReference;
 	class EventReference : public SimpleDataType
 	{
 	public:
@@ -395,6 +446,9 @@ public:
 
 		double changeRule = 0;
 		TreeNode* changeValue;
+
+		double searchForObjects = 0;
+		TreeNode* searchRequirements;
 
 		// The view fills in this list using enumerateEvents
 		TreeNode* eventList;
@@ -407,11 +461,17 @@ public:
 		TreeNode* condition;
 		double stopTrackingRowValue = 0;
 
+		enum ColumnSelectMode { ByLinks = 0, ByCode };
+
+		double columnSelectMode = (double)ByLinks;
+		TreeNode* selectColumnsCallback;
+
 		static void columnAdder(TreeNode* x, Column* column);
 		static Column* columnGetter(TreeNode* x);
 		NodeListArray<Column, columnAdder, columnGetter, 0> columns;
+		NodeListArray<Column, columnAdder, columnGetter, 0> liveColumns;
 
-		bool isTrackedVariableType();
+		virtual bool isTrackedVariableType();
 
 		virtual void bind() override;
 		virtual const char* getClassFactory() override { return "StatisticsCollectorEventReference"; }
@@ -421,21 +481,62 @@ public:
 
 		virtual const char* getType();
 		virtual TimerEventReference* toTimerEventReference() { return nullptr; }
+		virtual TransientEventReference* toTransientEventReference() { return nullptr; }
+	};
+
+	class TransientEventReference : public EventReference
+	{
+	public:
+		// Most of the inherited fields specify the existing event
+		// These additional fields specify information about the transient event
+		TreeNode* transientObjectsCallback;
+		ByteBlock transientEventName;
+		TreeNode* transientEventList; // The view fills in this list
+		double transientChangeRule = 0;
+		TreeNode* transientChangeValue;
+		TreeNode* transientCondition;
+
+		NodeListArray<EventParamProperty>::SdtSubNodeBindingType transientEventProperties;
+
+		virtual const char* getType() override;
+		virtual TransientEventReference* toTransientEventReference() override { return this; }
+		virtual void bind() override;
+		virtual const char* getClassFactory() override { return "StatisticsCollectorTransientEventReference"; }
+		virtual bool isClassType(const char* className) override {
+			return strcmp(className, "StatisticsCollectorTransientEventReference") == 0;
+		}
 	};
 
 	class EventReferenceListener : public FlexSimEvent
 	{
 	public:
-		ObjRef<EventReference> linkedEvent;
-		NodeRef eventObject;
-		ByteBlock eventName;
-		double flags = 0;
-		NodeRef instanceObject;
-		double changeRule = 0;
-		TreeNode* changeValue;
+		SDTMember<EventOccurredInfo> info;
+
 		virtual void execute() override;
 		virtual void bind() override;
 		virtual const char* getClassFactory() override { return "StatisticsCollectorEventReferenceListener"; }
+
+		// for listening to ProcessFlow instances
+		Variant getEventTitle(FLEXSIMINTERFACE);
+		Variant setInstanceObject(FLEXSIMINTERFACE);
+	};
+
+	class TransientEventReferenceListener : public FlexSimEvent
+	{
+	public:
+		// This function creates a listener on the transient object
+		NodeRef eventObject;
+		NodeRef instanceObject;
+		double flags;
+		ObjRef<TransientEventReference> linkedEventReference;
+
+		virtual void execute() override;
+		virtual void bind() override;
+		virtual const char* getClassFactory() override { return "StatisticsCollectorTransientEventReferenceListener"; }
+
+		// for listening to ProcessFlow instances
+		Variant getEventTitle(FLEXSIMINTERFACE);
+		Variant setInstanceObject(FLEXSIMINTERFACE);
 	};
 
 	class TimerEventReference : public EventReference
@@ -450,6 +551,9 @@ public:
 		// Additional columns - data to collect
 		TreeNode* schedule;
 
+		NodeListArray<CollectedDataProperty>::ObjPtrType collectedPropertiesList;
+		NodeListArray<Column>::ObjPtrType columnsToUpdate;
+
 		virtual void bind() override;
 		virtual const char* getClassFactory() override { return "StatisticsCollectorTimerEventReference"; }
 
@@ -461,7 +565,7 @@ public:
 	class TimerEventReferenceListener : public FlexSimEvent
 	{
 	public:
-		ObjRef<EventReference> linkedEvent;
+		ObjRef<TimerEventReference> linkedEventReference;
 		double rowNumber;
 		virtual void execute() override;
 		virtual void bind() override;
@@ -472,22 +576,18 @@ public:
 	class TrackedVariableEventReferenceListener : public ValueChangeListener
 	{
 	public:
-		ObjRef<EventReference> linkedEvent;
-		NodeRef eventObject;
-		ByteBlock eventName;
-		NodeRef instanceObject;
+		SDTMember<EventOccurredInfo> info;
 
 		virtual void onChangeRuleMet(const Variant& newValue, const Variant& oldValue) override;
 
 		virtual void bind() override;
 		virtual const char* getClassFactory() override { return "StatisticsCollectorTrackedVariableEventReferenceListener"; }
+
+		// for listening to ProcessFlow instances
+		Variant getEventTitle(FLEXSIMINTERFACE);
+		Variant setInstanceObject(FLEXSIMINTERFACE);
 	};
 #endif
-
-	engine_export static bool isStatsCollectorListener(TreeNode* listener);
-	engine_export static const char* getListenerEventName(TreeNode* listener);
-	engine_export static bool areListenersEqual(TreeNode* listener1, TreeNode* listener2);
-	engine_export static void setListenerInstance(TreeNode* listener, TreeNode* instanceObject);
 
 	class QuerySource : public SqlDataSource
 	{
@@ -500,34 +600,6 @@ public:
 		virtual int getRowCount(int tableID) override;
 		ObjRef<StatisticsCollector> collector;
 		QuerySource(StatisticsCollector* collector) : collector(collector) {}
-	};
-
-	class ExperimentQuerySource : public SqlDataSource
-	{
-	protected:
-		struct BundleInfo
-		{
-			Bundle* bundle;
-			int scenario;
-			int replication;
-		};
-
-		// I reverse the comparison, so that lower_bound gets me what I want
-		std::map<int, BundleInfo, std::greater<int>> cache;
-		std::map<int, BundleInfo, std::greater<int>>::iterator cacheEnd = cache.end();
-		int numRows = 0;
-		void buildCache();
-
-		ObjRef<StatisticsCollector> collector;
-		
-	public:
-		virtual int getColID(int tableId, const char* colName, int& colFlags) override;
-		virtual const char* enumerateColNames(int tableId, int colNum) override;
-		virtual Variant getValue(int tableId, int row, int colId) override;
-		// I don't need to set the value; collector tables are read-only for queries
-		// I don't need to worry about table ID either
-		virtual int getRowCount(int tableID) override;
-		ExperimentQuerySource(StatisticsCollector* collector);
 	};
 
 	class DataSource : public Table::TableDataSource
@@ -639,6 +711,7 @@ public:
 	TreeNode* rowSortInfo;
 	
 	NodeRef instanceObject;
+	double objectFormatMaxDepth = 0;
 
 	double lastUpdateTime = 0;
 	double updateSinceReset = 0;
@@ -646,25 +719,33 @@ public:
 
 	NodeListArray<EventReference>::SdtSubNodeBindingType eventReferences;
 	NodeListArray<Column>::SdtSubNodeBindingType columns;
-
+	NodeListArray<Column>::SdtSubNodeBindingType liveColumns;
 	NodeListArray<Column>::ObjPtrType dynamicColumns;
+
+	
 	NodeListArray<FlexSimEvent>::CouplingSdtPtrType liveListeners;
 
 	BundleMember data;
 	TreeNode* rowScores;
 
-	engine_export TreeNode* addEventReference(TreeNode* object, const char* eventName);
+	engine_export TreeNode* addEventReference();
 	engine_export TreeNode* addTimerEventReference();
+	engine_export TreeNode* addTransientEventReference();
 	engine_export const char* getEventReferenceType(TreeNode* eventReference);
 	engine_export void updateEventReferenceParams(TreeNode* eventReference);
+	engine_export void updateTransientEventReferenceParams(TreeNode* eventReference, TreeNode* paramTable);
+	void applyParamTableToProperties(TreeNode* paramTableNode, NodeListArray<EventParamProperty>::SdtSubNodeBindingType& eventProperties);
+	void applyUnkownParamsToProperties(NodeListArray<EventParamProperty>::SdtSubNodeBindingType& eventProperties);
+	engine_export TreeNode* getEventReferenceObject(TreeNode* eventReference);
 	engine_export TreeNode* addPropertyToEventReference(TreeNode* eventReference);
 	engine_export TreeNode* addSharedProperty();
 	engine_export TreeNode* addRowSortInfo();
 
 protected:
-	void addColumnInternal(Column* newColumn);
+	void addColumnInternal(Column* newColumn, std::string prefix);
 public:
-	engine_export TreeNode* addColumn(const char* type);
+	engine_export TreeNode* addColumn();
+	engine_export TreeNode* addColumnSet();
 
 	engine_export void linkColumnAndEvent(TreeNode* column, TreeNode* eventRef);
 	engine_export void unlinkColumnAndEvent(TreeNode* column, TreeNode* eventRef);
@@ -676,8 +757,8 @@ public:
 	engine_export TreeNode* addRowTableObject(TreeNode* object);
 	void updateRowTable();
 
-	void onEventOccured(EventReference* eventReference,
-		TreeNode* eventObject, const char* eventName, TreeNode* instanceObject, CallPoint* listenerCP, int flags = 0);
+	void onEventOccurred(EventOccurredInfo& info, CallPoint* listenerCP);
+	void onPreTransientEvent(TransientEventReference* eventReference, TreeNode* eventObject, TreeNode* instanceObject, double flags, CallPoint* listenerCP);
 
 	engine_export void update();
 
@@ -709,7 +790,18 @@ public:
 
 	engine_export void onReset();
 	engine_export void onPostReset();
+	engine_export void applySettings();
+	void onConfigure();
+	void clearCollector();
+	void setResetValues();
+	void createLiveComponents();
+	void createColumns();
 	void createListeners();
+	void setInfoColumns(EventOccurredInfo* info, EventReference* linkedEvent, TreeNode* eventObject, const char* eventName);
+	void setInfo(EventOccurredInfo* info, EventReference* linkedEvent, TreeNode* eventObject, const char* eventName, TreeNode* instanceObject, int flags);
+	void setTransientInfo(EventOccurredInfo* info, TransientEventReference* linkedEvent, TreeNode* eventObject, const char* eventName, int flags);
+	void listenToEventNode(EventReference* ref, TreeNode* eventNode, TreeNode* eventObject, const char* eventName, TreeNode* instanceObject, int flags);
+	void listenToTransientEventNode(TransientEventReference *ref, TreeNode* eventNode, TreeNode* eventObject, const char* eventName, int flags, const PropertyMap& cachedProperties);
 	void createEvents();
 	engine_export void onRunWarm();
 	// double onStartSimulation() override;
@@ -735,11 +827,15 @@ public:
 
 	engine_export static int isValueID(double id) { return IDService::isValueID(id); }
 	engine_export static TreeNode* getObjectFromID(double id) { return IDService::getObjectFromID(id); }
-	engine_export static const char* getPathFromID(double id) { return IDService::getPathFromID(id); }
+	engine_export static const char* getPathFromID(double id, int maxDepth = 0) { 
+		return IDService::getPathFromID(id, maxDepth);
+	}
 
 	engine_export static void clearIDs() { IDService::clear(); }
 
 	engine_export Variant getDBExportColumnExpression(const char* colName, int dbDataType);
+
+	engine_export bool isSuitableForLiveUpdates();
 
 	virtual StatisticsCollector* toStatisticsCollector() { return this; }
 };
@@ -810,6 +906,24 @@ public:
 	std::shared_ptr<Table::TableDataSource> dataSource;
 	std::shared_ptr<Table::TableDataSource> getTableDataSource();
 
+	// The event listener, if doing a live query from a Statistics Collector
+	class TableChangeListener : public FlexSimEvent
+	{
+	public:
+		enum Type { None = 0, SCRowAdded, SCRowUpdated, Invalid };
+		double type;
+		ByteBlock tableName;
+		
+		TableChangeListener() {}
+		TableChangeListener(Type type, const char* tableName);
+
+		virtual void execute() override;
+
+		virtual void bind() override;
+		virtual const char* getClassFactory() override { return "CalculatedTableTableChangeListener"; }
+		virtual bool isClassType(const char* className) { return strcmp(className, getClassFactory()) == 0; }
+	};
+
 	// Inputs
 	ByteBlock query;
 	enum UpdateMode { Manual = 0, ByInterval = 1, Always = 2, LazyInterval = 3 };
@@ -818,15 +932,23 @@ public:
 	double enabled = 1;
 	double updateCount = 0;
 	double displayTimeAsText = 0;
+	double objectFormatMaxDepth = 0;
 
 	TreeNode* formatList;
 
 	// Internal state
 	TreeNode* queryNode;
 
+	// I only add listeners if:
+	//   * the query only involves statistics collectors
+	//   * the update mode is always
+	//   * the "update" is called
+	NodeListArray<TableChangeListener>::CouplingSdtPtrType liveListeners;
+	double liveUpdateFailed = 0;
+
 	// This gets set for unrecoverable errors (sql build or query errors)
 	double buildFailed = 0;
-	ByteBlock badQuery;
+	ByteBlock cachedQuery;
 
 	// and here's the last update time
 	double lastUpdateTime = -1;
@@ -840,6 +962,7 @@ public:
 
 	// OnReset - build the sql query, and run it for the first time
 	engine_export void onReset();
+
 	bool isQueryBuildable();
 
 	// update runs the query, and dumps the table
@@ -852,6 +975,9 @@ public:
 	engine_export int dependsOnExperimentData();
 
 	engine_export virtual void bindVariables() override;
+
+	void onSourceRowAdded(const char* tableName);
+	void onSourceValueChanged(const char* tableName, int row, int col, const Variant& oldValue);
 
 	virtual CalculatedTable* toCalculatedTable() { return this; }
 };

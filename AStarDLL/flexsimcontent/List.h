@@ -52,6 +52,7 @@ public:
 		bool hasListeners = false;
 		const Variant* puller = nullptr;
 		TreeNode* onPull = nullptr;
+		bool isIneligibleForPull = false;
 		virtual void bindEvents() override;
 
 		Variant __getValue() { return value; }
@@ -147,7 +148,7 @@ public:
 		virtual int getRowCount(int tableID) override;
 		virtual OverflowTrackableValue getOverflowTrackableValue(int row, int colID);
 
-		virtual bool hasCustomWhereFilter() override { return matchValues != nullptr; }
+		virtual bool hasCustomWhereFilter() override { return matchValues != nullptr || list->shouldTrackIneligibleEntries; }
 		bool evaluateCustomWhereFilter(SqlQuery* q, int row);
 		virtual bool evaluateCustomWhereFilter(SqlQuery* q) override;
 
@@ -273,6 +274,8 @@ public:
 	TreeNode* contentsOnReset;
 
 	ByteBlock listType;	
+	bool shouldTrackIneligibleEntries = false;
+	std::vector<Entry*> ineligibleEntries;
 protected:
 	std::vector<int> staticFields;
 	std::vector<int> dynamicFields;

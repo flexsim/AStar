@@ -1272,6 +1272,19 @@ public:
 		static SimpleDataType* createSDTDerivative_NoDLLConnection(const char* classname, TreeNode* holder);
 		virtual ObjectDataType* toObject() { return nullptr; }
 	//@}
+
+	/** @name 3D/Tree User Interaction
+	*	Methods associated with the user manipulating the object in 3D/Tree
+	*/
+	//@{
+		virtual double onDrag(TreeNode* view) { return 0; }
+		virtual double onClick(TreeNode* view, int clickCode) { return 0; }
+		virtual double onCreate(bool isCopy) { return 0; }
+		virtual double onDestroy(TreeNode* view) { return 0; }
+		virtual unsigned int getClassType() { return 0; }
+		virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype) { return 0; }
+		virtual double onUndo(bool isUndo, treenode undoRecord) { return 0; }
+	//@}
 };
 
 /// <summary>	Event binding. Stores enumerated events and saves binding information for later use.  </summary>
@@ -1434,6 +1447,14 @@ public:
 
 	virtual const char* getClassFactory() override { return "SqlDataSource"; }
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>	Query if this object has custom where filter. </summary>
+	///
+	/// <remarks>	This is used by the list, so a pull query can include a list of 
+	/// 			objects that it's looking for, in addition to (or in place of) the WHERE clause. </remarks>
+	///
+	/// <returns>	True if custom where filter, false if not. </returns>
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 	virtual bool hasCustomWhereFilter() { return false; }
 	virtual bool evaluateCustomWhereFilter(SqlQuery* q) { return true; }
 };

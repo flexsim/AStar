@@ -43,6 +43,7 @@ protected:
 	TreeNode* genericChart;
 
 	TreeNode* statisticsCollectorStored;
+	TreeNode* calculatedTableStored;
 
 	NodeListArray<>::SubNodeType processedReplacements;
 	double firstPrepareComplete = 0;
@@ -113,6 +114,7 @@ public:
 	static TreeNode* global(const char* name);
 	StatisticsCollector* getStatisticsCollector();
 	CalculatedTable* getCalculatedTable();
+	engine_export TreeNode* getPrimaryTable();
 };
 
 }
