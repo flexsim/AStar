@@ -54,7 +54,7 @@ void Bridge::addPassagesToTable(Grid* grid)
 
 void Bridge::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle)
 {
-	addPathVertices(view, barrierMesh, z, Vec4f(0.0f, 0.3f, 1.0f, 1.0f), drawStyle);
+	addPathVertices(view, barrierMesh, z, Vec4f(0.0f, 0.3f, 1.0f, 1.0f), drawStyle, isTwoWay);
 }
 
 void Bridge::onReset(AStarNavigator* nav)

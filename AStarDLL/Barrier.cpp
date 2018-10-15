@@ -661,12 +661,12 @@ double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 		}
 	}
 
-	if (clickCode == RIGHT_RELEASE) {
+	//if (clickCode == RIGHT_RELEASE) {
 		// Right click -> abort barrier creation
-		if (mode & Barrier::CREATE) {
-			destroyobject(holder);
-		}
-	}
+	//	if (mode & Barrier::CREATE) {
+	//		destroyobject(holder);
+	//	}
+	//}
 
 	return 1;
 }
@@ -900,6 +900,8 @@ Point* Barrier::addPoint(const Vec3& modelPos)
 	Vec3 pos = modelPos.project(model(), holder);
 	Point* point = new Point(pos.x, pos.y, pos.z);
 	pointList.add(point);
+	if (!toBridge() && pointList.size() > 1) // everything but bridges should have the same z
+		point->z = pointList.front()->z;
 	return point;
 }
 
@@ -982,7 +984,7 @@ bool Barrier::setPointCoords(int pointIndex, const Vec3& modelPoint)
 	return true;
 }
 
-void Barrier::addPathVertices(treenode view, Mesh* barrierMesh, float z, const Vec4f& color, DrawStyle drawStyle)
+void Barrier::addPathVertices(treenode view, Mesh* barrierMesh, float z, const Vec4f& color, DrawStyle drawStyle, bool twoWay)
 {
 	Vec4f theColor( min(1.0f, color.r + 0.2f), min(1.0f, color.g + 0.2f), min(1.0f, color.b + 0.2f), color.a );
 	Vec4f lightGray( 0.4f, 0.4f, 0.4f, 1.0f );
@@ -1050,35 +1052,57 @@ void Barrier::addPathVertices(treenode view, Mesh* barrierMesh, float z, const V
 		float triangleWidth = lengthXY / numTriangles;
 		Vec3f diffPerTriangle = diff / (float)numTriangles;
 		
-		Vec3f triangleTip(triangleWidth, 0.0f, diffPerTriangle.z);
-		triangleTip.rotateXY(angle);
-		triangleTip += fromPoint;
+		Vec3f tip = Vec3f(triangleWidth, 0.0f, diffPerTriangle.z).rotateXY(angle) + fromPoint;
+		Vec3f top = Vec3f(0.0f, 0.5f * height, 0.0f).rotateXY(angle) + fromPoint;
+		Vec3f bottom = Vec3f(0.0f, -0.5f * height, 0.0f).rotateXY(angle) + fromPoint;
 
-		Vec3f triangleTop(0.0f, 0.5f * height, 0.0f);
-		triangleTop.rotateXY(angle);
-		triangleTop += fromPoint;
-
-		Vec3f triangleBottom(0.0f, -0.5f * height, 0.0f);
-		triangleBottom.rotateXY(angle);
-		triangleBottom += fromPoint;
+		Vec3f backwardsTip, backwardsTop, backwardsBottom;
+		if (twoWay) {
+			backwardsTip = Vec3f(0.0f, 0.0f, 0.0f).rotateXY(angle) + fromPoint;
+			backwardsTop = Vec3f(triangleWidth, 0.5f * height, diffPerTriangle.z).rotateXY(angle) + fromPoint;
+			backwardsBottom = Vec3f(triangleWidth, -0.5f * height, diffPerTriangle.z).rotateXY(angle) + fromPoint;
+		}
 
 		for (int j = 0; j < numTriangles; j++) {
-			if (drawStyle == Basic) {
-				addMeshVertex(barrierMesh, triangleTip, theColor);
-				addMeshVertex(barrierMesh, triangleTop, lightGray);
-				addMeshVertex(barrierMesh, triangleBottom, lightGray);
+			if (!twoWay || j % 2 == 0) {
+				if (drawStyle == Basic) {
+					addMeshVertex(barrierMesh, tip, theColor);
+					addMeshVertex(barrierMesh, top, lightGray);
+					addMeshVertex(barrierMesh, bottom, lightGray);
+				}
+				else {
+					addMeshVertex(barrierMesh, tip, highlightColor);
+					addMeshVertex(barrierMesh, top, highlightColor);
+					addMeshVertex(barrierMesh, top, highlightColor);
+					addMeshVertex(barrierMesh, bottom, highlightColor);
+					addMeshVertex(barrierMesh, bottom, highlightColor);
+					addMeshVertex(barrierMesh, tip, highlightColor);
+				}
 			} else {
-				addMeshVertex(barrierMesh, triangleTip, highlightColor);
-				addMeshVertex(barrierMesh, triangleTop, highlightColor);
-				addMeshVertex(barrierMesh, triangleTop, highlightColor);
-				addMeshVertex(barrierMesh, triangleBottom, highlightColor);
-				addMeshVertex(barrierMesh, triangleBottom, highlightColor);
-				addMeshVertex(barrierMesh, triangleTip, highlightColor);
+				if (drawStyle == Basic) {
+					addMeshVertex(barrierMesh, backwardsTip, theColor);
+					addMeshVertex(barrierMesh, backwardsTop, lightGray);
+					addMeshVertex(barrierMesh, backwardsBottom, lightGray);
+				}
+				else {
+					addMeshVertex(barrierMesh, backwardsTip, highlightColor);
+					addMeshVertex(barrierMesh, backwardsTop, highlightColor);
+					addMeshVertex(barrierMesh, backwardsTop, highlightColor);
+					addMeshVertex(barrierMesh, backwardsBottom, highlightColor);
+					addMeshVertex(barrierMesh, backwardsBottom, highlightColor);
+					addMeshVertex(barrierMesh, backwardsTip, highlightColor);
+				}
+
 			}
 
-			triangleTip += diffPerTriangle;
-			triangleTop += diffPerTriangle;
-			triangleBottom += diffPerTriangle;
+			tip += diffPerTriangle;
+			top += diffPerTriangle;
+			bottom += diffPerTriangle;
+			if (twoWay) {
+				backwardsTip += diffPerTriangle;
+				backwardsTop += diffPerTriangle;
+				backwardsBottom += diffPerTriangle;
+			}
 		}
 	}
 }

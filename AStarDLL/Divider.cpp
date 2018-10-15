@@ -154,10 +154,9 @@ void Divider::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle d
 	} else {
 		// draw one-way barrier
 		Vec4f green( 0.0f, 1.0f, 0.0f, 1.0f );
-		Vec4f lightGray( 0.5f, 0.5f, 0.5f, 1.0f );
 
 		for (int i = 0; i < pointList.size(); i++) {
-			pointList[i]->addVertices(barrierMesh, radius, lightGray, z + 3 * oneMillimeter, false);
+			pointList[i]->addVertices(barrierMesh, radius, drawStyle == Basic ? black : baseColor, z + 3 * oneMillimeter, false);
 		}
 		// Draw alternating light and dark triangles
 
@@ -194,12 +193,12 @@ void Divider::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle d
 
 
 			for (int i = 0; i < numLightTriangles; i++) {
-				addMeshTriangle(barrierMesh, topCenter, topLeft, bottomLeft, lightGray);
-				addMeshTriangle(barrierMesh, topCenter, bottomRight, topRight, lightGray);
+				addMeshTriangle(barrierMesh, topCenter, topLeft, bottomLeft, baseColor);
+				addMeshTriangle(barrierMesh, topCenter, bottomRight, topRight, baseColor);
 				
 				addMeshVertex(barrierMesh, bottomLeft, green);
-				addMeshVertex(barrierMesh, bottomRight, lightGray);
-				addMeshVertex(barrierMesh, topCenter, lightGray);
+				addMeshVertex(barrierMesh, bottomRight, baseColor);
+				addMeshVertex(barrierMesh, topCenter, baseColor);
 
 				topLeft += diffPerTriangle;
 				bottomLeft += diffPerTriangle;

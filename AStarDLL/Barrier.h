@@ -184,7 +184,7 @@ public:
 	virtual MandatoryPath* toMandatoryPath() { return nullptr; }
 	bool isBasicBarrier() { return toDivider() == nullptr && toPreferredPath() == nullptr && toBridge() == nullptr && toMandatoryPath() == nullptr; }
 
-	void addPathVertices(treenode view, Mesh* barrierMesh, float z, const Vec4f& color, DrawStyle drawStyle);
+	void addPathVertices(treenode view, Mesh* barrierMesh, float z, const Vec4f& color, DrawStyle drawStyle, bool twoWay);
 	virtual void onReset(AStarNavigator* nav);
 
 	std::string getType() { return node_b_classes->subnodes[1]->name.c_str(); }

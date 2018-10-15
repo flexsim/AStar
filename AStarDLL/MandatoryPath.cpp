@@ -37,15 +37,17 @@ void MandatoryPath::addPassagesToTable(Grid * grid)
 			if (!useCondition)
 				node->isOnMandatoryPath = true;
 			else newValue.isOnMandatoryPath = true;
-			if (direction > 135.0 || direction < -135.0)
-				newValue.setCanGo(Right, false);
-			else if (direction < 45.0 && direction > -45.0)
-				newValue.setCanGo(Left, false);
+			if (!isTwoWay) {
+				if (direction > 135.0 || direction < -135.0)
+					newValue.setCanGo(Right, false);
+				else if (direction < 45.0 && direction > -45.0)
+					newValue.setCanGo(Left, false);
 
-			if (direction < -45.0 && direction > -135.0)
-				newValue.setCanGo(Up, false);
-			else if (direction < 135.0 && direction > 45.0)
-				newValue.setCanGo(Down, false);
+				if (direction < -45.0 && direction > -135.0)
+					newValue.setCanGo(Up, false);
+				else if (direction < 135.0 && direction > 45.0)
+					newValue.setCanGo(Down, false);
+			}
 
 			conditionalBarrierChanges.addEntry(cell, newValue);
 		});
@@ -54,6 +56,6 @@ void MandatoryPath::addPassagesToTable(Grid * grid)
 
 void MandatoryPath::addVertices(treenode view, Mesh * barrierMesh, float z, DrawStyle drawStyle)
 {
-	addPathVertices(view, barrierMesh, z, Vec4f(0.75f, 0.61f, 0.25f, 1.0f), drawStyle);
+	addPathVertices(view, barrierMesh, z, Vec4f(0.75f, 0.61f, 0.25f, 1.0f), drawStyle, isTwoWay);
 }
 }
