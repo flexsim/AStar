@@ -221,7 +221,7 @@ void Barrier::drawManipulationHandles(treenode view)
 	float scale = max(this->nodeWidth, 0.15 * max(height, width));
 	float lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 	float z = (float)myMin.z + 0.01 / lengthMultiple;
-	Vec4f baseColor(0.6f, 0.6f, 0.6f, 1.0f);
+	Vec4f baseColor(0.4f, 0.4f, 0.4f, 1.0f);
 	Mesh mesh;
 
 	Vec3f bottomLeft((float)myMin.x, (float)myMin.y, myMin.z);

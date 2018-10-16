@@ -1995,6 +1995,7 @@ iterate(1, content(tabcontrol), 1){
   if (objectexists(node("&gt;PageOnApply",rank(tabcontrol,count))))
      nodefunction(node("&gt;PageOnApply",rank(tabcontrol,count)));
 }</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
        </data>
         <node f="40"><name></name></node>
         <node f="42" dt="4"><name>overlay</name><data>
@@ -2157,6 +2158,10 @@ forobjecttreeunder(c.find("../EditCondition")) {
           <node f="42" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
           <node f="42" dt="2"><name>coldlink</name><data>../../..&gt;objectfocus+&gt;variables/isTwoWay</data></node>
+          <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) {
+	treenode focus = c.find("..&gt;objectfocus+");
+	windowgray(windowfromnode(c), isclasstype(focus, "AStar::Bridge"));
+}</data></node>
           <node f="42" dt="2"><name>tooltip</name><data>Tells if the object's rule applies both ways</data></node>
          </data></node>
          <node f="42" dt="4"><name>PointsEdit</name><data>
@@ -2574,6 +2579,7 @@ iterate(1, content(tabcontrol), 1){
   if (objectexists(node("&gt;PageOnApply",rank(tabcontrol,count))))
      nodefunction(node("&gt;PageOnApply",rank(tabcontrol,count)));
 }</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
        </data>
         <node f="40"><name></name></node>
         <node f="42" dt="4"><name>overlay</name><data>
@@ -5266,6 +5272,10 @@ function_s(c.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
         <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+&gt;variables/isTwoWay</data></node>
+        <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) {
+	treenode focus = c.find("..&gt;objectfocus+");
+	windowgray(windowfromnode(c), isclasstype(focus, "AStar::Bridge"));
+}</data></node>
         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
         <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);
 treenode focus = node("&gt;coldlink+", c);
