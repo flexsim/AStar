@@ -668,14 +668,14 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 		struct ShimmyInfo {
 			AStarCell cell;
 			bool isValid = true;
-			ShimmyInfo(unsigned int grid, unsigned short col, unsigned short row, bool isValid) : cell(grid, col, row), isValid(isValid) {}
+			ShimmyInfo(unsigned int grid, unsigned short row, unsigned short col, bool isValid) : cell(grid, row, col), isValid(isValid) {}
 			ShimmyInfo() {}
 		};
 		AStarNode* curNode = navigator->getNode(curCell);
-		ShimmyInfo leftCell(curCell.grid, curCell.col - 1, curCell.row, curNode->canGoLeft);
-		ShimmyInfo rightCell(curCell.grid, curCell.col + 1, curCell.row, curNode->canGoRight);
-		ShimmyInfo upCell(curCell.grid, curCell.col, curCell.row + 1, curNode->canGoUp);
-		ShimmyInfo downCell(curCell.grid, curCell.col, curCell.row - 1, curNode->canGoDown);
+		ShimmyInfo leftCell(curCell.grid, curCell.row, curCell.col - 1, curNode->canGoLeft);
+		ShimmyInfo rightCell(curCell.grid, curCell.row, curCell.col + 1, curNode->canGoRight);
+		ShimmyInfo upCell(curCell.grid, curCell.row + 1, curCell.col, curNode->canGoUp);
+		ShimmyInfo downCell(curCell.grid, curCell.row - 1, curCell.col, curNode->canGoDown);
 
 		ShimmyInfo check[4];
 		if (blockingCell.col > curCell.col) {

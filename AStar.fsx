@@ -5784,6 +5784,7 @@ navigator.attrs.shape.value = "***";
 navigator.attrs.shapeindex.value = 0;
 navigator.attrs.guifocusclass.value = "VIEW:/modules/AStar/Pages/AStarProperties";
 navigator.find("&gt;variables/grids/1/nodeWidth").value = getvarnum(navigator, "nodeWidth");
+clearcontents(navigator.attrs.variables.find("resetposition"));
 switch_hidecontents(navigator, 0);
 createcopy(libNavigator.attrs.imageindexobject, navigator.attrs.imageindexobject, 1, 0, 0, 1);
 createcopy(libNavigator.attrs.imageobject, navigator.attrs.imageobject, 1, 0, 0, 1);
