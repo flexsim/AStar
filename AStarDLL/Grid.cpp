@@ -453,9 +453,8 @@ void Grid::blockNodeDirection(const AStarCell& cell, Direction direction, Barrie
 	if (navigator->applyToTemporaryBarrier == nullptr || !isConditionalBarrier) {
 		node->setCanGo(direction, false);
 	} else {
-		AStarNode copy(*node);
-		copy.setCanGo(direction, false);
-		navigator->applyToTemporaryBarrier->addEntry(cell, copy);
+		AStarNode& entryNode = (*navigator->applyToTemporaryBarrier)[cell].newValue;
+		entryNode.setCanGo(direction, false);
 		navigator->assertExtraData(cell, ConditionalBarrierData)->addConditionalBarrier(barrier);
 	}
 }

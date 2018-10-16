@@ -35,7 +35,7 @@ void PreferredPath::bind(void)
 
 void PreferredPath::addPassagesToTable(Grid* grid)
 {
-
+	double weight = pathWeight == 0 ? navigator->defaultPathWeight : pathWeight;
 	for (int i = 0; i < pointList.size() - 1; i++) {
 		
 		Point* fromPoint = pointList[i];
@@ -57,8 +57,8 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 			continue;
 
 		// calculate the weight values for preferred paths.
-		int horizontalWeight = (int)(pathWeight * 127 * dx / (fabs(dx) + fabs(dy)));
-		int verticalWeight = (int)(pathWeight * 127 * dy / (fabs(dx) + fabs(dy)));
+		int horizontalWeight = (int)(weight * 127 * dx / (fabs(dx) + fabs(dy)));
+		int verticalWeight = (int)(weight * 127 * dy / (fabs(dx) + fabs(dy)));
 
 		grid->visitGridModelLine(fromPos, toPos, [this, grid, horizontalWeight, verticalWeight, dx, dy](const AStarCell& cell) -> void {
 			AStarNode* node = grid->getNode(cell);

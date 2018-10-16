@@ -17,7 +17,8 @@ class TemporaryBarrier
 public:
 	AStarNode valueMask;
 	bool isApplied = false;
-	void addEntry(const AStarCell& cell, const AStarNode& newValue);
+	ChangeEntry& addEntry(const AStarCell& cell, const AStarNode& newValue);
+	ChangeEntry& operator [](const AStarCell& cell);
 	void apply();
 	void unapply();
 	void reset(AStarNavigator* nav) { navigator = nav; entries.clear(); isApplied = false; }

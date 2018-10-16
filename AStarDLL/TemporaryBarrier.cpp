@@ -3,14 +3,24 @@
 
 namespace AStar {
 
-void TemporaryBarrier::addEntry(const AStarCell& cell, const AStarNode& newValue)
+TemporaryBarrier::ChangeEntry& TemporaryBarrier::addEntry(const AStarCell& cell, const AStarNode& newValue)
 {
 	entries.push_back(ChangeEntry());
 	entries.back().cell = cell;
 	entries.back().newValue = newValue;
 	AStarNode& node = *navigator->getNode(cell);
 	entries.back().savedValue = node;
+	return entries.back();
+}
 
+TemporaryBarrier::ChangeEntry& TemporaryBarrier::operator[](const AStarCell & cell)
+{
+	for (int i = (int)entries.size() - 1; i >= 0; i--) {
+		if (entries[i].cell == cell)
+			return entries[i];
+	}
+	AStarNode& node = *navigator->getNode(cell);
+	return addEntry(cell, node);
 }
 
 void TemporaryBarrier::apply()

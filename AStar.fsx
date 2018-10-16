@@ -954,11 +954,6 @@ like a wall</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>A path that designated travelers must travel on</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\mandatorypath.bmp</data></node>
        </data></node>
-       <node f="42" dt="4"><name>Grid</name><data>
-        <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>modeleditmode("AStar::Grid")</data></node>
-        <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\grid.bmp</data></node>
-       </data></node>
       </node>
       <node f="42"><name>Pages</name>
        <node f="40"><name></name></node>
@@ -5814,6 +5809,8 @@ for (int i = 1; i &lt;= barriers.subnodes.length; i++) {
 			= barrier.find("useVirtualDistance")?.value;
 		newObj.attrs.variables.find("virtualDistance").value 
 			= barrier.find("virtualDistance")?.value;
+	} else if (class == "AStar::MandatoryPath") {
+		newObj = createinstance(astarFolder.find("MandatoryPath"), navigator);
 	}
 	if (newObj) {
 		newObjects.push(newObj);

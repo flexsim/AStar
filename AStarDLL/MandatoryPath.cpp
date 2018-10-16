@@ -27,8 +27,8 @@ void MandatoryPath::addPassagesToTable(Grid * grid)
 
 		Point* fromPoint = pointList[i];
 		Point* toPoint = pointList[i + 1];
-		Vec3 fromPos(fromPoint->x, fromPoint->y, fromPoint->z);
-		Vec3 toPos(toPoint->x, toPoint->y, toPoint->z);
+		Vec3 fromPos(fromPoint->project(holder, model()));
+		Vec3 toPos(toPoint->project(holder, model()));
 		double direction = radianstodegrees(atan2(toPos.y - fromPos.y, toPos.x - fromPos.x));
 
 		grid->visitGridModelLine(fromPos, toPos, [this, grid, direction](const AStarCell& cell) -> void {

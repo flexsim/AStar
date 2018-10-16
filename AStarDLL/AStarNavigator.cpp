@@ -245,8 +245,10 @@ double AStarNavigator::onReset()
 	maxPathWeight = 0.0;
 	for (int i = 0; i < barrierList.size(); i++) {
 		PreferredPath* path = barrierList[i]->toPreferredPath();
-		if (path)
-			maxPathWeight = max(path->pathWeight, maxPathWeight);
+		if (path) {
+			double weight = path->pathWeight == 0 ? this->defaultPathWeight : path->pathWeight;
+			maxPathWeight = max(weight, maxPathWeight);
+		}
 	}
 	activeTravelers.clear();
 
