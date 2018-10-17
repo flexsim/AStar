@@ -35,6 +35,7 @@ std::vector<Vec4f> AStarNavigator::heatMapColorProgression =
 	Vec4f(0.933f, 0.243f, 0.196f, 1.0f)
 };
 
+AStarNavigator* AStarNavigator::instance = nullptr;
 
 AStarNavigator::AStarNavigator()
 {
@@ -42,10 +43,13 @@ AStarNavigator::AStarNavigator()
 
 AStarNavigator::~AStarNavigator()
 {
+	if (AStarNavigator::instance == this)
+		AStarNavigator::instance = nullptr;
 }
 
 void AStarNavigator::bindVariables(void)
 {
+	AStarNavigator::instance = this;
 	__super::bindVariables();
 	bindVariable(defaultPathWeight);
 	bindVariable(drawMode);
@@ -135,6 +139,13 @@ void AStarNavigator::bindTEEvents(TaskExecuter* te)
 void AStarNavigator::bindTEStatistics(TaskExecuter* te)
 {
 
+}
+
+void AStarNavigator::bindInterface()
+{
+	bindClassByName<AStarCell>("AStar.Cell", true);
+	bindMethod(getCell, AStarNavigator, "AStar.Cell getCell(Vec3& loc)");
+	bindMethod(getLocation, AStarNavigator, "Vec3 getLocation(AStar.Cell& loc)");
 }
 
 TreeNode* AStarNavigator::resolveTraveler()
@@ -718,8 +729,8 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 
 	TaskExecuter* te = traveler->te;
 
-	AStarCell startCell = getCellFromLoc(startLoc);
-	AStarCell destCell = getCellFromLoc(destLoc);
+	AStarCell startCell = getCell(startLoc);
+	AStarCell destCell = getCell(destLoc);
 
 	if (traveler->useMandatoryPath) {
 		AStarNode* node = getNode(startCell);
@@ -924,7 +935,7 @@ the outside 8 nodes.
 						continue;
 					double addedDist = entry.bridge->travelDistance + grid->nodeWidth;
 					Point* endPoint = entry.isAtBridgeStart ? entry.bridge->pointList.back() : entry.bridge->pointList.front();
-					AStarCell endCell = getCellFromLoc(*endPoint + entry.bridge->getPointToModelOffset());
+					AStarCell endCell = getCell(*endPoint + entry.bridge->getPointToModelOffset());
 					AStarNode* node = getNode(endCell);
 					expandOpenSet(getGrid(endCell), endCell.row, endCell.col, addedDist / grid->nodeWidth, 0, i);
 				}
@@ -1025,7 +1036,7 @@ the outside 8 nodes.
 		double threshold = sqrt(destThreshold.xAxisThreshold * destThreshold.xAxisThreshold 
 			+ destThreshold.yAxisThreshold * destThreshold.yAxisThreshold);
 		while (travelPath.size() > 1) {
-			Vec3 pos = getLocFromCell(travelPath[travelPath.size() - 2].cell);
+			Vec3 pos = getLocation(travelPath[travelPath.size() - 2].cell);
 			Vec3 diff = pos - Vec3(destLoc.x, destLoc.y, 0);
 			if (diff.magnitude > threshold)
 				break;
@@ -1482,7 +1493,7 @@ void AStarNavigator::drawAllocations(float z)
 		bool isAllocCurrent = currentAllocation != nodeData.allocations.end();
 		Vec4f& clr = !isAllocCurrent ? partialClr : fullClr;
 
-		Vec3 centerPos = getLocFromCell(nodeData.cell);
+		Vec3 centerPos = getLocation(nodeData.cell);
 		int vert = allocMesh.addVertex();
 		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
 		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
@@ -1538,18 +1549,18 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 	Vec3 size = destination->objectAs(ObjectDataType)->size;
 	vectorproject(destination, 0.5 * size.x, -0.5 * size.y, 0, model(), loc);
 
-	getGrid(getCellFromLoc(loc))->drawDestinationThreshold(destination, loc, size);
+	getGrid(getCell(loc))->drawDestinationThreshold(destination, loc, size);
 
 }
 
-AStarCell AStarNavigator::getCellFromLoc(const Vec3& modelLoc)
+AStarCell AStarNavigator::getCell(const Vec3& modelLoc)
 {
-	return getGrid(modelLoc)->getCellFromLoc(modelLoc);
+	return getGrid(modelLoc)->getCell(modelLoc);
 }
 
-Vec3 AStarNavigator::getLocFromCell(const AStarCell & cell)
+Vec3 AStarNavigator::getLocation(const AStarCell & cell)
 {
-	return grids[max(1, cell.grid) - 1]->getLocFromCell(cell);
+	return grids[max(1, cell.grid) - 1]->getLocation(cell);
 }
 
 AStarNode * AStarNavigator::getNode(const AStarCell & cell)
@@ -1602,7 +1613,7 @@ void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 		return;
 	}
 
-	AStarCell cell = getCellFromLoc(modelPos);
+	AStarCell cell = getCell(modelPos);
 	grids[max(1, cell.grid) - 1]->blockGridModelPos(modelPos);
 }
 
@@ -1728,7 +1739,7 @@ void AStarNavigator::dumpBlockageData(treenode destNode)
 		table.addRow(0, 0);
 		table[Variant(table.numRows)][Variant("GridX")] = data->cell.col;
 		table[Variant(table.numRows)][Variant("GridY")] = data->cell.row;
-		Vec3 loc = getLocFromCell(data->cell);
+		Vec3 loc = getLocation(data->cell);
 		table[Variant(table.numRows)][Variant("ModelX")] = loc.x;
 		table[Variant(table.numRows)][Variant("ModelY")] = loc.y;
 		table[Variant(table.numRows)][Variant("TotalTraversals")] = data->totalTraversals;
@@ -1766,7 +1777,7 @@ void AStarNavigator::drawRoutingAlgorithm(Traveler * traveler, treenode view)
 		AStarSearchEntry& entry = snapshot.totalSet[i];
 		fglPushMatrix();
 
-		Vec3 centerPos = getLocFromCell(entry.cell);
+		Vec3 centerPos = getLocation(entry.cell);
 		//centerPos = centerPos / scale;
 		fglTranslate(centerPos.x, centerPos.y, centerPos.z);
 

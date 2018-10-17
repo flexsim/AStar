@@ -15,6 +15,7 @@ public:
 	virtual const char* getClassFactory() override { return "AStar::Traveler"; }
 	virtual void bind() override;
 	virtual void bindEvents() override;
+	virtual void bindInterface() override;
 
 	virtual TreeNode* getEventInfoObject(const char* eventTitle) override;
 

@@ -45,6 +45,30 @@ void AStarCell::bind(SimpleDataType* sdt, const char* prefix)
 	sdt->bindNumberByName((string(prefix) + "row").c_str(), row);
 }
 
+void AStarCell::bindInterface()
+{
+	SimpleDataType::bindConstructor(force_cast<void*>(&AStarCell::construct), "AStar.Cell(int grid, int row, int col)");
+	SimpleDataType::bindCopyConstructor(&AStarCell::copyConstruct);
+	SimpleDataType::bindCopyAssigner(&AStarCell::operator =);
+	bindTypedProperty(row, int, &AStarCell::__getRow, &AStarCell::__setRow);
+	bindTypedProperty(col, int, &AStarCell::__getCol, &AStarCell::__setCol);
+	SimpleDataType::bindOperator(bool, AStarCell, "int operator bool()");
+	SimpleDataType::bindOperator(==, AStarCell, "int operator ==(AStar.Cell& other)");
+	SimpleDataType::bindOperator(!= , AStarCell, "int operator !=(AStar.Cell& other)");
+}
+
+AStarCell::operator bool()
+{
+	if (!AStarNavigator::instance)
+		return false;
+	if (grid == 0 || grid > AStarNavigator::instance->grids.size())
+		return false;
+	Grid* grid = AStarNavigator::instance->getGrid(*this);
+	if (col >= grid->numCols || row >= grid->numRows)
+		return false;
+	return true;
+}
+
 void NodeAllocation::bind(TreeNode* x)
 {
 	int bindMode = SimpleDataType::getBindMode();

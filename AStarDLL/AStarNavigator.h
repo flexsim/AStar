@@ -255,6 +255,7 @@ public:
 	virtual void bindEvents() override;
 	virtual void bindTEEvents(TaskExecuter* te) override;
 	virtual void bindTEStatistics(TaskExecuter* te) override;
+	virtual void bindInterface() override;
 	TreeNode* AStarNavigator::resolveTraveler();
 
 	void blockGridModelPos(const Vec3& modelPos);
@@ -264,9 +265,9 @@ public:
 	void resolveGridBounds();
 	void resetGrids();
 
-	AStarCell getCellFromLoc(const Vec2& modelLoc) { return getCellFromLoc(Vec3(modelLoc.x, modelLoc.y, 0.0)); }
-	AStarCell getCellFromLoc(const Vec3& modelLoc);
-	Vec3 getLocFromCell(const AStarCell& cell);
+	//AStarCell getCell(const Vec2& modelLoc) { return getCell(Vec3(modelLoc.x, modelLoc.y, 0.0)); }
+	AStarCell getCell(const Vec3& modelLoc);
+	Vec3 getLocation(const AStarCell& cell);
 
 	AStarNode* getNode(const AStarCell& cell);
 	Grid* getGrid(const AStarCell& cell);
@@ -306,6 +307,8 @@ public:
 
 	treenode addMember(TaskExecuter* te);
 	void addObjectBarrier(ObjectDataType* object);
+
+	static AStarNavigator* instance;
 };
 
 }

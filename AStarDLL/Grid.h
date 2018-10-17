@@ -52,8 +52,8 @@ public:
 
 	bool growToEncompassBoundingBox(Vec3 min, Vec3 max, bool addSurroundDepth);
 	void findGrowthBounds(Vec2& min, Vec2& max) const;
-	AStarCell getCellFromLoc(const Vec3& modelLoc);
-	Vec3 getLocFromCell(const AStarCell& cell) { return Vec3(gridOrigin.x + cell.col * nodeWidth, gridOrigin.y + cell.row * nodeWidth, minPoint.z); }
+	AStarCell getCell(const Vec3& modelLoc);
+	Vec3 getLocation(const AStarCell& cell) { return Vec3(gridOrigin.x + cell.col * nodeWidth, gridOrigin.y + cell.row * nodeWidth, minPoint.z); }
 	void reset(AStarNavigator* nav);
 	void buildNodeTable();
 	void resolveGridOrigin();
@@ -90,7 +90,7 @@ public:
 	void addSolidBarrierToTable(const Vec3 & min, const Vec3 & max, Barrier* barrier = nullptr);
 	void addObjectBarrierToTable(treenode obj);
 	void blockGridModelPos(const AStarCell& cell);
-	void blockGridModelPos(const Vec3& pos) { blockGridModelPos(getCellFromLoc(pos)); }
+	void blockGridModelPos(const Vec3& pos) { blockGridModelPos(getCell(pos)); }
 	void blockNodeDirection(const AStarCell& cell, Direction direction, Barrier* barrier);
 	void divideGridModelLine(const Vec3& fromPos, const Vec3& toPos, bool isOneWay, Barrier* barrier = nullptr);
 	void visitGridModelLine(const Vec3& fromPos, const Vec3& toPos, std::function<void(const AStarCell& cell)>);
@@ -107,7 +107,7 @@ public:
 	void visitCellsWidening(const AStarCell& centerCell, std::function<bool(const AStarCell& cell)> callback);
 	void visitCellsWidening(const Vec3& center, std::function<bool(const AStarCell& cell)> callback)
 	{
-		visitCellsWidening(getCellFromLoc(center), callback);
+		visitCellsWidening(getCell(center), callback);
 	}
 
 

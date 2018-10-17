@@ -33,8 +33,8 @@ void Bridge::addPassagesToTable(Grid* grid)
 	if (pointList.size() < 2)
 		return;
 
-	AStarCell fromCell = grid->getCellFromLoc(pointList.front()->project(holder, model()));
-	AStarCell toCell = grid->getCellFromLoc(pointList.back()->project(holder, model()));
+	AStarCell fromCell = grid->getCell(pointList.front()->project(holder, model()));
+	AStarCell toCell = grid->getCell(pointList.back()->project(holder, model()));
 	if (fromCell == toCell)
 		return;
 
@@ -65,7 +65,7 @@ void Bridge::onReset(AStarNavigator* nav)
 	lastTraveler = nullptr;
 	geometricDistance = calculateDistance();
 	Vec3 modelPos(pointList[0]->x, pointList[0]->y, pointList[0]->z);
-	Grid* grid = nav->getGrid(nav->getCellFromLoc(modelPos));
+	Grid* grid = nav->getGrid(nav->getCell(modelPos));
 	nodeWidth = grid->nodeWidth;
 	travelDistance = useVirtualDistance ? virtualDistance : max(0.001 * nodeWidth, geometricDistance - nodeWidth);
 	filledDistance = 0.0;

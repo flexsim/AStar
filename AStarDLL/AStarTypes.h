@@ -28,12 +28,26 @@ struct AStarCell {
 	};
 	AStarCell() {}
 	AStarCell(unsigned int grid, unsigned short row, unsigned short col) : grid(grid), row(row), col(col) {}
+	void construct(unsigned int grid, unsigned int row, unsigned int col) {
+		new (this) AStarCell(grid, (unsigned short)row, (unsigned short)col);
+	}
+	void copyConstruct(const AStarCell& other) {
+		new (this) AStarCell(other);
+	}
 	AStarCell(unsigned long long value) : value(value) {}
+	AStarCell& operator = (const AStarCell& other) { new (this) AStarCell(other); return *this; }
 	bool operator == (const AStarCell& other) const { return value == other.value; }
 	bool operator != (const AStarCell& other) const { return value != other.value; }
 	bool operator < (const AStarCell& other) const { return value < other.value; }
 	void bind(TreeNode* x, const char* prefix);
 	void bind(SimpleDataType* sdt, const char* prefix = "");
+
+	void bindInterface();
+	int __getRow() { return row; }
+	void __setRow(int toVal) { row = (unsigned short)toVal; }
+	int __getCol() { return col; }
+	void __setCol(int toVal) { col = (unsigned short)toVal; }
+	operator bool();
 };
 
 enum ExtraDataReason : char {

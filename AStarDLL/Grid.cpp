@@ -114,7 +114,7 @@ void Grid::findGrowthBounds(Vec2 & min, Vec2 & max) const
 	}
 }
 
-AStarCell Grid::getCellFromLoc(const Vec3 & modelLoc)
+AStarCell Grid::getCell(const Vec3 & modelLoc)
 {
 	AStarCell cell;
 	cell.grid = rank;
@@ -281,8 +281,8 @@ void Grid::addSolidBarrierToTable(const Vec3 & min, const Vec3 & max, Barrier* b
 {
 	// minCell and maxCell are based on the min and max bounds, offset half a node with 
 	// into the boundary. This makes it so it doesn't affect stuff outside the barrier
-	AStarCell minCell = getCellFromLoc(min + Vec3(0.5 * nodeWidth, 0.5 * nodeWidth, 0.0));
-	AStarCell maxCell = getCellFromLoc(max + Vec3(-0.5 * nodeWidth, -0.5 * nodeWidth, 0.0));
+	AStarCell minCell = getCell(min + Vec3(0.5 * nodeWidth, 0.5 * nodeWidth, 0.0));
+	AStarCell maxCell = getCell(max + Vec3(-0.5 * nodeWidth, -0.5 * nodeWidth, 0.0));
 	int gridRank = rank;
 
 	for (int row = minCell.row; row <= maxCell.row; row++) {
@@ -958,7 +958,7 @@ void Grid::drawDestinationThreshold(treenode destination, const Vec3 & loc, cons
 	DestinationThreshold dt = DestinationThreshold(destination, nodeWidth);
 	// Set the desination outside a barrier if necessary
 	if (navigator->ignoreDestBarrier) {
-		AStarCell destCell = getCellFromLoc(Vec3(loc));
+		AStarCell destCell = getCell(Vec3(loc));
 		navigator->checkGetOutOfBarrier(destCell, nullptr, 0, 0, &dt);
 	}
 
@@ -977,7 +977,7 @@ void Grid::drawDestinationThreshold(treenode destination, const Vec3 & loc, cons
 			if (dt.xAxisThreshold > 0 || dt.yAxisThreshold > 0) {
 				double threshold = sqrt(dt.xAxisThreshold * dt.xAxisThreshold + dt.yAxisThreshold * dt.yAxisThreshold);
 
-				Vec3 pos = getLocFromCell(cell);
+				Vec3 pos = getLocation(cell);
 				Vec3 diff = pos - Vec3(loc[0], loc[1], 0);
 				if (diff.magnitude < threshold)
 					withinArrivalThreshold = 1;
@@ -986,7 +986,7 @@ void Grid::drawDestinationThreshold(treenode destination, const Vec3 & loc, cons
 			bool withinTravelThreshold = dt.isWithinThreshold(cell, gridOrigin, loc, nodeWidth);
 			if (withinTravelThreshold || withinArrivalThreshold) {
 				Mesh* theMesh = withinTravelThreshold ? &mesh : &mesh2;
-				Vec3 centerPos = getLocFromCell(cell);
+				Vec3 centerPos = getLocation(cell);
 				int vert = theMesh->addVertex();
 				theMesh->setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
 				vert = theMesh->addVertex();

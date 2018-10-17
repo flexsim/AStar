@@ -60,6 +60,11 @@ void Traveler::bindEvents()
 	bindEventByName("onContinue", onContinueTrigger, "OnContinue", EVENT_TYPE_TRIGGER);
 }
 
+void Traveler::bindInterface()
+{
+
+}
+
 TreeNode* Traveler::getEventInfoObject(const char* eventTitle)
 {
 	return node(eventTitle, node("MAIN:/project/exec/globals/DefaultEventInfo/AStarTraveler"));
@@ -87,7 +92,7 @@ void Traveler::onReset()
 	request = nullptr;
 	te->moveToResetPosition();
 	Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
-	AStarCell resetCell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
+	AStarCell resetCell = navigator->getCell(loc);
 
 	if (useMandatoryPath) {
 		Grid* grid = navigator->getGrid(resetCell);
@@ -101,7 +106,7 @@ void Traveler::onReset()
 			return true;
 		});
 		if (originalResetCell != resetCell) {
-			te->setLocation(grid->getLocFromCell(resetCell), Vec3(0.5, 0.5, 0.0));
+			te->setLocation(grid->getLocation(resetCell), Vec3(0.5, 0.5, 0.0));
 		}
 	}
 
@@ -122,7 +127,7 @@ void Traveler::onStartSimulation()
 {XS
 	if (navigator->enableCollisionAvoidance && !navigator->ignoreInactiveMemberCollisions) {
 		Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
-		AStarCell resetCell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
+		AStarCell resetCell = navigator->getCell(loc);
 		travelPath.clear();
 		travelPath.push_back(AStarPathEntry(resetCell, -1));
 		addAllocation(NodeAllocation(this, resetCell, 0, 0, 0.0, DBL_MAX, 1.0), true, false);
@@ -163,7 +168,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 	if (isExitingBridge)
 		startLoc = te->getLocation(0.5, 0.5, 0);
 	else {
-		startLoc = nav->getLocFromCell(travelPath[startAtPathIndex].cell);
+		startLoc = nav->getLocation(travelPath[startAtPathIndex].cell);
 		if (up(te->holder) != model())
 			startLoc = startLoc.project(model(), up(te->holder));
 	}
@@ -264,7 +269,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 					diff.rotateXY(-containerRot);
 			}
 			else {
-				Vec3 toLoc = nav->getLocFromCell(e.cell);
+				Vec3 toLoc = nav->getLocation(e.cell);
 				step.isDiagonal = false;
 				step.isHorizontalDeepSearch = false;
 				step.isVerticalDeepSearch = false;
@@ -842,7 +847,7 @@ void Traveler::abortTravel(TreeNode* newTS)
 			Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
 			if (te->holder->up != model())
 				loc = loc.project(te->holder->up, model());
-			AStarCell cell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
+			AStarCell cell = navigator->getCell(loc);
 			while (allocations.size() > 1 && allocations.back()->acquireTime > time())
 				clearAllocations(allocations.end() - 1);
 
