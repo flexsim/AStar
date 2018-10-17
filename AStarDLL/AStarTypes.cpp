@@ -9,7 +9,7 @@
 namespace AStar {
 
 
-void AStarCell::bind(TreeNode* x, const char* prefix)
+void Cell::bind(TreeNode* x, const char* prefix)
 {
 	string gridName = string(prefix) + "grid";
 	string rowName = string(prefix) + "row";
@@ -38,26 +38,26 @@ void AStarCell::bind(TreeNode* x, const char* prefix)
 }
 
 
-void AStarCell::bind(SimpleDataType* sdt, const char* prefix)
+void Cell::bind(SimpleDataType* sdt, const char* prefix)
 {
 	sdt->bindNumberByName((string(prefix) + "grid").c_str(), grid);
 	sdt->bindNumberByName((string(prefix) + "col").c_str(), col);
 	sdt->bindNumberByName((string(prefix) + "row").c_str(), row);
 }
 
-void AStarCell::bindInterface()
+void Cell::bindInterface()
 {
-	SimpleDataType::bindConstructor(force_cast<void*>(&AStarCell::construct), "AStar.Cell(int grid, int row, int col)");
-	SimpleDataType::bindCopyConstructor(&AStarCell::copyConstruct);
-	SimpleDataType::bindCopyAssigner(&AStarCell::operator =);
-	bindTypedProperty(row, int, &AStarCell::__getRow, &AStarCell::__setRow);
-	bindTypedProperty(col, int, &AStarCell::__getCol, &AStarCell::__setCol);
-	SimpleDataType::bindOperator(bool, AStarCell, "int operator bool()");
-	SimpleDataType::bindOperator(==, AStarCell, "int operator ==(AStar.Cell& other)");
-	SimpleDataType::bindOperator(!= , AStarCell, "int operator !=(AStar.Cell& other)");
+	SimpleDataType::bindConstructor(force_cast<void*>(&Cell::construct), "AStar.Cell(int grid, int row, int col)");
+	SimpleDataType::bindCopyConstructor(&Cell::copyConstruct);
+	SimpleDataType::bindCopyAssigner(&Cell::operator =);
+	bindTypedProperty(row, int, &Cell::__getRow, &Cell::__setRow);
+	bindTypedProperty(col, int, &Cell::__getCol, &Cell::__setCol);
+	SimpleDataType::bindOperator(bool, Cell, "int operator bool()");
+	SimpleDataType::bindOperator(==, Cell, "int operator ==(AStar.Cell& other)");
+	SimpleDataType::bindOperator(!= , Cell, "int operator !=(AStar.Cell& other)");
 }
 
-AStarCell::operator bool()
+Cell::operator bool()
 {
 	if (!AStarNavigator::instance)
 		return false;
@@ -197,7 +197,7 @@ void AStarNodeExtraData::fulfillTopRequest()
 	requests.pop_front();
 	double blockedTime = time() - traveler->lastBlockTime;
 	if (traveler->isBlocked && blockedTime > traveler->tinyTime) {
-		AStarCell cell;
+		Cell cell;
 		if (traveler->allocations.size() > 0)
 			cell = traveler->allocations.back()->cell;
 		else cell = traveler->travelPath[topRequest.travelPathIndex - 1].cell;
@@ -315,7 +315,7 @@ void AStarNodeExtraData::ContinueEvent::bind()
 	bindNumber(cell.row);
 }
 
-AStarNodeExtraData::ContinueEvent::ContinueEvent(double time, Traveler* traveler, Traveler* blocker, AStarCell& cell) : cell(cell), FlexSimEvent(traveler->holder, time, blocker ? blocker->holder : nullptr, cell.row * 100000 + cell.col) {}
+AStarNodeExtraData::ContinueEvent::ContinueEvent(double time, Traveler* traveler, Traveler* blocker, Cell& cell) : cell(cell), FlexSimEvent(traveler->holder, time, blocker ? blocker->holder : nullptr, cell.row * 100000 + cell.col) {}
 void AStarNodeExtraData::ContinueEvent::execute()
 {
 	partner()->objectAs(Traveler)->navigator->getExtraData(cell)->onContinue(involved ? involved->objectAs(Traveler) : nullptr);
@@ -376,7 +376,7 @@ DestinationThreshold::DestinationThreshold(treenode dest, double fudgeFactor)
 	anyThresholdRadius = 0.0;
 }
 
-bool DestinationThreshold::isWithinThreshold(const AStarCell & cell, const Vec2& gridOrigin, const Vec2& destLoc, double nodeWidth)
+bool DestinationThreshold::isWithinThreshold(const Cell & cell, const Vec2& gridOrigin, const Vec2& destLoc, double nodeWidth)
 {
 	if (anyThresholdRadius <= 0 && xAxisThreshold <= 0 && yAxisThreshold <= 0)
 		return false;

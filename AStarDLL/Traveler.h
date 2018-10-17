@@ -74,7 +74,7 @@ public:
 	static NodeAllocation* findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs);
 	void removeAllocation(TravelerAllocations::iterator iter);
 	void cullExpiredAllocations();
-	void clearAllocationsExcept(const AStarCell& cell);
+	void clearAllocationsExcept(const Cell& cell);
 	void clearAllocations();
 	void clearAllocationsUpTo(TravelerAllocations::iterator iter);
 	/// <summary>	Clears the allocations including and after fromPoint. </summary>
@@ -95,7 +95,7 @@ public:
 	};
 	ObjRef<ArrivalEvent> arrivalEvent;
 
-	void onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell& cell);
+	void onBlock(Traveler* collidingWith, int colliderPathIndex, Cell& cell);
 
 	bool isNavigatingAroundDeadlock = false;
 	bool isContinuingFromDeadlock = false;
@@ -104,7 +104,7 @@ public:
 	{
 	public:
 		BlockEvent() : FlexSimEvent() {}
-		BlockEvent(Traveler* collider, int colliderPathIndex, int intermediateAllocationIndex, Traveler* collidingWith, const AStarCell& cell, double time) 
+		BlockEvent(Traveler* collider, int colliderPathIndex, int intermediateAllocationIndex, Traveler* collidingWith, const Cell& cell, double time) 
 			: FlexSimEvent(collider->holder, time, collidingWith->holder, cell.row * 100000 + cell.col), colliderPathIndex(colliderPathIndex), intermediateAllocationIndex(intermediateAllocationIndex), cell(cell)
 		{}
 		virtual const char* getClassFactory() override { return "AStar::Traveler::BlockEvent"; }
@@ -131,7 +131,7 @@ public:
 		}
 		int colliderPathIndex;
 		int intermediateAllocationIndex;
-		AStarCell cell;
+		Cell cell;
 	};
 	ObjRef<BlockEvent> blockEvent;
 	double lastBlockTime;

@@ -92,12 +92,12 @@ void Traveler::onReset()
 	request = nullptr;
 	te->moveToResetPosition();
 	Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
-	AStarCell resetCell = navigator->getCell(loc);
+	Cell resetCell = navigator->getCell(loc);
 
 	if (useMandatoryPath) {
 		Grid* grid = navigator->getGrid(resetCell);
-		AStarCell originalResetCell = resetCell;
-		grid->visitCellsWidening(resetCell, [&](const AStarCell& cell) -> bool {
+		Cell originalResetCell = resetCell;
+		grid->visitCellsWidening(resetCell, [&](const Cell& cell) -> bool {
 			AStarNode* node = navigator->getNode(cell);
 			if (node->isOnMandatoryPath) {
 				resetCell = cell;
@@ -127,7 +127,7 @@ void Traveler::onStartSimulation()
 {XS
 	if (navigator->enableCollisionAvoidance && !navigator->ignoreInactiveMemberCollisions) {
 		Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
-		AStarCell resetCell = navigator->getCell(loc);
+		Cell resetCell = navigator->getCell(loc);
 		travelPath.clear();
 		travelPath.push_back(AStarPathEntry(resetCell, -1));
 		addAllocation(NodeAllocation(this, resetCell, 0, 0, 0.0, DBL_MAX, 1.0), true, false);
@@ -561,7 +561,7 @@ void Traveler::cullExpiredAllocations()
 		removeAllocation(allocations.begin());
 }
 
-void Traveler::clearAllocationsExcept(const AStarCell & cell)
+void Traveler::clearAllocationsExcept(const Cell & cell)
 {
 	double curTime = time();
 	while (allocations.size() > 0 && allocations[0]->cell != cell)
@@ -604,7 +604,7 @@ Traveler::TravelerAllocations::iterator Traveler::find(NodeAllocation* alloc)
 	return std::find_if(allocations.begin(), allocations.end(), [&](NodeAllocationIterator& iter) { return &(*iter) == alloc; });
 }
 
-void Traveler::onBlock(Traveler* collidingWith, int atPathIndex, AStarCell& cell)
+void Traveler::onBlock(Traveler* collidingWith, int atPathIndex, Cell& cell)
 {
 	cullExpiredAllocations();
 	bool shouldStop = true;
@@ -654,7 +654,7 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 {
 	double curTime = time();
 
-	AStarCell bestCell, bestAlternateCell;
+	Cell bestCell, bestAlternateCell;
 	Traveler* bestTraveler = nullptr, * bestAlternateTraveler = nullptr;
 
 	for (int i = 0; i <= deadlockList.size() && !bestTraveler; i++) {
@@ -662,16 +662,16 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 		if (traveler == this && i > 0)
 			continue;
 
-		AStarCell curCell = traveler->travelPath[traveler->blockedAtTravelPathIndex - 1].cell;
+		Cell curCell = traveler->travelPath[traveler->blockedAtTravelPathIndex - 1].cell;
 
-		AStarCell blockingCell = traveler->request->cell;
+		Cell blockingCell = traveler->request->cell;
 		AStarNodeExtraData* extra = navigator->getExtraData(blockingCell);
 		auto found = std::find_if(extra->allocations.begin(), extra->allocations.end(),
 			[&](NodeAllocation& alloc) -> bool {return alloc.acquireTime <= curTime && alloc.releaseTime >= curTime; });
 		Traveler* blockingTraveler = found->traveler;
 
 		struct ShimmyInfo {
-			AStarCell cell;
+			Cell cell;
 			bool isValid = true;
 			ShimmyInfo(unsigned int grid, unsigned short row, unsigned short col, bool isValid) : cell(grid, row, col), isValid(isValid) {}
 			ShimmyInfo() {}
@@ -745,7 +745,7 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 		navigator->getExtraData(bestTraveler->request->cell)->requests.remove_if([&](NodeAllocation& alloc) { return &alloc == bestTraveler->request; });
 		bestTraveler->request = nullptr;
 		FIRE_SDT_EVENT(bestTraveler->onRerouteTrigger, te->holder);
-		AStarCell curCell = bestTraveler->travelPath[bestTraveler->blockedAtTravelPathIndex - 1].cell;
+		Cell curCell = bestTraveler->travelPath[bestTraveler->blockedAtTravelPathIndex - 1].cell;
 		TravelPath newPath;
 		newPath.push_back(AStarPathEntry(curCell, -1));
 		newPath.push_back(AStarPathEntry(bestCell, -1));
@@ -847,7 +847,7 @@ void Traveler::abortTravel(TreeNode* newTS)
 			Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
 			if (te->holder->up != model())
 				loc = loc.project(te->holder->up, model());
-			AStarCell cell = navigator->getCell(loc);
+			Cell cell = navigator->getCell(loc);
 			while (allocations.size() > 1 && allocations.back()->acquireTime > time())
 				clearAllocations(allocations.end() - 1);
 

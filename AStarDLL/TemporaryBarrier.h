@@ -7,7 +7,7 @@ namespace AStar {
 class TemporaryBarrier
 {
 	struct ChangeEntry {
-		AStarCell cell;
+		Cell cell;
 		AStarNode savedValue;
 		AStarNode newValue;
 	};
@@ -17,8 +17,8 @@ class TemporaryBarrier
 public:
 	AStarNode valueMask;
 	bool isApplied = false;
-	ChangeEntry& addEntry(const AStarCell& cell, const AStarNode& newValue);
-	ChangeEntry& operator [](const AStarCell& cell);
+	ChangeEntry& addEntry(const Cell& cell, const AStarNode& newValue);
+	ChangeEntry& operator [](const Cell& cell);
 	void apply();
 	void unapply();
 	void reset(AStarNavigator* nav) { navigator = nav; entries.clear(); isApplied = false; }

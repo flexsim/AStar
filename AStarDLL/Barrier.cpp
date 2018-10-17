@@ -145,9 +145,9 @@ void Barrier::addBarriersToTable(Grid* grid)
 	if (isTrivialSolidBarrier) {
 		grid->addSolidBarrierToTable(myMin, myMax, this);
 	} else {
-		AStarCell minCell = grid->getCell(myMin + Vec3(0.5 * grid->nodeWidth, 0.5 * grid->nodeWidth, 0.0));
-		AStarCell maxCell = grid->getCell(myMax + Vec3(-0.5 * grid->nodeWidth, -0.5 * grid->nodeWidth, 0.0));
-		for (AStarCell cell = minCell; cell.row <= maxCell.row; cell.row++) {
+		Cell minCell = grid->getCell(myMin + Vec3(0.5 * grid->nodeWidth, 0.5 * grid->nodeWidth, 0.0));
+		Cell maxCell = grid->getCell(myMax + Vec3(-0.5 * grid->nodeWidth, -0.5 * grid->nodeWidth, 0.0));
+		for (Cell cell = minCell; cell.row <= maxCell.row; cell.row++) {
 			for (cell.col = minCell.col; cell.col <= maxCell.col; cell.col++) {
 				PatternCell* patternCell = getPatternCell(grid->getLocation(cell));
 				if (patternCell) {
@@ -470,10 +470,10 @@ void Barrier::drawManipulationHandles(treenode view)
 		Mesh gridPointsMesh;
 		gridPointsMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
 		Vec4f lightGray(0.7f, 0.7f, 0.7f, 1.0f);
-		AStarCell minCell = grid->getCell(myModelMin + Vec3(0.5 * nodeWidth, 0.5 * nodeWidth, 0.0));
-		AStarCell maxCell = grid->getCell(myModelMax + Vec3(-0.5 * nodeWidth, -0.5 * nodeWidth, 0.0));
+		Cell minCell = grid->getCell(myModelMin + Vec3(0.5 * nodeWidth, 0.5 * nodeWidth, 0.0));
+		Cell maxCell = grid->getCell(myModelMax + Vec3(-0.5 * nodeWidth, -0.5 * nodeWidth, 0.0));
 		Vec3f offset(-b_spatialx, -b_spatialy, -b_spatialz);
-		for (AStarCell cell = minCell; cell.row <= maxCell.row; cell.row++) {
+		for (Cell cell = minCell; cell.row <= maxCell.row; cell.row++) {
 			for (cell.col = minCell.col; cell.col <= maxCell.col; cell.col++) {
 				Vec3f modelPos(grid->getLocation(cell));
 				modelPos.z = gridZ;
@@ -1277,7 +1277,7 @@ Barrier::PatternCell * Barrier::getPatternCell(Vec3 & modelPos)
 	return nullptr;
 }
 
-Barrier::PatternCell* Barrier::getPatternCell(const AStarCell& cell) 
+Barrier::PatternCell* Barrier::getPatternCell(const Cell& cell) 
 { 
 	return getPatternCell(navigator->getLocation(cell)); 
 }

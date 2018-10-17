@@ -114,9 +114,9 @@ void Grid::findGrowthBounds(Vec2 & min, Vec2 & max) const
 	}
 }
 
-AStarCell Grid::getCell(const Vec3 & modelLoc)
+Cell Grid::getCell(const Vec3 & modelLoc)
 {
-	AStarCell cell;
+	Cell cell;
 	cell.grid = rank;
 	cell.col = (int)round((modelLoc.x - gridOrigin.x) / nodeWidth);
 	cell.col = max(0, cell.col);
@@ -281,24 +281,24 @@ void Grid::addSolidBarrierToTable(const Vec3 & min, const Vec3 & max, Barrier* b
 {
 	// minCell and maxCell are based on the min and max bounds, offset half a node with 
 	// into the boundary. This makes it so it doesn't affect stuff outside the barrier
-	AStarCell minCell = getCell(min + Vec3(0.5 * nodeWidth, 0.5 * nodeWidth, 0.0));
-	AStarCell maxCell = getCell(max + Vec3(-0.5 * nodeWidth, -0.5 * nodeWidth, 0.0));
+	Cell minCell = getCell(min + Vec3(0.5 * nodeWidth, 0.5 * nodeWidth, 0.0));
+	Cell maxCell = getCell(max + Vec3(-0.5 * nodeWidth, -0.5 * nodeWidth, 0.0));
 	int gridRank = rank;
 
 	for (int row = minCell.row; row <= maxCell.row; row++) {
-		blockNodeDirection(AStarCell(gridRank, row, minCell.col - 1), Right, barrier);
-		blockNodeDirection(AStarCell(gridRank, row, maxCell.col + 1), Left, barrier);
+		blockNodeDirection(Cell(gridRank, row, minCell.col - 1), Right, barrier);
+		blockNodeDirection(Cell(gridRank, row, maxCell.col + 1), Left, barrier);
 	}
 
 	for (int col = minCell.col; col <= maxCell.col; col++) {
-		blockNodeDirection(AStarCell(gridRank, maxCell.row + 1, col), Down, barrier);
-		blockNodeDirection(AStarCell(gridRank, minCell.row - 1, col), Up, barrier);
+		blockNodeDirection(Cell(gridRank, maxCell.row + 1, col), Down, barrier);
+		blockNodeDirection(Cell(gridRank, minCell.row - 1, col), Up, barrier);
 	}
 
 	for (int row = minCell.row; row <= maxCell.row; row++) {
 		for (int col = minCell.col; col <= maxCell.col; col++) {
 			AStarNode* theNode = getNode(row, col);
-			AStarCell cell(gridRank, row, col);
+			Cell cell(gridRank, row, col);
 			blockNodeDirection(cell, Up, barrier);
 			blockNodeDirection(cell, Down, barrier);
 			blockNodeDirection(cell, Left, barrier);
@@ -427,7 +427,7 @@ void Grid::addObjectBarrierToTable(treenode obj)
 	}
 }
 
-void Grid::blockGridModelPos(const AStarCell& cell)
+void Grid::blockGridModelPos(const Cell& cell)
 {
 	if (cell.col >= 0 && cell.col < numCols && cell.row >= 0 && cell.row < numRows) {
 		AStarNode& node = *getNode(cell);
@@ -447,7 +447,7 @@ void Grid::blockGridModelPos(const AStarCell& cell)
 	}
 }
 
-void Grid::blockNodeDirection(const AStarCell& cell, Direction direction, Barrier* barrier) {
+void Grid::blockNodeDirection(const Cell& cell, Direction direction, Barrier* barrier) {
 	AStarNode* node = getNode(cell);
 	bool isConditionalBarrier = barrier && barrier->useCondition;
 	if (navigator->applyToTemporaryBarrier == nullptr || !isConditionalBarrier) {
@@ -491,9 +491,9 @@ void Grid::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, boo
 			// Block down and up
 			if (currCol >= 0 && currCol < numCols) {
 				if ((!oneWay || nextCol > col) && currRow >= 0 && currRow < numRows)
-					blockNodeDirection(AStarCell(gridRank, (int)currRow, (int)currCol), Down, barrier);
+					blockNodeDirection(Cell(gridRank, (int)currRow, (int)currCol), Down, barrier);
 				if ((!oneWay || nextCol < col) && currRow - 1 >= 0 && currRow - 1 < numRows)
-					blockNodeDirection(AStarCell(gridRank, (int)currRow - 1, (int)currCol), Up, barrier);
+					blockNodeDirection(Cell(gridRank, (int)currRow - 1, (int)currCol), Up, barrier);
 			}
 
 			currCol++;
@@ -523,9 +523,9 @@ void Grid::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, boo
 			// Block left and right
 			if (currRow >= 0 && currRow < numRows) {
 				if ((!oneWay || nextRow < row) && currCol >= 0 && currCol < numCols)
-					blockNodeDirection(AStarCell(gridRank, (int)currRow, (int)currCol), Left, barrier);
+					blockNodeDirection(Cell(gridRank, (int)currRow, (int)currCol), Left, barrier);
 				if ((!oneWay || nextRow > row) && currCol - 1 >= 0 && currCol - 1 < numCols)
-					blockNodeDirection(AStarCell(gridRank, (int)currRow, (int)currCol - 1), Right, barrier);
+					blockNodeDirection(Cell(gridRank, (int)currRow, (int)currCol - 1), Right, barrier);
 			}
 
 			currRow++;
@@ -535,7 +535,7 @@ void Grid::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, boo
 }
 
 
-void Grid::visitGridModelLine(const Vec3& fromPos, const Vec3& toPos, std::function<void(const AStarCell& cell)> callback)
+void Grid::visitGridModelLine(const Vec3& fromPos, const Vec3& toPos, std::function<void(const Cell& cell)> callback)
 {
 	int fromCol = (int)round((fromPos.x - gridOrigin.x) / nodeWidth);
 	int fromRow = (int)round((fromPos.y - gridOrigin.y) / nodeWidth);
@@ -568,7 +568,7 @@ void Grid::visitGridModelLine(const Vec3& fromPos, const Vec3& toPos, std::funct
 	// now step through the line, essentially walking along the edges of the grid tiles
 	// under the line
 	while (true) {
-		AStarCell cell(rank, currRow, currCol);
+		Cell cell(rank, currRow, currCol);
 		callback(cell);
 
 		// the way that I essentially move along the line
@@ -608,7 +608,7 @@ void Grid::visitGridModelLine(const Vec3& fromPos, const Vec3& toPos, std::funct
 }
 
 
-void Grid::visitCellsWidening(const AStarCell& centerCell, std::function<bool(const AStarCell& cell)> callback)
+void Grid::visitCellsWidening(const Cell& centerCell, std::function<bool(const Cell& cell)> callback)
 {
 	if (!callback(centerCell))
 		return;
@@ -617,55 +617,55 @@ void Grid::visitCellsWidening(const AStarCell& centerCell, std::function<bool(co
 	for (int i = 1; continueWidening; i++) {
 		if (centerCell.col < i && centerCell.row < i && centerCell.col + i >= numCols && centerCell.row + i >= numRows)
 			break;
-		AStarCell right(centerCell.grid, centerCell.row, centerCell.col + i);
-		AStarCell left(centerCell.grid, centerCell.row, centerCell.col - i);
-		AStarCell top(centerCell.grid, centerCell.row + i, centerCell.col);
-		AStarCell bottom(centerCell.grid, centerCell.row - i, centerCell.col);
+		Cell right(centerCell.grid, centerCell.row, centerCell.col + i);
+		Cell left(centerCell.grid, centerCell.row, centerCell.col - i);
+		Cell top(centerCell.grid, centerCell.row + i, centerCell.col);
+		Cell bottom(centerCell.grid, centerCell.row - i, centerCell.col);
 
 		for (int j = 0; j <= i; j++) {
 			if (right.row >= j) {
-				AStarCell rightBottom(right.grid, right.row - j, right.col);
+				Cell rightBottom(right.grid, right.row - j, right.col);
 				if (!callback(rightBottom)) {
 					continueWidening = false;
 					break;
 				}
-				AStarCell leftBottom(left.grid, left.row - j, left.col);
+				Cell leftBottom(left.grid, left.row - j, left.col);
 				if (!callback(leftBottom)) {
 					continueWidening = false;
 					break;
 				}
 			}
 			if (j != 0 && right.row + j < numRows) {
-				AStarCell rightTop(right.grid, right.row + j, right.col);
+				Cell rightTop(right.grid, right.row + j, right.col);
 				if (!callback(rightTop)) {
 					continueWidening = false;
 					break;
 				}
-				AStarCell leftTop(left.grid, left.row + j, left.col);
+				Cell leftTop(left.grid, left.row + j, left.col);
 				if (!callback(leftTop)) {
 					continueWidening = false;
 					break;
 				}
 			}
 			if (top.col >= j + 1) {
-				AStarCell topLeft(top.grid, top.row, top.col - j);
+				Cell topLeft(top.grid, top.row, top.col - j);
 				if (!callback(topLeft)) {
 					continueWidening = false;
 					break;
 				}
-				AStarCell bottomLeft(bottom.grid, bottom.row, bottom.col - j);
+				Cell bottomLeft(bottom.grid, bottom.row, bottom.col - j);
 				if (!callback(bottomLeft)) {
 					continueWidening = false;
 					break;
 				}
 			}
 			if (j != 0 && top.col + j < numCols) {
-				AStarCell topRight(top.grid, top.row, top.col + j);
+				Cell topRight(top.grid, top.row, top.col + j);
 				if (!callback(topRight)) {
 					continueWidening = false;
 					break;
 				}
-				AStarCell bottomRight(bottom.grid, bottom.row, bottom.col + j);
+				Cell bottomRight(bottom.grid, bottom.row, bottom.col + j);
 				if (!callback(bottomRight)) {
 					continueWidening = false;
 					break;
@@ -958,7 +958,7 @@ void Grid::drawDestinationThreshold(treenode destination, const Vec3 & loc, cons
 	DestinationThreshold dt = DestinationThreshold(destination, nodeWidth);
 	// Set the desination outside a barrier if necessary
 	if (navigator->ignoreDestBarrier) {
-		AStarCell destCell = getCell(Vec3(loc));
+		Cell destCell = getCell(Vec3(loc));
 		navigator->checkGetOutOfBarrier(destCell, nullptr, 0, 0, &dt);
 	}
 
@@ -969,7 +969,7 @@ void Grid::drawDestinationThreshold(treenode destination, const Vec3 & loc, cons
 	for (int row = 0; row < numRows; row++) {
 		for (int col = 0; col < numCols; col++) {
 			AStarNode* n = getNode(row, col);
-			AStarCell cell;
+			Cell cell;
 			cell.col = col;
 			cell.row = row;
 
@@ -1013,12 +1013,12 @@ void Grid::drawDestinationThreshold(treenode destination, const Vec3 & loc, cons
 	fglEnable(GL_TEXTURE_2D);
 }
 
-void Grid::checkGetOutOfBarrier(AStarCell & cell, TaskExecuter * traveler, int rowDest, int colDest, DestinationThreshold * threshold)
+void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDest, int colDest, DestinationThreshold * threshold)
 {
 	AStarNode* node = getNode(cell);
 	int dy = rowDest - cell.row;
 	int dx = colDest - cell.col;
-	AStarCell originalCell(cell);
+	Cell originalCell(cell);
 
 	static const int up = 0;
 	static const int left = 1;

@@ -224,7 +224,7 @@ public:
 	void scalePatternColsOnSizeChange(double oldXSize, double newXSize);
 
 	PatternCell* getPatternCell(Vec3& modelPos);
-	PatternCell* getPatternCell(const AStarCell& cell);
+	PatternCell* getPatternCell(const Cell& cell);
 
 	void dragPatternCellSizer(PatternCell* cell, double diff, bool isXSizer);
 	void assertValidPatternTable();

@@ -143,7 +143,7 @@ void AStarNavigator::bindTEStatistics(TaskExecuter* te)
 
 void AStarNavigator::bindInterface()
 {
-	bindClassByName<AStarCell>("AStar.Cell", true);
+	bindClassByName<Cell>("AStar.Cell", true);
 	bindMethod(getCell, AStarNavigator, "AStar.Cell getCell(Vec3& loc)");
 	bindMethod(getLocation, AStarNavigator, "Vec3 getLocation(AStar.Cell& loc)");
 }
@@ -657,7 +657,7 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 {
 	if (!node->canGo(dir1) || !node->canGo(dir2))
 		return nullptr;
-	AStarCell cell;
+	Cell cell;
 	AStarSearchEntry* e1 = nullptr;
 	cell.grid = grid->rank;
 	cell.row = entryIn->cell.row + AStarNode::rowInc[dir1];
@@ -729,15 +729,15 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 
 	TaskExecuter* te = traveler->te;
 
-	AStarCell startCell = getCell(startLoc);
-	AStarCell destCell = getCell(destLoc);
+	Cell startCell = getCell(startLoc);
+	Cell destCell = getCell(destLoc);
 
 	if (traveler->useMandatoryPath) {
 		AStarNode* node = getNode(startCell);
 		if (!node->isOnMandatoryPath) {
 			bool foundMandatoryPath = false;
 			Grid* grid = getGrid(startCell);
-			grid->visitCellsWidening(startCell, [&](const AStarCell& cell) -> bool {
+			grid->visitCellsWidening(startCell, [&](const Cell& cell) -> bool {
 				if (getNode(startCell)->isOnMandatoryPath) {
 					startCell = cell;
 					foundMandatoryPath = true;
@@ -804,7 +804,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 
 	// Set the destination outside a barrier if necessary
 	if (ignoreDestBarrier) {
-		AStarCell tempDestCell = destCell;
+		Cell tempDestCell = destCell;
 		checkGetOutOfBarrier(tempDestCell, te, startCell.row, startCell.col, &traveler->destThreshold);
 	}
 
@@ -935,7 +935,7 @@ the outside 8 nodes.
 						continue;
 					double addedDist = entry.bridge->travelDistance + grid->nodeWidth;
 					Point* endPoint = entry.isAtBridgeStart ? entry.bridge->pointList.back() : entry.bridge->pointList.front();
-					AStarCell endCell = getCell(*endPoint + entry.bridge->getPointToModelOffset());
+					Cell endCell = getCell(*endPoint + entry.bridge->getPointToModelOffset());
 					AStarNode* node = getNode(endCell);
 					expandOpenSet(getGrid(endCell), endCell.row, endCell.col, addedDist / grid->nodeWidth, 0, i);
 				}
@@ -993,7 +993,7 @@ the outside 8 nodes.
 		// build the path into the barrier to the start cell if 
 		// there is a barrier. Note that I'm building the path backwards
 		// I reverse it later on.
-		AStarCell curCell = start->cell;
+		Cell curCell = start->cell;
 		while (curCell != startCell) {
 			int rowDiff = startCell.row - curCell.row;
 			int colDiff = startCell.col - curCell.col;
@@ -1066,7 +1066,7 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 	return path.calculateTotalDistance(this);
 }
 
-void AStarNavigator::updateConditionalBarrierDataOnOpenSetExpanded(const AStarCell& cell, AStarNode* n)
+void AStarNavigator::updateConditionalBarrierDataOnOpenSetExpanded(const Cell& cell, AStarNode* n)
 {
 	AStarNodeExtraData* barrierData = edgeTableExtraData[cell.value];
 	for (Barrier* barrier : barrierData->conditionalBarriers) {
@@ -1112,7 +1112,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 	}
 
 	if (n->hasConditionalBarrier) {
-		updateConditionalBarrierDataOnOpenSetExpanded(AStarCell(grid->rank, r, c), n);
+		updateConditionalBarrierDataOnOpenSetExpanded(Cell(grid->rank, r, c), n);
 	}
 
 	float speedScale = routeByTravelTime ? 1.0 / routingTraveler->te->v_maxspeed : 1.0;
@@ -1553,23 +1553,23 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 
 }
 
-AStarCell AStarNavigator::getCell(const Vec3& modelLoc)
+Cell AStarNavigator::getCell(const Vec3& modelLoc)
 {
 	return getGrid(modelLoc)->getCell(modelLoc);
 }
 
-Vec3 AStarNavigator::getLocation(const AStarCell & cell)
+Vec3 AStarNavigator::getLocation(const Cell & cell)
 {
 	return grids[max(1, cell.grid) - 1]->getLocation(cell);
 }
 
-AStarNode * AStarNavigator::getNode(const AStarCell & cell)
+AStarNode * AStarNavigator::getNode(const Cell & cell)
 {
 	return grids[max(1, cell.grid) - 1]->getNode(cell);
 }
 
 
-Grid* AStarNavigator::getGrid(const AStarCell& cell) 
+Grid* AStarNavigator::getGrid(const Cell& cell) 
 { 
 	return grids[max(1, cell.grid) - 1];
 }
@@ -1613,7 +1613,7 @@ void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 		return;
 	}
 
-	AStarCell cell = getCell(modelPos);
+	Cell cell = getCell(modelPos);
 	grids[max(1, cell.grid) - 1]->blockGridModelPos(modelPos);
 }
 
@@ -1638,7 +1638,7 @@ void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& mode
 }
 
 
-AStarNodeExtraData*  AStarNavigator::assertExtraData(const AStarCell& cell, ExtraDataReason reason)
+AStarNodeExtraData*  AStarNavigator::assertExtraData(const Cell& cell, ExtraDataReason reason)
 {
 	AStarNodeExtraData* extra;
 	auto extraIter = edgeTableExtraData.find(cell.value);
@@ -1667,9 +1667,9 @@ AStarNodeExtraData*  AStarNavigator::assertExtraData(const AStarCell& cell, Extr
 	return extra;
 }
 
-AStarCell AStarNavigator::getPrevCell(AStarCell & toCell, float rotDirection)
+Cell AStarNavigator::getPrevCell(Cell & toCell, float rotDirection)
 {
-	AStarCell cell(toCell);
+	Cell cell(toCell);
 	switch ((int)rotDirection) {
 	case -153: case -154: cell.col += 2; cell.row++; break;
 	case -135: cell.col++; cell.row++; break;

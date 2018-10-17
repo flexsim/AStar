@@ -33,13 +33,13 @@ void Bridge::addPassagesToTable(Grid* grid)
 	if (pointList.size() < 2)
 		return;
 
-	AStarCell fromCell = grid->getCell(pointList.front()->project(holder, model()));
-	AStarCell toCell = grid->getCell(pointList.back()->project(holder, model()));
+	Cell fromCell = grid->getCell(pointList.front()->project(holder, model()));
+	Cell toCell = grid->getCell(pointList.back()->project(holder, model()));
 	if (fromCell == toCell)
 		return;
 
 	// add bridge data to cells
-	auto addExtraData = [&](const AStarCell& cell, bool isAtStart) {
+	auto addExtraData = [&](const Cell& cell, bool isAtStart) {
 		AStarNodeExtraData* entry = grid->navigator->assertExtraData(cell, BridgeData);
 		grid->navigator->getNode(cell)->hasBridgeStartPoint = true;
 		entry->bridges.push_back(AStarNodeExtraData::BridgeEntry());

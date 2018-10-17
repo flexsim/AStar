@@ -52,8 +52,8 @@ public:
 
 	bool growToEncompassBoundingBox(Vec3 min, Vec3 max, bool addSurroundDepth);
 	void findGrowthBounds(Vec2& min, Vec2& max) const;
-	AStarCell getCell(const Vec3& modelLoc);
-	Vec3 getLocation(const AStarCell& cell) { return Vec3(gridOrigin.x + cell.col * nodeWidth, gridOrigin.y + cell.row * nodeWidth, minPoint.z); }
+	Cell getCell(const Vec3& modelLoc);
+	Vec3 getLocation(const Cell& cell) { return Vec3(gridOrigin.x + cell.col * nodeWidth, gridOrigin.y + cell.row * nodeWidth, minPoint.z); }
 	void reset(AStarNavigator* nav);
 	void buildNodeTable();
 	void resolveGridOrigin();
@@ -71,7 +71,7 @@ public:
 	/// <param name="cell">	The cell. </param>
 	/// <returns>	Null if it fails, else the node. </returns>
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	AStarNode* getNode(const AStarCell& cell) { 
+	AStarNode* getNode(const Cell& cell) { 
 		return getNode(cell.row, cell.col);
 	}
 
@@ -89,11 +89,11 @@ public:
 
 	void addSolidBarrierToTable(const Vec3 & min, const Vec3 & max, Barrier* barrier = nullptr);
 	void addObjectBarrierToTable(treenode obj);
-	void blockGridModelPos(const AStarCell& cell);
+	void blockGridModelPos(const Cell& cell);
 	void blockGridModelPos(const Vec3& pos) { blockGridModelPos(getCell(pos)); }
-	void blockNodeDirection(const AStarCell& cell, Direction direction, Barrier* barrier);
+	void blockNodeDirection(const Cell& cell, Direction direction, Barrier* barrier);
 	void divideGridModelLine(const Vec3& fromPos, const Vec3& toPos, bool isOneWay, Barrier* barrier = nullptr);
-	void visitGridModelLine(const Vec3& fromPos, const Vec3& toPos, std::function<void(const AStarCell& cell)>);
+	void visitGridModelLine(const Vec3& fromPos, const Vec3& toPos, std::function<void(const Cell& cell)>);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	/// <summary>	Visits cells around a given cell, expanding outward from the cell. </summary>
@@ -104,8 +104,8 @@ public:
 	/// <param name="callback">  	The cellback. If this callback returns false, the visiting loop 
 	/// 							will be discontinued. </param>
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	void visitCellsWidening(const AStarCell& centerCell, std::function<bool(const AStarCell& cell)> callback);
-	void visitCellsWidening(const Vec3& center, std::function<bool(const AStarCell& cell)> callback)
+	void visitCellsWidening(const Cell& centerCell, std::function<bool(const Cell& cell)> callback);
+	void visitCellsWidening(const Vec3& center, std::function<bool(const Cell& cell)> callback)
 	{
 		visitCellsWidening(getCell(center), callback);
 	}
@@ -118,7 +118,7 @@ public:
 	double maxHeatValue = 0.0;
 	void drawHeatMap(TreeNode* view);
 	void drawDestinationThreshold(treenode obj, const Vec3& loc, const Vec3& size);
-	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold);
+	void checkGetOutOfBarrier(Cell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold);
 
 	void onDrag(treenode view, Vec3& offset);
 	double onDrag(treenode view) override;

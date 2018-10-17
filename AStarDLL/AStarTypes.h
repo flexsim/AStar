@@ -16,7 +16,7 @@ enum Direction {
 };
 
 
-struct AStarCell {
+struct Cell {
 	union{
 		struct{
 			/// <summary>	The 1-based rank of the grid. Zero means undefined grid. </summary>
@@ -26,19 +26,19 @@ struct AStarCell {
 		};
 		unsigned long long value;
 	};
-	AStarCell() {}
-	AStarCell(unsigned int grid, unsigned short row, unsigned short col) : grid(grid), row(row), col(col) {}
+	Cell() {}
+	Cell(unsigned int grid, unsigned short row, unsigned short col) : grid(grid), row(row), col(col) {}
 	void construct(unsigned int grid, unsigned int row, unsigned int col) {
-		new (this) AStarCell(grid, (unsigned short)row, (unsigned short)col);
+		new (this) Cell(grid, (unsigned short)row, (unsigned short)col);
 	}
-	void copyConstruct(const AStarCell& other) {
-		new (this) AStarCell(other);
+	void copyConstruct(const Cell& other) {
+		new (this) Cell(other);
 	}
-	AStarCell(unsigned long long value) : value(value) {}
-	AStarCell& operator = (const AStarCell& other) { new (this) AStarCell(other); return *this; }
-	bool operator == (const AStarCell& other) const { return value == other.value; }
-	bool operator != (const AStarCell& other) const { return value != other.value; }
-	bool operator < (const AStarCell& other) const { return value < other.value; }
+	Cell(unsigned long long value) : value(value) {}
+	Cell& operator = (const Cell& other) { new (this) Cell(other); return *this; }
+	bool operator == (const Cell& other) const { return value == other.value; }
+	bool operator != (const Cell& other) const { return value != other.value; }
+	bool operator < (const Cell& other) const { return value < other.value; }
 	void bind(TreeNode* x, const char* prefix);
 	void bind(SimpleDataType* sdt, const char* prefix = "");
 
@@ -103,11 +103,11 @@ public:
 struct NodeAllocation
 {
 	NodeAllocation() : traveler(nullptr), acquireTime(0.0), releaseTime(0.0), traversalWeight(0.0), travelPathIndex(0), intermediateAllocationIndex(0) {}
-	NodeAllocation(Traveler* traveler, const AStarCell& cell, int travelPathIndex, int intermediateAllocationIndex, double acquireTime, double releaseTime, double traversalWeight) :
+	NodeAllocation(Traveler* traveler, const Cell& cell, int travelPathIndex, int intermediateAllocationIndex, double acquireTime, double releaseTime, double traversalWeight) :
 		traveler(traveler), cell(cell), travelPathIndex(travelPathIndex), intermediateAllocationIndex(intermediateAllocationIndex), acquireTime(acquireTime), releaseTime(releaseTime), traversalWeight(traversalWeight)
 	{}
 	Traveler* traveler;
-	AStarCell cell;
+	Cell cell;
 	int travelPathIndex;
 	int intermediateAllocationIndex;
 	/// <summary>The acquire time of the allocation.</summary>
@@ -130,7 +130,7 @@ struct AStarNodeExtraData : public SimpleDataType
 	AStarNodeExtraData() : cell(0, 0, 0), bonusRight(0), bonusLeft(0), bonusUp(0), bonusDown(0) {}
 	virtual const char* getClassFactory() { return "AStar::NodeExtraData"; }
 	virtual void bind() override;
-	AStarCell cell;
+	Cell cell;
 
 	double totalTraversals = 0;
 	double totalBlockedTime = 0.0;
@@ -181,10 +181,10 @@ struct AStarNodeExtraData : public SimpleDataType
 	{
 	public:
 		ContinueEvent() : FlexSimEvent() {}
-		ContinueEvent(double time, Traveler* traveler, Traveler* blocker, AStarCell& cell);
+		ContinueEvent(double time, Traveler* traveler, Traveler* blocker, Cell& cell);
 		virtual const char* getClassFactory() override { return "AStar::AStarNodeExtraData::ContinueEvent"; }
 		virtual void bind() override;
-		AStarCell cell;
+		Cell cell;
 		virtual void execute() override;
 	};
 	ObjRef<ContinueEvent> continueEvent;
@@ -193,9 +193,9 @@ struct AStarNodeExtraData : public SimpleDataType
 
 struct AStarPathEntry {
 	AStarPathEntry() : cell(0, 0, 0), bridgeIndex(-1) {}
-	AStarPathEntry(AStarCell cell, char bridgeIndex) : cell(cell), bridgeIndex(bridgeIndex) {}
+	AStarPathEntry(Cell cell, char bridgeIndex) : cell(cell), bridgeIndex(bridgeIndex) {}
 	void bind(TreeNode* toNode);
-	AStarCell cell;
+	Cell cell;
 	int bridgeIndex;
 };
 
@@ -214,7 +214,7 @@ struct AStarSearchEntry {
 	float f;
 	float g;
 	float h;
-	AStarCell cell;
+	Cell cell;
 	unsigned int previous;
 	float rotOnArrival;
 	char prevBridgeIndex;
@@ -251,7 +251,7 @@ struct CachedPathID {
 };
 
 struct AllocationStep {
-	AllocationStep(const AStarCell& fromCell, const AStarCell& toCell) :
+	AllocationStep(const Cell& fromCell, const Cell& toCell) :
 		fromCell(fromCell), toCell(toCell) {
 
 		isDiagonal = toCell.row != fromCell.row && toCell.col != fromCell.col;
@@ -259,21 +259,21 @@ struct AllocationStep {
 			isVerticalDeepSearch = abs(toCell.row - fromCell.row) == 2;
 			isHorizontalDeepSearch = abs(toCell.col - fromCell.col) == 2;
 			if (isVerticalDeepSearch) {
-				intermediateCell1 = AStarCell(fromCell.grid, (toCell.row + fromCell.row) / 2, fromCell.col);
-				intermediateCell2 = AStarCell(fromCell.grid, intermediateCell1.row, toCell.col);
+				intermediateCell1 = Cell(fromCell.grid, (toCell.row + fromCell.row) / 2, fromCell.col);
+				intermediateCell2 = Cell(fromCell.grid, intermediateCell1.row, toCell.col);
 			} else if (isHorizontalDeepSearch) {
-				intermediateCell1 = AStarCell(fromCell.grid, fromCell.row, (toCell.col + fromCell.col) / 2);
-				intermediateCell2 = AStarCell(fromCell.grid, toCell.row, intermediateCell1.col);
+				intermediateCell1 = Cell(fromCell.grid, fromCell.row, (toCell.col + fromCell.col) / 2);
+				intermediateCell2 = Cell(fromCell.grid, toCell.row, intermediateCell1.col);
 			} else {
 				if (sign(toCell.col - fromCell.col) == sign(toCell.row - fromCell.row)) {
 					// it's a "forward-slash diagonal"
-					intermediateCell1 = AStarCell(fromCell.grid, max(toCell.row, fromCell.row), min(toCell.col, fromCell.col));
-					intermediateCell2 = AStarCell(fromCell.grid, min(toCell.row, fromCell.row), max(toCell.col, fromCell.col));
+					intermediateCell1 = Cell(fromCell.grid, max(toCell.row, fromCell.row), min(toCell.col, fromCell.col));
+					intermediateCell2 = Cell(fromCell.grid, min(toCell.row, fromCell.row), max(toCell.col, fromCell.col));
 				}
 				else {
 					// it's a "back-slash diagonal"
-					intermediateCell1 = AStarCell(fromCell.grid, min(toCell.row, fromCell.row), min(toCell.col, fromCell.col));
-					intermediateCell2 = AStarCell(fromCell.grid, max(toCell.row, fromCell.row), max(toCell.col, fromCell.col));
+					intermediateCell1 = Cell(fromCell.grid, min(toCell.row, fromCell.row), min(toCell.col, fromCell.col));
+					intermediateCell2 = Cell(fromCell.grid, max(toCell.row, fromCell.row), max(toCell.col, fromCell.col));
 				}
 
 			}
@@ -283,10 +283,10 @@ struct AllocationStep {
 	bool isVerticalDeepSearch;
 	bool isHorizontalDeepSearch;
 	bool isDiagonal;
-	AStarCell fromCell;
-	AStarCell toCell;
-	AStarCell intermediateCell1;
-	AStarCell intermediateCell2;
+	Cell fromCell;
+	Cell toCell;
+	Cell intermediateCell1;
+	Cell intermediateCell2;
 
 	bool isImmediatelyBlocked(Traveler* traveler);
 };
@@ -299,7 +299,7 @@ struct DestinationThreshold
 	double yAxisThreshold;
 	double rotation;
 	double anyThresholdRadius;
-	bool isWithinThreshold(const AStarCell& cell, const Vec2& gridOrigin, const Vec2& destLoc, double nodeWidth);
+	bool isWithinThreshold(const Cell& cell, const Vec2& gridOrigin, const Vec2& destLoc, double nodeWidth);
 	void bind(SimpleDataType* sdt, const char* prefix);
 };
 

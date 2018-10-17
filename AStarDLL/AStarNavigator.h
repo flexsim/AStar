@@ -74,7 +74,7 @@ protected:
 	bool isBoundsMeshBuilt = false;
 	bool isGridMeshBuilt = false;
 
-	void updateConditionalBarrierDataOnOpenSetExpanded(const AStarCell& cell, AStarNode* n);
+	void updateConditionalBarrierDataOnOpenSetExpanded(const Cell& cell, AStarNode* n);
 	inline AStarSearchEntry* expandOpenSet(Grid* grid, int r, int c, float multiplier, float rotOnArrival, char bridgeIndex = -1);
 
 	void buildBoundsMesh(float z);
@@ -83,7 +83,7 @@ protected:
 public:
 	void setDirty() { isGridDirty = isBoundsDirty = true; }
 
-	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold)
+	void checkGetOutOfBarrier(Cell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold)
 	{
 		getGrid(cell)->checkGetOutOfBarrier(cell, traveler, rowDest, colDest, threshold);
 	}
@@ -265,20 +265,20 @@ public:
 	void resolveGridBounds();
 	void resetGrids();
 
-	//AStarCell getCell(const Vec2& modelLoc) { return getCell(Vec3(modelLoc.x, modelLoc.y, 0.0)); }
-	AStarCell getCell(const Vec3& modelLoc);
-	Vec3 getLocation(const AStarCell& cell);
+	//Cell getCell(const Vec2& modelLoc) { return getCell(Vec3(modelLoc.x, modelLoc.y, 0.0)); }
+	Cell getCell(const Vec3& modelLoc);
+	Vec3 getLocation(const Cell& cell);
 
-	AStarNode* getNode(const AStarCell& cell);
-	Grid* getGrid(const AStarCell& cell);
+	AStarNode* getNode(const Cell& cell);
+	Grid* getGrid(const Cell& cell);
 	Grid* getGrid(const Vec3& modelPos);
 
-	AStarNodeExtraData* assertExtraData(const AStarCell& cell, ExtraDataReason reason);
-	AStarNodeExtraData* getExtraData(const AStarCell& cell) {
+	AStarNodeExtraData* assertExtraData(const Cell& cell, ExtraDataReason reason);
+	AStarNodeExtraData* getExtraData(const Cell& cell) {
 		auto extraIter = edgeTableExtraData.find(cell.value);
 		return extraIter != edgeTableExtraData.end() ? extraIter->second : nullptr;
 	}
-	static AStarCell getPrevCell(AStarCell& toCell, float rotDirection);
+	static Cell getPrevCell(Cell& toCell, float rotDirection);
 
 
 	NodeListArray<Traveler>::CouplingSdtSubNodeBindingType travelers;
