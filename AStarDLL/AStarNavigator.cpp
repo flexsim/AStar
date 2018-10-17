@@ -1174,7 +1174,7 @@ double AStarNavigator::updateLocations()
 	switch_hidelabel(holder, 1);
 	switch_selected(holder, 0);
 	if ((pos.x != 0.0 || pos.y != 0.0 || pos.z != 0.0 || size.x != 1.0 || size.y != 1.0 || size.z != 1.0) && node_b_drawsurrogate) {
-		treenode surrogate = node_b_drawsurrogate ? node_b_drawsurrogate->subnodes[1] : nullptr;
+		treenode surrogate = node_b_drawsurrogate->subnodes[1];
 		if (surrogate) {
 			b_spatialx = b_spatialy = b_spatialz = 0;
 			b_spatialsx = b_spatialsy = b_spatialsz = 1.0;
@@ -1588,7 +1588,7 @@ ASTAR_FUNCTION Variant AStarNavigator_getGrid(FLEXSIMINTERFACE)
 
 unsigned int AStarNavigator::getClassType()
 {
-	return CLASSTYPE_WANTCONNECTLOGIC | CLASSTYPE_FLEXSIMOBJECT | CLASSTYPE_NAVIGATOR;
+	return __super::getClassType() | CLASSTYPE_WANTCONNECTLOGIC;
 }
 
 void AStarNavigator::blockGridModelPos(const Vec3& modelPos)

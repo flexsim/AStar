@@ -5842,6 +5842,8 @@ barriers.subnodes.clear();
 for (int i = 1; i &lt;= newObjects.length; i++)
 	function_s(newObjects[i], "assertNavigator");
 
+updatelocations(navigator);
+
 return 1;
 </data></node>
     </node>
