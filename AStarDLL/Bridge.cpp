@@ -171,7 +171,7 @@ void Bridge::onAvailable()
 		// move blockedTraveler onto bridge
 		Traveler* traveler = blockedTraveler;
 		blockedTraveler = nullptr;
-		traveler->onBridgeArrival(this, blockedPathIndex);
+		traveler->onBridgeArrival(this, (int)blockedPathIndex);
 	}
 }
 

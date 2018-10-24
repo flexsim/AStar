@@ -13,4 +13,6 @@ class Traveler;
 struct AStarPathEntry;
 class Grid;
 class TemporaryBarrier;
+class AStarNode;
+struct AStarNodeExtraData;
 }

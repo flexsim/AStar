@@ -60,9 +60,13 @@ void Traveler::bindEvents()
 	bindEventByName("onContinue", onContinueTrigger, "OnContinue", EVENT_TYPE_TRIGGER);
 }
 
+
+
 void Traveler::bindInterface()
 {
-
+	bindConstructor(&AStarNavigator::getTraveler, "AStar.Traveler Traveler(TaskExecuter te)");
+	SimpleDataType::bindTypedPropertyByName<TravelPath>("travelPath", "AStar.TravelPath&", force_cast<void*>(&Traveler::__getTravelPath), nullptr);
+	bindMethod(getAllocations, Traveler, "AStar.AllocationRange getAllocations(double time = -1)");
 }
 
 TreeNode* Traveler::getEventInfoObject(const char* eventTitle)
@@ -76,6 +80,21 @@ void Traveler::BlockEvent::bind()
 	cell.bind(this);
 	bindNumber(colliderPathIndex);
 	bindNumber(intermediateAllocationIndex);
+}
+
+AllocationRange Traveler::getAllocations(double atTime)
+{
+	if (atTime < 0) 
+		atTime = time();
+	for (int i = 0; i < allocations.size(); i++) {
+		if (allocations[i]->acquireTime <= atTime && allocations[i]->releaseTime > atTime) {
+			int j = i + 1;
+			while (j < allocations.size() && allocations[j]->acquireTime <= atTime)
+				j++;
+			return AllocationRange(this, i, j - i);
+		}
+	}
+	return AllocationRange();
 }
 
 void Traveler::onReset()

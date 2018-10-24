@@ -28,12 +28,6 @@ struct Cell {
 	};
 	Cell() {}
 	Cell(unsigned int grid, unsigned short row, unsigned short col) : grid(grid), row(row), col(col) {}
-	void construct(unsigned int grid, unsigned int row, unsigned int col) {
-		new (this) Cell(grid, (unsigned short)row, (unsigned short)col);
-	}
-	void copyConstruct(const Cell& other) {
-		new (this) Cell(other);
-	}
 	Cell(unsigned long long value) : value(value) {}
 	Cell& operator = (const Cell& other) { new (this) Cell(other); return *this; }
 	bool operator == (const Cell& other) const { return value == other.value; }
@@ -41,13 +35,6 @@ struct Cell {
 	bool operator < (const Cell& other) const { return value < other.value; }
 	void bind(TreeNode* x, const char* prefix);
 	void bind(SimpleDataType* sdt, const char* prefix = "");
-
-	void bindInterface();
-	int __getRow() { return row; }
-	void __setRow(int toVal) { row = (unsigned short)toVal; }
-	int __getCol() { return col; }
-	void __setCol(int toVal) { col = (unsigned short)toVal; }
-	operator bool();
 };
 
 enum ExtraDataReason : char {
@@ -119,6 +106,46 @@ struct NodeAllocation
 	void extendReleaseTime(double toTime);
 	void truncateReleaseTime(double toTime);
 	void bind(TreeNode* x);
+	void bindInterface();
+	double __getAcquireTime() { return acquireTime; }
+	double __getReleaseTime() { return releaseTime; }
+	Traveler* __getTraveler() { return traveler; }
+
+	operator bool() const { return traveler != nullptr; }
+
+};
+
+struct ExtendedCell : public Cell {
+	ExtendedCell(unsigned int grid, unsigned short row, unsigned short col) : Cell(grid, row, col) {}
+	void construct(unsigned int grid, unsigned int row, unsigned int col) {
+		new (this) ExtendedCell(grid, (unsigned short)row, (unsigned short)col);
+	}
+	void copyConstruct(const ExtendedCell& other) {
+		new (this) ExtendedCell(other);
+	}
+	ExtendedCell& operator = (const ExtendedCell& other) { new (this) ExtendedCell(other); return *this; }
+	int __getRow() { return row; }
+	void __setRow(int toVal) { row = (unsigned short)toVal; }
+	int __getCol() { return col; }
+	void __setCol(int toVal) { col = (unsigned short)toVal; }
+	operator bool();
+	void bindInterface();
+	AStarNode* node = nullptr;
+	AStarNodeExtraData * extra = nullptr;
+private:
+	void __assertCachedPointers();
+	void assertCachedPointers() { if (node) return; __assertCachedPointers(); }
+
+public:
+	int __canGoUp();
+	__declspec(property(get = __canGoUp)) int canGoUp;
+	int __canGoDown();
+	__declspec(property(get = __canGoDown)) int canGoDown;
+	int __canGoLeft();
+	__declspec(property(get = __canGoLeft)) int canGoLeft;
+	int __canGoRight();
+	__declspec(property(get = __canGoRight)) int canGoRight;
+	NodeAllocation getAllocation(double atTime = -1);
 };
 
 typedef std::list<NodeAllocation> NodeAllocationList;
@@ -195,14 +222,35 @@ struct AStarPathEntry {
 	AStarPathEntry() : cell(0, 0, 0), bridgeIndex(-1) {}
 	AStarPathEntry(Cell cell, char bridgeIndex) : cell(cell), bridgeIndex(bridgeIndex) {}
 	void bind(TreeNode* toNode);
+	void bindInterface();
 	Cell cell;
 	int bridgeIndex;
+
+	ExtendedCell __getCell();
 };
 
 class TravelPath : public std::vector<AStarPathEntry>
 {
 public:
 	double calculateTotalDistance(AStarNavigator* nav);
+	AStarPathEntry __oneBasedIndex(int index) { return operator [](index - 1); }
+	int __getLength() { return (int)size(); }
+	int indexOf(Cell& cell);
+	void bindInterface();
+};
+
+class AllocationRange {
+public:
+	Traveler* traveler = nullptr;
+	int startIndex = 0;
+	int size = 0;
+	AllocationRange() {}
+	AllocationRange(Traveler* traveler, int startIndex, int size) 
+		: traveler(traveler), startIndex(startIndex), size(size) {}
+
+	int __getLength() { return size; }
+	NodeAllocation operator [] (int oneBasedIndex);
+	void bindInterface();
 };
 
 struct AStarSearchEntry {
@@ -301,6 +349,12 @@ struct DestinationThreshold
 	double anyThresholdRadius;
 	bool isWithinThreshold(const Cell& cell, const Vec2& gridOrigin, const Vec2& destLoc, double nodeWidth);
 	void bind(SimpleDataType* sdt, const char* prefix);
+};
+
+class AStarNamespace { // for FlexScript access
+public:
+	void bindInterface();
+	static AStarNavigator* __getNavigator();
 };
 
 }

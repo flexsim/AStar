@@ -22,6 +22,7 @@ public:
 	Traveler(AStarNavigator* nav, TaskExecuter* te) : navigator(nav), te(te) {}
 	Traveler() : navigator(nullptr), te(nullptr) {}
 
+
 	Vec3 destLoc;
 	double endSpeed;
 	double turnSpeed;
@@ -32,9 +33,11 @@ public:
 	bool isActive = false;
 	std::list<Traveler*>::iterator activeEntry;
 	TravelPath travelPath;
+	TravelPath& __getTravelPath() { return travelPath; }
 	//double nodeWidth;
 	typedef std::deque<NodeAllocationIterator> TravelerAllocations;
 	TravelerAllocations allocations;
+	AllocationRange getAllocations(double atTime);
 	NodeAllocation* request = nullptr;
 	int nextCollisionUpdateTravelIndex;
 	double nextCollisionUpdateEndTime;

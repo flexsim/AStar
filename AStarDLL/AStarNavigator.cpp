@@ -143,7 +143,12 @@ void AStarNavigator::bindTEStatistics(TaskExecuter* te)
 
 void AStarNavigator::bindInterface()
 {
-	bindClassByName<Cell>("AStar.Cell", true);
+	bindClassByName<AStarNamespace>("AStar", false);
+	bindClassByName<NodeAllocation>("AStar.Allocation", true);
+	bindClassByName<ExtendedCell>("AStar.Cell", true);
+	bindClassByName<AStarPathEntry>("AStar.TravelPathEntry", false);
+	bindClassByName<TravelPath>("AStar.TravelPath", false);
+	bindClassByName<AllocationRange>("AStar.AllocationRange", false);
 	bindMethod(getCell, AStarNavigator, "AStar.Cell getCell(Vec3& loc)");
 	bindMethod(getLocation, AStarNavigator, "Vec3 getLocation(AStar.Cell& loc)");
 }

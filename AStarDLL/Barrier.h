@@ -13,9 +13,6 @@ namespace AStar {
 This class is the base class for an AStar barrier object.
 */
 
-class AStarNode;
-struct AStarNodeExtraData;
-
 class Barrier : public FlexSimEventHandler
 {
 private:

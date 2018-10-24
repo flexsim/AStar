@@ -101,6 +101,7 @@
          <node f="1000042" dt="2"><name>dumpBlockageData</name><data>dll:"module:AStar" func:"AStarNavigator_dumpBlockageData"</data></node>
          <node f="1000042" dt="2"><name>addCopiedMember</name><data>dll:"module:AStar" func:"AStarNavigator_addMember"</data></node>
          <node f="1000042" dt="2"><name>addObjectBarrierToTable</name><data>dll:"module:AStar" func:"AStarNavigator_addObjectBarrierToTable"</data></node>
+         <node f="42" dt="2"><name>flexScriptInterface</name><data>AStar.Navigator</data></node>
         </node>
         <node f="42"><name>cppfunctions</name>
          <node f="40"><name></name></node></node>
@@ -5846,6 +5847,22 @@ updatelocations(navigator);
 
 return 1;
 </data></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add</name><data>MAIN:/project/exec/globals/sdtinterfaces</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040180000</data></node>
+    <node f="42" dt="2"><name>after</name><data>Task</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42" dt="2"><name>AStar::Traveler</name><data>AStar.Traveler</data>
+      <node f="40"><name></name></node>
+      <node f="42" dt="1"><name>isCoupling</name><data>000000003ff00000</data></node>
+     </node>
     </node>
    </node>
   </node>
