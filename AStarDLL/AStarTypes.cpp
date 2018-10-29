@@ -65,6 +65,7 @@ void Cell::bind(SimpleDataType* sdt, const char* prefix)
 
 void ExtendedCell::bindInterface()
 {
+	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Cell.xml");
 	SimpleDataType::bindConstructor(force_cast<void*>(&ExtendedCell::construct), "void Cell(int grid, int row, int col)");
 	SimpleDataType::bindCopyConstructor(&ExtendedCell::copyConstruct);
 	SimpleDataType::bindCopyAssigner(&ExtendedCell::operator =);
@@ -180,9 +181,12 @@ struct ExtendedNodeAllocation : public NodeAllocation
 
 void NodeAllocation::bindInterface()
 {
+	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Allocation.xml");
 	SimpleDataType::bindConstructor(force_cast<void*>(&NodeAllocation::construct), "void Cell(int grid, int row, int col)");
 	SimpleDataType::bindCopyConstructor(&NodeAllocation::copyConstruct);
 	SimpleDataType::bindCopyAssigner(&NodeAllocation::operator =);
+	SimpleDataType::bindOperator(bool, NodeAllocation, "int bool()");
+	SimpleDataType::bindOperator(!, NodeAllocation, "int not()");
 	bindTypedProperty(acquireTime, double, &NodeAllocation::__getAcquireTime, nullptr);
 	bindTypedProperty(releaseTime, double, &NodeAllocation::__getReleaseTime, nullptr);
 	SimpleDataType::bindTypedPropertyByName<ExtendedCell>("cell", "AStar.Cell", force_cast<void*>(&ExtendedNodeAllocation::__getCell), nullptr);
@@ -545,10 +549,7 @@ void TravelPath::bindInterface()
 
 void AStarNamespace::bindInterface()
 {
-	//SimpleDataType::bindStaticConstIntPropertyByName<(int)Direction::Up>("up");
-	//SimpleDataType::bindStaticConstIntPropertyByName<(int)Direction::Down>("down");
-	//SimpleDataType::bindStaticConstIntPropertyByName<(int)Direction::Left>("left");
-	//SimpleDataType::bindStaticConstIntPropertyByName<(int)Direction::Right>("right");
+	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.xml");
 	SimpleDataType::bindStaticTypedPropertyByName<AStarNavigator*>("navigator", "AStar.Navigator", force_cast<void*>(&AStarNamespace::__getNavigator), nullptr);
 }
 
@@ -576,6 +577,7 @@ void AllocationRange::bindInterface()
 
 void AStarDirection::bindInterface()
 {
+	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Direction.xml");
 	SimpleDataType::bindStaticConstIntProperty(Left, (int)Direction::Left);
 	SimpleDataType::bindStaticConstIntProperty(Right, (int)Direction::Right);
 	SimpleDataType::bindStaticConstIntProperty(Up, (int)Direction::Up);
