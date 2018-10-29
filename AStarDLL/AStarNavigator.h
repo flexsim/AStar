@@ -267,6 +267,7 @@ public:
 
 	//Cell getCell(const Vec2& modelLoc) { return getCell(Vec3(modelLoc.x, modelLoc.y, 0.0)); }
 	Cell getCell(const Vec3& modelLoc);
+	ExtendedCell getExtendedCell(const Vec3& modelLoc) { return ExtendedCell(getCell(modelLoc)); }
 	Vec3 getLocation(const Cell& cell);
 
 	AStarNode* getNode(const Cell& cell);

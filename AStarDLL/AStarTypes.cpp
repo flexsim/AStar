@@ -9,6 +9,23 @@
 namespace AStar {
 
 
+int AStarNode::rowInc[] =
+{
+	0, // none
+	0, // right
+	0, // left
+	1, // up
+	-1 // down
+};
+int AStarNode::colInc[]
+{
+	0,
+	1, // right
+	-1, // left
+	0, // up
+	0 // down
+};
+
 void Cell::bind(TreeNode* x, const char* prefix)
 {
 	string gridName = string(prefix) + "grid";
@@ -50,17 +67,16 @@ void ExtendedCell::bindInterface()
 {
 	SimpleDataType::bindConstructor(force_cast<void*>(&ExtendedCell::construct), "void Cell(int grid, int row, int col)");
 	SimpleDataType::bindCopyConstructor(&ExtendedCell::copyConstruct);
-	SimpleDataType::bindCopyAssigner(&Cell::operator =);
+	SimpleDataType::bindCopyAssigner(&ExtendedCell::operator =);
 	bindTypedProperty(row, int, &ExtendedCell::__getRow, &ExtendedCell::__setRow);
 	bindTypedProperty(col, int, &ExtendedCell::__getCol, &ExtendedCell::__setCol);
 	SimpleDataType::bindOperator(bool, ExtendedCell, "int bool()");
+	SimpleDataType::bindOperator(!, ExtendedCell, "int not()");
 	SimpleDataType::bindOperator(== , Cell, "int equal(AStar.Cell& other)");
 	SimpleDataType::bindOperator(!= , Cell, "int notEqual(AStar.Cell& other)");
-	bindTypedProperty(canGoUp, int, &ExtendedCell::__canGoUp, nullptr);
-	bindTypedProperty(canGoDown, int, &ExtendedCell::__canGoDown, nullptr);
-	bindTypedProperty(canGoLeft, int, &ExtendedCell::__canGoLeft, nullptr);
-	bindTypedProperty(canGoRight, int, &ExtendedCell::__canGoRight, nullptr);
 	bindMethod(getAllocation, ExtendedCell, "AStar.Allocation getAllocation(double time = -1)");
+	bindMethod(adjacentCell, ExtendedCell, "AStar.Cell adjacentCell(int direction)");
+	bindMethod(canGo, ExtendedCell, "int canGo(int direction)");
 
 }
 
@@ -82,30 +98,6 @@ void ExtendedCell::__assertCachedPointers()
 		extra = found->second;
 }
 
-int ExtendedCell::__canGoUp()
-{
-	assertCachedPointers();
-	return node && node->canGoUp;
-}
-
-int ExtendedCell::__canGoDown()
-{
-	assertCachedPointers();
-	return node && node->canGoDown;
-}
-
-int ExtendedCell::__canGoLeft()
-{
-	assertCachedPointers();
-	return node && node->canGoLeft;
-}
-
-int ExtendedCell::__canGoRight()
-{
-	assertCachedPointers();
-	return node && node->canGoRight;
-}
-
 NodeAllocation ExtendedCell::getAllocation(double atTime)
 {
 	if (atTime < 0)
@@ -121,10 +113,27 @@ NodeAllocation ExtendedCell::getAllocation(double atTime)
 	else return NodeAllocation(nullptr, *this, 0, 0, -1.0, -1.0, 1.0);
 }
 
+ExtendedCell ExtendedCell::adjacentCell(int direction)
+{
+	ExtendedCell cell(*this);
+	cell.row += AStarNode::rowInc[direction];
+	cell.col += AStarNode::colInc[direction];
+	cell.node = nullptr;
+	cell.extra = nullptr;
+	return cell;
+}
+
+int ExtendedCell::canGo(int direction)
+{
+	assertCachedPointers();
+	if (!node)
+		return 0;
+	return node->canGo((Direction)direction);
+}
+
 ExtendedCell::operator bool()
 {
-	if (!node)
-		assertCachedPointers();
+	assertCachedPointers();
 
 	return node != nullptr;
 }
@@ -171,6 +180,9 @@ struct ExtendedNodeAllocation : public NodeAllocation
 
 void NodeAllocation::bindInterface()
 {
+	SimpleDataType::bindConstructor(force_cast<void*>(&NodeAllocation::construct), "void Cell(int grid, int row, int col)");
+	SimpleDataType::bindCopyConstructor(&NodeAllocation::copyConstruct);
+	SimpleDataType::bindCopyAssigner(&NodeAllocation::operator =);
 	bindTypedProperty(acquireTime, double, &NodeAllocation::__getAcquireTime, nullptr);
 	bindTypedProperty(releaseTime, double, &NodeAllocation::__getReleaseTime, nullptr);
 	SimpleDataType::bindTypedPropertyByName<ExtendedCell>("cell", "AStar.Cell", force_cast<void*>(&ExtendedNodeAllocation::__getCell), nullptr);
@@ -555,8 +567,19 @@ NodeAllocation AllocationRange::operator[](int oneBasedIndex)
 
 void AllocationRange::bindInterface()
 {
+	SimpleDataType::bindConstructor(force_cast<void*>(&AllocationRange::construct), "void AllocationRange()");
+	SimpleDataType::bindCopyConstructor(&AllocationRange::copyConstruct);
+	SimpleDataType::bindCopyAssigner(&AllocationRange::operator =);
 	bindTypedProperty(length, int, &AllocationRange::__getLength, nullptr);
 	SimpleDataType::bindOperator([], AllocationRange, "AStar.Allocation arrayDeref(int index)");
+}
+
+void AStarDirection::bindInterface()
+{
+	SimpleDataType::bindStaticConstIntProperty(Left, (int)Direction::Left);
+	SimpleDataType::bindStaticConstIntProperty(Right, (int)Direction::Right);
+	SimpleDataType::bindStaticConstIntProperty(Up, (int)Direction::Up);
+	SimpleDataType::bindStaticConstIntProperty(Down, (int)Direction::Down);
 }
 
 }

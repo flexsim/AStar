@@ -11,20 +11,6 @@
 
 namespace AStar {
 
-int AStarNode::rowInc[] = 
-{
-	0, // right
-	0, // left
-	1, // up
-	-1 // down
-};
-int AStarNode::colInc[]
-{
-	1, // right
-	-1, // left
-	0, // up
-	0 // down
-};
 
 std::vector<Vec4f> AStarNavigator::heatMapColorProgression =
 {
@@ -143,13 +129,15 @@ void AStarNavigator::bindTEStatistics(TaskExecuter* te)
 
 void AStarNavigator::bindInterface()
 {
-	bindClassByName<AStarNamespace>("AStar", false);
+	bindClassByName<AStarNamespace>("AStar", true);
+	bindClassByName<AStarDirection>("AStar.Direction", true);
 	bindClassByName<NodeAllocation>("AStar.Allocation", true);
 	bindClassByName<ExtendedCell>("AStar.Cell", true);
 	bindClassByName<AStarPathEntry>("AStar.TravelPathEntry", false);
 	bindClassByName<TravelPath>("AStar.TravelPath", false);
 	bindClassByName<AllocationRange>("AStar.AllocationRange", false);
-	bindMethod(getCell, AStarNavigator, "AStar.Cell getCell(Vec3& loc)");
+	auto callback = &AStarNavigator::getExtendedCell;
+	bindMethodByName<decltype(callback)>("getCell", callback, "AStar.Cell getCell(Vec3& loc)");
 	bindMethod(getLocation, AStarNavigator, "Vec3 getLocation(AStar.Cell& loc)");
 }
 

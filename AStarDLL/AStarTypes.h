@@ -9,10 +9,10 @@
 namespace AStar {
 
 enum Direction {
-	Right = 0,
-	Left = 1,
-	Up = 2,
-	Down = 3
+	Right = 1,
+	Left = 2,
+	Up = 3,
+	Down = 4
 };
 
 
@@ -83,8 +83,8 @@ public:
 	AStarNode(unsigned short value) : value(value) {}
 	static int rowInc[];
 	static int colInc[];
-	bool canGo(Direction direction) { return ((0x1 << (int)direction) & value) != 0; }
-	void setCanGo(Direction direction, bool toValue) { if (toValue) value |= (0x1 << (int)direction); else value &= ~(0x1 << (int)direction); }
+	bool canGo(Direction direction) { return ((0x1 << ((int)direction - 1)) & value) != 0; }
+	void setCanGo(Direction direction, bool toValue) { if (toValue) value |= (0x1 << ((int)direction - 1)); else value &= ~(0x1 << ((int)direction - 1)); }
 };
 
 struct NodeAllocation
@@ -93,6 +93,7 @@ struct NodeAllocation
 	NodeAllocation(Traveler* traveler, const Cell& cell, int travelPathIndex, int intermediateAllocationIndex, double acquireTime, double releaseTime, double traversalWeight) :
 		traveler(traveler), cell(cell), travelPathIndex(travelPathIndex), intermediateAllocationIndex(intermediateAllocationIndex), acquireTime(acquireTime), releaseTime(releaseTime), traversalWeight(traversalWeight)
 	{}
+	NodeAllocation& operator = (const NodeAllocation& other) { new (this) NodeAllocation(other); return *this; }
 	Traveler* traveler;
 	Cell cell;
 	int travelPathIndex;
@@ -103,20 +104,25 @@ struct NodeAllocation
 	double releaseTime;
 	double traversalWeight;
 	bool isMarkedForDeletion = false;
+
 	void extendReleaseTime(double toTime);
 	void truncateReleaseTime(double toTime);
 	void bind(TreeNode* x);
-	void bindInterface();
+	static void bindInterface();
 	double __getAcquireTime() { return acquireTime; }
 	double __getReleaseTime() { return releaseTime; }
 	Traveler* __getTraveler() { return traveler; }
 
 	operator bool() const { return traveler != nullptr; }
+	bool operator !() const { return traveler == nullptr; }
+	void construct() { new (this) NodeAllocation(); }
+	void copyConstruct(const NodeAllocation& other) { new (this) NodeAllocation(other); }
 
 };
 
 struct ExtendedCell : public Cell {
 	ExtendedCell(unsigned int grid, unsigned short row, unsigned short col) : Cell(grid, row, col) {}
+	ExtendedCell(const Cell& other) : Cell(other) {}
 	void construct(unsigned int grid, unsigned int row, unsigned int col) {
 		new (this) ExtendedCell(grid, (unsigned short)row, (unsigned short)col);
 	}
@@ -124,12 +130,13 @@ struct ExtendedCell : public Cell {
 		new (this) ExtendedCell(other);
 	}
 	ExtendedCell& operator = (const ExtendedCell& other) { new (this) ExtendedCell(other); return *this; }
-	int __getRow() { return row; }
-	void __setRow(int toVal) { row = (unsigned short)toVal; }
-	int __getCol() { return col; }
-	void __setCol(int toVal) { col = (unsigned short)toVal; }
+	int __getRow() { return *((short*)&row); }
+	void __setRow(int toVal) { row = (unsigned short)toVal; node = nullptr; extra = nullptr; }
+	int __getCol() { return *((short*)&col); }
+	void __setCol(int toVal) { col = (unsigned short)toVal; node = nullptr; extra = nullptr; }
 	operator bool();
-	void bindInterface();
+	int operator !() { return !operator bool(); }
+	static void bindInterface();
 	AStarNode* node = nullptr;
 	AStarNodeExtraData * extra = nullptr;
 private:
@@ -137,15 +144,10 @@ private:
 	void assertCachedPointers() { if (node) return; __assertCachedPointers(); }
 
 public:
-	int __canGoUp();
-	__declspec(property(get = __canGoUp)) int canGoUp;
-	int __canGoDown();
-	__declspec(property(get = __canGoDown)) int canGoDown;
-	int __canGoLeft();
-	__declspec(property(get = __canGoLeft)) int canGoLeft;
-	int __canGoRight();
-	__declspec(property(get = __canGoRight)) int canGoRight;
 	NodeAllocation getAllocation(double atTime = -1);
+
+	ExtendedCell adjacentCell(int direction);
+	int canGo(int direction);
 };
 
 typedef std::list<NodeAllocation> NodeAllocationList;
@@ -222,7 +224,7 @@ struct AStarPathEntry {
 	AStarPathEntry() : cell(0, 0, 0), bridgeIndex(-1) {}
 	AStarPathEntry(Cell cell, char bridgeIndex) : cell(cell), bridgeIndex(bridgeIndex) {}
 	void bind(TreeNode* toNode);
-	void bindInterface();
+	static void bindInterface();
 	Cell cell;
 	int bridgeIndex;
 
@@ -236,7 +238,7 @@ public:
 	AStarPathEntry __oneBasedIndex(int index) { return operator [](index - 1); }
 	int __getLength() { return (int)size(); }
 	int indexOf(Cell& cell);
-	void bindInterface();
+	static void bindInterface();
 };
 
 class AllocationRange {
@@ -245,12 +247,15 @@ public:
 	int startIndex = 0;
 	int size = 0;
 	AllocationRange() {}
+	AllocationRange& operator = (const AllocationRange& other) { new (this) AllocationRange(other); return *this; }
+	void construct() { new (this) AllocationRange(); }
+	void copyConstruct(const AllocationRange& other) { new (this) AllocationRange(other); }
 	AllocationRange(Traveler* traveler, int startIndex, int size) 
 		: traveler(traveler), startIndex(startIndex), size(size) {}
 
 	int __getLength() { return size; }
 	NodeAllocation operator [] (int oneBasedIndex);
-	void bindInterface();
+	static void bindInterface();
 };
 
 struct AStarSearchEntry {
@@ -353,8 +358,14 @@ struct DestinationThreshold
 
 class AStarNamespace { // for FlexScript access
 public:
-	void bindInterface();
+	static void bindInterface();
 	static AStarNavigator* __getNavigator();
+};
+
+
+class AStarDirection { // for FlexScript access
+public:
+	static void bindInterface();
 };
 
 }
