@@ -310,6 +310,13 @@ double AStarNavigator::onRunWarm()
 	return 0;
 }
 
+double AStarNavigator::onPreDraw(TreeNode * view)
+{
+	__super::onPreDraw(view);
+	resolveMinNodeWidth();
+	return 0.0;
+}
+
 double AStarNavigator::onDraw(TreeNode* view)
 {
 	treenode hoveredObj = tonode(getpickingdrawfocus(view, PICK_OBJECT, -1));

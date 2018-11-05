@@ -757,6 +757,13 @@ double Barrier::onPreDraw(treenode view)
 
 double Barrier::onDraw(treenode view)
 {
+	AStarNavigator* nav = navigator;
+	if (!((int)nav->drawMode & ASTAR_DRAW_MODE_BARRIERS))
+		return 0;
+
+	if (nodeWidth != nav->minNodeWidth)
+		isMeshDirty = true;
+
 	float factor, units;
 	bool polyOffsetFill = glIsEnabled(GL_POLYGON_OFFSET_FILL);
 	glGetFloatv(GL_POLYGON_OFFSET_FACTOR, &factor);
@@ -771,6 +778,7 @@ double Barrier::onDraw(treenode view)
 	glPolygonOffset(offset - 0.025, -5);
 
 	if (isMeshDirty || mode != 0) {
+		nodeWidth = nav->minNodeWidth;
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4);
 		addVertices(view, &mesh, 0.0f, Basic);
 		isMeshDirty = false;
@@ -865,6 +873,8 @@ double Barrier::onUndo(bool isUndo, treenode undoRecord)
 double Barrier::onCreate(double dropx, double dropy, double dropz, int iscopy)
 {
 	assertNavigator();
+
+	nodeWidth = navigator->minNodeWidth;
 
 	if (holder->up == model()) {
 		holder->up = navigator->holder;
