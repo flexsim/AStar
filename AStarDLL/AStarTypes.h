@@ -175,7 +175,7 @@ struct AStarNodeExtraData : public SimpleDataType
 		};
 		char bonus[4];
 	};
-	char getBonus(Direction direction) { return bonus[(int)direction]; }
+	char getBonus(Direction direction) { return bonus[(int)direction - 1]; }
 
 	struct BridgeEntry {
 		Bridge* bridge;
