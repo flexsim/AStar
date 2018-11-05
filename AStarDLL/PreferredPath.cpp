@@ -77,13 +77,13 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 				extra->bonusDown = (char)maxof(-128, minof(127, extra->bonusDown + fabs(verticalWeight)));
 			}
 
-			if (dx > 0)
+			if (dx > 0 || (isTwoWay && dx != 0))
 				node->canGoRight = true;
-			if (dx < 0)
+			if (dx < 0 || (isTwoWay && dx != 0))
 				node->canGoLeft = true;
-			if (dy > 0)
+			if (dy > 0 || (isTwoWay && dy != 0))
 				node->canGoUp = true;
-			if (dy < 0)
+			if (dy < 0 || (isTwoWay && dy != 0))
 				node->canGoDown = true;
 
 			if (useCondition) {
