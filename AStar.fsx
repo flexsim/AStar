@@ -616,7 +616,9 @@ setvarnum(c, "lastModelY", modelPos.y);
 </data></node>
         <node f="442" dt="2"><name>OnEntering</name><data>treenode iconGrid = nodefromwindow(keyboardfocus());
 nodepoint(viewfocus(c), iconGrid);
-nodepoint(objectfocus(c), selectedobject(iconGrid));</data></node>
+nodepoint(objectfocus(c), selectedobject(iconGrid));
+setvarnum(c, "mouseState", 0);
+</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
 
 
@@ -2113,7 +2115,8 @@ forobjecttreeunder(node("/BarrierPoints", c))
           <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+&gt;variables/useCondition</data></node>
           <node f="42"><name>eventfunctions</name>
            <node f="40"><name></name></node>
-           <node f="42" dt="2"><name>OnPress</name><data>function_s(c, "grayCondition");</data></node>
+           <node f="42" dt="2"><name>OnPress</name><data>function_s(c, "grayCondition");
+enablecode(c.find("../EditCondition&gt;objectfocus+"));</data></node>
            <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) {
 	setchecked(c, c.find("&gt;coldlink+").value);
 	function_s(c, "grayCondition");
@@ -2697,7 +2700,8 @@ forobjecttreeunder(node("/BarrierPoints", c))
           <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+&gt;variables/useCondition</data></node>
           <node f="42"><name>eventfunctions</name>
            <node f="40"><name></name></node>
-           <node f="42" dt="2"><name>OnPress</name><data>function_s(c, "grayCondition");</data></node>
+           <node f="42" dt="2"><name>OnPress</name><data>function_s(c, "grayCondition");
+enablecode(c.find("../EditCondition&gt;objectfocus+"));</data></node>
            <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) {
 	setchecked(c, c.find("&gt;coldlink+").value);
 	function_s(c, "grayCondition");
@@ -3046,8 +3050,8 @@ if ((numtostring(get(focus), 0, precision) != getviewtext(c) &amp;&amp; toVal !=
 	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
 	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
 	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
-	set(focus, toVal);
 	function_s(ownerobject(focus), "setSizeComponent", focus, toVal);
+	set(focus, toVal);
 	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
 	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
 	endaggregatedundo(c, undoId);
@@ -3338,8 +3342,8 @@ if ((numtostring(get(focus), 0, precision) != getviewtext(c) &amp;&amp; toVal !=
 	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
 	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
 	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
-	set(focus, toVal);
 	function_s(ownerobject(focus), "setSizeComponent", focus, toVal);
+	set(focus, toVal);
 	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
 	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
 	endaggregatedundo(c, undoId);
@@ -4124,6 +4128,7 @@ repaintall();</data></node>
          <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);
 function_s(c, "grayCondition");
 treenode focus = node("&gt;coldlink+", c);
+enablecode(c.find("../EditCondition&gt;objectfocus+"));
 function_s(c.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
          <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) {
 	setchecked(c, c.find("&gt;coldlink+")?.value);
@@ -4481,8 +4486,8 @@ if ((numtostring(get(focus), 0, precision) != getviewtext(c) &amp;&amp; toVal !=
 	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
 	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
 	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
-	set(focus, toVal);
 	function_s(ownerobject(focus), "setSizeComponent", focus, toVal);
+	set(focus, toVal);
 	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
 	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
 	endaggregatedundo(c, undoId);
@@ -4773,8 +4778,8 @@ if ((numtostring(get(focus), 0, precision) != getviewtext(c) &amp;&amp; toVal !=
 	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
 	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
 	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
-	set(focus, toVal);
 	function_s(ownerobject(focus), "setSizeComponent", focus, toVal);
+	set(focus, toVal);
 	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
 	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
 	endaggregatedundo(c, undoId);

@@ -217,8 +217,8 @@ public:
 	Variant mergePatternRows(FLEXSIMINTERFACE) { mergePatternRows((int)param(1), param(2)); return Variant(); }
 	void mergePatternCols(int firstCol, treenode view);
 	Variant mergePatternCols(FLEXSIMINTERFACE) { mergePatternCols((int)param(1), param(2)); return Variant(); }
-	void scalePatternRowsOnSizeChange(double oldYSize, double newYSize);
-	void scalePatternColsOnSizeChange(double oldXSize, double newXSize);
+	void scalePatternRowsOnSizeChange(double newYSize);
+	void scalePatternColsOnSizeChange(double newXSize);
 
 	PatternCell* getPatternCell(Vec3& modelPos);
 	PatternCell* getPatternCell(const Cell& cell);

@@ -704,14 +704,12 @@ double Barrier::dragPressedPick(treenode view, Vec3& pos, Vec3& diff)
 			//diff.y = pos.y - activeYPoint->y;
 		}
 		if (pickType == PICK_POINT || pickType == PICK_ARROW_LEFT || pickType == PICK_ARROW_RIGHT) {
-			double oldXSize = fabs(pointList[1]->x - pointList[0]->x);
 			activeXPoint->x += diff.x;
-			scalePatternColsOnSizeChange(oldXSize, fabs(pointList[1]->x - pointList[0]->x));
+			scalePatternColsOnSizeChange(fabs(pointList[1]->x - pointList[0]->x));
 		}
 		if (pickType == PICK_POINT || pickType == PICK_ARROW_TOP || pickType == PICK_ARROW_BOTTOM) {
-			double oldYSize = fabs(pointList[1]->y - pointList[0]->y);
 			activeYPoint->y += diff.y;
-			scalePatternRowsOnSizeChange(oldYSize, fabs(pointList[1]->y - pointList[0]->y));
+			scalePatternRowsOnSizeChange(fabs(pointList[1]->y - pointList[0]->y));
 		}
 		updateSpatialsToEncompassPoints();
 		return 1;
@@ -985,9 +983,9 @@ bool Barrier::setPointCoords(int pointIndex, const Vec3& modelPoint)
 	if (pointList.size() > 1 && isBasicBarrier()) {
 		Vec2 newSize(pointList[1]->x - pointList[0]->x, pointList[1]->y - pointList[0]->y);
 		if (oldSize.x != newSize.x)
-			scalePatternColsOnSizeChange(oldSize.x, newSize.x);
+			scalePatternColsOnSizeChange(newSize.x);
 		if (oldSize.y != newSize.y)
-			scalePatternRowsOnSizeChange(oldSize.y, newSize.y);
+			scalePatternRowsOnSizeChange(newSize.y);
 	}
 	updateSpatialsToEncompassPoints();
 	isMeshDirty = true;
@@ -1221,14 +1219,17 @@ void Barrier::mergePatternCols(int firstCol, treenode view)
 		endaggregatedundo(view, undoID);
 }
 
-void Barrier::scalePatternRowsOnSizeChange(double oldYSize, double newYSize)
+void Barrier::scalePatternRowsOnSizeChange(double newYSize)
 {	
 	Table patterns(patternTable);
 	if (patterns.numRows == 1) {
 		patterns.cell(1, 1)->objectAs(PatternCell)->height = maxof(0.00000001, newYSize);
 	} else {
-		double scaleFactor = newYSize / oldYSize;
+		double oldYSize = 0;
+		for (int col = 1; col <= patterns.numCols; col++)
+			oldYSize += patterns.cell(1, col)->objectAs(PatternCell)->height;
 
+		double scaleFactor = newYSize / oldYSize;
 		for (int row = 1; row <= patterns.numRows; row++) {
 			PatternCell* cell = patterns.cell(row, 1)->objectAs(PatternCell);
 			if (oldYSize != 0)
@@ -1238,12 +1239,16 @@ void Barrier::scalePatternRowsOnSizeChange(double oldYSize, double newYSize)
 	}
 }
 
-void Barrier::scalePatternColsOnSizeChange(double oldXSize, double newXSize)
+void Barrier::scalePatternColsOnSizeChange(double newXSize)
 {
 	Table patterns(patternTable);
 	if (patterns.numCols == 1) {
 		patterns.cell(1, 1)->objectAs(PatternCell)->width = maxof(0.00000001, newXSize);
 	} else {
+		double oldXSize = 0;
+		for (int col = 1; col <= patterns.numCols; col++)
+			oldXSize += patterns.cell(1, col)->objectAs(PatternCell)->width;
+
 		double scaleFactor = newXSize / oldXSize;
 		for (int col = 1; col <= patterns.numCols; col++) {
 			PatternCell* cell = patterns.cell(1, col)->objectAs(PatternCell);
@@ -1385,13 +1390,12 @@ void Barrier::setSizeComponent(treenode sizeAtt, double toSize)
 {
 	if (toSize <= 0)
 		toSize = 1;
-	double oldSize = sizeAtt->value;
 	if (sizeAtt == node_b_spatialsy) {
 		pointList.front()->holder->find("y")->value = pointList.back()->y - toSize;
-		scalePatternRowsOnSizeChange(oldSize, fabs(pointList[1]->y - pointList[0]->y));
+		scalePatternRowsOnSizeChange(fabs(pointList[1]->y - pointList[0]->y));
 	} else if (sizeAtt == node_b_spatialsx) {
 		pointList.back()->holder->find("x")->value = pointList.front()->x + toSize;
-		scalePatternColsOnSizeChange(oldSize, fabs(pointList[1]->x - pointList[0]->x));
+		scalePatternColsOnSizeChange(fabs(pointList[1]->x - pointList[0]->x));
 	}
 	updateSpatialsToEncompassPoints();
 	isMeshDirty = true;
