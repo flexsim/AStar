@@ -268,7 +268,7 @@
         <node f="42" dt="1"><name>patternTable</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>useCondition</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>condition</name><data>treenode traveler = param(1);
-return /**/traveler.type == 1/**direct*/;
+return /**/traveler.Type == 1/**direct*/;
 </data></node>
        </node>
        <node f="42"><name>behaviour</name>
@@ -2139,7 +2139,7 @@ forobjecttreeunder(c.find("../EditCondition")) {
           <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeEdit</data></node>
           <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/condition</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which the barrier will be applied</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which the divider/path will be applied</data></node>
           <node f="42"><name>variables</name>
            <node f="40"><name></name></node>
            <node f="42" dt="2"><name>codedescription</name><data>Barrier Condition</data></node>
@@ -3915,8 +3915,6 @@ applylinks(c, 1);
 </data></node>
         <node f="42" dt="2"><name>OnUndo</name><data>applylinks(c, 1);
 </data></node>
-        <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata &amp;&amp; eventcode == APPLY_LINKS_ON_OPEN)
-	function_s(node("/ChooseType", c), "refreshList");</data></node>
        </node>
        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
        <node f="42" dt="2"><name>tooltip</name><data></data></node>
@@ -3932,7 +3930,7 @@ applylinks(c, 1);
         <node f="42" dt="1"><name>spatialsx</name><data>000000004062c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>When checked, the A* traveler will always travel along mandatory paths</data></node>
-        <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+&gt;useMandatoryPath</data></node>
+        <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+/useMandatoryPath</data></node>
         <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);</data></node>
        </data></node>
       </node>
