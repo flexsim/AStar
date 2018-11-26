@@ -875,6 +875,7 @@ double Barrier::onCreate(double dropx, double dropy, double dropz, int iscopy)
 	nodeWidth = navigator->minNodeWidth;
 
 	if (holder->up == model()) {
+		holder->name = applicationcommand("getuniquename", getname(classobject(holder)), navigator->holder);
 		holder->up = navigator->holder;
 	}
 	if (isBasicBarrier())
