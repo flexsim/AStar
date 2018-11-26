@@ -734,12 +734,19 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	Cell destCell = getCell(destLoc);
 
 	if (traveler->useMandatoryPath) {
+		for (int i = 0; i < barrierList.size(); i++) {
+			MandatoryPath* path = barrierList[i]->toMandatoryPath();
+			if (path) {
+				if (!path->useCondition || path->condition->evaluate(traveler->te->holder))
+					path->conditionalBarrierChanges.apply();
+			}
+		}
 		AStarNode* node = getNode(startCell);
 		if (!node->isOnMandatoryPath) {
 			bool foundMandatoryPath = false;
 			Grid* grid = getGrid(startCell);
 			grid->visitCellsWidening(startCell, [&](const Cell& cell) -> bool {
-				if (getNode(startCell)->isOnMandatoryPath) {
+				if (getNode(cell)->isOnMandatoryPath) {
 					startCell = cell;
 					foundMandatoryPath = true;
 					return false;
@@ -749,13 +756,6 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 			if (!foundMandatoryPath) {
 				string message = string(traveler->holder->name.c_str()) + " is set to use mandatory paths, but no mandatory paths were found.";
 				EX(message.c_str(), "", 1);
-			}
-		}
-		for (int i = 0; i < barrierList.size(); i++) {
-			MandatoryPath* path = barrierList[i]->toMandatoryPath();
-			if (path) {
-				if (!path->useCondition || path->condition->evaluate(traveler->te->holder))
-					path->conditionalBarrierChanges.apply();
 			}
 		}
 	}
