@@ -15,11 +15,13 @@ public:
 	virtual const char* getClassFactory() override { return "AStar::Traveler"; }
 	virtual void bind() override;
 	virtual void bindEvents() override;
+	virtual void bindInterface() override;
 
 	virtual TreeNode* getEventInfoObject(const char* eventTitle) override;
 
 	Traveler(AStarNavigator* nav, TaskExecuter* te) : navigator(nav), te(te) {}
 	Traveler() : navigator(nullptr), te(nullptr) {}
+
 
 	Vec3 destLoc;
 	double endSpeed;
@@ -31,9 +33,11 @@ public:
 	bool isActive = false;
 	std::list<Traveler*>::iterator activeEntry;
 	TravelPath travelPath;
-	double nodeWidth;
+	TravelPath& __getTravelPath() { return travelPath; }
+	//double nodeWidth;
 	typedef std::deque<NodeAllocationIterator> TravelerAllocations;
 	TravelerAllocations allocations;
+	AllocationRange getAllocations(double atTime);
 	NodeAllocation* request = nullptr;
 	int nextCollisionUpdateTravelIndex;
 	double nextCollisionUpdateEndTime;
@@ -73,7 +77,7 @@ public:
 	static NodeAllocation* findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs);
 	void removeAllocation(TravelerAllocations::iterator iter);
 	void cullExpiredAllocations();
-	void clearAllocationsExcept(const AStarCell& cell);
+	void clearAllocationsExcept(const Cell& cell);
 	void clearAllocations();
 	void clearAllocationsUpTo(TravelerAllocations::iterator iter);
 	/// <summary>	Clears the allocations including and after fromPoint. </summary>
@@ -94,7 +98,7 @@ public:
 	};
 	ObjRef<ArrivalEvent> arrivalEvent;
 
-	void onBlock(Traveler* collidingWith, int colliderPathIndex, AStarCell& cell);
+	void onBlock(Traveler* collidingWith, int colliderPathIndex, Cell& cell);
 
 	bool isNavigatingAroundDeadlock = false;
 	bool isContinuingFromDeadlock = false;
@@ -103,7 +107,7 @@ public:
 	{
 	public:
 		BlockEvent() : FlexSimEvent() {}
-		BlockEvent(Traveler* collider, int colliderPathIndex, int intermediateAllocationIndex, Traveler* collidingWith, const AStarCell& cell, double time) 
+		BlockEvent(Traveler* collider, int colliderPathIndex, int intermediateAllocationIndex, Traveler* collidingWith, const Cell& cell, double time) 
 			: FlexSimEvent(collider->holder, time, collidingWith->holder, cell.row * 100000 + cell.col), colliderPathIndex(colliderPathIndex), intermediateAllocationIndex(intermediateAllocationIndex), cell(cell)
 		{}
 		virtual const char* getClassFactory() override { return "AStar::Traveler::BlockEvent"; }
@@ -130,7 +134,7 @@ public:
 		}
 		int colliderPathIndex;
 		int intermediateAllocationIndex;
-		AStarCell cell;
+		Cell cell;
 	};
 	ObjRef<BlockEvent> blockEvent;
 	double lastBlockTime;
@@ -165,7 +169,7 @@ public:
 	};
 	std::vector<RoutingAlgorithmSnapshot> routingAlgorithmSnapshots;
 
-
+	double useMandatoryPath = 0.0;
 };
 
 

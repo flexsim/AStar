@@ -113,9 +113,6 @@
     <ClInclude Include="macros.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="OneWayDivider.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Point.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -129,6 +126,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="TemporaryBarrier.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MandatoryPath.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -151,9 +154,6 @@
     <ClCompile Include="Divider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OneWayDivider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PreferredPath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -167,6 +167,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TemporaryBarrier.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MandatoryPath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

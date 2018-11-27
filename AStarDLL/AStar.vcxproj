@@ -172,15 +172,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AStarClasses.h" />
+    <ClInclude Include="Grid.h" />
     <ClInclude Include="AStarNavigator.h" />
     <ClInclude Include="AStarTypes.h" />
+    <ClInclude Include="MandatoryPath.h" />
     <ClInclude Include="TemporaryBarrier.h" />
     <ClInclude Include="Traveler.h" />
     <ClInclude Include="Barrier.h" />
     <ClInclude Include="Bridge.h" />
     <ClInclude Include="Divider.h" />
     <ClInclude Include="macros.h" />
-    <ClInclude Include="OneWayDivider.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="PreferredPath.h" />
     <ClInclude Include="AStar.h" />
@@ -211,13 +212,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AStar.cpp" />
+    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="AStarNavigator.cpp" />
     <ClCompile Include="AStarTypes.cpp" />
     <ClCompile Include="Barrier.cpp" />
     <ClCompile Include="Bridge.cpp" />
     <ClCompile Include="Divider.cpp" />
     <ClCompile Include="flexsimcontent\dllmain.cpp" />
-    <ClCompile Include="OneWayDivider.cpp" />
+    <ClCompile Include="MandatoryPath.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="PreferredPath.cpp" />
     <ClCompile Include="TemporaryBarrier.cpp" />

@@ -1,32 +1,34 @@
 #include "PreferredPath.h"
-#include "OneWayDivider.h"
 #include "Divider.h"
 #include "Point.h"
 #include "Barrier.h"
 #include "AStarNavigator.h"
 #include "AStar.h"
 #include "Bridge.h"
+#include "MandatoryPath.h"
 #include "Traveler.h"
 
 namespace AStar {
 
 visible ObjectDataType* createodtderivative(char* classname)
 {
-	if(strcmp(classname, "AStarNavigator")==0) return new AStarNavigator;
+	if (strcmp(classname, "AStarNavigator")==0) return new AStarNavigator;
+	if (strcmp(classname, "Barrier") == 0) return new Barrier;
+	if (strcmp(classname, "PreferredPath")==0) return new PreferredPath;
+	if (strcmp(classname, "Divider")==0) return new Divider;
+	if (strcmp(classname, "Bridge") == 0) return new Bridge;
+	if (strcmp(classname, "MandatoryPath") == 0) return new MandatoryPath;
 	return NULL;
 }
 
 visible SimpleDataType* createsdtderivative(char* classname)
 {
-	if(strcmp(classname, "PreferredPath")==0) return new PreferredPath;
-	if(strcmp(classname, "OneWayDivider")==0) return new OneWayDivider;
-	if(strcmp(classname, "Divider")==0) return new Divider;
-	if(strcmp(classname, "Point")==0) return new Point;
-	if (strcmp(classname, "Barrier") == 0) return new Barrier;
-	if (strcmp(classname, "Bridge") == 0) return new Bridge;
+	if (strcmp(classname, "Point")==0) return new Point;
+	if (strcmp(classname, "Barrier::PatternCell") == 0) return new Barrier::PatternCell;
 	if (strcmp(classname, "Bridge::ArrivalEvent") == 0) return new Bridge::ArrivalEvent;
 	if (strcmp(classname, "Bridge::EndArrivalEvent") == 0) return new Bridge::EndArrivalEvent;
 	if (strcmp(classname, "Bridge::AvailableEvent") == 0) return new Bridge::AvailableEvent;
+	if (strcmp(classname, "Grid") == 0) return new Grid;
 	if (strcmp(classname, "Traveler") == 0) return new Traveler;
 	if (strcmp(classname, "Traveler::ArrivalEvent") == 0) return new Traveler::ArrivalEvent;
 	if (strcmp(classname, "Traveler::BlockEvent") == 0) return new Traveler::BlockEvent;

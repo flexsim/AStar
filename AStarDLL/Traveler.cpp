@@ -2,7 +2,6 @@
 #include "AStarNavigator.h"
 #include "Bridge.h"
 #include "macros.h"
-#include "TemporaryBarrier.h"
 
 namespace AStar {
 
@@ -12,7 +11,6 @@ void Traveler::bind()
 	bindNumber(isBlocked);
 	bindObjRef(arrivalEvent, false);
 	bindObjRef(blockEvent, false);
-	bindNumber(nodeWidth); 
 	bindNumber(destLoc.x);
 	bindNumber(destLoc.y);
 	bindNumber(destLoc.z);
@@ -48,6 +46,8 @@ void Traveler::bind()
 
 	bindNumber(turnSpeed);
 	bindNumber(turnDelay);
+
+	bindDouble(useMandatoryPath, 1);
 	//bindNumber(estimatedIndefiniteAllocTimeDelay);
 	//bindStlContainer(allocations);
 }
@@ -58,6 +58,16 @@ void Traveler::bindEvents()
 	bindEventByName("onBlock", onBlockTrigger, "OnBlock", EVENT_TYPE_TRIGGER);
 	bindEventByName("onReroute", onRerouteTrigger, "OnReroute", EVENT_TYPE_TRIGGER);
 	bindEventByName("onContinue", onContinueTrigger, "OnContinue", EVENT_TYPE_TRIGGER);
+}
+
+
+
+void Traveler::bindInterface()
+{
+	bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Traveler.xml");
+	bindConstructor(&AStarNavigator::getTraveler, "AStar.Traveler Traveler(TaskExecuter te)");
+	SimpleDataType::bindTypedPropertyByName<TravelPath>("travelPath", "AStar.TravelPath&", force_cast<void*>(&Traveler::__getTravelPath), nullptr);
+	bindMethod(getAllocations, Traveler, "AStar.AllocationRange getAllocations(double time = -1)");
 }
 
 TreeNode* Traveler::getEventInfoObject(const char* eventTitle)
@@ -73,6 +83,21 @@ void Traveler::BlockEvent::bind()
 	bindNumber(intermediateAllocationIndex);
 }
 
+AllocationRange Traveler::getAllocations(double atTime)
+{
+	if (atTime < 0) 
+		atTime = time();
+	for (int i = 0; i < allocations.size(); i++) {
+		if (allocations[i]->acquireTime <= atTime && allocations[i]->releaseTime > atTime) {
+			int j = i + 1;
+			while (j < allocations.size() && allocations[j]->acquireTime <= atTime)
+				j++;
+			return AllocationRange(this, i, j - i);
+		}
+	}
+	return AllocationRange();
+}
+
 void Traveler::onReset()
 {
 	navigator = holder->ownerObject->objectAs(AStarNavigator);
@@ -83,15 +108,31 @@ void Traveler::onReset()
 	lastBlockTime = 0;
 	isNavigatingAroundDeadlock = false;
 	blockedAtTravelPathIndex = -1;
-	nodeWidth = navigator->nodeWidth;
 	allocations.clear();
 	request = nullptr;
 	te->moveToResetPosition();
 	Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
-	AStarCell resetCell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
+	Cell resetCell = navigator->getCell(loc);
+
+	if (useMandatoryPath) {
+		Grid* grid = navigator->getGrid(resetCell);
+		Cell originalResetCell = resetCell;
+		grid->visitCellsWidening(resetCell, [&](const Cell& cell) -> bool {
+			AStarNode* node = navigator->getNode(cell);
+			if (node->isOnMandatoryPath) {
+				resetCell = cell;
+				return false;
+			}
+			return true;
+		});
+		if (originalResetCell != resetCell) {
+			te->setLocation(grid->getLocation(resetCell), Vec3(0.5, 0.5, 0.0));
+		}
+	}
+
 	travelPath.clear();
 	travelPath.push_back(AStarPathEntry(resetCell, -1));
-	tinyTime = 0.001 * nodeWidth / te->v_maxspeed;
+	tinyTime = 0.001 * navigator->minNodeWidth / te->v_maxspeed;
 	nextCollisionUpdateEndTime = 0.0;
 	nextCollisionUpdateTravelIndex = -1;
 	needsContinueTrigger = false;
@@ -106,7 +147,7 @@ void Traveler::onStartSimulation()
 {XS
 	if (navigator->enableCollisionAvoidance && !navigator->ignoreInactiveMemberCollisions) {
 		Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
-		AStarCell resetCell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
+		Cell resetCell = navigator->getCell(loc);
 		travelPath.clear();
 		travelPath.push_back(AStarPathEntry(resetCell, -1));
 		addAllocation(NodeAllocation(this, resetCell, 0, 0, 0.0, DBL_MAX, 1.0), true, false);
@@ -147,7 +188,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 	if (isExitingBridge)
 		startLoc = te->getLocation(0.5, 0.5, 0);
 	else {
-		startLoc = nav->getLocFromCell(travelPath[startAtPathIndex].cell);
+		startLoc = nav->getLocation(travelPath[startAtPathIndex].cell);
 		if (up(te->holder) != model())
 			startLoc = startLoc.project(model(), up(te->holder));
 	}
@@ -215,8 +256,14 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 	int i;
 	double deallocTimeOffset = nav->deallocTimeOffset;
 	double firstCellDeallocTime = time() + deallocTimeOffset;
+	Grid* grid = nullptr;
+	int lastGridNum = -1;
 	for (i = startAtPathIndex + 1; i < numNodes; i++) {
 		e = travelPath[i];
+		if (e.cell.grid != lastGridNum) {
+			lastGridNum = e.cell.grid;
+			grid = navigator->getGrid(e.cell);
+		}
 		AllocationStep step(laste.cell, e.cell);
 		double totalTravelDist;
 		bridgeArrival = nullptr;
@@ -235,14 +282,14 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 			Vec3 diff;
 			double startTime = endTime;
 			if (!isExitingBridge) {
-				diff.x = (e.cell.col - laste.cell.col)*nodeWidth;
-				diff.y = (e.cell.row - laste.cell.row)*nodeWidth;
+				diff.x = (e.cell.col - laste.cell.col) * grid->nodeWidth;
+				diff.y = (e.cell.row - laste.cell.row) * grid->nodeWidth;
 				diff.z = 0;
 				if(containerRot)
 					diff.rotateXY(-containerRot);
 			}
 			else {
-				Vec3 toLoc = nav->getLocFromCell(e.cell);
+				Vec3 toLoc = nav->getLocation(e.cell);
 				step.isDiagonal = false;
 				step.isHorizontalDeepSearch = false;
 				step.isVerticalDeepSearch = false;
@@ -335,10 +382,12 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 		te->v_totaltraveldist += totalTravelDist;
 
 		//Traffic info
-		nav->assertExtraData(e.cell)->totalTraversals++;
+		nav->assertExtraData(e.cell, TraversalData)->totalTraversals++;
+		nav->heatMapTotalTraversals++;
 		if (step.isVerticalDeepSearch || step.isHorizontalDeepSearch) {
-			nav->assertExtraData(step.intermediateCell1)->totalTraversals += 0.5;
-			nav->assertExtraData(step.intermediateCell2)->totalTraversals += 0.5;
+			nav->assertExtraData(step.intermediateCell1, TraversalData)->totalTraversals += 0.5;
+			nav->assertExtraData(step.intermediateCell2, TraversalData)->totalTraversals += 0.5;
+			nav->heatMapTotalTraversals++;
 		}
 
 		if (enableCollisionAvoidance && endTime > nav->nextCollisionUpdateTime) {
@@ -412,7 +461,7 @@ void Traveler::onBridgeArrival(Bridge* bridge, int pathIndex)
 NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, bool notifyPendingAllocations)
 {
 	XS
-	AStarNodeExtraData* nodeData = navigator->assertExtraData(allocation.cell);
+	AStarNodeExtraData* nodeData = navigator->assertExtraData(allocation.cell, AllocationData);
 
 	if (!force || notifyPendingAllocations) {
 		NodeAllocation* collideWith = findCollision(nodeData, allocation, false);
@@ -532,7 +581,7 @@ void Traveler::cullExpiredAllocations()
 		removeAllocation(allocations.begin());
 }
 
-void Traveler::clearAllocationsExcept(const AStarCell & cell)
+void Traveler::clearAllocationsExcept(const Cell & cell)
 {
 	double curTime = time();
 	while (allocations.size() > 0 && allocations[0]->cell != cell)
@@ -560,8 +609,11 @@ void Traveler::clearAllocations(TravelerAllocations::iterator fromPoint, bool de
 	int numToRemove = allocations.end() - fromPoint;
 	for (int i = 0; i < numToRemove; i++) {
 		auto iter = allocations.end() - 1;
-		if (decrementTraversalStats)
-			navigator->getExtraData((*iter)->cell)->totalTraversals -= (*iter)->traversalWeight;
+		if (decrementTraversalStats) {
+			double weight = (*iter)->traversalWeight;
+			navigator->getExtraData((*iter)->cell)->totalTraversals -= weight;
+			navigator->heatMapTotalTraversals -= weight;
+		}
 		removeAllocation(iter);
 	}
 }
@@ -572,7 +624,7 @@ Traveler::TravelerAllocations::iterator Traveler::find(NodeAllocation* alloc)
 	return std::find_if(allocations.begin(), allocations.end(), [&](NodeAllocationIterator& iter) { return &(*iter) == alloc; });
 }
 
-void Traveler::onBlock(Traveler* collidingWith, int atPathIndex, AStarCell& cell)
+void Traveler::onBlock(Traveler* collidingWith, int atPathIndex, Cell& cell)
 {
 	cullExpiredAllocations();
 	bool shouldStop = true;
@@ -622,7 +674,7 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 {
 	double curTime = time();
 
-	AStarCell bestCell, bestAlternateCell;
+	Cell bestCell, bestAlternateCell;
 	Traveler* bestTraveler = nullptr, * bestAlternateTraveler = nullptr;
 
 	for (int i = 0; i <= deadlockList.size() && !bestTraveler; i++) {
@@ -630,25 +682,25 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 		if (traveler == this && i > 0)
 			continue;
 
-		AStarCell curCell = traveler->travelPath[traveler->blockedAtTravelPathIndex - 1].cell;
+		Cell curCell = traveler->travelPath[traveler->blockedAtTravelPathIndex - 1].cell;
 
-		AStarCell blockingCell = traveler->request->cell;
+		Cell blockingCell = traveler->request->cell;
 		AStarNodeExtraData* extra = navigator->getExtraData(blockingCell);
 		auto found = std::find_if(extra->allocations.begin(), extra->allocations.end(),
 			[&](NodeAllocation& alloc) -> bool {return alloc.acquireTime <= curTime && alloc.releaseTime >= curTime; });
 		Traveler* blockingTraveler = found->traveler;
 
 		struct ShimmyInfo {
-			AStarCell cell;
+			Cell cell;
 			bool isValid = true;
-			ShimmyInfo(unsigned short col, unsigned short row, bool isValid) : cell(col, row), isValid(isValid) {}
+			ShimmyInfo(unsigned int grid, unsigned short row, unsigned short col, bool isValid) : cell(grid, row, col), isValid(isValid) {}
 			ShimmyInfo() {}
 		};
 		AStarNode* curNode = navigator->getNode(curCell);
-		ShimmyInfo leftCell(curCell.col - 1, curCell.row, curNode->canGoLeft);
-		ShimmyInfo rightCell(curCell.col + 1, curCell.row, curNode->canGoRight);
-		ShimmyInfo upCell(curCell.col, curCell.row + 1, curNode->canGoUp);
-		ShimmyInfo downCell(curCell.col, curCell.row - 1, curNode->canGoDown);
+		ShimmyInfo leftCell(curCell.grid, curCell.row, curCell.col - 1, curNode->canGoLeft);
+		ShimmyInfo rightCell(curCell.grid, curCell.row, curCell.col + 1, curNode->canGoRight);
+		ShimmyInfo upCell(curCell.grid, curCell.row + 1, curCell.col, curNode->canGoUp);
+		ShimmyInfo downCell(curCell.grid, curCell.row - 1, curCell.col, curNode->canGoDown);
 
 		ShimmyInfo check[4];
 		if (blockingCell.col > curCell.col) {
@@ -673,8 +725,10 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 			check[3] = downCell;
 		}
 
+		Grid* grid = navigator->getGrid(check[i].cell);
+
 		for (int i = 0; i < 4; i++) {
-			if (!check[i].isValid || check[i].cell.col >= navigator->edgeTableXSize || check[i].cell.row > navigator->edgeTableYSize)
+			if (!check[i].isValid || check[i].cell.col >= grid->numCols || check[i].cell.row >= grid->numRows)
 				continue;
 
 			AStarNodeExtraData* extra = navigator->getExtraData(check[i].cell);
@@ -711,7 +765,7 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 		navigator->getExtraData(bestTraveler->request->cell)->requests.remove_if([&](NodeAllocation& alloc) { return &alloc == bestTraveler->request; });
 		bestTraveler->request = nullptr;
 		FIRE_SDT_EVENT(bestTraveler->onRerouteTrigger, te->holder);
-		AStarCell curCell = bestTraveler->travelPath[bestTraveler->blockedAtTravelPathIndex - 1].cell;
+		Cell curCell = bestTraveler->travelPath[bestTraveler->blockedAtTravelPathIndex - 1].cell;
 		TravelPath newPath;
 		newPath.push_back(AStarPathEntry(curCell, -1));
 		newPath.push_back(AStarPathEntry(bestCell, -1));
@@ -813,7 +867,7 @@ void Traveler::abortTravel(TreeNode* newTS)
 			Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
 			if (te->holder->up != model())
 				loc = loc.project(te->holder->up, model());
-			AStarCell cell = navigator->getCellFromLoc(Vec2(loc.x, loc.y));
+			Cell cell = navigator->getCell(loc);
 			while (allocations.size() > 1 && allocations.back()->acquireTime > time())
 				clearAllocations(allocations.end() - 1);
 
@@ -843,7 +897,7 @@ void Traveler::updateLocation()
 	double updateTime = time();
 
 	if (bridgeData.bridge && bridgeData.entryTime <= updateTime) {
-		bridgeData.bridge->updateLocations();
+		bridgeData.bridge->updateBridgeLocations();
 	} else {
 		TreeNode* kinematics = te->node_v_kinematics;
 		updatekinematics(kinematics, te->holder, updateTime);

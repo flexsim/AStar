@@ -3,17 +3,24 @@
 
 namespace AStar {
 
-void TemporaryBarrier::addEntry(const AStarCell& cell, const AStarNode& newValue)
+TemporaryBarrier::ChangeEntry& TemporaryBarrier::addEntry(const Cell& cell, const AStarNode& newValue)
 {
-	auto found = std::find_if(entries.begin(), entries.end(), [&](ChangeEntry& existing) { return existing.cell == cell; });
-	if (found == entries.end()) {
-		entries.push_back(ChangeEntry());
-		entries.back().cell = cell;
-		entries.back().newValue = newValue;
-		entries.back().savedValue = *navigator->getNode(cell);
-	} else {
-		found->newValue.value &= newValue.value;
+	entries.push_back(ChangeEntry());
+	entries.back().cell = cell;
+	entries.back().newValue = newValue;
+	AStarNode& node = *navigator->getNode(cell);
+	entries.back().savedValue = node;
+	return entries.back();
+}
+
+TemporaryBarrier::ChangeEntry& TemporaryBarrier::operator[](const Cell & cell)
+{
+	for (int i = (int)entries.size() - 1; i >= 0; i--) {
+		if (entries[i].cell == cell)
+			return entries[i];
 	}
+	AStarNode& node = *navigator->getNode(cell);
+	return addEntry(cell, node);
 }
 
 void TemporaryBarrier::apply()
@@ -23,10 +30,8 @@ void TemporaryBarrier::apply()
 	for (int i = 0; i < entries.size(); i++) {
 		AStarNode* toNode = navigator->getNode(entries[i].cell);
 		AStarNode& fromNode = entries[i].newValue;
-		toNode->canGoUp = fromNode.canGoUp;
-		toNode->canGoDown = fromNode.canGoDown;
-		toNode->canGoLeft = fromNode.canGoLeft;
-		toNode->canGoRight = fromNode.canGoRight;
+		entries[i].savedValue = *toNode;
+		toNode->value = (toNode->value & ~valueMask.value) | (fromNode.value & valueMask.value);
 	}
 	isApplied = true;
 }
@@ -38,12 +43,27 @@ void TemporaryBarrier::unapply()
 	for (int i = entries.size() - 1; i >= 0; i--) {
 		AStarNode* toNode = navigator->getNode(entries[i].cell);
 		AStarNode& fromNode = entries[i].savedValue;
-		toNode->canGoUp = fromNode.canGoUp;
-		toNode->canGoDown = fromNode.canGoDown;
-		toNode->canGoLeft = fromNode.canGoLeft;
-		toNode->canGoRight = fromNode.canGoRight;
+		toNode->value = (toNode->value & ~valueMask.value) | (fromNode.value & valueMask.value);
 	}
 	isApplied = false;
+}
+
+TemporaryBarrier::TemporaryBarrier()
+{
+	valueMask.value = 0;
+	valueMask.canGoDown = true;
+	valueMask.canGoUp = true;
+	valueMask.canGoLeft = true;
+	valueMask.canGoRight = true;
+}
+
+TemporaryBarrier::TemporaryBarrier(AStarNavigator * nav) : navigator(nav)
+{
+	valueMask.value = 0;
+	valueMask.canGoDown = true;
+	valueMask.canGoUp = true;
+	valueMask.canGoLeft = true;
+	valueMask.canGoRight = true;
 }
 
 }

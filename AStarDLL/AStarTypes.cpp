@@ -9,22 +9,44 @@
 namespace AStar {
 
 
-void AStarCell::bind(TreeNode* x, const char* prefix)
+int AStarNode::rowInc[] =
 {
+	0, // none
+	0, // right
+	0, // left
+	1, // up
+	-1 // down
+};
+int AStarNode::colInc[]
+{
+	0,
+	1, // right
+	-1, // left
+	0, // up
+	0 // down
+};
+
+void Cell::bind(TreeNode* x, const char* prefix)
+{
+	string gridName = string(prefix) + "grid";
 	string rowName = string(prefix) + "row";
 	string colName = string(prefix) + "col";
 	switch (SimpleDataType::getBindMode()) {
-		case SDT_BIND_ON_LOAD:
+		case SDT_BIND_ON_LOAD: {
+			treenode gridNode = x->subnodes[gridName.c_str()];
+			grid = gridNode ? gridNode->value : 1;
 			col = x->subnodes[colName.c_str()]->value;
 			row = x->subnodes[rowName.c_str()]->value;
 			break;
+			}
 		case SDT_BIND_ON_SAVE:
+			assertsubnode(x, (char*)gridName.c_str())->value = grid;
 			assertsubnode(x, (char*)colName.c_str())->value = col;
 			assertsubnode(x, (char*)rowName.c_str())->value = row;
 			break;
 		case SDT_BIND_ON_DISPLAY: {
 			char str[256];
-			sprintf(str, "%s: %d, %s: %d ", colName.c_str(), (int)col, rowName.c_str(), (int)row);
+			sprintf(str, "%s: %d %s: %d, %s: %d ", gridName.c_str(), (int)grid, colName.c_str(), (int)col, rowName.c_str(), (int)row);
 			SimpleDataType::appendToDisplayStr(str);
 			break;
 		}
@@ -33,11 +55,91 @@ void AStarCell::bind(TreeNode* x, const char* prefix)
 }
 
 
-void AStarCell::bind(SimpleDataType* sdt, const char* prefix)
+void Cell::bind(SimpleDataType* sdt, const char* prefix)
 {
+	sdt->bindNumberByName((string(prefix) + "grid").c_str(), grid);
 	sdt->bindNumberByName((string(prefix) + "col").c_str(), col);
 	sdt->bindNumberByName((string(prefix) + "row").c_str(), row);
 }
+
+
+void ExtendedCell::bindInterface()
+{
+	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Cell.xml");
+	SimpleDataType::bindConstructor(force_cast<void*>(&ExtendedCell::construct), "void Cell(int grid, int row, int col)");
+	SimpleDataType::bindCopyConstructor(&ExtendedCell::copyConstruct);
+	SimpleDataType::bindCopyAssigner(&ExtendedCell::operator =);
+	bindTypedProperty(row, int, &ExtendedCell::__getRow, &ExtendedCell::__setRow);
+	bindTypedProperty(col, int, &ExtendedCell::__getCol, &ExtendedCell::__setCol);
+	SimpleDataType::bindOperator(bool, ExtendedCell, "int bool()");
+	SimpleDataType::bindOperator(!, ExtendedCell, "int not()");
+	SimpleDataType::bindOperator(== , Cell, "int equal(AStar.Cell& other)");
+	SimpleDataType::bindOperator(!= , Cell, "int notEqual(AStar.Cell& other)");
+	bindMethod(getAllocation, ExtendedCell, "AStar.Allocation getAllocation(double time = -1)");
+	bindMethod(adjacentCell, ExtendedCell, "AStar.Cell adjacentCell(int direction)");
+	bindMethod(canGo, ExtendedCell, "int canGo(int direction)");
+
+}
+
+void ExtendedCell::__assertCachedPointers()
+{
+	if (!AStarNavigator::instance)
+		return;
+
+	if (grid == 0 || grid > AStarNavigator::instance->grids.size())
+		return;
+	Grid* grid = AStarNavigator::instance->getGrid(*this);
+	if (col >= grid->numCols || row >= grid->numRows)
+		return;
+
+	node = &(grid->nodes[row][col]);
+
+	auto found = AStarNavigator::instance->edgeTableExtraData.find(value);
+	if (found != AStarNavigator::instance->edgeTableExtraData.end())
+		extra = found->second;
+}
+
+NodeAllocation ExtendedCell::getAllocation(double atTime)
+{
+	if (atTime < 0)
+		atTime = time();
+
+	assertCachedPointers();
+	if (!extra)
+		return NodeAllocation(nullptr, *this, 0, 0, -1.0, -1.0, 1.0);
+
+	auto found = std::find_if(extra->allocations.begin(), extra->allocations.end(), [atTime](NodeAllocation& alloc) {return alloc.acquireTime <= atTime && alloc.releaseTime > atTime; });
+	if (found != extra->allocations.end())
+		return *found;
+	else return NodeAllocation(nullptr, *this, 0, 0, -1.0, -1.0, 1.0);
+}
+
+ExtendedCell ExtendedCell::adjacentCell(int direction)
+{
+	ExtendedCell cell(*this);
+	cell.row += AStarNode::rowInc[direction];
+	cell.col += AStarNode::colInc[direction];
+	cell.node = nullptr;
+	cell.extra = nullptr;
+	return cell;
+}
+
+int ExtendedCell::canGo(int direction)
+{
+	assertCachedPointers();
+	if (!node)
+		return 0;
+	return node->canGo((Direction)direction);
+}
+
+ExtendedCell::operator bool()
+{
+	assertCachedPointers();
+
+	return node != nullptr;
+}
+
+
 
 void NodeAllocation::bind(TreeNode* x)
 {
@@ -72,6 +174,25 @@ void NodeAllocation::bind(TreeNode* x)
 	}
 }
 
+struct ExtendedNodeAllocation : public NodeAllocation
+{
+	ExtendedCell __getCell() { return ExtendedCell(cell.grid, cell.row, cell.col); }
+};
+
+void NodeAllocation::bindInterface()
+{
+	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Allocation.xml");
+	SimpleDataType::bindConstructor(force_cast<void*>(&NodeAllocation::construct), "void Cell(int grid, int row, int col)");
+	SimpleDataType::bindCopyConstructor(&NodeAllocation::copyConstruct);
+	SimpleDataType::bindCopyAssigner(&NodeAllocation::operator =);
+	SimpleDataType::bindOperator(bool, NodeAllocation, "int bool()");
+	SimpleDataType::bindOperator(!, NodeAllocation, "int not()");
+	bindTypedProperty(acquireTime, double, &NodeAllocation::__getAcquireTime, nullptr);
+	bindTypedProperty(releaseTime, double, &NodeAllocation::__getReleaseTime, nullptr);
+	SimpleDataType::bindTypedPropertyByName<ExtendedCell>("cell", "AStar.Cell", force_cast<void*>(&ExtendedNodeAllocation::__getCell), nullptr);
+	SimpleDataType::bindTypedPropertyByName<Traveler>("traveler", "AStar.Traveler", force_cast<void*>(&NodeAllocation::__getTraveler), nullptr);
+}
+
 void AStarPathEntry::bind(TreeNode* toNode)
 {
 	int bindMode = SimpleDataType::getBindMode();
@@ -96,6 +217,16 @@ void AStarPathEntry::bind(TreeNode* toNode)
 	}
 }
 
+void AStarPathEntry::bindInterface()
+{
+	SimpleDataType::bindTypedPropertyByName<ExtendedCell>("cell", "AStar.Cell", force_cast<void*>(&AStarPathEntry::__getCell), nullptr);
+}
+
+ExtendedCell AStarPathEntry::__getCell()
+{
+	return ExtendedCell(cell.grid, cell.row, cell.col);
+}
+
 void AStarNodeExtraData::bind()
 {
 	cell.bind(this);
@@ -118,6 +249,15 @@ void AStarNodeExtraData::bind()
 	bindStlContainer(allocations);
 	bindStlContainer(requests);
 	bindObjRef(continueEvent, false);
+
+	bindStlContainer(conditionalBarriers);
+}
+
+void AStarNodeExtraData::addConditionalBarrier(Barrier * barrier)
+{
+	auto found = std::find(conditionalBarriers.begin(), conditionalBarriers.end(), barrier);
+	if (found == conditionalBarriers.end())
+		conditionalBarriers.push_back(barrier);
 }
 
 void AStarNodeExtraData::removeAllocation(NodeAllocationIterator allocIter)
@@ -158,7 +298,7 @@ void AStarNodeExtraData::fulfillTopRequest()
 	requests.pop_front();
 	double blockedTime = time() - traveler->lastBlockTime;
 	if (traveler->isBlocked && blockedTime > traveler->tinyTime) {
-		AStarCell cell;
+		Cell cell;
 		if (traveler->allocations.size() > 0)
 			cell = traveler->allocations.back()->cell;
 		else cell = traveler->travelPath[topRequest.travelPathIndex - 1].cell;
@@ -276,7 +416,7 @@ void AStarNodeExtraData::ContinueEvent::bind()
 	bindNumber(cell.row);
 }
 
-AStarNodeExtraData::ContinueEvent::ContinueEvent(double time, Traveler* traveler, Traveler* blocker, AStarCell& cell) : cell(cell), FlexSimEvent(traveler->holder, time, blocker ? blocker->holder : nullptr, cell.row * 100000 + cell.col) {}
+AStarNodeExtraData::ContinueEvent::ContinueEvent(double time, Traveler* traveler, Traveler* blocker, Cell& cell) : cell(cell), FlexSimEvent(traveler->holder, time, blocker ? blocker->holder : nullptr, cell.row * 100000 + cell.col) {}
 void AStarNodeExtraData::ContinueEvent::execute()
 {
 	partner()->objectAs(Traveler)->navigator->getExtraData(cell)->onContinue(involved ? involved->objectAs(Traveler) : nullptr);
@@ -311,14 +451,14 @@ bool AllocationStep::isImmediatelyBlocked(Traveler* traveler)
 	NodeAllocation* collision;
 	if (isDiagonal) {
 		allocation.cell = intermediateCell1;
-		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell1), allocation, true))
+		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell1, AllocationData), allocation, true))
 			return true;
 		allocation.cell = intermediateCell2;
-		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell2), allocation, true))
+		if (Traveler::findCollision(traveler->navigator->assertExtraData(intermediateCell2, AllocationData), allocation, true))
 			return true;
 	}
 	allocation.cell = toCell;
-	if (Traveler::findCollision(traveler->navigator->assertExtraData(toCell), allocation, true))
+	if (Traveler::findCollision(traveler->navigator->assertExtraData(toCell, AllocationData), allocation, true))
 		return true;
 	return false;
 
@@ -337,7 +477,7 @@ DestinationThreshold::DestinationThreshold(treenode dest, double fudgeFactor)
 	anyThresholdRadius = 0.0;
 }
 
-bool DestinationThreshold::isWithinThreshold(const AStarCell & cell, const Vec2& gridOrigin, const Vec2& destLoc, double nodeWidth)
+bool DestinationThreshold::isWithinThreshold(const Cell & cell, const Vec2& gridOrigin, const Vec2& destLoc, double nodeWidth)
 {
 	if (anyThresholdRadius <= 0 && xAxisThreshold <= 0 && yAxisThreshold <= 0)
 		return false;
@@ -369,24 +509,79 @@ double TravelPath::calculateTotalDistance(AStarNavigator * nav)
 	for (size_t i = 1; i < size(); i++) {
 		AStarPathEntry& from = operator [](i - 1);
 		AStarPathEntry& to = operator [](i);
+		Grid* grid = nav->getGrid(from.cell);
 		if (from.bridgeIndex >= 0) {
 			AStarNodeExtraData* nodeData = nav->getExtraData(from.cell);
 			AStarNodeExtraData::BridgeEntry& entry = nodeData->bridges[from.bridgeIndex];
 			Bridge* bridge = entry.bridge;
-			dist += bridge->travelDistance + nav->nodeWidth;
+			dist += bridge->travelDistance + grid->nodeWidth;
 		} else {
 			bool isDeepDiagonal = (abs(from.cell.row - to.cell.row) >= 2 || abs(from.cell.col - to.cell.col) >= 2);
 			if (isDeepDiagonal)
-				dist += nav->nodeWidth * 2.236067977499789696409;
+				dist += grid->nodeWidth * 2.236067977499789696409;
 			else {
 				bool isDiagonal = from.cell.row != to.cell.row && from.cell.col != to.cell.col;
 				if (isDiagonal)
-					dist += nav->nodeWidth * 1.4142135623730950488;
-				else dist += nav->nodeWidth;
+					dist += grid->nodeWidth * 1.4142135623730950488;
+				else dist += grid->nodeWidth;
 			}
 		}
 	}
 	return dist;
+}
+
+int TravelPath::indexOf(Cell & cell)
+{
+	for (int i = 0; i < size(); i++) {
+		if (operator [](i).cell == cell)
+			return i + 1;
+	}
+	return -1;
+}
+
+void TravelPath::bindInterface()
+{
+	bindTypedProperty(length, int, &TravelPath::__getLength, nullptr);
+	auto funcPtr = &TravelPath::__oneBasedIndex;
+	SimpleDataType::bindOperatorByName<decltype(funcPtr)>("[]", funcPtr, "AStar.TravelPathEntry arrayDeref(int index)");
+	bindMethod(indexOf, TravelPath, "int indexOf(AStar.Cell& cell)");
+}
+
+void AStarNamespace::bindInterface()
+{
+	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.xml");
+	SimpleDataType::bindStaticTypedPropertyByName<AStarNavigator*>("navigator", "AStar.Navigator", force_cast<void*>(&AStarNamespace::__getNavigator), nullptr);
+}
+
+AStarNavigator * AStarNamespace::__getNavigator()
+{
+	return AStarNavigator::instance;
+}
+
+NodeAllocation AllocationRange::operator[](int oneBasedIndex)
+{
+	if (!traveler || oneBasedIndex > size || startIndex + oneBasedIndex >= traveler->allocations.size())
+		return NodeAllocation();
+
+	return *(traveler->allocations[startIndex + oneBasedIndex - 1]);
+}
+
+void AllocationRange::bindInterface()
+{
+	SimpleDataType::bindConstructor(force_cast<void*>(&AllocationRange::construct), "void AllocationRange()");
+	SimpleDataType::bindCopyConstructor(&AllocationRange::copyConstruct);
+	SimpleDataType::bindCopyAssigner(&AllocationRange::operator =);
+	bindTypedProperty(length, int, &AllocationRange::__getLength, nullptr);
+	SimpleDataType::bindOperator([], AllocationRange, "AStar.Allocation arrayDeref(int index)");
+}
+
+void AStarDirection::bindInterface()
+{
+	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Direction.xml");
+	SimpleDataType::bindStaticConstIntProperty(Left, (int)Direction::Left);
+	SimpleDataType::bindStaticConstIntProperty(Right, (int)Direction::Right);
+	SimpleDataType::bindStaticConstIntProperty(Up, (int)Direction::Up);
+	SimpleDataType::bindStaticConstIntProperty(Down, (int)Direction::Down);
 }
 
 }

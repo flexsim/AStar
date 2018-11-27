@@ -7,21 +7,24 @@ namespace AStar {
 class TemporaryBarrier
 {
 	struct ChangeEntry {
-		AStarCell cell;
+		Cell cell;
 		AStarNode savedValue;
 		AStarNode newValue;
 	};
-
+	AStarNavigator* navigator = nullptr;
 	std::vector<ChangeEntry> entries;
-	AStarNavigator* navigator;
-	bool isApplied = false;
 
 public:
-	void addEntry(const AStarCell& cell, const AStarNode& newValue);
+	AStarNode valueMask;
+	bool isApplied = false;
+	ChangeEntry& addEntry(const Cell& cell, const AStarNode& newValue);
+	ChangeEntry& operator [](const Cell& cell);
 	void apply();
 	void unapply();
+	void reset(AStarNavigator* nav) { navigator = nav; entries.clear(); isApplied = false; }
 
-	TemporaryBarrier(AStarNavigator* navigator) : navigator(navigator) {}
+	TemporaryBarrier();
+	TemporaryBarrier(AStarNavigator* nav);
 	~TemporaryBarrier() { if (isApplied) unapply(); }
 
 

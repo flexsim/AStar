@@ -4,6 +4,7 @@
 #include "basicutils.h"
 #include "Barrier.h"
 #include "AStarTypes.h"
+#include "Grid.h"
 #include <vector>
 #include <unordered_map>
 #include <queue>
@@ -11,15 +12,27 @@
 
 namespace AStar {
 
+enum class EditMode : unsigned int {
+	NONE = 0,
+	PREFERRED_PATH = 35,
+	DIVIDER = 36,
+	UNUSED_ONE_WAY_DIVIDER = 37,
+	SOLID_BARRIER = 38,
+	BRIDGE = 39,
+	MANDATORY_PATH = 40,
+	GRID = 41
+};
+
 class AStarNavigator : public Navigator
 {
 	friend class Traveler;
+	friend class Grid;
 protected:
-	AStarNode* edgeTable;
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
-	std::unordered_map<unsigned int, unsigned int> entryHash; // A mapping from colRow to index in totalSet
+	std::unordered_map<unsigned long long, unsigned int> entryHash; // A mapping from colRow to index in totalSet
 	std::unordered_map<CachedPathID, TravelPath, CachedPathID::Hash > pathCache;
+	std::set<Barrier*> visitedConditionalBarriers;
 
 	struct HeapEntry {
 		HeapEntry(float f, unsigned int totalSetIndex) : f(f), totalSetIndex(totalSetIndex) {}
@@ -38,72 +51,80 @@ protected:
 	AStarNode * n;
 	AStarSearchEntry shortest;
 	Traveler* routingTraveler = nullptr;
-	Vec2 destLoc;
+	Vec3 destLoc;
 	double maxPathWeight;
 	int shortestIndex;
 	float closestSoFar;
 	int closestIndex;
 	TreeNode* kinematics;
-	double xStart;
-	double yStart;
+	Vec3 startLoc;
 	double smoothRotations;
 
-	int xOffset;
-	int yOffset;
-	float savedXOffset;
-	float savedYOffset;
-	double savedNodeWidth;
+	//int xOffset;
+	//int yOffset;
+	//float savedXOffset;
+	//float savedYOffset;
 	double directionChangePenalty;
 
 	// Drawing variables
-	Mesh boundsMesh;
-	Mesh barrierMesh;
-	Mesh gridMesh;
 	Mesh memberMesh;
+	Mesh mandatoryPathMemberMesh;
 	bool isGridDirty = false;
 	bool isBoundsDirty = true;
-	bool isBarrierDirty = true;
 	bool isBoundsMeshBuilt = false;
-	bool isBarrierMeshBuilt = false;
 	bool isGridMeshBuilt = false;
-	bool isActiveBarrierBuilt = false;
-	bool isHoveredBarrierBuilt = false;
 
-	inline AStarSearchEntry* expandOpenSet(int r, int c, float multiplier, float rotOnArrival, char bridgeIndex = -1);
-	void checkGetOutOfBarrier(AStarCell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold);
-	void checkBounds(TreeNode* theObj, Vec2& min, Vec2& max);
+	void updateConditionalBarrierDataOnOpenSetExpanded(const Cell& cell, AStarNode* n);
+	inline AStarSearchEntry* expandOpenSet(Grid* grid, int r, int c, float multiplier, float rotOnArrival, char bridgeIndex = -1);
+
 	void buildBoundsMesh(float z);
-	void buildBarrierMesh(float z);
 	void drawMembers(float z);
-	void buildGridMesh(float z);
+	void buildGridMesh(float zOffset);
+public:
+	void setDirty() { isGridDirty = isBoundsDirty = true; }
 
+	void checkGetOutOfBarrier(Cell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold)
+	{
+		getGrid(cell)->checkGetOutOfBarrier(cell, traveler, rowDest, colDest, threshold);
+	}
 	static const int HEAT_MAP_TRAVERSALS_PER_TIME = 1;
 	static const int HEAT_MAP_BLOCKAGE_TIME_PER_TRAVERSAL = 2;
 	static const int HEAT_MAP_BLOCKAGE_TIME_PERCENT = 3;
+	static const int HEAT_MAP_PERCENT_OF_TOTAL_TRAVERSALS = 4;
 	static std::vector<Vec4f> heatMapColorProgression;
 	double showHeatMap;
 	double heatMapMode;
-	double maxHeatValue;
 	double transparentBaseColor;
+	double heatMapTotalTraversals;
 	struct HeatMapColorEntry {
 		Vec4f color = Vec4f(0.0f, 0.0f, 0.0f, 0.0f);
 		AStarNodeExtraData* node = nullptr;
 		int vertIndex;
 	};
-	void drawHeatMap(float z, TreeNode* view);
+	void drawHeatMap(TreeNode* view);
 
 public:
-	Vec2 gridOrigin;
-	// Current edgeTable status variables
-	int edgeTableXSize;
-	int edgeTableYSize;
-	TreeNode* extraDataNode;
-	std::unordered_map<unsigned int, AStarNodeExtraData*> edgeTableExtraData; // A mapping from colRow to an ExtraData object
 
-	static unsigned int editMode;
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>	Checks and expands the passed min/max bounds based on the object's size and location. </summary>
+	///
+	/// <remarks>	</remarks>
+	///
+	/// <param name="theObj">	[in,out] The object. </param>
+	/// <param name="min">   	[in,out] The minimum. </param>
+	/// <param name="max">   	[in,out] The maximum. </param>
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	static void getBoundingBox(TreeNode* theObj, Vec3& min, Vec3& max);
+
+	// Current edgeTable status variables
+	TreeNode* extraDataNode;
+	std::unordered_map<unsigned long long, AStarNodeExtraData*> edgeTableExtraData; // A mapping from colRow to an ExtraData object
+
+
+	//static EditMode editMode;
 	static AStarNavigator* globalASN;
 	double defaultPathWeight;
-	double nodeWidth;
+	double minNodeWidth;
 	double surroundDepth;
 
 	/// <summary>Route by travel time. Boolean. If 1, the routing algorithm will use estimated travel time, including 
@@ -167,9 +188,19 @@ public:
 		virtual void execute() override { partner()->objectAs(AStarNavigator)->onCollisionIntervalUpdate(); }
 	};
 
+	static void addBarrier(treenode x, Barrier* newBarrier);
 	TreeNode* barriers;
-	NodeListArray<Barrier>::SdtSubNodeBindingType barrierList;
-	NodeRef activeBarrier;
+	NodeListArray<Barrier, addBarrier>::ObjCouplingType barrierList;
+
+	/// <summary>	The grid that is currently being edited by the user. </summary>
+	NodeRef activeGrid;
+	/// <summary>	Defines a set of custom barriers that are filled by objects that are barrier members of the astar navigator.
+	/// 			Each element of this array may be one of the following:
+	/// 			1. If the element is a single non-array, it is a single reference to an object.  
+	/// 			2. If the element is an array with 3 elements, then it is a single location, added via blockGridModelPos()  
+	/// 			   that should be blocked  
+	/// 			3. If the element is an array of 7 elements, then it represents two points, a min and max bounding box,  
+	/// 			   that should be blocked in the grid.</summary>
 	Array customBarriers;
 
 	TreeNode* fixedResourceBarriers;
@@ -182,12 +213,16 @@ public:
 	virtual double onReset() override;
 	virtual double onStartSimulation() override;
 	virtual double onRunWarm() override;
+	virtual double onPreDraw(TreeNode* view) override;
 	virtual double onDraw(TreeNode* view) override;
-	virtual double onDrag(TreeNode* view) override;
 	virtual double onClick(TreeNode* view, int clickcode) override;
 	virtual double onUndo(bool isUndo, treenode undoRecord) override;
-	void addCreateRecord(treenode view, Barrier* barrier);
-	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType) override;
+	void addCreateRecord(treenode view, SimpleDataType* barrier, const char* name);
+	double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType, Barrier* path);
+	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType) override
+	{
+		return dragConnection(connectTo, keyPressed, classType, nullptr);
+	}
 	virtual double onDestroy(TreeNode* view) override;
 	virtual double navigateToObject(TreeNode* traveler, TreeNode* destination, double endspeed) override;
 	double navigateToLoc(Traveler* traveler, double* destLoc, double endSpeed);
@@ -195,9 +230,9 @@ public:
 	virtual void onMemberDestroyed(TaskExecuter* te) override;
 	virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
 
-	AStarSearchEntry* checkExpandOpenSet(AStarNode* node, AStarSearchEntry* entryIn, Direction direction, float rotDirection, double dist, double bonusMod, AStarNodeExtraData* extraData);
-	AStarSearchEntry* checkExpandOpenSetDiagonal(AStarNode* node, AStarSearchEntry* entryIn,
-		Direction dir1, Direction dir2, float rotDirection, double dist, AStarNodeExtraData* extraData);
+	AStarSearchEntry* checkExpandOpenSet(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn, Direction direction, float rotDirection, double dist, double bonusMod, AStarNodeExtraData* preferredPathData);
+	AStarSearchEntry* checkExpandOpenSetDiagonal(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn,
+		Direction dir1, Direction dir2, float rotDirection, double dist, AStarNodeExtraData* preferredPathData);
 
 	/// <summary>Calculates the route.</summary>
 	///
@@ -221,40 +256,61 @@ public:
 	virtual void bindEvents() override;
 	virtual void bindTEEvents(TaskExecuter* te) override;
 	virtual void bindTEStatistics(TaskExecuter* te) override;
+	virtual void bindInterface() override;
 	TreeNode* AStarNavigator::resolveTraveler();
 
 	void blockGridModelPos(const Vec3& modelPos);
-	void divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay = 0);
+	void divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay = false);
 	void addObjectBarrierToTable(TreeNode* obj);
 
-	void setDirty();
-	void buildEdgeTable();
+	void resolveGridBounds();
+	void resetGrids();
 
-	AStarCell getCellFromLoc(const Vec2& modelLoc);
-	AStarCell getCellFromLoc(const Vec3& modelLoc) { return getCellFromLoc(Vec2(modelLoc.x, modelLoc.y)); }
-	Vec3 getLocFromCell(const AStarCell& cell) { return Vec3(gridOrigin.x + cell.col * nodeWidth, gridOrigin.y + cell.row * nodeWidth, 0.0);	}
-	AStarNode* getNode(const AStarCell& cell) { return &DeRefEdgeTable(cell.row, cell.col); }
-	AStarNode* getNode(int row, int col) { return &DeRefEdgeTable(row, col); }
-	AStarNodeExtraData* assertExtraData(const AStarCell& cell);
-	AStarNodeExtraData* getExtraData(const AStarCell& cell) {
-		auto extraIter = edgeTableExtraData.find(cell.colRow);
+	//Cell getCell(const Vec2& modelLoc) { return getCell(Vec3(modelLoc.x, modelLoc.y, 0.0)); }
+	Cell getCell(const Vec3& modelLoc);
+	ExtendedCell getExtendedCell(const Vec3& modelLoc) { return ExtendedCell(getCell(modelLoc)); }
+	Vec3 getLocation(const Cell& cell);
+
+	AStarNode* getNode(const Cell& cell);
+	Grid* getGrid(const Cell& cell);
+	Grid* getGrid(const Vec3& modelPos);
+
+	AStarNodeExtraData* assertExtraData(const Cell& cell, ExtraDataReason reason);
+	AStarNodeExtraData* getExtraData(const Cell& cell) {
+		auto extraIter = edgeTableExtraData.find(cell.value);
 		return extraIter != edgeTableExtraData.end() ? extraIter->second : nullptr;
 	}
-	static AStarCell getPrevCell(AStarCell& toCell, float rotDirection);
+	static Cell getPrevCell(Cell& toCell, float rotDirection);
 
 
-	NodeListArray<Traveler>::CouplingSdtSubNodeType travelers;
+	NodeListArray<Traveler>::CouplingSdtSubNodeBindingType travelers;
 	std::list<Traveler*> activeTravelers;
 	void buildActiveTravelerList();
 
-	Traveler* getTraveler(TaskExecuter* te) { return tonode(get(first(te->node_v_navigator)))->objectAs(Traveler); }
+	static Traveler* getTraveler(TaskExecuter* te) { return tonode(get(first(te->node_v_navigator)))->objectAs(Traveler); }
 
-	std::unique_ptr<unsigned int[]> heatMapBuffer;
 	void dumpBlockageData(treenode destNode);
 
 	double debugRoutingAlgorithm;
 	double routingAlgorithmCompletionRatio;
 	void drawRoutingAlgorithm(Traveler* traveler, treenode view);
+
+	bool areGridNodeTablesBuilt = false;
+	NodeListArray<Grid>::SdtSubNodeType grids;
+
+	void resolveMinNodeWidth();
+
+	double hasCustomUserGrids;
+	TreeNode* addObject(const Vec3& pos1, const Vec3& pos2, EditMode mode);
+
+	TemporaryBarrier* applyToTemporaryBarrier = nullptr;
+	double hasConditionalBarriers = 0.0;
+	double hasMandatoryPaths = 0.0;
+
+	treenode addMember(TaskExecuter* te);
+	void addObjectBarrier(ObjectDataType* object);
+
+	static AStarNavigator* instance;
 };
 
 }
