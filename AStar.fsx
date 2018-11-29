@@ -476,17 +476,18 @@ return /**/traveler.Type == 1/**direct*/;
          <node f="40"><name></name></node>
          <node f="42"><name>Spatial</name></node>
         </node>
+        <node f="42" dt="1"><name>mode</name><data>0000000000000000</data></node>
+        <node f="42" dt="2"><name>class</name><data></data></node>
         <node f="42" dt="1"><name>mouseDownScreenX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mouseDownScreenY</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mouseState</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelY</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelZ</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>mode</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>addToStart</name><data>0000000000000000</data></node>
         <node f="42" dt="3"><name>activeNavigator</name><data><coupling>null</coupling></data></node>
         <node f="42" dt="3"><name>curObjectNode</name><data><coupling>null</coupling></data></node>
         <node f="42" dt="3"><name>previousPoint</name><data><coupling>null</coupling></data></node>
-        <node f="42" dt="2"><name>class</name><data></data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -528,6 +529,25 @@ switch (clickCode) {
 	
 	case LEFT_RELEASE:
 		setvarnum(c, "mouseState", 0);
+		
+		//Adding onto the ends of dividers
+		if(!objectexists(curObjectNode) || up(curObjectNode) != activeNavigator) {
+			treenode pointNode = tonode(getpickingdrawfocus(i, PICK_SECONDARY_OBJECT, PICK_PRESSED));
+			treenode classNode = first(classes(ownerobject(pointNode)));
+			
+			if(objectexists(classNode) &amp;&amp; classNode.value.getPath(0, 1) == getvarstr(c, "class")) {
+				if(pointNode.rank == 1 || pointNode.rank == content(pointNode.up)) {
+					curObjectNode = ownerobject(pointNode);
+					function_s(curObjectNode, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
+					nodepoint(getvarnode(c, "curObjectNode"), curObjectNode);
+					nodepoint(getvarnode(c, "previousPoint"), 0);
+					
+					if(pointNode.rank == 1)
+						setvarnum(c, "addToStart", 1);
+				}
+			}
+		}
+		
 		if (objectexists(curObjectNode) &amp;&amp; up(curObjectNode) == activeNavigator) {
 			// if I'm currently editing a solid barrier or grid, (it's the second up click)
 			// then I should set curObjectNode to 0, meaning I'm done editing the barrier
@@ -535,10 +555,11 @@ switch (clickCode) {
 				function_s(curObjectNode, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
 				nodepoint(getvarnode(c, "curObjectNode"), 0); // on a sold barrier, on
 			} else {
-				// if I'm editing a multi-point object, then subsequent left-releases should add
-				// a new point.
+				// if I'm editing a multi-point object, then subsequent left-releases should add a new point.
 				treenode newPoint = function_s(curObjectNode, "addPoint", modelPos.x, modelPos.y, modelPos.z);
 				setpickingdrawfocus(i, curObjectNode, PICK_ASTAR_POINT, newPoint, OVERRIDE_SET_MOUSE_DOWN_PICK);
+				if(getvarnum(c, "addToStart"))
+					newPoint.rank = 1;
 				
 				treenode previousPoint = getvarnode(c, "previousPoint").value;
 				if(objectexists(previousPoint) &amp;&amp; ownerobject(previousPoint) == curObjectNode) {
@@ -557,7 +578,6 @@ switch (clickCode) {
 			int dy = fabs(screenY - getvarnum(c, "mouseDownScreenY"));
 			
 			// I only create a new object on the left release if the user did not drag the mouse (pan the view)
-			// and if I'm not in "creating" mode, i.e. I have not yet created the object
 			if (fabs(dx) &lt; 2 &amp;&amp; fabs(dy) &lt; 2) {
 				
 				if (mode != EDITMODE_GRID) {
@@ -590,6 +610,8 @@ switch (clickCode) {
 				endaggregatedundo(i, undoId);
 				
 				nodepoint(getvarnode(c, "curObjectNode"), curObjectNode);
+				nodepoint(getvarnode(c, "previousPoint"), 0);
+				setvarnum(c, "addToStart", 0);
 			}
 
 		}
@@ -631,40 +653,48 @@ nodepoint(objectfocus(c), selectedobject(iconGrid));
 
 setvarnum(c, "mouseDownScreenX", 0);
 setvarnum(c, "mouseDownScreenY", 0);
+setvarnum(c, "mouseState", 0);
 setvarnum(c, "lastModelX", 0);
 setvarnum(c, "lastModelY", 0);
 setvarnum(c, "lastModelZ", 0);
-setvarnum(c, "mouseState", 0);
+setvarnum(c, "addToStart", 0);
 
 nodepoint(getvarnode(c, "activeNavigator"), 0);
 nodepoint(getvarnode(c, "curObjectNode"), 0);
 nodepoint(getvarnode(c, "previousPoint"), 0);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
+treenode curObjectNode = tonode(getvarnum(c, "curObjectNode"));
+treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
 
+if(getvarnum(c, "addToStart")) {
+	treenode firstPoint = first(getvarnode(curObjectNode, "points"));
+	// Move point into position to be deleted
+	if (objectexists(firstPoint))
+		firstPoint.rank = content(firstPoint.up);
+}
+if (objectexists(curObjectNode))
+	function_s(curObjectNode, "abortCreationMode");
+if (objectexists(activeNav))
+	function_s(activeNav, "rebuildMeshes");
+
+nodepoint(objectfocus(c), 0);
+nodepoint(viewfocus(c), 0);
 
 setvarnum(c, "mode", 0);
 setvarstr(c, "class", "");
 
 setvarnum(c, "mouseDownScreenX", 0);
 setvarnum(c, "mouseDownScreenY", 0);
+setvarnum(c, "mouseState", 0);
 setvarnum(c, "lastModelX", 0);
 setvarnum(c, "lastModelY", 0);
 setvarnum(c, "lastModelZ", 0);
-setvarnum(c, "mouseState", 0);
-
-treenode curObjectNode = tonode(getvarnum(c, "curObjectNode"));
-if (objectexists(curObjectNode))
-	function_s(curObjectNode, "abortCreationMode");
-	
-treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
-if (objectexists(activeNav))
-	function_s(activeNav, "rebuildMeshes");
+setvarnum(c, "addToStart", 0);
 
 nodepoint(getvarnode(c, "activeNavigator"), 0);
 nodepoint(getvarnode(c, "curObjectNode"), 0);
 nodepoint(getvarnode(c, "previousPoint"), 0);
-nodepoint(objectfocus(c), 0);
-nodepoint(viewfocus(c), 0);</data></node>
+</data></node>
         <node f="442" dt="2"><name>checkStatus</name><data>#define BARRIER_MODE_CREATE 0x2
 
 treenode theEditMode = ownerobject(c);
