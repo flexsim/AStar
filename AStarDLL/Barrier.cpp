@@ -847,24 +847,11 @@ double Barrier::onDestroy(TreeNode * view)
 
 double Barrier::onUndo(bool isUndo, treenode undoRecord)
 {
-	AStarNavigator* nav = navigator;
 	isMeshDirty = true;
 
-	// Stop barrier creation
-	if (mode & Barrier::CREATE) {
-		if (pointList.size() > 2) {
-			removePoint(min(activePointIndex, pointList.size() - 1));
-			activePointIndex = pointList.size();
-			mode = 0;
-		}
-		else
-			destroyobject(holder);
-	}
-	else {
-		// Fix active point index
-		if (activePointIndex > pointList.size())
-			activePointIndex = pointList.size();
-	}
+	// Fix active point index
+	if (activePointIndex > pointList.size())
+		activePointIndex = pointList.size();
 	return 0.0;
 }
 
@@ -1020,6 +1007,8 @@ void Barrier::addPathVertices(treenode view, Mesh* barrierMesh, float z, const V
 				if (point->holder == hovered)
 					shouldDraw = true;
 			}
+			if (drawStyle == Highlighted && i == activePointIndex)
+				shouldDraw = true;
 		}
 		if (shouldDraw)
 			point->addVertices(barrierMesh, radius, drawStyle == Basic ? lightGray : highlightColor, z, drawStyle != Basic);

@@ -478,20 +478,15 @@ return /**/traveler.Type == 1/**direct*/;
         </node>
         <node f="42" dt="1"><name>mouseDownScreenX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mouseDownScreenY</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>lastMouseX</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>lastMouseY</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mouseState</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>state</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelY</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>lastModelZ</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>creating</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mode</name><data>0000000000000000</data></node>
         <node f="42" dt="3"><name>activeNavigator</name><data><coupling>null</coupling></data></node>
         <node f="42" dt="3"><name>curObjectNode</name><data><coupling>null</coupling></data></node>
+        <node f="42" dt="3"><name>previousPoint</name><data><coupling>null</coupling></data></node>
         <node f="42" dt="2"><name>class</name><data></data></node>
-        <node f="42" dt="1"><name>barrierEditMode</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -524,9 +519,6 @@ setvarnum(c, "lastModelY", modelPos.y);
 setvarnum(c, "lastModelZ", modelPos.z);
 int clickCode = clickcode();
 
-//pt("SelectedObject: "); pt(nodetomodelpath(selobj, 1)); 
-//pt(" clickcode: "); pd(clickCode); pr();
-
 switch (clickCode) {
 	case LEFT_PRESS:
 		setvarnum(c, "mouseDownScreenX", screenX);
@@ -536,7 +528,7 @@ switch (clickCode) {
 	
 	case LEFT_RELEASE:
 		setvarnum(c, "mouseState", 0);
-		if (curObjectNode) {
+		if (objectexists(curObjectNode) &amp;&amp; up(curObjectNode) == activeNavigator) {
 			// if I'm currently editing a solid barrier or grid, (it's the second up click)
 			// then I should set curObjectNode to 0, meaning I'm done editing the barrier
 			if (mode == EDITMODE_SOLID_BARRIER || mode == EDITMODE_GRID) {
@@ -547,6 +539,17 @@ switch (clickCode) {
 				// a new point.
 				treenode newPoint = function_s(curObjectNode, "addPoint", modelPos.x, modelPos.y, modelPos.z);
 				setpickingdrawfocus(i, curObjectNode, PICK_ASTAR_POINT, newPoint, OVERRIDE_SET_MOUSE_DOWN_PICK);
+				
+				treenode previousPoint = getvarnode(c, "previousPoint").value;
+				if(objectexists(previousPoint) &amp;&amp; ownerobject(previousPoint) == curObjectNode) {
+					// Make an undo record for the created point
+					int undoId = beginaggregatedundo(i, "Create A* Object Point");
+					createundorecord(i, curObjectNode, UNDO_UPDATE_LINKS_ON_UNDO, 0, 0, 0);
+					createundorecord(i, previousPoint, UNDO_CREATE_OBJECT, 0, 0, 0);
+					createundorecord(i, curObjectNode, UNDO_UPDATE_LINKS_ON_REDO, 0, 0, 0);
+					endaggregatedundo(i, undoId);
+				}
+				nodepoint(getvarnode(c, "previousPoint"), newPoint);
 			}
 		} else {
 			// on an up-click where there's no currently editing object, then I should see about creating one
@@ -578,6 +581,14 @@ switch (clickCode) {
 				} else {
 					curObjectNode = function_s(activeNavigator, "addObject", modelPos.x, modelPos.y, modelPos.z, modelPos.x, modelPos.y, modelPos.z, mode);
 				}
+				
+				// Make an undo record
+				int undoId = beginaggregatedundo(i, "Create A* Object");
+				createundorecord(i, activeNavigator, UNDO_UPDATE_LINKS_ON_UNDO, 0, 0, 0);
+				createundorecord(i, curObjectNode, UNDO_CREATE_OBJECT, 0, 0, 0);
+				createundorecord(i, activeNavigator, UNDO_UPDATE_LINKS_ON_REDO, 0, 0, 0);
+				endaggregatedundo(i, undoId);
+				
 				nodepoint(getvarnode(c, "curObjectNode"), curObjectNode);
 			}
 
@@ -617,40 +628,43 @@ setvarnum(c, "lastModelY", modelPos.y);
         <node f="442" dt="2"><name>OnEntering</name><data>treenode iconGrid = nodefromwindow(keyboardfocus());
 nodepoint(viewfocus(c), iconGrid);
 nodepoint(objectfocus(c), selectedobject(iconGrid));
-setvarnum(c, "mouseState", 0);
-</data></node>
-        <node f="442" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
 
-
-setvarnum(c, "editing", 0);
-setvarnum(c, "creating", 0);
-setvarnum(c, "mode", 0);
 setvarnum(c, "mouseDownScreenX", 0);
 setvarnum(c, "mouseDownScreenY", 0);
-setvarnum(c, "lastMouseY", 0);
-setvarnum(c, "dragging", 0);
 setvarnum(c, "lastModelX", 0);
 setvarnum(c, "lastModelY", 0);
 setvarnum(c, "lastModelZ", 0);
-setvarnum(c, "dragX", 0);
-setvarnum(c, "dragY", 0);
-setvarstr(c, "class", "");
 setvarnum(c, "mouseState", 0);
-
-treenode curObjectNode = tonode(getvarnum(c, "curObjectNode"));
-if (curObjectNode)
-	function_s(curObjectNode, "abortCreationMode");
-	
-treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
-if (objectexists(activeNav)) {
-	function_s(activeNav, "rebuildMeshes");
-}
 
 nodepoint(getvarnode(c, "activeNavigator"), 0);
 nodepoint(getvarnode(c, "curObjectNode"), 0);
+nodepoint(getvarnode(c, "previousPoint"), 0);</data></node>
+        <node f="442" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
+
+
+setvarnum(c, "mode", 0);
+setvarstr(c, "class", "");
+
+setvarnum(c, "mouseDownScreenX", 0);
+setvarnum(c, "mouseDownScreenY", 0);
+setvarnum(c, "lastModelX", 0);
+setvarnum(c, "lastModelY", 0);
+setvarnum(c, "lastModelZ", 0);
+setvarnum(c, "mouseState", 0);
+
+treenode curObjectNode = tonode(getvarnum(c, "curObjectNode"));
+if (objectexists(curObjectNode))
+	function_s(curObjectNode, "abortCreationMode");
+	
+treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
+if (objectexists(activeNav))
+	function_s(activeNav, "rebuildMeshes");
+
+nodepoint(getvarnode(c, "activeNavigator"), 0);
+nodepoint(getvarnode(c, "curObjectNode"), 0);
+nodepoint(getvarnode(c, "previousPoint"), 0);
 nodepoint(objectfocus(c), 0);
-nodepoint(viewfocus(c), 0);
-</data></node>
+nodepoint(viewfocus(c), 0);</data></node>
         <node f="442" dt="2"><name>checkStatus</name><data>#define BARRIER_MODE_CREATE 0x2
 
 treenode theEditMode = ownerobject(c);
@@ -663,9 +677,6 @@ int barrierEditMode = function_s(object, "getEditMode");
 
 if (barrierEditMode &amp; BARRIER_MODE_CREATE)
 	return 0;
-	
-setvarnum(theEditMode, "creating", 0);
-setvarnum(theEditMode, "editing", 1);
 </data></node>
         <node f="442" dt="2"><name>findNavigator</name><data>forobjecttreeunder(model) {
 	if (isclasstype(a, "AStar::AStarNavigator")) {
