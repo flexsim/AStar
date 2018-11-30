@@ -118,8 +118,8 @@
           <entry><ed>waiting for transporter</ed><ed>0000000000000000</ed><ed>1</ed></entry></data></node>
          <node f="42" dt="2"><name>sdt::attributetree</name><data>TrackedVariable</data>
           <node f="40"><name></name></node>
-          <node f="42" dt="1"><name>type</name><data>0000000040080000</data></node>
-          <node f="42" dt="1"><name>flags</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>type</name><data>0000000040100000</data></node>
+          <node f="42" dt="1"><name>flags</name><data>0000000040400000</data></node>
           <node f="42" dt="1"><name>curValue</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>startValue</name><data>0000000000000000</data></node>
          </node>
