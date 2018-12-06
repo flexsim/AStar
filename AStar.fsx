@@ -5119,8 +5119,7 @@ if (clickcode() == LEFT_RELEASE) {
          <node f="40"><name></name></node>
          <node f="442" dt="2"><name>selObj</name><data>treenode selObj = param(1);
 if (!objectexists(selObj) 
-		|| getdatatype(selObj) != DATATYPE_OBJECT 
-		|| getpickingdrawfocus(activedocumentnode(), PICK_SECONDARY_OBJECT, 0) != 0)
+		|| getdatatype(selObj) != DATATYPE_OBJECT)
 	return 0;
 
 return isclasstype(selObj, "AStar::Divider");
