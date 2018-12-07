@@ -3716,7 +3716,7 @@ if (clickcode() == LEFT_RELEASE) {
       </node>
       <node f="42"><name>length</name>
        <node f="40"><name></name></node>
-       <node f="42" dt="2"><name>nodeWidth</name><data>&gt;variables/nodeWidth</data>
+       <node f="42" dt="2"><name>nodeWidth</name><data>&gt;variables/grids/1/nodeWidth</data>
         <node f="40"><name></name></node>
         <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
        </node>
