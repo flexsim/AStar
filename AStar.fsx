@@ -5846,7 +5846,7 @@ for (int i = 1; i &lt;= barriers.subnodes.length; i++) {
 	string class = barrier.find("sdt::attributetree")?.value;
 	Object newObj = 0;
 	if (class == "AStar::Barrier") {
-		newObj = createinstance(astarFolder.find("Barrer"), navigator);
+		newObj = createinstance(astarFolder.find("Barrier"), navigator);
 	} else if (class == "AStar::Divider") {
 		newObj = createinstance(astarFolder.find("Divider"), navigator);
 		newObj.attrs.variables.find("isTwoWay").value = 1;
