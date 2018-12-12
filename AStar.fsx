@@ -580,9 +580,9 @@ switch (clickCode) {
 			// I only create a new object on the left release if the user did not drag the mouse (pan the view)
 			if (fabs(dx) &lt; 2 &amp;&amp; fabs(dy) &lt; 2) {
 				
+				double nodeWidth = function_s(activeNavigator, "getGrid", modelPos.x, modelPos.y, modelPos.z).find("nodeWidth").value;
 				if (mode != EDITMODE_GRID) {
 					// Snap between grid points
-					double nodeWidth = function_s(activeNavigator, "getGrid", modelPos.x, modelPos.y, modelPos.z).find("nodeWidth").value;
 					if (getvarnum(activeNavigator, "snapBetweenGrid") &amp;&amp; (mode == EDITMODE_DIVIDER || mode == EDITMODE_ONE_WAY_DIVIDER)) {
 						modelPos.x = floor((modelPos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 						modelPos.y = floor((modelPos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
@@ -594,8 +594,8 @@ switch (clickCode) {
 					curObjectNode.as(Object).setLocation(modelPos.x, modelPos.y, modelPos.z);
 					treenode firstPoint = first(getvarnode(curObjectNode, "points"));
 					treenode lastPoint = last(getvarnode(curObjectNode, "points"));
-					firstPoint.find("y").value = -0.01;
-					lastPoint.find("x").value = 0.01;
+					firstPoint.find("y").value = -0.01 * nodeWidth;
+					lastPoint.find("x").value = 0.01 * nodeWidth;
 					function_s(curObjectNode, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
 					setpickingdrawfocus(i, curObjectNode, PICK_ASTAR_POINT, lastPoint, OVERRIDE_SET_MOUSE_DOWN_PICK);
 				} else {
