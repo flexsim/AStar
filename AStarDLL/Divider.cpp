@@ -112,6 +112,8 @@ void Divider::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle d
 					if (point->holder == hovered)
 						shouldDraw = true;
 				}
+				if(drawStyle == Highlighted && i == activePointIndex)
+					shouldDraw = true;
 			}
 			if (shouldDraw)
 				point->addVertices(barrierMesh, radius, drawStyle == Basic ? black : baseColor, z + 3 * oneMillimeter, drawStyle != Basic);
@@ -219,14 +221,11 @@ double Divider::onClick(treenode view, int clickCode, Vec3& pos)
 		int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, PICK_PRESSED);
 		if (pickType == PICK_POINT) {
 			treenode point = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED));
-			applicationcommand("addundotracking", view, node("x", point));
-			applicationcommand("addundotracking", view, node("y", point));
 			clickedIndex = point->rank - 1;
-		} else {
-			for (int i = 0; i < pointList.size(); i++) {
-				applicationcommand("addundotracking", view, node("x", pointList[i]->holder));
-				applicationcommand("addundotracking", view, node("y", pointList[i]->holder));
-			}
+		}
+		for (int i = 0; i < pointList.size(); i++) {
+			applicationcommand("addundotracking", view, node("x", pointList[i]->holder));
+			applicationcommand("addundotracking", view, node("y", pointList[i]->holder));
 		}
 
 		if (clickedIndex > -1) {
@@ -236,17 +235,6 @@ double Divider::onClick(treenode view, int clickCode, Vec3& pos)
 		} else {
 			activePointIndex = pointList.size();
 			mode = Barrier::MOVE;
-		}
-	}
-
-	if (clickCode == RIGHT_RELEASE) {
-		// Right click -> abort barrier creation
-		if (mode & Barrier::CREATE) {
-			removePoint(activePointIndex);
-			mode = 0;
-			activePointIndex = pointList.size();
-			if (pointList.size() < 2)
-				destroyobject(holder);
 		}
 	}
 
@@ -302,7 +290,7 @@ void Divider::addCreatePointRecord(treenode view, Point* point)
 double Divider::onDestroy(TreeNode * view)
 {
 	isMeshDirty = true;
-	if (mode == 0 && pointList.size() > 2
+	if (mode & Barrier::POINT_EDIT && pointList.size() > 2
 		&& activePointIndex != pointList.size()) {
 		// Remove a divider point
 		removePoint(activePointIndex);

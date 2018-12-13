@@ -94,6 +94,7 @@ public:
 	static std::vector<Vec4f> heatMapColorProgression;
 	double showHeatMap;
 	double heatMapMode;
+	double maxHeatValue;
 	double transparentBaseColor;
 	double heatMapTotalTraversals;
 	struct HeatMapColorEntry {

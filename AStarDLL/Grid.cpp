@@ -130,7 +130,6 @@ Cell Grid::getCell(const Vec3 & modelLoc)
 
 void Grid::reset(AStarNavigator* nav)
 {
-	maxHeatValue = 0.0;
 	heatMapBuffer.reset(nullptr);
 	navigator = nav;
 }
@@ -831,7 +830,7 @@ void Grid::drawHeatMap(TreeNode * view)
 	int heatMapMode = (int)navigator->heatMapMode;
 	if (heatMapMode == 0 || statisticaltime() <= 0)
 		return;
-	if (maxHeatValue <= 0)
+	if (navigator->maxHeatValue <= 0)
 		return;
 
 	int pickMode = getpickingmode(view);
@@ -890,7 +889,7 @@ void Grid::drawHeatMap(TreeNode * view)
 			weight = 100.0 * data->totalBlockedTime / statisticaltime();
 			break;
 		}
-		weight /= maxHeatValue;
+		weight /= navigator->maxHeatValue;
 		weight = max(0, weight);
 		weight = min(0.9999, weight);
 

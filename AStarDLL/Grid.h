@@ -115,7 +115,6 @@ public:
 	Mesh gridMesh;
 	void buildBoundsMesh();
 	void buildGridMesh(float zOffset);
-	double maxHeatValue = 0.0;
 	void drawHeatMap(TreeNode* view);
 	void drawDestinationThreshold(treenode obj, const Vec3& loc, const Vec3& size);
 	void checkGetOutOfBarrier(Cell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold);

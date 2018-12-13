@@ -73,6 +73,7 @@ void AStarNavigator::bindVariables(void)
 
 	bindVariable(showHeatMap);
 	bindVariable(heatMapMode);
+	bindVariable(maxHeatValue);
 	bindVariable(transparentBaseColor);
 
 	bindVariable(collisionUpdateIntervalFactor);
