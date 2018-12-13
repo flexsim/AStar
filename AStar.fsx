@@ -5828,7 +5828,8 @@ if (!navigator)
 
 treenode astarFolder = Model.find("MAIN:/project/library/astar");
 Object libNavigator = astarFolder.find("AStarNavigator");
-createcopy(libNavigator.find("&gt;visual/drawsurrogate"), navigator.find("&gt;visual"), 1);
+Object surrogate = createcopy(libNavigator.find("&gt;visual/drawsurrogate"), navigator.find("&gt;visual"), 1).first;
+surrogate.size = Vec3(1.0, 1.0, 1.0);
 navigator.attrs.shape.value = "***";
 navigator.attrs.shapeindex.value = 0;
 navigator.attrs.guifocusclass.value = "VIEW:/modules/AStar/Pages/AStarProperties";
