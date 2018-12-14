@@ -365,6 +365,8 @@ double AStarNavigator::onDraw(TreeNode* view)
 			drawobjectpart(view, surrogate, OBJECT_PART_SIZER_Y);
 			setpickingdrawfocus(view, holder, PICK_SIZERYNEG);
 			drawobjectpart(view, surrogate, OBJECT_PART_SIZER_Y_NEG);
+			setpickingdrawfocus(view, holder, PICK_SIZERZ, 0, DETECT_DRAG_Z);
+			drawobjectpart(view, surrogate, OBJECT_PART_SIZER_Z);
 			fglDisable(GL_LIGHTING);
 			glLineWidth(3.0f);
 			if (selObj == holder)

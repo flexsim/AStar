@@ -1986,18 +1986,6 @@ see the progression of that traveler's last routing algorithm execution.</data><
           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
          </data>
           <node f="40"><name></name></node></node>
-         <node f="42" dt="4"><name>General</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/pages/shared/General</data></node>
-          <node f="42" dt="1"><name>viewwindowopen</name><data>000000003ff00000</data></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>00000000407bc000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
-          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-         </data>
-          <node f="40"><name></name></node></node>
         </node>
         <node f="42" dt="4"><name>BottomButtons</name><data>
          <node f="40"><name>object</name></node>
