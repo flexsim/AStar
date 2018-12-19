@@ -955,8 +955,19 @@ return asn;
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
 	modeleditmode("AStar::Barrier");</data></node>
-        <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/Barrier</data>
+        <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Barrier</data>
          <node f="2000040"><name></name></node></node>
+        <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
+Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
+treenode ontoView = param(5);
+if (ontoView) {
+	treenode obj = c.find("..&gt;objectfocus+");
+	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
+	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
+	return createdObj;
+} else {
+	modeleditmode(0);
+}</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>An area where travelers cannot go 
 or where travel direction is constrained</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
@@ -965,8 +976,19 @@ or where travel direction is constrained</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
 	modeleditmode("AStar::Divider");</data></node>
-        <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/Divider</data>
+        <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Divider</data>
          <node f="2000040"><name></name></node></node>
+        <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
+Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
+treenode ontoView = param(5);
+if (ontoView) {
+	treenode obj = c.find("..&gt;objectfocus+");
+	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
+	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
+	return createdObj;
+} else {
+	modeleditmode(0);
+}</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>A line or set of lines that blocks travel
 like a wall</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\divider.bmp</data></node>
@@ -975,8 +997,19 @@ like a wall</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
 	modeleditmode("AStar::PreferredPath");</data></node>
-        <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/PreferredPath</data>
+        <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/PreferredPath</data>
          <node f="2000040"><name></name></node></node>
+        <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
+Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
+treenode ontoView = param(5);
+if (ontoView) {
+	treenode obj = c.find("..&gt;objectfocus+");
+	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
+	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
+	return createdObj;
+} else {
+	modeleditmode(0);
+}</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>A path that acts as a "magnet" for travelers to travel on</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
        </data></node>
@@ -984,8 +1017,19 @@ like a wall</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
 	modeleditmode("AStar::Bridge");</data></node>
-        <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/Bridge</data>
+        <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Bridge</data>
          <node f="2000040"><name></name></node></node>
+        <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
+Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
+treenode ontoView = param(5);
+if (ontoView) {
+	treenode obj = c.find("..&gt;objectfocus+");
+	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
+	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
+	return createdObj;
+} else {
+	modeleditmode(0);
+}</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>A path that directly connects one location to another.</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\bridge.bmp</data></node>
        </data></node>
@@ -993,8 +1037,32 @@ like a wall</data></node>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
 	modeleditmode("AStar::MandatoryPath");</data></node>
-        <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/MandatoryPath</data>
+        <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/MandatoryPath</data>
          <node f="2000040"><name></name></node></node>
+        <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
+Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
+treenode ontoView = param(5);
+if (ontoView) {
+	treenode obj = c.find("..&gt;objectfocus+");
+	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
+	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
+	return createdObj;
+} else {
+	modeleditmode(0);
+}</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data>A path that designated travelers must travel on</data></node>
+        <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\mandatorypath.bmp</data></node>
+       </data></node>
+       <node f="42" dt="4"><name>Grid</name><data>
+        <node f="40"><name></name></node>
+        <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
+	modeleditmode("AStar::MandatoryPath");</data></node>
+        <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
+Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
+treenode ontoView = param(5);
+if (ontoView) {
+	;
+}</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>A path that designated travelers must travel on</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\mandatorypath.bmp</data></node>
        </data></node>
