@@ -3586,6 +3586,8 @@ TreeNode* node_v_downfunction;
 TreeNode* node_v_upfunction;
 TreeNode* node_v_enabled;
 #define v_enabled node_v_enabled->safedatafloat()[0]
+TreeNode* node_v_pickColor;
+#define v_pickColor node_v_pickColor->safedatafloat()[0]
 
 // System
 
@@ -5184,6 +5186,8 @@ FS_CONTENT_DLL_FUNC virtual double checkReceiveItem();
 
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
+FS_CONTENT_DLL_FUNC void cacheLocationUpdateData();
+
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
 TreeNode* node_v_usebatching;
@@ -5767,13 +5771,14 @@ FS_CONTENT_DLL_FUNC double buildBaseMesh(treenode cursection);
 
 FS_CONTENT_DLL_FUNC double buildConveyorMesh(treenode cursection, double &curtexperc);
 
+FS_CONTENT_DLL_FUNC virtual void bindEvents();
+
 TreeNode* node_v_speed;
 #define v_speed node_v_speed->safedatafloat()[0]
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
 TreeNode* node_v_accumulating;
 #define v_accumulating node_v_accumulating->safedatafloat()[0]
-TreeNode* node_v_conveyendtrigger;
 TreeNode* node_v_lastexittime;
 #define v_lastexittime node_v_lastexittime->safedatafloat()[0]
 TreeNode* node_v_lastentrytime;
@@ -5814,8 +5819,6 @@ TreeNode* node_v_lastentrysize;
 #define v_lastentrysize node_v_lastentrysize->safedatafloat()[0]
 TreeNode* node_v_photoeyes;
 #define v_photoeyes node_v_photoeyes->safedatafloat()[0]
-TreeNode* node_v_photoeyecovertrigger;
-TreeNode* node_v_photoeyeuncovertrigger;
 TreeNode* node_v_orientationmode;
 #define v_orientationmode node_v_orientationmode->safedatafloat()[0]
 TreeNode* node_v_zorient;
@@ -5898,6 +5901,12 @@ double builtY;
 double builtZ;
 
 bool builtRelative;
+
+treenode onConveyEndTrigger = nullptr;
+
+treenode onCoverTrigger = nullptr;
+
+treenode onUncoverTrigger = nullptr;
 
 
 // System
@@ -6048,6 +6057,8 @@ FS_CONTENT_DLL_FUNC virtual void resume();
 
 FS_CONTENT_DLL_FUNC double buildDecisionMesh();
 
+FS_CONTENT_DLL_FUNC virtual void bindEvents();
+
 TreeNode* node_v_decisionpointtable;
 #define v_decisionpointtable node_v_decisionpointtable->safedatafloat()[0]
 TreeNode* node_v_dptablecache;
@@ -6063,7 +6074,6 @@ TreeNode* node_v_cleardpevents;
 #define v_cleardpevents node_v_cleardpevents->safedatafloat()[0]
 TreeNode* node_v_inactivecouplings;
 #define v_inactivecouplings node_v_inactivecouplings->safedatafloat()[0]
-TreeNode* node_v_stopresume;
 
 // c++ attributes
 struct dptableentry{int row; double position; bool spaceneeded; int coverstate;};;
@@ -6071,6 +6081,8 @@ struct dptableentry{int row; double position; bool spaceneeded; int coverstate;}
 treenode exitingitem;;
 
 Mesh decisionPointMesh;
+
+treenode stopResume = nullptr;
 
 
 // System

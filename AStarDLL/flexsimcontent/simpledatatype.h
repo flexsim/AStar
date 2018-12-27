@@ -1571,7 +1571,7 @@ public:
 	engine_export virtual bool setPrimaryValue(const Variant& val) override;
 	virtual Variant getPrimaryValue() override { return getCurrent(); }
 	virtual Variant evaluate(const VariantParams& params) override { return getCurrent(); }
-	Variant getCategoricalName();
+	engine_export Variant getCategoricalName();
 	std::string getCategoryName(int catNum) const;
 
 	engine_export static TrackedVariable* create();

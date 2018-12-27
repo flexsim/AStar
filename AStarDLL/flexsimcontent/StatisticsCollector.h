@@ -778,6 +778,8 @@ public:
 	engine_export TreeNode* __getInstanceObject() { return instanceObject; }
 	engine_export void __setInstanceObject(TreeNode* obj) { instanceObject = obj; }
 
+	engine_export int getRowForValue(const Variant& value);
+
 	engine_export operator Table();
 	engine_export operator TreeNode*() { return holder; }
 

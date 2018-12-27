@@ -456,8 +456,8 @@ public:
 			if (atIndex < 1 || atIndex > vectorSize)
 				throw "Array index out of bounds";
 			
-			if (vectorSize + numElements >= bufferCapacity)
-				reserve(16 > bufferCapacity * 2 ? 16 : (bufferCapacity + numElements) * 2);
+			if (vectorSize + numElements > bufferCapacity)
+				reserve(16 > (bufferCapacity + numElements) * 2 ? 16 : (bufferCapacity + numElements) * 2);
 			// initialize new elements
 			for (size_t i = 0; i < numElements; i++)
 				::new (&(elements[vectorSize++])) T();
