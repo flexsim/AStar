@@ -1878,7 +1878,7 @@ treenode AStarNavigator::addMember(TaskExecuter* te)
 	TreeNode* theMemberNode = tonode(get(first(te->node_v_navigator)));
 	TreeNode* travelMembers = node_v_travelmembers;
 	if (validlink(theMemberNode, "")) {
-		if (theMemberNode->parent == travelMembers)
+		if (theMemberNode->up == travelMembers)
 			return theMemberNode;
 	}
 	Traveler* traveler = travelers.add(new Traveler);

@@ -638,9 +638,9 @@ double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 			cursorinfo(view, 4, 0, 0); // update the hover (I think)
 			switch (pickType) {
 				case PICK_SPLIT_PATTERN_COL: splitPatternCol(cell->holder->rank, view); break;
-				case PICK_SPLIT_PATTERN_ROW: splitPatternRow(cell->holder->parent->rank, view); break;
+				case PICK_SPLIT_PATTERN_ROW: splitPatternRow(cell->holder->up->rank, view); break;
 				case PICK_MERGE_PATTERN_COLS: mergePatternCols(cell->holder->rank, view); break;
-				case PICK_MERGE_PATTERN_ROWS: mergePatternRows(cell->holder->parent->rank, view); break;
+				case PICK_MERGE_PATTERN_ROWS: mergePatternRows(cell->holder->up->rank, view); break;
 				case PICK_PATTERN_DIRECTION_DOWN:
 				case PICK_PATTERN_DIRECTION_UP:
 				case PICK_PATTERN_DIRECTION_LEFT:
