@@ -9,8 +9,8 @@ namespace AStar {
 class Grid : public SimpleDataType
 {
 public:
-	Grid() {}
-	Grid(AStarNavigator* navigator, double nodeWidth) : navigator(navigator), nodeWidth(nodeWidth) {}
+	Grid() : gridOrigin(0.0, 0.0, 0.0) {}
+	Grid(AStarNavigator* navigator, double nodeWidth) : gridOrigin(0.0, 0.0, 0.0), navigator(navigator), nodeWidth(nodeWidth) {}
 	virtual void bind();
 	virtual const char* getClassFactory() { return "AStar::Grid"; }
 
@@ -32,6 +32,7 @@ public:
 	/// <summary>	The grid origin. This is based on minPoint, but is rounded so that the center of nodes are 
 	/// 			in the center of model grid units. </summary>
 	Vec3 gridOrigin;
+	double isUserCustomized = false;
 	bool isLocWithinBounds(const Vec3& modelLoc, bool canExpand) const;
 	bool isLocWithinVerticalBounds(double) const;
 	bool intersectBoundingBox(Vec3& min, Vec3& max) const;
@@ -112,7 +113,9 @@ public:
 
 
 	Mesh boundsMesh;
+	bool isDirtyByUser = false;
 	Mesh gridMesh;
+	void buildBoundsMesh(Mesh& mesh, bool asOutline, Vec4f& color);
 	void buildBoundsMesh();
 	void buildGridMesh(float zOffset);
 	void drawHeatMap(TreeNode* view);
@@ -123,6 +126,12 @@ public:
 	double onDrag(treenode view) override;
 	void onClick(treenode view, int clickCode, const Vec3& pos);
 	double onClick(treenode view, int clickCode) override;
+
+	void drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode);
+
+	static void addVertex(Mesh& mesh, Vec3f& point);
+	static void addTriangle(Mesh& mesh, Vec3f& p1, Vec3f& p2, Vec3f& p3);
+	static void addQuad(Mesh& mesh, Vec3f& p1, Vec3f& p2, Vec3f& p3, Vec3f& p4);
 };
 
 }

@@ -47,6 +47,7 @@
           <node f="42" dt="1"><name>gridOriginX</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>gridOriginY</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>gridOriginZ</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>isUserCustomized</name><data>0000000000000000</data></node>
           <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Grid</data>
            <node f="40"><name></name></node>
            <node f="42" dt="3"><name>navigator</name><data><coupling>/installdata/add/1/data/astar/AStarNavigator</coupling></data></node>
@@ -1056,15 +1057,24 @@ if (ontoView) {
        <node f="42" dt="4"><name>Grid</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
-	modeleditmode("AStar::MandatoryPath");</data></node>
+	modeleditmode("AStar::Grid");</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Grid</data>
+         <node f="2000040"><name></name></node></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
 if (ontoView) {
-	;
+	Object nav = model().find("AStarNavigator");
+	if (!nav)
+		nav = createinstance(library().find("?AStarNavigator"), model());
+	treenode createdObj = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);
+	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
+	return createdObj;
+} else {
+	modeleditmode(0);
 }</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>A path that designated travelers must travel on</data></node>
-        <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\mandatorypath.bmp</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data>A custom-definable A* grid</data></node>
+        <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\grid.bmp</data></node>
        </data></node>
       </node>
       <node f="42"><name>Pages</name>

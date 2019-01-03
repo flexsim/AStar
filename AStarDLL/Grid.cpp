@@ -22,6 +22,7 @@ void Grid::bind()
 	bindDoubleByName("gridOriginX", gridOrigin.x, 1);
 	bindDoubleByName("gridOriginY", gridOrigin.y, 1);
 	bindDoubleByName("gridOriginZ", gridOrigin.z, 1);
+	bindDouble(isUserCustomized, 1);
 }
 
 bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand) const
@@ -252,6 +253,7 @@ void Grid::buildNodeTable()
 			barrier->addPassagesToTable(this);
 		}
 	}
+	isDirtyByUser = false;
 }
 
 void Grid::resolveGridOrigin()
@@ -676,70 +678,89 @@ void Grid::visitCellsWidening(const Cell& centerCell, std::function<bool(const C
 
 void Grid::buildBoundsMesh()
 {
-	boundsMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
+	TreeNode* color = navigator->node_b_color;
+	Vec4f boundsColor(
+		(float)get(::rank(color, 1)),
+		(float)get(::rank(color, 2)),
+		(float)get(::rank(color, 3)),
+		0.75f
+	);
+	buildBoundsMesh(boundsMesh, false, boundsColor);
+}
+
+void Grid::buildBoundsMesh(Mesh& mesh, bool asOutline, Vec4f& color)
+{
+	mesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
 
 	if (maxPoint.x - minPoint.x <= 0 || maxPoint.y - minPoint.y <= 0)
 		return;
 
 	float z = (float)minPoint.z;
-	float up[3] = { 0.0f, 0.0f, 1.0f };
-	TreeNode* color = navigator->node_b_color;
-	float boundsColor[4] = {
-		(float)get(::rank(color, 1)),
-		(float)get(::rank(color, 2)),
-		(float)get(::rank(color, 3)),
-		0.75f
-	};
-	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-	boundsMesh.setMeshAttrib(MESH_NORMAL, up);
-	boundsMesh.setMeshAttrib(MESH_DIFFUSE4, boundsColor);
+	if (!asOutline) {
+		Vec3f up(0.0f, 0.0f, 1.0f);
+		mesh.setMeshAttrib(MESH_NORMAL, up);
+	}
+	mesh.setMeshAttrib(MESH_DIFFUSE4, color);
 
-	float width = numCols * nodeWidth;
-	float height = numRows * nodeWidth;
+	float width, height;
+	if (isDirtyByUser || numRows == 0 || numCols == 0) {
+		resolveGridOrigin();
+		width = (float)((int)((maxPoint.x - gridOrigin.x) / nodeWidth)) * (float)nodeWidth;
+		height = (float)((int)((maxPoint.y - gridOrigin.y) / nodeWidth)) * (float)nodeWidth;
+	} else {
+		width = (float)numCols * nodeWidth;
+		height = (float)numRows * nodeWidth;
+	}
 	float borderWidth = nodeWidth;
 
 	float midBW = 0.4 * borderWidth;
-	float bottomLeft[3] = { (float)(gridOrigin.x - 0.5 * nodeWidth), (float)(gridOrigin.y - 0.5 * nodeWidth), z };
-	float topRight[3] = { bottomLeft[0] + width, bottomLeft[1] + height, z };
-	float topLeft[3] = { bottomLeft[0], topRight[1], z };
-	float bottomRight[3] = { topRight[0], bottomLeft[1], z };
+	Vec3f bottomLeft( (float)(gridOrigin.x - 0.5 * nodeWidth), (float)(gridOrigin.y - 0.5 * nodeWidth), z );
+	Vec3f topRight( bottomLeft[0] + width, bottomLeft[1] + height, z );
+	Vec3f topLeft( bottomLeft[0], topRight[1], z );
+	Vec3f bottomRight( topRight[0], bottomLeft[1], z );
 
-	float oBottomLeft[3] = { bottomLeft[0] - borderWidth, bottomLeft[1] - borderWidth, z };
-	float oTopRight[3] = { topRight[0] + borderWidth, topRight[1] + borderWidth, z };
-	float oTopLeft[3] = { topLeft[0] - borderWidth, topLeft[1] + borderWidth, z };
-	float oBottomRight[3] = { bottomRight[0] + borderWidth, bottomRight[1] - borderWidth, z };
+	Vec3f oBottomLeft( bottomLeft[0] - borderWidth, bottomLeft[1] - borderWidth, z );
+	Vec3f oTopRight( topRight[0] + borderWidth, topRight[1] + borderWidth, z );
+	Vec3f oTopLeft( topLeft[0] - borderWidth, topLeft[1] + borderWidth, z );
+	Vec3f oBottomRight( bottomRight[0] + borderWidth, bottomRight[1] - borderWidth, z );
 
-	float mBottomLeft[3] = { bottomLeft[0] - midBW, bottomLeft[1] - midBW, z };
-	float mTopRight[3] = { topRight[0] + midBW, topRight[1] + midBW, z };
-	float mTopLeft[3] = { topLeft[0] - midBW, topLeft[1] + midBW, z };
-	float mBottomRight[3] = { bottomRight[0] + midBW, bottomRight[1] - midBW, z };
+	Vec3f mBottomLeft( bottomLeft[0] - midBW, bottomLeft[1] - midBW, z );
+	Vec3f mTopRight( topRight[0] + midBW, topRight[1] + midBW, z );
+	Vec3f mTopLeft( topLeft[0] - midBW, topLeft[1] + midBW, z );
+	Vec3f mBottomRight( bottomRight[0] + midBW, bottomRight[1] - midBW, z );
 
-#define ADD_VERTEX(point)\
-	{\
-		int newVertex = boundsMesh.addVertex();\
-		boundsMesh.setVertexAttrib(newVertex, MESH_POSITION, point);\
-	}\
+	if (!asOutline) {
+		// left border (GL_QUADS)
+		addQuad(mesh, bottomLeft, topLeft, oTopLeft, oBottomLeft);
 
-#define ADD_PLAIN_QUAD(p1, p2, p3, p4)\
-	ADD_VERTEX(p1);\
-	ADD_VERTEX(p2);\
-	ADD_VERTEX(p3);\
-	ADD_VERTEX(p1);\
-	ADD_VERTEX(p3);\
-	ADD_VERTEX(p4);
+		// top border
+		addQuad(mesh, topLeft, topRight, oTopRight, oTopLeft);
 
-	// left border (GL_QUADS)
-	ADD_PLAIN_QUAD(bottomLeft, topLeft, oTopLeft, oBottomLeft);
+		// right border
+		addQuad(mesh, topRight, bottomRight, oBottomRight, oTopRight);
 
-	// top border
-	ADD_PLAIN_QUAD(topLeft, topRight, oTopRight, oTopLeft);
+		// bottom border
+		addQuad(mesh, bottomRight, bottomLeft, oBottomLeft, oBottomRight);
+	} else {
+		addVertex(mesh, bottomLeft);
+		addVertex(mesh, topLeft);
+		addVertex(mesh, topLeft);
+		addVertex(mesh, topRight);
+		addVertex(mesh, topRight);
+		addVertex(mesh, bottomRight);
+		addVertex(mesh, bottomRight);
+		addVertex(mesh, bottomLeft);
 
-	// right border
-	ADD_PLAIN_QUAD(topRight, bottomRight, oBottomRight, oTopRight);
-
-	// bottom border
-	ADD_PLAIN_QUAD(bottomRight, bottomLeft, oBottomLeft, oBottomRight);
+		addVertex(mesh, oBottomLeft);
+		addVertex(mesh, oTopLeft);
+		addVertex(mesh, oTopLeft);
+		addVertex(mesh, oTopRight);
+		addVertex(mesh, oTopRight);
+		addVertex(mesh, oBottomRight);
+		addVertex(mesh, oBottomRight);
+		addVertex(mesh, oBottomLeft);
+	}
 }
 
 void Grid::buildGridMesh(float zOffset)
@@ -1069,6 +1090,7 @@ void Grid::onDrag(treenode view, Vec3& offset)
 	offset.x = min(max.x - maxPoint.x, offset.x);
 	offset.y = max(min.y - minPoint.y, offset.y);
 	offset.y = min(max.y - maxPoint.y, offset.y);
+	isDirtyByUser = true;
 
 	auto& barrierList = navigator->barrierList;
 	for (int i = 0; i < barrierList.size(); i++) {
@@ -1104,12 +1126,47 @@ double Grid::onDrag(treenode view)
 
 	navigator->isBoundsDirty = true;
 	navigator->isGridDirty = true;
+	isUserCustomized = true;
 	return 1;
 }
 
 double Grid::onClick(treenode view, int clickCode)
 {
 	return 0.0;
+}
+
+void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode)
+{
+	if (!pickingMode && (selObj == holder || hoverObj == holder)) {
+		Mesh tempMesh;
+		Vec4f color(1.0f, 1.0f, 0.0f, selObj == holder ? 1.0f : 0.2f);
+		buildBoundsMesh(tempMesh, true, color);
+		glLineWidth(5.0f);
+		tempMesh.draw(GL_LINES);
+		glLineWidth(1.0f);
+	}
+	if (pickingMode)
+		setpickingdrawfocus(view, holder, 0);
+	boundsMesh.draw(GL_TRIANGLES);
+}
+
+void Grid::addVertex(Mesh & mesh, Vec3f& point)
+{
+	int newVertex = mesh.addVertex();
+	mesh.setVertexAttrib(newVertex, MESH_POSITION, point);
+}
+
+void Grid::addTriangle(Mesh & mesh, Vec3f & p1, Vec3f & p2, Vec3f & p3)
+{
+	addVertex(mesh, p1);
+	addVertex(mesh, p2);
+	addVertex(mesh, p3);
+}
+
+void Grid::addQuad(Mesh & mesh, Vec3f & p1, Vec3f & p2, Vec3f & p3, Vec3f & p4)
+{
+	addTriangle(mesh, p1, p2, p3);
+	addTriangle(mesh, p1, p3, p4);
 }
 
 }

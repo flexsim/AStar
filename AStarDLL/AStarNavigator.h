@@ -258,6 +258,7 @@ public:
 	virtual void bindTEEvents(TaskExecuter* te) override;
 	virtual void bindTEStatistics(TaskExecuter* te) override;
 	virtual void bindInterface() override;
+	virtual void bind() override;
 	TreeNode* AStarNavigator::resolveTraveler();
 
 	void blockGridModelPos(const Vec3& modelPos);
@@ -297,7 +298,7 @@ public:
 	void drawRoutingAlgorithm(Traveler* traveler, treenode view);
 
 	bool areGridNodeTablesBuilt = false;
-	NodeListArray<Grid>::SdtSubNodeType grids;
+	NodeListArray<Grid>::SdtSubNodeBindingType grids;
 
 	void resolveMinNodeWidth();
 
@@ -311,7 +312,12 @@ public:
 	treenode addMember(TaskExecuter* te);
 	void addObjectBarrier(ObjectDataType* object);
 
+	Grid* createGrid(const Vec3& loc);
+	Variant createGrid(FLEXSIMINTERFACE);
+
 	static AStarNavigator* instance;
+
+	double areGridsUserCustomized = 0.0;
 };
 
 }

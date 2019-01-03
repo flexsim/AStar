@@ -95,6 +95,8 @@ void AStarNavigator::bindVariables(void)
 	bindStateVariable(hasConditionalBarriers);
 	bindStateVariable(hasMandatoryPaths);
 
+	bindStateVariable(areGridsUserCustomized);
+
 	bindVariableByName("extraData", extraDataNode, ODT_BIND_STATE_VARIABLE);
 
 	travelers.init(node_v_travelmembers);
@@ -141,6 +143,11 @@ void AStarNavigator::bindInterface()
 	auto callback = &AStarNavigator::getExtendedCell;
 	bindMethodByName<decltype(callback)>("getCell", callback, "AStar.Cell getCell(Vec3& loc)");
 	bindMethod(getLocation, AStarNavigator, "Vec3 getLocation(AStar.Cell& loc)");
+}
+
+void AStarNavigator::bind()
+{
+	bindCallback(createGrid, AStarNavigator);
 }
 
 TreeNode* AStarNavigator::resolveTraveler()
@@ -190,7 +197,7 @@ void AStarNavigator::resolveGridBounds()
 				grid->isLowestGrid = true;
 			grid->isBounded = isBounded;
 			grid->maxPoint.z = (nextGreaterZIter != tempGrids.end() ? std::nextafter((*nextGreaterZIter)->minPoint.z, -DBL_MAX) : DBL_MAX);
-			if (!isBounded) {
+			if (!isBounded && !grid->isUserCustomized) {
 				grid->minPoint.x = grid->minPoint.y = DBL_MAX;
 				grid->maxPoint.x = grid->maxPoint.y = -DBL_MAX;
 			}
@@ -392,6 +399,13 @@ double AStarNavigator::onDraw(TreeNode* view)
 	double offset = max(-1, -50 / (vpRadius * getmodelunit(LENGTH_MULTIPLE)));
 
 
+	glPolygonOffset(offset - 0.010, -2);
+	if (isBoundsMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BOUNDS)) {
+		for (Grid* grid : grids)
+			grid->drawBounds(view, selObj, hoveredObj, pickingMode);
+	}
+	glPolygonOffset(0.0, 0.0);
+
 	if (!pickingMode) {
 
 		if (isGridMeshBuilt && (drawMode & ASTAR_DRAW_MODE_GRID)) {
@@ -400,12 +414,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 				for (Grid* grid : grids)
 					grid->gridMesh.draw(GL_LINES);
 			}
-		}
-
-		glPolygonOffset(offset - 0.010, -2);
-		if (isBoundsMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BOUNDS)) {
-			for (Grid* grid : grids)
-				grid->boundsMesh.draw(GL_TRIANGLES);
 		}
 
 		fglEnable(GL_TEXTURE_2D);
@@ -443,13 +451,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 			for (Traveler* traveler : travelers) {
 				if (switch_selected(traveler->te->holder, -1))
 					drawRoutingAlgorithm(traveler, view);
-			}
-		}
-	} else {
-		if (drawMode & ASTAR_DRAW_MODE_BOUNDS) {
-			for (Grid* grid : grids) {
-				setpickingdrawfocus(view, grid->holder, PICK_TYPE_BOUNDS);
-				grid->boundsMesh.draw(GL_TRIANGLES);
 			}
 		}
 	}
@@ -1270,10 +1271,12 @@ void AStarNavigator::buildBoundsMesh(float z)
 	for (Grid* grid : grids)
 		grid->buildBoundsMesh();
 
-	if (!areGridNodeTablesBuilt) {
+
+	if (!areGridNodeTablesBuilt && !areGridsUserCustomized) {
 		isBoundsMeshBuilt = false;
 		return;
 	}
+
 	isBoundsMeshBuilt = true;
 }
 
@@ -1897,6 +1900,37 @@ void AStarNavigator::addObjectBarrier(ObjectDataType* object)
 			return;
 	}
 	objectBarrierList.add(object);
+}
+
+Grid * AStarNavigator::createGrid(const Vec3 & loc)
+{
+	Grid* grid = nullptr;
+	double nodeWidth = grids.front()->nodeWidth;
+	if (!isGridDirty && !isGridMeshBuilt && !areGridsUserCustomized && grids.size() == 1) {
+		// if I'm in a "pristine" condition where I am not yet drawing the main grid,
+		// then the grid should be the main grid.
+		grid = grids.front();
+	} else {
+		grid = grids.add(new Grid(this, nodeWidth));
+	}
+	grid->minPoint.x = loc.x - 5 * nodeWidth;
+	grid->minPoint.y = loc.y - 5 * nodeWidth;
+	grid->minPoint.z = loc.z;
+	grid->maxPoint.x = loc.x + 5.5 * nodeWidth;
+	grid->maxPoint.y = loc.y + 5.5 * nodeWidth;
+	grid->maxPoint.z = loc.z;
+	grid->isUserCustomized = true;
+	grid->isDirtyByUser = true;
+	isGridDirty = true;
+	isBoundsDirty = true;
+	areGridsUserCustomized = true;
+	drawMode = (double)((int)drawMode & ASTAR_DRAW_MODE_BOUNDS);
+	return grid;
+}
+
+Variant AStarNavigator::createGrid(FLEXSIMINTERFACE)
+{
+	return createGrid(Vec3(param(1), param(2), param(3)))->holder;
 }
 
 ASTAR_FUNCTION Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)
