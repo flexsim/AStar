@@ -176,6 +176,7 @@ public:
 		virtual int getColID(int tableID, const char* colName, int& flags) override;
 		virtual Variant getValue(int tableID, int row, int colID) override;
 		virtual int getRowCount(int tableID) override;
+		virtual bool evaluateCustomWhereFilter(SqlQuery* q) override;
 		/// <summary>The current 0-based entry row to compare back orders against.</summary>
 		int curEntryRow = 0;
 	};
