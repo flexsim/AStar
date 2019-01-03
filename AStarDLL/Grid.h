@@ -32,6 +32,8 @@ public:
 	/// <summary>	The grid origin. This is based on minPoint, but is rounded so that the center of nodes are 
 	/// 			in the center of model grid units. </summary>
 	Vec3 gridOrigin;
+	/// <summary>	Tells if this grid is user-customized. If the user has ever manipulated this 
+	/// 			grid directly, or created it directly, then it is user-customized. </summary>
 	double isUserCustomized = false;
 	bool isLocWithinBounds(const Vec3& modelLoc, bool canExpand) const;
 	bool isLocWithinVerticalBounds(double) const;
@@ -52,6 +54,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	bool growToEncompassBoundingBox(Vec3 min, Vec3 max, bool addSurroundDepth);
+	bool shrinkToFitGrowthBounds();
 	void findGrowthBounds(Vec2& min, Vec2& max) const;
 	Cell getCell(const Vec3& modelLoc);
 	Vec3 getLocation(const Cell& cell) { return Vec3(gridOrigin.x + cell.col * nodeWidth, gridOrigin.y + cell.row * nodeWidth, minPoint.z); }
@@ -127,8 +130,11 @@ public:
 	void onClick(treenode view, int clickCode, const Vec3& pos);
 	double onClick(treenode view, int clickCode) override;
 
+	void drawSizerHandles(treenode view, int pickingMode);
 	void drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode);
 
+	void getBoundsVertices(Vec3f& bottomLeft, Vec3f& topRight, Vec3f& topLeft, Vec3f& bottomRight,
+		Vec3f& oBottomLeft, Vec3f& oTopRight, Vec3f& oTopLeft, Vec3f& oBottomRight);
 	static void addVertex(Mesh& mesh, Vec3f& point);
 	static void addTriangle(Mesh& mesh, Vec3f& p1, Vec3f& p2, Vec3f& p3);
 	static void addQuad(Mesh& mesh, Vec3f& p1, Vec3f& p2, Vec3f& p3, Vec3f& p4);

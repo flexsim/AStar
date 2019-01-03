@@ -1906,7 +1906,7 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc)
 {
 	Grid* grid = nullptr;
 	double nodeWidth = grids.front()->nodeWidth;
-	if (!isGridDirty && !isGridMeshBuilt && !areGridsUserCustomized && grids.size() == 1) {
+	if (!isGridMeshBuilt && !areGridsUserCustomized && grids.size() == 1) {
 		// if I'm in a "pristine" condition where I am not yet drawing the main grid,
 		// then the grid should be the main grid.
 		grid = grids.front();
@@ -1916,8 +1916,8 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc)
 	grid->minPoint.x = loc.x - 5 * nodeWidth;
 	grid->minPoint.y = loc.y - 5 * nodeWidth;
 	grid->minPoint.z = loc.z;
-	grid->maxPoint.x = loc.x + 5.5 * nodeWidth;
-	grid->maxPoint.y = loc.y + 5.5 * nodeWidth;
+	grid->maxPoint.x = loc.x + 5 * nodeWidth;
+	grid->maxPoint.y = loc.y + 5 * nodeWidth;
 	grid->maxPoint.z = loc.z;
 	grid->isUserCustomized = true;
 	grid->isDirtyByUser = true;
@@ -1925,6 +1925,17 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc)
 	isBoundsDirty = true;
 	areGridsUserCustomized = true;
 	drawMode = (double)((int)drawMode & ASTAR_DRAW_MODE_BOUNDS);
+	Vec3 originalMin = grid->minPoint;
+	Vec3 originalMax = grid->maxPoint;
+	while (grid->shrinkToFitGrowthBounds()) {
+		if ((grid->maxPoint - grid->minPoint).magnitude < 0.1 * nodeWidth) {
+			Vec3 diff = Vec3(0.0, 10.0 * nodeWidth, 0.0);
+			originalMin += diff;
+			originalMax += diff;
+			grid->minPoint = originalMin;
+			grid->maxPoint = originalMax;
+		} else break;
+	}
 	return grid;
 }
 

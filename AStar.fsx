@@ -50,7 +50,6 @@
           <node f="42" dt="1"><name>isUserCustomized</name><data>0000000000000000</data></node>
           <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Grid</data>
            <node f="40"><name></name></node>
-           <node f="42" dt="3"><name>navigator</name><data><coupling>/installdata/add/1/data/astar/AStarNavigator</coupling></data></node>
            <node f="42" dt="1"><name>isBounded</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>isLowestGrid</name><data>0000000000000000</data></node>
           </node>

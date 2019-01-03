@@ -7,8 +7,7 @@ namespace AStar {
 
 void Grid::bind()
 {
-	bindObjPtr(navigator);
-	if (navigator == nullptr)
+	if (getBindMode() == SDT_BIND_ON_LOAD)
 		navigator = ownerobject(holder->up)->objectAs(AStarNavigator);
 	bindDouble(nodeWidth, 1);
 	bindNumber(isBounded);
@@ -86,32 +85,71 @@ bool Grid::growToEncompassBoundingBox(Vec3 min, Vec3 max, bool addSurroundDepth)
 	return isLocWithinBounds(min, false) && isLocWithinBounds(max, false);
 }
 
+bool Grid::shrinkToFitGrowthBounds()
+{
+	Vec2 min, max;
+	findGrowthBounds(min, max);
+	if (maxPoint.x > max.x || minPoint.x < min.x || maxPoint.y > max.y || minPoint.y < min.y) {
+		struct BorderCompare {
+			double* gridLoc;
+			double* growthBound;
+			bool shouldBeLess;
+		};
+		std::vector<BorderCompare> badBorders;
+		if (maxPoint.x > max.x)
+			badBorders.push_back({ &maxPoint.x, &max.x, true });
+		if (minPoint.x < min.x)
+			badBorders.push_back({ &minPoint.x, &min.x, false });
+		if (maxPoint.y > max.y)
+			badBorders.push_back({ &maxPoint.y, &max.y, true });
+		if (minPoint.y < min.y)
+			badBorders.push_back({ &minPoint.y, &min.y, false });
+		
+		std::sort(badBorders.begin(), badBorders.end(), 
+			[](BorderCompare& left, BorderCompare& right) -> bool
+				{ return fabs(*(left.gridLoc) - *(left.growthBound)) < fabs(*(right.gridLoc) - *(right.growthBound)); });
+
+		for (BorderCompare& compare : badBorders) {
+			if (((*compare.gridLoc) < (*compare.growthBound)) == compare.shouldBeLess)
+				continue;
+			*compare.gridLoc = std::nextafter(*compare.growthBound, compare.shouldBeLess ? -DBL_MAX : DBL_MAX);
+			findGrowthBounds(min, max);
+		}
+		minPoint.x = min(minPoint.x, maxPoint.x);
+		minPoint.y = min(minPoint.y, maxPoint.y);
+		return true;
+	}
+	return false;
+}
+
 void Grid::findGrowthBounds(Vec2 & min, Vec2 & max) const
 {
 	min = Vec2(-DBL_MAX, -DBL_MAX);
 	max = Vec2(DBL_MAX, DBL_MAX);
-	if (isBounded) {
-		for (Grid* grid : navigator->grids) {
-			if (grid == this || grid->minPoint.z != minPoint.z)
-				continue;
+	for (Grid* grid : navigator->grids) {
+		if (grid == this || fabs(grid->minPoint.z - minPoint.z) > nodeWidth)
+			continue;
 
-			if ((grid->minPoint.y >= minPoint.y && grid->minPoint.y <= maxPoint.y)
-				|| (grid->maxPoint.y >= minPoint.y && grid->maxPoint.y <= maxPoint.y)) {
+		if ((grid->minPoint.y >= minPoint.y && grid->minPoint.y <= maxPoint.y)
+			|| (grid->maxPoint.y >= minPoint.y && grid->maxPoint.y <= maxPoint.y)
+			|| (minPoint.y >= grid->minPoint.y && minPoint.y <= grid->maxPoint.y)
+			|| (maxPoint.y >= grid->minPoint.y && maxPoint.y <= grid->maxPoint.y)) {
 
-				if (grid->minPoint.x > minPoint.x)
-					max.x = min(max.x, grid->minPoint.x);
-				else min.x = max(min.x, grid->maxPoint.x);
-			}
-
-			if ((grid->minPoint.x >= minPoint.x && grid->minPoint.x <= maxPoint.x)
-				|| (grid->maxPoint.x >= minPoint.x && grid->maxPoint.x <= maxPoint.x)) {
-
-				if (grid->minPoint.y > minPoint.y)
-					max.y = min(max.y, grid->minPoint.y);
-				else min.y = max(min.y, grid->maxPoint.y);
-			}
-
+			if (grid->minPoint.x > minPoint.x)
+				max.x = min(max.x, grid->minPoint.x);
+			else min.x = max(min.x, grid->maxPoint.x);
 		}
+
+		if ((grid->minPoint.x >= minPoint.x && grid->minPoint.x <= maxPoint.x)
+			|| (grid->maxPoint.x >= minPoint.x && grid->maxPoint.x <= maxPoint.x)
+			|| (minPoint.x >= grid->minPoint.x && minPoint.x <= grid->maxPoint.x)
+			|| (maxPoint.x >= grid->minPoint.x && maxPoint.x <= grid->maxPoint.x)) {
+
+			if (grid->minPoint.y > minPoint.y)
+				max.y = min(max.y, grid->minPoint.y);
+			else min.y = max(min.y, grid->maxPoint.y);
+		}
+
 	}
 }
 
@@ -695,40 +733,14 @@ void Grid::buildBoundsMesh(Mesh& mesh, bool asOutline, Vec4f& color)
 	if (maxPoint.x - minPoint.x <= 0 || maxPoint.y - minPoint.y <= 0)
 		return;
 
-	float z = (float)minPoint.z;
-
 	if (!asOutline) {
 		Vec3f up(0.0f, 0.0f, 1.0f);
 		mesh.setMeshAttrib(MESH_NORMAL, up);
 	}
 	mesh.setMeshAttrib(MESH_DIFFUSE4, color);
 
-	float width, height;
-	if (isDirtyByUser || numRows == 0 || numCols == 0) {
-		resolveGridOrigin();
-		width = (float)((int)((maxPoint.x - gridOrigin.x) / nodeWidth)) * (float)nodeWidth;
-		height = (float)((int)((maxPoint.y - gridOrigin.y) / nodeWidth)) * (float)nodeWidth;
-	} else {
-		width = (float)numCols * nodeWidth;
-		height = (float)numRows * nodeWidth;
-	}
-	float borderWidth = nodeWidth;
-
-	float midBW = 0.4 * borderWidth;
-	Vec3f bottomLeft( (float)(gridOrigin.x - 0.5 * nodeWidth), (float)(gridOrigin.y - 0.5 * nodeWidth), z );
-	Vec3f topRight( bottomLeft[0] + width, bottomLeft[1] + height, z );
-	Vec3f topLeft( bottomLeft[0], topRight[1], z );
-	Vec3f bottomRight( topRight[0], bottomLeft[1], z );
-
-	Vec3f oBottomLeft( bottomLeft[0] - borderWidth, bottomLeft[1] - borderWidth, z );
-	Vec3f oTopRight( topRight[0] + borderWidth, topRight[1] + borderWidth, z );
-	Vec3f oTopLeft( topLeft[0] - borderWidth, topLeft[1] + borderWidth, z );
-	Vec3f oBottomRight( bottomRight[0] + borderWidth, bottomRight[1] - borderWidth, z );
-
-	Vec3f mBottomLeft( bottomLeft[0] - midBW, bottomLeft[1] - midBW, z );
-	Vec3f mTopRight( topRight[0] + midBW, topRight[1] + midBW, z );
-	Vec3f mTopLeft( topLeft[0] - midBW, topLeft[1] + midBW, z );
-	Vec3f mBottomRight( bottomRight[0] + midBW, bottomRight[1] - midBW, z );
+	Vec3f bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight;
+	getBoundsVertices(bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight);
 
 	if (!asOutline) {
 		// left border (GL_QUADS)
@@ -1084,34 +1096,49 @@ void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDes
 
 void Grid::onDrag(treenode view, Vec3& offset)
 {
-	Vec2 min, max;
-	findGrowthBounds(min, max);
-	offset.x = max(min.x - minPoint.x, offset.x);
-	offset.x = min(max.x - maxPoint.x, offset.x);
-	offset.y = max(min.y - minPoint.y, offset.y);
-	offset.y = min(max.y - maxPoint.y, offset.y);
-	isDirtyByUser = true;
 
-	auto& barrierList = navigator->barrierList;
-	for (int i = 0; i < barrierList.size(); i++) {
-		Barrier* barrier = barrierList[i];
-		Vec3 min, max;
-		barrier->getBoundingBox(min, max);
+	int pickType = getpickingdrawfocus(view, PICK_TYPE, 0);
+	Vec3 originalMin(minPoint), originalMax(maxPoint);
+	switch (pickType) {
+		case 0: {
+			auto& barrierList = navigator->barrierList;
+			for (int i = 0; i < barrierList.size(); i++) {
+				Barrier* barrier = barrierList[i];
+				Vec3 min, max;
+				barrier->getBoundingBox(min, max);
 
-		if (isLocWithinBounds(min, false) && isLocWithinBounds(max, false)) {
-			for (int i = 0; i < barrier->pointList.size(); i++) {
-				Point* point = barrier->pointList[i];
-				// add undo tracking for the x and y values
-				applicationcommand("addundotracking", view, node("x", point->holder));
-				applicationcommand("addundotracking", view, node("y", point->holder));
-				// move point x and y
-				point->x += offset.x;
-				point->y += offset.y;
+				if (isLocWithinBounds(min, false) && isLocWithinBounds(max, false)) {
+					for (int i = 0; i < barrier->pointList.size(); i++) {
+						Point* point = barrier->pointList[i];
+						// add undo tracking for the x and y values
+						applicationcommand("addundotracking", view, node("x", point->holder));
+						applicationcommand("addundotracking", view, node("y", point->holder));
+						// move point x and y
+						point->x += offset.x;
+						point->y += offset.y;
+					}
+				}
 			}
+			minPoint += offset;
+			maxPoint += offset;
+			break;
+		}
+		case PICK_SIZERX: maxPoint.x = max(minPoint.x, maxPoint.x + offset.x); break;
+		case PICK_SIZERXNEG: minPoint.x = min(maxPoint.x, minPoint.x + offset.x); break;
+		case PICK_SIZERY: maxPoint.y = max(minPoint.y, maxPoint.y + offset.y); break;
+		case PICK_SIZERYNEG: minPoint.y = min(maxPoint.y, minPoint.y + offset.y); break;
+	}
+	bool didShrink = shrinkToFitGrowthBounds();
+	if (didShrink && pickType == 0) {
+		bool isZeroSize = (maxPoint - minPoint).magnitude < 0.1 * nodeWidth;
+		minPoint = originalMin;
+		maxPoint = originalMax;
+		if (isZeroSize) {
+			minPoint += offset;
+			maxPoint += offset;
 		}
 	}
-	minPoint += offset;
-	maxPoint += offset;
+
 	resolveGridOrigin();
 }
 
@@ -1124,15 +1151,47 @@ double Grid::onDrag(treenode view)
 	// Move all attached barriers
 	onDrag(view, Vec3(dx, dy, dz));
 
-	navigator->isBoundsDirty = true;
-	navigator->isGridDirty = true;
+	navigator->setDirty();
 	isUserCustomized = true;
+	isDirtyByUser = true;
 	return 1;
 }
 
 double Grid::onClick(treenode view, int clickCode)
 {
 	return 0.0;
+}
+
+void Grid::drawSizerHandles(treenode view, int pickingMode)
+{
+	Vec3f bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight;
+	getBoundsVertices(bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight);
+
+	float arrowSize = 0.5 * min(oTopRight.x - oTopLeft.x, oTopRight.y - oBottomRight.y);
+	arrowSize = min(arrowSize, 2 * nodeWidth);
+	Mesh tempMesh;
+	tempMesh.init(0, MESH_POSITION);
+	Vec3f arrowRight(arrowSize, 0.0f, 0.0f);
+	Vec3f arrowLeft(-arrowSize, 0.0f, 0.0f);
+	Vec3f arrowTop(0.0f, arrowSize, 0.0f);
+	addTriangle(tempMesh, arrowLeft, arrowRight, arrowTop);
+
+	auto drawSizer = [pickingMode, this, &tempMesh, view](Vec3f& arrowBase, int pickType, float rotation)
+	{
+		fglPushMatrix();
+		fglTranslate(arrowBase.x, arrowBase.y, arrowBase.z);
+		fglRotate(rotation, 0.0f, 0.0f, 1.0f);
+		if (pickingMode)
+			setpickingdrawfocus(view, holder, pickType);
+		tempMesh.draw(GL_TRIANGLES);
+		fglPopMatrix();
+	};
+
+	fglColor(1.0f, 0.0f, 0.0f);
+	drawSizer((oTopRight + oTopLeft) * 0.5f, PICK_SIZERY, 0.0f);
+	drawSizer((oBottomRight + oBottomLeft) * 0.5f, PICK_SIZERYNEG, 180.0f);
+	drawSizer((oTopRight + oBottomRight) * 0.5f, PICK_SIZERX, -90.0f);
+	drawSizer((oTopLeft + oBottomLeft) * 0.5f, PICK_SIZERXNEG, 90.0f);
 }
 
 void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode)
@@ -1145,9 +1204,40 @@ void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pic
 		tempMesh.draw(GL_LINES);
 		glLineWidth(1.0f);
 	}
+
+
+	if (selObj == holder) {
+		drawSizerHandles(view, pickingMode);
+	}
 	if (pickingMode)
 		setpickingdrawfocus(view, holder, 0);
 	boundsMesh.draw(GL_TRIANGLES);
+}
+
+void Grid::getBoundsVertices(Vec3f & bottomLeft, Vec3f & topRight, Vec3f & topLeft, Vec3f & bottomRight, Vec3f & oBottomLeft, Vec3f & oTopRight, Vec3f & oTopLeft, Vec3f & oBottomRight)
+{
+	float width, height;
+	if (isDirtyByUser || numRows == 0 || numCols == 0) {
+		resolveGridOrigin();
+		width = (float)((int)((maxPoint.x - gridOrigin.x) / nodeWidth)) * (float)nodeWidth;
+		height = (float)((int)((maxPoint.y - gridOrigin.y) / nodeWidth)) * (float)nodeWidth;
+	}
+	else {
+		width = (float)numCols * nodeWidth;
+		height = (float)numRows * nodeWidth;
+	}
+
+	float borderWidth = nodeWidth;
+	float z = minPoint.z;
+	bottomLeft = Vec3f((float)(gridOrigin.x - 0.5 * nodeWidth), (float)(gridOrigin.y - 0.5 * nodeWidth), (float)minPoint.z);
+	topRight = Vec3f(bottomLeft.x + width, bottomLeft.y + height, z);
+	topLeft = Vec3f(bottomLeft.x, topRight.y, z);
+	bottomRight = Vec3f(topRight.x, bottomLeft.y, z);
+
+	oBottomLeft = Vec3f(bottomLeft.x - borderWidth, bottomLeft.y - borderWidth, z);
+	oTopRight = Vec3f(topRight.x + borderWidth, topRight.y + borderWidth, z);
+	oTopLeft = Vec3f(topLeft.x - borderWidth, topLeft.y + borderWidth, z);
+	oBottomRight = Vec3f(bottomRight.x + borderWidth, bottomRight.y - borderWidth, z);
 }
 
 void Grid::addVertex(Mesh & mesh, Vec3f& point)
