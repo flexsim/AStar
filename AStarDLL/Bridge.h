@@ -37,6 +37,8 @@ public:
 	ObjRef<Traveler> blockedTraveler = nullptr;
 	double blockedPathIndex;
 
+	NodeListArray<BridgeRoutingData>::CouplingSdtPtrType routingData;
+
 	double calculateDistance() const;
 	double getTravelToGeomDistScale();
 	void onEntry(Traveler* traveler, int pathIndex);
@@ -81,7 +83,6 @@ public:
 	};
 
 	Grid* getGrid(Traveler* traveler);
-
 
 };
 

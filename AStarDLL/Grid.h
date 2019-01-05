@@ -3,6 +3,7 @@
 #include "FlexsimDefs.h"
 #include "AStarClasses.h"
 #include "AStarTypes.h"
+#include "BridgeRoutingData.h"
 
 namespace AStar {
 
@@ -124,6 +125,8 @@ public:
 	void drawHeatMap(TreeNode* view);
 	void drawDestinationThreshold(treenode obj, const Vec3& loc, const Vec3& size);
 	void checkGetOutOfBarrier(Cell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold);
+	void buildBridgeDijkstraTables();
+
 
 	void onDrag(treenode view, Vec3& offset);
 	double onDrag(treenode view) override;
@@ -138,6 +141,8 @@ public:
 	static void addVertex(Mesh& mesh, Vec3f& point);
 	static void addTriangle(Mesh& mesh, Vec3f& p1, Vec3f& p2, Vec3f& p3);
 	static void addQuad(Mesh& mesh, Vec3f& p1, Vec3f& p2, Vec3f& p3, Vec3f& p4);
+
+	NodeListArray<BridgeRoutingData>::CouplingSdtSubNodeType bridgeData;
 };
 
 }

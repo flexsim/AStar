@@ -440,7 +440,7 @@ void Traveler::onBridgeArrival(Bridge* bridge, int pathIndex)
 	AStarNodeExtraData::BridgeEntry& entry = navigator->getExtraData(e.cell)->bridges[e.bridgeIndex];
 
 	updateLocation();
-	bridgeData = BridgeData(bridge, DBL_MAX, pathIndex, te->b_spatialz);
+	bridgeData = BridgeData(bridge, DBL_MAX, pathIndex, te->b_spatialz - (bridge->getPointToModelOffset().z + bridge->pointList.front()->z));
 
 	if (bridge->isAvailable) {
 		// move onto bridge

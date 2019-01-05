@@ -134,6 +134,9 @@
     <ClInclude Include="MandatoryPath.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="BridgeRoutingData.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AStar.cpp">
@@ -173,6 +176,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MandatoryPath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BridgeRoutingData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

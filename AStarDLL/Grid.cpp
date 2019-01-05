@@ -1,6 +1,7 @@
 #include "Grid.h"
 #include "AStarNavigator.h"
 #include "TemporaryBarrier.h"
+#include "BridgeRoutingData.h"
 
 namespace AStar {
 
@@ -22,16 +23,29 @@ void Grid::bind()
 	bindDoubleByName("gridOriginY", gridOrigin.y, 1);
 	bindDoubleByName("gridOriginZ", gridOrigin.z, 1);
 	bindDouble(isUserCustomized, 1);
+	bindSubNode(bridgeData, 0);
 }
 
 bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand) const
 {
 	double z = modelLoc.z + 0.001 * nodeWidth;
-	if ((z < minPoint.z && !isLowestGrid) || (z >= maxPoint.z && isBounded))
+	// return false if it's not in the z range
+	if ((z < minPoint.z && !isLowestGrid) || z >= maxPoint.z)
 		return false;
-	return (canExpand && !isBounded)
-		|| ((modelLoc.x >= minPoint.x && modelLoc.y >= minPoint.y)
-			&& (modelLoc.x <= maxPoint.x && modelLoc.y <= maxPoint.y));
+	if ((modelLoc.x >= minPoint.x && modelLoc.y >= minPoint.y)
+			&& (modelLoc.x <= maxPoint.x && modelLoc.y <= maxPoint.y))
+		return true;
+
+	if (canExpand) {
+		if (!isBounded)
+			return true;
+		Vec2 min, max;
+		findGrowthBounds(min, max);
+		if ((modelLoc.x >= min.x && modelLoc.y >= min.y)
+				&& (modelLoc.x <= max.x && modelLoc.y <= max.y))
+			return true;
+	}
+	return false;
 }
 
 bool Grid::isLocWithinVerticalBounds(double z) const
@@ -65,22 +79,24 @@ bool Grid::growToEncompassBoundingBox(Vec3 min, Vec3 max, bool addSurroundDepth)
 	bool didGrowX = false;
 	if (max.x > maxPoint.x && growthBoundMax.x > maxPoint.x) {
 		didGrowX = true;
-		maxPoint.x = min(max.x, growthBoundMax.x);
+		maxPoint.x = min(max.x, std::nextafter(growthBoundMax.x, -DBL_MAX));
 	}
 	if (min.x < minPoint.x && growthBoundMin.x < minPoint.x) {
 		didGrowX = true;
-		minPoint.x = max(min.x, growthBoundMin.x);
+		minPoint.x = max(min.x, std::nextafter(growthBoundMin.x, DBL_MAX));
 	}
 
 	if (didGrowX)
 		findGrowthBounds(growthBoundMin, growthBoundMax);
 
 	if (max.y > maxPoint.y && growthBoundMax.y > maxPoint.y) {
-		maxPoint.y = min(max.y, growthBoundMax.y);
+		maxPoint.y = min(max.y, std::nextafter(growthBoundMax.y, -DBL_MAX));
 	}
 	if (min.y < minPoint.y && growthBoundMin.y < minPoint.y) {
-		minPoint.y = max(min.y, growthBoundMin.y);
+		minPoint.y = max(min.y, std::nextafter(growthBoundMin.y, DBL_MAX));
 	}
+
+	navigator->setDirty();
 
 	return isLocWithinBounds(min, false) && isLocWithinBounds(max, false);
 }
@@ -129,7 +145,6 @@ void Grid::findGrowthBounds(Vec2 & min, Vec2 & max) const
 	for (Grid* grid : navigator->grids) {
 		if (grid == this || fabs(grid->minPoint.z - minPoint.z) > nodeWidth)
 			continue;
-
 		if ((grid->minPoint.y >= minPoint.y && grid->minPoint.y <= maxPoint.y)
 			|| (grid->maxPoint.y >= minPoint.y && grid->maxPoint.y <= maxPoint.y)
 			|| (minPoint.y >= grid->minPoint.y && minPoint.y <= grid->maxPoint.y)
@@ -194,7 +209,9 @@ void Grid::buildNodeTable()
 		Vec3 min, max;
 		barrier->getBoundingBox(min, max);
 		if (isLocWithinVerticalBounds(min.z)) {
-			growToEncompassBoundingBox(min, max, true);
+			if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
+					|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
+				growToEncompassBoundingBox(min, max, true);
 		}
 	}
 
@@ -206,30 +223,39 @@ void Grid::buildNodeTable()
 			// spatialx/y are the top left corner
 			// Treat objects as a solid barrier
 			AStarNavigator::getBoundingBox(element[1], min, max);
-			if (isLocWithinVerticalBounds(min.z))
-				growToEncompassBoundingBox(min, max, true);
+			if (isLocWithinVerticalBounds(min.z)) {
+				if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
+						|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
+					growToEncompassBoundingBox(min, max, true);
+			}
 		}
 		else if (element.size() == 3) {
 			// blockGridModelPos
 			Vec3 min = Vec3(element[1], element[2], element[3]);
 			Vec3 max = min;
-			if (isLocWithinVerticalBounds(min.z))
-				growToEncompassBoundingBox(min, max, true);
+			if (isLocWithinVerticalBounds(min.z)) {
+				if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
+						|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
+					growToEncompassBoundingBox(min, max, true);
+			}
 		}
 		else if (customBarriers[i].size() == 7) {
 			// divideGridModelLine
 			Vec3 min = Vec3(element[1], element[2], element[3]);
 			Vec3 max = Vec3(element[4], element[5], element[6]);
 
-			if (isLocWithinVerticalBounds(min.z))
-				growToEncompassBoundingBox(min, max, true);
+			if (isLocWithinVerticalBounds(min.z)) {
+				if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
+						|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
+					growToEncompassBoundingBox(min, max, true);
+			}
 		}
 	}
 
 	resolveGridOrigin();
 
-	int numCols = (int)(ceil((maxPoint.x - minPoint.x) / nodeWidth) + 1);
-	int numRows = (int)(ceil((maxPoint.y - minPoint.y) / nodeWidth) + 1);
+	int numCols = (int)round((maxPoint.x - gridOrigin.x) / nodeWidth);
+	int numRows = (int)round((maxPoint.y - gridOrigin.y) / nodeWidth);
 
 	nodes.resize(numRows);
 	for (int i = 0; i < nodes.size(); i++) {
@@ -256,7 +282,7 @@ void Grid::buildNodeTable()
 		}
 		Vec3 min, max;
 		barrier->getBoundingBox(min, max);
-		if (isLocWithinVerticalBounds(min.z) || isConditional) {
+		if (isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z) || isConditional) {
 			barrier->addBarriersToTable(this);
 		}
 		if (isConditional)
@@ -287,7 +313,7 @@ void Grid::buildNodeTable()
 		Barrier* barrier = barrierList[i];
 		Vec3 min, max;
 		barrier->getBoundingBox(min, max);
-		if (isLocWithinVerticalBounds(min.z)) {
+		if (isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z)) {
 			barrier->addPassagesToTable(this);
 		}
 	}
@@ -301,6 +327,7 @@ void Grid::resolveGridOrigin()
 
 	gridOrigin.x = (xOffset + 0.5) * nodeWidth;
 	gridOrigin.y = (yOffset + 0.5) * nodeWidth;
+	gridOrigin.z = minPoint.z;
 }
 
 
@@ -1015,7 +1042,7 @@ void Grid::drawDestinationThreshold(treenode destination, const Vec3 & loc, cons
 					withinArrivalThreshold = 1;
 			}
 
-			bool withinTravelThreshold = dt.isWithinThreshold(cell, gridOrigin, loc, nodeWidth);
+			bool withinTravelThreshold = dt.isWithinThreshold(cell, this, loc);
 			if (withinTravelThreshold || withinArrivalThreshold) {
 				Mesh* theMesh = withinTravelThreshold ? &mesh : &mesh2;
 				Vec3 centerPos = getLocation(cell);
@@ -1094,6 +1121,12 @@ void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDes
 	}
 }
 
+void Grid::buildBridgeDijkstraTables()
+{
+	for (BridgeRoutingData* data : bridgeData)
+		data->buildDijkstraTable(this);
+}
+
 void Grid::onDrag(treenode view, Vec3& offset)
 {
 
@@ -1101,24 +1134,6 @@ void Grid::onDrag(treenode view, Vec3& offset)
 	Vec3 originalMin(minPoint), originalMax(maxPoint);
 	switch (pickType) {
 		case 0: {
-			auto& barrierList = navigator->barrierList;
-			for (int i = 0; i < barrierList.size(); i++) {
-				Barrier* barrier = barrierList[i];
-				Vec3 min, max;
-				barrier->getBoundingBox(min, max);
-
-				if (isLocWithinBounds(min, false) && isLocWithinBounds(max, false)) {
-					for (int i = 0; i < barrier->pointList.size(); i++) {
-						Point* point = barrier->pointList[i];
-						// add undo tracking for the x and y values
-						applicationcommand("addundotracking", view, node("x", point->holder));
-						applicationcommand("addundotracking", view, node("y", point->holder));
-						// move point x and y
-						point->x += offset.x;
-						point->y += offset.y;
-					}
-				}
-			}
 			minPoint += offset;
 			maxPoint += offset;
 			break;
@@ -1216,16 +1231,17 @@ void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pic
 
 void Grid::getBoundsVertices(Vec3f & bottomLeft, Vec3f & topRight, Vec3f & topLeft, Vec3f & bottomRight, Vec3f & oBottomLeft, Vec3f & oTopRight, Vec3f & oTopLeft, Vec3f & oBottomRight)
 {
-	float width, height;
-	if (isDirtyByUser || numRows == 0 || numCols == 0) {
+	int numCols, numRows;
+	if (isDirtyByUser || this->numRows == 0 || this->numCols == 0) {
 		resolveGridOrigin();
-		width = (float)((int)((maxPoint.x - gridOrigin.x) / nodeWidth)) * (float)nodeWidth;
-		height = (float)((int)((maxPoint.y - gridOrigin.y) / nodeWidth)) * (float)nodeWidth;
+		numCols = (int)round((maxPoint.x - gridOrigin.x) / nodeWidth);
+		numRows = (int)round((maxPoint.y - gridOrigin.y) / nodeWidth);
+	} else {
+		numCols = this->numCols;
+		numRows = this->numRows;
 	}
-	else {
-		width = (float)numCols * nodeWidth;
-		height = (float)numRows * nodeWidth;
-	}
+	float width = (float)numCols * nodeWidth;
+	float height = (float)numRows * nodeWidth;
 
 	float borderWidth = nodeWidth;
 	float z = minPoint.z;

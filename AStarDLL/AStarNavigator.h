@@ -52,6 +52,9 @@ protected:
 	AStarSearchEntry shortest;
 	Traveler* routingTraveler = nullptr;
 	Vec3 destLoc;
+	Vec3 destCellLoc;
+	Grid* destGrid;
+	Cell destCell;
 	double maxPathWeight;
 	int shortestIndex;
 	float closestSoFar;
@@ -247,6 +250,7 @@ public:
 	///
 	/// <returns>The calculated route.</returns>
 	TravelPath calculateRoute(Traveler* traveler, double* destLoc, const DestinationThreshold& destThreshold, double endSpeed, bool doFullSearch = false, double travelStartTime = -1);
+	double calculateHeuristic(Grid* fromGrid, const Cell& fromCell);
 
 	virtual double updateLocations() override;
 	virtual double updateLocations(TaskExecuter* te) override;
@@ -275,7 +279,7 @@ public:
 
 	AStarNode* getNode(const Cell& cell);
 	Grid* getGrid(const Cell& cell);
-	Grid* getGrid(const Vec3& modelPos);
+	Grid* getGrid(const Vec3& modelPos, bool canReturnNull = false);
 
 	AStarNodeExtraData* assertExtraData(const Cell& cell, ExtraDataReason reason);
 	AStarNodeExtraData* getExtraData(const Cell& cell) {

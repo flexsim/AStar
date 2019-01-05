@@ -26,6 +26,7 @@ struct Cell {
 		};
 		unsigned long long value;
 	};
+	static const int INVALID_ROW = USHRT_MAX;
 	Cell() {}
 	Cell(unsigned int grid, unsigned short row, unsigned short col) : grid(grid), row(row), col(col) {}
 	Cell(unsigned long long value) : value(value) {}
@@ -352,7 +353,7 @@ struct DestinationThreshold
 	double yAxisThreshold;
 	double rotation;
 	double anyThresholdRadius;
-	bool isWithinThreshold(const Cell& cell, const Vec2& gridOrigin, const Vec2& destLoc, double nodeWidth);
+	bool isWithinThreshold(const Cell& cell, Grid* grid, const Vec3& destLoc);
 	void bind(SimpleDataType* sdt, const char* prefix);
 };
 
