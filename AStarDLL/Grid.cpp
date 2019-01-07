@@ -24,6 +24,9 @@ void Grid::bind()
 	bindDoubleByName("gridOriginZ", gridOrigin.z, 1);
 	bindDouble(isUserCustomized, 1);
 	bindSubNode(bridgeData, 0);
+
+	bindCallback(dragPressedPick, Grid);
+	bindCallback(makeDirty, Grid);
 }
 
 bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand) const
@@ -172,12 +175,12 @@ Cell Grid::getCell(const Vec3 & modelLoc)
 {
 	Cell cell;
 	cell.grid = rank;
-	cell.col = (int)round((modelLoc.x - gridOrigin.x) / nodeWidth);
-	cell.col = max(0, cell.col);
+	int col = (int)round((modelLoc.x - gridOrigin.x) / nodeWidth);
+	cell.col = max(0, col);
 	if (nodes.size() > 0)
 		cell.col = min(nodes[0].size() - 1, cell.col);
-	cell.row = (int)round((modelLoc.y - gridOrigin.y) / nodeWidth);
-	cell.row = max(0, cell.row);
+	int row = (int)round((modelLoc.y - gridOrigin.y) / nodeWidth);
+	cell.row = max(0, row);
 	cell.row = min(nodes.size() - 1, cell.row);
 	return cell;
 }
@@ -1129,7 +1132,6 @@ void Grid::buildBridgeDijkstraTables()
 
 void Grid::onDrag(treenode view, Vec3& offset)
 {
-
 	int pickType = getpickingdrawfocus(view, PICK_TYPE, 0);
 	Vec3 originalMin(minPoint), originalMax(maxPoint);
 	switch (pickType) {
@@ -1211,6 +1213,7 @@ void Grid::drawSizerHandles(treenode view, int pickingMode)
 
 void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode)
 {
+	if (pickingMode == PICK_PRESSED)
 	if (!pickingMode && (selObj == holder || hoverObj == holder)) {
 		Mesh tempMesh;
 		Vec4f color(1.0f, 1.0f, 0.0f, selObj == holder ? 1.0f : 0.2f);
@@ -1273,6 +1276,35 @@ void Grid::addQuad(Mesh & mesh, Vec3f & p1, Vec3f & p2, Vec3f & p3, Vec3f & p4)
 {
 	addTriangle(mesh, p1, p2, p3);
 	addTriangle(mesh, p1, p3, p4);
+}
+
+
+void Grid::dragPressedPick(treenode view, Vec3& pos, Vec3& diff)
+{
+	Vec3 midPoint = (minPoint + maxPoint) * 0.5;
+	double* xFocus, *yFocus;
+	if (pos.x > midPoint.x)
+		xFocus = &maxPoint.x;
+	else xFocus = &minPoint.x;
+
+	if (pos.y > midPoint.y)
+		yFocus = &maxPoint.y;
+	else yFocus = &minPoint.y;
+
+	*xFocus = pos.x;
+	*yFocus = pos.y;
+
+	navigator->setDirty();
+	isUserCustomized = true;
+	isDirtyByUser = true;
+}
+
+void Grid::makeDirty()
+{
+	resolveGridOrigin();
+	navigator->setDirty();
+	isUserCustomized = true;
+	isDirtyByUser = true;
 }
 
 }

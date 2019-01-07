@@ -306,7 +306,6 @@ public:
 
 	void resolveMinNodeWidth();
 
-	double hasCustomUserGrids;
 	TreeNode* addObject(const Vec3& pos1, const Vec3& pos2, EditMode mode);
 
 	TemporaryBarrier* applyToTemporaryBarrier = nullptr;
@@ -316,7 +315,7 @@ public:
 	treenode addMember(TaskExecuter* te);
 	void addObjectBarrier(ObjectDataType* object);
 
-	Grid* createGrid(const Vec3& loc);
+	Grid* createGrid(const Vec3& loc, const Vec3& size);
 	Variant createGrid(FLEXSIMINTERFACE);
 
 	static AStarNavigator* instance;

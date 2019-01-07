@@ -141,6 +141,14 @@ public:
 	static void addVertex(Mesh& mesh, Vec3f& point);
 	static void addTriangle(Mesh& mesh, Vec3f& p1, Vec3f& p2, Vec3f& p3);
 	static void addQuad(Mesh& mesh, Vec3f& p1, Vec3f& p2, Vec3f& p3, Vec3f& p4);
+	void dragPressedPick(treenode view, Vec3& pos, Vec3& diff);
+	Variant dragPressedPick(FLEXSIMINTERFACE)
+	{
+		dragPressedPick(param(1), Vec3(param(2), param(3), param(4)), Vec3(param(5), param(6), param(7)));
+		return Variant();
+	}
+	void makeDirty();
+	Variant makeDirty(FLEXSIMINTERFACE) { makeDirty(); return Variant(); }
 
 	NodeListArray<BridgeRoutingData>::CouplingSdtSubNodeType bridgeData;
 };

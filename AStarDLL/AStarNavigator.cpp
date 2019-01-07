@@ -91,7 +91,6 @@ void AStarNavigator::bindVariables(void)
 		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
 
 	bindStateVariable(minNodeWidth);
-	bindVariable(hasCustomUserGrids);
 	bindStateVariable(hasConditionalBarriers);
 	bindStateVariable(hasMandatoryPaths);
 
@@ -1855,14 +1854,8 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	case EditMode::BRIDGE: newBarrier = barrierList.add(new Bridge); break;
 	case EditMode::MANDATORY_PATH: newBarrier = barrierList.add(new MandatoryPath); break;
 	case EditMode::GRID: {
-		if (!hasCustomUserGrids && fabs(pos1.z - grids[0]->minPoint.z) < 0.01 * grids[0]->nodeWidth) {
-			newGrid = grids[0];
-			setname(newGrid->holder, "");
-		}
-		else {
-			newGrid = grids.add(new Grid);
-		}
-		hasCustomUserGrids = 1.0;
+		double nodeWidth = grids.front()->nodeWidth;
+		newGrid = createGrid(pos1, Vec3(nodeWidth, nodeWidth, 0.0));
 		break;
 	}
 	}
@@ -1896,7 +1889,7 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	setname(newNode, ss.str().c_str());
 
 	// Create undo record on the active view
-	addCreateRecord(nodefromwindow(activedocumentview()), newBarrier, "Create Barrier");
+	addCreateRecord(nodefromwindow(activedocumentview()), newNode->objectAs(SimpleDataType), newBarrier ? "Create Barrier" : "Create Grid");
 
 	return newNode;
 
@@ -1928,7 +1921,7 @@ void AStarNavigator::addObjectBarrier(ObjectDataType* object)
 	objectBarrierList.add(object);
 }
 
-Grid * AStarNavigator::createGrid(const Vec3 & loc)
+Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 {
 	Grid* grid = nullptr;
 	double nodeWidth = grids.front()->nodeWidth;
@@ -1939,12 +1932,12 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc)
 	} else {
 		grid = grids.add(new Grid(this, nodeWidth));
 	}
-	grid->minPoint.x = loc.x - 5 * nodeWidth;
-	grid->minPoint.y = loc.y - 5 * nodeWidth;
+	grid->minPoint.x = loc.x;
+	grid->minPoint.y = loc.y - (size.y != 0 ? size.y : 10.0 * nodeWidth);
 	grid->minPoint.z = loc.z;
-	grid->maxPoint.x = loc.x + 5 * nodeWidth;
-	grid->maxPoint.y = loc.y + 5 * nodeWidth;
-	grid->maxPoint.z = loc.z;
+	grid->maxPoint.x = loc.x + (size.x != 0 ? size.x : 10.0 * nodeWidth);
+	grid->maxPoint.y = loc.y;
+	grid->maxPoint.z = loc.z + size.z;
 	grid->isUserCustomized = true;
 	grid->isDirtyByUser = true;
 	isGridDirty = true;
@@ -1967,7 +1960,7 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc)
 
 Variant AStarNavigator::createGrid(FLEXSIMINTERFACE)
 {
-	return createGrid(Vec3(param(1), param(2), param(3)))->holder;
+	return createGrid(Vec3(param(1), param(2), param(3)), Vec3(param(4), param(5), param(6)))->holder;
 }
 
 ASTAR_FUNCTION Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)
