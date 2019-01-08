@@ -9,7 +9,7 @@ namespace AStar {
 void Grid::bind()
 {
 	if (getBindMode() == SDT_BIND_ON_LOAD)
-		navigator = ownerobject(holder->up)->objectAs(AStarNavigator);
+		bindNavigator();
 	bindDouble(nodeWidth, 1);
 	bindNumber(isBounded);
 	bindNumber(isLowestGrid);
@@ -1305,6 +1305,30 @@ void Grid::makeDirty()
 	navigator->setDirty();
 	isUserCustomized = true;
 	isDirtyByUser = true;
+}
+
+double Grid::onDestroy(treenode view)
+{
+	if (holder->up->subnodes.length == 1) {
+		msg("Grid Deletion Not Allowed", "You cannot delete all A* grids.", 1);
+		return 1.0;
+	}
+	return 0.0;
+}
+
+void Grid::bindNavigator()
+{
+	if (holder->up->name == "grids")
+		navigator = ownerobject(holder->up)->objectAs(AStarNavigator);
+	else navigator = nullptr;
+}
+
+double Grid::onUndo(bool isUndo, treenode undoRecord) 
+{ 
+	bindNavigator(); 
+	if (navigator) 
+		navigator->setDirty(); 
+	return 0;
 }
 
 }

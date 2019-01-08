@@ -151,6 +151,9 @@ public:
 	Variant makeDirty(FLEXSIMINTERFACE) { makeDirty(); return Variant(); }
 
 	NodeListArray<BridgeRoutingData>::CouplingSdtSubNodeType bridgeData;
+	virtual double onDestroy(treenode view) override;
+	void bindNavigator();
+	virtual double onUndo(bool isUndo, treenode undoRecord) override;
 };
 
 }

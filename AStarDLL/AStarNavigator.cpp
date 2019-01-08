@@ -1925,7 +1925,7 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 {
 	Grid* grid = nullptr;
 	double nodeWidth = grids.front()->nodeWidth;
-	if (!isGridMeshBuilt && !areGridsUserCustomized && grids.size() == 1) {
+	if (!isBoundsMeshBuilt && !areGridsUserCustomized && grids.size() == 1) {
 		// if I'm in a "pristine" condition where I am not yet drawing the main grid,
 		// then the grid should be the main grid.
 		grid = grids.front();
