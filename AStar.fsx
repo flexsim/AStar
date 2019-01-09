@@ -1189,37 +1189,11 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
           <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
          </data>
           <node f="40"><name></name></node>
-          <node f="42" dt="4"><name>Node Spacing</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000402a0000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-          </data></node>
-          <node f="42" dt="4"><name>EditNodeSpacing</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>00000000405e0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>000000004059c000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
-           <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/grids/1/nodeWidth</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
-           <node f="42"><name>variables</name>
-            <node f="40"><name></name></node>
-            <node f="42" dt="2"><name>valueType</name><data>length</data></node>
-            <node f="42" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
-           </node>
-          </data>
-           <node f="40"><name></name></node></node>
           <node f="42" dt="4"><name>Surround Depth</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040458000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000402e0000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
           </data></node>
@@ -1228,7 +1202,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000405e0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040440000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040280000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
@@ -1251,7 +1225,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040510000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040440000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
@@ -1261,7 +1235,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040580000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040510000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Snap dividers between points of the A* grid</data></node>
@@ -1273,7 +1247,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000405f0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040580000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>00000000406b8000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>000000004062a000</data></node>
            <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
@@ -1407,7 +1381,7 @@ forobjectsbehind (c)
            <node f="42" dt="1"><name>viewwindowopen</name><data>000000003ff00000</data></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040713000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000406ee000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>55555555407ae555</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>aaaaaaab40620aaa</data></node>
            <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
@@ -1885,23 +1859,23 @@ windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Check to show A* Barriers</data></node>
           </data></node>
-          <node f="42" dt="4"><name>Show Bounds</name><data>
+          <node f="42" dt="4"><name>Show Grid Bounds</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Check to show A* grid boundaries</data></node>
           </data></node>
-          <node f="42" dt="4"><name>Show Grid</name><data>
+          <node f="42" dt="4"><name>Show Grid Nodes</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040508000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Check to show A* grid</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to show A* grid nodes</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Members</name><data>
            <node f="40"><name>object</name></node>
@@ -5855,7 +5829,7 @@ if (getvarnum(c, "isExpanded")) {
 </data></node>
        </node>
        <node f="42" dt="2"><name>tooltip</name><data></data></node>
-       <node f="42" dt="2"><name>windowtitle</name><data>General Properties</data></node>
+       <node f="42" dt="2"><name>windowtitle</name><data>A* Grid Properties</data></node>
       </data>
        <node f="40"><name></name></node>
        <node f="42" dt="4"><name>EditName</name><data>
