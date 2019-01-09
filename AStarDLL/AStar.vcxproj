@@ -172,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AStarClasses.h" />
+    <ClInclude Include="BridgeRoutingData.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="AStarNavigator.h" />
     <ClInclude Include="AStarTypes.h" />
@@ -212,6 +213,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AStar.cpp" />
+    <ClCompile Include="BridgeRoutingData.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="AStarNavigator.cpp" />
     <ClCompile Include="AStarTypes.cpp" />

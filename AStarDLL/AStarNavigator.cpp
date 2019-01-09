@@ -91,9 +91,10 @@ void AStarNavigator::bindVariables(void)
 		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
 
 	bindStateVariable(minNodeWidth);
-	bindVariable(hasCustomUserGrids);
 	bindStateVariable(hasConditionalBarriers);
 	bindStateVariable(hasMandatoryPaths);
+
+	bindStateVariable(areGridsUserCustomized);
 
 	bindVariableByName("extraData", extraDataNode, ODT_BIND_STATE_VARIABLE);
 
@@ -143,6 +144,11 @@ void AStarNavigator::bindInterface()
 	bindMethod(getLocation, AStarNavigator, "Vec3 getLocation(AStar.Cell& loc)");
 }
 
+void AStarNavigator::bind()
+{
+	bindCallback(createGrid, AStarNavigator);
+}
+
 TreeNode* AStarNavigator::resolveTraveler()
 {
 	// this method is going to be called as a method on the TE
@@ -179,18 +185,18 @@ void AStarNavigator::resolveGridBounds()
 	for (auto iter = tempGrids.begin(); iter != tempGrids.end();) {
 		Grid* grid = *iter;
 		auto nextGreaterZIter = iter + 1;
-		while (nextGreaterZIter != tempGrids.end() && (*nextGreaterZIter)->minPoint.z <= grid->minPoint.z) {
+		while (nextGreaterZIter != tempGrids.end() && (*nextGreaterZIter)->minPoint.z <= grid->minPoint.z + grid->nodeWidth) {
 			nextGreaterZIter++;
 		}
 
 		bool isBounded = nextGreaterZIter - iter > 1;
 		for (; iter < nextGreaterZIter; iter++) {
 			Grid* grid = *iter;
-			if (grid->minPoint.z == lowestZ)
+			if (grid->minPoint.z <= lowestZ + grid->nodeWidth)
 				grid->isLowestGrid = true;
 			grid->isBounded = isBounded;
 			grid->maxPoint.z = (nextGreaterZIter != tempGrids.end() ? std::nextafter((*nextGreaterZIter)->minPoint.z, -DBL_MAX) : DBL_MAX);
-			if (!isBounded) {
+			if (!isBounded && !grid->isUserCustomized) {
 				grid->minPoint.x = grid->minPoint.y = DBL_MAX;
 				grid->maxPoint.x = grid->maxPoint.y = -DBL_MAX;
 			}
@@ -223,6 +229,10 @@ void AStarNavigator::resetGrids()
 
 	for (Grid* grid : grids) {
 		grid->buildNodeTable();
+	}
+
+	for (Grid* grid : grids) {
+		grid->buildBridgeDijkstraTables();
 	}
 
 	areGridNodeTablesBuilt = true;
@@ -392,6 +402,13 @@ double AStarNavigator::onDraw(TreeNode* view)
 	double offset = max(-1, -50 / (vpRadius * getmodelunit(LENGTH_MULTIPLE)));
 
 
+	glPolygonOffset(offset - 0.010, -2);
+	if (isBoundsMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BOUNDS)) {
+		for (Grid* grid : grids)
+			grid->drawBounds(view, selObj, hoveredObj, pickingMode);
+	}
+	glPolygonOffset(0.0, 0.0);
+
 	if (!pickingMode) {
 
 		if (isGridMeshBuilt && (drawMode & ASTAR_DRAW_MODE_GRID)) {
@@ -400,12 +417,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 				for (Grid* grid : grids)
 					grid->gridMesh.draw(GL_LINES);
 			}
-		}
-
-		glPolygonOffset(offset - 0.010, -2);
-		if (isBoundsMeshBuilt && (drawMode & ASTAR_DRAW_MODE_BOUNDS)) {
-			for (Grid* grid : grids)
-				grid->boundsMesh.draw(GL_TRIANGLES);
 		}
 
 		fglEnable(GL_TEXTURE_2D);
@@ -443,13 +454,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 			for (Traveler* traveler : travelers) {
 				if (switch_selected(traveler->te->holder, -1))
 					drawRoutingAlgorithm(traveler, view);
-			}
-		}
-	} else {
-		if (drawMode & ASTAR_DRAW_MODE_BOUNDS) {
-			for (Grid* grid : grids) {
-				setpickingdrawfocus(view, grid->holder, PICK_TYPE_BOUNDS);
-				grid->boundsMesh.draw(GL_TRIANGLES);
 			}
 		}
 	}
@@ -729,12 +733,12 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	destLoc.x = tempDestLoc[0];
 	destLoc.y = tempDestLoc[1];
 	destLoc.z = tempDestLoc[2];
-	Vec3 clampedDestLoc = destLoc;
 
 	TaskExecuter* te = traveler->te;
 
 	Cell startCell = getCell(startLoc);
-	Cell destCell = getCell(destLoc);
+	destCell = getCell(destLoc);
+	destCellLoc = getLocation(destCell);
 
 	if (traveler->useMandatoryPath) {
 		for (int i = 0; i < barrierList.size(); i++) {
@@ -788,10 +792,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	startLoc.x = startGrid->gridOrigin.x + startCell.col * startGrid->nodeWidth;
 	startLoc.y = startGrid->gridOrigin.y + startCell.row * startGrid->nodeWidth;
 
-	Grid* destGrid = getGrid(destCell);
-	// set x/y to the cetner of the dest grid point
-	clampedDestLoc.x = destGrid->gridOrigin.x + destCell.col * destGrid->nodeWidth;
-	clampedDestLoc.y = destGrid->gridOrigin.y + destCell.row * destGrid->nodeWidth;
+	this->destGrid = getGrid(destCell);
 
 	// total set includes all resolved and open nodes in the graph
 	totalSet.clear();
@@ -816,7 +817,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	checkGetOutOfBarrier(start->cell, te, destCell.row, destCell.col, nullptr);
 
 	start->g = 0;
-	start->h = (1.0 - maxPathWeight) * sqrt(sqr(clampedDestLoc.x - startLoc.x) + sqr(clampedDestLoc.y - startLoc.y) + sqr(clampedDestLoc.z - startLoc.z));
+	start->h = calculateHeuristic(startGrid, startCell);
 	start->f = start->g + start->h;
 	start->previous = ~0;
 	start->closed = 0;
@@ -874,8 +875,9 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 		n->open = false;
 
 		// if I am at the destination, then break out of the solve loop
-		if ((shortest.cell.col == destCell.col && shortest.cell.row == destCell.row) 
-				|| traveler->destThreshold.isWithinThreshold(shortest.cell, Vec2(destGrid->gridOrigin.x, destGrid->gridOrigin.y), destLoc, destGrid->nodeWidth)) {
+		if ((shortest.cell == destCell) 
+				|| (shortest.cell.grid == destCell.grid
+					&& traveler->destThreshold.isWithinThreshold(shortest.cell, destGrid, destLoc))) {
 			final = &shortest;
 			break;
 		}
@@ -1058,6 +1060,28 @@ the outside 8 nodes.
 	return travelPath;
 }
 
+double AStarNavigator::calculateHeuristic(Grid * fromGrid, const Cell & fromCell)
+{
+	Vec3 from(fromGrid->gridOrigin.x + fromCell.col * fromGrid->nodeWidth,
+		fromGrid->gridOrigin.y + fromCell.row * fromGrid->nodeWidth,
+		fromGrid->gridOrigin.z);
+	if (fromCell.grid == destCell.grid) {
+		return (1.0 - maxPathWeight) * Vec3(destCellLoc.x - from.x, destCellLoc.y - from.y, destCellLoc.z - from.z).magnitude;
+	} else {
+		double bestHeuristic = DBL_MAX;
+		for (BridgeRoutingData* data : fromGrid->bridgeData) {
+			auto& entry = data->toCellHeuristics[destCell.grid];
+			if (entry.heuristic < DBL_MAX) {
+				double testHeuristic = (fromGrid->getLocation(data->fromCell) - from).magnitude + entry.heuristic;
+				testHeuristic += (destCellLoc - destGrid->getLocation(entry.toCell)).magnitude;
+				if (testHeuristic < bestHeuristic)
+					bestHeuristic = testHeuristic;
+			}
+		}
+		return (1.0 - maxPathWeight) * bestHeuristic;
+	}
+}
+
 double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination)
 {
 	taskexecuter->updateLocations();
@@ -1155,10 +1179,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 			entry->cell.col = c;
 			entry->cell.row = r;
 			entryHash[entry->cell.value] = totalSetIndex;
-			// calculate the distance heuristic h
-			double diffx = destLoc.x - (grid->gridOrigin.x + entry->cell.col * grid->nodeWidth);
-			double diffy = destLoc.y - (grid->gridOrigin.y + entry->cell.row * grid->nodeWidth);
-			entry->h = (1.0 - maxPathWeight) * sqrt(diffx*diffx + diffy*diffy) * speedScale;
+			entry->h = calculateHeuristic(grid, entry->cell);
 			entry->closed = 0;
 			n->isInTotalSet = true;
 		}
@@ -1270,10 +1291,12 @@ void AStarNavigator::buildBoundsMesh(float z)
 	for (Grid* grid : grids)
 		grid->buildBoundsMesh();
 
-	if (!areGridNodeTablesBuilt) {
+
+	if (!areGridNodeTablesBuilt && !areGridsUserCustomized) {
 		isBoundsMeshBuilt = false;
 		return;
 	}
+
 	isBoundsMeshBuilt = true;
 }
 
@@ -1578,7 +1601,7 @@ Grid* AStarNavigator::getGrid(const Cell& cell)
 	return grids[max(1, cell.grid) - 1];
 }
 
-Grid * AStarNavigator::getGrid(const Vec3 & modelPos)
+Grid * AStarNavigator::getGrid(const Vec3 & modelPos, bool canReturnNull)
 {
 	for (Grid* grid : grids) {
 		if (grid->isLocWithinBounds(modelPos, false)) {
@@ -1590,10 +1613,15 @@ Grid * AStarNavigator::getGrid(const Vec3 & modelPos)
 			return grid;
 		}
 	}
+	if (canReturnNull)
+		return nullptr;
 	// if I get this far, then something's wrong with grid bounds, so resolve grid bounds and try again
 	resolveGridBounds();
 	// believe me when I say this is not infinite recursioin
-	return getGrid(modelPos);
+	Grid* grid = getGrid(modelPos, true);
+	if (!grid)
+		grid = grids.front();
+	return grid;
 }
 
 ASTAR_FUNCTION Variant AStarNavigator_getGrid(FLEXSIMINTERFACE)
@@ -1826,14 +1854,8 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	case EditMode::BRIDGE: newBarrier = barrierList.add(new Bridge); break;
 	case EditMode::MANDATORY_PATH: newBarrier = barrierList.add(new MandatoryPath); break;
 	case EditMode::GRID: {
-		if (!hasCustomUserGrids && fabs(pos1.z - grids[0]->minPoint.z) < 0.01 * grids[0]->nodeWidth) {
-			newGrid = grids[0];
-			setname(newGrid->holder, "");
-		}
-		else {
-			newGrid = grids.add(new Grid);
-		}
-		hasCustomUserGrids = 1.0;
+		double nodeWidth = grids.front()->nodeWidth;
+		newGrid = createGrid(pos1, Vec3(nodeWidth, nodeWidth, 0.0));
 		break;
 	}
 	}
@@ -1867,7 +1889,7 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	setname(newNode, ss.str().c_str());
 
 	// Create undo record on the active view
-	addCreateRecord(nodefromwindow(activedocumentview()), newBarrier, "Create Barrier");
+	addCreateRecord(nodefromwindow(activedocumentview()), newNode->objectAs(SimpleDataType), newBarrier ? "Create Barrier" : "Create Grid");
 
 	return newNode;
 
@@ -1897,6 +1919,48 @@ void AStarNavigator::addObjectBarrier(ObjectDataType* object)
 			return;
 	}
 	objectBarrierList.add(object);
+}
+
+Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
+{
+	Grid* grid = nullptr;
+	double nodeWidth = grids.front()->nodeWidth;
+	if (!isBoundsMeshBuilt && !areGridsUserCustomized && grids.size() == 1) {
+		// if I'm in a "pristine" condition where I am not yet drawing the main grid,
+		// then the grid should be the main grid.
+		grid = grids.front();
+	} else {
+		grid = grids.add(new Grid(this, nodeWidth));
+	}
+	grid->minPoint.x = loc.x;
+	grid->minPoint.y = loc.y - (size.y != 0 ? size.y : 10.0 * nodeWidth);
+	grid->minPoint.z = loc.z;
+	grid->maxPoint.x = loc.x + (size.x != 0 ? size.x : 10.0 * nodeWidth);
+	grid->maxPoint.y = loc.y;
+	grid->maxPoint.z = loc.z + size.z;
+	grid->isUserCustomized = true;
+	grid->isDirtyByUser = true;
+	isGridDirty = true;
+	isBoundsDirty = true;
+	areGridsUserCustomized = true;
+	drawMode = (double)((int)drawMode | ASTAR_DRAW_MODE_BOUNDS);
+	Vec3 originalMin = grid->minPoint;
+	Vec3 originalMax = grid->maxPoint;
+	while (grid->shrinkToFitGrowthBounds()) {
+		if ((grid->maxPoint - grid->minPoint).magnitude < 0.1 * nodeWidth) {
+			Vec3 diff = Vec3(0.0, 10.0 * nodeWidth, 0.0);
+			originalMin += diff;
+			originalMax += diff;
+			grid->minPoint = originalMin;
+			grid->maxPoint = originalMax;
+		} else break;
+	}
+	return grid;
+}
+
+Variant AStarNavigator::createGrid(FLEXSIMINTERFACE)
+{
+	return createGrid(Vec3(param(1), param(2), param(3)), Vec3(param(4), param(5), param(6)))->holder;
 }
 
 ASTAR_FUNCTION Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)

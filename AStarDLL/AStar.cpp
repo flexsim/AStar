@@ -7,6 +7,7 @@
 #include "Bridge.h"
 #include "MandatoryPath.h"
 #include "Traveler.h"
+#include "BridgeRoutingData.h"
 
 namespace AStar {
 
@@ -35,6 +36,8 @@ visible SimpleDataType* createsdtderivative(char* classname)
 	if (strcmp(classname, "AStarNodeExtraData::ContinueEvent") == 0) return new AStarNodeExtraData::ContinueEvent;
 	if (strcmp(classname, "NodeExtraData") == 0) return new AStarNodeExtraData;
 	if (strcmp(classname, "AStarNavigator::CollisionIntervalUpdateEvent") == 0) return new AStarNavigator::CollisionIntervalUpdateEvent;
+	if (strcmp(classname, "BridgeRoutingData") == 0) return new BridgeRoutingData;
+
 	return NULL;
 }
 

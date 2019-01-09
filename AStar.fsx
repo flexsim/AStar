@@ -47,9 +47,10 @@
           <node f="42" dt="1"><name>gridOriginX</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>gridOriginY</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>gridOriginZ</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>isUserCustomized</name><data>0000000000000000</data></node>
+          <node f="42"><name>bridgeData</name></node>
           <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Grid</data>
            <node f="40"><name></name></node>
-           <node f="42" dt="3"><name>navigator</name><data><coupling>/installdata/add/1/data/astar/AStarNavigator</coupling></data></node>
            <node f="42" dt="1"><name>isBounded</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>isLowestGrid</name><data>0000000000000000</data></node>
           </node>
@@ -548,7 +549,7 @@ switch (clickCode) {
 			}
 		}
 		
-		if (objectexists(curObjectNode) &amp;&amp; up(curObjectNode) == activeNavigator) {
+		if (objectexists(curObjectNode) &amp;&amp; (curObjectNode.up == activeNavigator || curObjectNode.up.up == variables(activeNavigator))) {
 			// if I'm currently editing a solid barrier or grid, (it's the second up click)
 			// then I should set curObjectNode to 0, meaning I'm done editing the barrier
 			if (mode == EDITMODE_SOLID_BARRIER || mode == EDITMODE_GRID) {
@@ -1056,15 +1057,24 @@ if (ontoView) {
        <node f="42" dt="4"><name>Grid</name><data>
         <node f="40"><name></name></node>
         <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
-	modeleditmode("AStar::MandatoryPath");</data></node>
+	modeleditmode("AStar::Grid");</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Grid</data>
+         <node f="2000040"><name></name></node></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
 if (ontoView) {
-	;
+	Object nav = model().find("AStarNavigator");
+	if (!nav)
+		nav = createinstance(library().find("?AStarNavigator"), model());
+	treenode createdObj = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);
+	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
+	return createdObj;
+} else {
+	modeleditmode(0);
 }</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>A path that designated travelers must travel on</data></node>
-        <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\mandatorypath.bmp</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data>A custom-definable A* grid</data></node>
+        <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\grid.bmp</data></node>
        </data></node>
       </node>
       <node f="42"><name>Pages</name>
@@ -1179,37 +1189,11 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
           <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
          </data>
           <node f="40"><name></name></node>
-          <node f="42" dt="4"><name>Node Spacing</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000402a0000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-          </data></node>
-          <node f="42" dt="4"><name>EditNodeSpacing</name><data>
-           <node f="40"><name>object</name></node>
-           <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
-           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-           <node f="42" dt="1"><name>spatialx</name><data>00000000405e0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>000000004059c000</data></node>
-           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
-           <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/grids/1/nodeWidth</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
-           <node f="42"><name>variables</name>
-            <node f="40"><name></name></node>
-            <node f="42" dt="2"><name>valueType</name><data>length</data></node>
-            <node f="42" dt="1"><name>spinner</name><data>000000003ff00000</data></node>
-           </node>
-          </data>
-           <node f="40"><name></name></node></node>
           <node f="42" dt="4"><name>Surround Depth</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040458000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000402e0000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
           </data></node>
@@ -1218,7 +1202,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000405e0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040440000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040280000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
@@ -1241,7 +1225,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040510000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040440000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
@@ -1251,7 +1235,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040580000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040510000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Snap dividers between points of the A* grid</data></node>
@@ -1263,7 +1247,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000405f0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040580000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>00000000406b8000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>000000004062a000</data></node>
            <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
@@ -1397,7 +1381,7 @@ forobjectsbehind (c)
            <node f="42" dt="1"><name>viewwindowopen</name><data>000000003ff00000</data></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ac000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040713000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000406ee000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>55555555407ae555</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>aaaaaaab40620aaa</data></node>
            <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
@@ -1875,23 +1859,23 @@ windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Check to show A* Barriers</data></node>
           </data></node>
-          <node f="42" dt="4"><name>Show Bounds</name><data>
+          <node f="42" dt="4"><name>Show Grid Bounds</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Check to show A* grid boundaries</data></node>
           </data></node>
-          <node f="42" dt="4"><name>Show Grid</name><data>
+          <node f="42" dt="4"><name>Show Grid Nodes</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040508000</data></node>
-           <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Check to show A* grid</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>Check to show A* grid nodes</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Members</name><data>
            <node f="40"><name>object</name></node>
@@ -5766,6 +5750,195 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
         </data>
          <node f="40"><name></name></node></node>
        </node>
+      </node>
+     </node>
+    </node>
+   </node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040450000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AStarDividerProperties</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42" dt="4"><name>AStarGridProperties</name><data>
+      <node f="40"><name>object</name></node>
+      <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040180000</data></node>
+      <node f="42" dt="2"><name>guifocusclass</name><data>../../..&gt;variables/QuickPropertiesPanel</data></node>
+      <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+      <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+      <node f="42" dt="1"><name>spatialsx</name><data>0000000040634000</data></node>
+      <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+      <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+     </data>
+      <node f="40"><name></name></node>
+      <node f="42" dt="4"><name>GridProperties</name><data>
+       <node f="40"><name>object</name></node>
+       <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
+       <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
+       <node f="42" dt="2"><name>resizefocus</name><data></data></node>
+       <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040100000</data>
+        <node f="40"><name></name></node>
+        <node f="42" dt="2"><name>GeneralProperties</name><data>VIEW:/active&gt;Tools/GeneralProperties</data></node>
+       </node>
+       <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+       <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
+       <node f="42" dt="1"><name>spatialsx</name><data>000000004066c000</data></node>
+       <node f="42" dt="1"><name>spatialsy</name><data>000000004052c000</data></node>
+       <node f="42" dt="2"><name>undohistory</name><data>..&gt;viewfocus+</data></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>isExpanded</name><data>000000003ff00000</data></node>
+        <node f="42" dt="1"><name>showRequirements</name><data>0000000000000000</data>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>selObj</name><data>treenode selObj = param(1);
+if (!objectexists(selObj) || getdatatype(selObj) != DATATYPE_SIMPLE)
+	return 0;
+
+return isclasstype(selObj, "AStar::Grid");
+</data></node>
+         <node f="442" dt="2"><name>docType</name><data>string docType = gets(documentwindow(param(1)));
+return docType == "3D" || docType == "Tree";</data></node>
+        </node>
+       </node>
+       <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+       <node f="42"><name>eventfunctions</name>
+        <node f="40"><name></name></node>
+        <node f="442" dt="2"><name>onSelObjChange</name><data>treenode selObj = param(1);
+
+nodepoint(objectfocus(c), selObj);
+if (getvarnum(c, "isExpanded")) {
+	applylinks(c, 1);
+	if (content(node("../../SelectedList/SelectedPanel/selectedList&gt;items", c))) {
+		windowgray(windowfromnode(node("RenameAll", c)), 0);
+	} else {
+		windowgray(windowfromnode(node("RenameAll", c)), 1);
+	}
+}</data></node>
+        <node f="442" dt="2"><name>onDocViewClick</name><data>if (getvarnum(c, "isExpanded"))
+	applylinks(c, 1);</data></node>
+        <node f="442" dt="2"><name>onExpand</name><data>if (param(1)) {// expanded
+	applylinks(c, 1);
+	
+	if (content(node("../../SelectedList/SelectedPanel/selectedList&gt;items", c))) {
+		windowgray(windowfromnode(node("RenameAll", c)), 0);
+	} else {
+		windowgray(windowfromnode(node("RenameAll", c)), 1);
+	}
+}
+</data></node>
+       </node>
+       <node f="42" dt="2"><name>tooltip</name><data></data></node>
+       <node f="42" dt="2"><name>windowtitle</name><data>A* Grid Properties</data></node>
+      </data>
+       <node f="40"><name></name></node>
+       <node f="42" dt="4"><name>EditName</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>00000000405e4000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data>Set the Object's Name</data></node>
+        <node f="442" dt="2"><name>hotlinkx</name><data>treenode focus = node("..&gt;objectfocus+", c);
+
+if (eventdata) {
+	if (!comparetext(getviewtext(c), getname(focus))) {
+		int undo_id = beginaggregatedundo(c, "Modify Object Name");
+			setname(focus, getviewtext(c));
+			validatename(c, 1, focus);
+			if(getname(focus) != getviewtext(c))
+				setname(focus, getviewtext(c));
+		endaggregatedundo(c, undo_id);
+		applytoedits(node("..&gt;viewfocus+", c), focus);
+	}
+} else {
+	string name = getnodename(focus);
+	if (comparetext(name,"NULL"))
+		setviewtext(c, "");
+	else
+		setviewtext(c, name);
+}	</data></node>
+        <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
+        <node f="42" dt="2"><name>OnKeyUp</name><data>int k = lastkeyup();
+
+if (k==13) {  // enter
+	executefsnode(OnKillFocus(c), c);
+} </data></node>
+        <node f="42" dt="2"><name>OnKillFocus</name><data>if (!content(c))
+	applylinks(c);
+
+//Update flow item name
+treenode activeDoc = activedocumentnode();
+if (objectexists(activeDoc) &amp;&amp; objectexists(documentwindow(activeDoc))) {
+	string docType = gets(documentwindow(activeDoc));
+	if (comparetext(docType, "FlowItem Bin"))
+		applicationcommand("notifydoclistenersonpropsapply", node("..&gt;objectfocus+", c));
+}
+</data></node>
+        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040240000</data></node>
+        <node f="42"><name>variables</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name>renameNum</name><data>000000003ff00000</data></node>
+         <node f="42" dt="2"><name>renameText</name><data></data></node>
+        </node>
+        <node f="42"><name>eventfunctions</name>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>showRenamePopup</name><data>treenode selected = node("/SelectedList/SelectedPanel/selectedList&gt;items", up(up(up(c))));
+setvarstr(c, "renameText", getviewtext(c));
+if (content(selected)) {
+	createpopup("VIEW:/popups/RenameWarning", nodetopath(c, 1), nodetopath(c, 1), c, 0, 0, 260, 55);	
+	applylinks(c, 1);
+}
+
+</data></node>
+         <node f="442" dt="2"><name>renameSelectedObjects</name><data>int renameNum = getvarnum(c, "renameNum");
+string name = getvarstr(c, "renameText");
+
+treenode selected = node("/SelectedList/SelectedPanel/selectedList&gt;items", up(up(up(c))));
+for (int r = 1; r &lt;= content(selected); r++) {
+	treenode actualObject = tonode(get(rank(selected, r)));
+	string newName = concat(name, numtostring(renameNum));
+	setname(actualObject, newName);
+	renameNum++;
+}
+applytoedits(node("..&gt;viewfocus+", c), node("..&gt;objectfocus+", c));
+repaintall();</data></node>
+        </node>
+       </data>
+        <node f="40"><name></name></node></node>
+       <node f="42" dt="4"><name>Node Spacing</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>00000000405e0000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+       </data></node>
+       <node f="42" dt="4"><name>EditNodeSpacing</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040490000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>000000004059c000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040418000</data></node>
+        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/nodeWidth</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
+        <node f="42"><name>variables</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>valueType</name><data>length</data></node>
+         <node f="42" dt="1"><name>spinner</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>isHotlink</name><data>000000003ff00000</data></node>
+        </node>
+        <node f="42"><name>eventfunctions</name>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>onApply</name><data>function_s(c.find("..&gt;objectfocus+"), "makeDirty");</data></node>
+        </node>
+       </data>
+        <node f="40"><name></name></node></node>
       </node>
      </node>
     </node>

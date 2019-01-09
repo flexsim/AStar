@@ -26,6 +26,7 @@ void Bridge::bindVariables(void)
 	bindStateVariable(lastTraveler);
 	bindStateVariable(blockedPathIndex);
 	bindStateVariable(nodeWidth);
+	bindStateVariable(routingData);
 }
 
 void Bridge::addPassagesToTable(Grid* grid)
@@ -33,9 +34,12 @@ void Bridge::addPassagesToTable(Grid* grid)
 	if (pointList.size() < 2)
 		return;
 
-	Cell fromCell = grid->getCell(pointList.front()->project(holder, model()));
-	Cell toCell = grid->getCell(pointList.back()->project(holder, model()));
+	Cell fromCell = grid->navigator->getCell(pointList.front()->project(holder, model()));
+	Cell toCell = grid->navigator->getCell(pointList.back()->project(holder, model()));
 	if (fromCell == toCell)
+		return;
+
+	if (grid->navigator->getGrid(fromCell) != grid)
 		return;
 
 	// add bridge data to cells
@@ -64,13 +68,21 @@ void Bridge::onReset(AStarNavigator* nav)
 	firstTraveler = nullptr;
 	lastTraveler = nullptr;
 	geometricDistance = calculateDistance();
-	Vec3 modelPos(pointList[0]->x, pointList[0]->y, pointList[0]->z);
-	Grid* grid = nav->getGrid(nav->getCell(modelPos));
+	Cell fromCell = nav->getCell(getPointToModelOffset() + *pointList.front());
+	Grid* grid = nav->getGrid(fromCell);
 	nodeWidth = grid->nodeWidth;
 	travelDistance = useVirtualDistance ? virtualDistance : max(0.001 * nodeWidth, geometricDistance - nodeWidth);
 	filledDistance = 0.0;
 	isAvailable = true;
 	lastUpdateTime = -1;
+	if (routingData.size() == 0) {
+		auto data = grid->bridgeData.add(new BridgeRoutingData);
+		nodejoin(data->holder, nodeinsertinto(routingData)->addData(DATATYPE_COUPLING));
+	}
+	auto data = routingData[0];
+	data->fromCell = fromCell;
+	if (data->holder->up->up != grid->holder)
+		data->holder->up = grid->bridgeData;
 }
 
 double Bridge::calculateDistance() const

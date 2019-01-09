@@ -477,18 +477,20 @@ DestinationThreshold::DestinationThreshold(treenode dest, double fudgeFactor)
 	anyThresholdRadius = 0.0;
 }
 
-bool DestinationThreshold::isWithinThreshold(const Cell & cell, const Vec2& gridOrigin, const Vec2& destLoc, double nodeWidth)
+bool DestinationThreshold::isWithinThreshold(const Cell & cell, Grid* grid, const Vec3& destLoc)
 {
 	if (anyThresholdRadius <= 0 && xAxisThreshold <= 0 && yAxisThreshold <= 0)
 		return false;
 
-	Vec2 cellLoc(gridOrigin.x + cell.col *nodeWidth, gridOrigin.y + cell.row * nodeWidth);
-	Vec2 diff(destLoc - cellLoc);
+	Vec3 cellLoc(grid->gridOrigin.x + cell.col * grid->nodeWidth, 
+		grid->gridOrigin.y + cell.row * grid->nodeWidth,
+		grid->gridOrigin.z);
+	Vec3 diff(destLoc - cellLoc);
 	if (anyThresholdRadius > 0 && anyThresholdRadius >= diff.getLength())
 		return true;
 
 	if (rotation != 0)
-		diff.rotate(-rotation);
+		diff.rotateXY(-rotation);
 	if (xAxisThreshold >= fabs(diff.x) && yAxisThreshold >= fabs(diff.y))
 		return true;
 

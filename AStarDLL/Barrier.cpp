@@ -142,6 +142,15 @@ void Barrier::addBarriersToTable(Grid* grid)
 		isTrivialSolidBarrier = !cell->canGoUp && !cell->canGoDown && !cell->canGoLeft && !cell->canGoRight;
 	}
 
+	if (!grid->isLocWithinBounds(myMin, false) && !grid->isLocWithinBounds(myMax, false)) {
+		Vec3 topLeft(myMin.x, myMax.y, myMin.z);
+		if (!grid->isLocWithinBounds(topLeft, false)) {
+			Vec3 bottomRight(myMax.x, myMin.y, myMin.z);
+			if (!grid->isLocWithinBounds(bottomRight, false))
+				return;
+		}
+	}
+
 	if (isTrivialSolidBarrier) {
 		grid->addSolidBarrierToTable(myMin, myMax, this);
 	} else {
@@ -211,10 +220,11 @@ void Barrier::drawManipulationHandles(treenode view)
 		pos = pos.project(holder->up, model());
 	Vec3 myModelMin(myMin + pos), myModelMax(myMax + pos);
 
-	Grid* grid = navigator->getGrid(myMin);
-	grid->growToEncompassBoundingBox(myModelMin, myModelMax, false);
-	grid->resolveGridOrigin();
-	nodeWidth = grid->nodeWidth;
+	Grid* grid = navigator->getGrid((myMin + myMax) * 0.5, true);
+	//grid->growToEncompassBoundingBox(myModelMin, myModelMax, false);
+	if (grid)
+		grid->resolveGridOrigin();
+	nodeWidth = grid ? grid->nodeWidth : navigator->grids.front()->nodeWidth;
 	Vec3 size = myMax - myMin;
 	float width = (float)(myMax.x - myMin.x);
 	float height = (float)(myMax.y - myMin.y);
@@ -465,7 +475,7 @@ void Barrier::drawManipulationHandles(treenode view)
 	if (pickingMode)
 		glLineWidth(1.0);
 	setpickingdrawfocus(view, holder, 0);
-	if (!pickingMode) {
+	if (!pickingMode && grid) {
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
 		Mesh gridPointsMesh;
 		gridPointsMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
