@@ -2,6 +2,7 @@
 
 namespace FlexSim {
 class TreeNode;
+class TreeNodeListHead;
 typedef TreeNode* treenode;
 class ByteBlock;
 class CouplingDataType;
@@ -25,7 +26,7 @@ class VariantParams;
 class VariantLValue;
 class List;
 class StatisticsCollector;
-typedef char* (*customdisplayfunction)(TreeNode*, int);
+typedef char* (*CustomDisplayFunction)(TreeNode*, int);
 class SplineCache;
 class TableViewDataSource;
 class BundleViewDataSource;

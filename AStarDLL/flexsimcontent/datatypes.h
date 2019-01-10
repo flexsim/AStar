@@ -533,7 +533,9 @@ public:
 /// 			to it will immediately be set to point to null. </summary>
 /// <remarks>	Anthony.johnson, 3/18/2015. </remarks>
 class NodeRef : private FlexSimPrivateTypes::NodeRefUnionMember {
+	friend class TreeNodeExtraData;
 	friend class TreeNode;
+	friend class CouplingDataType;
 	friend struct Compiler::ClassInfo;
 protected:
 	engine_export void init(TreeNode* x);
@@ -3007,7 +3009,7 @@ private:
 		Array& __getFocus() { return *_focus; }
 		__declspec(property(get = __getFocus)) Array& focus;
 	public:
-		ArrayDataSource(Array& array) : _focus(&array) {}
+		ArrayDataSource(Array& array) : _focus(&array) { root = nullptr; }
 		engine_export virtual int __numRows() const override;
 		engine_export virtual int __numCols() const override;
 

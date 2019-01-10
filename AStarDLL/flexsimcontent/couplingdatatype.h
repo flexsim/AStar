@@ -16,9 +16,9 @@ private:
 	NodeRef localPartner;
 public:
   
-	CouplingDataType() : localPartner(0), thePartner(&localPartner), partnerserialnumber(0)
+	CouplingDataType() : localPartner(0), thePartner(&localPartner)
 	{}
-	CouplingDataType(TreeNode* x) : localPartner(x), thePartner(&localPartner), partnerserialnumber(0)
+	CouplingDataType(TreeNode* x) : localPartner(x), thePartner(&localPartner)
 	{}
 	~CouplingDataType(){}
 	NodeRef& partner() { return *thePartner; }
@@ -27,11 +27,6 @@ public:
 	virtual Variant evaluate(const VariantParams& params) override { return partner().get(); }
 	virtual Variant getPrimaryValue() override { return partner().get(); }
 	virtual CouplingDataType* toCoupling() override { return this; }
-
-	union {
-		size_t partnerserialnumber;
-		char* xmlLoadPath;
-	};
 
 	#ifdef FLEXSIM_ENGINE_COMPILE
 		void disown(NodeRef& newPartner);
@@ -44,8 +39,6 @@ public:
 
 		int saveXML(std::ostream& doc);
 		int loadXML(std::istream& doc);
-
-		void pointerizeXML(TreeNode* topNode);
 	#endif
 };
 

@@ -290,20 +290,20 @@ inline double ptrtodouble(void* x)
 		#define engine_private public
 	#else
 		#define engine_export __declspec(dllimport)
-		#define engine_private private
+		#define engine_private protected
 	#endif
 #endif
 
 #if defined FLEXSIM_ENGINE_COMPILE || defined COMPILING_FLEXSIM_CONTENT
 	#define content_private public
 #else
-	#define content_private private
+	#define content_private protected
 #endif
 
 #if defined FLEXSIM_ENGINE_COMPILE || defined COMPILING_FLEXSIM_CONTENT || defined COMPILING_MODULE_DLL
 #define module_private public
 #else
-#define module_private private
+#define module_private protected
 #endif
 
 #if _MSC_VER >= 1800 // VS 2013 (compiler v18) introduced c++11 explicit conversions
