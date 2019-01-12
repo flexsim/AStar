@@ -515,8 +515,7 @@ double TravelPath::calculateTotalDistance(AStarNavigator * nav)
 		if (from.bridgeIndex >= 0) {
 			AStarNodeExtraData* nodeData = nav->getExtraData(from.cell);
 			AStarNodeExtraData::BridgeEntry& entry = nodeData->bridges[from.bridgeIndex];
-			Bridge* bridge = entry.bridge;
-			dist += bridge->travelDistance + grid->nodeWidth;
+			dist += entry.routingData->getTravelDistance(this, i, grid);
 		} else {
 			bool isDeepDiagonal = (abs(from.cell.row - to.cell.row) >= 2 || abs(from.cell.col - to.cell.col) >= 2);
 			if (isDeepDiagonal)

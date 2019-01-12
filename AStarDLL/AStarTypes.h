@@ -179,7 +179,7 @@ struct AStarNodeExtraData : public SimpleDataType
 	char getBonus(Direction direction) { return bonus[(int)direction - 1]; }
 
 	struct BridgeEntry {
-		Bridge* bridge;
+		BridgeRoutingData* routingData;
 		bool isAtBridgeStart;
 	};
 

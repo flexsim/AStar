@@ -173,6 +173,9 @@
   <ItemGroup>
     <ClInclude Include="AStarClasses.h" />
     <ClInclude Include="BridgeRoutingData.h" />
+    <ClInclude Include="ElevatorBridge.h" />
+    <ClInclude Include="ElevatorBridgeRoutingData.h" />
+    <ClInclude Include="flexsimcontent\datatypes.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="AStarNavigator.h" />
     <ClInclude Include="AStarTypes.h" />
@@ -214,6 +217,8 @@
   <ItemGroup>
     <ClCompile Include="AStar.cpp" />
     <ClCompile Include="BridgeRoutingData.cpp" />
+    <ClCompile Include="ElevatorBridge.cpp" />
+    <ClCompile Include="ElevatorBridgeRoutingData.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="AStarNavigator.cpp" />
     <ClCompile Include="AStarTypes.cpp" />

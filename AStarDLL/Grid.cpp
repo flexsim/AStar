@@ -191,12 +191,8 @@ void Grid::reset(AStarNavigator* nav)
 	navigator = nav;
 }
 
-void Grid::buildNodeTable()
+void Grid::growToBarriers() 
 {
-	// Determine the grid bounds
-
-	nodes.clear();
-
 	auto& barriers = navigator->barriers;
 	auto& objectBarrierList = navigator->objectBarrierList;
 	auto& barrierList = navigator->barrierList;
@@ -213,7 +209,7 @@ void Grid::buildNodeTable()
 		barrier->getBoundingBox(min, max);
 		if (isLocWithinVerticalBounds(min.z)) {
 			if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
-					|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
+				|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
 				growToEncompassBoundingBox(min, max, true);
 		}
 	}
@@ -228,7 +224,7 @@ void Grid::buildNodeTable()
 			AStarNavigator::getBoundingBox(element[1], min, max);
 			if (isLocWithinVerticalBounds(min.z)) {
 				if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
-						|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
+					|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
 					growToEncompassBoundingBox(min, max, true);
 			}
 		}
@@ -238,7 +234,7 @@ void Grid::buildNodeTable()
 			Vec3 max = min;
 			if (isLocWithinVerticalBounds(min.z)) {
 				if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
-						|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
+					|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
 					growToEncompassBoundingBox(min, max, true);
 			}
 		}
@@ -249,11 +245,19 @@ void Grid::buildNodeTable()
 
 			if (isLocWithinVerticalBounds(min.z)) {
 				if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
-						|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
+					|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
 					growToEncompassBoundingBox(min, max, true);
 			}
 		}
 	}
+}
+
+void Grid::buildNodeTable()
+{
+	nodes.clear();
+
+	auto& barrierList = navigator->barrierList;
+	auto& customBarriers = navigator->customBarriers;
 
 	resolveGridOrigin();
 

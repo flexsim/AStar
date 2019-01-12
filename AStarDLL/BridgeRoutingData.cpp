@@ -1,15 +1,17 @@
 #include "BridgeRoutingData.h"
 #include "Bridge.h"
 #include "AStarNavigator.h"
+#include "Traveler.h"
 
 namespace AStar {
 
 void BridgeRoutingData::bind()
 {
 	fromCell.bind(this, "fromCell");
+	bindObjPtr(bridge);
 }
 
-std::vector<BridgeRoutingData::HeuristicEntry> BridgeRoutingData::getAdjacentCells()
+std::vector<BridgeRoutingData::HeuristicEntry> BridgeRoutingData::getAdjacentCells(Grid* owner)
 {
 	Bridge* bridge = partner()->ownerObject->objectAs(Bridge);
 	Cell toCell = bridge->navigator->getCell(bridge->getPointToModelOffset() + *bridge->pointList.back());
@@ -46,7 +48,7 @@ void BridgeRoutingData::buildDijkstraTable(Grid* owner)
 				if (data->fromCell != entry.toCell || (entry.toCell == fromCell)) {
 					Vec3 fromLoc = nav->getLocation(data->fromCell);
 					double baseHeuristic = entry.heuristic + (fromLoc - entryLoc).magnitude;
-					auto adjacentCells = data->getAdjacentCells();
+					auto adjacentCells = data->getAdjacentCells(owner);
 					for (auto& adjacentCell : adjacentCells) {
 						double newHeuristic = baseHeuristic + adjacentCell.heuristic;
 						HeuristicEntry& destEntry = toCellHeuristics[adjacentCell.toCell.grid];
@@ -59,6 +61,68 @@ void BridgeRoutingData::buildDijkstraTable(Grid* owner)
 	}
 }
 
+const char * BridgeRoutingData::getBridgeDataClassFactory()
+{
+	return TravelerBridgeData::s_getClassFactory();
+}
 
+TravelerBridgeData * BridgeRoutingData::createBridgeData(Traveler * traveler, double entryTime, int pathIndex)
+{
+	return new TravelerBridgeData(this, entryTime, pathIndex, traveler->te->b_spatialz - (bridge->getPointToModelOffset().z + bridge->pointList.front()->z));
+}
+
+void BridgeRoutingData::onBridgeArrival(Traveler * traveler)
+{
+	if (bridge->isAvailable) {
+		// move onto bridge
+		traveler->clearAllocations();
+		bridge->onEntry(traveler, traveler->bridgeData->pathIndex);
+	} else {
+		if (traveler->allocations.size() > 0)
+			traveler->allocations.back()->extendReleaseTime(DBL_MAX);
+		_ASSERTE(bridge->blockedTraveler == nullptr);
+		// Traveler is blocked trying to get on the bridge
+		bridge->blockedTraveler = traveler;
+		bridge->blockedPathIndex = traveler->bridgeData->pathIndex;
+	}
+}
+
+void BridgeRoutingData::onExit(Traveler * traveler)
+{
+	bridge->onExit(traveler);
+}
+
+void BridgeRoutingData::updateLocation(Traveler * traveler)
+{
+	bridge->updateLocations();
+}
+
+void BridgeRoutingData::checkExpandOpenSet(AStarNavigator* nav, Traveler * traveler, Grid* grid, int bridgeEntryIndex, bool isAtBridgeStart)
+{
+	if (bridge->useCondition && !bridge->condition->evaluate(traveler->te->holder))
+		return;
+	double addedDist = bridge->travelDistance + grid->nodeWidth;
+	Point* endPoint = isAtBridgeStart ? bridge->pointList.back() : bridge->pointList.front();
+	Cell endCell = nav->getCell(*endPoint + bridge->getPointToModelOffset());
+	AStarNode* node = nav->getNode(endCell);
+	nav->expandOpenSet(nav->getGrid(endCell), endCell.row, endCell.col, addedDist / grid->nodeWidth, 0, bridgeEntryIndex);
+}
+
+double BridgeRoutingData::getTravelDistance(TravelPath * path, int travelPathIndex, Grid* grid)
+{
+	return bridge->travelDistance + grid->nodeWidth;
+}
+
+BridgeRoutingData::ArrivalEvent::ArrivalEvent(BridgeRoutingData* data, Traveler* object, int pathIndex, double time)
+	: pathIndex(pathIndex), FlexSimEvent(data->holder, time, object->holder, 0)
+{
+}
+
+void BridgeRoutingData::ArrivalEvent::execute()
+{
+	Traveler* traveler = involved->objectAs(Traveler); \
+	BridgeRoutingData* data = partner()->objectAs(BridgeRoutingData);
+	traveler->onBridgeArrival(data, pathIndex);
+}
 
 }

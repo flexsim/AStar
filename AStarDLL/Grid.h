@@ -60,6 +60,8 @@ public:
 	Cell getCell(const Vec3& modelLoc);
 	Vec3 getLocation(const Cell& cell) { return Vec3(gridOrigin.x + cell.col * nodeWidth, gridOrigin.y + cell.row * nodeWidth, minPoint.z); }
 	void reset(AStarNavigator* nav);
+
+	void growToBarriers();
 	void buildNodeTable();
 	void resolveGridOrigin();
 

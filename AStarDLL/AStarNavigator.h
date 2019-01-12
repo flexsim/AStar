@@ -5,6 +5,7 @@
 #include "Barrier.h"
 #include "AStarTypes.h"
 #include "Grid.h"
+#include "ElevatorBridge.h"
 #include <vector>
 #include <unordered_map>
 #include <queue>
@@ -27,6 +28,8 @@ class AStarNavigator : public Navigator
 {
 	friend class Traveler;
 	friend class Grid;
+	friend class BridgeRoutingData;
+	friend class ElevatorBridgeRoutingData;
 protected:
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
@@ -271,6 +274,8 @@ public:
 
 	void resolveGridBounds();
 	void resetGrids();
+	void buildGrids();
+	void resetElevatorBridges();
 
 	//Cell getCell(const Vec2& modelLoc) { return getCell(Vec3(modelLoc.x, modelLoc.y, 0.0)); }
 	Cell getCell(const Vec3& modelLoc);
@@ -314,6 +319,8 @@ public:
 
 	treenode addMember(TaskExecuter* te);
 	void addObjectBarrier(ObjectDataType* object);
+	bool addElevatorBridge(ObjectDataType* object);
+	bool removeElevatorBridge(ObjectDataType* object);
 
 	Grid* createGrid(const Vec3& loc, const Vec3& size);
 	Variant createGrid(FLEXSIMINTERFACE);
@@ -321,6 +328,10 @@ public:
 	static AStarNavigator* instance;
 
 	double areGridsUserCustomized = 0.0;
+
+	NodeListArray<ElevatorBridge>::CouplingSdtSubNodeType elevatorBridges;
+	NodeListArray<ObjectDataType>::StoredAttCouplingType elevators;
+	ElevatorBridge::AStarDelegate* elevatorDelegate;
 };
 
 }

@@ -10,9 +10,13 @@ class PreferredPath;
 class Bridge;
 class MandatoryPath;
 class Traveler;
+class TravelerBridgeData;
 struct AStarPathEntry;
 class Grid;
 class TemporaryBarrier;
 class AStarNode;
 struct AStarNodeExtraData;
+class BridgeRoutingData;
+class ElevatorBridgeRoutingData;
+class ElevatorBridge;
 }

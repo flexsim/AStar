@@ -89,6 +89,15 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(grids);
 	if (grids.size() == 0)
 		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
+	bindVariable(elevators);
+	elevatorBridges.init(elevators);
+	treenode elevatorDelegate = nullptr;
+	bindStateVariable(elevatorDelegate);
+	if (elevatorDelegate->dataType != DATA_SIMPLE) {
+		nodeaddsimpledata(elevatorDelegate, new ElevatorBridge::AStarDelegate, true);
+	}
+	this->elevatorDelegate = elevatorDelegate->objectAs(ElevatorBridge::AStarDelegate);
+	this->elevatorDelegate->navigator = this;
 
 	bindStateVariable(minNodeWidth);
 	bindStateVariable(hasConditionalBarriers);
@@ -216,6 +225,13 @@ void AStarNavigator::resetGrids()
 
 	resolveGridBounds();
 
+	for (Grid* grid : grids) {
+		grid->growToBarriers();
+	}
+}
+
+void AStarNavigator::buildGrids()
+{
 	// Clear custom barriers
 	customBarriers = Array();
 
@@ -236,6 +252,13 @@ void AStarNavigator::resetGrids()
 	}
 
 	areGridNodeTablesBuilt = true;
+}
+
+void AStarNavigator::resetElevatorBridges()
+{
+	for (ElevatorBridge* bridge : elevatorBridges) {
+		bridge->reset();
+	}
 }
 
 
@@ -280,6 +303,8 @@ double AStarNavigator::onReset()
 	extraDataNode->subnodes.clear();
 
 	resetGrids();
+	resetElevatorBridges();
+	buildGrids();
 
 	double sumSpeed = 0.0;
 	for (int i = 0; i < travelers.size(); i++) {
@@ -512,6 +537,8 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 
 		switch(keyPressed & 0x7f) {
 			case 'A': {
+				if (addElevatorBridge(te))
+					break;
 				Traveler* t = addMember(te)->objectAs(Traveler);
 				if (barrier && barrier->toMandatoryPath())
 					t->useMandatoryPath = 1.0;
@@ -519,6 +546,8 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 			}
 
 			case 'Q': {
+				if (removeElevatorBridge(te))
+					break;
 				if (barrier && barrier->toMandatoryPath()) {
 					auto found = std::find_if(travelers.begin(), travelers.end(), [te](Traveler* t) -> bool { return t->te == te; });
 					if (found != travelers.end()) {
@@ -539,9 +568,13 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 
 		switch(keyPressed & 0x7f) {
 			case 'A':
+				if (addElevatorBridge(theFR))
+					break;
 				addObjectBarrier(theFR);
 				break;
 			case 'Q':
+				if (removeElevatorBridge(theFR))
+					break;
 				for (int i = 0; i < objectBarrierList.size(); i++) {
 					TreeNode* objectNode = objectBarrierList[i]->holder;
 					if (objectNode == connectTo) {
@@ -937,13 +970,7 @@ the outside 8 nodes.
 			if (e != edgeTableExtraData.end() && extra->bridges.size() > 0) {
 				for (int i = 0; i < extra->bridges.size(); i++) {
 					auto& entry = extra->bridges[i];
-					if (entry.bridge->useCondition && !entry.bridge->condition->evaluate(routingTraveler->te->holder))
-						continue;
-					double addedDist = entry.bridge->travelDistance + grid->nodeWidth;
-					Point* endPoint = entry.isAtBridgeStart ? entry.bridge->pointList.back() : entry.bridge->pointList.front();
-					Cell endCell = getCell(*endPoint + entry.bridge->getPointToModelOffset());
-					AStarNode* node = getNode(endCell);
-					expandOpenSet(getGrid(endCell), endCell.row, endCell.col, addedDist / grid->nodeWidth, 0, i);
+					entry.routingData->checkExpandOpenSet(this, traveler, grid, i, entry.isAtBridgeStart);
 				}
 			}
 		}
@@ -1919,6 +1946,32 @@ void AStarNavigator::addObjectBarrier(ObjectDataType* object)
 			return;
 	}
 	objectBarrierList.add(object);
+}
+
+bool AStarNavigator::addElevatorBridge(ObjectDataType * object)
+{
+	if (std::find(elevators.begin(), elevators.end(), object) != elevators.end()) {
+		return true;
+	}
+	Variant result = function_s(object->holder, "createAStarElevatorBridge", (treenode)elevators);
+	if (result != Variant() && result != 0.0) {
+		ElevatorBridge* bridge = elevatorBridges.back();
+		bridge->elevator = object;
+		bridge->aStarDelegate = elevatorDelegate;
+		return true;
+	}
+	return false;
+}
+
+bool AStarNavigator::removeElevatorBridge(ObjectDataType * object)
+{
+	auto foundElevator = std::find(elevators.begin(), elevators.end(), object);
+	if (foundElevator != elevators.end()) {
+		int index = foundElevator - elevators.begin();
+		elevatorBridges[index]->holder->destroy();
+		return true;
+	}
+	return false;
 }
 
 Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
