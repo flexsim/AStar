@@ -1,6 +1,7 @@
 #include "ElevatorBridge.h"
 #include "AStarNavigator.h"
 #include "ElevatorBridgeRoutingData.h"
+#include "Traveler.h"
 
 namespace AStar {
 void ElevatorBridge::AStarDelegate::bind()
@@ -11,6 +12,11 @@ void ElevatorBridge::AStarDelegate::bind()
 void ElevatorBridge::AStarDelegate::onDestArrival(TaskExecuter * te)
 {
 
+}
+
+TravelerBridgeData * ElevatorBridge::AStarDelegate::getBridgeData(TaskExecuter * te)
+{
+	return AStarNavigator::getTraveler(te)->bridgeData;
 }
 
 void ElevatorBridge::reset()

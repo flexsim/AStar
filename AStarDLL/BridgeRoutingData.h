@@ -7,15 +7,20 @@ namespace AStar {
 class BridgeRoutingData : public CouplingDataType
 {
 public:
-	BridgeRoutingData(Bridge* bridge) : bridge(bridge) {}
+	BridgeRoutingData(Bridge* bridge, bool isAtBridgeStart) : bridge(bridge), isAtBridgeStart(isAtBridgeStart) {}
 	BridgeRoutingData() {}
 	virtual const char* getClassFactory() override { return "AStar::BridgeRoutingData"; }
 	virtual void bind() override;
 	Cell fromCell;
 	Bridge* bridge = nullptr;
+	bool isAtBridgeStart = false;
+	Grid* __getGrid();
+	__declspec(property(get = __getGrid)) Grid* grid;
 	struct HeuristicEntry {
+		bool isAdjacent;
 		Cell toCell;
 		double heuristic;
+		void bind(TreeNode* toNode);
 	};
 	/// <summary>	to cell heuristics vector. This will be a vector with an 
 	/// 			entry for each grid, indexed by grid number. It is built 
@@ -28,11 +33,12 @@ public:
 	virtual const char* getBridgeDataClassFactory();
 	virtual TravelerBridgeData* createBridgeData(Traveler* traveler, double entryTime, int pathIndex);
 
-	virtual void onBridgeArrival(Traveler* traveler);
+	virtual void onBridgeArrival(Traveler* traveler, int pathIndex);
 	virtual void onExit(Traveler* traveler);
 	virtual void updateLocation(Traveler* traveler);
-	virtual void checkExpandOpenSet(AStarNavigator* nav, Traveler * traveler, Grid* grid, int bridgeEntryIndex, bool isAtBridgeStart);
+	void checkExpandOpenSet(AStarNavigator* nav, Traveler * traveler, Grid* grid, int bridgeEntryIndex);
 	virtual double getTravelDistance(TravelPath* path, int travelPathIndex, Grid* grid);
+	virtual void addEntriesToNodeTable(Grid* grid);
 
 	class ArrivalEvent : public FlexSimEvent
 	{

@@ -1,6 +1,8 @@
 #include "ElevatorBridgeRoutingData.h"
 #include "AStarNavigator.h"
 #include "Grid.h"
+#include "ElevatorBridge.h"
+#include "Traveler.h"
 
 namespace AStar {
 
@@ -16,7 +18,7 @@ std::vector<BridgeRoutingData::HeuristicEntry> ElevatorBridgeRoutingData::getAdj
 	for (Grid* grid : nav->grids) {
 		for (BridgeRoutingData* bridge : grid->bridgeData) {
 			if (bridge != this && bridge->toElevator() && bridge->toElevator()->elevator == elevator) {
-				result.push_back({ bridge->fromCell, (grid->getLocation(bridge->fromCell) - owner->getLocation(fromCell)).magnitude });
+				result.push_back({false, bridge->fromCell, (grid->getLocation(bridge->fromCell) - owner->getLocation(fromCell)).magnitude });
 			}
 		}
 	}
@@ -30,7 +32,29 @@ ObjectDataType * ElevatorBridgeRoutingData::__getElevator()
 
 ElevatorBridge * ElevatorBridgeRoutingData::__getBridge()
 {
-	return holder->up->up->objectAs(ElevatorBridge);
+	return partner()->up->up->objectAs(ElevatorBridge);
+}
+
+void ElevatorBridgeRoutingData::onBridgeArrival(Traveler* traveler, int pathIndex)
+{
+	auto& nextCell = traveler->travelPath[pathIndex + 1].cell;
+	Vec3 destFloor = traveler->navigator->getLocation(nextCell);
+	bridge->onBridgeArrival(traveler->te, destFloor);
+}
+
+void ElevatorBridgeRoutingData::onExit(Traveler* traveler)
+{
+
+}
+
+void ElevatorBridgeRoutingData::updateLocation(Traveler* traveler)
+{
+	traveler->bridgeData->updateLocation(traveler->te);
+}
+
+TravelerBridgeData * ElevatorBridgeRoutingData::createBridgeData(Traveler * traveler, double entryTime, int pathIndex)
+{
+	return bridge->createBridgeData();
 }
 
 }

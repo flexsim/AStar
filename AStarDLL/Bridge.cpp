@@ -50,9 +50,7 @@ void Bridge::addPassagesToTable(Grid* grid)
 		if (foundRoutingData != grid->bridgeData.end()) {
 			AStarNodeExtraData* entry = grid->navigator->assertExtraData(cell, BridgeData);
 			grid->navigator->getNode(cell)->hasBridgeStartPoint = true;
-			entry->bridges.push_back(AStarNodeExtraData::BridgeEntry());
-			entry->bridges.back().routingData = *foundRoutingData;
-			entry->bridges.back().isAtBridgeStart = isAtStart;
+			entry->bridges.push_back(*foundRoutingData);
 		}
 	};
 
@@ -73,21 +71,34 @@ void Bridge::onReset(AStarNavigator* nav)
 	firstTraveler = nullptr;
 	lastTraveler = nullptr;
 	geometricDistance = calculateDistance();
-	Cell fromCell = nav->getCell(getPointToModelOffset() + *pointList.front());
-	Grid* grid = nav->getGrid(fromCell);
-	nodeWidth = grid->nodeWidth;
 	travelDistance = useVirtualDistance ? virtualDistance : max(0.001 * nodeWidth, geometricDistance - nodeWidth);
 	filledDistance = 0.0;
 	isAvailable = true;
 	lastUpdateTime = -1;
-	if (routingData.size() == 0) {
-		auto data = grid->bridgeData.add(new BridgeRoutingData(this));
-		nodejoin(data->holder, ((treenode)routingData)->subnodes.add()->addData(DATATYPE_COUPLING));
+
+	Cell fromCell = nav->getCell(getPointToModelOffset() + *pointList.front());
+	Cell toCell = nav->getCell(getPointToModelOffset() + *pointList.back());
+	if (fromCell != toCell) {
+		auto assertRoutingData = [this, nav](int index, Cell& cell) {
+			Grid* grid = nav->getGrid(cell);
+			nodeWidth = grid->nodeWidth;
+			if (routingData.size() <= index) {
+				auto data = grid->bridgeData.add(new BridgeRoutingData(this, index == 0));
+				nodejoin(data->holder, ((treenode)routingData)->subnodes.add()->addData(DATATYPE_COUPLING));
+			}
+			auto data = routingData[index];
+			data->fromCell = cell;
+			if (data->grid != grid)
+				data->holder->up = grid->bridgeData;
+		};
+		assertRoutingData(0, fromCell);
+		if (isTwoWay)
+			assertRoutingData(1, toCell);
+		else if (routingData.size() > 1)
+			routingData.remove(1);
+	} else {
+		routingData.clear();
 	}
-	auto data = routingData[0];
-	data->fromCell = fromCell;
-	if (data->holder->up->up != grid->holder)
-		data->holder->up = grid->bridgeData;
 }
 
 double Bridge::calculateDistance() const

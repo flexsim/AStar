@@ -164,25 +164,4 @@ public:
 	double useMandatoryPath = 0.0;
 };
 
-
-class TravelerBridgeData : public SimpleDataType {
-public:
-	static const char* s_getClassFactory();
-	virtual const char* getClassFactory() override { return s_getClassFactory(); }
-	virtual bool isClassType(const char* className) { return strcmp(s_getClassFactory(), className) == 0; }
-
-	virtual void bind() override;
-	TravelerBridgeData() : routingData(nullptr), entryTime(DBL_MAX) {}
-	TravelerBridgeData(BridgeRoutingData* routingData, double entryTime, int pathIndex, double spatialz)
-		: routingData(routingData), entryTime(entryTime), pathIndex(pathIndex), spatialz(spatialz) {}
-	int pathIndex;
-
-	// specific to default Bridge (not Elevator Bridge)
-	BridgeRoutingData* routingData;
-	double spatialz;
-	double entryTime;
-	Traveler* nextTraveler = nullptr;
-	Traveler* prevTraveler = nullptr;
-};
-
 }

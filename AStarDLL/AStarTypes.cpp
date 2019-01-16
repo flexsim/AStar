@@ -31,35 +31,24 @@ void Cell::bind(TreeNode* x, const char* prefix)
 	string gridName = string(prefix) + "grid";
 	string rowName = string(prefix) + "row";
 	string colName = string(prefix) + "col";
-	switch (SimpleDataType::getBindMode()) {
-		case SDT_BIND_ON_LOAD: {
-			treenode gridNode = x->subnodes[gridName.c_str()];
-			grid = gridNode ? gridNode->value : 1;
-			col = x->subnodes[colName.c_str()]->value;
-			row = x->subnodes[rowName.c_str()]->value;
-			break;
-			}
-		case SDT_BIND_ON_SAVE:
-			assertsubnode(x, (char*)gridName.c_str())->value = grid;
-			assertsubnode(x, (char*)colName.c_str())->value = col;
-			assertsubnode(x, (char*)rowName.c_str())->value = row;
-			break;
-		case SDT_BIND_ON_DISPLAY: {
-			char str[256];
-			sprintf(str, "%s: %d %s: %d, %s: %d ", gridName.c_str(), (int)grid, colName.c_str(), (int)col, rowName.c_str(), (int)row);
-			SimpleDataType::appendToDisplayStr(str);
-			break;
-		}
-		default: break;
-	}
+	SimpleDataType::bindNumberByName(gridName.c_str(), grid, x);
+	SimpleDataType::bindNumberByName(rowName.c_str(), row, x);
+	SimpleDataType::bindNumberByName(colName.c_str(), col, x);
 }
 
 
 void Cell::bind(SimpleDataType* sdt, const char* prefix)
 {
-	sdt->bindNumberByName((string(prefix) + "grid").c_str(), grid);
-	sdt->bindNumberByName((string(prefix) + "col").c_str(), col);
-	sdt->bindNumberByName((string(prefix) + "row").c_str(), row);
+	sdt->bindNumberByName((string(prefix) + "Grid").c_str(), grid);
+	sdt->bindNumberByName((string(prefix) + "Col").c_str(), col);
+	sdt->bindNumberByName((string(prefix) + "Row").c_str(), row);
+}
+
+void Cell::bind(TreeNode * x)
+{
+	SimpleDataType::bindNumber(grid, x);
+	SimpleDataType::bindNumber(row, x);
+	SimpleDataType::bindNumber(col, x);
 }
 
 
@@ -146,32 +135,12 @@ void NodeAllocation::bind(TreeNode* x)
 	int bindMode = SimpleDataType::getBindMode();
 	if (bindMode == SDT_BIND_ON_DISPLAY && SimpleDataType::isDisplayVerbose())
 		SimpleDataType::appendToDisplayStr("\r\n");
-	cell.bind(x, "");
-
-	switch (SimpleDataType::getBindMode()) {
-		case SDT_BIND_ON_LOAD:
-			traveler = ((TreeNode*)(x->subnodes["traveler"]->value))->objectAs(Traveler);
-			acquireTime = x->subnodes["acquireTime"]->value;
-			releaseTime = x->subnodes["releaseTime"]->value;
-			traversalWeight = x->subnodes["traversalWeight"]->value;
-			travelPathIndex = x->subnodes["travelPathIndex"]->value;
-			break;
-		case SDT_BIND_ON_SAVE:
-			assertsubnode(x, "traveler")->value = traveler->holder;
-			assertsubnode(x, "acquireTime")->value = acquireTime;
-			assertsubnode(x, "releaseTime")->value = releaseTime;
-			assertsubnode(x, "traversalWeight")->value = traversalWeight;
-			assertsubnode(x, "travelPathIndex")->value = travelPathIndex;
-			break;
-		case SDT_BIND_ON_DISPLAY: {
-			char str[1024];
-			sprintf(str, "traveler: %s, acquireTime: %lf, releaseTime: %lf, travelPathIndex: %d, traversalWeight: %lf", 
-				getname(traveler->holder).c_str(), acquireTime, releaseTime, (int)travelPathIndex, traversalWeight);
-			SimpleDataType::appendToDisplayStr(str);
-			break;
-		}
-		default: break;
-	}
+	cell.bind(x);
+	SimpleDataType::bindObjPtr(traveler, x);
+	SimpleDataType::bindNumber(acquireTime, x);
+	SimpleDataType::bindNumber(releaseTime, x);
+	SimpleDataType::bindNumber(traversalWeight, x);
+	SimpleDataType::bindNumber(travelPathIndex, x);
 }
 
 struct ExtendedNodeAllocation : public NodeAllocation
@@ -198,23 +167,8 @@ void AStarPathEntry::bind(TreeNode* toNode)
 	int bindMode = SimpleDataType::getBindMode();
 	if (bindMode == SDT_BIND_ON_DISPLAY && SimpleDataType::isDisplayVerbose())
 		SimpleDataType::appendToDisplayStr("\r\n");
-	cell.bind(toNode, "");
-	switch (bindMode) {
-		case SDT_BIND_ON_LOAD:
-			bridgeIndex = (int)toNode->subnodes["bridgeIndex"]->value;
-			break;
-		case SDT_BIND_ON_SAVE:
-			assertsubnode(toNode, "bridgeIndex")->value = bridgeIndex;
-			break;
-		case SDT_BIND_ON_DISPLAY: {
-			char str[100];
-			sprintf(str, "bridgeIndex: %d", 
-				(int)bridgeIndex);
-			SimpleDataType::appendToDisplayStr(str);
-			break;
-		}
-		default: break;
-	}
+	cell.bind(toNode);
+	SimpleDataType::bindNumber(bridgeIndex, toNode);
 }
 
 void AStarPathEntry::bindInterface()
@@ -514,8 +468,8 @@ double TravelPath::calculateTotalDistance(AStarNavigator * nav)
 		Grid* grid = nav->getGrid(from.cell);
 		if (from.bridgeIndex >= 0) {
 			AStarNodeExtraData* nodeData = nav->getExtraData(from.cell);
-			AStarNodeExtraData::BridgeEntry& entry = nodeData->bridges[from.bridgeIndex];
-			dist += entry.routingData->getTravelDistance(this, i, grid);
+			BridgeRoutingData* routingData = nodeData->bridges[from.bridgeIndex];
+			dist += routingData->getTravelDistance(this, i, grid);
 		} else {
 			bool isDeepDiagonal = (abs(from.cell.row - to.cell.row) >= 2 || abs(from.cell.col - to.cell.col) >= 2);
 			if (isDeepDiagonal)

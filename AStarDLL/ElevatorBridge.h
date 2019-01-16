@@ -3,6 +3,35 @@
 
 namespace AStar {
 class AStarNavigator;
+class Traveler;
+class BridgeRoutingData;
+
+class TravelerBridgeData : public SimpleDataType {
+public:
+	virtual const char* getClassFactory() override { return "AStar::TravelerBridgeData"; }
+
+	virtual void bind() override
+	{
+		bindObjPtr(routingData);
+		bindNumber(entryTime);
+		bindNumber(pathIndex);
+		bindObjPtr(prevTraveler);
+		bindObjPtr(nextTraveler);
+	}
+
+	TravelerBridgeData() : routingData(nullptr), entryTime(DBL_MAX) {}
+	TravelerBridgeData(BridgeRoutingData* routingData, double entryTime, int pathIndex, double spatialz)
+		: routingData(routingData), entryTime(entryTime), pathIndex(pathIndex), spatialz(spatialz) {}
+	int pathIndex;
+
+	BridgeRoutingData* routingData;
+	double spatialz;
+	double entryTime;
+	Traveler* nextTraveler = nullptr;
+	Traveler* prevTraveler = nullptr;
+	virtual void updateLocation(TaskExecuter* te) {}
+};
+
 class ElevatorBridge : public CouplingDataType {
 	friend class AStarNavigator;
 public:
@@ -12,6 +41,7 @@ public:
 		virtual const char* getClassFactory() { return "AStar::ElevatorBridge::AStarDelegate"; }
 		virtual void bind() override;
 		virtual void onDestArrival(TaskExecuter* te);
+		virtual TravelerBridgeData* getBridgeData(TaskExecuter* te);
 	};
 
 	treenode bridgeData = nullptr;
@@ -41,5 +71,7 @@ public:
 	virtual Vec3 getArrivalLoc(double floorZ) = 0;
 
 	virtual void getBoundingBox(Vec3& outMin, Vec3& outMax) = 0;
+	virtual TravelerBridgeData* createBridgeData() = 0;
 };
+
 }

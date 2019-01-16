@@ -278,8 +278,7 @@ void Grid::buildNodeTable()
 		getNode(numRows - 1, i)->canGoUp = 0;
 	}
 
-	// The maxPathWeight ensures that the estimated distance
-	// to the goal is not overestimated.
+	// go through each barrier and add it to the table
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
 		bool isConditional = barrier->useCondition && rank == 1;
@@ -316,6 +315,7 @@ void Grid::buildNodeTable()
 		}
 	}
 
+	// now add passages to the table
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
 		Vec3 min, max;
@@ -323,6 +323,10 @@ void Grid::buildNodeTable()
 		if (isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z)) {
 			barrier->addPassagesToTable(this);
 		}
+	}
+
+	for (BridgeRoutingData* data : bridgeData) {
+		data->addEntriesToNodeTable(this);
 	}
 	isDirtyByUser = false;
 }

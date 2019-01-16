@@ -268,9 +268,8 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 
 		if (laste.bridgeIndex != -1) {
 			AStarNodeExtraData* nodeData = nav->getExtraData(laste.cell);
-			AStarNodeExtraData::BridgeEntry& entry = nodeData->bridges[laste.bridgeIndex];
-			BridgeRoutingData* data = entry.routingData;
-			if (!bridgeData && bridgeData->routingData != data) {
+			BridgeRoutingData* data = nodeData->bridges[laste.bridgeIndex];
+			if (!bridgeData || bridgeData->routingData != data) {
 				bridgeArrival = data;
 			}
 		}
@@ -435,12 +434,11 @@ void Traveler::onBridgeArrival(BridgeRoutingData* data, int pathIndex)
 		return;
 
 	AStarPathEntry e = travelPath[pathIndex];
-	AStarNodeExtraData::BridgeEntry& entry = navigator->getExtraData(e.cell)->bridges[e.bridgeIndex];
 
 	updateLocation();
 	assertBridgeData(data, DBL_MAX, pathIndex);
 
-	data->onBridgeArrival(this);
+	data->onBridgeArrival(this, pathIndex);
 	XE
 }
 
@@ -899,20 +897,6 @@ void Traveler::updateLocation()
 		te->b_spatialx -= 0.5*te->b_spatialsx;
 		te->b_spatialy += 0.5*te->b_spatialsy;
 	}
-}
-
-const char * TravelerBridgeData::s_getClassFactory()
-{
-	return "AStar::TravelerBridgeData";
-}
-
-void TravelerBridgeData::bind()
-{
-	bindObjPtr(routingData);
-	bindNumber(entryTime);
-	bindNumber(pathIndex);
-	bindObjPtr(prevTraveler);
-	bindObjPtr(nextTraveler);
 }
 
 }

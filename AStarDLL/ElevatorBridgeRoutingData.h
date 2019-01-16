@@ -17,6 +17,12 @@ protected:
 	__declspec(property(get = __getElevator)) ObjectDataType* elevator;
 	ElevatorBridge* __getBridge();
 	__declspec(property(get = __getBridge)) ElevatorBridge* bridge;
+
+	virtual void onBridgeArrival(Traveler* traveler, int pathIndex) override;
+	virtual void onExit(Traveler* traveler) override;
+	virtual void updateLocation(Traveler* traveler) override;
+	virtual TravelerBridgeData* createBridgeData(Traveler* traveler, double entryTime, int pathIndex);
+
 };
 
 }

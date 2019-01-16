@@ -36,6 +36,7 @@ struct Cell {
 	bool operator < (const Cell& other) const { return value < other.value; }
 	void bind(TreeNode* x, const char* prefix);
 	void bind(SimpleDataType* sdt, const char* prefix = "");
+	void bind(TreeNode* x);
 };
 
 enum ExtraDataReason : char {
@@ -178,12 +179,7 @@ struct AStarNodeExtraData : public SimpleDataType
 	};
 	char getBonus(Direction direction) { return bonus[(int)direction - 1]; }
 
-	struct BridgeEntry {
-		BridgeRoutingData* routingData;
-		bool isAtBridgeStart;
-	};
-
-	std::vector<BridgeEntry> bridges;
+	std::vector<BridgeRoutingData*> bridges;
 
 	std::vector<Barrier*> conditionalBarriers;
 	void addConditionalBarrier(Barrier* barrier);

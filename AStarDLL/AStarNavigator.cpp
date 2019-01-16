@@ -970,7 +970,7 @@ the outside 8 nodes.
 			if (e != edgeTableExtraData.end() && extra->bridges.size() > 0) {
 				for (int i = 0; i < extra->bridges.size(); i++) {
 					auto& entry = extra->bridges[i];
-					entry.routingData->checkExpandOpenSet(this, traveler, grid, i, entry.isAtBridgeStart);
+					entry->checkExpandOpenSet(this, traveler, grid, i);
 				}
 			}
 		}
