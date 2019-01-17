@@ -40,6 +40,8 @@ void ElevatorBridgeRoutingData::onBridgeArrival(Traveler* traveler, int pathInde
 	auto& nextCell = traveler->travelPath[pathIndex + 1].cell;
 	Vec3 destFloor = traveler->navigator->getLocation(nextCell);
 	bridge->onBridgeArrival(traveler->te, destFloor);
+	if (traveler->allocations.size() > 0)
+		traveler->allocations.back()->extendReleaseTime(DBL_MAX);
 }
 
 void ElevatorBridgeRoutingData::onExit(Traveler* traveler)

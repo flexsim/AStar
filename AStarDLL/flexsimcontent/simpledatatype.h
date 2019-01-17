@@ -110,6 +110,9 @@ public:
 	engine_export static const char * getCurValueName();
 	engine_export Variant getValue(const char* name);
 	engine_export void setValue(const char* name, Variant value);
+private:
+	engine_export static TreeNode* bindByName(const char* name, int asSubNode, int dataType, int * added, TreeNode* bindParent, SimpleDataType* sdt);
+public:
 	engine_export TreeNode* bindByName(const char* name, int asSubNode, int dataType, int * added = 0);
 
 	engine_export void bindDoubleByName(const char* name, double& val, int asSubNode);
@@ -143,8 +146,9 @@ template<class ObjType>
 	/// <param name="name">	The name of the member to bind. </param>
 	#define bindUnknownDouble(name) bindUnknownDoubleByName(#name, name)
 
+private:
 	template<class T>
-	void bindNumberByName(const char* name, T& val)
+	static void __bindNumberByName(const char* name, T& val, TreeNode* bindToNode)
 	{
 		int bindMode = getBindMode();
 
@@ -156,19 +160,30 @@ template<class ObjType>
 				if (absVal < 1000000000000.0 && absVal > 0.00001)
 					sprintf(tempStr, "%s: %f%s", name, (double)val, isDisplayVerbose() ? "\r\n" : ", ");
 				else sprintf(tempStr, "%s: %e%s", name, (double)val, isDisplayVerbose() ? "\r\n" : ", ");
-			} else sprintf(tempStr, "%s: %d%s", name, (int)val, isDisplayVerbose() ? "\r\n" : ", ");
+			}
+			else sprintf(tempStr, "%s: %d%s", name, (int)val, isDisplayVerbose() ? "\r\n" : ", ");
 			appendToDisplayStr(tempStr);
 			break;
 		}
-			// else continue into load/save
+		// else continue into load/save
 		case SDT_BIND_ON_SAVE:
-		case SDT_BIND_ON_LOAD: {
-			TreeNode* theNode = bindByName(name, 0, DATA_FLOAT, 0);
-			if(bindMode == SDT_BIND_ON_SAVE)
-				theNode->safedatafloat()[0] = (double)val;
-			else val = (T)theNode->safedatafloat()[0];
+		case SDT_BIND_ON_LOAD:
+			if (bindMode == SDT_BIND_ON_SAVE)
+				bindToNode->safedatafloat()[0] = (double)val;
+			else val = (T)bindToNode->safedatafloat()[0];
 			break;
 		}
+	}
+public:
+	template<class T>
+	void bindNumberByName(const char* name, T& val)
+	{
+		int bindMode = getBindMode();
+
+		switch (bindMode) {
+		case SDT_BIND_ON_DISPLAY: __bindNumberByName(name, val, nullptr); break;
+		case SDT_BIND_ON_SAVE:
+		case SDT_BIND_ON_LOAD: __bindNumberByName(name, val, bindByName(name, 0, DATA_FLOAT, 0)); break;
 
 		case SDT_BIND_SET_VALUE:
 			if (strcmp(name, getCurValueName()) == 0) {
@@ -182,7 +197,18 @@ template<class ObjType>
 			break;
 		}
 	}
-	#define bindNumber(name) bindNumberByName(#name, name)
+	template<class T>
+	static void bindNumberByName(const char* name, T& val, TreeNode* bindParent)
+	{
+		int bindMode = getBindMode();
+
+		switch (bindMode) {
+		case SDT_BIND_ON_DISPLAY: __bindNumberByName(name, val, nullptr); break;
+		case SDT_BIND_ON_SAVE:
+		case SDT_BIND_ON_LOAD: __bindNumberByName(name, val, bindByName(name, 0, DATA_FLOAT, 0, bindParent, nullptr)); break;
+		}
+	}
+	#define bindNumber(name, ...) bindNumberByName(#name, name, __VA_ARGS__)
 
 
 	template<class T>
@@ -323,12 +349,16 @@ template<class ObjType>
 
 	engine_export void bindNodePtrByName(const char* name, TreeNode*& val);
 	engine_export void bindSubNodeByName(const char* name, TreeNode*& val, int dataType = 1);
+private:
+	static void __bindObjPtrByName(const char* name, SimpleDataType*& val, TreeNode* bindToNode);
+public:
 	engine_export void bindObjPtrByName(const char* name, SimpleDataType*& val);
+	engine_export static void bindObjPtrByName(const char* name, SimpleDataType*& val, TreeNode* bindParent);
 	engine_export void bindVariantByName(const char* name, Variant& var);
 
 #define bindSubNode(name, dataType) bindSubNodeByName(#name, name, dataType)
 #define bindNodePtr(name) bindNodePtrByName(#name, name)
-#define bindObjPtr(name) bindObjPtrByName(#name, (SimpleDataType*&)name)
+#define bindObjPtr(name, ...) bindObjPtrByName(#name, (SimpleDataType*&)name, __VA_ARGS__)
 #define bindVariant(name) bindVariantByName(#name, name)
 
 	engine_export void bindSimpleDataMemberByName(const char* name, SimpleDataType& member);
@@ -876,6 +906,7 @@ template<class ObjType>
 	static const int STAT_TYPE_TIME_SERIES = 0x3; // staytime is a stream of unrelated values; current value is less important
 	static const int STAT_TYPE_CATEGORICAL = 0x4; // discrete is a set of discrete values that don't relate mathematically, i.e. state
 	static const int STAT_TYPE_KINETIC_LEVEL = 0x5; // a "moving" level, i.e. you set it to a level and a rate, and the rate causes it to change.
+	static const int STAT_TYPE_POINTER = 0x6; // like categorical, but stores noderefs instead of strings
 
 	static const int STAT_USE_HISTORY = 0x10;
 	static const int STAT_USE_PROFILE = 0x20;
@@ -1573,6 +1604,7 @@ public:
 	virtual Variant evaluate(const VariantParams& params) override { return getCurrent(); }
 	engine_export Variant getCategoricalName();
 	std::string getCategoryName(int catNum) const;
+	engine_export Variant getCategoryValue(int catNum = -1);
 
 	engine_export static TrackedVariable* create();
 	engine_export void addSubscriber(bool needsHistory, bool needsProfile, bool persist);

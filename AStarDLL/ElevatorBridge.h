@@ -42,6 +42,7 @@ public:
 		virtual void bind() override;
 		virtual void onDestArrival(TaskExecuter* te);
 		virtual TravelerBridgeData* getBridgeData(TaskExecuter* te);
+		virtual void clearAllocations(TaskExecuter* te);
 	};
 
 	treenode bridgeData = nullptr;

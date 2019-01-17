@@ -19,6 +19,11 @@ TravelerBridgeData * ElevatorBridge::AStarDelegate::getBridgeData(TaskExecuter *
 	return AStarNavigator::getTraveler(te)->bridgeData;
 }
 
+void ElevatorBridge::AStarDelegate::clearAllocations(TaskExecuter * te)
+{
+	AStarNavigator::getTraveler(te)->clearAllocations();
+}
+
 void ElevatorBridge::reset()
 {
 	Vec3 min, max;
