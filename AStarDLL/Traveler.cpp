@@ -795,6 +795,7 @@ void Traveler::assertBridgeData(BridgeRoutingData * routing, double entryTime, i
 		bridgeData = data;
 		nodeaddsimpledata(bridgeDataNode, data, 1);
 	}
+	bridgeData->pathIndex = pathIndex;
 }
 
 void Traveler::onTEDestroyed()

@@ -59,4 +59,9 @@ TravelerBridgeData * ElevatorBridgeRoutingData::createBridgeData(Traveler * trav
 	return bridge->createBridgeData();
 }
 
+const char * ElevatorBridgeRoutingData::getBridgeDataClassFactory()
+{
+	return bridge->getBridgeDataClassFactory();
+}
+
 }

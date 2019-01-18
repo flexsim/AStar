@@ -22,6 +22,7 @@ protected:
 	virtual void onExit(Traveler* traveler) override;
 	virtual void updateLocation(Traveler* traveler) override;
 	virtual TravelerBridgeData* createBridgeData(Traveler* traveler, double entryTime, int pathIndex);
+	virtual const char* getBridgeDataClassFactory() override;
 
 };
 

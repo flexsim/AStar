@@ -9,9 +9,10 @@ void ElevatorBridge::AStarDelegate::bind()
 	bindObjPtr(navigator);
 }
 
-void ElevatorBridge::AStarDelegate::onDestArrival(TaskExecuter * te)
+void ElevatorBridge::AStarDelegate::onBridgeComplete(TaskExecuter * te)
 {
-
+	Traveler* traveler = AStarNavigator::getTraveler(te);
+	traveler->navigatePath(traveler->bridgeData->pathIndex + 1);
 }
 
 TravelerBridgeData * ElevatorBridge::AStarDelegate::getBridgeData(TaskExecuter * te)

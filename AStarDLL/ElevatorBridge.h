@@ -40,7 +40,7 @@ public:
 		AStarNavigator* navigator;
 		virtual const char* getClassFactory() { return "AStar::ElevatorBridge::AStarDelegate"; }
 		virtual void bind() override;
-		virtual void onDestArrival(TaskExecuter* te);
+		virtual void onBridgeComplete(TaskExecuter* te);
 		virtual TravelerBridgeData* getBridgeData(TaskExecuter* te);
 		virtual void clearAllocations(TaskExecuter* te);
 	};
@@ -73,6 +73,7 @@ public:
 
 	virtual void getBoundingBox(Vec3& outMin, Vec3& outMax) = 0;
 	virtual TravelerBridgeData* createBridgeData() = 0;
+	virtual const char* getBridgeDataClassFactory() = 0;
 };
 
 }
