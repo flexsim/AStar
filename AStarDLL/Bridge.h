@@ -48,17 +48,6 @@ public:
 	void updateBridgeLocations();
 	void updateLocation(Traveler* t, double geomDistAlongBridge, Vec3* offset = nullptr);
 
-	class ArrivalEvent : public FlexSimEvent
-	{
-	public:
-		ArrivalEvent() : FlexSimEvent() {}
-		ArrivalEvent(Bridge* bridge, Traveler* object, int pathIndex, double time);
-		virtual const char* getClassFactory() override { return "AStar::Bridge::ArrivalEvent"; }
-		virtual void execute() override;
-		virtual void bind() override { __super::bind(); bindNumber(pathIndex); }
-
-		int pathIndex;
-	};
 
 	class EndArrivalEvent : public FlexSimEvent
 	{

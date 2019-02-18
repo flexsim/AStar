@@ -137,6 +137,15 @@
     <ClInclude Include="BridgeRoutingData.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ElevatorBridgeRoutingData.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="flexsimcontent\datatypes.h">
+      <Filter>FlexsimContent</Filter>
+    </ClInclude>
+    <ClInclude Include="ElevatorBridge.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AStar.cpp">
@@ -179,6 +188,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BridgeRoutingData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ElevatorBridgeRoutingData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ElevatorBridge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

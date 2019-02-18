@@ -9,6 +9,7 @@
 namespace AStar {
 
 
+
 class Traveler : public CouplingDataType
 {
 public:
@@ -62,7 +63,7 @@ public:
 		travelPath = std::move(path);
 		navigatePath(0);
 	}
-	void onBridgeArrival(Bridge* bridge, int pathIndex);
+	void onBridgeArrival(BridgeRoutingData* bridge, int pathIndex);
 	void onArrival();
 
 	/// <summary>	Adds an allocation to the map's set of allocations. </summary>
@@ -147,19 +148,10 @@ public:
 	treenode onContinueTrigger = nullptr;
 	treenode onRerouteTrigger = nullptr;
 
-	struct BridgeData {
-		BridgeData() : bridge(nullptr), entryTime(DBL_MAX) {}
-		BridgeData(Bridge* bridge, double entryTime, int pathIndex, double spatialz)
-			: bridge(bridge), entryTime(entryTime), pathIndex(pathIndex), spatialz(spatialz) {}
-		Traveler* nextTraveler = nullptr;
-		Traveler* prevTraveler = nullptr;
-		double entryTime;
-		int pathIndex;
-		double spatialz;
-		Bridge* bridge;
-		ObjRef<Bridge::ArrivalEvent> arrivalEvent;
-	};
-	BridgeData bridgeData;
+	ObjRef<BridgeRoutingData::ArrivalEvent> bridgeArrivalEvent;
+	treenode bridgeDataNode = nullptr;
+	TravelerBridgeData* bridgeData = nullptr;
+	void assertBridgeData(BridgeRoutingData* routing, double entryTime, int pathIndex);
 
 	void onTEDestroyed();
 
@@ -171,6 +163,5 @@ public:
 
 	double useMandatoryPath = 0.0;
 };
-
 
 }

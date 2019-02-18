@@ -142,5 +142,32 @@ public:
 	engine_export virtual void getEventDataDescription(char* toStr, size_t maxSize) override;
 };
 
+template<class LambdaType>
+class LambdaEvent : public FlexSimEvent {
+public:
+	static const int EVENT_SENDMESSAGE = 19;
+	LambdaEvent() : FlexSimEvent()
+	{}
+	LambdaEvent(treenode focus, double time, LambdaType callback, const char* description = nullptr)
+		: FlexSimEvent(toobject, time, nullptr, 0, description),
+		callback(callback)
+	{}
+	LambdaType callback;
+	virtual void execute() override { if (callback) callback(partner()); }
+	virtual const char* getClassFactory() override { return "LambdaEvent"; }
+	virtual void getDescription(char* toStr, size_t maxSize) override 
+	{ 
+		toStr[0] = 0;
+		if (data[0] != 0)
+			strncat(toStr, data, maxSize);
+		else strncat(toStr, "Anonymous Lambda Event");
+	}
+	virtual void getEventDataDescription(char* toStr, size_t maxSize) override
+	{
+		strcpy(toStr, "");
+	}
+};
+
+
 }
 #endif

@@ -44,11 +44,14 @@ void Bridge::addPassagesToTable(Grid* grid)
 
 	// add bridge data to cells
 	auto addExtraData = [&](const Cell& cell, bool isAtStart) {
-		AStarNodeExtraData* entry = grid->navigator->assertExtraData(cell, BridgeData);
-		grid->navigator->getNode(cell)->hasBridgeStartPoint = true;
-		entry->bridges.push_back(AStarNodeExtraData::BridgeEntry());
-		entry->bridges.back().bridge = this;
-		entry->bridges.back().isAtBridgeStart = isAtStart;
+		auto foundRoutingData = std::find_if(grid->bridgeData.begin(), grid->bridgeData.end(), 
+			[this, &cell](BridgeRoutingData* data) { return data->bridge == this && data->fromCell == cell; });
+
+		if (foundRoutingData != grid->bridgeData.end()) {
+			AStarNodeExtraData* entry = grid->navigator->assertExtraData(cell, BridgeData);
+			grid->navigator->getNode(cell)->hasBridgeStartPoint = true;
+			entry->bridges.push_back(*foundRoutingData);
+		}
 	};
 
 	addExtraData(fromCell, true);
@@ -68,21 +71,34 @@ void Bridge::onReset(AStarNavigator* nav)
 	firstTraveler = nullptr;
 	lastTraveler = nullptr;
 	geometricDistance = calculateDistance();
-	Cell fromCell = nav->getCell(getPointToModelOffset() + *pointList.front());
-	Grid* grid = nav->getGrid(fromCell);
-	nodeWidth = grid->nodeWidth;
 	travelDistance = useVirtualDistance ? virtualDistance : max(0.001 * nodeWidth, geometricDistance - nodeWidth);
 	filledDistance = 0.0;
 	isAvailable = true;
 	lastUpdateTime = -1;
-	if (routingData.size() == 0) {
-		auto data = grid->bridgeData.add(new BridgeRoutingData);
-		nodejoin(data->holder, nodeinsertinto(routingData)->addData(DATATYPE_COUPLING));
+
+	Cell fromCell = nav->getCell(getPointToModelOffset() + *pointList.front());
+	Cell toCell = nav->getCell(getPointToModelOffset() + *pointList.back());
+	if (fromCell != toCell) {
+		auto assertRoutingData = [this, nav](int index, Cell& cell) {
+			Grid* grid = nav->getGrid(cell);
+			nodeWidth = grid->nodeWidth;
+			if (routingData.size() <= index) {
+				auto data = grid->bridgeData.add(new BridgeRoutingData(this, index == 0));
+				nodejoin(data->holder, ((treenode)routingData)->subnodes.add()->addData(DATATYPE_COUPLING));
+			}
+			auto data = routingData[index];
+			data->fromCell = cell;
+			if (data->grid != grid)
+				data->holder->up = grid->bridgeData;
+		};
+		assertRoutingData(0, fromCell);
+		if (isTwoWay)
+			assertRoutingData(1, toCell);
+		else if (routingData.size() > 1)
+			routingData.remove(1);
+	} else {
+		routingData.clear();
 	}
-	auto data = routingData[0];
-	data->fromCell = fromCell;
-	if (data->holder->up->up != grid->holder)
-		data->holder->up = grid->bridgeData;
 }
 
 double Bridge::calculateDistance() const
@@ -109,12 +125,12 @@ void Bridge::onEntry(Traveler * traveler, int pathIndex)
 	TaskExecuter* te = traveler->te;
 	if (!firstTraveler)
 		firstTraveler = traveler;
-	traveler->bridgeData.entryTime = time();
-	traveler->bridgeData.prevTraveler = lastTraveler;
-	traveler->bridgeData.nextTraveler = nullptr;
+	traveler->bridgeData->entryTime = time();
+	traveler->bridgeData->prevTraveler = lastTraveler;
+	traveler->bridgeData->nextTraveler = nullptr;
 	Grid* grid = nav->getGrid(traveler->travelPath[pathIndex].cell);
 	if (lastTraveler)
-		lastTraveler->bridgeData.nextTraveler = traveler;
+		lastTraveler->bridgeData->nextTraveler = traveler;
 	lastTraveler = traveler;
 	filledDistance += grid->nodeWidth;
 	if (!nav->enableCollisionAvoidance || firstTraveler == traveler) {
@@ -130,30 +146,30 @@ void Bridge::onEntry(Traveler * traveler, int pathIndex)
 
 void Bridge::onExit(Traveler * traveler)
 {
-	traveler->bridgeData.bridge = nullptr;
-	if (traveler->bridgeData.nextTraveler)
-		traveler->bridgeData.nextTraveler->bridgeData.prevTraveler = traveler->bridgeData.prevTraveler;
-	if (traveler->bridgeData.prevTraveler)
-		traveler->bridgeData.prevTraveler->bridgeData.nextTraveler = traveler->bridgeData.nextTraveler;
+	traveler->bridgeData->routingData = nullptr;
+	if (traveler->bridgeData->nextTraveler)
+		traveler->bridgeData->nextTraveler->bridgeData->prevTraveler = traveler->bridgeData->prevTraveler;
+	if (traveler->bridgeData->prevTraveler)
+		traveler->bridgeData->prevTraveler->bridgeData->nextTraveler = traveler->bridgeData->nextTraveler;
 
 	if (traveler == firstTraveler)
-		firstTraveler = traveler->bridgeData.nextTraveler;
+		firstTraveler = traveler->bridgeData->nextTraveler;
 	if (lastTraveler == traveler)
-		lastTraveler = traveler->bridgeData.prevTraveler;
+		lastTraveler = traveler->bridgeData->prevTraveler;
 
-	Grid* grid = traveler->navigator->getGrid(traveler->travelPath[traveler->bridgeData.pathIndex].cell);
+	Grid* grid = traveler->navigator->getGrid(traveler->travelPath[traveler->bridgeData->pathIndex].cell);
 
 	if (firstTraveler && firstTraveler->navigator->enableCollisionAvoidance) {
 		// check to see if I should adjust the firstTraveler's entryTime if he has accumulated,
 		// to avoid "jumping" ahead
-		double distTraveled = (time() - firstTraveler->bridgeData.entryTime) * firstTraveler->te->v_maxspeed;
+		double distTraveled = (time() - firstTraveler->bridgeData->entryTime) * firstTraveler->te->v_maxspeed;
 		if (distTraveled > travelDistance - grid->nodeWidth) {
 			distTraveled = travelDistance - grid->nodeWidth;
-			firstTraveler->bridgeData.entryTime = time() - distTraveled / firstTraveler->te->v_maxspeed;
+			firstTraveler->bridgeData->entryTime = time() - distTraveled / firstTraveler->te->v_maxspeed;
 		}
 
 		double distRemaining = travelDistance - distTraveled;
-		createevent(new Bridge::EndArrivalEvent(this, firstTraveler, firstTraveler->bridgeData.pathIndex,
+		createevent(new Bridge::EndArrivalEvent(this, firstTraveler, firstTraveler->bridgeData->pathIndex,
 			time() + (distRemaining / firstTraveler->te->v_maxspeed)));
 	}
 
@@ -161,7 +177,7 @@ void Bridge::onExit(Traveler * traveler)
 	filledDistance -= grid->nodeWidth;
 	if (wasFull && (filledDistance < travelDistance || filledDistance <= 0.0)) {
 		if (lastTraveler) {
-			double distRemainingByTravelTime = nodeWidth - (time() - lastTraveler->bridgeData.entryTime) / lastTraveler->te->v_maxspeed;
+			double distRemainingByTravelTime = nodeWidth - (time() - lastTraveler->bridgeData->entryTime) / lastTraveler->te->v_maxspeed;
 			double distRemainingByFilledDistance = filledDistance + grid->nodeWidth - travelDistance;
 			double distRemaining = max(distRemainingByFilledDistance, distRemainingByTravelTime);
 			createevent(new AvailableEvent(this, time() + (distRemaining / lastTraveler->te->v_maxspeed)));
@@ -183,7 +199,7 @@ void Bridge::onAvailable()
 		// move blockedTraveler onto bridge
 		Traveler* traveler = blockedTraveler;
 		blockedTraveler = nullptr;
-		traveler->onBridgeArrival(this, (int)blockedPathIndex);
+		traveler->onBridgeArrival(blockedTraveler->bridgeData->routingData, (int)blockedPathIndex);
 	}
 }
 
@@ -200,11 +216,11 @@ void Bridge::updateBridgeLocations()
 	double curMax = travelDistance;
 	double curTime = time();
 	while (t) {
-		double dist = min(curMax, (curTime - t->bridgeData.entryTime) * t->te->v_maxspeed);
+		double dist = min(curMax, (curTime - t->bridgeData->entryTime) * t->te->v_maxspeed);
 		updateLocation(t, dist * distScale, &offset);
 		curMax = dist - grid->nodeWidth;
 
-		t = t->bridgeData.nextTraveler;
+		t = t->bridgeData->nextTraveler;
 	}
 }
 
@@ -236,7 +252,7 @@ void Bridge::updateLocation(Traveler* traveler, double geomDist, Vec3* passedOff
 			traveler->te->b_spatialrz = nextRot;
 			traveler->te->b_spatialx = interpolated.x - 0.5 * traveler->te->b_spatialsx;
 			traveler->te->b_spatialy = interpolated.y + 0.5 * traveler->te->b_spatialsx;
-			traveler->te->b_spatialz = interpolated.z + traveler->bridgeData.spatialz;
+			traveler->te->b_spatialz = interpolated.z + traveler->bridgeData->spatialz;
 			break;
 		}
 	}
@@ -244,18 +260,7 @@ void Bridge::updateLocation(Traveler* traveler, double geomDist, Vec3* passedOff
 
 Grid * Bridge::getGrid(Traveler * traveler)
 {
-	return traveler->navigator->getGrid(traveler->travelPath[traveler->bridgeData.pathIndex].cell);
-}
-
-
-Bridge::ArrivalEvent::ArrivalEvent(Bridge* bridge, Traveler* object, int pathIndex, double time)
-	: pathIndex(pathIndex), FlexSimEvent(bridge->holder, time, object->holder, 0) 
-{
-}
-
-void Bridge::ArrivalEvent::execute() 
-{ 
-	involved->objectAs(Traveler)->onBridgeArrival(partner()->objectAs(Bridge), pathIndex); 
+	return traveler->navigator->getGrid(traveler->travelPath[traveler->bridgeData->pathIndex].cell);
 }
 
 Bridge::EndArrivalEvent::EndArrivalEvent(Bridge* bridge, Traveler* object, int pathIndex, double time)
