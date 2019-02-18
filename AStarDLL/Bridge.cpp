@@ -221,6 +221,10 @@ void Bridge::updateLocation(Traveler* traveler, double geomDist, Vec3* passedOff
 			while (nextRot < -180)
 				nextRot += 360;
 
+			if (traveler->te->holder->up != model()) {
+				interpolated = interpolated.project(model(), traveler->te->holder->up);
+			}
+
 			traveler->te->b_spatialrz = nextRot;
 			traveler->te->b_spatialx = interpolated.x - 0.5 * traveler->te->b_spatialsx;
 			traveler->te->b_spatialy = interpolated.y + 0.5 * traveler->te->b_spatialsx;
