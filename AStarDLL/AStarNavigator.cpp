@@ -619,7 +619,7 @@ double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destinatio
 
 double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double endSpeed)
 {
-	if (barrierList.size() == 0 && objectBarrierList.size() == 0) {
+	if (barrierList.size() == 0 && objectBarrierList.size() == 0 && grids.length == 1) {
 		msg("AStar Error", "No barriers found.\nThere must be at least one barrier associated with the AStar Navigator.", 1);
 		return 0;
 	}

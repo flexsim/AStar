@@ -1818,8 +1818,8 @@ including turn times and time waiting for other travelers.</data></node>
 int drawmode = get(node("@&gt;objectfocus+&gt;variables/drawMode", c));
 
 setchecked(node("/Show Barriers", up(c)), drawmode &amp; ASTAR_DRAW_MODE_BARRIERS);
-setchecked(node("/Show Bounds", up(c)), drawmode &amp; ASTAR_DRAW_MODE_BOUNDS);
-setchecked(node("/Show Grid", up(c)), drawmode &amp; ASTAR_DRAW_MODE_GRID);
+setchecked(node("/Show Grid Bounds", up(c)), drawmode &amp; ASTAR_DRAW_MODE_BOUNDS);
+setchecked(node("/Show Grid Nodes", up(c)), drawmode &amp; ASTAR_DRAW_MODE_GRID);
 setchecked(node("/Show Members", up(c)), drawmode &amp; ASTAR_DRAW_MODE_MEMBERS);
 setchecked(node("/Show Traffic", up(c)), drawmode &amp; ASTAR_DRAW_MODE_TRAFFIC);
 </data></node>
@@ -1832,8 +1832,8 @@ setchecked(node("/Show Traffic", up(c)), drawmode &amp; ASTAR_DRAW_MODE_TRAFFIC)
 double drawmode = 0;
 
 drawmode += getchecked(node("/Show Barriers", up(c))) ? ASTAR_DRAW_MODE_BARRIERS : 0;
-drawmode += getchecked(node("/Show Bounds", up(c))) ? ASTAR_DRAW_MODE_BOUNDS : 0;
-drawmode += getchecked(node("/Show Grid", up(c))) ? ASTAR_DRAW_MODE_GRID : 0;
+drawmode += getchecked(node("/Show Grid Bounds", up(c))) ? ASTAR_DRAW_MODE_BOUNDS : 0;
+drawmode += getchecked(node("/Show Grid Nodes", up(c))) ? ASTAR_DRAW_MODE_GRID : 0;
 drawmode += getchecked(node("/Show Members", up(c))) ? ASTAR_DRAW_MODE_MEMBERS : 0;
 drawmode += getchecked(node("/Show Traffic", up(c))) ? ASTAR_DRAW_MODE_TRAFFIC : 0;
 
