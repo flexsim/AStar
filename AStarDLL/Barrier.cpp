@@ -475,7 +475,7 @@ void Barrier::drawManipulationHandles(treenode view)
 	if (pickingMode)
 		glLineWidth(1.0);
 	setpickingdrawfocus(view, holder, 0);
-	if (!pickingMode && grid) {
+	if (!pickingMode && grid && grid->isBounded) {
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
 		Mesh gridPointsMesh;
 		gridPointsMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
