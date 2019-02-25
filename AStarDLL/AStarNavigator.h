@@ -84,7 +84,7 @@ protected:
 	inline AStarSearchEntry* expandOpenSet(Grid* grid, int r, int c, float multiplier, float rotOnArrival, char bridgeIndex = -1);
 
 	void buildBoundsMesh(float z);
-	void drawMembers(float z);
+	void drawMembers();
 	void buildGridMesh(float zOffset);
 public:
 	void setDirty() { isGridDirty = isBoundsDirty = true; }

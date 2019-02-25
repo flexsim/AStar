@@ -453,7 +453,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		glPolygonOffset(offset - 0.015, -3);
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
-			drawMembers(0);
+			drawMembers();
 
 		glPolygonOffset(offset - 0.020, -4);
 		if (showAllocations)
@@ -1359,7 +1359,7 @@ float AStarNavigator::clampDirection(float rotDirection)
 	return 0.0;
 }
 
-void AStarNavigator::drawMembers(float z)
+void AStarNavigator::drawMembers()
 {
 	memberMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
 	mandatoryPathMemberMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
@@ -1380,12 +1380,10 @@ void AStarNavigator::drawMembers(float z)
 		ObjectDataType* theFR = objectBarrierList[i];
 		TreeNode* theNode = theFR->holder;
 
-		Vec3 topLeft, bottomLeft, topRight, bottomRight;
-		vectorproject(theNode, 0, 0, 0, model(), topLeft);
-		vectorproject(theNode, 0, -ysize(theNode), 0, model(), bottomLeft);
-		vectorproject(theNode, xsize(theNode), -ysize(theNode), 0, model(), bottomRight);
-		vectorproject(theNode, xsize(theNode), 0, 0, model(), topRight);
-		topLeft.z = bottomLeft.z = topRight.z = bottomRight.z = 0;
+		Vec3 topLeft = Vec3(0, 0, 0).project(theNode, model());
+		Vec3 bottomLeft = Vec3(0, -ysize(theNode), 0).project(theNode, model());
+		Vec3 bottomRight = Vec3(xsize(theNode), -ysize(theNode), 0).project(theNode, model());
+		Vec3 topRight = Vec3(xsize(theNode), 0, 0).project(theNode, model());
 
 		auto addVertex = [this](const Vec3& pos) {
 			Vec3f posf(pos);
@@ -1401,12 +1399,16 @@ void AStarNavigator::drawMembers(float z)
 		addVertex(bottomLeft);
 	}
 
-#define ABV(pos, mesh) {\
-	int newVertex = mesh.addVertex();\
-	mesh.setVertexAttrib(newVertex, MESH_POSITION, pos);\
-	}
+	auto addVertex = [](Vec3f& pos, Mesh& mesh) {
+		int newVertex = mesh.addVertex();
+		mesh.setVertexAttrib(newVertex, MESH_POSITION, pos);
+	};
 
-#define ABT(pos1, pos2, pos3, mesh) ABV(pos1, mesh) ABV(pos2, mesh) ABV(pos3, mesh)
+	auto addTriangle = [&](Vec3f& pos1, Vec3f& pos2, Vec3f& pos3, Mesh& mesh) {
+		addVertex(pos1, mesh);
+		addVertex(pos2, mesh);
+		addVertex(pos3, mesh);
+	};
 
 	const static float TWO_PI = 2 * 3.1415926536f;
 	static int numSides = 20;
@@ -1416,17 +1418,13 @@ void AStarNavigator::drawMembers(float z)
 		Traveler * t = travelers[i];
 		if (t->isActive)
 			continue;
-		TreeNode* traveler = t->te->holder;
+		TaskExecuter* te = t->te;
 
-		double outputVector[3];
-		vectorproject(traveler, 0.5 * xsize(traveler), -0.5 * ysize(traveler), 0, model(), outputVector);
-		float x = outputVector[0];
-		float y = outputVector[1];
+		Vec3f center = te->getLocation(0.5, 0.5, 0.0).project(te->holder->up, model());
 
-		float width = get(spatialsx(traveler));
-		float height = get(spatialsy(traveler));
+		float width = te->size.x;
+		float height = te->size.y;
 		float radius = sqrt(width * width / 4.0 + height * height / 4.0);
-		float center[3] = {x, y, z};
 
 		// Triangle strip
 		for (int i = 0; i < numSides; i++) {
@@ -1437,39 +1435,26 @@ void AStarNavigator::drawMembers(float z)
 			float sinNextTheta = sin(nextTheta);
 			float cosNextTheta = cos(nextTheta);
 
-			float pos1[3] = {
-				radius * cosTheta + center[0], 
-				radius * sinTheta + center[1], 
-				z
-			};
-
-			float pos2[3] = {
-				radius * cosNextTheta  + center[0], 
-				radius * sinNextTheta + center[1], 
-				z
-			};
+			Vec3f pos1(radius * cosTheta + center[0], radius * sinTheta + center[1], center.z);
+			Vec3f pos2(radius * cosNextTheta  + center[0], radius * sinNextTheta + center[1], center.z);
 
 			if (t->useMandatoryPath) {
-				ABT(center, pos1, pos2, mandatoryPathMemberMesh);
+				addTriangle(center, pos1, pos2, mandatoryPathMemberMesh);
 			} else {
-				ABT(center, pos1, pos2, memberMesh);
+				addTriangle(center, pos1, pos2, memberMesh);
 			}
 		}
 	}
 
 	for (auto i = activeTravelers.begin(); i != activeTravelers.end(); i++) {
 		Traveler* t = *i;
-		TreeNode* traveler = t->te->holder;
+		TaskExecuter* te = t->te;
 
-		double outputVector[3];
-		vectorproject(traveler, 0.5 * xsize(traveler), -0.5 * ysize(traveler), 0, model(), outputVector);
-		float x = outputVector[0];
-		float y = outputVector[1];
+		Vec3f center = te->getLocation(0.5, 0.5, 0.0).project(te->holder->up, model());
 
-		float width = get(spatialsx(traveler));
-		float height = get(spatialsy(traveler));
+		float width = te->size.x;
+		float height = te->size.y;
 		float radius = sqrt(width * width / 4.0 + height * height / 4.0);
-		float center[3] = {x, y, z};
 
 		// Triangle strip
 		for (int i = 0; i < numSides; i++) {
@@ -1480,23 +1465,13 @@ void AStarNavigator::drawMembers(float z)
 			float sinNextTheta = sin(nextTheta);
 			float cosNextTheta = cos(nextTheta);
 
-			float pos1[3] = {
-				radius * cosTheta + center[0], 
-				radius * sinTheta + center[1], 
-				z
-			};
-
-			float pos2[3] = {
-				radius * cosNextTheta  + center[0], 
-				radius * sinNextTheta + center[1], 
-				z
-			};
+			Vec3f pos1(radius * cosTheta + center[0], radius * sinTheta + center[1], center.z);
+			Vec3f pos2(radius * cosNextTheta  + center[0], radius * sinNextTheta + center[1], center.z);
 
 			if (t->useMandatoryPath) {
-				ABT(center, pos1, pos2, mandatoryPathMemberMesh);
-			}
-			else {
-				ABT(center, pos1, pos2, memberMesh);
+				addTriangle(center, pos1, pos2, mandatoryPathMemberMesh);
+			} else {
+				addTriangle(center, pos1, pos2, memberMesh);
 			}
 		}
 	}
