@@ -240,8 +240,8 @@ void Grid::growToBarriers()
 		}
 		else if (customBarriers[i].size() == 7) {
 			// divideGridModelLine
-			Vec3 min = Vec3(element[1], element[2], element[3]);
-			Vec3 max = Vec3(element[4], element[5], element[6]);
+			Vec3 min = Vec3(min(element[1], element[4]), min(element[2], element[5]), element[3]);
+			Vec3 max = Vec3(max(element[1], element[4]), max(element[2], element[5]), element[6]);
 
 			if (isLocWithinVerticalBounds(min.z)) {
 				if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
