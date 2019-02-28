@@ -931,7 +931,10 @@ nodepoint(objectfocus(c), 0);</data></node>
        <node f="40"><name></name></node>
        <node f="42" dt="4"><name>AStarNavigator</name><data>
         <node f="40"><name></name></node>
-        <node f="42"><name></name></node>
+        <node f="42"><name>classes</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="3"><name>AStar::AStarNavigator</name><data><coupling>/installdata/add/1/data/astar/AStarNavigator</coupling></data></node>
+        </node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObject = param(1);
 double x = param(2);
 double y = param(3);
@@ -948,12 +951,15 @@ set(spatialy(asn), y);
 set(spatialz(asn), z);
 return asn;
 </data></node>
-        <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
         <node f="42" dt="2"><name>windowtitle</name><data>A* Navigator</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\astarnavigatorsmall.png</data></node>
        </data></node>
        <node f="42" dt="4"><name>Barrier</name><data>
         <node f="40"><name></name></node>
+        <node f="42"><name>classes</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="3"><name>AStar::Barrier</name><data><coupling>/installdata/add/1/data/astar/Barrier</coupling></data></node>
+        </node>
         <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
 	modeleditmode("AStar::Barrier");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Barrier</data>
@@ -975,6 +981,10 @@ or where travel direction is constrained</data></node>
        </data></node>
        <node f="42" dt="4"><name>Divider</name><data>
         <node f="40"><name></name></node>
+        <node f="42"><name>classes</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add/1/data/astar/Divider</coupling></data></node>
+        </node>
         <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
 	modeleditmode("AStar::Divider");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Divider</data>
@@ -996,6 +1006,10 @@ like a wall</data></node>
        </data></node>
        <node f="42" dt="4"><name>Preferred Path</name><data>
         <node f="40"><name></name></node>
+        <node f="42"><name>classes</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="3"><name>AStar::PreferredPath</name><data><coupling>/installdata/add/1/data/astar/PreferredPath</coupling></data></node>
+        </node>
         <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
 	modeleditmode("AStar::PreferredPath");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/PreferredPath</data>
@@ -1016,6 +1030,10 @@ if (ontoView) {
        </data></node>
        <node f="42" dt="4"><name>Bridge</name><data>
         <node f="40"><name></name></node>
+        <node f="42"><name>classes</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="3"><name>AStar::Bridge</name><data><coupling>/installdata/add/1/data/astar/Bridge</coupling></data></node>
+        </node>
         <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
 	modeleditmode("AStar::Bridge");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Bridge</data>
@@ -1036,6 +1054,10 @@ if (ontoView) {
        </data></node>
        <node f="42" dt="4"><name>Mandatory Path</name><data>
         <node f="40"><name></name></node>
+        <node f="42"><name>classes</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="3"><name>AStar::MandatoryPath</name><data><coupling>/installdata/add/1/data/astar/MandatoryPath</coupling></data></node>
+        </node>
         <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE)
 	modeleditmode("AStar::MandatoryPath");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/MandatoryPath</data>
