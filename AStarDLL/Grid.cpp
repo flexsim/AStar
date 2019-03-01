@@ -281,7 +281,7 @@ void Grid::buildNodeTable()
 	// go through each barrier and add it to the table
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
-		bool isConditional = barrier->useCondition && rank == 1;
+		bool isConditional = barrier->conditionRule && rank == 1;
 		if (isConditional) {
 			barrier->conditionalBarrierChanges.reset(navigator);
 			navigator->applyToTemporaryBarrier = &barrier->conditionalBarrierChanges;
@@ -526,7 +526,7 @@ void Grid::blockGridModelPos(const Cell& cell)
 
 void Grid::blockNodeDirection(const Cell& cell, Direction direction, Barrier* barrier) {
 	AStarNode* node = getNode(cell);
-	bool isConditionalBarrier = barrier && barrier->useCondition;
+	bool isConditionalBarrier = barrier && barrier->conditionRule;
 	if (navigator->applyToTemporaryBarrier == nullptr || !isConditionalBarrier) {
 		node->setCanGo(direction, false);
 	} else {

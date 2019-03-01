@@ -55,8 +55,23 @@ void Traveler::bindEvents()
 	bindEventByName("onBlock", onBlockTrigger, "OnBlock", EVENT_TYPE_TRIGGER);
 	bindEventByName("onReroute", onRerouteTrigger, "OnReroute", EVENT_TYPE_TRIGGER);
 	bindEventByName("onContinue", onContinueTrigger, "OnContinue", EVENT_TYPE_TRIGGER);
+
+	bindRelayedClassEvents<TravelerBridgeData>("", 0, &Traveler::resolveBridgeData, bridgeData);
 }
 
+
+TreeNode* Traveler::resolveBridgeData()
+{
+	// this method is going to be called as a method on the TE
+	// so this is actually a pointer to a TaskExecuter
+	TaskExecuter* te = (TaskExecuter*)(void*)this;
+	Traveler* traveler;
+	if (te->holder->dataType == DATATYPE_OBJECT)
+		traveler = AStarNavigator::getTraveler(te);
+	else traveler = (Traveler*)(void*)te;
+
+	return traveler->bridgeData->holder;
+}
 
 
 void Traveler::bindInterface()
@@ -139,6 +154,8 @@ void Traveler::onReset()
 	if (bridgeData)
 		bridgeData->routingData = nullptr;
 	routingAlgorithmSnapshots.clear();
+	cachedPathKey.barrierConditions.resize(navigator->barrierConditions.size());
+	isCachedPathKeyValid = false;
 }
 
 void Traveler::onStartSimulation()
@@ -808,6 +825,8 @@ void Traveler::onTEDestroyed()
 		destroyevent(arrivalEvent);
 	clearAllocations();
 }
+
+
 
 void Traveler::onArrival()
 {

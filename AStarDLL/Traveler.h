@@ -24,6 +24,7 @@ public:
 	Traveler() : navigator(nullptr), te(nullptr) {}
 
 
+	TreeNode* resolveBridgeData();
 	Vec3 destLoc;
 	double endSpeed;
 	double turnSpeed;
@@ -162,6 +163,9 @@ public:
 	std::vector<RoutingAlgorithmSnapshot> routingAlgorithmSnapshots;
 
 	double useMandatoryPath = 0.0;
+
+	CachedPathKey cachedPathKey;
+	bool isCachedPathKeyValid = false;
 };
 
 }

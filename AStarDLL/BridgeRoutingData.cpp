@@ -107,7 +107,7 @@ void BridgeRoutingData::updateLocation(Traveler * traveler)
 
 void BridgeRoutingData::checkExpandOpenSet(AStarNavigator* nav, Traveler * traveler, Grid* grid, int bridgeEntryIndex)
 {
-	if (bridge && bridge->useCondition && !bridge->condition->evaluate(traveler->te->holder))
+	if (bridge && bridge->conditionRule && !bridge->evaluateCondition(traveler))
 		return;
 
 	for (auto& entry : toCellHeuristics) {

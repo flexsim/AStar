@@ -86,7 +86,7 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 			if (dy < 0 || (isTwoWay && dy != 0))
 				node->canGoDown = true;
 
-			if (useCondition) {
+			if (conditionRule) {
 				node->hasConditionalBarrier = true;
 				extra->addConditionalBarrier(this);
 			}

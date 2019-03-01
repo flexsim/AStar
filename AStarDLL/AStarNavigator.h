@@ -34,7 +34,7 @@ protected:
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
 	std::unordered_map<unsigned long long, unsigned int> entryHash; // A mapping from colRow to index in totalSet
-	std::unordered_map<CachedPathID, TravelPath, CachedPathID::Hash > pathCache;
+	std::unordered_map<CachedPathKey, TravelPath, CachedPathKey::Hash > pathCache;
 	std::set<Barrier*> visitedConditionalBarriers;
 
 	struct HeapEntry {
@@ -266,7 +266,7 @@ public:
 	virtual void bindTEStatistics(TaskExecuter* te) override;
 	virtual void bindInterface() override;
 	virtual void bind() override;
-	TreeNode* AStarNavigator::resolveTraveler();
+	TreeNode* resolveTraveler();
 
 	void blockGridModelPos(const Vec3& modelPos);
 	void divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay = false);
@@ -332,6 +332,8 @@ public:
 	NodeListArray<ElevatorBridge>::CouplingSdtSubNodeType elevatorBridges;
 	NodeListArray<ObjectDataType>::StoredAttCouplingType elevators;
 	ElevatorBridge::AStarDelegate* elevatorDelegate;
+
+	NodeListArray<>::SubNodeType barrierConditions;
 };
 
 }

@@ -37,6 +37,13 @@ struct Cell {
 	void bind(TreeNode* x, const char* prefix);
 	void bind(SimpleDataType* sdt, const char* prefix = "");
 	void bind(TreeNode* x);
+	size_t getHash() const {
+#ifdef _M_X64
+		return value;
+#else
+		return ((unsigned long) value) ^ ((unsigned long)(value >> 32));
+#endif
+	}
 };
 
 enum ExtraDataReason : char {
@@ -271,31 +278,29 @@ struct AStarSearchEntry {
 	bool closed;
 };
 
-struct CachedPathID {
-	union {
-		struct {
-			unsigned short startCol;
-			unsigned short startRow;
-			unsigned short endCol;
-			unsigned short endRow;
-		};
-		struct {
-			unsigned int startID;
-			unsigned int endID;
-		};
-		unsigned long long gridID;
-	};
+struct CachedPathKey {
+	Cell startCell;
+	Cell endCell;
 	bool isUsingMandatoryPaths;
+
 	treenode destination;
-	bool operator == (const CachedPathID& other) const { return gridID == other.gridID && destination == other.destination && isUsingMandatoryPaths == other.isUsingMandatoryPaths; }
+	std::vector<bool> barrierConditions;
+	bool operator == (const CachedPathKey& other) const { 
+		return startCell == other.startCell
+			&& endCell == other.endCell
+			&& destination == other.destination 
+			&& isUsingMandatoryPaths == other.isUsingMandatoryPaths
+			&& barrierConditions == other.barrierConditions; }
+
 	struct Hash {
-		size_t operator()(const CachedPathID& key) const
+		size_t operator()(const CachedPathKey& key) const
 		{	// hash _Keyval to size_t value by pseudorandomizing transform
-#ifdef _M_X64
-			return (size_t)key.gridID ^ (size_t)key.destination ^ (size_t)key.isUsingMandatoryPaths;
-#else
-			return key.startID ^ key.endID ^ (size_t)key.destination ^ (size_t)key.isUsingMandatoryPaths;
-#endif
+			int bits = sizeof(void*) == 4 ? 32 : 64;
+			size_t val = key.startCell.getHash() ^ key.endCell.getHash() ^ (size_t)key.destination ^ (size_t)key.isUsingMandatoryPaths;
+			for (int i = 0; i < key.barrierConditions.size(); i++) {
+				val ^= (((size_t)key.barrierConditions[i]) << (i % bits));
+			}
+			return val;
 		}
 	};
 };

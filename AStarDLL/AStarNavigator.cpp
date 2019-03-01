@@ -99,6 +99,8 @@ void AStarNavigator::bindVariables(void)
 	this->elevatorDelegate = elevatorDelegate->objectAs(ElevatorBridge::AStarDelegate);
 	this->elevatorDelegate->navigator = this;
 
+	bindVariable(barrierConditions);
+
 	bindStateVariable(minNodeWidth);
 	bindStateVariable(hasConditionalBarriers);
 	bindStateVariable(hasMandatoryPaths);
@@ -131,6 +133,7 @@ void AStarNavigator::bindEvents()
 void AStarNavigator::bindTEEvents(TaskExecuter* te)
 {
 	te->bindRelayedClassEvents<Traveler>("AStar", 0, &AStarNavigator::resolveTraveler, getTraveler(te));
+	bindRelayedClassEvents<TravelerBridgeData>("AStar", 0, &Traveler::resolveBridgeData, getTraveler(te)->bridgeData);
 }
 
 void AStarNavigator::bindTEStatistics(TaskExecuter* te)
@@ -777,7 +780,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 		for (int i = 0; i < barrierList.size(); i++) {
 			MandatoryPath* path = barrierList[i]->toMandatoryPath();
 			if (path) {
-				if (!path->useCondition || path->condition->evaluate(traveler->te->holder))
+				if (!path->conditionRule || path->evaluateCondition(traveler))
 					path->conditionalBarrierChanges.apply();
 			}
 		}
@@ -804,17 +807,18 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 
 	// Figure out if this path is in the cache
 	bool shouldUseCache = false;
-	CachedPathID p;
-	if (cachePaths && !doFullSearch && !routeByTravelTime && !hasConditionalBarriers) {
+	if (cachePaths && !doFullSearch && !routeByTravelTime) {
 		requestCount++;
-		p.startRow = startCell.row;
-		p.startCol = startCell.col;
-		p.endRow = destCell.row;
-		p.endCol = destCell.col;
-		p.destination = traveler->destNode;
-		p.isUsingMandatoryPaths = traveler->useMandatoryPath != 0;
+		traveler->cachedPathKey.startCell = startCell;
+		traveler->cachedPathKey.endCell = destCell;
+		traveler->cachedPathKey.destination = traveler->destNode;
+		traveler->cachedPathKey.isUsingMandatoryPaths = traveler->useMandatoryPath != 0;
+		for (int i = 0; i < traveler->cachedPathKey.barrierConditions.size(); i++) {
+			traveler->cachedPathKey.barrierConditions[i] = (bool)(int)barrierConditions[i]->evaluate(traveler->te->holder);
+		}
+		traveler->isCachedPathKeyValid = true;
 	
-		auto e = pathCache.find(p);
+		auto e = pathCache.find(traveler->cachedPathKey);
 		if (e != pathCache.end()) {
 			cacheUseCount++;
 			return e->second;
@@ -1078,9 +1082,10 @@ the outside 8 nodes.
 	}
 
 	if (cachePaths && !doFullSearch && !routeByTravelTime) {
-		pathCache[p] = travelPath;
+		pathCache[traveler->cachedPathKey] = travelPath;
 		pathCount++;
 	}
+	traveler->isCachedPathKeyValid = false;
 
 	routingTraveler = nullptr;
 
@@ -1127,7 +1132,7 @@ void AStarNavigator::updateConditionalBarrierDataOnOpenSetExpanded(const Cell& c
 	for (Barrier* barrier : barrierData->conditionalBarriers) {
 		if (visitedConditionalBarriers.find(barrier) == visitedConditionalBarriers.end()) {
 			visitedConditionalBarriers.insert(barrier);
-			bool shouldApplyBarrier = (bool)barrier->condition->evaluate(routingTraveler->te->holder);
+			bool shouldApplyBarrier = (bool)barrier->evaluateCondition(routingTraveler);
 			if (shouldApplyBarrier) {
 				barrier->conditionalBarrierChanges.apply();
 			}

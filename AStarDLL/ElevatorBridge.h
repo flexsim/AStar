@@ -18,6 +18,12 @@ public:
 		bindObjPtr(prevTraveler);
 		bindObjPtr(nextTraveler);
 	}
+	virtual void bindEvents() override
+	{
+		bindEvent(ElevatorBankArrival);
+		bindEvent(ElevatorEntry);
+		bindEvent(ElevatorExit);
+	}
 
 	TravelerBridgeData() : routingData(nullptr), entryTime(DBL_MAX) {}
 	TravelerBridgeData(BridgeRoutingData* routingData, double entryTime, int pathIndex, double spatialz)
@@ -29,6 +35,11 @@ public:
 	double entryTime;
 	Traveler* nextTraveler = nullptr;
 	Traveler* prevTraveler = nullptr;
+
+	TreeNode* onElevatorBankArrival = nullptr;
+	TreeNode* onElevatorEntry = nullptr;
+	TreeNode* onElevatorExit = nullptr;
+
 	virtual void updateLocation(TaskExecuter* te) {}
 };
 

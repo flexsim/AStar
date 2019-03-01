@@ -1,6 +1,7 @@
 #include "Barrier.h"
 #include "AStarNavigator.h"
 #include "Grid.h"
+#include "Traveler.h"
 #include "macros.h"
 
 namespace AStar {
@@ -23,8 +24,7 @@ void Barrier::bindVariables(void)
 	bindVariable(points);
 	pointList.init(points);
 
-	bindVariable(useCondition);
-	bindVariable(condition);
+	bindVariable(conditionRule);
 	bindVariable(patternTable);
 	bindStateVariable(nodeWidth);
 }
@@ -65,11 +65,6 @@ AStarNavigator * Barrier::__getNavigator()
 	if (subnodes.length > 0)
 		return ownerobject(subnodes[1]->value)->objectAs(AStarNavigator);
 	return nullptr;
-}
-
-void Barrier::bindEvents()
-{
-	bindEventByName("condition", condition, "Condition", EVENT_TYPE_VALUE_GETTER);
 }
 
 void Barrier::assertNavigator()
@@ -1415,6 +1410,16 @@ void Barrier::setSizeComponent(treenode sizeAtt, double toSize)
 	updateSpatialsToEncompassPoints();
 	isMeshDirty = true;
 }
+
+bool Barrier::evaluateCondition(Traveler * traveler)
+{
+	if (conditionRule) {
+		if (traveler->isCachedPathKeyValid)
+			return traveler->cachedPathKey.barrierConditions[conditionRule->rank - 1];
+		return (bool)conditionRule->evaluate(traveler->te->holder);
+	} else return true;
+}
+
 
 void Barrier::PatternCell::bind()
 {
