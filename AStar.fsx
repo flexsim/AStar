@@ -543,6 +543,8 @@ switch (clickCode) {
 					
 					if(pointNode.rank == 1)
 						setvarnum(c, "addToStart", 1);
+					
+					modeleditmode(EDIT_MODE_PUSH);
 				}
 			}
 		}
@@ -553,6 +555,7 @@ switch (clickCode) {
 			if (mode == EDITMODE_SOLID_BARRIER || mode == EDITMODE_GRID) {
 				function_s(curObjectNode, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
 				nodepoint(getvarnode(c, "curObjectNode"), 0); // on a sold barrier, on
+				modeleditmode(EDIT_MODE_POP);
 			} else {
 				// if I'm editing a multi-point object, then subsequent left-releases should add a new point.
 				treenode newPoint = function_s(curObjectNode, "addPoint", modelPos.x, modelPos.y, modelPos.z);
@@ -611,9 +614,26 @@ switch (clickCode) {
 				nodepoint(getvarnode(c, "curObjectNode"), curObjectNode);
 				nodepoint(getvarnode(c, "previousPoint"), 0);
 				setvarnum(c, "addToStart", 0);
+				
+				modeleditmode(EDIT_MODE_PUSH);
 			}
 
 		}
+		break;
+	
+	case RIGHT_RELEASE:
+		if(getvarnum(c, "addToStart")) {
+			treenode firstPoint = first(getvarnode(curObjectNode, "points"));
+			// Move point into position to be deleted
+			if (objectexists(firstPoint))
+				firstPoint.rank = content(firstPoint.up);
+		}
+		if (objectexists(curObjectNode))
+			function_s(curObjectNode, "abortCreationMode");
+		if (objectexists(activeNavigator))
+			function_s(activeNavigator, "rebuildMeshes");
+		
+		function_s(c, "initialize");
 		break;
 }
 </data></node>
@@ -650,7 +670,17 @@ setvarnum(c, "lastModelY", modelPos.y);
 nodepoint(viewfocus(c), iconGrid);
 nodepoint(objectfocus(c), selectedobject(iconGrid));
 
-setvarnum(c, "mouseDownScreenX", 0);
+function_s(c, "initialize");</data></node>
+        <node f="442" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
+
+nodepoint(objectfocus(c), 0);
+nodepoint(viewfocus(c), 0);
+
+setvarnum(c, "mode", 0);
+setvarstr(c, "class", "");
+
+function_s(c, "initialize");</data></node>
+        <node f="442" dt="2"><name>initialize</name><data>setvarnum(c, "mouseDownScreenX", 0);
 setvarnum(c, "mouseDownScreenY", 0);
 setvarnum(c, "mouseState", 0);
 setvarnum(c, "lastModelX", 0);
@@ -661,39 +691,6 @@ setvarnum(c, "addToStart", 0);
 nodepoint(getvarnode(c, "activeNavigator"), 0);
 nodepoint(getvarnode(c, "curObjectNode"), 0);
 nodepoint(getvarnode(c, "previousPoint"), 0);</data></node>
-        <node f="442" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
-treenode curObjectNode = tonode(getvarnum(c, "curObjectNode"));
-treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
-
-if(getvarnum(c, "addToStart")) {
-	treenode firstPoint = first(getvarnode(curObjectNode, "points"));
-	// Move point into position to be deleted
-	if (objectexists(firstPoint))
-		firstPoint.rank = content(firstPoint.up);
-}
-if (objectexists(curObjectNode))
-	function_s(curObjectNode, "abortCreationMode");
-if (objectexists(activeNav))
-	function_s(activeNav, "rebuildMeshes");
-
-nodepoint(objectfocus(c), 0);
-nodepoint(viewfocus(c), 0);
-
-setvarnum(c, "mode", 0);
-setvarstr(c, "class", "");
-
-setvarnum(c, "mouseDownScreenX", 0);
-setvarnum(c, "mouseDownScreenY", 0);
-setvarnum(c, "mouseState", 0);
-setvarnum(c, "lastModelX", 0);
-setvarnum(c, "lastModelY", 0);
-setvarnum(c, "lastModelZ", 0);
-setvarnum(c, "addToStart", 0);
-
-nodepoint(getvarnode(c, "activeNavigator"), 0);
-nodepoint(getvarnode(c, "curObjectNode"), 0);
-nodepoint(getvarnode(c, "previousPoint"), 0);
-</data></node>
         <node f="442" dt="2"><name>checkStatus</name><data>#define BARRIER_MODE_CREATE 0x2
 
 treenode theEditMode = ownerobject(c);
