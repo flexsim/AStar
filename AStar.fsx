@@ -544,7 +544,7 @@ switch (clickCode) {
 					if(pointNode.rank == 1)
 						setvarnum(c, "addToStart", 1);
 					
-					modeleditmode(EDIT_MODE_PUSH);
+					modeleditmode(EDIT_MODE_DEPTH_PUSH);
 				}
 			}
 		}
@@ -555,7 +555,7 @@ switch (clickCode) {
 			if (mode == EDITMODE_SOLID_BARRIER || mode == EDITMODE_GRID) {
 				function_s(curObjectNode, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
 				nodepoint(getvarnode(c, "curObjectNode"), 0); // on a sold barrier, on
-				modeleditmode(EDIT_MODE_POP);
+				modeleditmode(EDIT_MODE_DEPTH_POP);
 			} else {
 				// if I'm editing a multi-point object, then subsequent left-releases should add a new point.
 				treenode newPoint = function_s(curObjectNode, "addPoint", modelPos.x, modelPos.y, modelPos.z);
@@ -615,7 +615,7 @@ switch (clickCode) {
 				nodepoint(getvarnode(c, "previousPoint"), 0);
 				setvarnum(c, "addToStart", 0);
 				
-				modeleditmode(EDIT_MODE_PUSH);
+				modeleditmode(EDIT_MODE_DEPTH_PUSH);
 			}
 
 		}
