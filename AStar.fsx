@@ -499,14 +499,16 @@ if (!objectexists(i))
 if (gets(documentwindow(i)) != "3D")
 	return 0;
 
+applicationcommand("assertmoduledependency", "AStar");
+
+int clickCode = clickcode();
 int mode = getvarnum(c, "mode");
 treenode curObjectNode = tonode(getvarnum(c, "curObjectNode"));
 
-applicationcommand("assertmoduledependency", "AStar");
 treenode activeNavigator = tonode(getvarnum(c, "activeNavigator"));
 if (!objectexists(activeNavigator))
 	activeNavigator = function_s(c, "findNavigator");
-if (!objectexists(activeNavigator))
+if (!objectexists(activeNavigator) &amp;&amp; (clickCode == LEFT_PRESS || clickCode == LEFT_RELEASE))
 	activeNavigator = createinstance(node("/?AStarNavigator", library()), model());
 
 nodepoint(getvarnode(c, "activeNavigator"), activeNavigator);
@@ -517,7 +519,6 @@ double screenY = cursorinfo(i, 1, 2, 1);
 setvarnum(c, "lastModelX", modelPos.x);
 setvarnum(c, "lastModelY", modelPos.y);
 setvarnum(c, "lastModelZ", modelPos.z);
-int clickCode = clickcode();
 
 switch (clickCode) {
 	case LEFT_PRESS:
@@ -651,14 +652,6 @@ if (mouseState == 0) {
 		
 		#define WM_PAINT 0x000F
 		postwindowmessage(windowfromnode(i), WM_PAINT,0,0);
-	} else {
-		treenode iconGrid = tonode(get(viewfocus(c)));
-		if (!objectexists(iconGrid) 
-				|| !objectexists(selectedobject(iconGrid)) 
-				|| selectedobject(iconGrid) != tonode(get(objectfocus(c)))) 
-		{
-			modeleditmode(0);
-		}
 	}
 }
 
@@ -672,6 +665,19 @@ nodepoint(objectfocus(c), selectedobject(iconGrid));
 
 function_s(c, "initialize");</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
+treenode curObjectNode = tonode(getvarnum(c, "curObjectNode"));
+treenode activeNavigator = tonode(getvarnum(c, "activeNavigator"));
+
+if(getvarnum(c, "addToStart")) {
+	treenode firstPoint = first(getvarnode(curObjectNode, "points"));
+	// Move point into position to be deleted
+	if (objectexists(firstPoint))
+		firstPoint.rank = content(firstPoint.up);
+}
+if (objectexists(curObjectNode))
+	function_s(curObjectNode, "abortCreationMode");
+if (objectexists(activeNavigator))
+	function_s(activeNavigator, "rebuildMeshes");
 
 nodepoint(objectfocus(c), 0);
 nodepoint(viewfocus(c), 0);
