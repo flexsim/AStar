@@ -181,8 +181,6 @@ double AStarNavigator::onCreate(double dropx, double dropy, double dropz, int is
 
 void AStarNavigator::resolveGridBounds()
 {
-	if (grids.size() == 0)
-		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
 
 	std::vector<Grid*> tempGrids;
 	for (Grid* grid : grids) {
@@ -219,6 +217,9 @@ void AStarNavigator::resolveGridBounds()
 
 void AStarNavigator::resetGrids()
 {
+	if (grids.size() == 0)
+		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
+
 	hasConditionalBarriers = 0.0;
 	hasMandatoryPaths = 0.0;
 
@@ -233,7 +234,8 @@ void AStarNavigator::resetGrids()
 	}
 }
 
-void AStarNavigator::buildGrids()
+
+void AStarNavigator::buildCustomBarriers()
 {
 	// Clear custom barriers
 	customBarriers = Array();
@@ -245,6 +247,10 @@ void AStarNavigator::buildGrids()
 			continue;
 		addObjectBarrierToTable(theObj);
 	}
+}
+
+void AStarNavigator::buildGrids()
+{
 
 	for (Grid* grid : grids) {
 		grid->buildNodeTable();
@@ -305,6 +311,7 @@ double AStarNavigator::onReset()
 	edgeTableExtraData.clear();
 	extraDataNode->subnodes.clear();
 
+	buildCustomBarriers();
 	resetGrids();
 	resetElevatorBridges();
 	buildGrids();
@@ -1211,7 +1218,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 			entry->cell.col = c;
 			entry->cell.row = r;
 			entryHash[entry->cell.value] = totalSetIndex;
-			entry->h = calculateHeuristic(grid, entry->cell);
+			entry->h = calculateHeuristic(grid, entry->cell) * speedScale;
 			entry->closed = 0;
 			n->isInTotalSet = true;
 		}

@@ -272,6 +272,7 @@ public:
 	void divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay = false);
 	void addObjectBarrierToTable(TreeNode* obj);
 
+	void buildCustomBarriers();
 	void resolveGridBounds();
 	void resetGrids();
 	void buildGrids();
