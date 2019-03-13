@@ -29,36 +29,6 @@ void Bridge::bindVariables(void)
 	bindStateVariable(routingData);
 }
 
-void Bridge::addPassagesToTable(Grid* grid)
-{
-	if (pointList.size() < 2)
-		return;
-
-	Cell fromCell = grid->navigator->getCell(pointList.front()->project(holder, model()));
-	Cell toCell = grid->navigator->getCell(pointList.back()->project(holder, model()));
-	if (fromCell == toCell)
-		return;
-
-	if (grid->navigator->getGrid(fromCell) != grid)
-		return;
-
-	// add bridge data to cells
-	auto addExtraData = [&](const Cell& cell, bool isAtStart) {
-		auto foundRoutingData = std::find_if(grid->bridgeData.begin(), grid->bridgeData.end(), 
-			[this, &cell](BridgeRoutingData* data) { return data->bridge == this && data->fromCell == cell; });
-
-		if (foundRoutingData != grid->bridgeData.end()) {
-			AStarNodeExtraData* entry = grid->navigator->assertExtraData(cell, BridgeData);
-			grid->navigator->getNode(cell)->hasBridgeStartPoint = true;
-			entry->bridges.push_back(*foundRoutingData);
-		}
-	};
-
-	addExtraData(fromCell, true);
-	if (isTwoWay)
-		addExtraData(toCell, false);
-}
-
 void Bridge::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle)
 {
 	addPathVertices(view, barrierMesh, z, Vec4f(0.0f, 0.3f, 1.0f, 1.0f), drawStyle, isTwoWay);
@@ -199,7 +169,7 @@ void Bridge::onAvailable()
 		// move blockedTraveler onto bridge
 		Traveler* traveler = blockedTraveler;
 		blockedTraveler = nullptr;
-		traveler->onBridgeArrival(blockedTraveler->bridgeData->routingData, (int)blockedPathIndex);
+		traveler->onBridgeArrival(traveler->bridgeData->routingData, (int)blockedPathIndex);
 	}
 }
 

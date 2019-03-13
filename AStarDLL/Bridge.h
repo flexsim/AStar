@@ -14,7 +14,7 @@ public:
 	virtual void bindVariables(void);
 
 	virtual void addBarriersToTable(Grid* grid) override {}
-	virtual void addPassagesToTable(Grid* grid) override;
+	virtual void addPassagesToTable(Grid* grid) override {}
 	virtual void addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle) override;
 	virtual void onReset(AStarNavigator* nav) override;
 	virtual Bridge* toBridge() override { return this; }

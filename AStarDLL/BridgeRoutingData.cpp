@@ -110,10 +110,9 @@ void BridgeRoutingData::checkExpandOpenSet(AStarNavigator* nav, Traveler * trave
 	if (bridge && bridge->conditionRule && !bridge->evaluateCondition(traveler))
 		return;
 
-	for (auto& entry : toCellHeuristics) {
-		if (entry.isAdjacent) {
-			nav->expandOpenSet(nav->getGrid(entry.toCell), entry.toCell.row, entry.toCell.col, entry.heuristic / grid->nodeWidth, 0, bridgeEntryIndex);
-		}
+	auto adjacentCells = getAdjacentCells(grid);
+	for (auto& entry : adjacentCells) {
+		nav->expandOpenSet(nav->getGrid(entry.toCell), entry.toCell.row, entry.toCell.col, entry.heuristic / grid->nodeWidth, 0, bridgeEntryIndex);
 	}
 }
 

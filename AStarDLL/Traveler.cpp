@@ -454,6 +454,9 @@ void Traveler::onBridgeArrival(BridgeRoutingData* data, int pathIndex)
 
 	updateLocation();
 	assertBridgeData(data, DBL_MAX, pathIndex);
+	bridgeData->routingData = data;
+	bridgeData->spatialz = te->location.z;
+	bridgeData->pathIndex = pathIndex;
 
 	data->onBridgeArrival(this, pathIndex);
 	XE
@@ -812,7 +815,6 @@ void Traveler::assertBridgeData(BridgeRoutingData * routing, double entryTime, i
 		bridgeData = data;
 		nodeaddsimpledata(bridgeDataNode, data, 1);
 	}
-	bridgeData->pathIndex = pathIndex;
 }
 
 void Traveler::onTEDestroyed()
