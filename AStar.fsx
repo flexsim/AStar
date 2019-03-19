@@ -1065,6 +1065,7 @@ if (ontoView) {
 	modeleditmode("AStar::Grid");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Grid</data>
          <node f="2000040"><name></name></node></node>
+        <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
