@@ -958,7 +958,7 @@ return asn;
 	modeleditmode("AStar::Barrier");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Barrier</data>
          <node f="2000040"><name></name></node></node>
-        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#divider</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
@@ -980,7 +980,7 @@ or where travel direction is constrained</data></node>
 	modeleditmode("AStar::Divider");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Divider</data>
          <node f="2000040"><name></name></node></node>
-        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#divider</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
@@ -1002,7 +1002,7 @@ like a wall</data></node>
 	modeleditmode("AStar::PreferredPath");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/PreferredPath</data>
          <node f="2000040"><name></name></node></node>
-        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#preferred</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
@@ -1023,7 +1023,7 @@ if (ontoView) {
 	modeleditmode("AStar::Bridge");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Bridge</data>
          <node f="2000040"><name></name></node></node>
-        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#bridges</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
@@ -1044,7 +1044,7 @@ if (ontoView) {
 	modeleditmode("AStar::MandatoryPath");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/MandatoryPath</data>
          <node f="2000040"><name></name></node></node>
-        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#mandatoryPaths</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
