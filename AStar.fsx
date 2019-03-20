@@ -956,7 +956,7 @@ return asn;
 	modeleditmode("AStar::Barrier");</data></node>
         <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/Barrier</data>
          <node f="2000040"><name></name></node></node>
-        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#divider</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>An area where travelers cannot go 
 or where travel direction is constrained</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
@@ -967,7 +967,7 @@ or where travel direction is constrained</data></node>
 	modeleditmode("AStar::Divider");</data></node>
         <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/Divider</data>
          <node f="2000040"><name></name></node></node>
-        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#divider</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>A line or set of lines that blocks travel
 like a wall</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\divider.bmp</data></node>
@@ -978,7 +978,7 @@ like a wall</data></node>
 	modeleditmode("AStar::PreferredPath");</data></node>
         <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/PreferredPath</data>
          <node f="2000040"><name></name></node></node>
-        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#preferred</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>A path that acts as a "magnet" for travelers to travel on</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
        </data></node>
@@ -988,7 +988,7 @@ like a wall</data></node>
 	modeleditmode("AStar::Bridge");</data></node>
         <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/Bridge</data>
          <node f="2000040"><name></name></node></node>
-        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#bridges</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>A path that directly connects one location to another.</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\bridge.bmp</data></node>
        </data></node>
@@ -998,7 +998,7 @@ like a wall</data></node>
 	modeleditmode("AStar::MandatoryPath");</data></node>
         <node f="42" dt="2"><name>droppath</name><data>MAIN:/project/library/astar/MandatoryPath</data>
          <node f="2000040"><name></name></node></node>
-        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#mandatoryPaths</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>A path that designated travelers must travel on</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\mandatorypath.bmp</data></node>
        </data></node>
