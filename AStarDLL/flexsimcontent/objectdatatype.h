@@ -154,7 +154,7 @@ public:
 	virtual unsigned int getClassType(){return 0;}
 	virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype){return 0;}
 
-	TreeNode objecttree;
+	TreeNodeListHead objecttree;
 
 	ScenePositionCache* sceneCache;
   

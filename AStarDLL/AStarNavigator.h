@@ -5,6 +5,7 @@
 #include "Barrier.h"
 #include "AStarTypes.h"
 #include "Grid.h"
+#include "ElevatorBridge.h"
 #include <vector>
 #include <unordered_map>
 #include <queue>
@@ -27,11 +28,13 @@ class AStarNavigator : public Navigator
 {
 	friend class Traveler;
 	friend class Grid;
+	friend class BridgeRoutingData;
+	friend class ElevatorBridgeRoutingData;
 protected:
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
 	std::unordered_map<unsigned long long, unsigned int> entryHash; // A mapping from colRow to index in totalSet
-	std::unordered_map<CachedPathID, TravelPath, CachedPathID::Hash > pathCache;
+	std::unordered_map<CachedPathKey, TravelPath, CachedPathKey::Hash > pathCache;
 	std::set<Barrier*> visitedConditionalBarriers;
 
 	struct HeapEntry {
@@ -81,7 +84,7 @@ protected:
 	inline AStarSearchEntry* expandOpenSet(Grid* grid, int r, int c, float multiplier, float rotOnArrival, char bridgeIndex = -1);
 
 	void buildBoundsMesh(float z);
-	void drawMembers(float z);
+	void drawMembers();
 	void buildGridMesh(float zOffset);
 public:
 	void setDirty() { isGridDirty = isBoundsDirty = true; }
@@ -263,14 +266,17 @@ public:
 	virtual void bindTEStatistics(TaskExecuter* te) override;
 	virtual void bindInterface() override;
 	virtual void bind() override;
-	TreeNode* AStarNavigator::resolveTraveler();
+	TreeNode* resolveTraveler();
 
 	void blockGridModelPos(const Vec3& modelPos);
 	void divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay = false);
 	void addObjectBarrierToTable(TreeNode* obj);
 
+	void buildCustomBarriers();
 	void resolveGridBounds();
 	void resetGrids();
+	void buildGrids();
+	void resetElevatorBridges();
 
 	//Cell getCell(const Vec2& modelLoc) { return getCell(Vec3(modelLoc.x, modelLoc.y, 0.0)); }
 	Cell getCell(const Vec3& modelLoc);
@@ -314,6 +320,8 @@ public:
 
 	treenode addMember(TaskExecuter* te);
 	void addObjectBarrier(ObjectDataType* object);
+	bool addElevatorBridge(ObjectDataType* object);
+	bool removeElevatorBridge(ObjectDataType* object);
 
 	Grid* createGrid(const Vec3& loc, const Vec3& size);
 	Variant createGrid(FLEXSIMINTERFACE);
@@ -321,6 +329,12 @@ public:
 	static AStarNavigator* instance;
 
 	double areGridsUserCustomized = 0.0;
+
+	NodeListArray<ElevatorBridge>::CouplingSdtSubNodeType elevatorBridges;
+	NodeListArray<ObjectDataType>::StoredAttCouplingType elevators;
+	ElevatorBridge::AStarDelegate* elevatorDelegate;
+
+	NodeListArray<>::SubNodeType barrierConditions;
 };
 
 }

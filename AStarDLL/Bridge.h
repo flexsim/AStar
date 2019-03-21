@@ -14,7 +14,7 @@ public:
 	virtual void bindVariables(void);
 
 	virtual void addBarriersToTable(Grid* grid) override {}
-	virtual void addPassagesToTable(Grid* grid) override;
+	virtual void addPassagesToTable(Grid* grid) override {}
 	virtual void addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle) override;
 	virtual void onReset(AStarNavigator* nav) override;
 	virtual Bridge* toBridge() override { return this; }
@@ -48,17 +48,6 @@ public:
 	void updateBridgeLocations();
 	void updateLocation(Traveler* t, double geomDistAlongBridge, Vec3* offset = nullptr);
 
-	class ArrivalEvent : public FlexSimEvent
-	{
-	public:
-		ArrivalEvent() : FlexSimEvent() {}
-		ArrivalEvent(Bridge* bridge, Traveler* object, int pathIndex, double time);
-		virtual const char* getClassFactory() override { return "AStar::Bridge::ArrivalEvent"; }
-		virtual void execute() override;
-		virtual void bind() override { __super::bind(); bindNumber(pathIndex); }
-
-		int pathIndex;
-	};
 
 	class EndArrivalEvent : public FlexSimEvent
 	{

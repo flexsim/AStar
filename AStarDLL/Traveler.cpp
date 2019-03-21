@@ -37,17 +37,14 @@ void Traveler::bind()
 		appendToDisplayStr("\r\n:");
 	}
 	bindNumber(tinyTime);
-	bindObjPtr(bridgeData.bridge);
-	bindObjRef(bridgeData.arrivalEvent, 0);
-	bindNumber(bridgeData.entryTime);
-	bindNumber(bridgeData.pathIndex);
-	bindObjPtr(bridgeData.prevTraveler);
-	bindObjPtr(bridgeData.nextTraveler);
+	bindSubNodeByName("bridgeData", bridgeDataNode, 0);
+	bridgeData = bridgeDataNode->objectAs(TravelerBridgeData);
 
 	bindNumber(turnSpeed);
 	bindNumber(turnDelay);
 
 	bindDouble(useMandatoryPath, 1);
+	bindObjRef(bridgeArrivalEvent, 0);
 	//bindNumber(estimatedIndefiniteAllocTimeDelay);
 	//bindStlContainer(allocations);
 }
@@ -58,8 +55,23 @@ void Traveler::bindEvents()
 	bindEventByName("onBlock", onBlockTrigger, "OnBlock", EVENT_TYPE_TRIGGER);
 	bindEventByName("onReroute", onRerouteTrigger, "OnReroute", EVENT_TYPE_TRIGGER);
 	bindEventByName("onContinue", onContinueTrigger, "OnContinue", EVENT_TYPE_TRIGGER);
+
+	bindRelayedClassEvents<TravelerBridgeData>("", 0, &Traveler::resolveBridgeData, bridgeData);
 }
 
+
+TreeNode* Traveler::resolveBridgeData()
+{
+	// this method is going to be called as a method on the TE
+	// so this is actually a pointer to a TaskExecuter
+	TaskExecuter* te = (TaskExecuter*)(void*)this;
+	Traveler* traveler;
+	if (te->holder->dataType == DATATYPE_OBJECT)
+		traveler = AStarNavigator::getTraveler(te);
+	else traveler = (Traveler*)(void*)te;
+
+	return traveler->bridgeData->holder;
+}
 
 
 void Traveler::bindInterface()
@@ -139,8 +151,11 @@ void Traveler::onReset()
 	destThreshold = DestinationThreshold();
 	destLoc = Vec3(0.0, 0.0, 0.0);
 	destNode = nullptr;
-	bridgeData.bridge = nullptr;
+	if (bridgeData)
+		bridgeData->routingData = nullptr;
 	routingAlgorithmSnapshots.clear();
+	cachedPathKey.barrierConditions.resize(navigator->barrierConditions.size());
+	isCachedPathKeyValid = false;
 }
 
 void Traveler::onStartSimulation()
@@ -184,7 +199,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 	treenode kinematics = te->node_v_kinematics;
 	double outputVector[3];
 	Vec3 startLoc;
-	bool isExitingBridge = bridgeData.bridge != nullptr;
+	bool isExitingBridge = bridgeData != nullptr && bridgeData->routingData != nullptr;
 	if (isExitingBridge)
 		startLoc = te->getLocation(0.5, 0.5, 0);
 	else {
@@ -243,7 +258,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 
 	int didBlockPathIndex = -1;
 	NodeAllocation* lastAllocation = nullptr;
-	Bridge* bridgeArrival = nullptr;
+	BridgeRoutingData* bridgeArrival = nullptr;
 
 	double containerRot = 0;
 	if (te->holder->up != model()) {
@@ -270,10 +285,9 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 
 		if (laste.bridgeIndex != -1) {
 			AStarNodeExtraData* nodeData = nav->getExtraData(laste.cell);
-			AStarNodeExtraData::BridgeEntry& entry = nodeData->bridges[laste.bridgeIndex];
-			Bridge* bridge = entry.bridge;
-			if (bridgeData.bridge != bridge) {
-				bridgeArrival = bridge;
+			BridgeRoutingData* data = nodeData->bridges[laste.bridgeIndex];
+			if (!bridgeData || bridgeData->routingData != data) {
+				bridgeArrival = data;
 			}
 		}
 
@@ -365,16 +379,16 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 				}
 			}
 			totalTravelDist = diff.magnitude;
-		}
-		else {
+		} else {
 			// travel onto a bridge
-			Bridge* bridge = bridgeArrival;
+			BridgeRoutingData* bridge = bridgeArrival;
 			totalTravelDist = 0;
 
 			// Create a BridgeArrivalEvent
-			if (bridgeData.arrivalEvent)
-				destroyevent(bridgeData.arrivalEvent->holder);
-			bridgeData.arrivalEvent = createevent(new Bridge::ArrivalEvent(bridge, this, i - 1, endTime))->objectAs(Bridge::ArrivalEvent);
+			if (bridgeArrivalEvent)
+				destroyevent(bridgeArrivalEvent->holder);
+			assertBridgeData(bridgeArrival, 0.0, 0);
+			bridgeArrivalEvent = createevent(new BridgeRoutingData::ArrivalEvent(bridge, this, i - 1, endTime))->objectAs(BridgeRoutingData::ArrivalEvent);
 			didBlockPathIndex = i;
 			break;
 		}
@@ -403,8 +417,8 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 	// This will trigger other travelers who might be waiting for me to move on 
 	// from the current point I'm at.
 	if (numNodes > startAtPathIndex + 1 && !isCollisionUpdateInterval && (didBlockPathIndex == -1 || didBlockPathIndex > startAtPathIndex + 1)) {
-		if (bridgeData.bridge)
-			bridgeData.bridge->onExit(this);
+		if (bridgeData && bridgeData->routingData)
+			bridgeData->routingData->onExit(this);
 
 		if (enableCollisionAvoidance && initialAllocsSize > 0) {
 			for (int i = initialAllocsSize - 1; i >= 0; i--) {
@@ -426,35 +440,25 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 		arrivalEvent = createevent(new ArrivalEvent(this, endTime))->objectAs(ArrivalEvent);
 
 	isRoutingNow = false;
-	_ASSERTE(allocations.size() > 0 || !enableCollisionAvoidance || navigator->ignoreInactiveMemberCollisions || bridgeArrival || bridgeData.bridge);
+	_ASSERTE(allocations.size() > 0 || !enableCollisionAvoidance || navigator->ignoreInactiveMemberCollisions || bridgeArrival || (bridgeData && bridgeData->routingData));
 	XE
 }
 
-void Traveler::onBridgeArrival(Bridge* bridge, int pathIndex) 
+void Traveler::onBridgeArrival(BridgeRoutingData* data, int pathIndex) 
 {
 	XS
 	if (isBlocked)
 		return;
 
 	AStarPathEntry e = travelPath[pathIndex];
-	AStarNodeExtraData::BridgeEntry& entry = navigator->getExtraData(e.cell)->bridges[e.bridgeIndex];
 
 	updateLocation();
-	bridgeData = BridgeData(bridge, DBL_MAX, pathIndex, te->b_spatialz - (bridge->getPointToModelOffset().z + bridge->pointList.front()->z));
+	assertBridgeData(data, DBL_MAX, pathIndex);
+	bridgeData->routingData = data;
+	bridgeData->spatialz = te->location.z;
+	bridgeData->pathIndex = pathIndex;
 
-	if (bridge->isAvailable) {
-		// move onto bridge
-		clearAllocations();
-		bridge->onEntry(this, pathIndex);
-	}
-	else {
-		if (allocations.size() > 0)
-			allocations.back()->extendReleaseTime(DBL_MAX);
-		_ASSERTE(bridge->blockedTraveler == nullptr);
-		// Traveler is blocked trying to get on the bridge
-		bridge->blockedTraveler = this;
-		bridge->blockedPathIndex = pathIndex;
-	}
+	data->onBridgeArrival(this, pathIndex);
 	XE
 }
 
@@ -499,8 +503,8 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, 
 						destroyevent(laterTraveler->blockEvent->holder);
 					laterTraveler->blockEvent = createevent(event)->objectAs(BlockEvent);
 
-					if (laterTraveler->bridgeData.arrivalEvent)
-						destroyevent(laterTraveler->bridgeData.arrivalEvent->holder);
+					if (laterTraveler->bridgeArrivalEvent)
+						destroyevent(laterTraveler->bridgeArrivalEvent->holder);
 				}
 
 				if (laterAllocation != &allocation) {
@@ -804,6 +808,15 @@ bool Traveler::findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travel
 	return false;
 }
 
+void Traveler::assertBridgeData(BridgeRoutingData * routing, double entryTime, int pathIndex)
+{
+	if (!bridgeData || !bridgeData->isClassType(routing->getBridgeDataClassFactory())) {
+		TravelerBridgeData* data = routing->createBridgeData(this, entryTime, pathIndex);
+		bridgeData = data;
+		nodeaddsimpledata(bridgeDataNode, data, 1);
+	}
+}
+
 void Traveler::onTEDestroyed()
 {
 	if (!navigator->enableCollisionAvoidance)
@@ -814,6 +827,8 @@ void Traveler::onTEDestroyed()
 		destroyevent(arrivalEvent);
 	clearAllocations();
 }
+
+
 
 void Traveler::onArrival()
 {
@@ -896,8 +911,8 @@ void Traveler::updateLocation()
 
 	double updateTime = time();
 
-	if (bridgeData.bridge && bridgeData.entryTime <= updateTime) {
-		bridgeData.bridge->updateBridgeLocations();
+	if (bridgeData && bridgeData->routingData && bridgeData->entryTime <= updateTime) {
+		bridgeData->routingData->updateLocation(this);
 	} else {
 		TreeNode* kinematics = te->node_v_kinematics;
 		updatekinematics(kinematics, te->holder, updateTime);

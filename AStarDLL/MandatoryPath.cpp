@@ -12,7 +12,7 @@ void MandatoryPath::bindVariables()
 void MandatoryPath::onReset(AStarNavigator* nav)
 {
 	__super::onReset(nav);
-	if (useCondition) {
+	if (conditionRule) {
 		conditionalBarrierChanges.valueMask.isOnMandatoryPath = true;
 		nav->hasConditionalBarriers = 1.0;
 	}
@@ -34,7 +34,7 @@ void MandatoryPath::addPassagesToTable(Grid * grid)
 		grid->visitGridModelLine(fromPos, toPos, [this, grid, direction](const Cell& cell) -> void {
 			AStarNode* node = grid->getNode(cell);
 			AStarNode newValue(*node);
-			if (!useCondition)
+			if (!conditionRule)
 				node->isOnMandatoryPath = true;
 			else newValue.isOnMandatoryPath = true;
 			if (!isTwoWay) {

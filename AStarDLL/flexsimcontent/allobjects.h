@@ -2848,8 +2848,6 @@ visible double rackgetcellcontent(treenode rack, int bay, int level);
 
 visible double rackgetcellvar(treenode rack, int bay, int level, int varnum, treenode storedlabel DEFAULTNULL);
 
-visible treenode rackgetcontenttable(treenode rack);
-
 visible double rackgetitemcellrank(treenode rack, treenode item);
 
 visible treenode rackgetitembybaylevel(treenode rack, int bay, int level, int itemrank DEFAULTONE);
@@ -5525,9 +5523,114 @@ class Rack : public FixedResource
 public:
 
 
-// c++ member functions
+//ClassIncludeHeaderStart
+class Bay;
+class Cell : public SimpleDataType {
+public:
+	struct ItemInfo {
+		ItemInfo() {}
+		ItemInfo(TreeNode* item) : item(item) {}
+		NodeRef item;
+		void bind(treenode toNode);
+		operator TreeNode* () { return item.get(); }
+	};
+	virtual const char* getClassFactory() { return "RackCell"; }
+	virtual void bind() override;
+	double loc = 0.0;
+	double size = 1.0;
+	template <class Type> 
+	class OneBasedVector : public std::vector<Type>
+	{
+	public:
+		Type& operator[] (int index) { return __super::operator[](index - 1); }
+	};
+	OneBasedVector<ItemInfo> items;
+	Bay* __getBay();
+	__declspec(property(get = __getBay)) Bay* bay;
+};
 
-FS_CONTENT_DLL_FUNC  Rack();
+class Bay : public SimpleDataType {
+public:
+	virtual const char* getClassFactory() { return "RackBay"; }
+	virtual void bind() override;
+	double loc = 0.0;
+	double size = 1.0;
+	int numItems = 0;
+	NodeListArray<Cell>::SdtSubNodeBindingTypeOneBased cells;
+};
+
+virtual void bind() override;
+static SimpleDataType* createSDTDerivative(const char* className);
+
+NodeListArray<Bay>::SdtSubNodeBindingTypeOneBased bays;
+
+int lastpredrawoutput = -1;
+int lastpredrawinput = -1;
+IndexedMesh structuralMesh;
+Mesh platformsMesh;
+Mesh braceMesh;
+bool rebuildMeshes = true;
+bool areLocationsDirty = true;
+double meshSY = 0;
+int meshDrawMode = 0;
+int meshFloorStorage = 0;
+int meshColumnSpacing = 0;
+bool meshHideFloor;
+int meshExtendColumn;
+treenode onEndDwellTimeTrigger = nullptr;
+double unrequitedDrag = 0;
+bool isBayUndoTrackingAdded = false;
+
+static const int TYPE_BASIC = 0;
+static const int TYPE_PUSH_BACK = 1;
+static const int TYPE_GRAVITY_FLOW = 2;
+static const int TYPE_DRIVE_IN = 3;
+double type;
+
+Bay* getBay(int bay);
+Bay* getBay(treenode item);
+Cell* getCell(int bay, int level);
+Cell* getCell(treenode item);
+void setItemCellRank(treenode item, int rank) { setItemVar(item, 1, rank); }
+FS_CONTENT_DLL_FUNC Array getBaySizes();
+FS_CONTENT_DLL_FUNC Array getLevelSizes();
+FS_CONTENT_DLL_FUNC Array getLevelSizes(int bayNum);
+
+FS_CONTENT_DLL_FUNC void setBaySizes(Array);
+FS_CONTENT_DLL_FUNC void setBaySize(int bayNum, double width);
+FS_CONTENT_DLL_FUNC void setLevelSizes(Array);
+FS_CONTENT_DLL_FUNC void setLevelSizes(int bayNum, Array);
+FS_CONTENT_DLL_FUNC void setLevelSize(int bayNum, int levelNum, double height);
+FS_CONTENT_DLL_FUNC void setBayLoc(int bayNum, double location);
+FS_CONTENT_DLL_FUNC void setLevelLoc(int bayNum, int levelNum, double location);
+FS_CONTENT_DLL_FUNC bool hasBasicDimensions();
+
+
+Variant getBaySizes(FLEXSIMINTERFACE) { return getBaySizes(); }
+Variant getBaySize(FLEXSIMINTERFACE) { return getBaySize(param(1)); }
+Variant getLevelSizes(FLEXSIMINTERFACE);
+Variant getLevelSize(FLEXSIMINTERFACE) { return getLevelSize(param(1), param(2)); }
+Variant getBayLoc(FLEXSIMINTERFACE) { return getBayLoc(param(1)); }
+Variant getLevelLoc(FLEXSIMINTERFACE) { return getLevelLoc(param(1), param(2)); }
+
+Variant setBaySizes(FLEXSIMINTERFACE) { setBaySizes(param(1)); return Variant(); }
+Variant setBaySize(FLEXSIMINTERFACE) { setBaySize(param(1), param(2)); return Variant(); }
+Variant setLevelSizes(FLEXSIMINTERFACE);
+Variant setLevelSize(FLEXSIMINTERFACE) { setLevelSize(param(1), param(2), param(3)); return Variant(); }
+Variant setBayLoc(FLEXSIMINTERFACE) { setBayLoc(param(1), param(2)); return Variant(); }
+Variant setLevelLoc(FLEXSIMINTERFACE) { setLevelLoc(param(1), param(2), param(3)); return Variant(); }
+
+Variant refreshBayLevelLocations(FLEXSIMINTERFACE) { refreshBayLevelLocations(); return Variant(); }
+Variant setBasicDimensions(FLEXSIMINTERFACE) { setBasicDimensions(param(1), param(2), param(3), param(4)); return Variant(); }
+Variant hasBasicDimensions(FLEXSIMINTERFACE) { return hasBasicDimensions(); }
+
+FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
+FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
+FS_CONTENT_DLL_FUNC double onUndo(bool isUndo, treenode undoRecord) override { rebuildMeshes = true; return 0; }
+
+//ClassIncludeHeaderEnd
+
+// c++ member functions
 
 FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
@@ -5623,22 +5726,22 @@ FS_CONTENT_DLL_FUNC double buildBasicMesh();
 
 FS_CONTENT_DLL_FUNC double buildLineMesh();
 
-FS_CONTENT_DLL_FUNC double refreshTable();
+FS_CONTENT_DLL_FUNC void refreshBayLevelLocations();
+
+FS_CONTENT_DLL_FUNC void setBasicDimensions(int numBays, double bayWidth, int numLevels, double levelHeight);
 
 FS_CONTENT_DLL_FUNC virtual void bindEvents();
 
+FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+TreeNode* node_v_bays;
+#define v_bays node_v_bays->safedatafloat()[0]
 TreeNode* node_v_placeinbay;
 TreeNode* node_v_placeinlevel;
 TreeNode* node_v_minimumstaytime;
 TreeNode* node_v_entrytrigger;
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode* node_v_contenttable;
-#define v_contenttable node_v_contenttable->safedatafloat()[0]
-TreeNode* node_v_locationtable;
-#define v_locationtable node_v_locationtable->safedatafloat()[0]
-TreeNode* node_v_sizetable;
-#define v_sizetable node_v_sizetable->safedatafloat()[0]
 TreeNode* node_v_rackdrawmode;
 #define v_rackdrawmode node_v_rackdrawmode->safedatafloat()[0]
 TreeNode* node_v_pickplaceyoffset;
@@ -5660,37 +5763,9 @@ TreeNode* node_v_hidefloor;
 TreeNode* node_v_extendcolumn;
 #define v_extendcolumn node_v_extendcolumn->safedatafloat()[0]
 
-// c++ attributes
-int lastpredrawoutput;
-
-int lastpredrawinput;
-
-IndexedMesh structuralMesh;
-
-Mesh platformsMesh;
-
-Mesh braceMesh;
-
-bool rebuildMeshes;
-
-double meshSY;
-
-int meshDrawMode;
-
-int meshFloorStorage;
-
-int meshColumnSpacing;
-
-bool meshHideFloor;
-
-int meshExtendColumn;
-
-treenode onEndDwellTimeTrigger = nullptr;
-
-
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+FS_CONTENT_DLL_FUNC virtual void bindVariablesDefault();
 
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };

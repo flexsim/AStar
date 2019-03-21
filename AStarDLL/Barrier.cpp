@@ -1,6 +1,7 @@
 #include "Barrier.h"
 #include "AStarNavigator.h"
 #include "Grid.h"
+#include "Traveler.h"
 #include "macros.h"
 
 namespace AStar {
@@ -23,8 +24,7 @@ void Barrier::bindVariables(void)
 	bindVariable(points);
 	pointList.init(points);
 
-	bindVariable(useCondition);
-	bindVariable(condition);
+	bindVariable(conditionRule);
 	bindVariable(patternTable);
 	bindStateVariable(nodeWidth);
 }
@@ -65,11 +65,6 @@ AStarNavigator * Barrier::__getNavigator()
 	if (subnodes.length > 0)
 		return ownerobject(subnodes[1]->value)->objectAs(AStarNavigator);
 	return nullptr;
-}
-
-void Barrier::bindEvents()
-{
-	bindEventByName("condition", condition, "Condition", EVENT_TYPE_VALUE_GETTER);
 }
 
 void Barrier::assertNavigator()
@@ -475,7 +470,7 @@ void Barrier::drawManipulationHandles(treenode view)
 	if (pickingMode)
 		glLineWidth(1.0);
 	setpickingdrawfocus(view, holder, 0);
-	if (!pickingMode && grid) {
+	if (!pickingMode && grid && grid->isBounded) {
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
 		Mesh gridPointsMesh;
 		gridPointsMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
@@ -1226,8 +1221,8 @@ void Barrier::scalePatternRowsOnSizeChange(double newYSize)
 		patterns.cell(1, 1)->objectAs(PatternCell)->height = maxof(0.00000001, newYSize);
 	} else {
 		double oldYSize = 0;
-		for (int col = 1; col <= patterns.numCols; col++)
-			oldYSize += patterns.cell(1, col)->objectAs(PatternCell)->height;
+		for (int row = 1; row <= patterns.numRows; row++)
+			oldYSize += patterns.cell(row, 1)->objectAs(PatternCell)->height;
 
 		double scaleFactor = newYSize / oldYSize;
 		for (int row = 1; row <= patterns.numRows; row++) {
@@ -1299,6 +1294,21 @@ Barrier::PatternCell* Barrier::getPatternCell(const Cell& cell)
 
 void Barrier::dragPatternCellSizer(PatternCell * cell, double diff, bool isXSizer)
 {
+	// Limit cell growth
+	if (diff > 0) {
+		double sizeBeforeGrow = 0;
+		bool didVisitCell = false;
+		visitPatternCells([&](PatternCell* temp) {
+			if (!didVisitCell) {
+				double val = isXSizer ? temp->width : temp->height;
+				sizeBeforeGrow += val;
+				if (temp == cell)
+					didVisitCell = true;
+			}
+		}, isXSizer ? VISIT_FIRST_ROW_ONLY : VISIT_FIRST_COL_ONLY);
+		double maxDiff = (isXSizer ? fabs(pointList[1]->x - pointList[0]->x) : fabs(pointList[1]->y - pointList[0]->y)) - sizeBeforeGrow;
+		if (diff > maxDiff) diff = maxDiff;
+	}
 	double& val = isXSizer ? cell->width : cell->height;
 	val += diff;
 	if (val < 0) {
@@ -1400,6 +1410,16 @@ void Barrier::setSizeComponent(treenode sizeAtt, double toSize)
 	updateSpatialsToEncompassPoints();
 	isMeshDirty = true;
 }
+
+bool Barrier::evaluateCondition(Traveler * traveler)
+{
+	if (conditionRule) {
+		if (traveler->isCachedPathKeyValid)
+			return traveler->cachedPathKey.barrierConditions[conditionRule->rank - 1];
+		return (bool)conditionRule->evaluate(traveler->te->holder);
+	} else return true;
+}
+
 
 void Barrier::PatternCell::bind()
 {

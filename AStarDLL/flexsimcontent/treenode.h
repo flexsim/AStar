@@ -66,6 +66,23 @@ public:
 	TreeNode* operator[](const char* name);
 };
 
+class TreeNodeExtraData
+{
+	friend class TreeNode;
+	friend class TreeNodeListHead;
+protected:
+	~TreeNodeExtraData();
+	void* operator new (size_t size);
+	void operator delete (void* p);
+
+
+	CustomDisplayFunction __customDisplayFunction = nullptr;
+protected:
+	NodeRef * __refsToMe = nullptr;
+	TreeNode * __ownerObjectCache = nullptr;
+
+	void removeAllRefs();
+};
 
 
 class TreeNode
@@ -201,11 +218,9 @@ private:
 	// for normal dll accessors, you should get data with a getter method
 	__declspec(property(get = __getData)) void* data;
 #else
-private:
-	unsigned int listsize;                        // (4 bytes)
+protected:
 	TreeNode ** array;                            // (4 or 8 bytes)
-	TreeNode ** arraybase;                        // (4 or 8 bytes)
-	NodeRef * refsToMe;                      // (4 or 8 bytes)
+	TreeNodeExtraData* extraData = nullptr;       // (4 or 8 bytes)
 
 	//DATA MEMBERS ARE MANUALLY ALIGNED (NO PADDING)
 engine_private:
@@ -213,16 +228,11 @@ engine_private:
 	unsigned short datatype;                      // (2 bytes)
 protected:
 	unsigned long long flags;                     // (8 bytes)
-	ByteBlock m_name;                             // (12 or 16 bytes)
+	ByteBlock m_name;                             // (36 or 40 bytes)
 public:
-	TreeNode * ownerobjectcache;                  // (4 or 8 bytes)
-	void* dupedMember;                            // (4 or 8 bytes)
-	std::unordered_map<std::string, TreeNode*> * listhash;              // (4 or 8 bytes)
-	int arraysize;                                // (4 bytes)
-	TreeNode * parent;                            // (4 or 8 bytes)
 content_private:
-	TreeNode * owner;                             // (4 or 8 bytes)
-	TreeNode * branch;                            // (4 or 8 bytes) 
+	TreeNodeListHead * owner;                             // (4 or 8 bytes)
+	TreeNodeListHead * branch;                            // (4 or 8 bytes) 
 
 engine_private:
 	union{                                        // (4 or 8 bytes) 
@@ -257,7 +267,7 @@ public:
 			TreeNode* element;
 			int curRank;
 			IteratorElement(TreeNode* node, int curRank)
-				: listHead(node->owner == node ? node : node->branch),
+				: listHead((TreeNode*)node->owner == node ? node : (TreeNode*)node->branch),
 				curRank(curRank), element(listHead ? listHead->array[curRank] : 0)
 			{}
 			IteratorElement() : listHead(0), curRank(0), element(0) {}
@@ -288,13 +298,76 @@ public:
 			}
 		};
 #endif // end full treenode def
-private:
+protected:
 
 	#ifdef FLEXSIM_ENGINE_COMPILE
 		#include "treenodeinternal.h"
 	#endif
 };
 #pragma pack()
+
+class TreeNodeListHead : public TreeNode
+{
+	friend class TreeNode;
+protected:
+	unsigned int __listSize = 0;
+	static const int LOCAL_ARRAY_SIZE = 16;
+	TreeNode* __localArray[LOCAL_ARRAY_SIZE];
+	int __arrayCapacity = LOCAL_ARRAY_SIZE;
+	TreeNode** __arrayBase = __localArray;
+public:
+	int __getArrayCapacity() { return __arrayCapacity; }
+	__declspec(property(get = __getArrayCapacity)) int arrayCapacity;
+	std::unordered_map<std::string, TreeNode*> * listHash = nullptr;
+	TreeNode * __parent = nullptr;
+
+	TreeNodeListHead() {
+		owner = this;
+		array = __arrayBase;
+		array[0] = this;
+	}
+	engine_export ~TreeNodeListHead();
+	void* operator new (size_t size);
+	void operator delete (void* p);
+
+	// ------------------------
+	// extra
+	// ------------------------
+
+	static TreeNode*const LIST_HASH_UNCACHED_VALUE;
+
+	inline std::unordered_map<std::string, TreeNode*> * & assertListHash();
+	std::unordered_map<std::string, TreeNode*> * & refreshListHash();
+	// ------------------------
+	// extra
+	// ------------------------
+
+	void assertListCapacity(int size);
+
+
+	void clear();
+	void remove(TreeNode*);
+	void destroy(TreeNode*);
+	void swap(size_t index1, size_t index2);
+	void insertBlock(int qty);
+	TreeNode* add(); // insert_bareBones new treenode at end
+	TreeNode* add(TreeNode* newNode); // insert_bareBones at end
+
+
+	TreeNode* insert(TreeNode* location);
+	TreeNode* insert_bareBones(TreeNode* insertAfter);
+	// undoable method pointers for insert_bareBones
+	TreeNode* insert_undoable(TreeNode* insertAfter);
+	typedef TreeNode* (TreeNodeListHead::*InsertCallback)(TreeNode*);
+	static InsertCallback insertCallback;
+
+	TreeNode* insert_bareBones(TreeNode* insertAfter, TreeNode* nodeToInsert);
+
+	bool saveList(std::ostream& stream);
+	bool loadList(std::istream& stream);
+	int saveList(char*& destination);
+	int loadList(const char*& source);
+};
 
 }
 

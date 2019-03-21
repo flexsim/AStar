@@ -89,6 +89,17 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(grids);
 	if (grids.size() == 0)
 		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
+	bindVariable(elevators);
+	elevatorBridges.init(elevators);
+	treenode elevatorDelegate = nullptr;
+	bindStateVariable(elevatorDelegate);
+	if (elevatorDelegate->dataType != DATA_SIMPLE) {
+		nodeaddsimpledata(elevatorDelegate, new ElevatorBridge::AStarDelegate, true);
+	}
+	this->elevatorDelegate = elevatorDelegate->objectAs(ElevatorBridge::AStarDelegate);
+	this->elevatorDelegate->navigator = this;
+
+	bindVariable(barrierConditions);
 
 	bindStateVariable(minNodeWidth);
 	bindStateVariable(hasConditionalBarriers);
@@ -122,6 +133,7 @@ void AStarNavigator::bindEvents()
 void AStarNavigator::bindTEEvents(TaskExecuter* te)
 {
 	te->bindRelayedClassEvents<Traveler>("AStar", 0, &AStarNavigator::resolveTraveler, getTraveler(te));
+	bindRelayedClassEvents<TravelerBridgeData>("AStar", 0, &Traveler::resolveBridgeData, getTraveler(te)->bridgeData);
 }
 
 void AStarNavigator::bindTEStatistics(TaskExecuter* te)
@@ -169,8 +181,6 @@ double AStarNavigator::onCreate(double dropx, double dropy, double dropz, int is
 
 void AStarNavigator::resolveGridBounds()
 {
-	if (grids.size() == 0)
-		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
 
 	std::vector<Grid*> tempGrids;
 	for (Grid* grid : grids) {
@@ -207,6 +217,9 @@ void AStarNavigator::resolveGridBounds()
 
 void AStarNavigator::resetGrids()
 {
+	if (grids.size() == 0)
+		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
+
 	hasConditionalBarriers = 0.0;
 	hasMandatoryPaths = 0.0;
 
@@ -216,6 +229,14 @@ void AStarNavigator::resetGrids()
 
 	resolveGridBounds();
 
+	for (Grid* grid : grids) {
+		grid->growToBarriers();
+	}
+}
+
+
+void AStarNavigator::buildCustomBarriers()
+{
 	// Clear custom barriers
 	customBarriers = Array();
 
@@ -226,6 +247,10 @@ void AStarNavigator::resetGrids()
 			continue;
 		addObjectBarrierToTable(theObj);
 	}
+}
+
+void AStarNavigator::buildGrids()
+{
 
 	for (Grid* grid : grids) {
 		grid->buildNodeTable();
@@ -236,6 +261,13 @@ void AStarNavigator::resetGrids()
 	}
 
 	areGridNodeTablesBuilt = true;
+}
+
+void AStarNavigator::resetElevatorBridges()
+{
+	for (ElevatorBridge* bridge : elevatorBridges) {
+		bridge->reset();
+	}
 }
 
 
@@ -279,7 +311,10 @@ double AStarNavigator::onReset()
 	edgeTableExtraData.clear();
 	extraDataNode->subnodes.clear();
 
+	buildCustomBarriers();
 	resetGrids();
+	resetElevatorBridges();
+	buildGrids();
 
 	double sumSpeed = 0.0;
 	for (int i = 0; i < travelers.size(); i++) {
@@ -428,7 +463,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		glPolygonOffset(offset - 0.015, -3);
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
-			drawMembers(0);
+			drawMembers();
 
 		glPolygonOffset(offset - 0.020, -4);
 		if (showAllocations)
@@ -512,6 +547,8 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 
 		switch(keyPressed & 0x7f) {
 			case 'A': {
+				if (addElevatorBridge(te))
+					break;
 				Traveler* t = addMember(te)->objectAs(Traveler);
 				if (barrier && barrier->toMandatoryPath())
 					t->useMandatoryPath = 1.0;
@@ -519,6 +556,8 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 			}
 
 			case 'Q': {
+				if (removeElevatorBridge(te))
+					break;
 				if (barrier && barrier->toMandatoryPath()) {
 					auto found = std::find_if(travelers.begin(), travelers.end(), [te](Traveler* t) -> bool { return t->te == te; });
 					if (found != travelers.end()) {
@@ -539,9 +578,13 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 
 		switch(keyPressed & 0x7f) {
 			case 'A':
+				if (addElevatorBridge(theFR))
+					break;
 				addObjectBarrier(theFR);
 				break;
 			case 'Q':
+				if (removeElevatorBridge(theFR))
+					break;
 				for (int i = 0; i < objectBarrierList.size(); i++) {
 					TreeNode* objectNode = objectBarrierList[i]->holder;
 					if (objectNode == connectTo) {
@@ -586,7 +629,7 @@ double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destinatio
 
 double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double endSpeed)
 {
-	if (barrierList.size() == 0 && objectBarrierList.size() == 0) {
+	if (barrierList.size() == 0 && objectBarrierList.size() == 0 && grids.length == 1) {
 		msg("AStar Error", "No barriers found.\nThere must be at least one barrier associated with the AStar Navigator.", 1);
 		return 0;
 	}
@@ -744,7 +787,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 		for (int i = 0; i < barrierList.size(); i++) {
 			MandatoryPath* path = barrierList[i]->toMandatoryPath();
 			if (path) {
-				if (!path->useCondition || path->condition->evaluate(traveler->te->holder))
+				if (!path->conditionRule || path->evaluateCondition(traveler))
 					path->conditionalBarrierChanges.apply();
 			}
 		}
@@ -771,17 +814,18 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 
 	// Figure out if this path is in the cache
 	bool shouldUseCache = false;
-	CachedPathID p;
-	if (cachePaths && !doFullSearch && !routeByTravelTime && !hasConditionalBarriers) {
+	if (cachePaths && !doFullSearch && !routeByTravelTime) {
 		requestCount++;
-		p.startRow = startCell.row;
-		p.startCol = startCell.col;
-		p.endRow = destCell.row;
-		p.endCol = destCell.col;
-		p.destination = traveler->destNode;
-		p.isUsingMandatoryPaths = traveler->useMandatoryPath != 0;
+		traveler->cachedPathKey.startCell = startCell;
+		traveler->cachedPathKey.endCell = destCell;
+		traveler->cachedPathKey.destination = traveler->destNode;
+		traveler->cachedPathKey.isUsingMandatoryPaths = traveler->useMandatoryPath != 0;
+		for (int i = 0; i < traveler->cachedPathKey.barrierConditions.size(); i++) {
+			traveler->cachedPathKey.barrierConditions[i] = (bool)(int)barrierConditions[i]->evaluate(traveler->te->holder);
+		}
+		traveler->isCachedPathKeyValid = true;
 	
-		auto e = pathCache.find(p);
+		auto e = pathCache.find(traveler->cachedPathKey);
 		if (e != pathCache.end()) {
 			cacheUseCount++;
 			return e->second;
@@ -937,13 +981,7 @@ the outside 8 nodes.
 			if (e != edgeTableExtraData.end() && extra->bridges.size() > 0) {
 				for (int i = 0; i < extra->bridges.size(); i++) {
 					auto& entry = extra->bridges[i];
-					if (entry.bridge->useCondition && !entry.bridge->condition->evaluate(routingTraveler->te->holder))
-						continue;
-					double addedDist = entry.bridge->travelDistance + grid->nodeWidth;
-					Point* endPoint = entry.isAtBridgeStart ? entry.bridge->pointList.back() : entry.bridge->pointList.front();
-					Cell endCell = getCell(*endPoint + entry.bridge->getPointToModelOffset());
-					AStarNode* node = getNode(endCell);
-					expandOpenSet(getGrid(endCell), endCell.row, endCell.col, addedDist / grid->nodeWidth, 0, i);
+					entry->checkExpandOpenSet(this, traveler, grid, i);
 				}
 			}
 		}
@@ -1051,9 +1089,10 @@ the outside 8 nodes.
 	}
 
 	if (cachePaths && !doFullSearch && !routeByTravelTime) {
-		pathCache[p] = travelPath;
+		pathCache[traveler->cachedPathKey] = travelPath;
 		pathCount++;
 	}
+	traveler->isCachedPathKeyValid = false;
 
 	routingTraveler = nullptr;
 
@@ -1100,7 +1139,7 @@ void AStarNavigator::updateConditionalBarrierDataOnOpenSetExpanded(const Cell& c
 	for (Barrier* barrier : barrierData->conditionalBarriers) {
 		if (visitedConditionalBarriers.find(barrier) == visitedConditionalBarriers.end()) {
 			visitedConditionalBarriers.insert(barrier);
-			bool shouldApplyBarrier = (bool)barrier->condition->evaluate(routingTraveler->te->holder);
+			bool shouldApplyBarrier = (bool)barrier->evaluateCondition(routingTraveler);
 			if (shouldApplyBarrier) {
 				barrier->conditionalBarrierChanges.apply();
 			}
@@ -1179,7 +1218,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 			entry->cell.col = c;
 			entry->cell.row = r;
 			entryHash[entry->cell.value] = totalSetIndex;
-			entry->h = calculateHeuristic(grid, entry->cell);
+			entry->h = calculateHeuristic(grid, entry->cell) * speedScale;
 			entry->closed = 0;
 			n->isInTotalSet = true;
 		}
@@ -1332,7 +1371,7 @@ float AStarNavigator::clampDirection(float rotDirection)
 	return 0.0;
 }
 
-void AStarNavigator::drawMembers(float z)
+void AStarNavigator::drawMembers()
 {
 	memberMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
 	mandatoryPathMemberMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
@@ -1353,12 +1392,10 @@ void AStarNavigator::drawMembers(float z)
 		ObjectDataType* theFR = objectBarrierList[i];
 		TreeNode* theNode = theFR->holder;
 
-		Vec3 topLeft, bottomLeft, topRight, bottomRight;
-		vectorproject(theNode, 0, 0, 0, model(), topLeft);
-		vectorproject(theNode, 0, -ysize(theNode), 0, model(), bottomLeft);
-		vectorproject(theNode, xsize(theNode), -ysize(theNode), 0, model(), bottomRight);
-		vectorproject(theNode, xsize(theNode), 0, 0, model(), topRight);
-		topLeft.z = bottomLeft.z = topRight.z = bottomRight.z = 0;
+		Vec3 topLeft = Vec3(0, 0, 0).project(theNode, model());
+		Vec3 bottomLeft = Vec3(0, -ysize(theNode), 0).project(theNode, model());
+		Vec3 bottomRight = Vec3(xsize(theNode), -ysize(theNode), 0).project(theNode, model());
+		Vec3 topRight = Vec3(xsize(theNode), 0, 0).project(theNode, model());
 
 		auto addVertex = [this](const Vec3& pos) {
 			Vec3f posf(pos);
@@ -1374,12 +1411,16 @@ void AStarNavigator::drawMembers(float z)
 		addVertex(bottomLeft);
 	}
 
-#define ABV(pos, mesh) {\
-	int newVertex = mesh.addVertex();\
-	mesh.setVertexAttrib(newVertex, MESH_POSITION, pos);\
-	}
+	auto addVertex = [](Vec3f& pos, Mesh& mesh) {
+		int newVertex = mesh.addVertex();
+		mesh.setVertexAttrib(newVertex, MESH_POSITION, pos);
+	};
 
-#define ABT(pos1, pos2, pos3, mesh) ABV(pos1, mesh) ABV(pos2, mesh) ABV(pos3, mesh)
+	auto addTriangle = [&](Vec3f& pos1, Vec3f& pos2, Vec3f& pos3, Mesh& mesh) {
+		addVertex(pos1, mesh);
+		addVertex(pos2, mesh);
+		addVertex(pos3, mesh);
+	};
 
 	const static float TWO_PI = 2 * 3.1415926536f;
 	static int numSides = 20;
@@ -1389,17 +1430,13 @@ void AStarNavigator::drawMembers(float z)
 		Traveler * t = travelers[i];
 		if (t->isActive)
 			continue;
-		TreeNode* traveler = t->te->holder;
+		TaskExecuter* te = t->te;
 
-		double outputVector[3];
-		vectorproject(traveler, 0.5 * xsize(traveler), -0.5 * ysize(traveler), 0, model(), outputVector);
-		float x = outputVector[0];
-		float y = outputVector[1];
+		Vec3f center = te->getLocation(0.5, 0.5, 0.0).project(te->holder->up, model());
 
-		float width = get(spatialsx(traveler));
-		float height = get(spatialsy(traveler));
+		float width = te->size.x;
+		float height = te->size.y;
 		float radius = sqrt(width * width / 4.0 + height * height / 4.0);
-		float center[3] = {x, y, z};
 
 		// Triangle strip
 		for (int i = 0; i < numSides; i++) {
@@ -1410,39 +1447,26 @@ void AStarNavigator::drawMembers(float z)
 			float sinNextTheta = sin(nextTheta);
 			float cosNextTheta = cos(nextTheta);
 
-			float pos1[3] = {
-				radius * cosTheta + center[0], 
-				radius * sinTheta + center[1], 
-				z
-			};
-
-			float pos2[3] = {
-				radius * cosNextTheta  + center[0], 
-				radius * sinNextTheta + center[1], 
-				z
-			};
+			Vec3f pos1(radius * cosTheta + center[0], radius * sinTheta + center[1], center.z);
+			Vec3f pos2(radius * cosNextTheta  + center[0], radius * sinNextTheta + center[1], center.z);
 
 			if (t->useMandatoryPath) {
-				ABT(center, pos1, pos2, mandatoryPathMemberMesh);
+				addTriangle(center, pos1, pos2, mandatoryPathMemberMesh);
 			} else {
-				ABT(center, pos1, pos2, memberMesh);
+				addTriangle(center, pos1, pos2, memberMesh);
 			}
 		}
 	}
 
 	for (auto i = activeTravelers.begin(); i != activeTravelers.end(); i++) {
 		Traveler* t = *i;
-		TreeNode* traveler = t->te->holder;
+		TaskExecuter* te = t->te;
 
-		double outputVector[3];
-		vectorproject(traveler, 0.5 * xsize(traveler), -0.5 * ysize(traveler), 0, model(), outputVector);
-		float x = outputVector[0];
-		float y = outputVector[1];
+		Vec3f center = te->getLocation(0.5, 0.5, 0.0).project(te->holder->up, model());
 
-		float width = get(spatialsx(traveler));
-		float height = get(spatialsy(traveler));
+		float width = te->size.x;
+		float height = te->size.y;
 		float radius = sqrt(width * width / 4.0 + height * height / 4.0);
-		float center[3] = {x, y, z};
 
 		// Triangle strip
 		for (int i = 0; i < numSides; i++) {
@@ -1453,23 +1477,13 @@ void AStarNavigator::drawMembers(float z)
 			float sinNextTheta = sin(nextTheta);
 			float cosNextTheta = cos(nextTheta);
 
-			float pos1[3] = {
-				radius * cosTheta + center[0], 
-				radius * sinTheta + center[1], 
-				z
-			};
-
-			float pos2[3] = {
-				radius * cosNextTheta  + center[0], 
-				radius * sinNextTheta + center[1], 
-				z
-			};
+			Vec3f pos1(radius * cosTheta + center[0], radius * sinTheta + center[1], center.z);
+			Vec3f pos2(radius * cosNextTheta  + center[0], radius * sinNextTheta + center[1], center.z);
 
 			if (t->useMandatoryPath) {
-				ABT(center, pos1, pos2, mandatoryPathMemberMesh);
-			}
-			else {
-				ABT(center, pos1, pos2, memberMesh);
+				addTriangle(center, pos1, pos2, mandatoryPathMemberMesh);
+			} else {
+				addTriangle(center, pos1, pos2, memberMesh);
 			}
 		}
 	}
@@ -1919,6 +1933,32 @@ void AStarNavigator::addObjectBarrier(ObjectDataType* object)
 			return;
 	}
 	objectBarrierList.add(object);
+}
+
+bool AStarNavigator::addElevatorBridge(ObjectDataType * object)
+{
+	if (std::find(elevators.begin(), elevators.end(), object) != elevators.end()) {
+		return true;
+	}
+	Variant result = function_s(object->holder, "createAStarElevatorBridge", (treenode)elevators);
+	if (result != Variant() && result != 0.0) {
+		ElevatorBridge* bridge = elevatorBridges.back();
+		bridge->elevator = object;
+		bridge->aStarDelegate = elevatorDelegate;
+		return true;
+	}
+	return false;
+}
+
+bool AStarNavigator::removeElevatorBridge(ObjectDataType * object)
+{
+	auto foundElevator = std::find(elevators.begin(), elevators.end(), object);
+	if (foundElevator != elevators.end()) {
+		int index = foundElevator - elevators.begin();
+		elevatorBridges[index]->holder->destroy();
+		return true;
+	}
+	return false;
 }
 
 Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)

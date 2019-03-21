@@ -946,7 +946,7 @@ namespace FlexSim {
 	typedef double       (*_setcollisioncheck)(treenode collisionobj, double val,double interval);
 	typedef double       (*_setcolor)(treenode involved, double red, double green, double blue);
 	typedef int          (*_setcursor)(int cursorid);
-	typedef double       (*_setcustomdisplayfunction)(treenode obj, customdisplayfunction);
+	typedef double       (*_setcustomdisplayfunction)(treenode obj, CustomDisplayFunction);
 	typedef double       (*_setdrawnamefunction)(int boxwidth, int boxheight, treenode x, double p1, double p2, double p3);
 	typedef double       (*_setdropcoords)(treenode theview);
 	typedef void         (*_setdropcoordsmanual)(double x, double y, double z);

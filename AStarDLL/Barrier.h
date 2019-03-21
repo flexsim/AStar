@@ -55,8 +55,8 @@ public:
 	static const int PICK_PATTERN_DIRECTION_DOWN = 16;
 
 	double nodeWidth = 1.0;
-	double useCondition = 0.0;
-	treenode condition = nullptr;
+	NodeRef conditionRule;
+	bool evaluateCondition(Traveler* traveler);
 
 	TemporaryBarrier conditionalBarrierChanges;
 
@@ -67,7 +67,6 @@ public:
 
 	virtual void bindVariables(void) override;
 	virtual void bind() override;
-	virtual void bindEvents() override;
 
 	void assertNavigator();
 	ASTAR_FUNCTION Variant assertNavigator(FLEXSIMINTERFACE) { assertNavigator(); return Variant(); }

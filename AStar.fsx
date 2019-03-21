@@ -58,6 +58,7 @@
         </node>
         <node f="42"><name>barriers</name></node>
         <node f="42" dt="3"><name>activeBarrier</name><data><coupling>null</coupling></data></node>
+        <node f="42"><name>barrierConditions</name></node>
         <node f="42"><name>fixedResourceBarriers</name></node>
         <node f="42" dt="1"><name>cachePaths</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>pathCount</name><data>0000000000000000</data></node>
@@ -267,10 +268,7 @@
          </node>
         </node>
         <node f="42" dt="1"><name>patternTable</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>useCondition</name><data>0000000000000000</data></node>
-        <node f="42" dt="2"><name>condition</name><data>treenode traveler = param(1);
-return /**/traveler.Type == 1/**direct*/;
-</data></node>
+        <node f="42" dt="3"><name>conditionRule</name><data><coupling>null</coupling></data></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node></node>
@@ -501,14 +499,16 @@ if (!objectexists(i))
 if (gets(documentwindow(i)) != "3D")
 	return 0;
 
+applicationcommand("assertmoduledependency", "AStar");
+
+int clickCode = clickcode();
 int mode = getvarnum(c, "mode");
 treenode curObjectNode = tonode(getvarnum(c, "curObjectNode"));
 
-applicationcommand("assertmoduledependency", "AStar");
 treenode activeNavigator = tonode(getvarnum(c, "activeNavigator"));
 if (!objectexists(activeNavigator))
 	activeNavigator = function_s(c, "findNavigator");
-if (!objectexists(activeNavigator))
+if (!objectexists(activeNavigator) &amp;&amp; (clickCode == LEFT_PRESS || clickCode == LEFT_RELEASE))
 	activeNavigator = createinstance(node("/?AStarNavigator", library()), model());
 
 nodepoint(getvarnode(c, "activeNavigator"), activeNavigator);
@@ -519,7 +519,6 @@ double screenY = cursorinfo(i, 1, 2, 1);
 setvarnum(c, "lastModelX", modelPos.x);
 setvarnum(c, "lastModelY", modelPos.y);
 setvarnum(c, "lastModelZ", modelPos.z);
-int clickCode = clickcode();
 
 switch (clickCode) {
 	case LEFT_PRESS:
@@ -545,6 +544,8 @@ switch (clickCode) {
 					
 					if(pointNode.rank == 1)
 						setvarnum(c, "addToStart", 1);
+					
+					modeleditmode(EDIT_MODE_DEPTH_PUSH);
 				}
 			}
 		}
@@ -555,6 +556,7 @@ switch (clickCode) {
 			if (mode == EDITMODE_SOLID_BARRIER || mode == EDITMODE_GRID) {
 				function_s(curObjectNode, "setEditMode", BARRIER_MODE_DYNAMIC_CREATE);
 				nodepoint(getvarnode(c, "curObjectNode"), 0); // on a sold barrier, on
+				modeleditmode(EDIT_MODE_DEPTH_POP);
 			} else {
 				// if I'm editing a multi-point object, then subsequent left-releases should add a new point.
 				treenode newPoint = function_s(curObjectNode, "addPoint", modelPos.x, modelPos.y, modelPos.z);
@@ -613,9 +615,26 @@ switch (clickCode) {
 				nodepoint(getvarnode(c, "curObjectNode"), curObjectNode);
 				nodepoint(getvarnode(c, "previousPoint"), 0);
 				setvarnum(c, "addToStart", 0);
+				
+				modeleditmode(EDIT_MODE_DEPTH_PUSH);
 			}
 
 		}
+		break;
+	
+	case RIGHT_RELEASE:
+		if(getvarnum(c, "addToStart")) {
+			treenode firstPoint = first(getvarnode(curObjectNode, "points"));
+			// Move point into position to be deleted
+			if (objectexists(firstPoint))
+				firstPoint.rank = content(firstPoint.up);
+		}
+		if (objectexists(curObjectNode))
+			function_s(curObjectNode, "abortCreationMode");
+		if (objectexists(activeNavigator))
+			function_s(activeNavigator, "rebuildMeshes");
+		
+		function_s(c, "initialize");
 		break;
 }
 </data></node>
@@ -633,14 +652,6 @@ if (mouseState == 0) {
 		
 		#define WM_PAINT 0x000F
 		postwindowmessage(windowfromnode(i), WM_PAINT,0,0);
-	} else {
-		treenode iconGrid = tonode(get(viewfocus(c)));
-		if (!objectexists(iconGrid) 
-				|| !objectexists(selectedobject(iconGrid)) 
-				|| selectedobject(iconGrid) != tonode(get(objectfocus(c)))) 
-		{
-			modeleditmode(0);
-		}
 	}
 }
 
@@ -652,7 +663,30 @@ setvarnum(c, "lastModelY", modelPos.y);
 nodepoint(viewfocus(c), iconGrid);
 nodepoint(objectfocus(c), selectedobject(iconGrid));
 
-setvarnum(c, "mouseDownScreenX", 0);
+function_s(c, "initialize");</data></node>
+        <node f="442" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
+treenode curObjectNode = tonode(getvarnum(c, "curObjectNode"));
+treenode activeNavigator = tonode(getvarnum(c, "activeNavigator"));
+
+if(getvarnum(c, "addToStart")) {
+	treenode firstPoint = first(getvarnode(curObjectNode, "points"));
+	// Move point into position to be deleted
+	if (objectexists(firstPoint))
+		firstPoint.rank = content(firstPoint.up);
+}
+if (objectexists(curObjectNode))
+	function_s(curObjectNode, "abortCreationMode");
+if (objectexists(activeNavigator))
+	function_s(activeNavigator, "rebuildMeshes");
+
+nodepoint(objectfocus(c), 0);
+nodepoint(viewfocus(c), 0);
+
+setvarnum(c, "mode", 0);
+setvarstr(c, "class", "");
+
+function_s(c, "initialize");</data></node>
+        <node f="442" dt="2"><name>initialize</name><data>setvarnum(c, "mouseDownScreenX", 0);
 setvarnum(c, "mouseDownScreenY", 0);
 setvarnum(c, "mouseState", 0);
 setvarnum(c, "lastModelX", 0);
@@ -663,39 +697,6 @@ setvarnum(c, "addToStart", 0);
 nodepoint(getvarnode(c, "activeNavigator"), 0);
 nodepoint(getvarnode(c, "curObjectNode"), 0);
 nodepoint(getvarnode(c, "previousPoint"), 0);</data></node>
-        <node f="442" dt="2"><name>OnExiting</name><data>// reset all my variables so I don't get revision control diffs
-treenode curObjectNode = tonode(getvarnum(c, "curObjectNode"));
-treenode activeNav = tonode(getvarnum(c, "activeNavigator"));
-
-if(getvarnum(c, "addToStart")) {
-	treenode firstPoint = first(getvarnode(curObjectNode, "points"));
-	// Move point into position to be deleted
-	if (objectexists(firstPoint))
-		firstPoint.rank = content(firstPoint.up);
-}
-if (objectexists(curObjectNode))
-	function_s(curObjectNode, "abortCreationMode");
-if (objectexists(activeNav))
-	function_s(activeNav, "rebuildMeshes");
-
-nodepoint(objectfocus(c), 0);
-nodepoint(viewfocus(c), 0);
-
-setvarnum(c, "mode", 0);
-setvarstr(c, "class", "");
-
-setvarnum(c, "mouseDownScreenX", 0);
-setvarnum(c, "mouseDownScreenY", 0);
-setvarnum(c, "mouseState", 0);
-setvarnum(c, "lastModelX", 0);
-setvarnum(c, "lastModelY", 0);
-setvarnum(c, "lastModelZ", 0);
-setvarnum(c, "addToStart", 0);
-
-nodepoint(getvarnode(c, "activeNavigator"), 0);
-nodepoint(getvarnode(c, "curObjectNode"), 0);
-nodepoint(getvarnode(c, "previousPoint"), 0);
-</data></node>
         <node f="442" dt="2"><name>checkStatus</name><data>#define BARRIER_MODE_CREATE 0x2
 
 treenode theEditMode = ownerobject(c);
@@ -931,7 +932,6 @@ nodepoint(objectfocus(c), 0);</data></node>
        <node f="40"><name></name></node>
        <node f="42" dt="4"><name>AStarNavigator</name><data>
         <node f="40"><name></name></node>
-        <node f="42"><name></name></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObject = param(1);
 double x = param(2);
 double y = param(3);
@@ -958,6 +958,7 @@ return asn;
 	modeleditmode("AStar::Barrier");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Barrier</data>
          <node f="2000040"><name></name></node></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#divider</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
@@ -979,6 +980,7 @@ or where travel direction is constrained</data></node>
 	modeleditmode("AStar::Divider");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Divider</data>
          <node f="2000040"><name></name></node></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#divider</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
@@ -1000,6 +1002,7 @@ like a wall</data></node>
 	modeleditmode("AStar::PreferredPath");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/PreferredPath</data>
          <node f="2000040"><name></name></node></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#preferred</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
@@ -1020,6 +1023,7 @@ if (ontoView) {
 	modeleditmode("AStar::Bridge");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Bridge</data>
          <node f="2000040"><name></name></node></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#bridges</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
@@ -1040,6 +1044,7 @@ if (ontoView) {
 	modeleditmode("AStar::MandatoryPath");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/MandatoryPath</data>
          <node f="2000040"><name></name></node></node>
+        <node f="42" dt="2"><name>helptopic</name><data>WorkingWithAStar#mandatoryPaths</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
@@ -1060,6 +1065,7 @@ if (ontoView) {
 	modeleditmode("AStar::Grid");</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/astar/Grid</data>
          <node f="2000040"><name></name></node></node>
+        <node f="42" dt="2"><name>helptopic</name><data>AStarTool#grids</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
@@ -1098,7 +1104,8 @@ iterate(1, content(tabcontrol), 1){
 
 executefsnode(node("VIEW:/nodefunctions/setparameterstitle"),c,0,0);
 repaintview(c);</data></node>
-        <node f="42" dt="2"><name>OnPreOpen</name><data>standardpreopen(c);
+        <node f="42" dt="2"><name>OnPreOpen</name><data>c.name = "AStarProperties";
+standardpreopen(c);
 </data>
          <node f="40"><name></name></node></node>
         <node f="42" dt="2"><name>OnClose</name><data></data></node>
@@ -1107,6 +1114,37 @@ iterate(1, content(tabcontrol), 1){
   if (objectexists(node("&gt;PageOnApply",rank(tabcontrol,count))))
      nodefunction(node("&gt;PageOnApply",rank(tabcontrol,count)));
 }</data></node>
+        <node f="42"><name>eventfunctions</name>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>addBarrierCondition</name><data>treenode addedView = function_s(c.find("/tabcontrol/BarrierConditions/Panel"), "addItem");
+treenode addedCondition = addedView.find("&gt;objectfocus+");
+function_s(c, "selectBarrierCondition", addedCondition, addedView);
+return addedCondition;
+</data></node>
+         <node f="442" dt="2"><name>selectBarrierCondition</name><data>treenode focusedCondition = param(1);
+treenode focusedPanel = param(2);
+Object tabControl = c.find("/tabcontrol");
+Object conditionsTab = tabControl.find("/BarrierConditions");
+Object dragPanel = conditionsTab.find("/Panel");
+if (!focusedPanel &amp;&amp; focusedCondition) {
+	focusedPanel = dragPanel.find("ViewPort/ItemPanel").subnodes[focusedCondition.rank].find("PropertiesPanel").first;
+}
+
+if (itemcurrent(tabControl).value != conditionsTab.rank) {
+	windowshow(windowfromnode(tabControl.subnodes[itemcurrent(tabControl).value]), 0);
+	itemcurrent(tabControl).value = conditionsTab.rank;
+	windowshow(windowfromnode(conditionsTab), 1);
+	#define TCM_SETCURSEL 0x130c
+	sendwindowmessage(windowfromnode(tabControl), TCM_SETCURSEL, conditionsTab.rank - 1, 0);
+}
+if (focusedPanel) {
+	Object titleEdit = focusedPanel.find("/Title");
+	string title = getviewtext(focusedPanel);
+	keyboardfocus(titleEdit);
+	highlightviewtext(titleEdit, 0, title.length, 2);
+}
+</data></node>
+        </node>
        </data>
         <node f="40"><name></name></node>
         <node f="42" dt="4"><name>overlay</name><data>
@@ -1818,8 +1856,8 @@ including turn times and time waiting for other travelers.</data></node>
 int drawmode = get(node("@&gt;objectfocus+&gt;variables/drawMode", c));
 
 setchecked(node("/Show Barriers", up(c)), drawmode &amp; ASTAR_DRAW_MODE_BARRIERS);
-setchecked(node("/Show Bounds", up(c)), drawmode &amp; ASTAR_DRAW_MODE_BOUNDS);
-setchecked(node("/Show Grid", up(c)), drawmode &amp; ASTAR_DRAW_MODE_GRID);
+setchecked(node("/Show Grid Bounds", up(c)), drawmode &amp; ASTAR_DRAW_MODE_BOUNDS);
+setchecked(node("/Show Grid Nodes", up(c)), drawmode &amp; ASTAR_DRAW_MODE_GRID);
 setchecked(node("/Show Members", up(c)), drawmode &amp; ASTAR_DRAW_MODE_MEMBERS);
 setchecked(node("/Show Traffic", up(c)), drawmode &amp; ASTAR_DRAW_MODE_TRAFFIC);
 </data></node>
@@ -1832,8 +1870,8 @@ setchecked(node("/Show Traffic", up(c)), drawmode &amp; ASTAR_DRAW_MODE_TRAFFIC)
 double drawmode = 0;
 
 drawmode += getchecked(node("/Show Barriers", up(c))) ? ASTAR_DRAW_MODE_BARRIERS : 0;
-drawmode += getchecked(node("/Show Bounds", up(c))) ? ASTAR_DRAW_MODE_BOUNDS : 0;
-drawmode += getchecked(node("/Show Grid", up(c))) ? ASTAR_DRAW_MODE_GRID : 0;
+drawmode += getchecked(node("/Show Grid Bounds", up(c))) ? ASTAR_DRAW_MODE_BOUNDS : 0;
+drawmode += getchecked(node("/Show Grid Nodes", up(c))) ? ASTAR_DRAW_MODE_GRID : 0;
 drawmode += getchecked(node("/Show Members", up(c))) ? ASTAR_DRAW_MODE_MEMBERS : 0;
 drawmode += getchecked(node("/Show Traffic", up(c))) ? ASTAR_DRAW_MODE_TRAFFIC : 0;
 
@@ -2020,6 +2058,115 @@ windowgray(windowfromnode(c.find("../CompletionRatioTracker")), gray);
 see the progression of that traveler's last routing algorithm execution.</data></node>
           </data></node>
          </node>
+         <node f="42" dt="4"><name>BarrierConditions</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000407bc000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
+          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
+          <node f="42" dt="2"><name>windowtitle</name><data>Barrier Conditions</data></node>
+         </data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="4"><name>Panel</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/DragViewPanel</data></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>00000000407c0000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>00000000407b1000</data></node>
+           <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
+           <node f="42" dt="1"><name>alignbottommargin</name><data>00000000401c0000</data></node>
+           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+           <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/barrierConditions</data></node>
+           <node f="42" dt="2"><name>viewfocus</name><data>@&gt;viewfocus+</data></node>
+           <node f="42"><name>variables</name>
+            <node f="40"><name></name></node>
+            <node f="42"><name>listItemTemplates</name>
+             <node f="40"><name></name></node>
+             <node f="42" dt="4"><name>Condition</name><data>
+              <node f="40"><name></name></node>
+              <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+              <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
+              <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+              <node f="42" dt="1"><name>spatialsx</name><data>0000000040240000</data></node>
+              <node f="42" dt="1"><name>spatialsy</name><data>00000000404f0000</data></node>
+              <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040380000</data></node>
+              <node f="42" dt="2"><name>viewfocus</name><data>../../../../../..</data></node>
+              <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
+              <node f="42"><name>eventfunctions</name>
+               <node f="40"><name></name></node></node>
+             </data>
+              <node f="40"><name></name></node>
+              <node f="42" dt="4"><name>Title</name><data>
+               <node f="40"><name>object</name></node>
+               <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+               <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
+               <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
+               <node f="42" dt="1"><name>spatialsx</name><data>000000004053c000</data></node>
+               <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+               <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
+               <node f="42" dt="2"><name>coldlinkname</name><data>../..&gt;objectfocus+</data></node>
+              </data></node>
+              <node f="42" dt="4"><name>Edit</name><data>
+               <node f="40"><name>object</name></node>
+               <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+               <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
+               <node f="42" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
+               <node f="42" dt="1"><name>spatialsx</name><data>0000000040468000</data></node>
+               <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+               <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
+               <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeEdit</data></node>
+               <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+</data></node>
+               <node f="42" dt="2"><name>tooltip</name><data>Define the condition </data></node>
+               <node f="42"><name>variables</name>
+                <node f="40"><name></name></node>
+                <node f="42" dt="2"><name>codedescription</name><data>Barrier Condition</data></node>
+                <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/BarrierCondition</data>
+                 <node f="40"><name></name></node></node>
+                <node f="42" dt="1"><name>hasDragTarget</name><data>0000000000000000</data></node>
+                <node f="42" dt="1"><name>valType</name><data>000000003ff00000</data>
+                 <node f="40"><name></name></node>
+                 <node f="42"><name>number</name></node>
+                </node>
+                <node f="42" dt="2"><name>codefocus</name><data>../..&gt;objectfocus+</data></node>
+               </node>
+              </data>
+               <node f="40"><name></name></node></node>
+             </node>
+            </node>
+            <node f="42" dt="2"><name>itemfocus</name><data>&gt;objectfocus+</data></node>
+            <node f="42" dt="2"><name>addButtonTooltip</name><data>Add a new condition</data></node>
+            <node f="42" dt="1"><name>addButtonViewBeveltype</name><data>0000000000000000</data></node>
+            <node f="42" dt="2"><name>removeButtonTooltip</name><data>Remove this condition</data></node>
+            <node f="442" dt="2"><name>defaultCondition</name><data>Object traveler = param(1);
+return /**/traveler.Type == 1/**direct*/;
+</data></node>
+           </node>
+           <node f="42"><name>eventfunctions</name>
+            <node f="40"><name></name></node>
+            <node f="442" dt="2"><name>panelFromItem</name><data>treenode item = param(1);
+treenode templates = param(2);
+return templates.first;</data></node>
+            <node f="442" dt="2"><name>destroyItem</name><data>treenode condition = param(1);
+treenode panel = param(2);
+if (msg("Remove Condition?", "Some objects may reference this condition.\r\nRemoving it cannot be undone.\r\n\r\nContinue?"))
+	condition.destroy();
+else return 1;
+</data></node>
+            <node f="442" dt="2"><name>createItem</name><data>treenode conditions = c.find("&gt;objectfocus+");
+treenode defaultCondition = c.find("&gt;variables/defaultCondition");
+treenode newCondition = createcopy(defaultCondition, conditions);
+newCondition.name = "Rule " + string.fromNum(conditions.subnodes.length);
+return newCondition;
+</data></node>
+           </node>
+          </data>
+           <node f="40"><name></name></node></node>
+         </node>
          <node f="42" dt="4"><name>Triggers</name><data>
           <node f="40"><name>object</name></node>
           <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/pages/shared/Triggers</data></node>
@@ -2187,54 +2334,26 @@ forobjecttreeunder(node("/BarrierPoints", c))
          <node f="40"><name></name></node>
          <node f="42" dt="4"><name>Condition</name><data>
           <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
           <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+&gt;variables/useCondition</data></node>
-          <node f="42"><name>eventfunctions</name>
-           <node f="40"><name></name></node>
-           <node f="42" dt="2"><name>OnPress</name><data>function_s(c, "grayCondition");
-enablecode(c.find("../EditCondition&gt;objectfocus+"));</data></node>
-           <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) {
-	setchecked(c, c.find("&gt;coldlink+").value);
-	function_s(c, "grayCondition");
-}
-</data></node>
-           <node f="442" dt="2"><name>grayCondition</name><data>int useCondition = getchecked(c);
-forobjecttreeunder(c.find("../EditCondition")) {
-	windowgray(windowfromnode(a), !useCondition);
-}
-</data></node>
-          </node>
+          <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
          </data></node>
-         <node f="42" dt="4"><name>EditCondition</name><data>
+         <node f="42" dt="4"><name>ChooseCondition</name><data>
           <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040534000</data></node>
           <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
           <node f="42" dt="1"><name>spatialsx</name><data>0000000040710000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
-          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeEdit</data></node>
-          <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/condition</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which the divider/path will be applied</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which this divider/path will be applied</data></node>
+          <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/conditionRule</data></node>
+          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/modules/AStar/GUIClasses/ChooseCondition</data></node>
           <node f="42"><name>variables</name>
-           <node f="40"><name></name></node>
-           <node f="42" dt="2"><name>codedescription</name><data>Barrier Condition</data></node>
-           <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/BarrierCondition</data>
-            <node f="40"><name></name></node></node>
-           <node f="42" dt="1"><name>hasDragTarget</name><data>0000000000000000</data></node>
-           <node f="42" dt="1"><name>valType</name><data>000000003ff00000</data>
-            <node f="40"><name></name></node>
-            <node f="42"><name>number</name></node>
-           </node>
-           <node f="42" dt="2"><name>codefocus</name><data>../..&gt;objectfocus+</data></node>
-          </node>
-         </data>
-          <node f="40"><name></name></node></node>
+           <node f="40"><name></name></node></node>
+         </data></node>
          <node f="42" dt="4"><name>Two Way</name><data>
           <node f="40"><name>object</name></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
@@ -2772,52 +2891,25 @@ forobjecttreeunder(node("/BarrierPoints", c))
          <node f="40"><name></name></node>
          <node f="42" dt="4"><name>Condition</name><data>
           <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
           <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+&gt;variables/useCondition</data></node>
-          <node f="42"><name>eventfunctions</name>
-           <node f="40"><name></name></node>
-           <node f="42" dt="2"><name>OnPress</name><data>function_s(c, "grayCondition");
-enablecode(c.find("../EditCondition&gt;objectfocus+"));</data></node>
-           <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) {
-	setchecked(c, c.find("&gt;coldlink+").value);
-	function_s(c, "grayCondition");
-}
-</data></node>
-           <node f="442" dt="2"><name>grayCondition</name><data>int useCondition = getchecked(c);
-forobjecttreeunder(c.find("../EditCondition")) {
-	windowgray(windowfromnode(a), !useCondition);
-}
-</data></node>
-          </node>
+          <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
          </data></node>
-         <node f="42" dt="4"><name>EditCondition</name><data>
+         <node f="42" dt="4"><name>ChooseCondition</name><data>
           <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040534000</data></node>
           <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
           <node f="42" dt="1"><name>spatialsx</name><data>0000000040710000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
-          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeEdit</data></node>
-          <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/condition</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which the barrier will be applied</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which this divider/path will be applied</data></node>
+          <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/conditionRule</data></node>
+          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/modules/AStar/GUIClasses/ChooseCondition</data></node>
           <node f="42"><name>variables</name>
-           <node f="40"><name></name></node>
-           <node f="42" dt="2"><name>codedescription</name><data>Barrier Condition</data></node>
-           <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/BarrierCondition</data>
-            <node f="40"><name></name></node></node>
-           <node f="42" dt="1"><name>hasDragTarget</name><data>0000000000000000</data></node>
-           <node f="42" dt="1"><name>valType</name><data>000000003ff00000</data>
-            <node f="40"><name></name></node>
-            <node f="42"><name>number</name></node>
-           </node>
-           <node f="42" dt="2"><name>codefocus</name><data>../..&gt;objectfocus+</data></node>
-          </node>
+           <node f="40"><name></name></node></node>
          </data>
           <node f="40"><name></name></node></node>
          <node f="42" dt="4"><name>SizingPanel</name><data>
@@ -3705,6 +3797,112 @@ if (clickcode() == LEFT_RELEASE) {
         <node f="42" dt="2"><name>By Traveler Label</name><data>return /**/traveler.type == 1/**direct*/;</data></node>
        </node>
       </node>
+      <node f="42"><name>GUIClasses</name>
+       <node f="40"><name></name></node>
+       <node f="42" dt="4"><name>ChooseCondition</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data></data></node>
+        <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+       </data>
+        <node f="40"><name></name></node>
+        <node f="42" dt="4"><name>ChooseCondition</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040710000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040350000</data></node>
+         <node f="42" dt="2"><name>tooltip</name><data></data></node>
+         <node f="42"><name>items</name></node>
+         <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+         <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+</data></node>
+         <node f="42"><name>eventfunctions</name>
+          <node f="40"><name></name></node>
+          <node f="442" dt="2"><name>coldlinkx</name><data>Object view = c;
+if (!eventdata) {
+	function_s(c, "refreshList");
+}
+return objectfocus(c.up).find("+");</data></node>
+          <node f="442" dt="2"><name>refreshList</name><data>items(c).subnodes.clear();
+treenode rules = Model.find("AStarNavigator&gt;variables/barrierConditions");
+treenode nullNode = 0;
+treenode first = items(c).subnodes.add();
+first.name = "No Condition";
+first.value = nullNode;
+for (int i = 1; i &lt;= rules.subnodes.length; i++) {
+	treenode x = items(c).subnodes.add();
+	x.name = rules.subnodes[i].name;
+	x.value = rules.subnodes[i];
+}
+treenode last = items(c).subnodes.add();
+last.name = "Add New Condition...";
+comborefresh(c);
+</data></node>
+          <node f="42" dt="2"><name>OnSelect</name><data>int isHotLink = getvarnum(c.up, "isHotLink");
+int selected = itemcurrent(c).value;
+treenode focus = objectfocus(c.up).find("+");
+treenode newRule = 0;
+if (selected == items(c).subnodes.length) {
+	Object navigator = Model.find("AStarNavigator");
+	createview(navigator.attrs.guifocusclass.value, navigator.getPath(), "");
+	Object propertiesView = Model.find("VIEW:/active/AStarProperties");
+	if (propertiesView) {
+		newRule = function_s(propertiesView, "addBarrierCondition");
+	}
+} 
+
+if (isHotLink) {
+	int undoID;
+	if (objectexists(undohistory(c.up))) {
+		undoID = beginaggregatedundo(c.up, "Changed Barrier Condition");
+		createundorecord(c.up, c.up, UNDO_UPDATE_LINKS_ON_UNDO);
+	}
+	if (newRule)
+		focus.value = newRule;
+	else
+		applylinks(c);
+	function_s(c.up, "onApply");
+
+	if (objectexists(undohistory(c.up))) {
+		createundorecord(c.up, c.up, UNDO_UPDATE_LINKS_ON_REDO);
+		endaggregatedundo(c.up, undoID);
+	}
+} else if (newRule)
+	focus.value = newRule;
+	
+
+if (newRule)
+	applylinks(c, 1);
+</data></node>
+         </node>
+        </data></node>
+        <node f="42" dt="4"><name>More</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+         <node f="42" dt="1"><name>alignrightposition</name><data>0000000040350000</data></node>
+         <node f="42" dt="2"><name>OnPress</name><data>treenode focus = c.find("..&gt;objectfocus+");
+
+Object navigator = Model.find("AStarNavigator");
+createview(navigator.attrs.guifocusclass.value, navigator.getPath(), "");
+Object propertiesView = Model.find("VIEW:/active/AStarProperties");
+if (propertiesView) {
+	function_s(propertiesView, "selectBarrierCondition", focus.value);
+}</data></node>
+         <node f="42" dt="2"><name>tooltip</name><data>Edit this condition in A* Navigator Properties</data></node>
+         <node f="42" dt="2"><name>windowtitle</name><data>...</data></node>
+        </data></node>
+       </node>
+      </node>
      </node>
     </node>
    </node>
@@ -4194,71 +4392,38 @@ repaintall();</data></node>
        </data></node>
        <node f="42" dt="4"><name>Condition</name><data>
         <node f="40"><name>object</name></node>
-        <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
         <node f="42" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data></data></node>
-        <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+&gt;variables/useCondition</data></node>
-        <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
-        <node f="42"><name>eventfunctions</name>
-         <node f="40"><name></name></node>
-         <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);
-function_s(c, "grayCondition");
-treenode focus = node("&gt;coldlink+", c);
-enablecode(c.find("../EditCondition&gt;objectfocus+"));
-function_s(c.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
-         <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) {
-	setchecked(c, c.find("&gt;coldlink+")?.value);
-	function_s(c, "grayCondition");
-}
-</data></node>
-         <node f="442" dt="2"><name>grayCondition</name><data>int useCondition = getchecked(c);
-forobjecttreeunder(c.find("../EditCondition")) {
-	windowgray(windowfromnode(a), !useCondition);
-}
-</data></node>
-        </node>
        </data></node>
-       <node f="42" dt="4"><name>EditCondition</name><data>
+       <node f="42" dt="4"><name>ChooseCondition</name><data>
         <node f="40"><name>object</name></node>
-        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
-        <node f="42" dt="1"><name>spatialy</name><data>00000000404c0000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040490000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040710000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
-        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeEdit</data></node>
-        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/condition</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which the barrier will be applied</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which this barrier is enabled</data></node>
         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/conditionRule</data></node>
+        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/modules/AStar/GUIClasses/ChooseCondition</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
-         <node f="42" dt="2"><name>codedescription</name><data>Barrier Condition</data></node>
-         <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/BarrierCondition</data>
-          <node f="40"><name></name></node></node>
-         <node f="42" dt="1"><name>hasDragTarget</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>valType</name><data>000000003ff00000</data>
-          <node f="40"><name></name></node>
-          <node f="42"><name>number</name></node>
-         </node>
-         <node f="42" dt="2"><name>codefocus</name><data>../..&gt;objectfocus+</data></node>
          <node f="42" dt="1"><name>isHotLink</name><data>000000003ff00000</data></node>
         </node>
         <node f="42"><name>eventfunctions</name>
          <node f="40"><name></name></node>
-         <node f="442" dt="2"><name>onApply</name><data>treenode focus = node("&gt;objectfocus+", c);
-function_s(c.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
-         <node f="442" dt="2"><name>shouldApply</name><data>return 1;</data></node>
+         <node f="442" dt="2"><name>onApply</name><data>function_s(c.up.up.up.up, "applyChangesToSelected", c.find("&gt;objectfocus+"), c);</data></node>
         </node>
-       </data>
-        <node f="40"><name></name></node></node>
+       </data></node>
        <node f="42" dt="4"><name>SizingPanel</name><data>
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>spatialy</name><data>0000000040534000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>000000004051c000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data>
          <node f="40"><name></name></node>
          <node f="42" dt="1"><name>min</name><data>0000000040590000</data></node>
@@ -5290,61 +5455,31 @@ repaintall();</data></node>
        </data></node>
        <node f="42" dt="4"><name>Condition</name><data>
         <node f="40"><name>object</name></node>
-        <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
         <node f="42" dt="1"><name>spatialy</name><data>0000000040418000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data></data></node>
-        <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+&gt;variables/useCondition</data></node>
-        <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
-        <node f="42"><name>eventfunctions</name>
-         <node f="40"><name></name></node>
-         <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);
-function_s(c, "grayCondition");
-treenode focus = node("&gt;coldlink+", c);
-function_s(c.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
-         <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) {
-	setchecked(c, c.find("&gt;coldlink+")?.value);
-	function_s(c, "grayCondition");
-}
-</data></node>
-         <node f="442" dt="2"><name>grayCondition</name><data>int useCondition = getchecked(c);
-forobjecttreeunder(c.find("../EditCondition")) {
-	windowgray(windowfromnode(a), !useCondition);
-}
-</data></node>
-        </node>
        </data></node>
-       <node f="42" dt="4"><name>EditCondition</name><data>
+       <node f="42" dt="4"><name>ChooseCondition</name><data>
         <node f="40"><name>object</name></node>
-        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
-        <node f="42" dt="1"><name>spatialy</name><data>00000000404c0000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040490000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040710000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
-        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EasyCodeEdit</data></node>
-        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/condition</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which the barrier will be applied</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which this barrier/path is enabled</data></node>
         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/conditionRule</data></node>
+        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/modules/AStar/GUIClasses/ChooseCondition</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
-         <node f="42" dt="2"><name>codedescription</name><data>Barrier Condition</data></node>
-         <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/BarrierCondition</data>
-          <node f="40"><name></name></node></node>
-         <node f="42" dt="1"><name>hasDragTarget</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>valType</name><data>000000003ff00000</data>
-          <node f="40"><name></name></node>
-          <node f="42"><name>number</name></node>
-         </node>
-         <node f="42" dt="2"><name>codefocus</name><data>../..&gt;objectfocus+</data></node>
          <node f="42" dt="1"><name>isHotLink</name><data>000000003ff00000</data></node>
         </node>
         <node f="42"><name>eventfunctions</name>
          <node f="40"><name></name></node>
-         <node f="442" dt="2"><name>onApply</name><data>treenode focus = node("&gt;objectfocus+", c);
-function_s(c.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
+         <node f="442" dt="2"><name>onApply</name><data>function_s(c.up.up.up.up, "applyChangesToSelected", c.find("&gt;objectfocus+"), c);</data></node>
         </node>
        </data>
         <node f="40"><name></name></node></node>
@@ -5352,7 +5487,7 @@ function_s(c.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
-        <node f="42" dt="1"><name>spatialy</name><data>0000000040550000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040538000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
         <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+&gt;variables/isTwoWay</data></node>
@@ -5370,7 +5505,7 @@ function_s(c.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
-        <node f="42" dt="1"><name>spatialy</name><data>00000000405a4000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>000000004058c000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>000000004076c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>000000004072c000</data></node>
         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
@@ -5645,7 +5780,7 @@ repaintview(TheTable);
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>00000000c0240000</data></node>
-        <node f="42" dt="1"><name>spatialy</name><data>0000000040795000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>000000004078f000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>000000004076c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data>
@@ -5684,7 +5819,7 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-        <node f="42" dt="1"><name>spatialy</name><data>0000000040795000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>000000004078f000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>000000004076c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data>
@@ -5784,7 +5919,7 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
        <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
        <node f="42" dt="1"><name>spatialsx</name><data>000000004066c000</data></node>
-       <node f="42" dt="1"><name>spatialsy</name><data>000000004052c000</data></node>
+       <node f="42" dt="1"><name>spatialsy</name><data>00000000405e4000</data></node>
        <node f="42" dt="2"><name>undohistory</name><data>..&gt;viewfocus+</data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -5927,6 +6062,38 @@ repaintall();</data></node>
         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/nodeWidth</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
+        <node f="42"><name>variables</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>valueType</name><data>length</data></node>
+         <node f="42" dt="1"><name>spinner</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>isHotlink</name><data>000000003ff00000</data></node>
+        </node>
+        <node f="42"><name>eventfunctions</name>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>onApply</name><data>function_s(c.find("..&gt;objectfocus+"), "makeDirty");</data></node>
+        </node>
+       </data>
+        <node f="40"><name></name></node></node>
+       <node f="42" dt="4"><name>Z Position</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040538000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>00000000405e0000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+       </data></node>
+       <node f="42" dt="4"><name>EditZPosition</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040574000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>000000004059c000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040418000</data></node>
+        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/minPointZ</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data>Enter the Z position of the grid</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
          <node f="42" dt="2"><name>valueType</name><data>length</data></node>
@@ -6139,8 +6306,50 @@ return 1;
     </node>
    </node>
   </node>
+  <node f="42" dt="2"><name>add</name><data>MAIN:/project/events/OnUpdateModel/Update to 19.1</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040080000</data></node>
+    <node f="42" dt="2"><name>after</name><data>update milestone collectors</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>update astar conditional barriers</name><data>treenode updaterootnode = param(1);
+double oldVersion = param(2);
+
+if (oldVersion &gt;= 19.1)
+	return 0;
+	
+int updated = 0;
+treenode conditions = Model.find("AStarNavigator&gt;variables/barrierConditions");
+forobjecttreeunder(updaterootnode) {
+	if (isclasstype(a, "AStar::Barrier") &amp;&amp; getvarnum(a, "useCondition") != 0) {
+		updated = 1;
+		int foundMatch = 0;
+		treenode condition = getvarnode(a, "condition");
+		string value = gets(condition);
+		for (int i = 1; i &lt;= conditions.subnodes.length; i++) {
+			if (value == gets(conditions.subnodes[i])) {
+				foundMatch = 1;
+				nodepoint(getvarnode(a, "conditionRule"), conditions.subnodes[i]);
+				break;
+			}
+		}
+		if (!foundMatch) {
+			treenode newCondition = createcopy(condition, conditions);
+			newCondition.name = "Rule " + string.fromNum(conditions.subnodes.length);
+			nodepoint(getvarnode(a, "conditionRule"), newCondition);
+		}
+	}
+}
+
+return updated;</data></node>
+    </node>
+   </node>
+  </node>
  </node>
- <node f="42" dt="2"><name>release</name><data>19.0</data></node>
+ <node f="42" dt="2"><name>release</name><data>19.1</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
- <node f="42" dt="2"><name>flexsim release</name><data>19.0</data></node>
+ <node f="42" dt="2"><name>flexsim release</name><data>19.1</data></node>
 </node></flexsim-tree>
