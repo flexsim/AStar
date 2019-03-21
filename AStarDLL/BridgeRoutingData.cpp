@@ -74,9 +74,9 @@ const char * BridgeRoutingData::getBridgeDataClassFactory()
 	return "AStar::TravelerBridgeData";
 }
 
-TravelerBridgeData * BridgeRoutingData::createBridgeData(Traveler * traveler, double entryTime, int pathIndex)
+TravelerBridgeData * BridgeRoutingData::createBridgeData()
 {
-	return new TravelerBridgeData(this, entryTime, pathIndex, bridge ? traveler->te->b_spatialz - (bridge->getPointToModelOffset().z + bridge->pointList.front()->z) : 0.0);
+	return new TravelerBridgeData();
 }
 
 void BridgeRoutingData::onBridgeArrival(Traveler * traveler, int pathIndex)

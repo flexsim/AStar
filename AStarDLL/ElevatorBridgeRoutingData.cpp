@@ -54,7 +54,7 @@ void ElevatorBridgeRoutingData::updateLocation(Traveler* traveler)
 	traveler->bridgeData->updateLocation(traveler->te);
 }
 
-TravelerBridgeData * ElevatorBridgeRoutingData::createBridgeData(Traveler * traveler, double entryTime, int pathIndex)
+TravelerBridgeData * ElevatorBridgeRoutingData::createBridgeData()
 {
 	return bridge->createBridgeData();
 }

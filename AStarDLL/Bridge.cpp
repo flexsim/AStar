@@ -116,7 +116,6 @@ void Bridge::onEntry(Traveler * traveler, int pathIndex)
 
 void Bridge::onExit(Traveler * traveler)
 {
-	traveler->bridgeData->routingData = nullptr;
 	if (traveler->bridgeData->nextTraveler)
 		traveler->bridgeData->nextTraveler->bridgeData->prevTraveler = traveler->bridgeData->prevTraveler;
 	if (traveler->bridgeData->prevTraveler)

@@ -152,7 +152,7 @@ public:
 	ObjRef<BridgeRoutingData::ArrivalEvent> bridgeArrivalEvent;
 	treenode bridgeDataNode = nullptr;
 	TravelerBridgeData* bridgeData = nullptr;
-	void assertBridgeData(BridgeRoutingData* routing, double entryTime, int pathIndex);
+	void assertBridgeData(BridgeRoutingData* routing);
 
 	void onTEDestroyed();
 
