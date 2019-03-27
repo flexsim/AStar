@@ -70,6 +70,8 @@ TreeNode* Traveler::resolveBridgeData()
 		traveler = AStarNavigator::getTraveler(te);
 	else traveler = (Traveler*)(void*)te;
 
+	if (!traveler->bridgeData)
+		traveler->assertBridgeData(nullptr);
 	return traveler->bridgeData->holder;
 }
 
@@ -815,7 +817,10 @@ bool Traveler::findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travel
 void Traveler::assertBridgeData(BridgeRoutingData * routing)
 {
 	if (!bridgeData || !bridgeData->isClassType(routing->getBridgeDataClassFactory())) {
-		TravelerBridgeData* data = routing->createBridgeData();
+		TravelerBridgeData* data;
+		if (routing)
+			data = routing->createBridgeData();
+		else data = new TravelerBridgeData;
 		bridgeData = data;
 		nodeaddsimpledata(bridgeDataNode, data, 1);
 	}

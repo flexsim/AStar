@@ -261,8 +261,13 @@ void Grid::buildNodeTable()
 
 	resolveGridOrigin();
 
-	int numCols = (int)round((maxPoint.x - gridOrigin.x) / nodeWidth);
-	int numRows = (int)round((maxPoint.y - gridOrigin.y) / nodeWidth);
+	int numCols, numRows;
+	if (maxPoint.x >= gridOrigin.x && maxPoint.y >= gridOrigin.y) {
+		numCols = (int)round((maxPoint.x - gridOrigin.x) / nodeWidth);
+		numRows = (int)round((maxPoint.y - gridOrigin.y) / nodeWidth);
+	} else {
+		numCols = numRows = 1;
+	}
 
 	nodes.resize(numRows);
 	for (int i = 0; i < nodes.size(); i++) {

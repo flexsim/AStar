@@ -21,6 +21,7 @@ public:
 	virtual void bindEvents() override
 	{
 		bindEvent(ElevatorBankArrival);
+		bindEvent(ElevatorBankContinue);
 		bindEvent(ElevatorEntry);
 		bindEvent(ElevatorExit);
 	}
@@ -39,6 +40,7 @@ public:
 	TreeNode* onElevatorBankArrival = nullptr;
 	TreeNode* onElevatorEntry = nullptr;
 	TreeNode* onElevatorExit = nullptr;
+	TreeNode* onElevatorBankContinue = nullptr;
 
 	virtual void updateLocation(TaskExecuter* te) {}
 };
