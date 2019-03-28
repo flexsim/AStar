@@ -163,8 +163,8 @@
         </node>
         <node f="42" dt="1"><name>imageindexobject</name><data>0000000000000000</data>
          <node f="40"><name></name></node>
-         <node f="42" dt="1"><name>split</name><data>0000000040360000</data></node>
-         <node f="42" dt="1"><name>merge</name><data>0000000040370000</data></node>
+         <node f="42" dt="1"><name>split</name><data>0000000040478000</data></node>
+         <node f="42" dt="1"><name>merge</name><data>0000000040480000</data></node>
         </node>
         <node f="42" dt="2"><name>imagebase</name><data>***</data></node>
         <node f="42" dt="1"><name>imageindexbase</name><data>0000000000000000</data></node>
@@ -4133,6 +4133,112 @@ return 0;
      </node>
     </node>
    </node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040180000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AStarTraveler</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStarTravelerBridgeData</name>
+      <node f="40"><name></name></node>
+      <node f="42" dt="4"><name>OnElevatorBankArrival</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>params</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Current</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Current</data></node>
+          <node f="42" dt="2"><name>Name</name><data>current</data></node>
+          <node f="42" dt="2"><name>Type</name><data>TaskExecuter</data></node>
+         </node>
+         <node f="42" dt="2"><name>Elevator Bank</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Elevator Bank</data></node>
+          <node f="42" dt="2"><name>Name</name><data>elevatorBank</data></node>
+          <node f="42" dt="2"><name>Type</name><data>ElevatorBank</data></node>
+         </node>
+         <node f="42" dt="2"><name>Dest Floor Z</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Dest Floor Z</data></node>
+          <node f="42" dt="2"><name>Name</name><data>destFloorZ</data></node>
+          <node f="42" dt="2"><name>Type</name><data>double</data></node>
+         </node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object arrives at an elevator bank to move between floors</data></node>
+      </data></node>
+      <node f="42" dt="4"><name>OnElevatorBankContinue</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>params</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Current</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Current</data></node>
+          <node f="42" dt="2"><name>Name</name><data>current</data></node>
+          <node f="42" dt="2"><name>Type</name><data>TaskExecuter</data></node>
+         </node>
+         <node f="42" dt="2"><name>Elevator Bank</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Elevator Bank</data></node>
+          <node f="42" dt="2"><name>Name</name><data>elevatorBank</data></node>
+          <node f="42" dt="2"><name>Type</name><data>ElevatorBank</data></node>
+         </node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object continues from an elevator bank</data></node>
+      </data></node>
+      <node f="42" dt="4"><name>OnElevatorEntry</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>params</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Current</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Current</data></node>
+          <node f="42" dt="2"><name>Name</name><data>current</data></node>
+          <node f="42" dt="2"><name>Type</name><data>TaskExecuter</data></node>
+         </node>
+         <node f="42" dt="2"><name>Elevator</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Elevator</data></node>
+          <node f="42" dt="2"><name>Name</name><data>elevator</data></node>
+          <node f="42" dt="2"><name>Type</name><data>ElevatorBank.Elevator</data></node>
+         </node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object enters an elevator</data></node>
+      </data></node>
+      <node f="42" dt="4"><name>OnElevatorExit</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>params</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Current</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Current</data></node>
+          <node f="42" dt="2"><name>Name</name><data>current</data></node>
+          <node f="42" dt="2"><name>Type</name><data>TaskExecuter</data></node>
+         </node>
+         <node f="42" dt="2"><name>Elevator</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Elevator</data></node>
+          <node f="42" dt="2"><name>Name</name><data>elevator</data></node>
+          <node f="42" dt="2"><name>Type</name><data>ElevatorBank.Elevator</data></node>
+         </node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object enters an elevator</data></node>
+      </data></node>
+     </node>
+    </node>
+   </node>
   </node>
   <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels</data>
    <node f="40"><name></name></node>
@@ -6310,7 +6416,7 @@ return 1;
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040080000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040100000</data></node>
     <node f="42" dt="2"><name>after</name><data>update milestone collectors</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>

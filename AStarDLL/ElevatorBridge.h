@@ -26,6 +26,12 @@ public:
 		bindEvent(ElevatorExit);
 	}
 
+
+	virtual TreeNode* getEventInfoObject(const char* eventTitle) override
+	{
+		return node(eventTitle, node("MAIN:/project/exec/globals/DefaultEventInfo/AStarTravelerBridgeData"));
+	}
+
 	TravelerBridgeData() : routingData(nullptr), entryTime(DBL_MAX) {}
 	TravelerBridgeData(BridgeRoutingData* routingData, double entryTime, int pathIndex, double spatialz)
 		: routingData(routingData), entryTime(entryTime), pathIndex(pathIndex), spatialz(spatialz) {}
