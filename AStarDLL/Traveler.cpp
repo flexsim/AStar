@@ -70,6 +70,8 @@ TreeNode* Traveler::resolveBridgeData()
 		traveler = AStarNavigator::getTraveler(te);
 	else traveler = (Traveler*)(void*)te;
 
+	if (!traveler->bridgeData)
+		traveler->assertBridgeData(nullptr);
 	return traveler->bridgeData->holder;
 }
 
@@ -199,7 +201,8 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 	treenode kinematics = te->node_v_kinematics;
 	double outputVector[3];
 	Vec3 startLoc;
-	bool isExitingBridge = bridgeData != nullptr && bridgeData->routingData != nullptr;
+	BridgeRoutingData* exitingBridgeRoutingData = (bridgeData ? bridgeData->routingData : nullptr);
+	bool isExitingBridge = exitingBridgeRoutingData != nullptr;
 	if (isExitingBridge)
 		startLoc = te->getLocation(0.5, 0.5, 0);
 	else {
@@ -387,7 +390,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 			// Create a BridgeArrivalEvent
 			if (bridgeArrivalEvent)
 				destroyevent(bridgeArrivalEvent->holder);
-			assertBridgeData(bridgeArrival, 0.0, 0);
+			assertBridgeData(bridgeArrival);
 			bridgeArrivalEvent = createevent(new BridgeRoutingData::ArrivalEvent(bridge, this, i - 1, endTime))->objectAs(BridgeRoutingData::ArrivalEvent);
 			didBlockPathIndex = i;
 			break;
@@ -417,8 +420,11 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 	// This will trigger other travelers who might be waiting for me to move on 
 	// from the current point I'm at.
 	if (numNodes > startAtPathIndex + 1 && !isCollisionUpdateInterval && (didBlockPathIndex == -1 || didBlockPathIndex > startAtPathIndex + 1)) {
-		if (bridgeData && bridgeData->routingData)
-			bridgeData->routingData->onExit(this);
+		if (exitingBridgeRoutingData) {
+			if (bridgeData->routingData == exitingBridgeRoutingData)
+				bridgeData->routingData = nullptr;
+			exitingBridgeRoutingData->onExit(this);
+		}
 
 		if (enableCollisionAvoidance && initialAllocsSize > 0) {
 			for (int i = initialAllocsSize - 1; i >= 0; i--) {
@@ -453,7 +459,7 @@ void Traveler::onBridgeArrival(BridgeRoutingData* data, int pathIndex)
 	AStarPathEntry e = travelPath[pathIndex];
 
 	updateLocation();
-	assertBridgeData(data, DBL_MAX, pathIndex);
+	assertBridgeData(data);
 	bridgeData->routingData = data;
 	bridgeData->spatialz = te->location.z;
 	bridgeData->pathIndex = pathIndex;
@@ -808,10 +814,13 @@ bool Traveler::findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travel
 	return false;
 }
 
-void Traveler::assertBridgeData(BridgeRoutingData * routing, double entryTime, int pathIndex)
+void Traveler::assertBridgeData(BridgeRoutingData * routing)
 {
 	if (!bridgeData || !bridgeData->isClassType(routing->getBridgeDataClassFactory())) {
-		TravelerBridgeData* data = routing->createBridgeData(this, entryTime, pathIndex);
+		TravelerBridgeData* data;
+		if (routing)
+			data = routing->createBridgeData();
+		else data = new TravelerBridgeData;
 		bridgeData = data;
 		nodeaddsimpledata(bridgeDataNode, data, 1);
 	}

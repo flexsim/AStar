@@ -261,8 +261,13 @@ void Grid::buildNodeTable()
 
 	resolveGridOrigin();
 
-	int numCols = (int)round((maxPoint.x - gridOrigin.x) / nodeWidth);
-	int numRows = (int)round((maxPoint.y - gridOrigin.y) / nodeWidth);
+	int numCols, numRows;
+	if (maxPoint.x >= gridOrigin.x && maxPoint.y >= gridOrigin.y) {
+		numCols = (int)round((maxPoint.x - gridOrigin.x) / nodeWidth);
+		numRows = (int)round((maxPoint.y - gridOrigin.y) / nodeWidth);
+	} else {
+		numCols = numRows = 1;
+	}
 
 	nodes.resize(numRows);
 	for (int i = 0; i < nodes.size(); i++) {
@@ -1187,6 +1192,35 @@ double Grid::onClick(treenode view, int clickCode)
 	return 0.0;
 }
 
+double Grid::onCreate(bool isCopy)
+{
+	Vec3 size = maxPoint - minPoint;
+	maxPoint.x += size.x;
+	minPoint.x += size.x;
+	if (holder->up->name != "grids") {
+		PostMessage(systemwindow(0), FLEXSIM_MESSAGE_USER_CALLBACK, (WPARAM)&Grid::onPostCreate, (LPARAM)this);
+	}
+	return 0;
+}
+
+
+void Grid::onPostCreate(void * data)
+{
+	Grid* grid = (Grid*)data;
+
+	if (grid->holder->up->name != "grids") {
+		auto found = model()->find("AStarNavigator>variables/grids");
+		if (found) {
+			beginignoreundo();
+			transfernode(grid->holder, found);
+			endignoreundo();
+		}
+	}
+	grid->bindNavigator();
+	if (grid->navigator)
+		grid->navigator->isGridDirty = grid->navigator->isBoundsDirty = true;
+}
+
 void Grid::drawSizerHandles(treenode view, int pickingMode)
 {
 	Vec3f bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight;
@@ -1326,9 +1360,11 @@ double Grid::onDestroy(treenode view)
 
 void Grid::bindNavigator()
 {
-	if (holder->up->name == "grids")
+	if (holder->up && holder->up->name == "grids")
 		navigator = ownerobject(holder->up)->objectAs(AStarNavigator);
-	else navigator = nullptr;
+	else {
+		navigator = nullptr;
+	}
 }
 
 double Grid::onUndo(bool isUndo, treenode undoRecord) 

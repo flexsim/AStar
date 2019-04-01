@@ -21,8 +21,15 @@ public:
 	virtual void bindEvents() override
 	{
 		bindEvent(ElevatorBankArrival);
+		bindEvent(ElevatorBankContinue);
 		bindEvent(ElevatorEntry);
 		bindEvent(ElevatorExit);
+	}
+
+
+	virtual TreeNode* getEventInfoObject(const char* eventTitle) override
+	{
+		return node(eventTitle, node("MAIN:/project/exec/globals/DefaultEventInfo/AStarTravelerBridgeData"));
 	}
 
 	TravelerBridgeData() : routingData(nullptr), entryTime(DBL_MAX) {}
@@ -39,6 +46,7 @@ public:
 	TreeNode* onElevatorBankArrival = nullptr;
 	TreeNode* onElevatorEntry = nullptr;
 	TreeNode* onElevatorExit = nullptr;
+	TreeNode* onElevatorBankContinue = nullptr;
 
 	virtual void updateLocation(TaskExecuter* te) {}
 };

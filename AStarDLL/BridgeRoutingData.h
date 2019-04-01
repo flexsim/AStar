@@ -31,7 +31,7 @@ public:
 	void buildDijkstraTable(Grid* owner);
 	virtual ElevatorBridgeRoutingData* toElevator() { return nullptr; }
 	virtual const char* getBridgeDataClassFactory();
-	virtual TravelerBridgeData* createBridgeData(Traveler* traveler, double entryTime, int pathIndex);
+	virtual TravelerBridgeData* createBridgeData();
 
 	virtual void onBridgeArrival(Traveler* traveler, int pathIndex);
 	virtual void onExit(Traveler* traveler);
