@@ -233,6 +233,10 @@ public:
 	Vec3 getPointToModelOffset();
 	void setSizeComponent(treenode sizeAtt, double toSize);
 	ASTAR_FUNCTION Variant setSizeComponent(FLEXSIMINTERFACE) { setSizeComponent(param(1), param(2)); return Variant(); }
+
+	Point * dragAnchorPointX = nullptr;
+	Point * dragAnchorPointY = nullptr;
+	
 };
 
 }
