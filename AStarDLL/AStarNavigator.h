@@ -331,7 +331,7 @@ public:
 	double areGridsUserCustomized = 0.0;
 
 	NodeListArray<ElevatorBridge>::CouplingSdtSubNodeType elevatorBridges;
-	NodeListArray<ObjectDataType>::StoredAttCouplingType elevators;
+	NodeListArray<ObjectDataType>::ObjStoredAttCouplingType elevators;
 	ElevatorBridge::AStarDelegate* elevatorDelegate;
 
 	NodeListArray<>::SubNodeType barrierConditions;
