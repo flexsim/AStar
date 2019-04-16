@@ -225,7 +225,7 @@ void Bridge::updateLocation(Traveler* traveler, double geomDist, Vec3* passedOff
 			traveler->te->b_spatialrz = nextRot;
 			traveler->te->b_spatialx = interpolated.x - 0.5 * traveler->te->b_spatialsx;
 			traveler->te->b_spatialy = interpolated.y + 0.5 * traveler->te->b_spatialsx;
-			traveler->te->b_spatialz = interpolated.z + traveler->bridgeData->spatialz;
+			traveler->te->b_spatialz = interpolated.z;
 			break;
 		}
 	}
