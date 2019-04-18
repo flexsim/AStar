@@ -137,11 +137,11 @@ void Barrier::addBarriersToTable(Grid* grid)
 		isTrivialSolidBarrier = !cell->canGoUp && !cell->canGoDown && !cell->canGoLeft && !cell->canGoRight;
 	}
 
-	if (!grid->isLocWithinBounds(myMin, false) && !grid->isLocWithinBounds(myMax, false)) {
+	if (!grid->isLocWithinBounds(myMin, false, false) && !grid->isLocWithinBounds(myMax, false, false)) {
 		Vec3 topLeft(myMin.x, myMax.y, myMin.z);
-		if (!grid->isLocWithinBounds(topLeft, false)) {
+		if (!grid->isLocWithinBounds(topLeft, false, false)) {
 			Vec3 bottomRight(myMax.x, myMin.y, myMin.z);
-			if (!grid->isLocWithinBounds(bottomRight, false))
+			if (!grid->isLocWithinBounds(bottomRight, false, false))
 				return;
 		}
 	}

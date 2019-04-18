@@ -1618,12 +1618,12 @@ Grid* AStarNavigator::getGrid(const Cell& cell)
 Grid * AStarNavigator::getGrid(const Vec3 & modelPos, bool canReturnNull)
 {
 	for (Grid* grid : grids) {
-		if (grid->isLocWithinBounds(modelPos, false)) {
+		if (grid->isLocWithinBounds(modelPos, false, false)) {
 			return grid;
 		}
 	}
 	for (Grid* grid : grids) {
-		if (grid->isLocWithinBounds(modelPos, true)) {
+		if (grid->isLocWithinBounds(modelPos, true, false)) {
 			return grid;
 		}
 	}

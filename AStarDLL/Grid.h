@@ -36,7 +36,7 @@ public:
 	/// <summary>	Tells if this grid is user-customized. If the user has ever manipulated this 
 	/// 			grid directly, or created it directly, then it is user-customized. </summary>
 	double isUserCustomized = false;
-	bool isLocWithinBounds(const Vec3& modelLoc, bool canExpand) const;
+	bool isLocWithinBounds(const Vec3& modelLoc, bool canExpand, bool addSurroundDepth) const;
 	bool isLocWithinVerticalBounds(double) const;
 	bool intersectBoundingBox(Vec3& min, Vec3& max) const;
 

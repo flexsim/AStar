@@ -35,7 +35,7 @@ void ElevatorBridge::reset()
 	for (Grid* grid : nav->grids) {
 		if (grid->minPoint.z >= min.z && grid->minPoint.z <= max.z) {
 			Vec3 arrivalPoint = getArrivalLoc(grid->minPoint.z);
-			if (grid->isLocWithinBounds(arrivalPoint, false)) {
+			if (grid->isLocWithinBounds(arrivalPoint, false, false)) {
 				auto data = new ElevatorBridgeRoutingData;
 				grid->bridgeData.add(data);
 				nodejoin(data->holder, nodeadddata(this->bridgeData->subnodes.add(), DATATYPE_COUPLING));
