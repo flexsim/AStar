@@ -547,8 +547,6 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 
 		switch(keyPressed & 0x7f) {
 			case 'A': {
-				if (addElevatorBridge(te))
-					break;
 				Traveler* t = addMember(te)->objectAs(Traveler);
 				if (barrier && barrier->toMandatoryPath())
 					t->useMandatoryPath = 1.0;
@@ -556,8 +554,6 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 			}
 
 			case 'Q': {
-				if (removeElevatorBridge(te))
-					break;
 				if (barrier && barrier->toMandatoryPath()) {
 					auto found = std::find_if(travelers.begin(), travelers.end(), [te](Traveler* t) -> bool { return t->te == te; });
 					if (found != travelers.end()) {
@@ -578,13 +574,11 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 
 		switch(keyPressed & 0x7f) {
 			case 'A':
-				if (addElevatorBridge(theFR))
-					break;
+				addElevatorBridge(theFR);
 				addObjectBarrier(theFR);
 				break;
 			case 'Q':
-				if (removeElevatorBridge(theFR))
-					break;
+				removeElevatorBridge(theFR);
 				for (int i = 0; i < objectBarrierList.size(); i++) {
 					TreeNode* objectNode = objectBarrierList[i]->holder;
 					if (objectNode == connectTo) {
