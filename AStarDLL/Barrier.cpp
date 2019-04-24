@@ -137,11 +137,11 @@ void Barrier::addBarriersToTable(Grid* grid)
 		isTrivialSolidBarrier = !cell->canGoUp && !cell->canGoDown && !cell->canGoLeft && !cell->canGoRight;
 	}
 
-	if (!grid->isLocWithinBounds(myMin, false) && !grid->isLocWithinBounds(myMax, false)) {
+	if (!grid->isLocWithinBounds(myMin, false, false) && !grid->isLocWithinBounds(myMax, false, false)) {
 		Vec3 topLeft(myMin.x, myMax.y, myMin.z);
-		if (!grid->isLocWithinBounds(topLeft, false)) {
+		if (!grid->isLocWithinBounds(topLeft, false, false)) {
 			Vec3 bottomRight(myMax.x, myMin.y, myMin.z);
-			if (!grid->isLocWithinBounds(bottomRight, false))
+			if (!grid->isLocWithinBounds(bottomRight, false, false))
 				return;
 		}
 	}
@@ -681,6 +681,7 @@ double Barrier::onClick(treenode view, int clickCode)
 	AStarNavigator* nav = navigator;
 	isMeshDirty = true;
 	Vec3 pos(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), cursorinfo(view, 2, 3, 1));
+	dragAnchorPointX = dragAnchorPointY = nullptr;
 	return onClick(view, clickCode, pos);
 }
 
@@ -696,17 +697,41 @@ double Barrier::dragPressedPick(treenode view, Vec3& pos, Vec3& diff)
 		Point* activePoint = pointNode->objectAs(Point);
 		Point* activeXPoint = activePoint, *activeYPoint = activePoint;
 		if (pickType == PICK_POINT) {
-			Vec3 min, max;
-			getBoundingBox(min, max);
-			Vec3 center = (min + max) * 0.5;
-			if (pos.x < center.x)
+			if (!dragAnchorPointX) {
+				dragAnchorPointX = pointList[0];
+				dragAnchorPointY = pointList[0];
+			}
+			Vec3 ptmOffset = getPointToModelOffset();
+			Vec2 anchor(dragAnchorPointX->x + ptmOffset.x, dragAnchorPointY->y + ptmOffset.y);
+
+			if (pos.x < anchor.x) {
 				activeXPoint = pointList[0];
-			else activeXPoint = pointList[1];
-			if (pos.y < center.y)
+				if (dragAnchorPointX == activeXPoint) {
+					dragAnchorPointX = pointList[1];
+					dragAnchorPointX->x = anchor.x - b_spatialx;
+				}
+			}
+			else {
+				activeXPoint = pointList[1];
+				if (dragAnchorPointX == activeXPoint) {
+					dragAnchorPointX = pointList[0];
+					dragAnchorPointX->x = anchor.x - b_spatialx;
+				}
+			}
+			if (pos.y < anchor.y) {
 				activeYPoint = pointList[0];
-			else activeYPoint = pointList[1];
-			//diff.x = pos.x - activeXPoint->x;
-			//diff.y = pos.y - activeYPoint->y;
+				if (dragAnchorPointY == activeYPoint) {
+					dragAnchorPointY = pointList[1];
+					dragAnchorPointY->y = anchor.y - b_spatialy;
+				}
+			}
+			else {
+				activeYPoint = pointList[1];
+				if (dragAnchorPointY == activeYPoint) {
+					dragAnchorPointY = pointList[0];
+					dragAnchorPointY->y = anchor.y - b_spatialy;
+				}
+			}
 		}
 		if (pickType == PICK_POINT || pickType == PICK_ARROW_LEFT || pickType == PICK_ARROW_RIGHT) {
 			activeXPoint->x += diff.x;

@@ -29,14 +29,16 @@ void Grid::bind()
 	bindCallback(makeDirty, Grid);
 }
 
-bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand) const
+bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand, bool addSurroundDepth) const
 {
+
+	double offset = addSurroundDepth ? (navigator->surroundDepth + 1) * nodeWidth : 0;
 	double z = modelLoc.z + 0.001 * nodeWidth;
 	// return false if it's not in the z range
 	if ((z < minPoint.z && !isLowestGrid) || z >= maxPoint.z)
 		return false;
-	if ((modelLoc.x >= minPoint.x && modelLoc.y >= minPoint.y)
-			&& (modelLoc.x <= maxPoint.x && modelLoc.y <= maxPoint.y))
+	if ((modelLoc.x - offset >= minPoint.x && modelLoc.y - offset >= minPoint.y)
+			&& (modelLoc.x + offset <= maxPoint.x && modelLoc.y + offset <= maxPoint.y))
 		return true;
 
 	if (canExpand) {
@@ -44,8 +46,8 @@ bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand) const
 			return true;
 		Vec2 min, max;
 		findGrowthBounds(min, max);
-		if ((modelLoc.x >= min.x && modelLoc.y >= min.y)
-				&& (modelLoc.x <= max.x && modelLoc.y <= max.y))
+		if ((modelLoc.x - offset >= min.x && modelLoc.y - offset >= min.y)
+				&& (modelLoc.x + offset <= max.x && modelLoc.y + offset <= max.y))
 			return true;
 	}
 	return false;
@@ -64,10 +66,11 @@ bool Grid::intersectBoundingBox(Vec3 & min, Vec3 & max) const
 bool Grid::growToEncompassBoundingBox(Vec3 min, Vec3 max, bool addSurroundDepth)
 {
 	if (addSurroundDepth) {
-		min.x -= navigator->surroundDepth * nodeWidth;
-		min.y -= navigator->surroundDepth * nodeWidth;
-		max.x += navigator->surroundDepth * nodeWidth;
-		max.y += navigator->surroundDepth * nodeWidth;
+		double offset = (navigator->surroundDepth + 2) * nodeWidth;
+		min.x -= offset;
+		min.y -= offset;
+		max.x += offset;
+		max.y += offset;
 	}
 
 	if (max.x <= maxPoint.x && min.x >= minPoint.x && max.y <= maxPoint.y && min.y >= minPoint.y)
@@ -101,7 +104,7 @@ bool Grid::growToEncompassBoundingBox(Vec3 min, Vec3 max, bool addSurroundDepth)
 
 	navigator->setDirty();
 
-	return isLocWithinBounds(min, false) && isLocWithinBounds(max, false);
+	return isLocWithinBounds(min, false, false) && isLocWithinBounds(max, false, false);
 }
 
 bool Grid::shrinkToFitGrowthBounds()
@@ -208,8 +211,8 @@ void Grid::growToBarriers()
 		Vec3 min, max;
 		barrier->getBoundingBox(min, max);
 		if (isLocWithinVerticalBounds(min.z)) {
-			if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
-				|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
+			if ((!isLocWithinBounds(min, false, true) && isLocWithinBounds(min, true, true))
+				|| (!isLocWithinBounds(max, false, true) && isLocWithinBounds(max, true, true)))
 				growToEncompassBoundingBox(min, max, true);
 		}
 	}
@@ -223,8 +226,8 @@ void Grid::growToBarriers()
 			// Treat objects as a solid barrier
 			AStarNavigator::getBoundingBox(element[1], min, max);
 			if (isLocWithinVerticalBounds(min.z)) {
-				if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
-					|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
+				if ((!isLocWithinBounds(min, false, true) && isLocWithinBounds(min, true, true))
+					|| (!isLocWithinBounds(max, false, true) && isLocWithinBounds(max, true, true)))
 					growToEncompassBoundingBox(min, max, true);
 			}
 		}
@@ -233,8 +236,8 @@ void Grid::growToBarriers()
 			Vec3 min = Vec3(element[1], element[2], element[3]);
 			Vec3 max = min;
 			if (isLocWithinVerticalBounds(min.z)) {
-				if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
-					|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
+				if ((!isLocWithinBounds(min, false, true) && isLocWithinBounds(min, true, true))
+					|| (!isLocWithinBounds(max, false, true) && isLocWithinBounds(max, true, true)))
 					growToEncompassBoundingBox(min, max, true);
 			}
 		}
@@ -244,8 +247,8 @@ void Grid::growToBarriers()
 			Vec3 max = Vec3(max(element[1], element[4]), max(element[2], element[5]), element[6]);
 
 			if (isLocWithinVerticalBounds(min.z)) {
-				if ((!isLocWithinBounds(min, false) && isLocWithinBounds(min, true))
-					|| (!isLocWithinBounds(max, false) && isLocWithinBounds(max, true)))
+				if ((!isLocWithinBounds(min, false, true) && isLocWithinBounds(min, true, true))
+					|| (!isLocWithinBounds(max, false, true) && isLocWithinBounds(max, true, true)))
 					growToEncompassBoundingBox(min, max, true);
 			}
 		}
