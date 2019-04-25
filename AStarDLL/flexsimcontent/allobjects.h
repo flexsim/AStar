@@ -1367,11 +1367,14 @@
 #define BUNDLE_FLAG_KEYED 0x2
 #define BUNDLE_FLAG_SORTED 0x4
 
+#define BUNDLE_FLAG_IR_OPT 0x10
+
 #define BUNDLE_FIELD_TYPE_DOUBLE 1
 #define BUNDLE_FIELD_TYPE_INT 2
 #define BUNDLE_FIELD_TYPE_STR 3
 #define BUNDLE_FIELD_TYPE_FLOAT 4
 #define BUNDLE_FIELD_TYPE_VARCHAR 5
+#define BUNDLE_FIELD_TYPE_NODEREF 6
 #define BUNDLE_FIELD_TYPE_MASK 0x00FF
 
 #define BUNDLE_FIELD_INDEX_MAP 0x0100
@@ -1716,6 +1719,9 @@
 
 #define EDIT_MODE_GET_MODE_NUM -1
 #define EDIT_MODE_GET_MODE_DELEGATE -2
+#define EDIT_MODE_GET_DEPTH -3
+#define EDIT_MODE_DEPTH_PUSH -4
+#define EDIT_MODE_DEPTH_POP -5
 
 #define PARAM_TYPE_NUMBER 1
 #define PARAM_TYPE_NODE 2
@@ -1835,6 +1841,7 @@
 #define LIST_ON_FULFILL_NUM_REQUESTED "%$4$%"
 #define LIST_ON_FULFILL_NUM_REQUIRED "%$5$%"
 #define LIST_ON_PULL_VALUE "%$1$%"
+#define LIST_ON_PULL_PULLER "%$2$%"
 
 #define EVENT_INFO_TABLE_COL_NAME 1
 #define EVENT_INFO_TABLE_COL_REF 2
@@ -1888,6 +1895,7 @@
 #define STAT_TYPE_TIME_SERIES 0x3
 #define STAT_TYPE_CATEGORICAL 0x4
 #define STAT_TYPE_KINETIC_LEVEL 0x5
+#define STAT_TYPE_POINTER 0x6
 
 #define STAT_RELAYED 0x100
 #define STAT_TIME_WEIGHTED 0x200
@@ -5069,6 +5077,7 @@ TreeNode* node_v_precision;
 #define v_precision node_v_precision->safedatafloat()[0]
 TreeNode* node_v_showLegend;
 #define v_showLegend node_v_showLegend->safedatafloat()[0]
+TreeNode* node_v_manager;
 TreeNode* node_v_timeplotSettings;
 #define v_timeplotSettings node_v_timeplotSettings->safedatafloat()[0]
 TreeNode* node_v_histogramSettings;

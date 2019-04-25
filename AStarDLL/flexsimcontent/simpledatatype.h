@@ -1488,6 +1488,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	virtual bool hasCustomWhereFilter() { return false; }
 	virtual bool evaluateCustomWhereFilter(SqlQuery* q) { return true; }
+	virtual const char* getFlexScriptType(int tableID, int colID) { return nullptr; }
 };
 #endif
 
@@ -1609,6 +1610,8 @@ public:
 	engine_export static TrackedVariable* create();
 	engine_export void addSubscriber(bool needsHistory, bool needsProfile, bool persist);
 	Variant addSubscriber(FLEXSIMINTERFACE);
+
+	static bool resetStatsCalled;
 private:
 	void countDownSubscribers();
 	int needsHistoryCountDown = 0;

@@ -214,6 +214,7 @@ protected:
 		TreeNode* eventNode = nullptr;
 		ObjectDataType* processFlowInstance = nullptr;
 		std::string eventName;
+		Array linkedColumns;
 
 		bool dataAvailable = false;
 		bool rowValueAvailable = false;
@@ -253,6 +254,7 @@ protected:
 		TreeNode* __getEventNode();
 		ObjectDataType* __getProcessFlowInstance();
 		std::string __getEventName();
+		Array __getLinkedColumns();
 		Variant __getRowValue();
 		int __getRowNumber();
 		int __getRowValueIndex();
@@ -266,6 +268,7 @@ protected:
 		__declspec(property(get = __getEventNode)) TreeNode* eventNode;
 		__declspec(property(get = __getProcessFlowInstance)) ObjectDataType* processFlowInstance;
 		__declspec(property(get = __getEventName)) std::string eventName;
+		__declspec(property(get = __getLinkedColumns)) Array linkedColumns;
 		__declspec(property(get = __getRowObject)) Variant rowObject;
 		__declspec(property(get = __getRowNumber)) int rowNumber;
 		__declspec(property(get = __getRowValueIndex)) int rowValueIndex;
@@ -346,6 +349,7 @@ public:
 		double bundleFieldType = 1;
 		double valueFormat = DATA_FORMAT_NONE;
 		TreeNode* valueNode;
+		TreeNode* initialValueNode;
 		Variant columnValue;
 		double columnValueIndex = 0;
 
@@ -358,6 +362,7 @@ public:
 		double valueApplicationMode = (double)OnEventOnly;
 		
 		Variant getValue() { return valueNode->evaluate(); }
+		Variant getInitialValue() { return initialValueNode->evaluate(); }
 		int getBundleFieldType() { return (int)bundleFieldType;	};
 
 		int getColumnFormat() { return (int)valueFormat; }
@@ -428,6 +433,7 @@ public:
 		NodeListArray<CollectedDataProperty>::ObjPtrType collectedProperties;
 		double stopTrackingRowValue = 0.0;
 		NodeListArray<Column>::ObjPtrType columns;
+		Variant columnIndices;
 		double flags = 0;
 
 		TreeNode* savedProperties;
@@ -551,8 +557,7 @@ public:
 		// Additional columns - data to collect
 		TreeNode* schedule;
 
-		NodeListArray<CollectedDataProperty>::ObjPtrType collectedPropertiesList;
-		NodeListArray<Column>::ObjPtrType columnsToUpdate;
+		TreeNode* infoNode;
 
 		virtual void bind() override;
 		virtual const char* getClassFactory() override { return "StatisticsCollectorTimerEventReference"; }
@@ -567,6 +572,7 @@ public:
 	public:
 		ObjRef<TimerEventReference> linkedEventReference;
 		double rowNumber;
+		
 		virtual void execute() override;
 		virtual void bind() override;
 		virtual const char* getClassFactory() { return "StatisticsCollectorTimerEventReferenceListener"; }
@@ -598,17 +604,21 @@ public:
 		// I don't need to set the value; collector tables are read-only for queries
 		// I don't need to worry about table ID either
 		virtual int getRowCount(int tableID) override;
-		ObjRef<StatisticsCollector> collector;
-		QuerySource(StatisticsCollector* collector) : collector(collector) {}
+		NodeRef collectorLink;
+		StatisticsCollector* __getCollector();
+		__declspec(property(get = __getCollector)) StatisticsCollector* collector;
+		QuerySource(StatisticsCollector* collector);
 	};
 
 	class DataSource : public Table::TableDataSource
 	{
 	protected:
-		ObjRef<StatisticsCollector> curCollector;
+		NodeRef collectorLink;
+		StatisticsCollector* __getCollector() const;
+		__declspec(property(get = __getCollector)) StatisticsCollector* curCollector;
 		void throwError(std::string message) { throw message + " (for " + curCollector->holder->name + ")"; }
 	public:
-		DataSource(StatisticsCollector* curCollector) : curCollector(curCollector) {}
+		DataSource(StatisticsCollector* curCollector);
 		bool isValid() { return (bool)curCollector; }
 
 		virtual int getConstraints() const override { return READ_ONLY | BUNDLE_TYPES_ONLY; }
@@ -693,6 +703,7 @@ protected:
 
 public:
 	double enabled = 1;
+	enum WarmupMode { ClearRows = 0x0, DoNothing = 0x1, ResetValues = 0x2, RemoveUntrackedRows = 0x4 };
 	double ignoreWarmup = 0;
 	double inErrorState = 0;
 	double changeCount;
@@ -737,6 +748,7 @@ public:
 	void applyParamTableToProperties(TreeNode* paramTableNode, NodeListArray<EventParamProperty>::SdtSubNodeBindingType& eventProperties);
 	void applyUnkownParamsToProperties(NodeListArray<EventParamProperty>::SdtSubNodeBindingType& eventProperties);
 	engine_export TreeNode* getEventReferenceObject(TreeNode* eventReference);
+	engine_export TreeNode* assertEventReferenceParam(TreeNode* eventReference, int paramNum);
 	engine_export TreeNode* addPropertyToEventReference(TreeNode* eventReference);
 	engine_export TreeNode* addSharedProperty();
 	engine_export TreeNode* addRowSortInfo();
@@ -747,6 +759,13 @@ public:
 	engine_export TreeNode* addColumn();
 	engine_export TreeNode* addColumnSet();
 
+private:
+	bool hasColumnSets();
+	TreeNode* getColumnCache(bool assert);
+public:
+	int getNumColumns();
+	Variant getColName(int colNum);
+	
 	engine_export void linkColumnAndEvent(TreeNode* column, TreeNode* eventRef);
 	engine_export void unlinkColumnAndEvent(TreeNode* column, TreeNode* eventRef);
 	engine_export void unlinkAllEvents(TreeNode* column);
@@ -759,6 +778,7 @@ public:
 
 	void onEventOccurred(EventOccurredInfo& info, CallPoint* listenerCP);
 	void onPreTransientEvent(TransientEventReference* eventReference, TreeNode* eventObject, TreeNode* instanceObject, double flags, CallPoint* listenerCP);
+	void updateAllRows(std::vector<Column*>& columnsToUpdate, const char* eventName, bool doEvent);
 
 	engine_export void update();
 
@@ -840,148 +860,6 @@ public:
 	engine_export bool isSuitableForLiveUpdates();
 
 	virtual StatisticsCollector* toStatisticsCollector() { return this; }
-};
-
-class CalculatedTable : public ColumnFormatter
-{
-protected:
-	bool shouldUpdate() const;
-
-public:
-	class Timer : public FlexSimEvent
-	{
-	public:
-		virtual void execute() override;
-		virtual const char* getClassFactory() { return "CalculatedTableTimer"; }
-	};
-
-	class QuerySource : public SqlDataSource
-	{
-	public:
-		virtual int getColID(int tableId, const char* colName, int& colFlags) override;
-		virtual const char* enumerateColNames(int tableId, int colNum) override;
-		virtual Variant getValue(int tableId, int row, int colId) override;
-		// I don't need to set the value; collector tables are read-only for queries
-		// I don't need to worry about table ID either
-		virtual int getRowCount(int tableID) override;
-		ObjRef<CalculatedTable> table;
-		QuerySource(CalculatedTable* table) : table(table) {}
-	};
-
-	class DataSource : public Table::TableDataSource
-	{
-	protected:
-		ObjRef<CalculatedTable> table;
-		void throwError(std::string message) { throw message + " (for " + table->holder->name + ")"; }
-	public:
-		DataSource(CalculatedTable* table) : table(table) {}
-		bool isValid() { return (bool)table; }
-
-		virtual int getConstraints() const override { return READ_ONLY | BUNDLE_TYPES_ONLY; }
-		engine_export virtual int __numRows() const override;
-		engine_export virtual int __numCols() const override;
-
-		virtual std::string __name() const override;
-
-		virtual void addCol(int, int) override { throwError("Error: cannot add columns"); }
-		virtual void addRow(int, int) override { throwError("Error: cannot add rows"); }
-		virtual TreeNode* cell(const Variant&, const Variant&) override { throwError("Error: cannot get cell"); throw; }
-		virtual void clear(int) { throwError("Error: cannot clear table"); }
-		virtual void deleteCol(int) override { throwError("Error: cannot delete column"); }
-		virtual void deleteRow(int) override { throwError("Error: cannot delete row"); }
-		// executeCell is okay
-		virtual std::string getColHeader(int colNum) override;
-		// getRowHeader is okay
-		virtual void moveCol(int, int) override { throwError("Error: cannnot move column"); }
-		virtual void moveRow(int, int) override { throwError("Error: cannnot move row"); }
-		virtual void setColHeader(int, const char*) override { throwError("Error: cannnot set column header"); }
-		virtual void setRowHeader(int, const char*) override { throwError("Error: cannnot set row header"); }
-		virtual void setSize(int, int, int, int) override { throwError("Error: cannnot set size"); }
-		virtual void sort(const Variant&, const Variant&) override { throwError("Error: cannnot sort"); }
-		virtual void swapCols(int, int) override { throwError("Error: swap columns"); }
-		virtual void swapRows(int, int) override { throwError("Error: swap rows"); }
-
-		engine_export virtual Variant getValue(int row, int col) override;
-		virtual void setValue(int row, int col, const Variant& val) override { throwError("Error: cannnot set value"); }
-	};
-
-	std::shared_ptr<Table::TableDataSource> dataSource;
-	std::shared_ptr<Table::TableDataSource> getTableDataSource();
-
-	// The event listener, if doing a live query from a Statistics Collector
-	class TableChangeListener : public FlexSimEvent
-	{
-	public:
-		enum Type { None = 0, SCRowAdded, SCRowUpdated, Invalid };
-		double type;
-		ByteBlock tableName;
-		
-		TableChangeListener() {}
-		TableChangeListener(Type type, const char* tableName);
-
-		virtual void execute() override;
-
-		virtual void bind() override;
-		virtual const char* getClassFactory() override { return "CalculatedTableTableChangeListener"; }
-		virtual bool isClassType(const char* className) { return strcmp(className, getClassFactory()) == 0; }
-	};
-
-	// Inputs
-	ByteBlock query;
-	enum UpdateMode { Manual = 0, ByInterval = 1, Always = 2, LazyInterval = 3 };
-	double updateMode = 0;
-	double updateInterval = 0;
-	double enabled = 1;
-	double updateCount = 0;
-	double displayTimeAsText = 0;
-	double objectFormatMaxDepth = 0;
-
-	TreeNode* formatList;
-
-	// Internal state
-	TreeNode* queryNode;
-
-	// I only add listeners if:
-	//   * the query only involves statistics collectors
-	//   * the update mode is always
-	//   * the "update" is called
-	NodeListArray<TableChangeListener>::CouplingSdtPtrType liveListeners;
-	double liveUpdateFailed = 0;
-
-	// This gets set for unrecoverable errors (sql build or query errors)
-	double buildFailed = 0;
-	ByteBlock cachedQuery;
-
-	// and here's the last update time
-	double lastUpdateTime = -1;
-	double updateSinceReset = 0;
-	NodeRef lastUpdateEvent;
-
-	// and here's where the result gets dumped
-	BundleMember data;
-
-	engine_export static CalculatedTable* getGlobal(const Variant& queryTable);
-
-	// OnReset - build the sql query, and run it for the first time
-	engine_export void onReset();
-
-	bool isQueryBuildable();
-
-	// update runs the query, and dumps the table
-	engine_export void update(int force = 0);
-	void updateFormatList();
-
-	engine_export int getColumnFormat(int columnNr) override;
-	engine_export Array getColumnFormats() override;
-
-	engine_export int dependsOnExperimentData();
-
-	engine_export virtual void bindVariables() override;
-
-	void onSourceRowAdded(const char* tableName);
-	void onSourceValueChanged(const char* tableName, int row, int col, const Variant& oldValue);
-
-	virtual CalculatedTable* toCalculatedTable() { return this; }
 };
 
 }

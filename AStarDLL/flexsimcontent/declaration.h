@@ -23,6 +23,7 @@ THE SOFTWARE.
 
 #ifndef DECLARATION_H
 #define DECLARATION_H
+//#define P_AP_M
 
 namespace FlexSim {
 

@@ -125,6 +125,7 @@ n21,n22,n23,n24,n25,n26,n27,n28,n29,n30
 #define ObjectFunctionEnd(functionname) return 0; } catch(...) {\
 		reportobjectfunctionexception(functionname, c, i, thisClass);mpr();\
 		logevent("EXCEPTION", c, i);\
+		throw;\
 	} 
 #define ObjectMethodStart try {
 #define ObjectMethodEnd(objectname) } catch(...) {reportobjectfunctionexception(objectname, this->holder, NULL, NULL); throw;} 
