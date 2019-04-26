@@ -24,7 +24,7 @@ class FlexSimEvent : public CouplingDataType
 		data[0] = 0;
 	}
 
-	FlexSimEvent(TreeNode* object, double time, TreeNode* involved, int code, char* _data = 0) : 
+	FlexSimEvent(TreeNode* object, double time, TreeNode* involved, int code, const char* _data = 0) : 
 			CouplingDataType(object),
 			time(time),
 			involved(involved),
@@ -53,6 +53,45 @@ public:
 private:
 	static FlexSimEvent childChecker;
 #endif
+public:
+	template<class LambdaType = std::function<void()>>
+	static FlexSimEvent* create(treenode focus, double time, const char* description, LambdaType callback)
+	{
+		class LambdaEvent : public FlexSimEvent {
+		public:
+			LambdaEvent(treenode focus, double time, LambdaType callback, const char* description = nullptr)
+				: FlexSimEvent(focus, time, nullptr, 0, description),
+				callback(callback)
+			{}
+			LambdaEvent(treenode focus, double time, LambdaType&& callback, const char* description = nullptr)
+				: FlexSimEvent(focus, time, nullptr, 0, description),
+				callback(std::move(callback))
+			{}
+			LambdaType callback;
+			virtual void execute() override { callback(); }
+			virtual const char* getClassFactory() override { return "LambdaEvent"; }
+			virtual void getDescription(char* toStr, size_t maxSize) override
+			{
+				toStr[0] = 0;
+				const char* src;
+				if (data[0] != 0)
+					src = data;
+				else src = "Anonymous Lambda Event";
+
+				char* copyPoint = toStr;
+				// I don't use strncpy because I don't want to be dependent on <string.h>
+				while ((*(copyPoint++) = *(src++)) != 0 && copyPoint - toStr < maxSize)
+					;
+				toStr[maxSize - 1] = 0;// make sure it's null terminated
+			}
+
+			virtual void getEventDataDescription(char* toStr, size_t maxSize) override
+			{
+				toStr[0] = 0;
+			}
+		};
+		return new LambdaEvent(focus, time, callback, description);
+	}
 };
 
 #if !defined FLEXSIM_ENGINE_COMPILE || (defined FLEXSIM_EXECUTIVE && defined FLEXSIM_FLEXSCRIPT_CPP)
@@ -142,31 +181,6 @@ public:
 	engine_export virtual void getEventDataDescription(char* toStr, size_t maxSize) override;
 };
 
-template<class LambdaType>
-class LambdaEvent : public FlexSimEvent {
-public:
-	static const int EVENT_SENDMESSAGE = 19;
-	LambdaEvent() : FlexSimEvent()
-	{}
-	LambdaEvent(treenode focus, double time, LambdaType callback, const char* description = nullptr)
-		: FlexSimEvent(toobject, time, nullptr, 0, description),
-		callback(callback)
-	{}
-	LambdaType callback;
-	virtual void execute() override { if (callback) callback(partner()); }
-	virtual const char* getClassFactory() override { return "LambdaEvent"; }
-	virtual void getDescription(char* toStr, size_t maxSize) override 
-	{ 
-		toStr[0] = 0;
-		if (data[0] != 0)
-			strncat(toStr, data, maxSize);
-		else strncat(toStr, "Anonymous Lambda Event");
-	}
-	virtual void getEventDataDescription(char* toStr, size_t maxSize) override
-	{
-		strcpy(toStr, "");
-	}
-};
 
 
 }

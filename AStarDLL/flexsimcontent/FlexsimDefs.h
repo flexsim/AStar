@@ -113,6 +113,7 @@ namespace FlexSim {
 	#include "mesh.h"
 	#include "List.h"
 	#include "StatisticsCollector.h"
+	#include "CalculatedTable.h"
 	#include "ChartTemplate.h"
 	#include "DatabaseConnection.h"
 

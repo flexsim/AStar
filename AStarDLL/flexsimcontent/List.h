@@ -151,6 +151,7 @@ public:
 		virtual bool hasCustomWhereFilter() override { return matchValues != nullptr || list->shouldTrackIneligibleEntries; }
 		bool evaluateCustomWhereFilter(SqlQuery* q, int row);
 		virtual bool evaluateCustomWhereFilter(SqlQuery* q) override;
+		virtual const char* getFlexScriptType(int tableID, int colID) override;
 
 		TreeNode* curPuller = nullptr;
 		List* list;
@@ -670,6 +671,11 @@ public:
 	engine_export static void remove(TreeNode* node);
 
 	engine_export virtual void bindInterface() override;
+
+	ByteBlock valueAlias;
+	ByteBlock valueType;
+	ByteBlock pullerAlias;
+	ByteBlock pullerType;
 
 private:
 	Partition::ListEntries __getListEntries(const Variant& partitionID);

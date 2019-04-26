@@ -363,6 +363,7 @@ public:
 		void construct(const Animation& other);
 		Animation& operator=(const Animation& other);
 
+		void resume(int resumeAtType = 0, double resumeAtVal = 0);
 		void start(int speedType = 0, double speedValue = 0, int repeatType = 0, double repeatValue = 0);
 		void stop();
 		void update(double updateTime = -1);

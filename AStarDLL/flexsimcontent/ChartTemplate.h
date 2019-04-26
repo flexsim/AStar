@@ -51,7 +51,6 @@ protected:
 	TreeNode* chartLinks;
 
 	NodeRef genericChartRef;
-	TreeNode* getChart();
 
 public:
 	// type determines which UI to show
@@ -89,6 +88,20 @@ public:
 	// This way, instances can correctly update values they need
 	NodeListArray<>::SubNodeType replacements;
 
+	// The preservedNodes list is a list of nodes to keep from the user's side
+	// During pack and unpack, these nodes will be saved and loaded. This
+	// way, some user settings can be preserved.
+	NodeListArray<>::SubNodeType preservedNodes;
+
+	// some chart templates (like the ones for people module) don't need internal groups
+	double skipGroups;
+
+private:
+	TreeNode* getPreserveTarget(TreeNode* preserveInfo);
+	void savePreservedNodes();
+	void loadPreservedNodes();
+
+public:
 	engine_export void pack();
 	engine_export void clearEvents();
 	engine_export void clearObjects();
@@ -115,6 +128,7 @@ public:
 	StatisticsCollector* getStatisticsCollector();
 	CalculatedTable* getCalculatedTable();
 	engine_export TreeNode* getPrimaryTable();
+	engine_export TreeNode* getChart();
 };
 
 }

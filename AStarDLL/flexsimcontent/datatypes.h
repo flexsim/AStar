@@ -3150,12 +3150,14 @@ public:
 	DateTime(double);
 	//DateTime(const char*, const char* format = nullptr);
 	DateTime(const Variant&);
+	DateTime(int days, int hours, int minutes = 0, int seconds = 0);
 
 private:
 	void construct(double val) { new (this) DateTime(val); }
 	void construct(const char* val) { new (this) DateTime(val); }
 	void construct(const Variant& val) { new (this) DateTime(val); }
 	void construct(const DateTime& other) { new (this) DateTime(other); }
+	void construct(int days, int hours, int minutes = 0, int seconds = 0) { new (this) DateTime(days, hours, minutes, seconds); }
 
 public:
 	//static DateTime fromModelTime(double modelTime);

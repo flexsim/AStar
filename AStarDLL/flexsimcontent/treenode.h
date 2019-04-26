@@ -21,6 +21,7 @@
 	#define VALIDLINKFAST(x) (x != nullptr && x!=&TreeNode::failSafeLink && testpointer(x,sizeof(TreeNode), nullptr) && x->checkParity())
 
 	#include "Platform.h"
+	#include "pageallocator.h"
 #endif
 
 namespace FlexSim {
