@@ -1579,6 +1579,8 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 		return;
 	if (!areGridNodeTablesBuilt)
 		return;
+	if (destination->dataType != DATA_OBJECT)
+		return;
 
 	Vec3 loc;
 	Vec3 size = destination->objectAs(ObjectDataType)->size;
