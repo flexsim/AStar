@@ -6025,7 +6025,7 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
        <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
        <node f="42" dt="1"><name>spatialsx</name><data>000000004066c000</data></node>
-       <node f="42" dt="1"><name>spatialsy</name><data>00000000405e4000</data></node>
+       <node f="42" dt="1"><name>spatialsy</name><data>000000004061c000</data></node>
        <node f="42" dt="2"><name>undohistory</name><data>..&gt;viewfocus+</data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -6212,6 +6212,27 @@ repaintall();</data></node>
         </node>
        </data>
         <node f="40"><name></name></node></node>
+       <node f="42" dt="4"><name>SetGridZ</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>00000000405d4000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+        <node f="42" dt="2"><name>windowtitle</name><data>Set View Grid Z</data></node>
+        <node f="42" dt="2"><name>OnPress</name><data>treenode activedoc = activedocumentnode();
+
+if (get(viewwindowtype(activedoc)) != 2)
+	return 0;
+
+double zpos = get(node("../EditZPosition&gt;objectfocus+", c));
+set(first(gridplane(activedoc)), zpos);
+set(viewpointz(activedoc), zpos);
+repaintall();</data>
+         <node f="40"><name></name></node></node>
+        <node f="42" dt="2"><name>tooltip</name><data>Set the current Grid Z of the 3D view to this position</data></node>
+        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040418000</data></node>
+       </data></node>
       </node>
      </node>
     </node>

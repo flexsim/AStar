@@ -1581,6 +1581,8 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 		return;
 	if (destination->dataType != DATA_OBJECT)
 		return;
+	if (isclasstype(destination, "AStar::Barrier"))
+		return;
 
 	Vec3 loc;
 	Vec3 size = destination->objectAs(ObjectDataType)->size;
