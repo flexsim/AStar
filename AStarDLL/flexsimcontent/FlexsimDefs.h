@@ -116,6 +116,7 @@ namespace FlexSim {
 	#include "CalculatedTable.h"
 	#include "ChartTemplate.h"
 	#include "DatabaseConnection.h"
+	#include "ColorPalette.h"
 
 	#if defined COMPILING_MODULE_DLL
 		#include "allobjects.h"
