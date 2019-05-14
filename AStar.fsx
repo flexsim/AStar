@@ -6475,6 +6475,40 @@ return updated;</data></node>
     </node>
    </node>
   </node>
+  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/Toolbox&gt;variables/tools</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000403e0000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AGVNetwork</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42" dt="4"><name>AStarNavigator</name><data>
+      <node f="40"><name></name></node>
+      <node f="42" dt="2"><name>objectfocus</name><data>MODEL:/AStarNavigator</data></node>
+      <node f="42" dt="2"><name>bitmap</name><data>modules\AStar\bitmaps\astarnavigatorsmaller.png</data></node>
+      <node f="42"><name>variables</name>
+       <node f="40"><name></name></node>
+       <node f="42" dt="2"><name>toolType</name><data>Singleton</data></node>
+       <node f="42" dt="1"><name>hasCustomDelete</name><data>000000003ff00000</data></node>
+      </node>
+      <node f="42"><name>eventfunctions</name>
+       <node f="40"><name></name></node>
+       <node f="442" dt="2"><name>onDoubleClick</name><data>createview("VIEW:/modules/AStar/Pages/AStarProperties", "MODEL:/AStarNavigator", "MODEL:/AStarNavigator");</data></node>
+       <node f="442" dt="2"><name>onDelete</name><data>if (msg("Delete AStarNavigator?", "Delete AStarNavigator?", 0))
+{
+	destroyobject(node("MODEL:/AStarNavigator"));
+	repaintall();
+}
+</data></node>
+      </node>
+      <node f="42" dt="2"><name>windowtitle</name><data>AStarNavigator</data></node>
+     </data>
+      <node f="40"><name></name></node></node>
+    </node>
+   </node>
+  </node>
  </node>
  <node f="42" dt="2"><name>release</name><data>19.2</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
