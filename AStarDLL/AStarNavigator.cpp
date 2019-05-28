@@ -158,6 +158,7 @@ void AStarNavigator::bindInterface()
 
 void AStarNavigator::bind()
 {
+	__super::bind();
 	bindCallback(createGrid, AStarNavigator);
 }
 
