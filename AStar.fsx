@@ -163,8 +163,8 @@
         </node>
         <node f="42" dt="1"><name>imageindexobject</name><data>0000000000000000</data>
          <node f="40"><name></name></node>
-         <node f="42" dt="1"><name>split</name><data>0000000040478000</data></node>
-         <node f="42" dt="1"><name>merge</name><data>0000000040480000</data></node>
+         <node f="42" dt="1"><name>split</name><data>000000004052c000</data></node>
+         <node f="42" dt="1"><name>merge</name><data>0000000040530000</data></node>
         </node>
         <node f="42" dt="2"><name>imagebase</name><data>***</data></node>
         <node f="42" dt="1"><name>imageindexbase</name><data>0000000000000000</data></node>
@@ -1147,54 +1147,13 @@ if (focusedPanel) {
         </node>
        </data>
         <node f="40"><name></name></node>
-        <node f="42" dt="4"><name>overlay</name><data>
-         <node f="40"><name>object</name></node>
-         <node f="42" dt="2"><name>viewfocus</name><data>../..</data></node>
-         <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040080000</data></node>
-         <node f="42" dt="1"><name>spatialx</name><data>000000003ff00000</data></node>
-         <node f="42" dt="1"><name>spatialy</name><data>0000000040dfffc0</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>0000000040903000</data></node>
-         <node f="42" dt="1"><name>spatialsy</name><data>0000000040886000</data></node>
-         <node f="42" dt="1"><name>viewpointx</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>viewpointy</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>viewpointz</name><data>7f8ca81a407c965f</data></node>
-         <node f="42" dt="1"><name>hidden</name><data>000000003ff00000</data></node>
-         <node f="42" dt="1"><name>viewhidealllabels</name><data>000000003ff00000</data></node>
-         <node f="42" dt="1"><name>transparent</name><data>000000003ff00000</data></node>
-         <node f="42" dt="1"><name>viewhideallbases</name><data>000000003ff00000</data></node>
-         <node f="42" dt="1"><name>gridx</name><data>00000000401c0000</data></node>
-         <node f="42" dt="1"><name>gridy</name><data>00000000401c0000</data></node>
-         <node f="42" dt="1"><name>viewsnaptogrid</name><data>000000003ff00000</data></node>
-        </data>
-         <node f="40"><name></name></node></node>
-        <node f="42" dt="4"><name>static1</name><data>
-         <node f="40"><name>object</name></node>
-         <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-         <node f="42" dt="1"><name>spatialx</name><data>0000000040240000</data></node>
-         <node f="42" dt="1"><name>spatialy</name><data>0000000040140000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>0000000040500000</data></node>
-         <node f="42" dt="1"><name>spatialsy</name><data>0000000040500000</data></node>
-         <node f="42" dt="2"><name>bitmap</name><data>modules\AStar\bitmaps\astarnavigator.png</data></node>
-        </data></node>
-        <node f="42" dt="4"><name>editname</name><data>
-         <node f="40"><name>object</name></node>
-         <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-         <node f="42" dt="1"><name>spatialx</name><data>000000004056c000</data></node>
-         <node f="42" dt="1"><name>spatialy</name><data>00000000403c0000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>555555554076c555</data></node>
-         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
-         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/EditObjectName</data></node>
-        </data></node>
         <node f="42" dt="4"><name>tabcontrol</name><data>
          <node f="40"><name>object</name></node>
          <node f="42" dt="2"><name>viewfocus</name><data>MAIN:/project/model</data></node>
          <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405cc000</data></node>
          <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
-         <node f="42" dt="1"><name>spatialy</name><data>0000000040518000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>spatialsx</name><data>55555555407c1555</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>aaaaaaab407c0aaa</data></node>
          <node f="42" dt="1"><name>itemcurrent</name><data>000000003ff00000</data></node>
