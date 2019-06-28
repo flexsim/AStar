@@ -26,6 +26,7 @@
       <ComponentRef Id="comp_604ECE881B7A491B8F2D1563D2757904" />
       <ComponentRef Id="comp_F6A25C0ED25E432F948D74DDF57A5D25" />
       <ComponentRef Id="comp_2881CE12D03142FCBD02258753F0827B" />
+      <ComponentRef Id="comp_F7D54F0843044BAD85D441B46DA61254" />
       <ComponentRef Id="comp_B1749A877D0B4B6FB43AE2AAD4AB6A95" />
       <ComponentRef Id="comp_3B0057ECC4894946924DEAFF562B9C8E" />
       <ComponentRef Id="comp_4F275985CAB54E86AC960C6A08941421" />
@@ -74,6 +75,15 @@
 </Program GUIDs-->
         <Component Id="comp_2881CE12D03142FCBD02258753F0827B" Guid="8C422DCE-45CD-432F-84CA-9B48221D6D14">
           <File Id="file_8315A4F873D3451AACE2C731B95E125C" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\astarnavigatorsmall.png" />
+        </Component>
+<!--Program GUIDs>
+<FlexSim="F0A52AB7-BD04-41F7-8D49-ACF3F244EF94">
+<FlexSimHC="93EE9B73-1989-4938-AC08-F8F435520EB8">
+<FlexSimChinese="A4A8D7C1-7C9F-405E-8F41-B7A8DB395867">
+<FlexSimJapanese="3F4EA086-12C5-416A-981C-9596B41B78DE">
+</Program GUIDs-->
+        <Component Id="comp_F7D54F0843044BAD85D441B46DA61254" Guid="F7C97BCA-1893-44A4-AD7F-7E9DB33E643E">
+          <File Id="file_377007F8716B43058993494B353DD32B" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\astarnavigatorsmaller.png" />
         </Component>
 <!--Program GUIDs>
 <FlexSim="9B5EB05B-B7C7-4988-979E-0FE50A1E8FFF">
