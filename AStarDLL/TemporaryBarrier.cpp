@@ -31,7 +31,7 @@ void TemporaryBarrier::apply()
 		AStarNode* toNode = navigator->getNode(entries[i].cell);
 		AStarNode& fromNode = entries[i].newValue;
 		entries[i].savedValue = *toNode;
-		toNode->value = (toNode->value & ~valueMask.value) | (fromNode.value & valueMask.value);
+		toNode->value = (toNode->value & ~valueMask.value) | (fromNode.value & valueMask.value & toNode->value);
 	}
 	isApplied = true;
 }
