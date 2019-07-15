@@ -306,7 +306,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 					diff.rotateXY(-containerRot);
 			}
 			else {
-				Vec3 toLoc = nav->getLocation(e.cell);
+				Vec3 toLoc = nav->getLocation(e.cell).project(model(), up(te->holder));
 				step.isDiagonal = false;
 				step.isHorizontalDeepSearch = false;
 				step.isVerticalDeepSearch = false;
