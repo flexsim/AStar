@@ -1945,6 +1945,79 @@ windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
 bright red, in the heat map.</data></node>
           </data>
            <node f="40"><name></name></node></node>
+          <node f="42" dt="4"><name>MaxHeatValueSpinner</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ec000</data></node>
+           <node f="42" dt="2"><name>viewfocus</name><data>../../EditMaxHeatValue</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040703000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000406a0000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040320000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data></data></node>
+           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
+           <node f="42" dt="1"><name>coefficient</name><data>47ae147b3f847ae1</data></node>
+           <node f="42" dt="1"><name>exponent</name><data>333333333ff33333</data></node>
+           <node f="42" dt="1"><name>rangemin</name><data>0000000000000000</data></node>
+           <node f="42"><name>eventfunctions</name>
+            <node f="40"><name></name></node>
+            <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_PRESS) {
+	set(itemcurrent(c),stringtonum(getviewtext(node("&gt;viewfocus+",c))));
+	executefsnode(OnFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
+}
+if (clickcode() == LEFT_RELEASE) {
+	setcursor(1);
+	set(node("&gt;editing",c),0);
+	executefsnode(OnKillFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
+}
+</data></node>
+            <node f="442" dt="2"><name>OnMouseMove</name><data>if (i) {  // off the spinner
+	int y = cursorinfo(c, 6, 2, 0);
+	if (get(node("&gt;editing",c))==0) {  // first time falling off the spinner
+		setcursor(11);
+		set(node("&gt;lastval",c),get(itemcurrent(c)));
+		set(node("&gt;lasty",c),y);
+		set(node("&gt;editing",c),1);
+	}
+	
+	int monitortop = getsystemmetric(5);
+	int monitorbottom = getsystemmetric(6);
+	if (y &lt;= monitortop+1) {
+		double newy = monitorbottom - 2;
+		cursorinfo(0, 7, 2, newy);
+		inc(node("&gt;lasty",c), newy - y);
+		y = newy;
+	} else if (y &gt;= monitorbottom-1) {
+		double newy = monitortop + 2;
+		cursorinfo(0, 7, 2, newy);
+		inc(node("&gt;lasty", c), newy - y);
+		y = newy;
+	}
+	int dy = -(y - get(node("&gt;lasty",c)));
+	
+	double prevvalue = get(node("&gt;lastval",c));
+	double newvalue;
+	double coefficient = getnodenum(node("&gt;coefficient",c));
+	double exponent = getnodenum(node("&gt;exponent",c));
+	if (dy &gt; 0)
+		newvalue = prevvalue + coefficient*pow(dy,exponent);
+	else newvalue = prevvalue - coefficient*pow(-dy,exponent);
+	
+	if (objectexists(rangemin(c)) &amp;&amp; newvalue&lt;get(rangemin(c)))
+		newvalue = get(rangemin(c));
+	if (objectexists(rangemax(c)) &amp;&amp; newvalue&gt;get(rangemax(c)))
+		newvalue = get(rangemax(c));
+	set(itemcurrent(c),newvalue);
+	setviewtext(node("&gt;viewfocus+",c), numtostring(newvalue,0,2));
+	applylinks(node("&gt;viewfocus+", c));
+}
+</data></node>
+           </node>
+           <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>lastval</name><data>47ae147b3fc47ae1</data></node>
+           <node f="42" dt="1"><name>lasty</name><data>00000000407c4000</data></node>
+          </data></node>
           <node f="42" dt="4"><name>TransparentBaseColor</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
