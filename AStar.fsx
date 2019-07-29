@@ -1095,14 +1095,13 @@ if (ontoView) {
         <node f="42" dt="1"><name>spatialy</name><data>000000004057c000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>00000000407db000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>000000004082a000</data></node>
-        <node f="42" dt="2"><name>windowtitle</name><data></data></node>
+        <node f="42" dt="2"><name>windowtitle</name><data>A* Navigator Properties</data></node>
         <node f="442" dt="2"><name>OnOpen</name><data>treenode tabcontrol = node("/tabcontrol",c);
 iterate(1, content(tabcontrol), 1){
   if (objectexists(node("&gt;PageOnOpen",rank(tabcontrol,count))))
      nodefunction(node("&gt;PageOnOpen",rank(tabcontrol,count)));
 }
 
-executefsnode(node("VIEW:/nodefunctions/setparameterstitle"),c,0,0);
 repaintview(c);</data></node>
         <node f="42" dt="2"><name>OnPreOpen</name><data>c.name = "AStarProperties";
 standardpreopen(c);
@@ -1152,7 +1151,7 @@ if (focusedPanel) {
          <node f="42" dt="2"><name>viewfocus</name><data>MAIN:/project/model</data></node>
          <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405cc000</data></node>
-         <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>spatialsx</name><data>55555555407c1555</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>aaaaaaab407c0aaa</data></node>
@@ -6535,7 +6534,7 @@ return updated;</data></node>
 }
 </data></node>
       </node>
-      <node f="42" dt="2"><name>windowtitle</name><data>AStarNavigator</data></node>
+      <node f="42" dt="2"><name>windowtitle</name><data>A* Navigator</data></node>
      </data>
       <node f="40"><name></name></node></node>
     </node>
