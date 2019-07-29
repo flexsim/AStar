@@ -163,8 +163,8 @@
         </node>
         <node f="42" dt="1"><name>imageindexobject</name><data>0000000000000000</data>
          <node f="40"><name></name></node>
-         <node f="42" dt="1"><name>split</name><data>000000004052c000</data></node>
-         <node f="42" dt="1"><name>merge</name><data>0000000040530000</data></node>
+         <node f="42" dt="1"><name>split</name><data>0000000040528000</data></node>
+         <node f="42" dt="1"><name>merge</name><data>000000004052c000</data></node>
         </node>
         <node f="42" dt="2"><name>imagebase</name><data>***</data></node>
         <node f="42" dt="1"><name>imageindexbase</name><data>0000000000000000</data></node>
@@ -2223,7 +2223,7 @@ return newCondition;
          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>spatialy</name><data>00000000403c0000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>00000000407cc000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040755000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040360000</data></node>
          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/BottomButtons</data></node>
