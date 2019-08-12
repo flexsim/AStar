@@ -427,7 +427,7 @@ public:
 
 		ObjRef<FlexSimEvent> backOrderFulfillEvent;
 
-		void assignSelectLabelsToPuller(TreeNode* puller, SqlQuery* q, int queryMatchIndex, bool reset, double qtyRatio = 1.0);
+		void assignSelectLabelsToPuller(TreeNode* puller, SqlQuery* q, int queryMatchIndex, bool reset, double curQty = 1.0);
 	};
 
 	NodeListArray<Partition>::SdtSubNodeBindingType partitions;
@@ -676,6 +676,9 @@ public:
 	ByteBlock valueType;
 	ByteBlock pullerAlias;
 	ByteBlock pullerType;
+
+	double assignSelectValsToPuller;
+	double isFirstSelectValQuantifier;
 
 private:
 	Partition::ListEntries __getListEntries(const Variant& partitionID);

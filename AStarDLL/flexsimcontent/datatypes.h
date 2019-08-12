@@ -103,18 +103,11 @@ public:
 		void operator delete [](void* p) { flexsimfree(p); }
 	};
 public:
-	// union member classes: a method to get around Visual Studio's non-compliance with
-	// c++11: declare a super-class that has all the same data but no constructors, and 
-	// use that super class as the member of the union, then down-cast as needed to get
-	// to the methods, constructors, destructors, etc.
-	class StringUnionMember : public NewDelete
+	class String
 	{
-	protected:
+	private:
 		char* buffer;
 		size_t length;
-	};
-	class String : public StringUnionMember
-	{
 	public:
 		inline void construct(const char* str, size_t strLen)
 		{
@@ -222,32 +215,33 @@ public:
 
 #undef COMPARE_STRING
 	};
+
 	template <class T>
-	class SharedPtrUnionMember : public NewDelete
+	class SharedPtr
 	{
-	protected:
+	private:
 		T* ptr;
-	};
-	template <class T>
-	class SharedPtr : public SharedPtrUnionMember<T>
-	{
 	public:
 		explicit SharedPtr(T* newPtr)
 		{
 			ptr = newPtr;
 			ptr->refCount++;
 		}
-		explicit SharedPtr(const SharedPtr<T>& other)
+		SharedPtr(const SharedPtr<T>& other)
 		{
 			ptr = other.ptr;
 			ptr->refCount++;
 		}
+		SharedPtr() : ptr(nullptr) { }
 		inline void cleanup()
 		{
-			ptr->refCount--;
-			if (ptr->refCount == 0) {
-				ptr->~T();
-				flexsimfree(ptr);
+			if (ptr) {
+				ptr->refCount--;
+				if (ptr->refCount == 0) {
+					ptr->~T();
+					flexsimfree(ptr);
+				}
+				ptr = nullptr;
 			}
 		}
 		SharedPtr& operator = (const SharedPtr<T>& other)
@@ -501,26 +495,6 @@ public:
 		inline size_t size() const { return vectorSize; }
 	};
 
-	template<class ElementType = int, VariantType TypeId = VariantType::Number>
-	class FlexSimArrayUnionMember : public NewDelete
-	{
-	protected:
-		FlexSimPrivateTypes::SharedPtrUnionMember<FlexSimPrivateTypes::Vector<ElementType>> theArrayUnionMember;
-	};
-
-	struct NodeRefUnionMember
-	{
-		TreeNode* ref;
-		NodeRef* next;
-		// NodeRef is a quasi-doubly-linked list. The next member points to the next NodeRef in the list, 
-		// but the prev member actually points to the address of the next member of the previous guy.
-		// I do this because TreeNode has a NodeRef* refsToMe member that points to the head of the list,
-		// and I want NodeRef to easily remove itself from the list, so by having prev be the address
-		// of the next member of the previous NodeRef, the head's prev member can point to the node's 
-		// refsToMe pointer. Then removal from the list is exactly the same if you are the head or not.
-		NodeRef** prev;
-	};
-
 	struct DoubleStub
 	{
 		Variant __getAsProperty(const char* name, unsigned index) const;
@@ -532,11 +506,21 @@ public:
 /// <summary>	A class representing a "safe" pointer to a node. If a node is deleted, all NodeRef's pointing
 /// 			to it will immediately be set to point to null. </summary>
 /// <remarks>	Anthony.johnson, 3/18/2015. </remarks>
-class NodeRef : private FlexSimPrivateTypes::NodeRefUnionMember {
+class NodeRef {
 	friend class TreeNodeExtraData;
 	friend class TreeNode;
 	friend class CouplingDataType;
 	friend struct Compiler::ClassInfo;
+private:
+	TreeNode* ref;
+	NodeRef* next;
+	// NodeRef is a quasi-doubly-linked list. The next member points to the next NodeRef in the list, 
+	// but the prev member actually points to the address of the next member of the previous guy.
+	// I do this because TreeNode has a NodeRef* refsToMe member that points to the head of the list,
+	// and I want NodeRef to easily remove itself from the list, so by having prev be the address
+	// of the next member of the previous NodeRef, the head's prev member can point to the node's 
+	// refsToMe pointer. Then removal from the list is exactly the same if you are the head or not.
+	NodeRef** prev;
 protected:
 	engine_export void init(TreeNode* x);
 	void cleanup()
@@ -679,9 +663,10 @@ public:
 };
 
 template<class Type = double, VariantType TypeId = VariantType::Number>
-class FlexSimArray : public FlexSimPrivateTypes::FlexSimArrayUnionMember<Type, TypeId>
+class FlexSimArray : public FlexSimPrivateTypes::NewDelete
 {
 private:
+	FlexSimPrivateTypes::SharedPtr<FlexSimPrivateTypes::Vector<Type>> theArray;
 	typedef FlexSimArray<Type, TypeId> ArrayType;
 	typedef FlexSimPrivateTypes::Vector<Type> MyVecType;
 	typedef FlexSimPrivateTypes::SharedPtr<MyVecType> MySharedPtrType;
@@ -704,33 +689,19 @@ private:
 	typedef Type* iterator; 
 
 	private:
-	inline const MySharedPtrType& theArray() const
-		{ return reinterpret_cast<const MySharedPtrType&>(theArrayUnionMember); }
-	inline MySharedPtrType& theArray()
-		{ return reinterpret_cast<MySharedPtrType&>(theArrayUnionMember); }
 public:
 	VariantType arrayType;
-	FlexSimArray() : arrayType(TypeId) 
-	{
-		::new (&theArray()) FlexSimPrivateTypes::SharedPtr<MyVecType>(new MyVecType);
-	}
-	FlexSimArray(size_t size) : arrayType(TypeId) {
-		::new (&theArray()) FlexSimPrivateTypes::SharedPtr<MyVecType>(new MyVecType(size + 1));
-	}
-	FlexSimArray(int arraySize) : arrayType(TypeId)
-	{
-		::new (&theArray()) FlexSimPrivateTypes::SharedPtr<MyVecType>(new MyVecType(arraySize + 1));
-	}
-	FlexSimArray(const ArrayType& other) : arrayType(TypeId) {
-		::new (&theArray()) FlexSimPrivateTypes::SharedPtr<MyVecType>(other.theArray());
-	}
+	FlexSimArray() : arrayType(TypeId), theArray(new MyVecType()) {}
+	FlexSimArray(size_t size) : arrayType(TypeId), theArray(new MyVecType(size + 1)) {}
+	FlexSimArray(int arraySize) : arrayType(TypeId), theArray(new MyVecType(arraySize + 1)){}
+	FlexSimArray(const ArrayType& other) : arrayType(TypeId), theArray(other.theArray) {}
 	template <class OtherElementType, VariantType OtherTypeID>
 	typename std::enable_if<std::is_convertible<OtherElementType, ElementType>::value && !std::is_same<OtherElementType, ElementType>::value>::type
 		construct_generic(const FlexSimArray<OtherElementType, OtherTypeID>& other)
 	{
 		arrayType = TypeId;
-		::new (&theArray()) FlexSimPrivateTypes::SharedPtr<MyVecType>(new MyVecType(other.size() + 1));
-		for (int i = 0; i < theArray()->size(); i++)
+		::new (&theArray) FlexSimPrivateTypes::SharedPtr<MyVecType>(new MyVecType(other.size() + 1));
+		for (int i = 0; i < theArray->size(); i++)
 			operator[](i) = other[i];
 	}
 	template <class OtherElementType, VariantType OtherTypeID>
@@ -739,15 +710,13 @@ public:
 		construct_generic<OtherElementType, OtherTypeID>(other);
 	}
 
-	~FlexSimArray() {
-		theArray().~MySharedPtrType();
-	}
+	~FlexSimArray() {}
 	void destruct() { this->~FlexSimArray(); } 
 	void construct() { ::new(this)FlexSimArray(); }
 	void construct(int size) { ::new(this)FlexSimArray((size_t)size); }
 	void construct(const ArrayType& other) { ::new(this)FlexSimArray(other); }
-	template <typename T> Type& operator[](T n) { return theArray()->operator[]((size_t)n); }
-	template <typename T> const Type& operator[] (T n) const { return theArray()->operator[](n); }
+	template <typename T> Type& operator[](T n) { return theArray->operator[]((size_t)n); }
+	template <typename T> const Type& operator[] (T n) const { return theArray->operator[](n); }
 
 	template <class OtherElementType, VariantType OtherTypeID>
 	typename std::enable_if<std::is_convertible<OtherElementType, ElementType>::value && !std::is_same<OtherElementType, ElementType>::value, ArrayType&>::type
@@ -757,20 +726,20 @@ public:
 		construct_generic<OtherElementType, OtherTypeID>(other);
 		return *this;
 	}
-	ArrayType& operator=(const ArrayType& other) { theArray() = other.theArray(); return *this; }
-	ArrayType& operator=(int n) { theArray()->resize(n + 1); return *this; }
-	void resize(size_t n) { theArray()->resize(n + 1); }
-	size_t size() const { return theArray()->size() < 1 ? 0 : theArray()->size() - 1; }
+	ArrayType& operator=(const ArrayType& other) { theArray = other.theArray; return *this; }
+	ArrayType& operator=(int n) { theArray->resize(n + 1); return *this; }
+	void resize(size_t n) { theArray->resize(n + 1); }
+	size_t size() const { return theArray->size() < 1 ? 0 : theArray->size() - 1; }
 	ArrayType& push(ParamType val)
 	{
-		theArray()->push_back(val);
-		if (theArray()->size() == 1)
-			theArray()->push_back(val);
+		theArray->push_back(val);
+		if (theArray->size() == 1)
+			theArray->push_back(val);
 		return *this;
 	}
-	Type pop() { Type val = theArray()->back(); theArray()->pop_back(); return val; }
-	Type shift() { Type val = theArray()->operator[](1); theArray()->pop_front(); return val; }
-	ArrayType& unshift(ParamType val) { theArray()->insert(val, 1); return *this; }
+	Type pop() { Type val = theArray->back(); theArray->pop_back(); return val; }
+	Type shift() { Type val = theArray->operator[](1); theArray->pop_front(); return val; }
+	ArrayType& unshift(ParamType val) { theArray->insert(val, 1); return *this; }
 	ArrayType& append(const ArrayType& val)
 	{
 		size_t startSize = size();
@@ -818,15 +787,15 @@ public:
 	}
 	ArrayType& splice(int from, int count)
 	{
-		theArray()->remove(from, from + count);
+		theArray->remove(from, from + count);
 		return *this;
 	}
 	ArrayType& splice(int from, int count, const ArrayType& insert)
 	{
 		if (count > 0)
-			theArray()->remove(from, from + count);
+			theArray->remove(from, from + count);
 		if (insert.size() > 0)
-			theArray()->insert(&insert[0], from, insert.size());
+			theArray->insert(&insert[0], from, insert.size());
 		return *this;
 	}
 	ArrayType slice(int begin, int end)
@@ -848,7 +817,7 @@ public:
 	int indexOf(ParamType val) const
 	{
 		for (int i = 1; i <= size(); i++) {
-			if (theArray()->operator[](i) == (Type)val)
+			if (theArray->operator[](i) == (Type)val)
 				return i;
 		}
 		return -1;
@@ -861,8 +830,8 @@ public:
 		return copy;
 	}
 
-	iterator begin() { return theArray()->data() + 1; } 
-	iterator end() { return theArray()->data() + 1 + size(); } 
+	iterator begin() { return theArray->data() + 1; } 
+	iterator end() { return theArray->data() + 1 + size(); } 
 
 	template<class X>
 	typename std::enable_if<std::is_same<Type, FlexSimPrivateTypes::String>::value && std::is_same<X, const char*>::value, ArrayType&>::type
@@ -993,7 +962,6 @@ public:
 	}
 
 	typedef FlexSimArray<Variant, VariantType::Array> VariantArray;
-	typedef FlexSimArrayUnionMember<Variant, VariantType::Array> VariantArrayUnionMember;
 };
 
 template<class ElementType, VariantType TypeId>
@@ -1215,26 +1183,12 @@ protected:
 	union
 	{
 		// union x86/x64 bytes = 12/24
-		FlexSimPrivateTypes::NodeRefUnionMember asTreeNodeUnionMember; // 12/24 bytes
+		NodeRef asTreeNode; // 12/24 bytes
 		double asNumber; // 8 bytes
 		void* asPointer; // 4/8 bytes
-		FlexSimPrivateTypes::StringUnionMember asStringUnionMember; // 8/16 bytes 
-		FlexSimArray<>::VariantArrayUnionMember asVariantArrayUnionMember; // 4/8 bytes
+		FlexSimPrivateTypes::String asString; // 8/16 bytes 
+		FlexSimArray<Variant, VariantType::Array> asArray; // 4/8 bytes
 	};
-	// casters to get around Visual Studio's non-compliance with C++11 unrestricted unions
-	inline const NodeRef& asTreeNode() const
-		{ return reinterpret_cast<const NodeRef&>(asTreeNodeUnionMember); }
-	inline NodeRef& asTreeNode()
-		{ return reinterpret_cast<NodeRef&>(asTreeNodeUnionMember); }
-
-	inline const FlexSimPrivateTypes::String& asString() const
-		{ return reinterpret_cast<const FlexSimPrivateTypes::String&>(asStringUnionMember); }
-	inline FlexSimPrivateTypes::String& asString()
-		{ return reinterpret_cast<FlexSimPrivateTypes::String&>(asStringUnionMember); }
-	inline const Array& asArray() const
-		{ return reinterpret_cast<const Array&>(asVariantArrayUnionMember); }
-	inline Array& asArray()
-		{ return reinterpret_cast<Array&>(asVariantArrayUnionMember); }
 
 	engine_export void applyToBoundNode();
 	inline void checkApplyToBoundNode()
@@ -1256,14 +1210,14 @@ public:
 		type = copyFrom.type;
 		switch (type) {
 			case VariantType::Number: asNumber = copyFrom.asNumber; break;
-			case VariantType::TreeNode: new (&asTreeNode()) NodeRef(copyFrom.asTreeNode()); break;
+			case VariantType::TreeNode: new (&asTreeNode) NodeRef(copyFrom.asTreeNode); break;
 			case VariantType::String: 
 				if (copyFrom.flags & WEAK_STR)
-					::new (&asString()) FlexSimPrivateTypes::String(copyFrom.asString().c_str(), true);
-				else ::new (&asString()) FlexSimPrivateTypes::String(copyFrom.asString());
+					::new (&asString) FlexSimPrivateTypes::String(copyFrom.asString.c_str(), true);
+				else ::new (&asString) FlexSimPrivateTypes::String(copyFrom.asString);
 				break;
 
-			case VariantType::Array: ::new (&asArray()) Array(copyFrom.asArray()); break;
+			case VariantType::Array: ::new (&asArray) Array(copyFrom.asArray); break;
 			case VariantType::Pointer: asPointer = copyFrom.asPointer; break;
 			default: asNumber = 0; break;
 		}
@@ -1274,13 +1228,13 @@ public:
 		switch (type) {
 			case VariantType::Number: asNumber = from.asNumber; break;
 			case VariantType::TreeNode: 
-				new (&asTreeNode()) NodeRef(std::move(from.asTreeNode()));
-				from.asTreeNode().~NodeRef();
+				new (&asTreeNode) NodeRef(std::move(from.asTreeNode));
+				from.asTreeNode.~NodeRef();
 				break;
-			case VariantType::String: ::new (&asString()) FlexSimPrivateTypes::String(std::move(from.asString())); break;
+			case VariantType::String: ::new (&asString) FlexSimPrivateTypes::String(std::move(from.asString)); break;
 			case VariantType::Array:
-				::new (&asArray()) Array(std::move(from.asArray()));
-				from.asArray().~Array();
+				::new (&asArray) Array(std::move(from.asArray));
+				from.asArray.~Array();
 				break;
 			case VariantType::Pointer: asPointer = from.asPointer; break;
 			default: asNumber = 0; break;
@@ -1305,28 +1259,28 @@ public:
 
 	Variant(TreeNode* val) : type(VariantType::TreeNode), flags(0), reserved(0) 
 	{
-		::new (&asTreeNode()) NodeRef(val);
+		::new (&asTreeNode) NodeRef(val);
 	}
 	Variant(const NodeRef& val) : type(VariantType::TreeNode), flags(0), reserved(0)
 	{
-		::new (&asTreeNode()) NodeRef(val);
+		::new (&asTreeNode) NodeRef(val);
 	}
 	Variant(const std::string& val) : type(VariantType::String), flags(0), reserved(0)
 	{
-		::new (&asString()) FlexSimPrivateTypes::String(val);
+		::new (&asString) FlexSimPrivateTypes::String(val);
 	}
 	Variant(const char* val) : type(VariantType::String), flags(0), reserved(0)
 	{
-		::new (&asString()) FlexSimPrivateTypes::String(val);
+		::new (&asString) FlexSimPrivateTypes::String(val);
 	}
 	engine_export Variant(const wchar_t * val);
 	Variant(const FlexSimPrivateTypes::String& val) : type(VariantType::String), flags(0), reserved(0)
 	{
-		::new (&asString()) FlexSimPrivateTypes::String(val);
+		::new (&asString) FlexSimPrivateTypes::String(val);
 	}
 	Variant(const Array& val) : type(VariantType::Array), flags(0), reserved(0)
 	{
-		::new (&asArray()) Array(val);
+		::new (&asArray) Array(val);
 	}
 
 	class engine_export Hash
@@ -1350,7 +1304,7 @@ public:
 private:
 	Variant(const char* val, unsigned char flags) : type(VariantType::String), flags(flags), reserved(0)
 	{
-		::new (&asString()) FlexSimPrivateTypes::String(val, true);
+		::new (&asString) FlexSimPrivateTypes::String(val, true);
 	}
 	void cleanup()
 	{
@@ -1359,10 +1313,10 @@ private:
 				break;
 			case VariantType::String: 
 				if (!(flags & WEAK_STR))
-					asString().~String(); 
+					asString.~String(); 
 				break;
-			case VariantType::TreeNode: asTreeNode().~NodeRef(); break;
-			case VariantType::Array: asArray().~Array(); break;
+			case VariantType::TreeNode: asTreeNode.~NodeRef(); break;
+			case VariantType::Array: asArray.~Array(); break;
 			default: {
 				_ASSERT_EXPR(0, L"Variant being cleaned up has not been constructed");
 				char errorStr[100];
@@ -1434,7 +1388,7 @@ public:
 		{ \
 		switch (type) { \
 			case VariantType::Number: return static_cast<NumberType>(asNumber); \
-			case VariantType::Array: return static_cast<NumberType>(asArray().size() > 0 ? asArray()[1] : 0); \
+			case VariantType::Array: return static_cast<NumberType>(asArray.size() > 0 ? asArray[1] : 0); \
 			default: return static_cast<NumberType>(0.0); \
 			} \
 		} \
@@ -1452,26 +1406,26 @@ public:
 	operator TreeNode*() const
 	{
 		switch (type) {
-			case VariantType::TreeNode: return asTreeNode();
-			case VariantType::Array: return (asArray().size() > 0 ? asArray()[1] : 0);;
+			case VariantType::TreeNode: return asTreeNode;
+			case VariantType::Array: return (asArray.size() > 0 ? asArray[1] : 0);;
 			default: return 0;
 		}
 	}
 	operator NodeRef() const
 	{
 		switch (type) {
-			case VariantType::TreeNode: return asTreeNode();
-			case VariantType::Array: return (asArray().size() > 0 ? asArray()[1].operator NodeRef() : NodeRef());
+			case VariantType::TreeNode: return asTreeNode;
+			case VariantType::Array: return (asArray.size() > 0 ? asArray[1].operator NodeRef() : NodeRef());
 			default: return 0;
 		}
 	}
 	operator std::string() const
 	{
 		switch (type) {
-			case VariantType::String: return std::string(asString().c_str(), asString().getLength());
+			case VariantType::String: return std::string(asString.c_str(), asString.getLength());
 			case VariantType::Array:
-				if (asArray().size() > 0) {
-					auto& element = asArray()[1];
+				if (asArray.size() > 0) {
+					auto& element = asArray[1];
 					return std::string(element.c_str());
 				} else return std::string("");
 				break;
@@ -1483,8 +1437,8 @@ public:
 		switch (type) {
 		case VariantType::String: 
 			if (flags & WEAK_STR)
-				return FlexSimPrivateTypes::String(asString().c_str());
-			else return asString();
+				return FlexSimPrivateTypes::String(asString.c_str());
+			else return asString;
 		default: return FlexSimPrivateTypes::String("");
 		}
 	}
@@ -1497,7 +1451,7 @@ public:
 				temp.push(*this);
 				return temp;
 			}
-			case VariantType::Array: return asArray();
+			case VariantType::Array: return asArray;
 		}
 	}
 	explicit operator void*() const
@@ -1511,7 +1465,7 @@ public:
 	int size() const
 	{
 		switch (type) {
-		case VariantType::Array: return (int)asArray().size();
+		case VariantType::Array: return (int)asArray.size();
 		case VariantType::Null: return 0;
 		default: return 1;
 		}
@@ -1521,7 +1475,7 @@ public:
 	{
 		switch (type) {
 		case VariantType::Array:
-			return asArray()[index];
+			return asArray[index];
 		case VariantType::TreeNode:
 		case VariantType::Number:
 		case VariantType::String:
@@ -1541,7 +1495,7 @@ public:
 	{
 		switch (type) {
 		case VariantType::Number: return asNumber != 0.0;
-		case VariantType::TreeNode: return asTreeNode().get() != nullptr;
+		case VariantType::TreeNode: return asTreeNode.get() != nullptr;
 		case VariantType::Pointer: return asPointer != nullptr;
 		case VariantType::Null: return false;
 		default: return true;
@@ -1573,7 +1527,7 @@ public:
 		else if (type == VariantType::String && other.type == VariantType::String) {
 			if (other.type != VariantType::String)
 				return false;
-			return strcmp(asString().c_str(), other.asString().c_str()) < 0;
+			return strcmp(asString.c_str(), other.asString.c_str()) < 0;
 		} else if (type == VariantType::Null && (other.type == VariantType::Number && other.asNumber != 0.0))
 			return 0.0 < other.asNumber; 
 		else if (other.type == VariantType::Null && (type == VariantType::Number && asNumber != 0.0))
@@ -1604,10 +1558,10 @@ public:
 		switch (type) {
 		case VariantType::Null: return true;
 		case VariantType::Number: return asNumber == other.asNumber;
-		case VariantType::String: return strcmp(asString().c_str(), other.asString().c_str()) == 0;
-		case VariantType::TreeNode: return asTreeNode() == other.asTreeNode();
+		case VariantType::String: return strcmp(asString.c_str(), other.asString.c_str()) == 0;
+		case VariantType::TreeNode: return asTreeNode == other.asTreeNode;
 		case VariantType::Pointer: return asPointer == other.asPointer;
-		case VariantType::Array: return asArray() == other.asArray();
+		case VariantType::Array: return asArray == other.asArray;
 		}
 		return false;
 	}
@@ -1666,18 +1620,18 @@ public:
 	Variant& operator +=(const char* val)
 	{
 		if (type == VariantType::String) {
-			std::string temp = asString();
+			std::string temp = asString;
 			temp.append(val);
-			asString() = temp;
+			asString = temp;
 		} else throw "Invalid Variant type in += assignment";
 		return *this;
 	}
 	Variant& operator +=(const std::string& val)
 	{
 		if (type == VariantType::String) {
-			std::string temp = asString();
+			std::string temp = asString;
 			temp.append(val);
-			asString() = temp;
+			asString = temp;
 		} else throw "Invalid Variant type in += assignment";
 		return *this;
 	}
@@ -1719,7 +1673,7 @@ public:
 	bool operator op (inType str) const \
 	{\
 		if (type == VariantType::String) \
-			return asString() op str; \
+			return asString op str; \
 		return defaultVal; \
 	}\
 
@@ -1830,7 +1784,7 @@ public:
 		if (type == VariantType::Number && other.type == VariantType::Number) {
 			return Variant(asNumber + other.asNumber);
 		} else if (type == VariantType::String && other.type == VariantType::String) {
-			return Variant(asString() + other.asString());
+			return Variant(asString + other.asString);
 		} else throw "Invalid Variant types in + operation";
 
 		return Variant();
@@ -1856,7 +1810,7 @@ public:
 	Variant operator + (const std::string& other) const
 	{
 		if (type == VariantType::String)
-			return Variant(asString() + other);
+			return Variant(asString + other);
 		else throw "Invalid Variant type in + operation";
 		return Variant();
 	}
@@ -1864,7 +1818,7 @@ public:
 	Variant operator + (const char* other) const
 	{
 		if (type == VariantType::String)
-			return Variant(asString() + other);
+			return Variant(asString + other);
 		else throw "Invalid Variant type in + operation";
 		return Variant();
 	}
@@ -1923,9 +1877,9 @@ public:
 	{
 		switch (type) {
 			case VariantType::Number: return asNumber;
-			case VariantType::TreeNode: return ptrtodouble(asTreeNode().get());
-			case VariantType::String: return ptrtodouble((void*)asString().c_str());
-			case VariantType::Array: return asArray().size() > 0 ? asArray()[1].forceLegacyDouble() : 0.0;
+			case VariantType::TreeNode: return ptrtodouble(asTreeNode.get());
+			case VariantType::String: return ptrtodouble((void*)asString.c_str());
+			case VariantType::Array: return asArray.size() > 0 ? asArray[1].forceLegacyDouble() : 0.0;
 			case VariantType::Pointer: return (double)(size_t)asPointer;
 			default: return 0;
 		}
@@ -1936,8 +1890,8 @@ public:
 
 	// only return my pointer if it's a non-owned cstr, i.e. it won't
 	// go out of scope if I'm destructed.
-	const char* getWeakStr() const { return (type == VariantType::String && (flags & WEAK_STR)) ? asString().c_str() : 0; }
-	const char* c_str() const { return (type == VariantType::String) ? asString().c_str() : ""; }
+	const char* getWeakStr() const { return (type == VariantType::String && (flags & WEAK_STR)) ? asString.c_str() : 0; }
+	const char* c_str() const { return (type == VariantType::String) ? asString.c_str() : ""; }
 
 private:
 	std::string toStringInternal() const;
@@ -1962,8 +1916,8 @@ public:
 				// continue into array case
 			case VariantType::Array:
 				if (val.type == VariantType::Array)
-					asArray().append(val);
-				else asArray().push(val);
+					asArray.append(val);
+				else asArray.push(val);
 				break;
 		}
 		return *this;
@@ -1981,12 +1935,12 @@ public:
 	engine_export Variant& push(const Variant& value);
 	engine_export Variant& unshift(const Variant& value);
 	engine_export Array concat(const Array& other) const;	
-	Variant& splice(int begin, int removeCount) { if (type != VariantType::Array) *this = operator Array(); asArray().splice(begin, removeCount); checkApplyToBoundNode(); return *this; }
-	Variant& splice(int begin, int removeCount, const Array& insert) { if (type != VariantType::Array) *this = operator Array(); asArray().splice(begin, removeCount, insert); checkApplyToBoundNode(); return *this; }
+	Variant& splice(int begin, int removeCount) { if (type != VariantType::Array) *this = operator Array(); asArray.splice(begin, removeCount); checkApplyToBoundNode(); return *this; }
+	Variant& splice(int begin, int removeCount, const Array& insert) { if (type != VariantType::Array) *this = operator Array(); asArray.splice(begin, removeCount, insert); checkApplyToBoundNode(); return *this; }
 	Array slice(int begin, int end)
 	{
 		switch (type) {
-			case VariantType::Array: return asArray().slice(begin, end);
+			case VariantType::Array: return asArray.slice(begin, end);
 				// case VariantType::String: return helper()->slice(from, to);
 			default:
 				return operator Array().slice(begin, end);
@@ -2798,6 +2752,7 @@ public:
 	}
 
 	static Color byNumber(int val);
+	static Color fromPalette(const Variant& value, const Variant& palette = Variant());
 
 	static const Color aqua;
 	static const Color blue;

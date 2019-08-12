@@ -363,8 +363,8 @@ public:
 
 	engine_export void bindSimpleDataMemberByName(const char* name, SimpleDataType& member);
 
-	template <class T = std::enable_if<std::is_base_of<SimpleDataType, T>::value>::type>
-	void bindSdtMemberByName(const char* name, T& member)
+	template <class T>
+	typename std::enable_if<std::is_base_of<SimpleDataType, T>::value, void>::type bindSdtMemberByName(const char* name, T& member)
 	{
 		bindSimpleDataMemberByName(name, member);
 	}
@@ -793,7 +793,7 @@ public:
 
 	private:
 	engine_export void bindEventByNameEx(const char* nodeName, TreeNode*& node, const char* eventTitle, int flags = 0, EventNodeResolver resolver = nullptr, CurValueResolver valueResolver = nullptr);
-	engine_export void bindRelayedClassEventsEx(const char* prefix, int flags, EventNodeResolver resolver, SimpleDataType* sdt, bool shouldShareSDT);
+	engine_export static void bindRelayedClassEventsEx(const char* prefix, int flags, EventNodeResolver resolver, SimpleDataType* sdt, bool shouldShareSDT);
 	public:
 	template <class ResolverCallbackType = nullptr_t, class ValueResolverCallbackType = nullptr_t>
 	void bindEventByName(const char* nodeName, TreeNode*& node, const char* eventTitle, int flags = 0, 
@@ -812,7 +812,7 @@ public:
 
 
 	template <class RelayToClass, class ResolverCallbackType = nullptr_t>
-	void bindRelayedClassEvents(const char* prefix, int flags, ResolverCallbackType resolver, RelayToClass* existing = nullptr)
+	static void bindRelayedClassEvents(const char* prefix, int flags, ResolverCallbackType resolver, RelayToClass* existing = nullptr)
 	{
 		switch (getBindEventMode()) {
 			case BIND_EVENT_ENUMERATE: 
