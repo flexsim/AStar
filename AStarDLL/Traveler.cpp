@@ -174,8 +174,8 @@ XE}
 void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval)
 {
 	XS
-	if (isRoutingNow)
-		return;
+		if (isRoutingNow)
+			return;
 	isRoutingNow = true;
 	AStarNavigator* nav = navigator;
 	nextCollisionUpdateTravelIndex = -1;
@@ -226,11 +226,13 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 
 			if (!te->canRotateOnIncline())
 				kinFlags |= KINEMATIC_NO_INCLINE_ROTATION;
-		} else {
+		}
+		else {
 			rotLerpSize = 0;
 		}
 		initkinematics(kinematics, startLoc.x, startLoc.y, te->b_spatialz, 0, 0, te->b_spatialrz, kinFlags, 0);
-	} else {
+	}
+	else {
 		endTime = nextCollisionUpdateEndTime;
 		if (endTime > nav->nextCollisionUpdateTime) {
 			isRoutingNow = false;
@@ -268,7 +270,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 		treenode obj = te->holder;
 		while (obj != model()) {
 			obj = obj->findOwnerObject();
-			containerRot += zrot(obj);			
+			containerRot += zrot(obj);
 		}
 	}
 	int i;
@@ -302,7 +304,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 				diff.x = (e.cell.col - laste.cell.col) * grid->nodeWidth;
 				diff.y = (e.cell.row - laste.cell.row) * grid->nodeWidth;
 				diff.z = 0;
-				if(containerRot)
+				if (containerRot)
 					diff.rotateXY(-containerRot);
 			}
 			else {
@@ -330,7 +332,8 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 						if (i == startAtPathIndex + 1)
 							firstCellDeallocTime = startTime + deallocTimeOffset;
 					}
-				} else {
+				}
+				else {
 					double timeToRot = fabs(rotDiff) / rotLerpSpeed;
 					double rotStartTime = max(time(), startTime - 0.5 * timeToRot);
 					addkinematic(kinematics, 0, 0, rotDiff, rotLerpSpeed, 0, 0, 0, 0, rotStartTime, KINEMATIC_ROTATE);
@@ -382,16 +385,10 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 				}
 			}
 			totalTravelDist = diff.magnitude;
-		} else {
+		}
+		else {
 			// travel onto a bridge
-			BridgeRoutingData* bridge = bridgeArrival;
 			totalTravelDist = 0;
-
-			// Create a BridgeArrivalEvent
-			if (bridgeArrivalEvent)
-				destroyevent(bridgeArrivalEvent->holder);
-			assertBridgeData(bridgeArrival);
-			bridgeArrivalEvent = createevent(new BridgeRoutingData::ArrivalEvent(bridge, this, i - 1, endTime))->objectAs(BridgeRoutingData::ArrivalEvent);
 			didBlockPathIndex = i;
 			break;
 		}
@@ -435,6 +432,14 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 				}
 			}
 		}
+	}
+
+	if (bridgeArrival) {
+		// Create a BridgeArrivalEvent
+		if (bridgeArrivalEvent)
+			destroyevent(bridgeArrivalEvent->holder);
+		assertBridgeData(bridgeArrival);
+		bridgeArrivalEvent = createevent(new BridgeRoutingData::ArrivalEvent(bridgeArrival, this, i - 1, endTime))->objectAs(BridgeRoutingData::ArrivalEvent);
 	}
 
 	if (!isActive) {
