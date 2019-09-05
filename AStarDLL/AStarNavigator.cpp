@@ -1589,7 +1589,7 @@ void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
 	Vec3 size = destination->objectAs(ObjectDataType)->size;
 	vectorproject(destination, 0.5 * size.x, -0.5 * size.y, 0, model(), loc);
 
-	getGrid(getCell(loc))->drawDestinationThreshold(destination, loc, size);
+	getGrid(loc)->drawDestinationThreshold(destination, loc, size);
 
 }
 
@@ -1658,8 +1658,7 @@ void AStarNavigator::blockGridModelPos(const Vec3& modelPos)
 		return;
 	}
 
-	Cell cell = getCell(modelPos);
-	grids[max(1, cell.grid) - 1]->blockGridModelPos(modelPos);
+	getGrid(modelPos)->blockGridModelPos(modelPos);
 }
 
 void AStarNavigator::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay)
