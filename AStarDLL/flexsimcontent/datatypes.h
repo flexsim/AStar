@@ -5,6 +5,8 @@
 #include <memory>
 #include <regex>
 #include <functional>
+#include <deque>
+#include <unordered_map>
 #include "basicclasses.h"
 
 #ifdef FLEXSIM_ENGINE_COMPILE
@@ -108,13 +110,20 @@ public:
 	private:
 		char* buffer;
 		size_t length;
+		static const int LOCAL_BUFFER_LENGTH = 24;
+		char localBuffer[LOCAL_BUFFER_LENGTH];
 	public:
 		inline void construct(const char* str, size_t strLen)
 		{
-			buffer = reinterpret_cast<char*>(flexsimmalloc(strLen + 1));
-			length = strLen;
+			if (strLen < LOCAL_BUFFER_LENGTH) {
+				buffer = localBuffer;
+			}
+			else {
+				buffer = reinterpret_cast<char*>(flexsimmalloc(strLen + 1));
+			}
 			buffer[0] = 0;
-			strncat(buffer, str, strLen + 1);
+			strncat(buffer, str, strLen);
+			length = strLen;
 		}
 		void construct(const std::string& str)
 		{
@@ -124,28 +133,34 @@ public:
 		{
 			construct(str, strlen(str));
 		}
-		inline void move(String& from)
+		inline void move(String&& from)
 		{
-			buffer = from.buffer;
+			if (from.buffer == from.localBuffer) {
+				buffer = localBuffer;
+				strcpy(localBuffer, from.localBuffer);
+			}
+			else {
+				buffer = from.buffer;
+				from.buffer = from.localBuffer;
+			}
 			length = from.length;
-			from.buffer = 0;
 			from.length = 0;
 		}
 		inline void cleanup()
 		{
-			if (buffer)
+			if (buffer && buffer != localBuffer)
 				flexsimfree(buffer);
 		}
-		explicit String() { buffer = 0; length = 0; }
+		explicit String() { buffer = localBuffer; buffer[0] = 0; length = 0; }
 		explicit String(const char* str) { construct(str, strlen(str)); }
-		explicit String(const char* str, bool isWeak) { buffer = const_cast<char*>(str); length = -1; }
+		//explicit String(const char* str, bool isWeak) { buffer = const_cast<char*>(str); length = -1; }
 		String(const std::string& str) { construct(str.c_str(), str.length()); }
 		String(const String& str) { construct(str.buffer, str.length); }
-		String(String&& str) { move(str); }
+		String(String&& str) { move(std::move(str)); }
 		String& operator=(String&& str)
 		{
 			cleanup();
-			move(str);
+			move(std::move(str));
 			return *this;
 		}
 		~String() { cleanup(); }
@@ -153,12 +168,7 @@ public:
 		String& operator=(const String& str)
 		{
 			cleanup();
-			if (str.buffer)
-				construct(str.buffer, str.length);
-			else {
-				buffer = 0;
-				length = 0;
-			}
+			construct(str.buffer, str.length);
 			return *this;
 		}
 		String& operator=(const std::string& str)
@@ -196,7 +206,7 @@ public:
 
 		const char* c_str() const { return buffer; }
 		size_t size() const { return getLength(); }
-		size_t getLength() const { return length != -1 ? length : strlen(buffer); }
+		size_t getLength() const { return length; }
 		operator std::string() const { return std::string(buffer, length); }
 		Variant __getAsProperty(const char* name, unsigned index) const;
 		void __setAsProperty(const char* name, unsigned index, const Variant& val);
@@ -1175,8 +1185,6 @@ public:
 	friend class TreeNode;
 
 protected:
-	// a weak str ptr is one that's not owned by me, so I shouldn't deallocate it
-	static const unsigned char WEAK_STR = 0x1;
 	unsigned char flags;
 	short reserved;// reserved for future use
 	TreeNode* boundToNode = nullptr;
@@ -1186,7 +1194,7 @@ protected:
 		NodeRef asTreeNode; // 12/24 bytes
 		double asNumber; // 8 bytes
 		void* asPointer; // 4/8 bytes
-		FlexSimPrivateTypes::String asString; // 8/16 bytes 
+		FlexSimPrivateTypes::String asString; // 32/40 bytes 
 		FlexSimArray<Variant, VariantType::Array> asArray; // 4/8 bytes
 	};
 
@@ -1212,9 +1220,7 @@ public:
 			case VariantType::Number: asNumber = copyFrom.asNumber; break;
 			case VariantType::TreeNode: new (&asTreeNode) NodeRef(copyFrom.asTreeNode); break;
 			case VariantType::String: 
-				if (copyFrom.flags & WEAK_STR)
-					::new (&asString) FlexSimPrivateTypes::String(copyFrom.asString.c_str(), true);
-				else ::new (&asString) FlexSimPrivateTypes::String(copyFrom.asString);
+				::new (&asString) FlexSimPrivateTypes::String(copyFrom.asString);
 				break;
 
 			case VariantType::Array: ::new (&asArray) Array(copyFrom.asArray); break;
@@ -1302,18 +1308,13 @@ public:
 		bool operator() (const Variant& a, const Variant& b) const { return a < b;};
 	};
 private:
-	Variant(const char* val, unsigned char flags) : type(VariantType::String), flags(flags), reserved(0)
-	{
-		::new (&asString) FlexSimPrivateTypes::String(val, true);
-	}
 	void cleanup()
 	{
 		switch (type) {
 			case VariantType::Null: case VariantType::Number: case VariantType::Pointer:
 				break;
 			case VariantType::String: 
-				if (!(flags & WEAK_STR))
-					asString.~String(); 
+				asString.~String(); 
 				break;
 			case VariantType::TreeNode: asTreeNode.~NodeRef(); break;
 			case VariantType::Array: asArray.~Array(); break;
@@ -1419,26 +1420,30 @@ public:
 			default: return 0;
 		}
 	}
+#ifdef FLEXSIM_ENGINE_COMPILE
 	operator std::string() const
 	{
 		switch (type) {
 			case VariantType::String: return std::string(asString.c_str(), asString.getLength());
-			case VariantType::Array:
-				if (asArray.size() > 0) {
-					auto& element = asArray[1];
-					return std::string(element.c_str());
-				} else return std::string("");
-				break;
-			default: return std::string("");
+			case VariantType::Number: return toStringInternal();
+			default: return "";
 		}
 	}
+#else 
+	operator std::string() const
+	{
+		switch (type) {
+		case VariantType::String: return std::string(asString.c_str(), asString.getLength());
+		case VariantType::Number: return toString();
+		default: return "";
+		}
+	}
+#endif
 	operator FlexSimPrivateTypes::String() const
 	{
 		switch (type) {
 		case VariantType::String: 
-			if (flags & WEAK_STR)
-				return FlexSimPrivateTypes::String(asString.c_str());
-			else return asString;
+			return asString;
 		default: return FlexSimPrivateTypes::String("");
 		}
 	}
@@ -1503,17 +1508,6 @@ public:
 	}
 	bool operator !() const { return !operator bool(); }
 #pragma endregion
-
-	static Variant createWeakStr(const char* str)
-	{
-		return Variant(str, WEAK_STR);
-	}
-	Variant& ownWeakStr()
-	{
-		if (type == VariantType::String && (flags & WEAK_STR))
-			this->operator = (c_str());
-		return *this;
-	}
 
 	inline bool isNumberType() const { return type == VariantType::Number; };
 	
@@ -1649,7 +1643,7 @@ public:
 			asNumber -= val;
 		else if (type == VariantType::Null)
 			operator = (-val);
-		else throw "Invalid Variant type in += assignment";
+		else throw "Invalid Variant type in -= assignment";
 		return *this;
 	}
 	Variant& operator *=(double val)
@@ -1681,10 +1675,10 @@ public:
 	COMPARE_STRING(op, const std::string&, defaultVal); \
 	COMPARE_STRING(op, const char*, defaultVal);
 
-	COMPARE_STRING_PAIR(== , false)
-	COMPARE_STRING_PAIR(!= , true)
-	COMPARE_STRING_PAIR(>, false)
-	COMPARE_STRING_PAIR(<, false)
+COMPARE_STRING_PAIR(== , false)
+COMPARE_STRING_PAIR(!= , true)
+COMPARE_STRING_PAIR(> , false)
+COMPARE_STRING_PAIR(< , false)
 	COMPARE_STRING_PAIR(>= , false)
 	COMPARE_STRING_PAIR(<= , false)
 
@@ -1765,15 +1759,29 @@ public:
 #define BINARY_NUM_OP(numberType, op)\
 	double operator op (numberType num) const\
 	{\
-		if (type == VariantType::Number)\
+		if (type == VariantType::Null)\
+			return num op 0;\
+		else if (type == VariantType::Number)\
 			return (double)(asNumber op num);\
+		else throw "Invalid Variant type in " #op " operation";\
+		return (double)num;\
+	}
+#define BINARY_STRINGABLE_OP(numberType, op)\
+	Variant operator op (numberType num) const\
+	{\
+		if (type == VariantType::Null)\
+			return num;\
+		else if (type == VariantType::Number)\
+			return (double)(asNumber op num);\
+		else if (type == VariantType::String)\
+			return operator std::string() op Variant(num).operator std::string(); \
 		else throw "Invalid Variant type in " #op " operation";\
 		return (double)num;\
 	}
 	
 
 	// Variant op numberType
-	FOR_ALL_NUMBER_TYPES(BINARY_NUM_OP, +)
+	FOR_ALL_NUMBER_TYPES(BINARY_STRINGABLE_OP, +)
 	FOR_ALL_NUMBER_TYPES(BINARY_NUM_OP, -)
 	FOR_ALL_NUMBER_TYPES(BINARY_NUM_OP, *)
 	FOR_ALL_NUMBER_TYPES(BINARY_NUM_OP, /)
@@ -1781,12 +1789,18 @@ public:
 	// Variant op Variant (+ operator deals with strings
 	Variant operator + (const Variant& other) const
 	{
-		if (type == VariantType::Number && other.type == VariantType::Number) {
-			return Variant(asNumber + other.asNumber);
-		} else if (type == VariantType::String && other.type == VariantType::String) {
+		if (type == VariantType::Number && other.type == VariantType::Number)
+			return asNumber + other.asNumber;
+		else if (type == VariantType::String && other.type == VariantType::String)
 			return Variant(asString + other.asString);
-		} else throw "Invalid Variant types in + operation";
-
+		else if (type == VariantType::String || other.type == VariantType::String)
+			return operator std::string() + other.operator std::string();
+		else if (type == VariantType::Number && other.type == VariantType::Null)
+			return asNumber;
+		else if (type == VariantType::Null && other.type == VariantType::Number)
+			return other.asNumber;
+		
+		throw "Invalid Variant types in + operation";
 		return Variant();
 	}
 
@@ -1807,20 +1821,14 @@ public:
 	int operator % (const Variant& right) const { return operator int() % right.operator int(); }
 
 	// Variant op string
-	Variant operator + (const std::string& other) const
+	std::string operator + (const std::string& other) const
 	{
-		if (type == VariantType::String)
-			return Variant(asString + other);
-		else throw "Invalid Variant type in + operation";
-		return Variant();
+		return operator std::string() + other;
 	}
 
-	Variant operator + (const char* other) const
+	std::string operator + (const char* other) const
 	{
-		if (type == VariantType::String)
-			return Variant(asString + other);
-		else throw "Invalid Variant type in + operation";
-		return Variant();
+		return operator std::string() + other;
 	}
 
 #undef BINARY_VARIANT_OP
@@ -1888,9 +1896,6 @@ public:
 	engine_export static Variant interpretString(const char*);
 	engine_export static std::string dataToString(const Variant& value, int precision, int displayFlags);
 
-	// only return my pointer if it's a non-owned cstr, i.e. it won't
-	// go out of scope if I'm destructed.
-	const char* getWeakStr() const { return (type == VariantType::String && (flags & WEAK_STR)) ? asString.c_str() : 0; }
 	const char* c_str() const { return (type == VariantType::String) ? asString.c_str() : ""; }
 
 private:
@@ -2020,24 +2025,29 @@ inline bool operator != (TreeNode* left, const NodeRef& right)
 		return static_cast<double>(left) op static_cast<double>(right); \
 	}
 
-	FOR_ALL_NUMBER_TYPES(BINARY_OP, +)
-	FOR_ALL_NUMBER_TYPES(BINARY_OP, -)
-	FOR_ALL_NUMBER_TYPES(BINARY_OP, *)
-	FOR_ALL_NUMBER_TYPES(BINARY_OP, /)
+#define BINARY_STRINGABLE_GLOBAL_OP(numType, op)\
+	inline Variant operator op (numType left, const Variant& right) {\
+		return Variant(left) + right; \
+	}
+
+FOR_ALL_NUMBER_TYPES(BINARY_STRINGABLE_GLOBAL_OP, +)
+FOR_ALL_NUMBER_TYPES(BINARY_OP, -)
+FOR_ALL_NUMBER_TYPES(BINARY_OP, *)
+FOR_ALL_NUMBER_TYPES(BINARY_OP, /)
 
 inline int operator % (int left, const Variant& right)
 {
 	return left % (int)right;
 }
 
-inline Variant operator + (const std::string& left, const Variant& right)
+inline std::string operator + (const std::string& left, const Variant& right)
 {
-	return Variant(std::string(left).append(right));
+	return std::string(left).append(right);
 }
 
-inline Variant operator + (const char* left, const Variant& right)
+inline std::string operator + (const char* left, const Variant& right)
 {
-	return Variant(std::string(left).append(right));
+	return std::string(left).append(right);
 }
 
 
@@ -2366,6 +2376,7 @@ public:
 #endif
 
 	operator Number* () { return loc; }
+	operator const Number* () const { return loc; }
 	const Vec4Generic operator + (const Vec4Generic& a) const { return Vec4Generic(x + a.x, y + a.y, z + a.z, w + a.w); }
 	const Vec4Generic operator - (const Vec4Generic& a) const { return Vec4Generic(x - a.x, y - a.y, z - a.z, w - a.w); }
 	const Vec4Generic operator - () const { return Vec4Generic(-x, -y, -z, -w); }
@@ -2468,6 +2479,7 @@ public:
 #endif
 
 	operator Number* () { return loc; }
+	operator const Number* () const { return loc; }
 	Vec3Generic operator + (const Vec3Generic& a) const { return Vec3Generic(x + a.x, y + a.y, z + a.z); }
 	Vec3Generic operator - (const Vec3Generic& a) const { return Vec3Generic(x - a.x, y - a.y, z - a.z); }
 	Vec3Generic operator - () const { return Vec3Generic(-x, -y, -z); }
@@ -2634,6 +2646,7 @@ public:
 #endif
 
 	operator Number* () { return loc; }
+	operator const Number* () const { return loc; }
 	Vec2Generic operator + (const Vec2Generic& a) const { return Vec2Generic(x + a.x, y + a.y); }
 	Vec2Generic operator - (const Vec2Generic& a) const { return Vec2Generic(x - a.x, y - a.y); }
 	Vec2Generic operator - () const { return Vec2Generic(-x, -y); }
@@ -2688,6 +2701,208 @@ typedef Vec3Generic<double> Vec3;
 typedef Vec3Generic<float> Vec3f;
 typedef Vec2Generic<double> Vec2;
 typedef Vec2Generic<float> Vec2f;
+
+template <class T>
+class Mat4Generic
+{
+public:
+	typedef Vec4Generic<T> ColType;
+	typedef Mat4Generic<T> MatType;
+	typedef Vec3Generic<T> Vec3Type;
+private:
+	ColType value[4];
+public:
+
+	enum Uninitialized : int { u = 0 };
+	static const Uninitialized uninitialized = Uninitialized::u;
+
+	Mat4Generic(Uninitialized uninitialized) {}
+
+	Mat4Generic()
+	{
+		value[0] = ColType(1.0, 0.0, 0.0, 0.0);
+		value[1] = ColType(0.0, 1.0, 0.0, 0.0);
+		value[2] = ColType(0.0, 0.0, 1.0, 0.0);
+		value[3] = ColType(0.0, 0.0, 0.0, 1.0);
+	}
+	Mat4Generic(const Mat4Generic& from)
+	{
+		value[0] = from.value[0];
+		value[1] = from.value[1];
+		value[2] = from.value[2];
+		value[3] = from.value[3];
+	}
+	Mat4Generic(const T* data)
+	{
+		memcpy(&value[0][0], data, 16 * sizeof(T));
+	}
+	Mat4Generic(
+		T const & x0, T const & y0, T const & z0, T const & w0,
+		T const & x1, T const & y1, T const & z1, T const & w1,
+		T const & x2, T const & y2, T const & z2, T const & w2,
+		T const & x3, T const & y3, T const & z3, T const & w3)
+	{
+		value[0] = ColType(x0, y0, z0, w0);
+		value[1] = ColType(x1, y1, z1, w1);
+		value[2] = ColType(x2, y2, z2, w2);
+		value[3] = ColType(x3, y3, z3, w3);
+	}
+
+	Mat4Generic
+	(
+		ColType const & v0,
+		ColType const & v1,
+		ColType const & v2,
+		ColType const & v3
+	)
+	{
+		value[0] = v0;
+		value[1] = v1;
+		value[2] = v2;
+		value[3] = v3;
+	}
+
+	ColType& operator [] (int index) { return value[index]; }
+	const ColType& operator [] (int index) const { return value[index]; }
+	operator T*() { return value[0]; }
+
+
+	static MatType rotate(const MatType& m, T angle, const Vec3Generic<T>& v)
+	{
+		T const a = degreestoradians(angle);
+		T const c = cos(a);
+		T const s = sin(a);
+
+		Vec3Type axis(v.normalized);
+		Vec3Type temp(axis * (T(1) - c));
+
+		MatType Rotate;
+		Rotate[0][0] = c + temp[0] * axis[0];
+		Rotate[0][1] = temp[0] * axis[1] + s * axis[2];
+		Rotate[0][2] = temp[0] * axis[2] - s * axis[1];
+
+		Rotate[1][0] = temp[1] * axis[0] - s * axis[2];
+		Rotate[1][1] = c + temp[1] * axis[1];
+		Rotate[1][2] = temp[1] * axis[2] + s * axis[0];
+
+		Rotate[2][0] = temp[2] * axis[0] + s * axis[1];
+		Rotate[2][1] = temp[2] * axis[1] - s * axis[0];
+		Rotate[2][2] = c + temp[2] * axis[2];
+
+		MatType Result(uninitialized);
+		Result[0] = m[0] * Rotate[0][0] + m[1] * Rotate[0][1] + m[2] * Rotate[0][2];
+		Result[1] = m[0] * Rotate[1][0] + m[1] * Rotate[1][1] + m[2] * Rotate[1][2];
+		Result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];
+		Result[3] = m[3];
+		return Result;
+	}
+
+	static MatType translate(const MatType & m, const Vec3Type & v)
+	{
+		MatType Result(m);
+		Result[3] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3];
+		return Result;
+	}
+
+	static MatType scale(const MatType &m, const Vec3Type& v)
+	{
+		MatType Result(uninitialized);
+		Result[0] = m[0] * v[0];
+		Result[1] = m[1] * v[1];
+		Result[2] = m[2] * v[2];
+		Result[3] = m[3];
+		return Result;
+	}
+
+	static MatType inverse(const MatType &m)
+	{
+		T Coef00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
+		T Coef02 = m[1][2] * m[3][3] - m[3][2] * m[1][3];
+		T Coef03 = m[1][2] * m[2][3] - m[2][2] * m[1][3];
+
+		T Coef04 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
+		T Coef06 = m[1][1] * m[3][3] - m[3][1] * m[1][3];
+		T Coef07 = m[1][1] * m[2][3] - m[2][1] * m[1][3];
+
+		T Coef08 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
+		T Coef10 = m[1][1] * m[3][2] - m[3][1] * m[1][2];
+		T Coef11 = m[1][1] * m[2][2] - m[2][1] * m[1][2];
+
+		T Coef12 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
+		T Coef14 = m[1][0] * m[3][3] - m[3][0] * m[1][3];
+		T Coef15 = m[1][0] * m[2][3] - m[2][0] * m[1][3];
+
+		T Coef16 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
+		T Coef18 = m[1][0] * m[3][2] - m[3][0] * m[1][2];
+		T Coef19 = m[1][0] * m[2][2] - m[2][0] * m[1][2];
+
+		T Coef20 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
+		T Coef22 = m[1][0] * m[3][1] - m[3][0] * m[1][1];
+		T Coef23 = m[1][0] * m[2][1] - m[2][0] * m[1][1];
+
+		Vec4Generic<T> Fac0(Coef00, Coef00, Coef02, Coef03);
+		Vec4Generic<T> Fac1(Coef04, Coef04, Coef06, Coef07);
+		Vec4Generic<T> Fac2(Coef08, Coef08, Coef10, Coef11);
+		Vec4Generic<T> Fac3(Coef12, Coef12, Coef14, Coef15);
+		Vec4Generic<T> Fac4(Coef16, Coef16, Coef18, Coef19);
+		Vec4Generic<T> Fac5(Coef20, Coef20, Coef22, Coef23);
+
+		Vec4Generic<T> Vec0(m[1][0], m[0][0], m[0][0], m[0][0]);
+		Vec4Generic<T> Vec1(m[1][1], m[0][1], m[0][1], m[0][1]);
+		Vec4Generic<T> Vec2(m[1][2], m[0][2], m[0][2], m[0][2]);
+		Vec4Generic<T> Vec3(m[1][3], m[0][3], m[0][3], m[0][3]);
+
+		Vec4Generic<T> Inv0(Vec1 * Fac0 - Vec2 * Fac1 + Vec3 * Fac2);
+		Vec4Generic<T> Inv1(Vec0 * Fac0 - Vec2 * Fac3 + Vec3 * Fac4);
+		Vec4Generic<T> Inv2(Vec0 * Fac1 - Vec1 * Fac3 + Vec3 * Fac5);
+		Vec4Generic<T> Inv3(Vec0 * Fac2 - Vec1 * Fac4 + Vec2 * Fac5);
+
+		Vec4Generic<T> SignA(+1, -1, +1, -1);
+		Vec4Generic<T> SignB(-1, +1, -1, +1);
+		MatType Inverse(Inv0 * SignA, Inv1 * SignB, Inv2 * SignA, Inv3 * SignB);
+
+		Vec4Generic<T> Row0(Inverse[0][0], Inverse[1][0], Inverse[2][0], Inverse[3][0]);
+
+		Vec4Generic<T> Dot0(m[0] * Row0);
+		T Dot1 = (Dot0.x + Dot0.y) + (Dot0.z + Dot0.w);
+
+		T OneOverDeterminant = static_cast<T>(1) / Dot1;
+
+		return Inverse * OneOverDeterminant;
+	}
+
+	MatType operator *(T s) {
+		return MatType(value[0] * s, value[1] * s, value[2] * s, value[3] * s);
+	}
+
+};
+
+template <class T>
+Mat4Generic<T> operator*(T s, const Mat4Generic<T>& right) { return right * s; }
+
+template<class T>
+Mat4Generic<T> operator*(const Mat4Generic<T>& left, const Mat4Generic<T>& right)
+{
+	typename Mat4Generic<T>::ColType const SrcA0 = left[0];
+	typename Mat4Generic<T>::ColType const SrcA1 = left[1];
+	typename Mat4Generic<T>::ColType const SrcA2 = left[2];
+	typename Mat4Generic<T>::ColType const SrcA3 = left[3];
+
+	typename Mat4Generic<T>::ColType const SrcB0 = right[0];
+	typename Mat4Generic<T>::ColType const SrcB1 = right[1];
+	typename Mat4Generic<T>::ColType const SrcB2 = right[2];
+	typename Mat4Generic<T>::ColType const SrcB3 = right[3];
+
+	Mat4Generic<T> Result(Mat4Generic<T>::uninitialized);
+	Result[0] = SrcA0 * SrcB0[0] + SrcA1 * SrcB0[1] + SrcA2 * SrcB0[2] + SrcA3 * SrcB0[3];
+	Result[1] = SrcA0 * SrcB1[0] + SrcA1 * SrcB1[1] + SrcA2 * SrcB1[2] + SrcA3 * SrcB1[3];
+	Result[2] = SrcA0 * SrcB2[0] + SrcA1 * SrcB2[1] + SrcA2 * SrcB2[2] + SrcA3 * SrcB2[3];
+	Result[3] = SrcA0 * SrcB3[0] + SrcA1 * SrcB3[1] + SrcA2 * SrcB3[2] + SrcA3 * SrcB3[3];
+	return Result;
+}
+
+typedef Mat4Generic<double> Mat4;
+typedef Mat4Generic<float> Mat4f;
 
 class engine_export Color
 {
@@ -2900,8 +3115,9 @@ public:
 		static const int READ_ONLY = 0x2;
 		static const int READ_ONLY_ROW_HEADERS = 0x4;
 		static const int BUNDLE_TYPES_ONLY = 0x8;
+		static const int NO_COLS_WITHOUT_ROWS = 0x10;
 		static bool cellTypeIsBundleType;
-		virtual int getConstraints() const { return 0; }
+		virtual int getConstraints() const;
 		engine_export virtual int __numRows() const;
 		engine_export virtual int __numCols() const;
 		__declspec(property(get = __numRows)) int numRows;
@@ -2935,6 +3151,19 @@ public:
 		engine_export int indexFromVariant(int depth, const Variant& headerName);
 		engine_export void clearCell(treenode cell, int recursive = 0);
 
+		engine_export Variant getRowByKey(const Variant& key, const Variant& keyCol = Variant());
+		engine_export Variant getValueByKey(const Variant& key, const Variant& valueCol, const Variant& keyCol = Variant());
+		virtual int getDefaultKeyCol() { return 1; }
+		virtual int findRowForKey(const Variant& key, int keyCol);
+		virtual int lookupRowForKey(const Variant& key, int keyCol);
+
+		engine_export void addIndex(const Variant& keyCol, int indexType) { addIndex(indexFromVariant(2, keyCol), indexType); }
+		virtual void addIndex(int keyCol, int indexType) { throw "this table type does not support adding an index"; };
+		engine_export int hasIndex(const Variant& keyCol) { return hasIndex(indexFromVariant(2, keyCol)); }
+		virtual int hasIndex(int keyCol) { return false; }
+		engine_export void removeIndex(const Variant& keyCol) { removeIndex(indexFromVariant(2, keyCol)); }
+		virtual void removeIndex(int keyCol) {}
+
 	};
 
 private:
@@ -2957,6 +3186,12 @@ private:
 
 		engine_export virtual Variant getValue(int row, int col);
 		engine_export virtual void setValue(int row, int col, const Variant& val);
+
+		virtual int getDefaultKeyCol() override;
+		virtual int lookupRowForKey(const Variant& key, int keyCol) override;
+		virtual void addIndex(int keyCol, int indexType) override;
+		virtual int hasIndex(int keyCol) override;
+		virtual void removeIndex(int keyCol) override;
 	};
 	class ArrayDataSource : public TableDataSource
 	{
@@ -3036,6 +3271,17 @@ public:
 	Table& swapCols(int col, int col2) { dataSource->swapCols(col, col2); return *this; }
 	Table& swapRows(int row, int row2) { dataSource->swapRows(row, row2); return *this; }
 
+	int getRowByKey(const Variant& key, const Variant& keyCol = Variant()) { return dataSource->getRowByKey(key, keyCol); }
+	Variant getValueByKey(const Variant& key, const Variant& valueCol, const Variant& keyCol = Variant()) { return dataSource->getValueByKey(key, valueCol, keyCol); }
+
+	struct IndexType {
+		static const int Unordered = 1;
+		static const int Ordered = 2;
+	};
+	void addIndex(const Variant& keyCol, int indexType = IndexType::Unordered) { dataSource->addIndex(keyCol, indexType); }
+	int hasIndex(const Variant& keyCol) { return dataSource->hasIndex(keyCol); }
+	void removeIndex(const Variant& keyCol) { dataSource->removeIndex(keyCol); }
+
 	engine_export Table& cloneTo(Table& dest);
 	engine_export Array clone();
 
@@ -3103,35 +3349,46 @@ class engine_export DateTime
 {
 public:
 	DateTime(double);
-	//DateTime(const char*, const char* format = nullptr);
 	DateTime(const Variant&);
-	DateTime(int days, int hours, int minutes = 0, int seconds = 0);
+	DateTime(const char*, const char* format = nullptr);
+	DateTime(int days, int hours, int minutes = 0, int seconds = 0, int milliseconds = 0);
+	DateTime(int year, int month, int day, int hour, int minute, int second, int millisecond = 0);
 
 private:
 	void construct(double val) { new (this) DateTime(val); }
-	void construct(const char* val) { new (this) DateTime(val); }
 	void construct(const Variant& val) { new (this) DateTime(val); }
 	void construct(const DateTime& other) { new (this) DateTime(other); }
-	void construct(int days, int hours, int minutes = 0, int seconds = 0) { new (this) DateTime(days, hours, minutes, seconds); }
+	void construct(const char* val, const char* format = 0) { new (this) DateTime(val, format); }
+	void construct(int days, int hours, int minutes = 0, int seconds = 0, int milliseconds = 0) { new (this) DateTime(days, hours, minutes, seconds, milliseconds); }
+	void construct(int year, int month, int day, int hour, int minute, int second, int millisecond = 0) { new (this) DateTime(year, month, day, hour, minute, second, millisecond); }
 
 public:
-	//static DateTime fromModelTime(double modelTime);
-
 	static DateTime milliseconds(double value) { return DateTime(value * 0.001); }
 	static DateTime seconds(double value) { return DateTime(value); }
 	static DateTime minutes(double value) { return DateTime(value * 60.0); }
 	static DateTime hours(double value) { return DateTime(value * 3600.0); }
 	static DateTime days(double value) { return DateTime(value * 86400.0); }
 
-	static std::string getLocaleName(int type);
-
 	static DateTime fromExcelTime(double excelTime);
+	//static DateTime fromModelTime(double modelTime);
+
+	static std::string datePickerFormatToStrptimeFormat(const char* fmt);
+	static std::string getLocaleName(int type);
+	static char* strptime(const char* timeStr, const char* fmt, tm& _tm);
+	static std::tm* gmtime(const std::time_t* t, std::tm* tm);
+	static time_t timegm(std::tm const *t);
+	static bool isLeap(int year);
+
 	std::string toString(const char* format = nullptr) const;
 
 private:
 	double m_value;
 
 public:
+	static const int64_t FS1900 = 9435484800; // Jan 1, 1900 in FS_DATETIME
+	static const int64_t FS1970 = 11644473600; // Jan 1, 1970 in FS_DATETIME
+	static const int64_t _100NSECS_PER_SEC = 10000000;
+
 	static void bindInterface();
 
 	operator Variant() const { return Variant(m_value);  }
@@ -3183,6 +3440,8 @@ public:
 
 	DateTime operator + (const DateTime& other) const { return DateTime(m_value + other.m_value); }
 	DateTime operator - (const DateTime& other) const { return DateTime(m_value - other.m_value); }
+	DateTime operator += (const DateTime& other) { m_value += other.m_value; return *this; }
+	DateTime operator -= (const DateTime& other) { m_value -= other.m_value; return *this; }
 	bool operator < (const DateTime& other) const { return m_value < other.value; }
 	bool operator <= (const DateTime& other) const { return m_value <= other.value; }
 	bool operator > (const DateTime& other) const { return m_value > other.value; }
@@ -3260,6 +3519,114 @@ public:
 
 	static void bindInterface();
 };
+
+class TextureAtlas : public FlexSimPrivateTypes::NewDelete {
+public:
+	struct ImgCoords {
+		Vec2f bottomLeft;
+		Vec2f topRight;
+	};
+private:
+	engine_export TextureAtlas();
+	struct Rect {
+		int x;
+		int y;
+		int w;
+		int h;
+	};
+	static const int pixelSize = 4;
+	int m_size = 256;
+	bool m_isDirty = true;
+
+	std::deque<Rect> emptySpaces;
+	std::unordered_map<std::string, Rect> takenSpaces;
+	typedef std::unique_ptr<unsigned char[]> TextureBuffer;
+	TextureBuffer texture;
+	unsigned int texID = 0;
+	TextureBuffer normalMap;
+	unsigned int normalMapID = 0;
+	TextureBuffer heightMap;
+	unsigned int heightMapID = 0;
+	TextureBuffer specularMap;
+	unsigned int specularMapID = 0;
+	TextureBuffer glossMap;
+	unsigned int glossMapID = 0;
+	void assertGLTexture(unsigned int& texID);
+	static const int DEFAULT_NORMAL_VAL = 0xff7f7fff;
+	static const int DEFAULT_HEIGHT_VAL = 0xff7f7f7f;
+	static const int DEFAULT_SPECULAR_VAL = 0xff000000;
+	static const int DEFAULT_GLOSS_VAL = 0xff000000;
+	static void memSet(unsigned char* dst, unsigned int defaultVal, size_t num);
+	void assertBuffer(TextureBuffer& map, unsigned int defaultVal);
+	void growBuffer(TextureBuffer& map, unsigned int defaultVal);
+	void growTexture();
+	ImgCoords getCoords(const Rect& rect);
+	//void generateMipMaps();
+public:
+	engine_export ~TextureAtlas();
+	static engine_export TextureAtlas* makeAtlas();
+	engine_export ImgCoords assertImage(const char* path, bool& requiredResize);
+	engine_export ImgCoords getCoords(const char* image, bool& requiredResize) { return assertImage(image, requiredResize); }
+	engine_export bool hasImage(const char* image);
+	engine_export void bindTexture();
+
+	int __getSize() { return m_size; }
+	__declspec(property(get = __getSize)) int size;
+	bool __getIsDirty() { return m_isDirty; }
+	__declspec(property(get = __getIsDirty)) bool isDirty;
+
+};
+
+struct SqlCursor {
+	union {
+		int rowNum;
+		int orderingID;
+	};
+	void* ptr = nullptr;
+	void* altPtr = nullptr;
+	SqlCursor& operator = (int row) { rowNum = row; return *this; }
+	SqlCursor(int row) : rowNum(row) {}
+	SqlCursor() {}
+
+	bool operator < (const SqlCursor& right) const { 
+		return orderingID < right.orderingID;
+	}
+	bool operator <= (const SqlCursor& right) const {
+		return orderingID <= right.orderingID;
+	}
+	bool operator == (const SqlCursor& right) const {
+		return orderingID == right.orderingID;
+	}
+	bool operator != (const SqlCursor& right) const {
+		return orderingID != right.orderingID;
+	}
+	engine_export void bind(treenode toNode);
+
+};
+class SqlCursorAdvancer : public FlexSimPrivateTypes::NewDelete {
+public:
+	virtual ~SqlCursorAdvancer() {}
+	int tableSize = 0;
+	SqlCursorAdvancer() {}
+	SqlCursorAdvancer(int tableSize) : tableSize(tableSize) {}
+	virtual bool advance(SqlCursor& cursor) 
+	{ 
+		cursor.rowNum++; 
+		return cursor.rowNum < tableSize; 
+	}
+	virtual bool init(SqlCursor& cursor) 
+	{ 
+		cursor.rowNum = 0; 
+		return tableSize > 0;
+	}
+	virtual bool less(const SqlCursor& left, const SqlCursor& right) 
+		{ return left.rowNum < right.rowNum; }
+	virtual bool equal(const SqlCursor& left, const SqlCursor& right)
+	{
+		return !less(left, right) && !less(right, left);
+	}
+};
+
 
 }
 

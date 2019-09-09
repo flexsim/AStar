@@ -131,6 +131,8 @@ public:
 	int isValueID(double id);
 	TreeNode* getObjectFromID(double id);
 	const char* getPathFromID(double id, const unsigned int maxDepth);
+	int doesNodeHaveID(TreeNode* object);
+	void setNodeID(TreeNode* object, double id);
 
 	void mergeWith(IDServiceCore* other);
 
@@ -174,6 +176,8 @@ public:
 	engine_export static int isValueID(double id);
 	engine_export static TreeNode* getObjectFromID(double id);
 	engine_export static const char* getPathFromID(double id, int maxDepth);
+	engine_export static int doesNodeHaveID(TreeNode* object);
+	engine_export static void setNodeID(TreeNode* object, double id);
 	
 	engine_export static Array getIDsAndPathsInBundle(TreeNode* bundleNode, const Variant& columns, int startEntry, int maxDepth);
 
@@ -191,16 +195,20 @@ public:
 // formats (DATA_FORMAT_*)
 class StatisticsCollector;
 class CalculatedTable;
-class ColumnFormatter : public ObjectDataType
+class engine_export ColumnFormatter
 {
 public:
 	virtual int getColumnFormat(int colNr) = 0;
 	virtual Array getColumnFormats() = 0;
-	virtual StatisticsCollector* toStatisticsCollector() { return nullptr; }
-	virtual CalculatedTable* toCalculatedTable() { return nullptr; }
+	virtual TreeNode* getBundleNode() = 0;
+	virtual int getObjectFormatMaxDepth() { return 0; };
+	virtual void prepareToRead() {};
+
+	static bool inheritsColumnFormatter(TreeNode* object);
+	static ColumnFormatter* toColumnFormatter(TreeNode* object);
 };
 
-class StatisticsCollector : public ColumnFormatter
+class StatisticsCollector : public ObjectDataType, public ColumnFormatter
 {
 protected:
 	typedef std::map<std::string, Variant> PropertyMap;
@@ -799,6 +807,7 @@ public:
 	engine_export void __setInstanceObject(TreeNode* obj) { instanceObject = obj; }
 
 	engine_export int getRowForValue(const Variant& value);
+	engine_export Variant getValue(int row, int col, int skipUpdate = 0);
 
 	engine_export operator Table();
 	engine_export operator TreeNode*() { return holder; }
@@ -806,6 +815,9 @@ public:
 	// These methods allow access to some column metadata
 	engine_export int getColumnFormat(int columnNr) override;
 	engine_export Array getColumnFormats() override;
+	engine_export TreeNode* getBundleNode() override;
+	engine_export int getObjectFormatMaxDepth() override;
+	engine_export void prepareToRead() override;
 
 	engine_export static StatisticsCollector* createGlobal();
 	engine_export static StatisticsCollector* getGlobal(const Variant& id);
@@ -852,6 +864,8 @@ public:
 	engine_export static const char* getPathFromID(double id, int maxDepth = 0) { 
 		return IDService::getPathFromID(id, maxDepth);
 	}
+	engine_export static int doesNodeHaveID(TreeNode* object) { return IDService::doesNodeHaveID(object); }
+	engine_export static void setNodeID(TreeNode* object, double id) { IDService::setNodeID(object, id); }
 
 	engine_export static void clearIDs() { IDService::clear(); }
 

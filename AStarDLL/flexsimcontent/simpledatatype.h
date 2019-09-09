@@ -25,6 +25,7 @@ namespace FlexSim {
 #define SDT_BIND_ON_DISPLAY 4
 #define SDT_BIND_SET_VALUE 5
 #define SDT_BIND_GET_VALUE 6
+#define SDT_BIND_ENUM_SUBNODES 7
 
 class SimpleDataType
 {
@@ -40,6 +41,7 @@ private:
 	static char* displayStrCopyPoint;
 	static bool displayVerbose;
 	static int detachAfterBind;
+	static Array boundSubnodes;
 	static void attachSDTDerivative(TreeNode* x);
 	static void bindSDTNode(TreeNode* x);
 	static void detachSDTDerivative(TreeNode* x);
@@ -86,6 +88,7 @@ public:
 	engine_export virtual int stringtodata(char *datastring, int precision) { return 0; };
 	engine_export virtual int getCapabilities() { return 0; }
 	static const int CAPABILITY_LABELS = 0x1;
+	engine_export virtual void setLabel(const char* name, const Variant& val);
 engine_private:
 	virtual TreeNode* getObjectTree() { return 0; }
 	virtual TreeNode* getLabelNode(const char* labelName, bool assert) { return 0; }
@@ -110,6 +113,7 @@ public:
 	engine_export static const char * getCurValueName();
 	engine_export Variant getValue(const char* name);
 	engine_export void setValue(const char* name, Variant value);
+	Array enumerateBoundSubnodes();
 private:
 	engine_export static TreeNode* bindByName(const char* name, int asSubNode, int dataType, int * added, TreeNode* bindParent, SimpleDataType* sdt);
 public:
@@ -577,6 +581,10 @@ public:
 			appendToDisplayStr("\r\n");
 			break;
 		}
+		case SDT_BIND_ENUM_SUBNODES: {
+			bindByName(prefix, 0, DATA_FLOAT);
+			break;
+		}
 		default:break;
 
 		}
@@ -621,6 +629,10 @@ public:
 				ValBinder::Displayer(&(temp->second));
 			}
 			appendToDisplayStr("\r\n");
+			break;
+		}
+		case SDT_BIND_ENUM_SUBNODES: {
+			bindByName(prefix, 0, DATA_FLOAT);
 			break;
 		}
 		default:break;
@@ -1396,6 +1408,35 @@ public:
 };
 
 #if !defined FLEXSIM_ENGINE_COMPILE || defined FLEXSIM_FLEXSCRIPT_CPP
+
+class SqlQueryInterface : public SimpleDataType
+{
+public:
+	virtual void setLimit(int limit) = 0;
+	virtual SqlCursor getCurrentCursorByTableID(int tableID) = 0;
+	virtual SqlCursor getMatchCursorByTableID(int tableID, int matchRow) = 0;
+	virtual SqlCursor getMatchCursor(const char* tableName, int matchRow) = 0;
+	virtual SqlCursor getMatchCursor(int tableNum, int matchRow) = 0;
+	virtual int getResultLength() = 0;
+	virtual Variant getResult(int row, int col) = 0;
+	virtual Variant getResult(int row, const char* col) = 0;
+
+	virtual int run(SqlDataSource* d, bool doSort = true) = 0;
+	virtual int run(bool doSort = true) = 0;
+
+	virtual bool hasSelect() = 0;
+	virtual bool hasFrom() = 0;
+	virtual bool hasWhere() = 0;
+	virtual bool hasOn() = 0;
+	virtual bool hasOrderBy() = 0;
+	virtual bool hasGroupBy() = 0;
+	virtual bool hasHaving() = 0;
+
+	virtual Array getResultArray() = 0;
+
+	virtual SqlDataSource* getDataSource() = 0;
+};
+
 /// <summary>	Defines an interface for interaction with FlexSim's SQL parser/evaluator. </summary>
 /// <remarks>	Sub-class implementations act as delegates to the parser,
 /// 			providing, first, mappings of table and column names to table and
@@ -1416,16 +1457,10 @@ class SqlDataSource : public SimpleDataType
 
 public:
 
-	/// <summary>	Returns true if the delegate can resolve column and table refs at parse time, otherwise false. </summary>
-	/// <remarks>	Default is true. If false, this means that references must be resolved at query time. This 
-	/// 			would only be useful if there is a mechanism by which you can parse and store a query beforehand,
-	/// 			and then run the query later, potentially multiple times. This could improve speed because
-	/// 			you're only parsing once and querying multiple times, instead parsing on each query. </remarks>
-	/// <returns>	true if it can resolve references at parse time, false if not. </returns>
-	virtual bool canResolveRefsAtParseTime() {return true;}
-
 	static const int COL_INDEXED = 0x1; // tells the execution engine that the data source has an quick lookup index for values.
-	static const int COL_DYNAMIC = 0x2; // signal to the sql execution engine that it should perhaps be cached because it may change on each execution
+	static const int COL_INDEX_ORDERED = 0x2; // tells the execution engine that the data source has an ordered quick lookup index, so the user can get fast lookups both with an ==, as well as with a <, >, <=, and >=.
+	static const int COL_DYNAMIC = 0x4; // signal to the sql execution engine that it should perhaps be cached because it may change on each execution
+	static const int COL_CONSTANT = 0x8; // signal to the sql execution engine that this column value is constant across all rows of the table (for indexing)
 	/// <summary>	Returns the column identifier of the column with the defined name in the defined
 	/// 			table. </summary>
 	/// <remarks>	Anthony, 8/27/2014. </remarks>
@@ -1443,7 +1478,7 @@ public:
 	/// 			SQL_COL_END. Each call should return the name of a column.</param>
 	/// <param name="colNum"> 	The 0-based column number. </param>
 	/// <returns>	Returns the name of a column, or SQL_COL_END. </returns>
-	virtual const char* enumerateColNames(int tableId, int colNum){return SQL_COL_END;}
+	virtual const char* enumerateColNames(int tableID, int colNum){return SQL_COL_END;}
 
 	/// <summary>	Retrieves a value out of a table. </summary>
 	/// <remarks>	Anthony, 8/27/2014. </remarks>
@@ -1451,7 +1486,9 @@ public:
 	/// <param name="row">	  	The zero-based row. </param>
 	/// <param name="colId">  	Identifier for the col. </param>
 	/// <returns>	The value. </returns>
-	virtual Variant getValue(int tableId, int row, int colId) {return SQL_NULL;}
+	virtual Variant getValue(int tableID, int row, int colID) {return SQL_NULL;}
+
+	virtual Variant getValue(int tableID, const SqlCursor& cursor, int colID) { return getValue(tableID, cursor.rowNum, colID); }
 
 	/// <summary>	Sets a value. </summary>
 	/// <remarks>	Anthony.johnson, 2/25/2016. </remarks>
@@ -1461,6 +1498,7 @@ public:
 	/// <param name="toVal">  	to value. </param>
 	/// <returns>	true if it succeeds, false if it fails. </returns>
 	virtual bool setValue(int tableId, int row, int colId, const Variant& toVal) { return false; }
+	virtual bool setValue(int tableID, const SqlCursor& cursor, int colID, const Variant& toVal) { return setValue(tableID, cursor.rowNum, colID, toVal); }
 
 	/// <summary>	Gets a table's identifier. </summary>
 	/// <remarks>	Anthony, 8/27/2014. </remarks>
@@ -1474,7 +1512,22 @@ public:
 	/// <returns>	The number of rows in the table. </returns>
 	virtual int getRowCount(int tableID) {return 0;}
 
+	engine_export virtual SqlCursorAdvancer* initAdvancer(int tableID, SqlCursorAdvancer* default, bool& manageMemory)
+	{
+		default->tableSize = getRowCount(tableID);
+		return default;
+	}
+
+	static const int COMP_EQ = 0;
+	static const int COMP_GT = 1;
+	static const int COMP_LT = 2;
+	static const int COMP_GE = 3;
+	static const int COMP_LE = 4;
 	virtual int getNextIndexedRow(int tableID, int colID, const Variant& value, int lastRow = -1) { return -1; }
+
+	virtual bool initIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) { cursor.rowNum = getNextIndexedRow(tableID, colID, value, -1); return cursor.rowNum >= 0; }
+	virtual bool advanceIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) { cursor.rowNum = getNextIndexedRow(tableID, colID, value, cursor.rowNum); return cursor.rowNum >= 0; }
+
 
 	virtual const char* getClassFactory() override { return "SqlDataSource"; }
 
@@ -1487,7 +1540,7 @@ public:
 	/// <returns>	True if custom where filter, false if not. </returns>
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	virtual bool hasCustomWhereFilter() { return false; }
-	virtual bool evaluateCustomWhereFilter(SqlQuery* q) { return true; }
+	virtual bool evaluateCustomWhereFilter(SqlQueryInterface* q) { return true; }
 	virtual const char* getFlexScriptType(int tableID, int colID) { return nullptr; }
 };
 #endif
@@ -1618,6 +1671,31 @@ private:
 	int needsProfileCountDown = 0;
 	double lastResetTime;
 };
+#endif
+
+#if !defined FLEXSIM_ENGINE_COMPILE || defined FLEXSIM_EXECUTIVE
+
+class StatVariable : public SimpleDataType
+{
+protected:
+	int type;
+	Variant value;
+	TreeNode* onChange = nullptr;
+
+public:
+	virtual const char* getClassFactory() override { return "StatVariable"; }
+	virtual bool isClassType(const char* className) { return strcmp(className, "StatVariable") == 0 || __super::isClassType(className); }
+
+	virtual void bind() override;
+	virtual void bindEvents() override;
+	virtual bool setPrimaryValue(const Variant& val) override;
+	virtual Variant getPrimaryValue() override;
+	virtual Variant evaluate(const VariantParams& params) override;
+	virtual TreeNode* getEventInfoObject(const char* eventTitle) override;
+
+	engine_export static StatVariable* init(TreeNode* holder, int type);
+};
+
 #endif
 
 #if !defined FLEXSIM_ENGINE_COMPILE || defined FLEXSIM_TREEWIN

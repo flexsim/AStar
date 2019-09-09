@@ -149,8 +149,8 @@ public:
 		virtual OverflowTrackableValue getOverflowTrackableValue(int row, int colID);
 
 		virtual bool hasCustomWhereFilter() override { return matchValues != nullptr || list->shouldTrackIneligibleEntries; }
-		bool evaluateCustomWhereFilter(SqlQuery* q, int row);
-		virtual bool evaluateCustomWhereFilter(SqlQuery* q) override;
+		bool evaluateCustomWhereFilter(SqlQueryInterface* q, int row);
+		virtual bool evaluateCustomWhereFilter(SqlQueryInterface* q) override;
 		virtual const char* getFlexScriptType(int tableID, int colID) override;
 
 		TreeNode* curPuller = nullptr;
@@ -177,7 +177,7 @@ public:
 		virtual int getColID(int tableID, const char* colName, int& flags) override;
 		virtual Variant getValue(int tableID, int row, int colID) override;
 		virtual int getRowCount(int tableID) override;
-		virtual bool evaluateCustomWhereFilter(SqlQuery* q) override;
+		virtual bool evaluateCustomWhereFilter(SqlQueryInterface* q) override;
 		/// <summary>The current 0-based entry row to compare back orders against.</summary>
 		int curEntryRow = 0;
 	};
@@ -226,7 +226,7 @@ public:
 		Fulfillment checkFulfill(EntryRange& range);
 		virtual int getRowCount(int tableID) override;
 		virtual Variant getValue(int tableID, int row, int colID) override;
-		virtual bool evaluateCustomWhereFilter(SqlQuery* q) override;
+		virtual bool evaluateCustomWhereFilter(SqlQueryInterface* q) override;
 		virtual OverflowTrackableValue getOverflowTrackableValue(int row, int colID) override;
 
 
@@ -298,6 +298,7 @@ public:
 	// Events
 	TreeNode* onPush = nullptr;
 	TreeNode* onPull = nullptr;
+	TreeNode* onValuePulled = nullptr;
 
 	class BackOrderFulfillEvent : public FlexSimEvent
 	{
