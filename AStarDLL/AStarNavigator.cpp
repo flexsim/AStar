@@ -304,6 +304,8 @@ double AStarNavigator::onRunWarm()
 {
 	for (auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
 		AStarNodeExtraData* extra = iter->second;
+		if (!extra)
+			continue;
 		extra->totalTraversals = 0;
 		extra->totalBlockedTime = 0.0;
 		extra->totalBlocks = 0;
@@ -932,7 +934,7 @@ the outside 8 nodes.
 		if (n->hasBridgeStartPoint) {
 			auto e = edgeTableExtraData.find(shortest.cell.value);
 			AStarNodeExtraData* extra = e->second;
-			if (e != edgeTableExtraData.end() && extra->bridges.size() > 0) {
+			if (e != edgeTableExtraData.end() && extra && extra->bridges.size() > 0) {
 				for (int i = 0; i < extra->bridges.size(); i++) {
 					auto& entry = extra->bridges[i];
 					if (entry.bridge->useCondition && !entry.bridge->condition->evaluate(routingTraveler->te->holder))
@@ -1489,15 +1491,17 @@ void AStarNavigator::drawAllocations(float z)
 	allocMesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE4, MESH_DYNAMIC_DRAW);
 	lineMesh.init(0, MESH_POSITION, MESH_DYNAMIC_DRAW);
 	for (auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
-		AStarNodeExtraData& nodeData = *(iter->second);
-		if (nodeData.allocations.size() == 0)
+		AStarNodeExtraData* nodeData = iter->second;
+		if (!nodeData)
 			continue;
-		auto currentAllocation = std::find_if(nodeData.allocations.begin(), nodeData.allocations.end(),
+		if (nodeData->allocations.size() == 0)
+			continue;
+		auto currentAllocation = std::find_if(nodeData->allocations.begin(), nodeData->allocations.end(),
 			[](NodeAllocation& alloc) { return alloc.acquireTime <= time() && alloc.releaseTime > time(); });
-		bool isAllocCurrent = currentAllocation != nodeData.allocations.end();
+		bool isAllocCurrent = currentAllocation != nodeData->allocations.end();
 		Vec4f& clr = !isAllocCurrent ? partialClr : fullClr;
 
-		Vec3 centerPos = getLocation(nodeData.cell);
+		Vec3 centerPos = getLocation(nodeData->cell);
 		int vert = allocMesh.addVertex();
 		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
 		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
@@ -1518,7 +1522,7 @@ void AStarNavigator::drawAllocations(float z)
 		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
 
 		if (isAllocCurrent) {
-			while (currentAllocation != nodeData.allocations.end()) {
+			while (currentAllocation != nodeData->allocations.end()) {
 				lineMesh.setVertexAttrib(lineMesh.addVertex(), MESH_POSITION, Vec3f(centerPos.x, centerPos.y, centerPos.z));
 				TaskExecuter* te = currentAllocation->traveler->te;
 				Vec3 topPos = te->getLocation(0.5, 0.5, 1.1);
@@ -1526,7 +1530,7 @@ void AStarNavigator::drawAllocations(float z)
 					topPos = topPos.project(te->holder->up, model());
 				lineMesh.setVertexAttrib(lineMesh.addVertex(), MESH_POSITION, Vec3f(topPos.x, topPos.y, topPos.z));
 				currentAllocation++;
-				currentAllocation = std::find_if(currentAllocation, nodeData.allocations.end(),
+				currentAllocation = std::find_if(currentAllocation, nodeData->allocations.end(),
 					[](NodeAllocation& alloc) { return alloc.acquireTime <= time() && alloc.releaseTime > time(); });
 			}
 		}

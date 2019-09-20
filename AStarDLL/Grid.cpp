@@ -870,6 +870,8 @@ void Grid::drawHeatMap(TreeNode * view)
 	int myRank = rank;
 	for (auto& node : navigator->edgeTableExtraData) {
 		AStarNodeExtraData* data = node.second;
+		if (!data)
+			continue;
 		if (data->totalTraversals <= 0)
 			continue;
 		if (data->cell.grid != myRank)
