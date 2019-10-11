@@ -1044,7 +1044,7 @@ void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDes
 		currDir = (currDir + 1) % 4;
 		distance = (counter++) / 4;
 
-		if (distance == max(numRows, numCols))
+		if (distance >= max(numRows, numCols))
 			break;
 
 		switch (currDir) {
