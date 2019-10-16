@@ -3826,6 +3826,8 @@ if (clickcode() == LEFT_RELEASE) {
 </data>
         <node f="40"><name></name></node>
         <node f="42" dt="2"><name>By Traveler Label</name><data>return /**/traveler.type == 1/**direct*/;</data></node>
+        <node f="42" dt="2"><name>Staff Only</name><data>/**Staff Only*/
+return !isclasstype(traveler, "People::Staff") || traveler.TravelingWithPatient?;</data></node>
        </node>
       </node>
       <node f="42"><name>GUIClasses</name>
