@@ -184,6 +184,7 @@
     <ClInclude Include="AStarNavigator.h" />
     <ClInclude Include="AStarTypes.h" />
     <ClInclude Include="MandatoryPath.h" />
+    <ClInclude Include="OpenCL.h" />
     <ClInclude Include="TemporaryBarrier.h" />
     <ClInclude Include="Traveler.h" />
     <ClInclude Include="Barrier.h" />

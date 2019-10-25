@@ -335,6 +335,9 @@ public:
 	ElevatorBridge::AStarDelegate* elevatorDelegate;
 
 	NodeListArray<>::SubNodeType barrierConditions;
+
+	void testOpenCL(bool onGPU);
+	Variant testOpenCL(FLEXSIMINTERFACE) { testOpenCL((int)param(1)); return Variant(); }
 };
 
 }

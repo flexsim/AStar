@@ -6,6 +6,7 @@
 #include "Traveler.h"
 #include "TemporaryBarrier.h"
 #include "MandatoryPath.h"
+#include "OpenCL.h"
 
 #include <sstream>
 
@@ -160,6 +161,7 @@ void AStarNavigator::bind()
 {
 	__super::bind();
 	bindCallback(createGrid, AStarNavigator);
+	bindCallback(testOpenCL, AStarNavigator);
 }
 
 TreeNode* AStarNavigator::resolveTraveler()
@@ -2003,6 +2005,48 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 Variant AStarNavigator::createGrid(FLEXSIMINTERFACE)
 {
 	return createGrid(Vec3(param(1), param(2), param(3)), Vec3(param(4), param(5), param(6)))->holder;
+}
+
+void AStarNavigator::testOpenCL(bool onGPU)
+{
+	auto& cl = OpenCL::instance;
+	const char* source =
+		"__kernel void vector_add(__global const int *A, __global const int *B, __global int *C) {"
+			"int i = get_global_id(0);"
+			"C[i] = A[i] + B[i];"
+		"}";
+
+	OpenCL::Program program = cl.createProgram(source, "vector_add", onGPU ? OpenCL::DEVICE_TYPE_GPU : OpenCL::DEVICE_TYPE_DEFAULT);
+
+	static const int LIST_SIZE = 1024;
+	int A[LIST_SIZE];
+	int B[LIST_SIZE];
+	int C[LIST_SIZE];
+	for (int i = 0; i < LIST_SIZE; i++) {
+		A[i] = i;
+		B[i] = LIST_SIZE - i;
+	}
+
+	auto commandQueue = program.createCommandQueue(0);
+	auto aBuffer = program.createBuffer(0, sizeof(A), nullptr);
+	auto bBuffer = program.createBuffer(0, sizeof(B), nullptr);
+	auto cBuffer = program.createBuffer(0, sizeof(C), nullptr);
+
+	commandQueue.writeBuffer(aBuffer, true, 0, sizeof(A), A);
+	commandQueue.writeBuffer(bBuffer, true, 0, sizeof(B), B);
+	
+	program.setKernelArg(0, aBuffer);
+	program.setKernelArg(1, bBuffer);
+	program.setKernelArg(2, cBuffer);
+
+	commandQueue.enqueue(LIST_SIZE, 64);
+	commandQueue.readBuffer(cBuffer, true, 0, sizeof(C), C);
+	commandQueue.finish();
+
+	for (int i = 0; i < LIST_SIZE; i++) {
+		pd(i); pt(" "); pd(C[i]); pr();
+	}
+
 }
 
 ASTAR_FUNCTION Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)
