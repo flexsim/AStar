@@ -546,6 +546,10 @@ void Grid::blockNodeDirection(const Cell& cell, Direction direction, Barrier* ba
 
 void Grid::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay, Barrier* barrier)
 {
+	// Apply the line only if it is within the minPoint.z and maxPoint.z
+	if (minPoint.z > min(modelPos1.z, modelPos2.z) + 0.000001 || maxPoint.z < min(modelPos1.z, modelPos2.z) + 0.000001)
+		return;
+
 	double low, high, step, pos;
 	int gridRank = rank;
 	// calculate columns and rows from the model points
