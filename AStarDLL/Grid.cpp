@@ -289,18 +289,19 @@ void Grid::buildNodeTable()
 	// go through each barrier and add it to the table
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
-		bool isConditional = barrier->conditionRule && rank == 1;
-		if (isConditional) {
-			barrier->conditionalBarrierChanges.reset(navigator);
-			navigator->applyToTemporaryBarrier = &barrier->conditionalBarrierChanges;
-		}
+		bool isConditional = barrier->conditionRule;
 		Vec3 min, max;
 		barrier->getBoundingBox(min, max);
-		if (isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z) || isConditional) {
+		bool isWithinVerticalBounds = isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z);
+		if ((!isConditional && isWithinVerticalBounds) || (isConditional && rank == 1)) {
+			if (isConditional) {
+				barrier->conditionalBarrierChanges.reset(navigator);
+				navigator->applyToTemporaryBarrier = &barrier->conditionalBarrierChanges;
+			}
 			barrier->addBarriersToTable(this);
+			if (isConditional)
+				navigator->applyToTemporaryBarrier = nullptr;
 		}
-		if (isConditional)
-			navigator->applyToTemporaryBarrier = nullptr;
 	}
 
 	// add custom barriers
