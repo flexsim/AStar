@@ -55,7 +55,7 @@ bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand, bool addSurr
 
 bool Grid::isLocWithinVerticalBounds(double z) const
 {
-	return (isLowestGrid || z >= minPoint.z - 0.001 * nodeWidth) && z < maxPoint.z;
+	return (isLowestGrid || z >= minPoint.z - 0.001 * nodeWidth) && z < maxPoint.z - 0.001 * nodeWidth;
 }
 
 bool Grid::intersectBoundingBox(Vec3 & min, Vec3 & max) const
