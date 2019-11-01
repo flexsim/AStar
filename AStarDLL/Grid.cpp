@@ -289,11 +289,10 @@ void Grid::buildNodeTable()
 	// go through each barrier and add it to the table
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
-		bool isConditional = barrier->conditionRule;
 		Vec3 min, max;
 		barrier->getBoundingBox(min, max);
-		bool isWithinVerticalBounds = isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z);
-		if ((!isConditional && isWithinVerticalBounds) || (isConditional && rank == 1)) {
+		if (isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z)) {
+			bool isConditional = barrier->conditionRule;
 			if (isConditional) {
 				barrier->conditionalBarrierChanges.reset(navigator);
 				navigator->applyToTemporaryBarrier = &barrier->conditionalBarrierChanges;
