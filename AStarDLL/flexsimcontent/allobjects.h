@@ -1142,6 +1142,7 @@
 #define REPEAT_TYPE_NR_ITERATIONS 3
 #define REPEAT_TYPE_USE_TIME 4
 #define REPEAT_TYPE_TIME_AFTER_END 5
+#define REPEAT_TYPE_LAST_FRAME 6
 
 #define KEYFRAME_CONTENT 2
 #define KEYFRAME_BODIES 1
@@ -1898,6 +1899,7 @@
 #define STAT_TYPE_CATEGORICAL 0x4
 #define STAT_TYPE_KINETIC_LEVEL 0x5
 #define STAT_TYPE_POINTER 0x6
+#define STAT_TYPE_CATEGORICAL_COMBO 0x7
 
 #define STAT_RELAYED 0x100
 #define STAT_TIME_WEIGHTED 0x200
@@ -2146,21 +2148,24 @@ class TaskSequence : public SimpleDataType{
 	treenode owner; // this is only used in coordinated tasks.  It is there so that the proxy task executers have a reference back to the dispatcher that has the task sequence
 	unsigned int milestone; // this is the rank of the current milestone
 	unsigned int nrofallocations; // this is the current number of objects allocated or whose allocation has been requested
+	int waitForFinishState = 0;
 	virtual const char* getClassFactory() {return "TaskSequence";}
-	virtual void bind();
-	virtual void bindInterface() override;
-	virtual char* toString(int verbose);
-	virtual int getCapabilities() { return 1; } //Labels
-	virtual treenode getObjectTree();
-	virtual TreeNode* getLabelNode(const char* labelName, bool assert);
-	virtual TreeNode* getLabelNode(int labelRank, bool assert);
+	FS_CONTENT_DLL_FUNC virtual void bind();
+	FS_CONTENT_DLL_FUNC virtual void bindInterface() override;
+	FS_CONTENT_DLL_FUNC virtual char* toString(int verbose);
+	FS_CONTENT_DLL_FUNC virtual int getCapabilities() { return 1; } //Labels
+	FS_CONTENT_DLL_FUNC virtual treenode getObjectTree();
+	FS_CONTENT_DLL_FUNC virtual TreeNode* getLabelNode(const char* labelName, bool assert);
+	FS_CONTENT_DLL_FUNC virtual TreeNode* getLabelNode(int labelRank, bool assert);
 	
-	Variant getLabelProperty(const char* name, unsigned nameHash, bool dieHard);
-	void setLabelProperty(const char* name, unsigned nameHash, const Variant& value);
+	FS_CONTENT_DLL_FUNC Variant getLabelProperty(const char* name, unsigned nameHash, bool dieHard);
+	FS_CONTENT_DLL_FUNC void setLabelProperty(const char* name, unsigned nameHash, const Variant& value);
 
-	static TaskSequence* create(treenode obj, double priority = 0.0, int preempt = 0);
-	Task* addTask(int type, treenode involved1 = nullptr, treenode involved2 = nullptr, const Variant& var1 = Variant(), 
+	FS_CONTENT_DLL_FUNC static TaskSequence* create(treenode obj, double priority = 0.0, int preempt = 0, int waitForFinishState = 0);
+	FS_CONTENT_DLL_FUNC Task* addTask(int type, treenode involved1 = nullptr, treenode involved2 = nullptr, const Variant& var1 = Variant(), 
 		const Variant& var2 = Variant(), const Variant& var3 = Variant(), const Variant& var4 = Variant());
+		
+	FS_CONTENT_DLL_FUNC void finish();
 	
 	treenode labelsNode;
 	void reset();
@@ -2174,16 +2179,16 @@ class TaskSequence : public SimpleDataType{
 	void __setRank(int toRank) { holder->rank = toRank; }
 	
 	public:
-	void __dispatch(treenode dispatcher);
+	FS_CONTENT_DLL_FUNC void __dispatch(treenode dispatcher);
 	Task* __getCurrentTask() { return holder->subnodes[curtask]->objectAs(Task); }
 	
 	__declspec(property(get=__getCurrentTask)) Task* currentTask;
-
-	void dispatch() { __dispatch(nullptr);}
-	void move(Dispatcher* toDisp);
 	
 	TaskArray __getTasks() { return TaskArray(holder); }
 	__declspec(property(get=__getTasks)) TaskArray tasks;
+	
+	void dispatch() { __dispatch(nullptr);}
+	FS_CONTENT_DLL_FUNC void move(Dispatcher* toDisp);
 };
 
 
@@ -2937,8 +2942,6 @@ visible double resumeobject(treenode involved, int id);
 visible double resumetransportsin(treenode object, int rank DEFAULTZERO);
 
 visible double resumetransportsout(treenode object, int rank DEFAULTZERO);
-
-visible double rotationproject(treenode originSpace, double rx, double ry, double rz, treenode ontoSpace, double* rotationsOut);
 
 Variant savenodestate(treenode savenode, int size DEFAULTZERO, int nrofpointers DEFAULTONE, treenode* nodes DEFAULTNULL);
 
@@ -4176,10 +4179,17 @@ FS_CONTENT_DLL_FUNC string getStateName(treenode profile, int stateNum);
 
 FS_CONTENT_DLL_FUNC int getNumStates(treenode profile);
 
+FS_CONTENT_DLL_FUNC double generateGuid();
+
+FS_CONTENT_DLL_FUNC void bindVariables();
+
+FS_CONTENT_DLL_FUNC static StatisticObject* getStatisticByGuid(const char* guid);
+
+TreeNode* node_v_guid;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+FS_CONTENT_DLL_FUNC void bindVariablesDefault();
 
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
@@ -6452,13 +6462,24 @@ FS_CONTENT_DLL_FUNC virtual double getEntryLoc(treenode involved,  double* retur
 
 FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
 
+FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
+
+FS_CONTENT_DLL_FUNC void bindVariables();
+
 TreeNode* node_v_activeRoles;
 #define v_activeRoles node_v_activeRoles->safedatafloat()[0]
 TreeNode* node_v_currentLocation;
+TreeNode* node_v_idleAnimation;
+TreeNode* node_v_walkAnimation;
+TreeNode* node_v_walkLoadedAnimation;
+
+// c++ attributes
+bool doUpdateAnimation = true;
+
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+FS_CONTENT_DLL_FUNC void bindVariablesDefault();
 
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
@@ -8031,6 +8052,8 @@ public:
 		};
 		double loc = 0.0;
 		double size = 1.0;
+		Vec3 lowerPadding = Vec3(0.0, 0.0, 0.0);
+		Vec3 upperPadding = Vec3(0.0, 0.0, 0.0);
 		Vec3 stackingMarker;
 		Vec3 stackingMaxSizeMarker;
 		double isStorable = 1.0;
@@ -8456,6 +8479,9 @@ public:
 	FS_CONTENT_DLL_FUNC void setSlotStorable(bool isStorable, const Variant& slotFilter = Variant());
 	Variant setSlotStorable(FLEXSIMINTERFACE) { setSlotStorable((int)param(1), param(2)); return Variant(); }
 
+	FS_CONTENT_DLL_FUNC void setSlotPadding(bool isUpperPadding, int vecIndex, double padding, const Variant& slotFilter = Variant());
+	Variant setSlotPadding(FLEXSIMINTERFACE) { setSlotPadding((bool)(int)param(1), (int)param(2), (double)param(3), param(4)); return Variant(); }
+
 	Variant getBaySize(FLEXSIMINTERFACE) { return getBaySize(param(1)); }
 	Variant getLevelSize(FLEXSIMINTERFACE) { return getLevelSize(param(1), param(2)); }
 	Variant getBayLoc(FLEXSIMINTERFACE) { return getBayLoc(param(1)); }
@@ -8810,6 +8836,7 @@ public:
 
 //ClassIncludeHeaderStart
 
+virtual void bind() override;
 bool isDriveThrough() { return stackingAxis1 == STACKING_AXIS_Y; }
 virtual int getPickingOrder() override { return isDriveThrough() ? FIFO : LIFO; }
 virtual void bindVariables() override;
@@ -8833,6 +8860,9 @@ virtual void setInitialDimensions() override
 	setBasicDimensions(10, 1.5 / getmodelunit(LENGTH_MULTIPLE), 4, 1.5 / getmodelunit(LENGTH_MULTIPLE), 1);
 }
 virtual const char* getDefaultVisualizationName() override { return "Drive In Rack"; }
+void customizeAStarGrid(TreeNode* navigator, double nodeWidth);
+Variant customizeAStarGrid(FLEXSIMINTERFACE) { customizeAStarGrid(param(1), param(2)); return 1; }
+
 
 //ClassIncludeHeaderEnd
 

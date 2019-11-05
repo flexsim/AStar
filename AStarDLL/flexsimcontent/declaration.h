@@ -636,7 +636,8 @@ inline double getstatenum(treenode obj, int profilenr){return getstatenum_alias2
 inline double getstatenum(treenode obj){return getstatenum_alias1(obj);}
 
 inline void updateanimation(treenode object){updateanimationalias1(object);}
-inline void updateanimation(treenode object, double updatetime, int animnr = 0){updateanimationalias2(object, updatetime, animnr);}
+inline void updateanimation(treenode object, double updatetime, int animnr = 0){ updateanimationalias2(object, updatetime, animnr); }
+inline void updateanimation(treenode object, double updatetime, int animnr, int force){ updateanimationalias3(object, updatetime, animnr, force); }
 
 inline treenode assertattribute(treenode object,char *name, int datatype){return assertattributealias(object, name, datatype);}
 inline treenode assertvariable(treenode object,char *name, int datatype = 0){return assertvariablealias(object, name, datatype);}
@@ -810,8 +811,6 @@ engine_export treenode trackedvariable(const char* listName);
 inline treenode trackedvariable(const std::string& str) { return trackedvariable(str.c_str()); }
 engine_export treenode inittrackedvariable(treenode theNode, int type, double startValue, int flags);
 
-visible double rotationproject(treenode originSpace, double rx, double ry, double rz, treenode ontoSpace, double* rotationsOut);
-
 engine_export int getsystemmetric(int metric, HWND win);
 engine_export Variant callwebscriptmethod(treenode view, const char* id, const char* name, ...);
 
@@ -863,6 +862,7 @@ engine_export int print(const Variant&, const Variant&, const Variant&, const Va
 	const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
 
 engine_export Variant shapeinfo(int info, const Variant& p1 = Variant(), const Variant& p2 = Variant(), const Variant& p3 = Variant());
+engine_export void rotationproject(treenode originSpace, double rx, double ry, double rz, treenode ontoSpace, double* rotationsOut);
 
 }
 

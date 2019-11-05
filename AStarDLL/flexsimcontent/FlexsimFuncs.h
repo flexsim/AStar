@@ -1104,6 +1104,7 @@ namespace FlexSim {
 	typedef treenode     (*_up)(treenode node);
 	typedef void         (*_updateanimationalias1)(treenode object);
 	typedef void         (*_updateanimationalias2)(treenode object, double updatetime, int animnr);
+	typedef void         (*_updateanimationalias3)(treenode object, double updatetime, int animnr, int force);
 	typedef void         (*_updatekinematicsalias)(treenode infonode, treenode object, double updatetime);
 	typedef double       (*_updatelocations)(treenode object);
 	typedef double       (*_updatestate_alias1)(treenode obj);
@@ -1970,7 +1971,8 @@ DECLARE_FLEXSIM_FUNCTION_1(trunc)
 DECLARE_FLEXSIM_FUNCTION_2(uniformalias, "uniform")
 DECLARE_FLEXSIM_FUNCTION_1(up)
 DECLARE_FLEXSIM_FUNCTION_2(updateanimationalias1, "updateanimation")
-DECLARE_FLEXSIM_FUNCTION_3(updateanimationalias2, "?updateanimation@FlexSim@@YAXPAVTreeNode@1@NH@Z","?updateanimation@FlexSim@@YAXPEAVTreeNode@1@NH@Z")
+DECLARE_FLEXSIM_FUNCTION_3(updateanimationalias2, "?updateanimation@FlexSim@@YAXPAVTreeNode@1@NH@Z", "?updateanimation@FlexSim@@YAXPEAVTreeNode@1@NH@Z")
+DECLARE_FLEXSIM_FUNCTION_3(updateanimationalias3, "?updateanimation@FlexSim@@YAXPAVTreeNode@1@NHH@Z", "?updateanimation@FlexSim@@YAXPEAVTreeNode@1@NHH@Z")
 DECLARE_FLEXSIM_FUNCTION_2(updatekinematicsalias, "updatekinematics")
 DECLARE_FLEXSIM_FUNCTION_2(updatestate_alias1, "updatestate")
 DECLARE_FLEXSIM_FUNCTION_3(updatestate_alias2, "?updatestate@FlexSim@@YANPAVTreeNode@1@H@Z","?updatestate@FlexSim@@YANPEAVTreeNode@1@H@Z")

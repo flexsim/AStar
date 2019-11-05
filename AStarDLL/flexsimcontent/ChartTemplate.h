@@ -29,8 +29,6 @@ This class is defined in the engine so that run-time users can create
 these objects.
 */
 
-
-
 class ChartTemplate : public ObjectDataType
 {
 protected:
@@ -54,7 +52,7 @@ protected:
 
 public:
 	// type determines which UI to show
-	double type;
+	TreeNode* type;
 
 	// these values determine which template objects to use
 	ByteBlock flowPath;
