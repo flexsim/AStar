@@ -123,6 +123,8 @@ DECLARE_ATTRIBUTE(0,animationinfo,"An attribute containing animation information
 DECLARE_ATTRIBUTE(0,resizeinfo,"An attribute containing sub-component resizing information", 0)
 DECLARE_ATTRIBUTE(0,shapedata, "Path to a node containing information to override shape data", 0)
 
+DECLARE_ATTRIBUTE(0, resetvalues, "Maps nodes whose values were changed during the model run to their original values", 0)
+
 // COPYRIGHT 2006   F L E X S I M   C O R P O R A T I O N .  ALL RIGHTS RESERVED.
 
 

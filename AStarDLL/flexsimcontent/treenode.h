@@ -198,6 +198,7 @@ public:
 	/// <remarks>	If undos are enabled, this will add an undo record. </remarks>
 	/// <param name="name">	The name. </param>
 	engine_export TreeNode* setName(const char* name);
+	engine_export const char * getName();
 
 	/// <summary>	Adds data to the node. </summary>
 	/// <remarks>	If undos are enabled, this will add an undo record. </remarks>

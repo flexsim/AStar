@@ -819,6 +819,14 @@ visible void fglMultMatrix(float m00, float m01, float m02, float m03, float m04
 engine_export void fglMultMatrix(const float* matrix);
 visible void fglLoadMatrix(float m00, float m01, float m02, float m03, float m04, float m05, float m06, float m07, float m08, float m09, float m10, float m11, float m12, float m13, float m14, float m15);
 engine_export void fglLoadMatrix(const float* matrix);
+engine_export void fglColorMaterial(int colorMaterial);
+engine_export int fglGetUniformLocation(int program, const char* name);
+engine_export void fglUniform(int location, float value);
+engine_export int fglGetAttribLocation(int program, const char* name);
+engine_export void fglVertexAttrib(int location, const Vec4f& vec);
+engine_export void fglVertexAttrib(int location, const Vec3f& vec);
+engine_export void fglVertexAttrib(int location, const Vec2f& vec);
+engine_export void fglVertexAttrib(int location, float val);
 engine_export void autoloadallmedia(treenode obj);
 visible int autoloadallmedia();
 
@@ -853,6 +861,9 @@ engine_export int print(const Variant&, const Variant&, const Variant&, const Va
 	const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
 engine_export int print(const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&,
 	const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&, const Variant&);
+
+engine_export Variant shapeinfo(int info, const Variant& p1 = Variant(), const Variant& p2 = Variant(), const Variant& p3 = Variant());
+
 }
 
 #endif

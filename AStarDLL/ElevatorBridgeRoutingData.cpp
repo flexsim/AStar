@@ -54,6 +54,15 @@ void ElevatorBridgeRoutingData::updateLocation(Traveler* traveler)
 	traveler->bridgeData->updateLocation(traveler->te);
 }
 
+double ElevatorBridgeRoutingData::getTravelDistance(TravelPath* path, int travelPathIndex, Grid* grid)
+{
+	auto& srcCell = (*path)[travelPathIndex].cell;
+	Vec3 srcLoc = grid->getLocation(srcCell);
+	auto& destCell = (*path)[travelPathIndex + 1].cell;
+	Vec3 destLoc = grid->navigator->getLocation(destCell);
+	return (destLoc - srcLoc).magnitude;
+}
+
 TravelerBridgeData * ElevatorBridgeRoutingData::createBridgeData()
 {
 	return bridge->createBridgeData();

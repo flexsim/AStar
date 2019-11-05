@@ -160,6 +160,7 @@
 #define node_b_animationinfo Nb_animationinfo
 #define node_b_resizeinfo Nb_resizeinfo
 #define node_b_shapedata Nb_shapedata
+#define node_b_resetvalues Nb_resetvalues
 
 
 // Constants
@@ -1375,6 +1376,7 @@
 #define BUNDLE_FIELD_TYPE_FLOAT 4
 #define BUNDLE_FIELD_TYPE_VARCHAR 5
 #define BUNDLE_FIELD_TYPE_NODEREF 6
+#define BUNDLE_FIELD_TYPE_BINARY 7
 #define BUNDLE_FIELD_TYPE_MASK 0x00FF
 
 #define BUNDLE_FIELD_INDEX_MAP 0x0100
@@ -2008,6 +2010,18 @@ namespace FlexSim {
 class FlexSimEventHandler;
 
 class FlexSimObject;
+
+class StorageObject;
+
+class Rack;
+
+class GravityFlowRack;
+
+class DriveInRack;
+
+class PushBackRack;
+
+class FloorStorage;
 
 class Dispatcher;
 
@@ -3048,6 +3062,8 @@ FS_CONTENT_DLL_FUNC virtual void resume(int id, int stateprofile DEFAULTZERO);
 FS_CONTENT_DLL_FUNC virtual void resume();
 
 FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+
+FS_CONTENT_DLL_FUNC virtual void onDragConnection(ObjectDataType* fromObj, ObjectDataType* toObj, char charPressed);
 
 FS_CONTENT_DLL_FUNC virtual double getPickOffset(treenode involvedobj, treenode toobject, double* returnarray);
 
@@ -5032,17 +5048,57 @@ FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
 
 FS_CONTENT_DLL_FUNC std::string setProperties(treenode view, treenode repData DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC std::string colorToJSON(treenode colorNode);
+FS_CONTENT_DLL_FUNC std::string getBasicPropertiesAsJSON();
+
+FS_CONTENT_DLL_FUNC std::string getAxisPropertiesAsJSON(treenode settings);
+
+FS_CONTENT_DLL_FUNC std::string getFormatPropertiesAsJSON(treenode tableRef, treenode repData DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC std::string getColorPropertiesAsJSON(treenode tableRef, treenode repData DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC Array getColorValues(std::vector<int>& objColumns, treenode tableRef, treenode repData DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC std::vector<int> getObjDisplayColumns(Array columnFormats);
+
+FS_CONTENT_DLL_FUNC Array getColumnFormats(treenode tableRef, treenode repData DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC int getObjectFormatMaxDepth(treenode tableRef, treenode repData DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC std::set<unsigned __int64> getIDsInBundle(treenode bundle, const std::vector<int>& fields);
+
+FS_CONTENT_DLL_FUNC std::string getColumnListAsJSON(const char* name, treenode colListNode);
+
+FS_CONTENT_DLL_FUNC std::string getValueListAsJSON(const char* name, treenode valueListNode);
+
+FS_CONTENT_DLL_FUNC Array getColumnListAsArray(treenode colListNode, int base DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC std::string getNameValueJSON(const char* name, const Variant& value);
+
+FS_CONTENT_DLL_FUNC std::string getValueJSON(const Variant& value);
+
+FS_CONTENT_DLL_FUNC std::string getNameNodeValueJSON(const char* name, treenode valueNode, bool neg1IsNull DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC treenode getBundleNode(treenode tableRef);
 
-FS_CONTENT_DLL_FUNC treenode getBundleFormatter(treenode tableRef, bool isRepData);
+FS_CONTENT_DLL_FUNC treenode getBundleFormatter(treenode tableRef);
 
 FS_CONTENT_DLL_FUNC Variant getNewIDsInSeries(treenode bundleNode, treenode series);
 
 FS_CONTENT_DLL_FUNC void getDataForTable(treenode tableRef, treenode destNode);
 
 FS_CONTENT_DLL_FUNC treenode getSettingsNode();
+
+FS_CONTENT_DLL_FUNC treenode getTableRef(treenode settings);
+
+FS_CONTENT_DLL_FUNC treenode getKeyColumns(treenode settings);
+
+FS_CONTENT_DLL_FUNC treenode getAxisKeyColumns(treenode settings);
+
+FS_CONTENT_DLL_FUNC treenode getColorKeyColumns(treenode settings);
+
+FS_CONTENT_DLL_FUNC Variant getDataColumnsArray(treenode settings, int base DEFAULTZERO);
+
+FS_CONTENT_DLL_FUNC void setAxisCategories(treenode tableRef, treenode repData DEFAULTZERO);
 
 FS_CONTENT_DLL_FUNC void onColorAssignment(const Variant& value, const Variant& color, int usedExistingColor);
 
@@ -5052,13 +5108,21 @@ FS_CONTENT_DLL_FUNC void onColorCategoryFound(std::string category);
 
 FS_CONTENT_DLL_FUNC virtual double onDestroy(treenode view);
 
-FS_CONTENT_DLL_FUNC void setTimeFormatD3(treenode view);
+FS_CONTENT_DLL_FUNC std::string getTimeFormatAsJSON();
 
-FS_CONTENT_DLL_FUNC void setNumberFormatD3(treenode view);
+FS_CONTENT_DLL_FUNC std::string getNumberFormatAsJSON();
 
 FS_CONTENT_DLL_FUNC std::string getColumnReplacementText(int rank);
 
 FS_CONTENT_DLL_FUNC std::string getValueReplacementText(int rank);
+
+FS_CONTENT_DLL_FUNC std::map<int, treenode> getReplicationBundles(int scenario);
+
+FS_CONTENT_DLL_FUNC Array getReplicationFormats();
+
+FS_CONTENT_DLL_FUNC GenericChart* getExperimentVersion();
+
+FS_CONTENT_DLL_FUNC Array getTextForAxisKeyValue(Array keyValue, treenode repData DEFAULTZERO);
 
 TreeNode* node_v_data;
 TreeNode* node_v_initialized;
@@ -5077,7 +5141,22 @@ TreeNode* node_v_precision;
 #define v_precision node_v_precision->safedatafloat()[0]
 TreeNode* node_v_showLegend;
 #define v_showLegend node_v_showLegend->safedatafloat()[0]
+TreeNode* node_v_useCustomTitle;
+#define v_useCustomTitle node_v_useCustomTitle->safedatafloat()[0]
+TreeNode* node_v_customTitle;
 TreeNode* node_v_manager;
+TreeNode* node_v_palette;
+TreeNode* node_v_localPalette;
+TreeNode* node_v_namedColumns;
+#define v_namedColumns node_v_namedColumns->safedatafloat()[0]
+TreeNode* node_v_axisCategories;
+#define v_axisCategories node_v_axisCategories->safedatafloat()[0]
+TreeNode* node_v_colorCategories;
+#define v_colorCategories node_v_colorCategories->safedatafloat()[0]
+TreeNode* node_v_allowAxisChase;
+#define v_allowAxisChase node_v_allowAxisChase->safedatafloat()[0]
+TreeNode* node_v_useAxisOrderInTable;
+#define v_useAxisOrderInTable node_v_useAxisOrderInTable->safedatafloat()[0]
 TreeNode* node_v_timeplotSettings;
 #define v_timeplotSettings node_v_timeplotSettings->safedatafloat()[0]
 TreeNode* node_v_histogramSettings;
@@ -5098,6 +5177,81 @@ TreeNode* node_v_sankeySettings;
 // System
 
 FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// ScenarioChart
+class ScenarioChart : public GenericChart, public ColumnFormatter
+{
+public:
+
+
+// c++ member functions
+
+FS_CONTENT_DLL_FUNC int getColumnFormat(int colNr);
+
+FS_CONTENT_DLL_FUNC Array getColumnFormats();
+
+FS_CONTENT_DLL_FUNC treenode getBundleNode();
+
+FS_CONTENT_DLL_FUNC void setData();
+
+FS_CONTENT_DLL_FUNC void setSettings();
+
+FS_CONTENT_DLL_FUNC void setDefaultDataAndSettings();
+
+FS_CONTENT_DLL_FUNC void bindVariables();
+
+FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+
+TreeNode* node_v_needsUpdate;
+#define v_needsUpdate node_v_needsUpdate->safedatafloat()[0]
+TreeNode* node_v_timeplotInterpolationMode;
+#define v_timeplotInterpolationMode node_v_timeplotInterpolationMode->safedatafloat()[0]
+TreeNode* node_v_timeplotSampleRate;
+#define v_timeplotSampleRate node_v_timeplotSampleRate->safedatafloat()[0]
+TreeNode* node_v_timeplotShowRange;
+#define v_timeplotShowRange node_v_timeplotShowRange->safedatafloat()[0]
+TreeNode* node_v_timeplotShowConfidence;
+#define v_timeplotShowConfidence node_v_timeplotShowConfidence->safedatafloat()[0]
+TreeNode* node_v_timeplotConfidence;
+#define v_timeplotConfidence node_v_timeplotConfidence->safedatafloat()[0]
+TreeNode* node_v_tableAggregateColumns;
+#define v_tableAggregateColumns node_v_tableAggregateColumns->safedatafloat()[0]
+TreeNode* node_v_tableShowMean;
+#define v_tableShowMean node_v_tableShowMean->safedatafloat()[0]
+TreeNode* node_v_tableShowMin;
+#define v_tableShowMin node_v_tableShowMin->safedatafloat()[0]
+TreeNode* node_v_tableShowMax;
+#define v_tableShowMax node_v_tableShowMax->safedatafloat()[0]
+TreeNode* node_v_pieAggregateTitle;
+#define v_pieAggregateTitle node_v_pieAggregateTitle->safedatafloat()[0]
+TreeNode* node_v_pieAggregateCenter;
+#define v_pieAggregateCenter node_v_pieAggregateCenter->safedatafloat()[0]
+TreeNode* node_v_barAggregateTitle;
+#define v_barAggregateTitle node_v_barAggregateTitle->safedatafloat()[0]
+TreeNode* node_v_barAggregateValue;
+#define v_barAggregateValue node_v_barAggregateValue->safedatafloat()[0]
+TreeNode* node_v_localPalette;
+TreeNode* node_v_allowAxisChase;
+#define v_allowAxisChase node_v_allowAxisChase->safedatafloat()[0]
+
+// c++ attributes
+ObjRef<GenericChart> sourceChart;
+
+treenode scenarios;
+
+BundleMember data;
+
+treenode formatList;
+
+treenode infoForSettings;
+
+
+// System
+
+FS_CONTENT_DLL_FUNC void bindVariablesDefault();
 
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
@@ -5522,259 +5676,6 @@ treenode onProcessFinishTrigger = nullptr;
 // System
 
 FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-FS_CONTENT_DLL_FUNC static int getAllocSize();
-};
-
-// Rack
-class Rack : public FixedResource
-{
-public:
-
-
-//ClassIncludeHeaderStart
-class Bay;
-class Cell : public SimpleDataType {
-public:
-	struct ItemInfo {
-		ItemInfo() {}
-		ItemInfo(TreeNode* item) : item(item) {}
-		NodeRef item;
-		void bind(treenode toNode);
-		operator TreeNode* () { return item.get(); }
-	};
-	virtual const char* getClassFactory() { return "RackCell"; }
-	virtual void bind() override;
-	double loc = 0.0;
-	double size = 1.0;
-	template <class Type> 
-	class OneBasedVector : public std::vector<Type>
-	{
-	public:
-		Type& operator[] (int index) { return __super::operator[](index - 1); }
-	};
-	OneBasedVector<ItemInfo> items;
-	Bay* __getBay();
-	__declspec(property(get = __getBay)) Bay* bay;
-};
-
-class Bay : public SimpleDataType {
-public:
-	virtual const char* getClassFactory() { return "RackBay"; }
-	virtual void bind() override;
-	double loc = 0.0;
-	double size = 1.0;
-	int numItems = 0;
-	NodeListArray<Cell>::SdtSubNodeBindingTypeOneBased cells;
-};
-
-virtual void bind() override;
-static SimpleDataType* createSDTDerivative(const char* className);
-
-NodeListArray<Bay>::SdtSubNodeBindingTypeOneBased bays;
-
-int lastpredrawoutput = -1;
-int lastpredrawinput = -1;
-IndexedMesh structuralMesh;
-Mesh platformsMesh;
-Mesh braceMesh;
-bool rebuildMeshes = true;
-bool areLocationsDirty = true;
-double meshSY = 0;
-int meshDrawMode = 0;
-int meshFloorStorage = 0;
-int meshColumnSpacing = 0;
-bool meshHideFloor;
-int meshExtendColumn;
-treenode onEndDwellTimeTrigger = nullptr;
-double unrequitedDrag = 0;
-bool isBayUndoTrackingAdded = false;
-
-static const int TYPE_BASIC = 0;
-static const int TYPE_PUSH_BACK = 1;
-static const int TYPE_GRAVITY_FLOW = 2;
-static const int TYPE_DRIVE_IN = 3;
-double type;
-
-Bay* getBay(int bay);
-Bay* getBay(treenode item);
-Cell* getCell(int bay, int level);
-Cell* getCell(treenode item);
-void setItemCellRank(treenode item, int rank) { setItemVar(item, 1, rank); }
-FS_CONTENT_DLL_FUNC Array getBaySizes();
-FS_CONTENT_DLL_FUNC Array getLevelSizes();
-FS_CONTENT_DLL_FUNC Array getLevelSizes(int bayNum);
-
-FS_CONTENT_DLL_FUNC void setBaySizes(Array);
-FS_CONTENT_DLL_FUNC void setBaySize(int bayNum, double width);
-FS_CONTENT_DLL_FUNC void setLevelSizes(Array);
-FS_CONTENT_DLL_FUNC void setLevelSizes(int bayNum, Array);
-FS_CONTENT_DLL_FUNC void setLevelSize(int bayNum, int levelNum, double height);
-FS_CONTENT_DLL_FUNC void setBayLoc(int bayNum, double location);
-FS_CONTENT_DLL_FUNC void setLevelLoc(int bayNum, int levelNum, double location);
-FS_CONTENT_DLL_FUNC bool hasBasicDimensions();
-
-
-Variant getBaySizes(FLEXSIMINTERFACE) { return getBaySizes(); }
-Variant getBaySize(FLEXSIMINTERFACE) { return getBaySize(param(1)); }
-Variant getLevelSizes(FLEXSIMINTERFACE);
-Variant getLevelSize(FLEXSIMINTERFACE) { return getLevelSize(param(1), param(2)); }
-Variant getBayLoc(FLEXSIMINTERFACE) { return getBayLoc(param(1)); }
-Variant getLevelLoc(FLEXSIMINTERFACE) { return getLevelLoc(param(1), param(2)); }
-
-Variant setBaySizes(FLEXSIMINTERFACE) { setBaySizes(param(1)); return Variant(); }
-Variant setBaySize(FLEXSIMINTERFACE) { setBaySize(param(1), param(2)); return Variant(); }
-Variant setLevelSizes(FLEXSIMINTERFACE);
-Variant setLevelSize(FLEXSIMINTERFACE) { setLevelSize(param(1), param(2), param(3)); return Variant(); }
-Variant setBayLoc(FLEXSIMINTERFACE) { setBayLoc(param(1), param(2)); return Variant(); }
-Variant setLevelLoc(FLEXSIMINTERFACE) { setLevelLoc(param(1), param(2), param(3)); return Variant(); }
-
-Variant refreshBayLevelLocations(FLEXSIMINTERFACE) { refreshBayLevelLocations(); return Variant(); }
-Variant setBasicDimensions(FLEXSIMINTERFACE) { setBasicDimensions(param(1), param(2), param(3), param(4)); return Variant(); }
-Variant hasBasicDimensions(FLEXSIMINTERFACE) { return hasBasicDimensions(); }
-
-FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
-FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
-FS_CONTENT_DLL_FUNC double onUndo(bool isUndo, treenode undoRecord) override { rebuildMeshes = true; return 0; }
-
-//ClassIncludeHeaderEnd
-
-// c++ member functions
-
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
-
-FS_CONTENT_DLL_FUNC double onReset();
-
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
-
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
-
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
-
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
-
-FS_CONTENT_DLL_FUNC double onKeyedClick(treenode view, int code, char key);
-
-FS_CONTENT_DLL_FUNC double resetVariables();
-
-FS_CONTENT_DLL_FUNC virtual double getPickOffset(treenode item, treenode toobject, double* returnarray);
-
-FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode item, treenode fromobject,  double* returnarray);
-
-FS_CONTENT_DLL_FUNC virtual void assertCellAssignment(treenode item, int& bay, int& level);
-
-FS_CONTENT_DLL_FUNC virtual int assignBay(treenode item);
-
-FS_CONTENT_DLL_FUNC virtual int assignLevel(treenode item, int bay);
-
-FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int portnumber);
-
-FS_CONTENT_DLL_FUNC virtual void onTransportInFailed(treenode item, int port);
-
-FS_CONTENT_DLL_FUNC double getBayXCenter(double baynumber);
-
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
-
-FS_CONTENT_DLL_FUNC double getBayOfItem(treenode item);
-
-FS_CONTENT_DLL_FUNC double getBayLoc(int bay);
-
-FS_CONTENT_DLL_FUNC double getBaySize(int bay);
-
-FS_CONTENT_DLL_FUNC double getItemCellRank(treenode item);
-
-FS_CONTENT_DLL_FUNC double getLevelOfItem(treenode item);
-
-FS_CONTENT_DLL_FUNC double getLevelLoc(int bay, int level);
-
-FS_CONTENT_DLL_FUNC double getLevelSize(int bay, int level);
-
-FS_CONTENT_DLL_FUNC treenode getItemByBayLevel(int bay, int level, int rankincell DEFAULTONE);
-
-FS_CONTENT_DLL_FUNC double getBayContent(int bay);
-
-FS_CONTENT_DLL_FUNC double getCellContent(int bay, int level);
-
-FS_CONTENT_DLL_FUNC double getNrOfBays();
-
-FS_CONTENT_DLL_FUNC double getNrOfLevels(int bay DEFAULTONE);
-
-FS_CONTENT_DLL_FUNC double getCellVar(int bay, int level, int varnum, treenode storedlabel DEFAULTNULL);
-
-FS_CONTENT_DLL_FUNC double setCellVar(int bay, int level, int varnum, double value, treenode storedlabel DEFAULTNULL);
-
-FS_CONTENT_DLL_FUNC virtual double drawFilledCell(int bay, int level, double x, double y, double z, double sx, double sy, double sz, int red, int green, int blue, int glbeginend DEFAULTONE);
-
-FS_CONTENT_DLL_FUNC double recycleItem(treenode item, int binrank);
-
-FS_CONTENT_DLL_FUNC treenode  restoreItem(int binrank, int bay, int level, int position);
-
-FS_CONTENT_DLL_FUNC double setCellContent(int bay, int level, int contentval);
-
-FS_CONTENT_DLL_FUNC virtual double addItemToContentTable(treenode item, int bay, int level);
-
-FS_CONTENT_DLL_FUNC virtual double removeItemFromContentTable(treenode item);
-
-FS_CONTENT_DLL_FUNC virtual double setItemEntryLocation(treenode item, treenode tablecell, int bay, int level, int position);
-
-FS_CONTENT_DLL_FUNC virtual double drawVirtualContent(double bayfillperc, double levelfillperc, double itemdepth, double red, double green, double blue, int onlyvirtual DEFAULTONE);
-
-FS_CONTENT_DLL_FUNC double saveState();
-
-FS_CONTENT_DLL_FUNC double loadState();
-
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
-
-FS_CONTENT_DLL_FUNC double buildMeshes();
-
-FS_CONTENT_DLL_FUNC double buildFullMeshes();
-
-FS_CONTENT_DLL_FUNC double buildFlatCellMesh();
-
-FS_CONTENT_DLL_FUNC double buildBasicMesh();
-
-FS_CONTENT_DLL_FUNC double buildLineMesh();
-
-FS_CONTENT_DLL_FUNC void refreshBayLevelLocations();
-
-FS_CONTENT_DLL_FUNC void setBasicDimensions(int numBays, double bayWidth, int numLevels, double levelHeight);
-
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
-
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
-
-TreeNode* node_v_bays;
-#define v_bays node_v_bays->safedatafloat()[0]
-TreeNode* node_v_placeinbay;
-TreeNode* node_v_placeinlevel;
-TreeNode* node_v_minimumstaytime;
-TreeNode* node_v_entrytrigger;
-TreeNode* node_v_maxcontent;
-#define v_maxcontent node_v_maxcontent->safedatafloat()[0]
-TreeNode* node_v_rackdrawmode;
-#define v_rackdrawmode node_v_rackdrawmode->safedatafloat()[0]
-TreeNode* node_v_pickplaceyoffset;
-#define v_pickplaceyoffset node_v_pickplaceyoffset->safedatafloat()[0]
-TreeNode* node_v_tiltvalue;
-#define v_tiltvalue node_v_tiltvalue->safedatafloat()[0]
-TreeNode* node_v_tiltangle;
-#define v_tiltangle node_v_tiltangle->safedatafloat()[0]
-TreeNode* node_v_markreadytogo;
-#define v_markreadytogo node_v_markreadytogo->safedatafloat()[0]
-TreeNode* node_v_floorstorage;
-#define v_floorstorage node_v_floorstorage->safedatafloat()[0]
-TreeNode* node_v_opacity;
-#define v_opacity node_v_opacity->safedatafloat()[0]
-TreeNode* node_v_columnspacing;
-#define v_columnspacing node_v_columnspacing->safedatafloat()[0]
-TreeNode* node_v_hidefloor;
-#define v_hidefloor node_v_hidefloor->safedatafloat()[0]
-TreeNode* node_v_extendcolumn;
-#define v_extendcolumn node_v_extendcolumn->safedatafloat()[0]
-
-// System
-
-FS_CONTENT_DLL_FUNC virtual void bindVariablesDefault();
 
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
@@ -6332,7 +6233,22 @@ class TaskExecuter : public Dispatcher
 public:
 
 
-// c++ member functions
+//ClassIncludeHeaderStart
+Vec3 offsetloc;
+treenode activetask;
+IndexedMesh spheresMesh;
+double lastPickPlaceOffsetResult;
+bool isPostLoadUnloadOffset = false;
+bool isNotFirstOffset = false;
+
+treenode onLoadTrigger = nullptr;
+treenode onUnloadTrigger = nullptr;
+treenode onPreemptTrigger = nullptr;
+treenode onStartTaskTrigger = nullptr;
+treenode onFinishTaskTrigger = nullptr;
+
+FS_CONTENT_DLL_FUNC virtual void bindInterface() override;
+FS_CONTENT_DLL_FUNC virtual void bindVariables() override;
 
 FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
@@ -6355,6 +6271,8 @@ FS_CONTENT_DLL_FUNC double cleanupAbortedTS(treenode ts);
 FS_CONTENT_DLL_FUNC virtual double beginTask(treenode task);
 
 FS_CONTENT_DLL_FUNC virtual double beginLoadUnloadTask(treenode task, int isLoad, int eventCode, char* eventName, int logId);
+
+FS_CONTENT_DLL_FUNC virtual void finishLoadUnloadTask(treenode task, bool isLoad, treenode involvedItem, treenode involvedStation);
 
 FS_CONTENT_DLL_FUNC virtual double finishTask(treenode task);
 
@@ -6438,7 +6356,10 @@ FS_CONTENT_DLL_FUNC TaskSequence* __getActiveTaskSequence();
 
 FS_CONTENT_DLL_FUNC Task* __getActiveTask();
 
-FS_CONTENT_DLL_FUNC void bindInterface();
+
+//ClassIncludeHeaderEnd
+
+// c++ member functions
 
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
@@ -6452,8 +6373,6 @@ TreeNode* node_v_deceleration;
 #define v_deceleration node_v_deceleration->safedatafloat()[0]
 TreeNode* node_v_navigator;
 #define v_navigator node_v_navigator->safedatafloat()[0]
-TreeNode* node_v_oldbreakrequirement;
-#define v_oldbreakrequirement node_v_oldbreakrequirement->safedatafloat()[0]
 TreeNode* node_v_breakto;
 TreeNode* node_v_modifyrotation;
 #define v_modifyrotation node_v_modifyrotation->safedatafloat()[0]
@@ -6465,24 +6384,6 @@ TreeNode* node_v_offsetbegintime;
 #define v_offsetbegintime node_v_offsetbegintime->safedatafloat()[0]
 TreeNode* node_v_offsettotaltime;
 #define v_offsettotaltime node_v_offsettotaltime->safedatafloat()[0]
-TreeNode* node_v_offsetlocx;
-#define v_offsetlocx node_v_offsetlocx->safedatafloat()[0]
-TreeNode* node_v_offsetlocy;
-#define v_offsetlocy node_v_offsetlocy->safedatafloat()[0]
-TreeNode* node_v_offsetlocz;
-#define v_offsetlocz node_v_offsetlocz->safedatafloat()[0]
-TreeNode* node_v_offsetbeginx;
-#define v_offsetbeginx node_v_offsetbeginx->safedatafloat()[0]
-TreeNode* node_v_offsetbeginy;
-#define v_offsetbeginy node_v_offsetbeginy->safedatafloat()[0]
-TreeNode* node_v_offsetbeginz;
-#define v_offsetbeginz node_v_offsetbeginz->safedatafloat()[0]
-TreeNode* node_v_offsetbeginxrot;
-#define v_offsetbeginxrot node_v_offsetbeginxrot->safedatafloat()[0]
-TreeNode* node_v_offsetbeginyrot;
-#define v_offsetbeginyrot node_v_offsetbeginyrot->safedatafloat()[0]
-TreeNode* node_v_offsetbeginzrot;
-#define v_offsetbeginzrot node_v_offsetbeginzrot->safedatafloat()[0]
 TreeNode* node_v_loadedspeed;
 #define v_loadedspeed node_v_loadedspeed->safedatafloat()[0]
 TreeNode* node_v_emptyspeed;
@@ -6518,27 +6419,9 @@ TreeNode* node_v_activetasksequence;
 TreeNode* node_v_resetposition;
 #define v_resetposition node_v_resetposition->safedatafloat()[0]
 
-// c++ attributes
-double offsetloc[3] ;
-
-treenode activetask;
-
-IndexedMesh spheresMesh;
-
-treenode onLoadTrigger = nullptr;
-
-treenode onUnloadTrigger = nullptr;
-
-treenode onPreemptTrigger = nullptr;
-
-treenode onStartTaskTrigger = nullptr;
-
-treenode onFinishTaskTrigger = nullptr;
-
-
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+FS_CONTENT_DLL_FUNC void bindVariablesDefault();
 
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
@@ -7164,7 +7047,7 @@ treenode onEntryTrigger = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariablesDefault();
+FS_CONTENT_DLL_FUNC void bindVariablesDefault();
 
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };
@@ -7257,6 +7140,1734 @@ treenode onRequestTrigger = nullptr;
 // System
 
 FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// StorageSystem
+class StorageSystem : public FlexSimEventHandler
+{
+public:
+
+
+//ClassIncludeHeaderStart
+	  
+StorageSystem() : slots(this) {}
+~StorageSystem();
+static StorageSystem* instance;
+
+class AddressMapping;
+
+/// <summary>	Represents a integer-ized slot address.</summary>
+/// <remarks>	  Addresses can be either "mapped" or "raw". Address provides 
+/// 			  conversions between "raw" and "mapped".</remarks>
+class Address {
+public:
+	Address() : storageObject(nullptr), isMapped(false) {}
+	Address(StorageObject* storageObject, int bay, int level, int slot, bool isMapped)
+		: storageObject(storageObject), bay(bay), level(level), slot(slot), isMapped(isMapped)
+	{}
+	StorageObject* storageObject;
+	int bay;
+	int level;
+	int slot;
+	bool isMapped;
+	Address getRaw(const AddressMapping& mapping) const;
+	Address getMapped(const AddressMapping& mapping) const;
+	Address getRaw() const;
+	Address getMapped() const;
+	std::string toString() const;
+	Variant getZoneID() const;
+	Variant getAisleID() const;
+	Variant getBayID() const;
+	Variant getLevelID() const;
+	Variant getSlotID() const;
+	bool operator < (const Address& other);
+};
+
+class AddressScheme : public SimpleDataType {
+public:
+	virtual const char* getClassFactory() override { return "StorageSystemAddressScheme"; }
+	virtual void bind() override;
+
+	class Element : public SimpleDataType {
+	public:
+		virtual const char* getClassFactory() override { return "StorageSystemAddressSchemeElement"; }
+		virtual void bind() override;
+		static const int TEXT = 0;
+		static const int ZONE_ID = 1;
+		static const int AISLE_ID = 2;
+		static const int BAY_ID = 3;
+		static const int LEVEL_ID = 4;
+		static const int SLOT_ID = 5;
+		double scope = 0;
+
+		static const int NUMBER = 1;
+		static const int LETTER = 2;
+		static const int ARBITRARY = 3;
+		double format = 0;
+
+		double isFixedLength = 1;
+		double fixedLength = 1;
+		ByteBlock text;
+		ByteBlock fillerText;
+		string getExampleText();
+		StorageSystem* __getSystem() { return holder->ownerObject->objectAs(StorageSystem); }
+		__declspec(property(get = __getSystem)) StorageSystem* system;
+		AddressScheme* __getScheme() { return holder->up->up->objectAs(AddressScheme); }
+		__declspec(property(get = __getScheme)) AddressScheme* scheme;
+
+		bool isValidChar(char c);
+
+		const char* parseBegin;
+		const char* parseEnd;
+
+		/// <summary>	Parses the given text. </summary>
+		/// <param name="text">	The text to parse. In/out parameter. It will be progressed 
+		/// 					to the start of the next token at the end of the parse if 
+		/// 					successful.</param>
+		/// <returns>	True if it succeeds, false if it fails. </returns>
+		bool parse(const char*& text);
+
+		/// <summary>	Resolves the last parsed text to a number. </summary>
+		/// <remarks>	This should be called after a successful call to parse(), if 
+		/// 			the scope is a bay, level, or slot. </remarks>
+		/// <returns>	The resolved number value. </returns>
+		int resolveNumber();
+
+		void formatAddress(std::string& outStr, const Address& addr);
+		std::string getScopeStr();
+	};
+
+	NodeListArray<Element>::SdtSubNodeBindingType elements;
+	StorageSystem* __getSystem() { return holder->ownerObject->objectAs(StorageSystem); }
+	__declspec(property(get = __getSystem)) StorageSystem* system;
+
+	StorageObject* findMemberObject();
+	Variant getExampleText();
+	Variant getExampleText(FLEXSIMINTERFACE) { return getExampleText(); }
+
+	bool isMatch(const char* text);
+	Variant isSequenceValid();
+	Variant isSequenceValid(FLEXSIMINTERFACE) { return isSequenceValid(); }
+	std::pair<bool, Address> parseAddress(const char* address);
+	void formatAddress(std::string& outStr, const Address& addr);
+	Variant getID(int scope, int numVal, const Address& addr, bool forceString = false);
+	Variant getID(int scope, int numVal, bool forceString = false);
+	Variant getBayID(FLEXSIMINTERFACE) { return getID(Element::BAY_ID, (int)param(1), (int)param(2)); }
+	Variant getLevelID(FLEXSIMINTERFACE) { return getID(Element::LEVEL_ID, (int)param(1), (int)param(2)); }
+	Variant getSlotID(FLEXSIMINTERFACE) { return getID(Element::SLOT_ID, (int)param(1), (int)param(2)); }
+
+	int getNum(int scope, const char* id);
+	int getBayNum(const char* id) { return getNum(Element::BAY_ID, id); }
+	int getLevelNum(const char* id) { return getNum(Element::LEVEL_ID, id); }
+	int getSlotNum(const char* id) { return getNum(Element::SLOT_ID, id); }
+	Variant getBayNum(FLEXSIMINTERFACE) { return getNum(Element::BAY_ID, param(1).c_str()); }
+	Variant getLevelNum(FLEXSIMINTERFACE) { return getNum(Element::LEVEL_ID, param(1).c_str()); }
+	Variant getSlotNum(FLEXSIMINTERFACE) { return getNum(Element::SLOT_ID, param(1).c_str()); }
+
+	string assertValidText(int scope, const char* original);
+	Variant assertValidText(FLEXSIMINTERFACE) { return assertValidText(param(1), param(2).c_str()); }
+
+	void onReset();
+	Element* addElement(int scope);
+	Variant addElement(FLEXSIMINTERFACE) { return addElement(param(1))->holder; }
+
+	struct Hash
+	{
+		size_t operator()(const std::pair<string, string>& val) const {
+			return std::hash<string>()(val.first) ^ std::hash<string>()(val.first);
+		}
+	};
+	std::unordered_multimap<std::pair<string, string>, StorageObject*, Hash> objectIndex;
+};
+
+/// <summary>	Defines the data needed to apply a mapping from "raw" bay/level/slot 
+/// 			coordinates to "mapped" coordinates.</summary>
+///
+/// <remarks>	 Each storage object owns an address mapping, and the various values 
+/// 			 are defined by the user.</remarks>
+class AddressMapping {
+public:
+	StorageObject & storageObject;
+	AddressMapping(StorageObject& storageObject) : storageObject(storageObject) {}
+	double startBay;
+	double bayStride;
+	double startLevel;
+	double levelStride;
+	double startSlot;
+	double slotStride;
+	void bindVariables();
+};
+
+class AbstractSlot : public SimpleDataType {
+public:
+	static const int STOP_AT_LEVEL_END = 1;
+	static const int STOP_AT_BAY_END = 2;
+	static const int STOP_AT_OBJECT_END = 3;
+	static const int STOP_AT_SYSTEM_END = 4;
+	struct Iterator {
+		Iterator(AbstractSlot* slot, int stopPoint = STOP_AT_SYSTEM_END) : slot(slot), stopPoint(stopPoint) {}
+		bool operator == (const Iterator& other) const { return other.slot == slot; }
+		bool operator != (const Iterator& other) const { return other.slot != slot; }
+		Iterator& operator++();
+		Iterator operator++(int) { Iterator copy = *this; operator++(); return copy; }
+		AbstractSlot* slot;
+		AbstractSlot* operator *() { return slot; }
+		int stopPoint;
+	};
+};
+
+struct Slots {
+	StorageSystem* system;
+	Slots(StorageSystem* system) : system(system) {}
+	AbstractSlot::Iterator begin();
+	AbstractSlot::Iterator end() { return AbstractSlot::Iterator(nullptr); }
+};
+Slots slots;
+
+class AbstractSlotItem : public CouplingDataType{};
+class VirtualizedItem;
+
+static const int INDEX_UNORDERED = 1;
+static const int INDEX_ORDERED = 2;
+
+class SlotLabelSettings : public SimpleDataType {
+public:
+	virtual const char* getClassFactory() override { return "StorageSystemSlotLabelSettings"; }
+	virtual void bind() override;
+
+	/// <summary>	Reference to the label's color palette. </summary>
+	ObjRef<ColorPalette> colorPalette;
+	double indexType = 0.0;
+	double trackedVariableType = 0.0;
+	TreeNode* defaultValue;
+
+	struct SlotLess {
+		bool operator ()(const AbstractSlot* left, const AbstractSlot* right) const;
+	};
+	typedef std::set<AbstractSlot*, SlotLess> SlotSet;
+	typedef std::unordered_map<Variant, SlotSet, Variant::Hash> SlotIndex;
+	SlotIndex slotIndex;
+	typedef std::pair<SlotSet::iterator, SlotSet::iterator> SlotSetRange;
+	void onSlotLabelValueChange(AbstractSlot* slot, TreeNode* label, const Variant& newValue);
+
+
+	StorageSystem* __getSystem() { return holder->ownerObject->objectAs(StorageSystem); }
+	__declspec(property(get = __getSystem)) StorageSystem* system;
+
+	void onReset();
+
+	Color getColor(const Variant& value);
+};
+
+class VirtualizedItem : public CouplingDataType {
+public:
+	class StorageObjectItemMeshData;
+
+	virtual const char* getClassFactory() override { return "StorageSystemVirtualizedItem"; }
+	virtual void bind();
+	int shapeIndex;
+	int textureIndex;
+	double lastMoveTime;
+	double creationTime;
+	double statsCollectorID = 0;
+	Vec3 location; // the location of the item in storage object coordinate
+	Vec3 size; // used only when recycling
+	Vec3 rotation; // used only when recycling
+	Vec3 __getSize() { return size; }
+	Vec3 __getRotation() { return rotation; }
+	Vec3 __getCenter();
+	void __setCenter(const Vec3& toLoc);
+	__declspec(property(get = __getCenter, put = __setCenter)) Vec3 center;
+	Vec4f color;
+
+	void virtualize(ObjectDataType* item, StorageSystem* system, StorageObject* owner);
+	ObjectDataType* unvirtualize(treenode toNode, StorageSystem* system, StorageObject* owner);
+	void setMeshDataDirty(StorageObject* obj);
+	VirtualizedItem* next = nullptr;
+	VirtualizedItem* prev = nullptr;
+	StorageObjectItemMeshData* meshDataOwner = nullptr;
+	VirtualizedItem* meshDataNext = nullptr;
+	VirtualizedItem* meshDataPrev = nullptr;
+
+	std::vector<Variant> labels;
+	TreeNode* substructure = nullptr;
+	TreeNode* copiedLabels = nullptr;
+
+	int assignmentCount = 0;
+
+	bool isParentVirtualized = false;
+	bool isDrawSurrogateElement = false;
+
+	class StorageData;
+
+	class StorageObjectItemMeshData : public CouplingDataType {
+	public:
+		StorageObjectItemMeshData();
+		virtual const char* getClassFactory() override { return "StorageSystemVirtualizedItemStorageObjectItemMeshData"; }
+		virtual void bind() override;
+		bool isDirty;
+		StorageObject* __getStorageObject() const { return holder->ownerObject->objectAs(StorageObject); }
+		__declspec(property(get = __getStorageObject)) StorageObject* object;
+		StorageData* __getStorageData() const { return partner()->up->up->objectAs(StorageData); }
+		__declspec(property(get = __getStorageData)) StorageData* data;
+
+		int transformVertAttrib;
+		int colorVertAttrib;
+		InstancedMesh mesh;
+		VirtualizedItem* firstItem = nullptr;
+		void draw(int dataMeshIndex, int glDrawMode);
+		void rebuildMesh();
+	};
+
+	class StorageData : public SimpleDataType {
+	public:
+		struct Key {
+			int shapeIndex;
+			int textureIndex;
+			bool operator == (const Key& other) const { return shapeIndex == other.shapeIndex && textureIndex == other.textureIndex; }
+			Key() { }
+			Key(ObjectDataType* item);
+			Key(int shapeIndex, int textureIndex) : shapeIndex(shapeIndex), textureIndex(textureIndex) {}
+		};
+
+		struct Hash {
+			size_t operator() (const Key& key) const { return key.shapeIndex ^ key.textureIndex; }
+		};
+		virtual const char* getClassFactory() override { return "StorageSystemVirtualizedItemStorageData"; }
+		virtual void bind() override;
+		Key key;
+		TreeNode* itemCopy;
+		bool isMeshDataDumped = false;
+		NodeListArray<>::SubNodeType shapeMeshes;
+		int __getNumMeshes() { return shapeMeshes.length; }
+		__declspec(property(get = __getNumMeshes)) int numMeshes;
+		NodeListArray<StorageObjectItemMeshData>::ObjPtrType dependentObjectMeshData;
+		void dumpMeshData();
+		int prepareDraw(int meshIndex);
+		void finishDraw(int meshIndex);
+		IndexedMesh* getMesh(int meshIndex) { return shapeMeshes[meshIndex]->subnodes["mesh"]->objectAs(IndexedMesh); }
+
+		static int u_perInstanceColorEnabledID;
+		static bool u_perInstanceColorEnabledCurValue;
+		bool didDisableTextures = false;
+	};
+};
+
+class ItemLabelSettings : public SimpleDataType {
+public:
+	virtual const char* getClassFactory() override { return "StorageSystemItemLabelSettings"; }
+	virtual void bind() override;
+
+	double indexType = 0.0;
+
+	struct ItemLess {
+		bool operator ()(const VirtualizedItem* left, const VirtualizedItem* right) const
+		{
+			return left->assignmentCount < right->assignmentCount;
+		}
+	};
+	typedef std::set<VirtualizedItem*, ItemLess> ItemSet;
+	typedef std::unordered_map<Variant, ItemSet, Variant::Hash> ItemIndex;
+	typedef std::pair<ItemSet::iterator, ItemSet::iterator> ItemSetRange;
+	ItemIndex itemIndex;
+
+
+	StorageSystem* __getSystem() { return holder->ownerObject->objectAs(StorageSystem); }
+	__declspec(property(get = __getSystem)) StorageSystem* system;
+
+	void onReset();
+	void removeFromIndex(const Variant& value, VirtualizedItem* item);
+	void addToIndex(const Variant& value, VirtualizedItem* item) 
+	{ 
+		if (item) 
+			itemIndex[value].insert(item); 
+	}
+};
+
+struct BoundingBox {
+	Vec3f min;
+	Vec3f max;
+	bool contains(const Vec3f& point) const { 
+		return point.x >= min.x - 0.00001
+			&& point.y >= min.y - 0.00001
+			&& point.z >= min.z - 0.00001
+			&& point.x <= max.x + 0.00001
+			&& point.y <= max.y + 0.00001
+			&& point.z <= max.z + 0.00001;
+	}
+	bool contains(const Vec3f& point, int axis) const {
+		return point[axis] >= min[axis] - 0.00001
+			&& point[axis] <= max[axis] + 0.00001;
+	}
+};
+
+class Visualization : public SimpleDataType {
+public:
+	virtual const char* getClassFactory() { return "StorageSystemVisualization"; }
+	virtual void bind() override;
+	void onReset();
+	void rebuildLabelDependencies();
+	void rebuildMeshMasterSlaveDependencies();
+	Variant rebuildLabelDependencies(FLEXSIMINTERFACE) { rebuildLabelDependencies(); return Variant(); }
+	void onSlotLabelValueChange(AbstractSlot* slot, TreeNode* label, const Variant& newValue);
+
+	StorageSystem* __getSystem() { return ownerobject(holder)->objectAs(StorageSystem); }
+	__declspec(property(get = __getSystem)) StorageSystem* system;
+
+	class TextElement;
+	class ImageElement;
+	class WireframeBoxElement;
+	class VisualizationReferenceElement;
+	class Element;
+
+	struct Rect {
+		Vec3f bottomLeft;
+		Vec3f xAxis;
+		Vec3f yAxis;
+	};
+
+	class ElementMeshEntry {
+	public:
+		StorageObject* owner;
+		Element* element;
+		ElementMeshEntry(StorageObject* owner, Element* element) : owner(owner), element(element) {}
+		ElementMeshEntry() : owner(nullptr), element(nullptr) {}
+		virtual ~ElementMeshEntry() {}
+		void rebuildMesh();
+		virtual void addToMesh(TreeNode* slotNode, Element* element, const Rect& face);
+		void init();
+		virtual void initVirtual() = 0;
+		virtual void clear() = 0;
+		void setDirty();
+		virtual void setDirtyVirtual() = 0;
+		virtual void draw() = 0;
+		static ElementMeshEntry* makeEntry(StorageObject* owner, Element* element);
+		virtual Mesh* getMesh() = 0;
+	};
+
+
+	class WireframeBoxElementMeshEntry : public ElementMeshEntry {
+	public:
+		WireframeBoxElementMeshEntry(StorageObject* owner, Element* element) : ElementMeshEntry(owner, element), mesh([this](Mesh& mesh) { rebuildMesh(); }) {}
+
+		IndexedMesh::AutoRebuildingMesh mesh;
+		virtual void initVirtual() override { mesh.mesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE4); }
+		virtual void clear() override { mesh.mesh.clear(); }
+		virtual void setDirtyVirtual() override { mesh.setDirty(); }
+		virtual void draw() override;
+		virtual Mesh* getMesh() override { return &mesh.mesh; }
+	};
+
+	class ImageElementMeshEntry : public WireframeBoxElementMeshEntry {
+	public:
+		ImageElementMeshEntry(StorageObject* owner, Element* element) : WireframeBoxElementMeshEntry(owner, element) {}
+
+		int builtAtlasSize = 0;
+
+		virtual void addToMesh(TreeNode* slotNode, Element* element, const Rect& face) override;
+		virtual void initVirtual() override 
+		{ 
+			mesh.mesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE4 | MESH_NORMAL | MESH_TEX_COORD2);
+		}
+		virtual void draw() override;
+	};
+
+	class TextElementMeshEntry : public ElementMeshEntry {
+	public:
+		TextElementMeshEntry(StorageObject* owner, Element* element) 
+			: ElementMeshEntry(owner, element), 
+			textMesh([this](TextMesh& mesh) { rebuildMesh(); })
+		{}
+		TextMesh::AutoRebuildingMesh textMesh;
+		virtual void initVirtual() override {
+			textMesh.mesh.init(MESH_NORMAL | MESH_AMBIENT_AND_DIFFUSE4);
+		}
+		virtual void clear() override {textMesh.mesh.clear();}
+		virtual void setDirtyVirtual() override {textMesh.setDirty();}
+		virtual void draw() override;
+		virtual Mesh* getMesh() override { return &textMesh.mesh; }
+	};
+
+	class Element : public SimpleDataType {
+	public:
+		virtual const char* getClassFactory() override { return "StorageSystemVisualizationElement"; }
+		virtual void bind() override;
+		virtual void onReset() {}
+
+		static const int SCOPE_SLOT = 1;
+		static const int SCOPE_CELL = 2;
+		static const int SCOPE_LEVEL = 3;
+		static const int SCOPE_BAY = 4;
+		static const int SCOPE_OBJECT = 5;
+		double scope;
+		static const int FACE_FRONT = 1;
+		static const int FACE_BACK = 2;
+		static const int FACE_BOTTOM = 3;
+		static const int FACE_TOP = 4;
+		static const int FACE_LEFT = 5;
+		static const int FACE_RIGHT = 6;
+		double face;
+
+		double x;
+		double y;
+		double z;
+		double sx; 
+		double sy;
+
+		Vec3 anchorMin;
+		Vec3 anchorMax;
+		Vec2 pivot;
+
+		ObjRef<SlotLabelSettings> label;
+		static const int COLOR_BY_OBJECT = 0;
+		static const int COLOR_BY_LABEL = 1;
+		TreeNode* color;
+
+		TreeNode* slotFilter;
+
+		static const int REPEAT_TYPE_STRETCH = 0;
+		static const int REPEAT_TYPE_TILE = 1;
+		double shapeRepeatType = 0;
+		double shapeRepeatAxis = 1;
+		double shapeRepeatScaleToFit = 1;
+		double shapeRepeat = 1;
+
+		Visualization* __getVisualization() { return holder->up->up->objectAs(Visualization); }
+		__declspec(property(get = __getVisualization)) Visualization* visualization;
+
+		virtual bool addToMesh(Mesh* mesh, TreeNode* slotNode, const Rect& face) { return true; }
+
+		double drawText = 0;
+		void setAllObjectsDirty();
+		Variant setAllObjectsDirty(FLEXSIMINTERFACE) { setAllObjectsDirty(); return Variant(); }
+	
+		virtual TextElement* toText() { return nullptr; }
+		virtual ImageElement* toImage() { return nullptr; }
+		virtual WireframeBoxElement* toWireBox() { return nullptr; }
+		virtual VisualizationReferenceElement* toVisualizationReference() { return nullptr; }
+
+		void calculateInnerFace(Vec3f& bbBottomLeft, Vec3f& xAxis, Vec3f& yAxis);
+		void addToBoundingBoxOutline(Mesh* mesh, Vec3f& bbBottomLeft, Vec3f& bbXAxis, Vec3f& bbYAxis, bool doInnerBox);
+		bool isValidForSlot(TreeNode* slotNode);
+
+		Rect getFaceFromBoundingBox(StorageObject* obj, const BoundingBox& originalBB, bool includeZ, int shapeRepeatCount);
+		void offsetFace(Vec3f& faceOrigin, const BoundingBox& bb, int shapeRepeatCount);
+		Variant calculateLabelValue(TreeNode* slotNode);
+		Vec4f calculateColor(const Variant& labelValue, TreeNode* slotNode);
+
+		virtual bool canBeMeshSlave(Element* toMaster) { return false; }
+		virtual bool canBeMeshMaster() { return false; }
+		ObjRef<Element> meshMaster;
+		bool __getIsMeshSlave() { return meshMaster.get() != nullptr; }
+		__declspec(property(get = __getIsMeshSlave)) bool isMeshSlave;
+		double isMeshMaster = 0.0;
+
+		int getNumShapeRepeats(const BoundingBox& bb, StorageObject* obj);
+		void saveUnitScalingData(treenode toNode);
+	};
+
+	class ImageElement : public Element {
+	public:
+		virtual const char* getClassFactory() override { return "StorageSystemVisualizationImageElement"; }
+		virtual void bind() override;
+		virtual void onReset() override;
+		std::unique_ptr<TextureAtlas> atlas;
+		static const int IMG_TYPE_STATIC = 1;
+		static const int IMG_TYPE_DYNAMIC = 2;
+		double imageType;
+		TreeNode* dynamicImage;
+		ByteBlock staticImage;
+		int staticImageIndexRank = 0;
+		string cachedStaticImage;
+		Vec2 bottomLeft;
+		Vec2 bottomRight;
+		Vec2 topLeft;
+		Vec2 topRight;
+		Vec2 repeatType;
+		Vec2 repeat;
+		Vec2 repeatOffset;
+		std::string getImage(TreeNode* slotNode);
+		virtual bool addToMesh(Mesh* mesh, TreeNode* slotNode, const Rect& face) override;
+		virtual ImageElement* toImage() override { return this; }
+		virtual bool canBeMeshSlave(Element* toMaster) override;
+		virtual bool canBeMeshMaster() override;
+	};
+
+
+	class TextElement : public Element {
+	public:
+		virtual const char* getClassFactory() override { return "StorageSystemVisualizationTextElement"; }
+		virtual void bind() override;
+		double textScale = 1.0; // ratio of text line height to height of text box
+		TreeNode* drawText;
+		double vertAlign = TextMesh::Top;
+		double horAlign = TextMesh::Left;
+		double wrap = 1;
+		double scaleToFit = 1;
+		virtual TextElement* toText() override { return this; }
+		virtual bool addToMesh(Mesh* mesh, TreeNode* slotNode, const Rect& face) override;
+		virtual bool canBeMeshSlave(Element* toMaster) override { return toMaster->toText() != nullptr; }
+		virtual bool canBeMeshMaster() override { return true; }
+	};
+
+	class WireframeBoxElement : public Element {
+	public:
+		virtual const char* getClassFactory() override { return "StorageSystemVisualizationWireframeBoxElement"; }
+		virtual void bind() override;
+		double lineWidth;
+		virtual WireframeBoxElement* toWireBox() override { return this; }
+		virtual bool addToMesh(Mesh* mesh, TreeNode* slotNode, const Rect& face) override;
+		virtual bool canBeMeshSlave(Element* toMaster) override { return toMaster->toWireBox() != nullptr && toMaster->toWireBox()->lineWidth == lineWidth; }
+		virtual bool canBeMeshMaster() override { return true; }
+	};
+
+	class VisualizationReferenceElement : public Element {
+	public:
+		virtual const char* getClassFactory() override { return "StorageSystemVisualizationReferenceElement"; }
+		virtual void bind() override { __super::bind(); bindObjRef(visualization, 1); }
+		ObjRef<Visualization> visualization;
+		double lineWidth;
+		virtual VisualizationReferenceElement* toVisualizationReference() override { return this; }
+	};
+
+	NodeListArray<Element>::SdtSubNodeBindingType elements;
+
+	TreeNode* labelDependencies;
+
+	Element* addElement(const char* type);
+	Variant addElement(FLEXSIMINTERFACE);
+	void saveUnitScalingData(treenode elementsSubstructureNode);
+	Variant saveUnitScalingData(FLEXSIMINTERFACE) { saveUnitScalingData(param(1)); return Variant(); }
+};
+
+NodeListArray<Visualization>::SdtSubNodeBindingType visualizations;
+Variant addVisualization(FLEXSIMINTERFACE) { return visualizations.add(new Visualization)->holder; }
+
+
+static SimpleDataType* createSDTDerivative(const char* className);
+static void addObject(TreeNode* myCouplingNode, StorageObject* obj);
+
+ 
+NodeListArray<StorageObject, addObject>::ObjCouplingType objects;
+typedef NodeListArray<StorageObject, addObject, nullptr, OneBased::rankOffset>::ObjCouplingType StorageObjectArray;
+StorageObjectArray storageObjects;
+StorageObjectArray& __getStorageObjects() { return storageObjects; }
+NodeListArray<SlotLabelSettings>::SdtSubNodeBindingType slotLabels;
+
+NodeListArray<ItemLabelSettings>::SdtSubNodeBindingType itemLabels;
+NodeListArray<ItemLabelSettings>::ObjPtrType indexedItemLabels;
+ObjRef<VirtualizedItem> firstItem;
+ObjRef<VirtualizedItem> lastItem;
+
+
+NodeListArray<AddressScheme>::SdtSubNodeBindingType addressSchemes;
+Variant addAddressScheme(FLEXSIMINTERFACE) { return addressSchemes.add(new AddressScheme)->holder; }
+
+
+virtual void bind() override;
+virtual void bindVariables() override;
+virtual void bindInterface() override;
+virtual void bindEvents() override;
+virtual double onReset();
+virtual void onCreate();
+
+void addAllModelStorageObjects();
+void validateUniqueAddresses();
+
+Variant addSlotLabel(FLEXSIMINTERFACE);
+Variant addItemLabel(FLEXSIMINTERFACE);
+
+ObjRef<SlotLabelSettings> drawPickableSlots;
+
+TreeNode* onSlotEntry;
+TreeNode* onSlotExit;
+TreeNode* onSlotAssign;
+
+std::unordered_map<std::string, int> labelRankMap;
+void refreshLabelRankMap();
+int getLabelRank(const char* labelName);
+
+static const int QUERY_LIMIT_1 = 0x1;
+
+static const int QUERY_UNSTORABLE_SLOTS = 0x20;
+static const int QUERY_ALL_SLOTS = 0x20;
+
+static const int QUERY_UNSTORED_ITEMS = 0x400;
+static const int QUERY_REASSIGNED_ITEMS = 0x800;
+static const int QUERY_ALL_ITEMS = 0xc00;
+
+class SlotQueryDataSource : public SqlDataSource
+{
+public:
+	StorageSystem * __getSystem() { return ownerobject(holder)->objectAs(StorageSystem); }
+	__declspec(property(get = __getSystem))
+	StorageSystem* system;
+	SlotQueryDataSource() : advancer(*this) {}
+	virtual const char* getClassFactory() override { return "StorageSystemSlotQueryDataSource"; }
+	virtual void bind() override;
+	SlotLabelSettings::SlotSet::iterator lastIndexedIter;
+	SlotLabelSettings::SlotSet* lastSet;
+	static const int UNTRACKED_LABEL_COL_ID_OFFSET = 0x1000;
+	std::vector<string> untrackedLabels;
+	int flags;
+	VariantParams* params;
+	void reset(int flags, VariantParams& params);
+
+	virtual int getTableID(const char* tableName) override;
+
+	static const int SLOT_COL_ID = 0;
+	int getColID(int tableId, const char* colName, int& colFlags, bool includeSlotLogic);
+	virtual int getColID(int tableId, const char* colName, int& colFlags) override
+	{ 
+		return getColID(tableId, colName, colFlags, true);
+	}
+
+
+	virtual Variant getValue(int tableID, const SqlCursor& cursor, int colID) override;
+	virtual bool setValue(int tableId, const SqlCursor& cursor, int colID, const Variant& toVal) override;
+
+	class CursorAdvancer : public SqlCursorAdvancer {
+	public:
+		SlotQueryDataSource & owner;
+		CursorAdvancer(SlotQueryDataSource& owner) : owner(owner) {}
+		virtual bool init(SqlCursor& cursor) override;
+		virtual bool advance(SqlCursor& cursor) override;
+	};
+	CursorAdvancer advancer;
+
+	virtual SqlCursorAdvancer* initAdvancer(int tableID, SqlCursorAdvancer* default, bool& manageMemory) override { manageMemory = false; return &advancer; }
+
+	virtual bool initIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) override;
+	virtual bool advanceIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) override;
+
+	virtual bool hasCustomWhereFilter() override { return (flags & QUERY_ALL_SLOTS) != QUERY_ALL_SLOTS; }
+	virtual bool evaluateCustomWhereFilter(SqlQueryInterface* q) override;
+	virtual const char* getFlexScriptType(int tableID, int colID) override;
+};
+std::unordered_map<string, ObjRef<SqlQueryInterface>> slotQueryIndex;
+TreeNode* slotQueries;
+Variant querySlots(const char* query, int flags, VariantParams& params);
+Variant querySlots(const char* query, int flags = 0);
+Variant querySlots(const char* query, int flags, const Variant& p1);
+Variant querySlots(const char* query, int flags, const Variant& p1, const Variant& p2);
+Variant querySlots(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3);
+Variant querySlots(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
+Variant querySlots(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
+
+
+AbstractSlot* findSlot(const Variant& queries, int flags, VariantParams& params);
+AbstractSlot* findSlot(const Variant& queries = Variant(), int flags = 0);
+AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1);
+AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1, const Variant& p2ract);
+AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3);
+AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
+AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
+
+
+AbstractSlot* getSlot(const char* address);
+
+class ItemQueryDataSource : public SlotQueryDataSource
+{
+public:
+	virtual const char* getClassFactory() override { return "StorageSystemItemQueryDataSource"; }
+	ItemQueryDataSource() : advancer(*this) {}
+
+	static const int SLOT_COL_ID = 0;
+	static const int ITEM_COL_ID = UNTRACKED_LABEL_COL_ID_OFFSET + 0x1000;
+	virtual int getColID(int tableId, const char* colName, int& colFlags) override;
+
+	virtual Variant getValue(int tableID, const SqlCursor& cursor, int colID) override;
+
+	//virtual bool setValue(int tableId, int row, int colId, const Variant& toVal) override;
+	class CursorAdvancer : public SqlCursorAdvancer {
+	public:
+		ItemQueryDataSource& owner;
+		CursorAdvancer(ItemQueryDataSource& owner) : owner(owner) {}
+		virtual bool init(SqlCursor& cursor) override;
+		virtual bool advance(SqlCursor& cursor) override;
+	};
+	CursorAdvancer advancer;
+	virtual SqlCursorAdvancer* initAdvancer(int tableID, SqlCursorAdvancer* default, bool& manageMemory) override { manageMemory = false; return &advancer; }
+
+	virtual bool initIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) override;
+	virtual bool advanceIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) override;
+	virtual const char* getFlexScriptType(int tableID, int colID) override 
+	{ 
+		if (colID == SLOT_COL_ID) return "Storage.Slot"; 
+		else if (colID == ITEM_COL_ID) return "Storage.Slot.Item";
+		else return nullptr; }
+	virtual bool hasCustomWhereFilter() override { return (flags & QUERY_ALL_ITEMS) != QUERY_ALL_ITEMS; }
+	virtual bool evaluateCustomWhereFilter(SqlQueryInterface* q) override;
+};
+std::unordered_map<string, ObjRef<SqlQueryInterface>> itemQueryIndex;
+TreeNode* itemQueries;
+
+Variant queryItems(const char* query, int flags, VariantParams& params);
+Variant queryItems(const char* query, int flags = 0);
+Variant queryItems(const char* query, int flags, const Variant& p1);
+Variant queryItems(const char* query, int flags, const Variant& p1, const Variant& p2);
+Variant queryItems(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3);
+Variant queryItems(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
+Variant queryItems(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
+
+VirtualizedItem* findItem(const Variant& queries, int flags, VariantParams& params);
+VirtualizedItem* findItem(const Variant& queries, int flags = 0);
+VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1);
+VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1, const Variant& p2);
+VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3);
+VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
+VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
+
+double autoRestack = 0;
+double virtualizeItems;
+NodeListArray<VirtualizedItem::StorageData>::SdtSubNodeBindingType virtualizedItems;
+std::unordered_map<VirtualizedItem::StorageData::Key, VirtualizedItem::StorageData*, VirtualizedItem::StorageData::Hash> virtualizedItemMap;
+void refreshVirtualizedItemMap();
+
+double itemAssignmentCount;
+
+Variant setDrawElementBoundingBox(FLEXSIMINTERFACE);
+
+void onItemSlotAssigned(AbstractSlot* slot, VirtualizedItem* data);
+void onItemSlotExited(AbstractSlot* slot, VirtualizedItem* data);
+void addToInventory(ObjectDataType* item, VirtualizedItem* data);
+void removeFromInventory(ObjectDataType* item, VirtualizedItem* data);
+void onItemSlotUnassigned(ObjectDataType* item, VirtualizedItem* data);
+void onItemCurrentSlotUpdating(VirtualizedItem* oldCurrentSlotItem);
+
+class StorageNamespace {
+public:
+	static void bindInterface();
+	static StorageSystem* __getSystem();
+};
+
+StorageObject* drawFiringStorageObject = nullptr;
+bool shouldFireDraw = false;
+void draw(treenode view);
+
+//ClassIncludeHeaderEnd
+
+// System
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// StorageObject
+class StorageObject : public FixedResource
+{
+public:
+
+
+//ClassIncludeHeaderStart
+	StorageObject() : 
+		addressMapping(*this),  
+		readyToGoMesh([this](Mesh& mesh) {buildReadyToGoMesh(mesh); })
+	{
+	}
+	~StorageObject();
+	typedef StorageSystem::Visualization Visualization;
+
+	class Bay;
+	class Level;
+	class Item;
+	class Slot : public StorageSystem::AbstractSlot {
+	public:
+		virtual const char* getClassFactory() { return "StorageSlot"; }
+		virtual void bind() override;
+		virtual void bindInterface() override;
+		virtual void bindEvents() override;
+		virtual int getCapabilities() override { return CAPABILITY_LABELS; }
+
+		class Item : public StorageSystem::VirtualizedItem {
+		public:
+			virtual const char* getClassFactory() override { return "StorageSlotItem"; }
+			virtual void bind() override;
+			virtual void bindInterface() override;
+			StorageObject::Item* __getStorageItem();
+			__declspec(property(get = __getStorageItem)) StorageObject::Item* rawStorageItem;
+			StorageObject::Item* __assertStorageItem();
+			__declspec(property(get = __assertStorageItem)) StorageObject::Item* storageItem;
+			ObjectDataType* __assertItem();
+			__declspec(property(get = __assertItem)) ObjectDataType* item; 
+			// the "storage size" meaning the total size the item takes up relative to the rack
+			Vec3 storageSize;
+			// the assigned ("resting"), untilted stack location of the item in slot coordinates
+			Vec3 stackingLocation;
+			Vec3 slotStackingMarkerAtEntry;
+			Vec3 __getStackingCenter() {
+				return Vec3(
+					stackingLocation.x + 0.5 * storageSize.x,
+					stackingLocation.y - 0.5 * storageSize.y,
+					stackingLocation.z + 0.5 * storageSize.z);
+			}
+			void __setStackingCenter(const Vec3& center) {
+				stackingLocation = Vec3(center.x - 0.5 * storageSize.x,
+					center.y + 0.5 * storageSize.y,
+					center.z - 0.5 * storageSize.z);
+			}
+			// the assigned ("resting"), untilted stack center of the item in slot coordinates
+			__declspec(property(get = __getStackingCenter, put = __setStackingCenter)) Vec3 stackingCenter; 
+			Slot* __getSlot() { return holder->up->up->objectAs(Slot); }
+			__declspec(property(get = __getSlot)) Slot* slot;
+			int __getPickRank();
+			__declspec(property(get = __getPickRank)) int pickRank;
+			int __getSlotRank() { return holder->rank; }
+			__declspec(property(get = __getSlotRank)) int slotRank;
+
+			int __getIsVirtual() { return rawStorageItem == nullptr; }
+			__declspec(property(get = __getIsVirtual)) int isVirtual;
+			Variant __getLabelProperty(const char* name, unsigned nameHash, bool dieHard);
+			void __setLabelProperty(const char* name, unsigned nameHash, const Variant& value);
+			Vec3 __getLocation() { return location + slot->getLocation(Vec3(0,0,0)); }
+
+			Vec3 getLocation(const Vec3& sizeRatio);
+			Vec3 getLocation(double xRatio, double yRatio, double zRatio) { return getLocation(Vec3(xRatio, yRatio, zRatio)); }
+
+			void virtualize();
+			ObjectDataType* unvirtualize();
+
+		};
+		double loc = 0.0;
+		double size = 1.0;
+		Vec3 stackingMarker;
+		Vec3 stackingMaxSizeMarker;
+		double isStorable = 1.0;
+		int __getIsStorable() { return (int)isStorable; }
+		double __getCenter() { return loc + 0.5 * size; }
+		__declspec(property(get = __getCenter)) double center;
+		Vec3 getSize(bool xyIsReposedPlane);
+		Vec3 getLocation(const Vec3& sizeRatio, bool xyIsReposedPlane);
+		Vec3 getLocation(const Vec3& sizeRatio) { return getLocation(sizeRatio, true); }
+		Vec3 getLocation(double xRatio, double yRatio, double zRatio) { return getLocation(Vec3(xRatio, yRatio, zRatio), true); }
+		Vec3 __getLocation() { return getLocation(Vec3(0.0, 0.0, 0.0), true); }
+		Vec3 __getSize();
+
+		treenode itemsNode;
+		static StorageObject::Item* __getStorageItem(treenode subnode);
+		/// <summary>	The items assigned to this slot. This includes 
+		/// 			both items that are in the object and items that 
+		/// 			have been assigned to the slot but have not yet 
+		/// 			been placed in the object. Note that items already 
+		/// 			in the object should always be first in the array, 
+		/// 			i.e. the assigned-only items are at the end of the 
+		/// 			array.</summary>
+		NodeListArray<StorageObject::Item, nullptr, &Slot::__getStorageItem, OneBased::rankOffset> storageItems;
+
+		typedef NodeListArray<typename Slot::Item, nullptr, nullptr, OneBased::rankOffset>::CouplingSdtSubNodeType SlotItemArray;
+		SlotItemArray slotItems;
+		SlotItemArray& __getSlotItems() { return slotItems; }
+		
+		Level* __getLevel();
+		__declspec(property(get = __getLevel)) Level* level;
+		Bay* __getBay();
+		__declspec(property(get = __getBay)) Bay* bay;
+		StorageObject* __getObject();
+		__declspec(property(get = __getObject)) StorageObject* storageObject;
+		TreeNode* labels = nullptr;
+		TreeNode* resetLabels = nullptr;
+		virtual TreeNode* getLabelNode(const char* labelName, bool assert, TreeNode*& labels);
+		virtual TreeNode* getLabelNode(const char* labelName, bool assert) override { return getLabelNode(labelName, assert, labels); }
+		virtual void setLabel(const char* labelName, const Variant& toVal) override;
+
+		int __getNumStoredItems();
+		__declspec(property(get = __getNumStoredItems)) int numStoredItems;
+
+		void onReset();
+		void resetStackingMarkers();
+		void resetLabelValues();
+		void restack(int fromSlotRank = 0);
+
+		static const int PAINT_INDIVIDUAL_SLOT = 1;
+		static const int PAINT_ALL_SLOTS_IN_SAME_CELL = 2;
+		static const int PAINT_ALL_SLOTS_IN_SAME_LEVEL = 3;
+		static const int PAINT_ALL_SLOTS_IN_SAME_BAY = 4;
+		static const int PAINT_ALL_SLOTS_IN_SAME_RACK = 5;
+
+		void paintLabel(const string& labelName, const Variant& value, int paintMode);
+		Variant paintLabel(FLEXSIMINTERFACE);
+
+		void synchronizeLabelRanks(StorageSystem* system, TreeNode*& labelsNode);
+		void synchronizeLabelRanks(StorageSystem* system)
+		{
+			synchronizeLabelRanks(system, labels);
+			synchronizeLabelRanks(system, resetLabels);
+		}
+
+		StorageSystem::Address getAddress(bool mapped = true);
+		void onAssigned(StorageObject::Item* data);
+		void onReceive(StorageObject::Item* data);
+		void onSend(StorageObject::Item* data);
+		bool hasSpace(treenode item);
+		void resolveItemPlacement(Slot::Item* slotItem, StorageObject::Item* storageItem, Vec3& marker, Vec3& maxSizeMarker);
+		void setItemStackingLocation(Slot::Item* slotItem, StorageObject::Item* storageItem);
+
+		TreeNode* onEntry = nullptr;
+		TreeNode* onExit = nullptr;
+		TreeNode* onAssign = nullptr;
+
+		int systemAllSlotsIndex = 0;
+
+		Variant __getLabelProperty(const char* name, unsigned nameHash, bool dieHard);
+		void __setLabelProperty(const char* name, unsigned nameHash, const Variant& value) { setLabel(name, value); }
+	
+		Variant __getSlotID();
+		__declspec(property(get = __getSlotID)) Variant slotID;
+		Variant __getLevelID();
+		__declspec(property(get = __getLevelID)) Variant levelID;
+		Variant __getBayID();
+		__declspec(property(get = __getBayID)) Variant bayID;
+		Variant __getAisleID();
+		__declspec(property(get = __getAisleID)) Variant aisleID;
+		Variant __getZoneID();
+		__declspec(property(get = __getZoneID)) Variant zoneID;
+		Variant __getAddress();
+		__declspec(property(get = __getAddress)) Variant address; 
+
+		StorageSystem::BoundingBox getBoundingBoxFromScope(int scope);
+
+		double lastItemExitTime;
+		double lastItemExitYSize;
+		ObjRef<ObjectDataType> pushBackItem;
+		bool updateFlowingItems(bool asPushBackRack);
+	};
+
+	struct SlotLabelMatchCache {
+		bool isDirty = true;
+		bool areEqual = false;
+		bool isFirstSet = false;
+		string labelName;
+		Variant value;
+		void init(const char* name) {
+			labelName = name;
+			value = Variant();
+			areEqual = true;
+			isFirstSet = false;
+			isDirty = false;
+		}
+		void init(const char* name, const Variant& val) {
+			init(name);
+			value = val;
+			isFirstSet = true;
+		}
+		bool check(Slot* slot) {
+			Variant val;
+			TreeNode* labelNode = slot->getLabelNode(labelName.c_str(), false);
+			if (labelNode)
+				val = labelNode->value;
+			if (!isFirstSet) {
+				isFirstSet = true;
+				value = val;
+			}
+			else {
+				areEqual = areEqual && value == val;
+			}
+			return areEqual;
+		}
+		template <class Func>
+		bool check(const char* name, Func func) {
+			if (!isDirty && labelName == name)
+				return areEqual;
+			init(name);
+			func();
+			return areEqual;
+		}
+		template <class Func>
+		bool check(const char* name, const Variant& val, Func func) {
+			if (!isDirty && labelName == name && value == val)
+				return areEqual;
+			init(name);
+			func();
+			return areEqual;
+		}
+	};
+
+	class Level : public SimpleDataType {
+	public:
+		virtual const char* getClassFactory() { return "StorageLevel"; }
+		virtual void bind() override;
+		virtual void bindInterface() override;
+		double loc = 0.0;
+		double size = 1.0;
+		double isStorable = 1.0;
+		typedef NodeListArray<Slot>::SdtSubNodeBindingTypeOneBased SlotsArray;
+		SlotsArray slots;
+		SlotsArray& __getSlots() { return slots; }
+
+		Bay* __getBay() { return holder->up->up->objectAs(Bay); }
+		__declspec(property(get = __getBay)) Bay* bay;
+
+		void onReset();
+		void cacheIsStorable();
+
+		template<typename Func, typename CompareType, typename Comp = typename std::equal_to<CompareType>>
+		CompareType visitSlots(Func func, CompareType stopVal, CompareType finishVal, Comp comp = Comp()) 
+		{
+			for (Slot* slot : slots) {
+				CompareType val = func(slot);
+				if (comp(val, stopVal))
+					return val;
+			}
+			return finishVal;
+		}
+		template<typename Func>
+		void visitSlots(Func func)
+		{
+			for (Slot* slot : slots) {
+				func(slot);
+			}
+		}
+		SlotLabelMatchCache slotLabelMatchCache;
+		bool areSlotLabelsEqual(const char* labelName) {
+			return slotLabelMatchCache.check(labelName, [this]() {
+				return visitSlots([this](Slot* slot) { 
+					return slotLabelMatchCache.check(slot);
+				}, false, true);
+			});
+		}
+		bool areSlotLabelsEqual(const char* labelName, const Variant& value)
+		{
+			return slotLabelMatchCache.check(labelName, value, [this]() {
+				visitSlots([this](Slot* slot) { 
+					return slotLabelMatchCache.check(slot);
+				}, false, true);
+			});
+		}
+		void setSlotLabels(const char* labelName, const Variant& value)
+		{
+			visitSlots([&](Slot* slot) {slot->setLabel(labelName, value); });
+		}
+	};
+
+	class Bay : public SimpleDataType {
+	public:
+		virtual const char* getClassFactory() { return "StorageBay"; }
+		virtual void bind() override;
+		virtual void bindInterface() override;
+		double loc = 0.0;
+		double size = 1.0;
+		int numItems = 0;
+		double isStorable = 1.0;
+		typedef NodeListArray<Level>::SdtSubNodeBindingTypeOneBased LevelsArray;
+		LevelsArray levels;
+		LevelsArray& __getLevels() { return levels; }
+
+		void onReset();
+		void cacheIsStorable();
+
+
+		template<class Func, class CompareType, class Comp = std::equal_to<CompareType>>
+		CompareType visitSlots(Func func, CompareType stopVal, CompareType finishVal, Comp comp = Comp())
+		{
+			for (Level* level : levels) {
+				CompareType val = level->visitSlots(func, stopVal, finishVal, comp);
+				if (comp(val, stopVal))
+					return val;
+			}
+			return finishVal;
+		}
+		template<typename Func>
+		void visitSlots(Func func)
+		{
+			for (Level* level : levels) {
+				level->visitSlots(func);
+			}
+		}
+
+		SlotLabelMatchCache slotLabelMatchCache;
+		bool areSlotLabelsEqual(const char* labelName) {
+			return slotLabelMatchCache.check(labelName, [this]() {
+				visitSlots([this](Slot* slot) { 
+					return slotLabelMatchCache.check(slot);
+				}, false, true);
+			});
+		}
+		bool areSlotLabelsEqual(const char* labelName, const Variant& value)
+		{
+			return slotLabelMatchCache.check(labelName, value, [this]() {
+				visitSlots([this](Slot* slot) { 
+					return slotLabelMatchCache.check(slot);
+				}, false, true);
+			});
+		}
+		void setSlotLabels(const char* labelName, const Variant& value)
+		{
+			visitSlots([&](Slot* slot) {slot->setLabel(labelName, value); });
+		}
+	};
+
+	class Item : public SimpleDataType {
+	private:
+		treenode currentSlotNode;
+		treenode assignedSlotNode;
+	public:
+		static const char* classFactory;
+		virtual const char* getClassFactory() { return classFactory; }
+		virtual void bind() override;
+		virtual void bindInterface() override;
+		ObjectDataType* __getItem() { return holder->ownerObject->objectAs(ObjectDataType); }
+		__declspec(property(get = __getItem)) ObjectDataType* item;
+
+		double accumOffset = 0;
+		Slot* __getCurrentSlot();
+		void __setCurrentSlot(Slot* slot);
+		__declspec(property(get=__getCurrentSlot, put = __setCurrentSlot)) Slot* currentSlot;
+		Slot* __getAssignedSlot();
+		void __setAssignedSlot(Slot* slot);
+		__declspec(property(get = __getAssignedSlot, put = __setAssignedSlot)) Slot* assignedSlot;
+		void restoreAtRank(Slot* slot, int atRank);
+		Slot::Item* __getCurrentSlotItem();
+		__declspec(property(get = __getCurrentSlotItem)) Slot::Item* currentSlotItem;
+		Slot::Item* __getAssignedSlotItem();
+		__declspec(property(get = __getAssignedSlotItem)) Slot::Item* assignedSlotItem;
+
+		class State {
+		public:
+			static const int Unassigned = 1;
+			static const int Inbound = 2;
+			static const int Stored = 3;
+			static const int Outbound = 4;
+			static int __getUnassigned() { return Unassigned; }
+			static int __getInbound() { return Inbound; }
+			static int __getStored() { return Stored; }
+			static int __getOutbound() { return Outbound; }
+			static void bindInterface();
+		};
+		int __getState() {
+			if (!currentSlot) {
+				if (!assignedSlot)
+					return State::Unassigned;
+				else return State::Inbound;
+			}
+			else {
+				if (assignedSlot == currentSlot)
+					return State::Stored;
+				else return State::Outbound;
+			}
+		}
+		__declspec(property(get = __getState)) int state;
+	};
+	static StorageObject::Item* getItem(treenode item);
+	static StorageObject::Item* assertItem(treenode item);
+
+
+	FS_CONTENT_DLL_FUNC virtual void bind() override;
+	FS_CONTENT_DLL_FUNC virtual void bindInterface() override;
+	FS_CONTENT_DLL_FUNC virtual void bindEvents();
+	FS_CONTENT_DLL_FUNC virtual void bindVariables();
+	
+	static SimpleDataType* createSDTDerivative(const char* className);
+
+	virtual Rack* toRack() { return nullptr; }
+	virtual FloorStorage* toFloorStorage() { return nullptr; }
+	virtual GravityFlowRack* toGravityFlowRack() { return nullptr; }
+	virtual DriveInRack* toDriveInRack() { return nullptr; }
+	virtual PushBackRack* toPushBackRack() { return nullptr; }
+
+	typedef NodeListArray<Bay>::SdtSubNodeBindingTypeOneBased BaysArray;
+	BaysArray bays;
+	BaysArray& __getBays() { return bays; }
+	TreeNode* systemNode;
+	StorageSystem* __getSystem();
+	__declspec(property(get = __getSystem)) StorageSystem* system;
+
+	/// <summary>	The structural mesh. Draws the column supports, and the orange front-facing
+	/// 			panels </summary>
+	IndexedMesh structuralMesh;
+	/// <summary>	The slot mesh. Draws either the rack platforms, or a 
+	/// 			box outline of each slot.</summary>
+	Mesh slotMesh;
+	/// <summary>	The box mesh. Draws the box surrounding the entire rack.</summary>
+	Mesh boxMesh;
+	/// <summary>	The brace mesh. Draws the diagonal column braces.</summary>
+	Mesh braceMesh;
+	/// <summary>	The pickable slot mesh. Draws a colored rectangle for each slot. 
+	/// 			Used in slot label painter mode.</summary>
+	Mesh pickableSlotMesh;
+	std::string pickableSlotMeshLabelName;
+	static std::string drawPickableSlotsLabelName;
+	Variant setDrawPickableSlots(FLEXSIMINTERFACE) { drawPickableSlotsLabelName = param(1); return Variant(); }
+	
+
+	void buildReadyToGoMesh(Mesh& mesh);
+	Mesh::AutoRebuildingMesh readyToGoMesh;
+
+	bool rebuildMeshes = true;
+	bool areLocationsDirty = true;
+	treenode onEndDwellTimeTrigger = nullptr;
+	double unrequitedDrag = 0;
+	bool isBayUndoTrackingAdded = false;
+
+	static const int PICK_BAY_SIZER = 101;
+	static const int PICK_LEVEL_SIZER = 102;
+
+	StorageSystem::AddressMapping addressMapping;
+	ObjRef<StorageSystem::AddressScheme> addressScheme;
+
+	Bay* getBay(int bay);
+	Bay* getBay(treenode item);
+	Level* getLevel(int bay, int level);
+	Level* getLevel(treenode item);
+	Slot* getSlot(int bay, int level, int position);
+	Slot* getSlot(const Variant& bayID, const Variant& levelID, const Variant& slotID);
+	Slot* getSlot(treenode item);
+
+	void visitBays(std::function<void(Bay*)>, const Variant& bayFilter = Variant());
+	void visitLevels(std::function<void(Level*)>, const Variant& levelFilter = Variant());
+	void visitSlots(std::function<void(Slot*)>, const Variant& slotFilter = Variant());
+
+	template<class Func, class CompareType, class Comp = std::equal_to<CompareType>>
+	CompareType visitSlots(Func func, CompareType stopVal, CompareType finishVal, Comp comp = Comp())
+	{
+		for (Bay* bay : bays) {
+			CompareType val = bay->visitSlots(func, stopVal, finishVal, comp);
+			if (comp(val, stopVal))
+				return val;
+		}
+		return finishVal;
+	}
+	template<typename Func>
+	void visitSlots(Func func)
+	{
+		for (Bay* bay : bays) {
+			bay->visitSlots(func);
+		}
+	}
+
+	FS_CONTENT_DLL_FUNC void setNumBays(int numBays, bool skipLocRefresh = false);
+	Variant setNumBays(FLEXSIMINTERFACE) { setNumBays(param(1), (int)param(2)); return Variant(); }
+
+	FS_CONTENT_DLL_FUNC void setBaySize(double width, const Variant& bayFilter = Variant(), bool skipLocRefresh = false);
+	Variant setBaySize(FLEXSIMINTERFACE) { setBaySize(param(1), param(2), (int)param(3)); return Variant(); }
+
+	FS_CONTENT_DLL_FUNC void setNumLevels(int numLevels, const Variant& bayFilter, bool skipLocRefresh = false);
+	Variant setNumLevels(FLEXSIMINTERFACE) { setNumLevels(param(1), param(2), (int)param(3)); return Variant(); }
+
+	FS_CONTENT_DLL_FUNC void setLevelSize(double height, const Variant& levelFilter = Variant(), bool skipLocRefresh = false);
+	Variant setLevelSize(FLEXSIMINTERFACE) { setLevelSize(param(1), param(2), (int)param(3)); return Variant(); }
+
+	FS_CONTENT_DLL_FUNC void setNumSlots(int numSlots, const Variant& slotFilter, bool skipLocRefresh = false);
+	Variant setNumSlots(FLEXSIMINTERFACE) { setNumSlots(param(1), param(2), (int)param(3)); return Variant(); }
+
+	FS_CONTENT_DLL_FUNC void setSlotSize(double size, const Variant& slotFilter = Variant(), bool skipLocRefresh = false);
+	Variant setSlotSize(FLEXSIMINTERFACE) { setSlotSize(param(1), param(2), (int)param(3)); return Variant(); }
+
+	FS_CONTENT_DLL_FUNC void setSlotStorable(bool isStorable, const Variant& slotFilter = Variant());
+	Variant setSlotStorable(FLEXSIMINTERFACE) { setSlotStorable((int)param(1), param(2)); return Variant(); }
+
+	Variant getBaySize(FLEXSIMINTERFACE) { return getBaySize(param(1)); }
+	Variant getLevelSize(FLEXSIMINTERFACE) { return getLevelSize(param(1), param(2)); }
+	Variant getBayLoc(FLEXSIMINTERFACE) { return getBayLoc(param(1)); }
+	Variant getLevelLoc(FLEXSIMINTERFACE) { return getLevelLoc(param(1), param(2)); }
+
+	string getBayAlias(Bay* bay);
+	Variant getBayAlias(FLEXSIMINTERFACE) { return getBayAlias(((TreeNode*)param(1))->objectAs(Bay)); }
+	string getLevelAlias(Level* level);
+	Variant getLevelAlias(FLEXSIMINTERFACE) { return getLevelAlias(((TreeNode*)param(1))->objectAs(Level)); }
+	string getSlotAlias(Slot* slot);
+	Variant getSlotAlias(FLEXSIMINTERFACE) { return getSlotAlias(((TreeNode*)param(1))->objectAs(Slot)); }
+
+	Variant refreshBayLevelSlotLocations(FLEXSIMINTERFACE) { refreshBayLevelSlotLocations(); return Variant(); }
+	Variant updateProgressions(FLEXSIMINTERFACE) { updateProgressions(); return Variant(); }
+
+	FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
+	FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
+	FS_CONTENT_DLL_FUNC double onUndo(bool isUndo, treenode undoRecord) override { rebuildMeshes = true; return 0; }
+
+	FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+
+	FS_CONTENT_DLL_FUNC double onReset();
+
+	FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+
+
+	void onItemSlotAssigned(Slot* slot, Slot::Item* data);
+
+	FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+
+	FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+
+	static const int DRAW_RACK = 1;
+	static const int DRAW_SLOTS = 2;
+	static const int DRAW_BOX = 3;
+	static const int DRAW_LINES = 4;
+	static const int DRAW_VISUALIZATION = 5;
+
+	FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+
+	FS_CONTENT_DLL_FUNC virtual double getPickOffset(treenode item, treenode toobject, double* returnarray);
+
+	FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode item, treenode fromobject, double* returnarray);
+
+	FS_CONTENT_DLL_FUNC Slot* assignSlot(Item* data, bool throwOnFail);
+	FS_CONTENT_DLL_FUNC Slot* assignSlot(treenode item);
+
+	FS_CONTENT_DLL_FUNC virtual double onTransportOutNotify(treenode item, int port) override;
+
+	FS_CONTENT_DLL_FUNC virtual double onTransportOutComplete(treenode item, int port, treenode transporter = nullptr) override;
+
+	FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int portnumber);
+
+	FS_CONTENT_DLL_FUNC virtual void onTransportInFailed(treenode item, int port);
+
+	FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
+
+	FS_CONTENT_DLL_FUNC double getBayOfItem(treenode item);
+
+	FS_CONTENT_DLL_FUNC double getBayLoc(int bay);
+
+	FS_CONTENT_DLL_FUNC double getBaySize(int bay);
+
+	FS_CONTENT_DLL_FUNC double getItemSlotRank(treenode item);
+
+	FS_CONTENT_DLL_FUNC double getLevelOfItem(treenode item);
+
+	FS_CONTENT_DLL_FUNC double getLevelLoc(int bay, int level);
+
+	FS_CONTENT_DLL_FUNC double getLevelSize(int bay, int level);
+
+	FS_CONTENT_DLL_FUNC treenode getItem(int bay, int level, int position, int rankinslot);
+
+	FS_CONTENT_DLL_FUNC double getBayContent(int bay);
+
+	FS_CONTENT_DLL_FUNC double getSlotContent(int bay, int level, int position);
+
+	FS_CONTENT_DLL_FUNC double getNrOfBays();
+
+	FS_CONTENT_DLL_FUNC double getNrOfLevels(int bay DEFAULTONE);
+
+	FS_CONTENT_DLL_FUNC virtual double drawFilledSlot(int bay, int level, int position, double x, double y, double z, double sx, double sy, double sz, int red, int green, int blue, int glbeginend DEFAULTONE);
+	FS_CONTENT_DLL_FUNC double recycleItem(treenode item, int binrank);
+
+	FS_CONTENT_DLL_FUNC treenode  restoreItem(int binrank, int bay, int level, int position, int itemRank);
+
+	FS_CONTENT_DLL_FUNC double setSlotContent(int bay, int level, int position, int contentval);
+
+	FS_CONTENT_DLL_FUNC virtual double drawVirtualContent(double bayfillperc, double levelfillperc, double itemdepth, double red, double green, double blue, int onlyvirtual DEFAULTONE);
+
+	FS_CONTENT_DLL_FUNC double saveState();
+
+	FS_CONTENT_DLL_FUNC double loadState();
+
+	FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+
+	FS_CONTENT_DLL_FUNC double checkRebuildMeshes();
+
+	FS_CONTENT_DLL_FUNC double buildFlatSlotMesh();
+
+	FS_CONTENT_DLL_FUNC double buildBoxMesh();
+
+	FS_CONTENT_DLL_FUNC double buildLineMesh();
+
+	FS_CONTENT_DLL_FUNC void buildPickableSlotMesh();
+
+	FS_CONTENT_DLL_FUNC void refreshBayLevelSlotLocations();
+
+	FS_CONTENT_DLL_FUNC void setBasicDimensions(int numBays, double bayWidth, int numLevels, double levelHeight, int numPositions);
+
+	FS_CONTENT_DLL_FUNC virtual void onDragConnection(ObjectDataType* fromObj, ObjectDataType* toObj, char charPressed) override;
+
+	double meshHash = 0;
+	double calculateMeshHash();
+
+	TreeNode* placeinbay;
+	TreeNode* placeinlevel;
+
+	TreeNode* slotAssignment;
+	TreeNode* minimumstaytime;
+	TreeNode* entrytrigger;
+	double enableFRLogic;
+	double maxcontent;
+	double rackdrawmode;
+	double markreadytogo;
+	ByteBlock zoneID;
+	ByteBlock aisleID;
+
+	static const int STACKING_AXIS_NONE = 0;
+	static const int STACKING_AXIS_X = 1;
+	static const int STACKING_AXIS_NEG_X = 2;
+	static const int STACKING_AXIS_Y = 3;
+	static const int STACKING_AXIS_NEG_Y = 4;
+	static const int STACKING_AXIS_Z = 5;
+	static const int STACKING_AXIS_NEG_Z = 6;
+	double stackingAxis1;
+	double stackingAxis2;
+	double stackingAxis3;
+
+	TreeNode* onSlotEntry = nullptr;
+	TreeNode* onSlotExit = nullptr;
+	TreeNode* onSlotAssign = nullptr;
+
+	struct StackingInfo {
+		Vec3 progressionFromMarker;
+		int axes[4];
+		int vectorIndex[4];
+		void cache(StorageObject* obj);
+	} stackingInfo;
+
+	void onSlotLabelValueChange(Slot* slot, TreeNode* label, const Variant& newValue);
+
+	enum Progression : int {Positive = 1, Negative = -1, None = 0};
+	Progression getBayProgressionFromGeometry();
+	Progression getLevelProgressionFromGeometry();
+	Progression getSlotProgressionFromGeometry();
+	void updateProgressions();
+	double bayProgression;
+	double levelProgression;
+	double slotProgression;
+
+	typedef StorageSystem::Visualization::ElementMeshEntry ElementMeshEntry;
+	static ObjRef<StorageSystem::Visualization::Element> drawElementBoundingBox;
+	static bool drawSlotMeshBoundingBoxOutlines;
+	static Mesh slotBoundingBoxMesh;
+	static bool isSlotBoundingBoxMeshInitialized;
+	Variant setDrawElementBoundingBox(FLEXSIMINTERFACE);
+
+	ObjRef<StorageSystem::Visualization> visualization;
+	StorageSystem::Visualization* getEffectiveVisualization();
+	struct ElementLess {
+		bool operator()(const Visualization::Element* left, const Visualization::Element* right) const
+		{
+			if (!left)
+				return right != nullptr;
+			if (!right)
+				return false;
+			unsigned short leftVisRank = (unsigned short)left->holder->up->up->rank;
+			unsigned short leftElementRank = (unsigned short)left->holder->rank;
+			unsigned int leftVal = (leftVisRank << 16) | leftElementRank;
+			unsigned short rightVisRank = (unsigned short)right->holder->up->up->rank;
+			unsigned short rightElementRank = (unsigned short)right->holder->rank;
+			unsigned int rightVal = (rightVisRank << 16) | rightElementRank;
+			return leftVal < rightVal;
+		}
+	};
+	std::map<Visualization::Element*, std::unique_ptr<Visualization::ElementMeshEntry>, ElementLess> slotMeshes;
+	void initializeSlotMeshes();
+	void rebuildSlotMesh(StorageSystem::Visualization::ElementMeshEntry& entry, Visualization::Element* element);
+
+	SlotLabelMatchCache slotLabelMatchCache;
+	bool areSlotLabelsEqual(const char* labelName) {
+		return slotLabelMatchCache.check(labelName, [this]() {
+			visitSlots([this](Slot* slot) { 
+				return slotLabelMatchCache.check(slot);
+			}, false, true);
+		});
+	}
+	bool areSlotLabelsEqual(const char* labelName, const Variant& value)
+	{
+		return slotLabelMatchCache.check(labelName, value, [this]() {
+			visitSlots([this](Slot* slot) { 
+				return slotLabelMatchCache.check(slot);
+			}, false, true);
+		});
+	}
+	void setSlotLabels(const char* labelName, const Variant& value)
+	{
+		visitSlots([&](Slot* slot) {slot->setLabel(labelName, value); });
+	}
+
+	static const int FIFO = 1;
+	static const int LIFO = 2;
+	virtual int getPickingOrder() { return stackingAxis2 == 0 ? FIFO : LIFO; }
+	virtual void setInitialDimensions() {
+		setBasicDimensions(8, 2.5 / getmodelunit(LENGTH_MULTIPLE), 6, 1.4 / getmodelunit(LENGTH_MULTIPLE), 2);
+	}
+
+	virtual void onSlotReceive(Slot* slot, StorageObject::Item* item);
+	virtual void onSlotSend(Slot* slot, StorageObject::Item* item);
+	virtual void setItemStackingLocation(Slot* slot, Slot::Item* slotItem, StorageObject::Item* data) { slot->setItemStackingLocation(slotItem, data); }
+
+	virtual const char* getDefaultVisualizationName() { return "Rack"; }
+
+	NodeListArray<StorageSystem::VirtualizedItem::StorageObjectItemMeshData>::CouplingSdtSubNodeBindingType virtualizedItemMeshData;
+	std::unordered_map<
+		StorageSystem::VirtualizedItem::StorageData::Key,
+		StorageSystem::VirtualizedItem::StorageObjectItemMeshData*,
+		StorageSystem::VirtualizedItem::StorageData::Hash
+	> virtualizedItemMeshDataMap;
+	void refreshVirtualizedItemMeshDataMap();
+
+//ClassIncludeHeaderEnd
+
+// System
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// Rack
+class Rack : public StorageObject
+{
+public:
+
+
+//ClassIncludeHeaderStart
+
+FS_CONTENT_DLL_FUNC virtual void bindVariables() override;
+FS_CONTENT_DLL_FUNC virtual Rack* toRack() override { return this; }
+FS_CONTENT_DLL_FUNC virtual double onReset() override;
+FS_CONTENT_DLL_FUNC double buildFullMeshes();
+void setTiltAngle(StorageObject::Item* item);
+
+//ClassIncludeHeaderEnd
+
+// c++ member functions
+
+TreeNode* node_v_pickplaceyoffset;
+#define v_pickplaceyoffset node_v_pickplaceyoffset->safedatafloat()[0]
+TreeNode* node_v_tiltvalue;
+#define v_tiltvalue node_v_tiltvalue->safedatafloat()[0]
+TreeNode* node_v_tiltangle;
+#define v_tiltangle node_v_tiltangle->safedatafloat()[0]
+TreeNode* node_v_hidefloor;
+#define v_hidefloor node_v_hidefloor->safedatafloat()[0]
+TreeNode* node_v_extendcolumn;
+#define v_extendcolumn node_v_extendcolumn->safedatafloat()[0]
+
+// System
+
+FS_CONTENT_DLL_FUNC void bindVariablesDefault();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// GravityFlowRack
+class GravityFlowRack : public Rack
+{
+public:
+
+
+//ClassIncludeHeaderStart
+	double flowSpeed;
+
+	// hasPreDrawFiredSinceReset is a variable for optimization of my flowingSlots set
+	bool hasPreDrawFiredSinceReset = false;
+	double lastFlowUpdateTime = -1;
+	std::set<Slot*> flowingSlots;
+	virtual void bindVariables() override;
+	virtual double onReset() override;
+	virtual double onTimerEvent(treenode involved, int code, char *datastr) override;
+	virtual GravityFlowRack* toGravityFlowRack() override { return this; }
+	virtual void setInitialDimensions() override {
+		setBasicDimensions(5, 2.5 / getmodelunit(LENGTH_MULTIPLE), 6, 0.4 / getmodelunit(LENGTH_MULTIPLE), 4);
+	}
+	FS_CONTENT_DLL_FUNC virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO) override;
+
+	FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode involvedobj, treenode fromobject, double* returnarray) override;
+
+	FS_CONTENT_DLL_FUNC virtual double getPickOffset(treenode item, treenode toobject, double* returnarray);
+	virtual void onSlotReceive(Slot* slot, StorageObject::Item* item) override;
+	virtual void onSlotSend(Slot* slot, StorageObject::Item* item) override;
+	virtual double updateLocations() override;
+	virtual const char* getDefaultVisualizationName() override { return "Gravity Flow Rack"; }
+
+//ClassIncludeHeaderEnd
+
+// System
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// PushBackRack
+class PushBackRack : public GravityFlowRack
+{
+public:
+
+
+//ClassIncludeHeaderStart
+
+virtual PushBackRack* toPushBackRack() override { return this; }
+double getPickPlaceOffset(treenode involved, treenode fromObj, double* returnArray, bool isPickOffset);
+virtual double getPlaceOffset(treenode involved, treenode fromObj, double* returnArray) override
+{
+	return getPickPlaceOffset(involved, fromObj, returnArray, false);
+}
+virtual double getPickOffset(treenode involved, treenode toObj, double* returnArray) override
+{
+	return getPickPlaceOffset(involved, toObj, returnArray, true);
+}
+virtual void setItemStackingLocation(Slot* slot, Slot::Item* slotItem, StorageObject::Item* data) override;
+
+virtual void setInitialDimensions() override;
+virtual const char* getDefaultVisualizationName() override { return "Push Back Rack"; }
+
+virtual void onSlotReceive(Slot* slot, StorageObject::Item* item) override;
+
+//ClassIncludeHeaderEnd
+
+// System
+
+FS_CONTENT_DLL_FUNC virtual void bindVariables();
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// DriveInRack
+class DriveInRack : public Rack
+{
+public:
+
+
+//ClassIncludeHeaderStart
+
+bool isDriveThrough() { return stackingAxis1 == STACKING_AXIS_Y; }
+virtual int getPickingOrder() override { return isDriveThrough() ? FIFO : LIFO; }
+virtual void bindVariables() override;
+virtual double onTimerEvent(treenode involved, int code, char *datastr) override;
+virtual DriveInRack* toDriveInRack() override { return this; }
+double getPickPlaceOffset(treenode involved, treenode fromObj, double* returnArray, bool isPickOffset);
+virtual double getPlaceOffset(treenode involved, treenode fromObj, double* returnArray) override 
+{ 
+	return getPickPlaceOffset(involved, fromObj, returnArray, false); 
+}
+virtual double getPickOffset(treenode involved, treenode toObj, double* returnArray) override
+{
+	return getPickPlaceOffset(involved, toObj, returnArray, true);
+}
+
+virtual void onSlotReceive(Slot* slot, StorageObject::Item* item) override;
+virtual void onSlotSend(Slot* slot, StorageObject::Item* item) override;
+
+virtual void setInitialDimensions() override
+{
+	setBasicDimensions(10, 1.5 / getmodelunit(LENGTH_MULTIPLE), 4, 1.5 / getmodelunit(LENGTH_MULTIPLE), 1);
+}
+virtual const char* getDefaultVisualizationName() override { return "Drive In Rack"; }
+
+//ClassIncludeHeaderEnd
+
+// System
+
+FS_CONTENT_DLL_FUNC static int getAllocSize();
+};
+
+// FloorStorage
+class FloorStorage : public StorageObject
+{
+public:
+
+
+//ClassIncludeHeaderStart
+
+	virtual FloorStorage* toFloorStorage() override { return this; }
+	FS_CONTENT_DLL_FUNC virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO) override;
+
+	virtual int getPickingOrder() override { return LIFO; }
+
+	virtual const char* getDefaultVisualizationName() override { return "Floor Storage"; }
+
+	virtual void setInitialDimensions() override
+	{
+		setBasicDimensions(10, 1.0 / getmodelunit(LENGTH_MULTIPLE), 10, 1.0 / getmodelunit(LENGTH_MULTIPLE), 1);
+	}
+//ClassIncludeHeaderEnd
+
+// c++ member functions
+
+
+// System
+
+FS_CONTENT_DLL_FUNC void bindVariablesDefault();
 
 FS_CONTENT_DLL_FUNC static int getAllocSize();
 };

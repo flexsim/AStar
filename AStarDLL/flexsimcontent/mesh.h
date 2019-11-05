@@ -9,6 +9,8 @@
 
 namespace FlexSim {
 
+
+
 /// <summary>	A class encapsulating data and functionality for drawing geometry in OpenGL.</summary>
 /// <remarks>	The mesh class, and its accompanying mesh api in flexscript, replace the old immediate-mode
 /// 			OpenGL rendering using glBegin() and glEnd(). To use the mesh class you initialize the mesh
@@ -103,11 +105,15 @@ public:
 	typedef void (Mesh::*_drawCallback)(int drawMode, int vertOffset, int vertCount, int vertStride);
 	static _drawCallback drawCallback;
 	static std::ofstream renderFile;
+
 	static void startPOVExport(const char* filePath);
 	static void endPOVExport();
 
 	static void startCyclesExport(const char* filePath);
 	static void endCyclesExport();
+
+	static void startOptiXDraw();
+	static void endOptiXDraw();
 
 protected:
 	void drawRenderMode(int drawMode, int vertOffset, int vertCount, int vertStride);
@@ -118,6 +124,9 @@ protected:
 
 	void drawCyclesExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
 	void printCyclesVertexData(int drawMode);
+
+	void drawOptiXMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+
 	void assertBufferSize(unsigned char*& buffer, unsigned int& maxSize, unsigned int sizeNeeded, int vertByteStride, bool growExactly);
 #endif
 
@@ -164,11 +173,10 @@ protected:
 #define MESH_FORCE_CLEANUP 0x8
 #define MESH_NO_POSITION 0x10
 #define MESH_FORCE_CLEANUP_FULL 0x20
-#define MESH_INSTANCED 0x8
 
 // MESH_IN_MEMORY: (not implemented, just an idea at this point) means the mesh is not bound to the tree, 
 // which means it can delete its buffers once copied into the open gl objects
-#define MESH_IN_MEMORY 0x8
+#define MESH_IN_MEMORY 0x40
 
 	/// <summary>	The number of bytes contained in one vertex (vertex data is
 	/// 			interleaved) </summary>
@@ -207,8 +215,10 @@ protected:
 	/// <summary>	The buffer of vertex data. </summary>
 	unsigned char* vertBuffer;
 	/// <summary>	true if the vertex/mesh data has has been changed since the last draw. 
-	/// 			The mesh will apply the new data to the VBO on the next draw() call. </summary>
+	/// 			The mesh will apply the new data to the VBO on the next draw() call. 
+	/// 			Do not set this to true directly; use setDirty(). </summary>
 	bool isDirty;
+	bool isDirtyOptiX;
 
 	static unsigned int setColorMaterial;
 
@@ -289,6 +299,43 @@ public:
 	/// <param name="verts">   	[in] The vertex data. </param>
 	engine_export void defineVertexAttribs(unsigned int attribId, float* verts);
 
+	engine_export void clear();
+	void setDirty() { isDirty = isDirtyOptiX = true; }
+
+	/// <summary>	Retrieve vertex attributes. </summary>
+	/// <remarks>	Copies the vertex data from the mesh's internal OpenGL-optimized format.
+	/// 			This method should be used if you want to get an array of vertex data.</remarks>
+	/// <param name="attribId">	Identifier for the attribute. Should be one of the following:
+	/// 							- MESH_POSITION - the vertex position data
+	/// 							- MESH_TEX_COORD2 - the vertex texture coordinate data
+	///								- MESH_NORMAL - the vertex normal data
+	///								- MESH_AMBIENT_AND_DIFFUSE - the vertex 3-component color data
+	///								- MESH_AMBIENT_AND_DIFFUSE4 - the vertex 4-component color data  
+	///								- MESH_DIFFUSE - the vertex 3-component color data
+	///								- MESH_DIFFUSE4 - the vertex 4-component color data</param>
+	/// <param name="outBuffer">   	[in] The output buffer to write the data. </param>
+	void getVertexAttribs(unsigned int attribId, float* outBuffer);
+	void getCustomVertexAttribs(const char* customAttribName, float* outBuffer);
+
+	/// <summary>	Retrieve mesh attributes. </summary>
+	/// <remarks>	Copies the mesh data from the mesh's internal OpenGL-optimized format.
+	/// 			This method should be used if you want to get per-mesh attribute data.</remarks>
+	/// <param name="attribId">	Identifier for the attribute. Should be one of the following:
+	///								- MESH_NORMAL - the mesh normal data
+	///								- MESH_DIFFUSE - the 3-component color data
+	///								- MESH_DIFFUSE4 - the 4-component color data
+	///								- MESH_AMBIENT - the ambient data
+	///								- MESH_SPECULAR - the specular data
+	///								- MESH_EMISSION - the emission data
+	///								- MESH_SHININESS - the shininess data</param>
+	/// <param name="outBuffer">   	[in] The output buffer to write the data. </param>
+	void getMeshAttrib(unsigned int attribId, float* outBuffer);
+
+	/// <summary>	Retrieve vertex indices. </summary>
+	/// <remarks>	For a non-indexed mesh, this returns a buffer of 0, 1, 2, 3, etc.
+	/// 			For an indexed mesh, this returns the buffer of indices.</remarks>
+	engine_export virtual void getVertexIndices(int* outBuffer);
+
 	/// <summary>	Adds a vertex. </summary>
 	/// <remarks>	Should be used when you initialize the mesh with 0 vertices, and then add vertex data as you go. </remarks>
 	/// <returns>	The index of the added vertex, for use in Mesh::setVertexAttrib(). </returns>
@@ -327,7 +374,42 @@ public:
 	engine_export Mesh& merge(const Mesh& other);
 	engine_export void scaleToBounds(const Vec3f& min, const Vec3f& max);
 	engine_export void getBounds(Vec3f& min, Vec3f& max) const;
+protected:
+	template <class MeshType = Mesh>
+	class TemplatedAutoRebuildingMesh
+	{
+	public:
+		TemplatedAutoRebuildingMesh(std::function<void(MeshType&)> rebuildCallback)
+			: rebuild(rebuildCallback) {}
+		void setDirty() { isDirty = true; }
+	private:
+		bool isDirty = true;
+		std::function<void(MeshType&)> rebuild;
+	public:
+		MeshType mesh;
+		void checkRebuild() {
+			while (isDirty) {
+				isDirty = false;
+				rebuild(mesh);
+			}
+		}
+		void draw(int drawMode, int vertOffset, int vertCount = 0, int vertStride = 0)
+		{
+			checkRebuild();
+			mesh.draw(drawMode, vertOffset, vertCount, vertStride);
+		}
+		void draw(int drawMode)
+		{
+			checkRebuild();
+			mesh.draw(drawMode);
+		}
+	};
 
+public:
+	typedef TemplatedAutoRebuildingMesh<Mesh> AutoRebuildingMesh;
+	virtual IndexedMesh* toIndexedMesh() { return nullptr; }
+	virtual InstancedMesh* toInstancedMesh() { return nullptr; }
+	virtual TextMesh* toTextMesh() { return nullptr; }
 };
 
 class IndexedMesh : public Mesh
@@ -356,6 +438,14 @@ public:
 	engine_export void defineIndexBuffer(int num, unsigned int * buffer);
 	engine_export void defineIndexBuffer(int num, int* buffer) { defineIndexBuffer(num, (unsigned int*)buffer); }
 
+
+	engine_export void clear();
+
+	/// <summary>	Retrieve vertex indices. </summary>
+	/// <remarks>	For a non-indexed mesh, this returns a buffer of 0, 1, 2, 3, etc.
+	/// 			For an indexed mesh, this returns the buffer of indices.</remarks>
+	engine_export virtual void getVertexIndices(int* outBuffer);
+
 	/// <summary>	Adds an index to the index buffer. </summary>
 	/// <remarks>	 If you want to add indices as you go, use this method. </remarks>
 	/// <param name="index">	The vertex index, returned by addVertex()</param>
@@ -372,8 +462,9 @@ public:
 	engine_export void cleanupIndexBuffer(bool isDestructor = false);
 	engine_export unsigned int vertexForIndex(unsigned int index);
 
-protected:
 	unsigned int numIndices;
+
+protected:
 	/// <summary>	The maximum number of indices possible, given the current allocated buffer size </summary>
 	/// <remarks>	Anthony.johnson, 8/15/2013. </remarks>
 	unsigned int maxNumIndices;
@@ -402,16 +493,19 @@ protected:
 	void assertIndexBufferSize(int numIndices);
 
 #ifdef FLEXSIM_ENGINE_COMPILE
-	public:
-		typedef void (IndexedMesh::*_drawCallback)(int drawMode, int vertOffset, int vertCount, int vertStride);
-		static _drawCallback indexedDrawCallback;
-		void indexedDrawRenderMode(int drawMode, int vertOffset, int vertCount, int vertStride);
-		void indexedDrawPOVExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
-
-		void indexedDrawCyclesExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+public:
+	typedef void (IndexedMesh::*_drawCallback)(int drawMode, int vertOffset, int vertCount, int vertStride);
+	static _drawCallback indexedDrawCallback;
+	void indexedDrawRenderMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+	void indexedDrawPOVExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+	void indexedDrawCyclesExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+	void indexedDrawOptiXMode(int drawMode, int vertOffset, int vertCount, int vertStride);
 #endif
 public:
 	engine_export IndexedMesh& merge(const IndexedMesh& other);
+
+	typedef Mesh::TemplatedAutoRebuildingMesh<IndexedMesh> AutoRebuildingMesh;
+	IndexedMesh* toIndexedMesh() override { return this; }
 };
 
 class InstancedMesh : public IndexedMesh
@@ -428,6 +522,7 @@ public:
 		IndexedMesh::init(numVerts, perVertexAttribs, flags);
 		numInstancedVerts = 0;
 	}
+	void clear() { __super::clear(); numInstancedVerts = 0; }
 
 protected:
 	struct InstancedVertexAttrib : public Mesh::CustomVertexAttrib {
@@ -473,15 +568,24 @@ public:
 	/// <returns>	The index of the added instanced vertex attrib. </returns>
 	engine_export unsigned int addInstancedVertexAttrib(const char* name, int componentsPerVertex, GLenum type, GLuint attribDivisor, bool isNormalized);
 
+	void getInstancedVertexAttribs(const char* name, float* outBuffer);
+
 	engine_export unsigned int addInstancedVertex();
 	engine_export void setInstancedVertexAttrib(unsigned int vertIndex, unsigned int attribId, float* data);
 	engine_export void defineInstancedVertexAttribs(unsigned int numVerts, unsigned int attribId, float* data);
-private:
 	engine_export void instancedDrawRenderMode(int drawMode, IndexedMesh* mesh);
+#ifdef FLEXSIM_ENGINE_COMPILE
 public:
-	void draw(int drawMode) { draw(drawMode, this); }
-	void draw(int drawMode, IndexedMesh* mesh) { instancedDrawRenderMode(drawMode, mesh); }
+	typedef void (InstancedMesh::*_drawCallback)(int drawMode, IndexedMesh* mesh);
+	static _drawCallback instancedDrawCallback;
+	void instancedDrawOptiXMode(int drawMode, IndexedMesh* mesh);
+#endif
+public:
+	engine_export void draw(int drawMode) { draw(drawMode, this); }
+	engine_export void draw(int drawMode, IndexedMesh* mesh);
 
+	typedef Mesh::TemplatedAutoRebuildingMesh<InstancedMesh> AutoRebuildingMesh;
+	InstancedMesh* toInstancedMesh() override { return this; }
 };
 
 

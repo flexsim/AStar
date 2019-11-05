@@ -55,7 +55,7 @@ bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand, bool addSurr
 
 bool Grid::isLocWithinVerticalBounds(double z) const
 {
-	return (isLowestGrid || z >= minPoint.z - 0.001 * nodeWidth) && z < maxPoint.z;
+	return (isLowestGrid || z >= minPoint.z - 0.001 * nodeWidth) && z < maxPoint.z - 0.001 * nodeWidth;
 }
 
 bool Grid::intersectBoundingBox(Vec3 & min, Vec3 & max) const
@@ -289,18 +289,18 @@ void Grid::buildNodeTable()
 	// go through each barrier and add it to the table
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
-		bool isConditional = barrier->conditionRule && rank == 1;
-		if (isConditional) {
-			barrier->conditionalBarrierChanges.reset(navigator);
-			navigator->applyToTemporaryBarrier = &barrier->conditionalBarrierChanges;
-		}
 		Vec3 min, max;
 		barrier->getBoundingBox(min, max);
-		if (isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z) || isConditional) {
+		if (isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z)) {
+			bool isConditional = barrier->conditionRule;
+			if (isConditional) {
+				barrier->conditionalBarrierChanges.reset(navigator);
+				navigator->applyToTemporaryBarrier = &barrier->conditionalBarrierChanges;
+			}
 			barrier->addBarriersToTable(this);
+			if (isConditional)
+				navigator->applyToTemporaryBarrier = nullptr;
 		}
-		if (isConditional)
-			navigator->applyToTemporaryBarrier = nullptr;
 	}
 
 	// add custom barriers
@@ -546,6 +546,10 @@ void Grid::blockNodeDirection(const Cell& cell, Direction direction, Barrier* ba
 
 void Grid::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay, Barrier* barrier)
 {
+	// Apply the line only if it is within the minPoint.z and maxPoint.z
+	if (minPoint.z > min(modelPos1.z, modelPos2.z) + 0.000001 || maxPoint.z < min(modelPos1.z, modelPos2.z) + 0.000001)
+		return;
+
 	double low, high, step, pos;
 	int gridRank = rank;
 	// calculate columns and rows from the model points
@@ -949,6 +953,8 @@ void Grid::drawHeatMap(TreeNode * view)
 	int myRank = rank;
 	for (auto& node : navigator->edgeTableExtraData) {
 		AStarNodeExtraData* data = node.second;
+		if (!data)
+			continue;
 		if (data->totalTraversals <= 0)
 			continue;
 		if (data->cell.grid != myRank)
@@ -1121,7 +1127,7 @@ void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDes
 		currDir = (currDir + 1) % 4;
 		distance = (counter++) / 4;
 
-		if (distance == max(numRows, numCols))
+		if (distance >= max(numRows, numCols))
 			break;
 
 		switch (currDir) {

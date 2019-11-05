@@ -21,6 +21,7 @@ protected:
 	virtual void onBridgeArrival(Traveler* traveler, int pathIndex) override;
 	virtual void onExit(Traveler* traveler) override;
 	virtual void updateLocation(Traveler* traveler) override;
+	virtual double getTravelDistance(TravelPath* path, int travelPathIndex, Grid* grid) override;
 	virtual TravelerBridgeData* createBridgeData() override;
 	virtual const char* getBridgeDataClassFactory() override;
 

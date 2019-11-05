@@ -914,6 +914,9 @@ void Traveler::abortTravel(TreeNode* newTS)
 	if (arrivalEvent)
 		destroyevent(arrivalEvent->holder);
 
+	if (bridgeArrivalEvent)
+		destroyevent(bridgeArrivalEvent->holder);
+
 	navigator->activeTravelers.erase(activeEntry);
 	isActive = false;
 }

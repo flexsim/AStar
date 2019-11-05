@@ -234,7 +234,7 @@ public:
 	static ObjectDataType* createodtderivativefromclassatt(TreeNode* classatt);
 
 	static const int ODT_BIND_STATE_VARIABLE = 0x1;
-	ObjectDataType* checkCreateODTDerivative(TreeNode* classesAtt);
+	ObjectDataType* checkCreateODTDerivative(TreeNode* classesAtt, bool force = false);
 	engine_export TreeNode* bindVariableNode(char* name, bool isStateVariable);
 	engine_export void bindVariableByName(const char* name, double& val, int flags = 0);
 	engine_export void bindVariableByName(const char* name, TreeNode*& val, int flags = 0);
@@ -268,8 +268,11 @@ public:
 	engine_export ObjectDataType& setRotation(double x, double y, double z);
 	engine_export ObjectDataType& setSize(double x, double y, double z);
 
-
-
+	struct BoundingBox {
+		Vec3 min;
+		Vec3 max;
+	};
+	engine_export BoundingBox getAxisAlignedBoundingBox();
 
 	engine_export Vec3& __getLocation();
 	engine_export Vec3& __getRotation();
@@ -280,6 +283,9 @@ public:
 	__declspec(property(get = __getSize)) Vec3& size;
 
 	engine_export void setState(int state, int profile);
+
+	engine_export Variant getVariable(const char* variableName);
+	engine_export void setVariable(const char* variableName, const Variant&  value);
 
 	engine_export Color& __getColor();
 	// making color into a property creates name collisions with the color() attribute command
@@ -409,6 +415,20 @@ public:
 	virtual ObjectDataType* toObject() override { return this; }
 
 	engine_export Variant message(double delayTime = 0, treenode fromObj = nullptr, const Variant& p1 = Variant(), const Variant& p2 = Variant(), const Variant& p3 = Variant());
+
+	class ResetValues : public SimpleDataType
+	{
+	private:
+		std::unordered_map<TreeNode*, Variant> variableMap;
+
+	public:
+#if defined FLEXSIM_COMMANDS
+		virtual void bind() { __super::bind(); bindStlMap(variableMap); }
+#endif
+		virtual const char* getClassFactory() { return "ObjectResetValues"; }
+		void addVariable(TreeNode* varNode);
+		void restoreValues();
+	};
 };
 
 
