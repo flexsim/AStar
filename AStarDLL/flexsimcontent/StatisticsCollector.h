@@ -4,6 +4,10 @@
 #include "objectdatatype.h"
 #include "flexsimevent.h"
 
+#ifdef FLEXSIM_ENGINE_COMPILE
+#include "bundle.h"
+#endif
+
 #include <functional>
 #include <map>
 
@@ -355,6 +359,7 @@ public:
 		};
 
 		double bundleFieldType = 1;
+		double bundleIndexType = 0;
 		double valueFormat = DATA_FORMAT_NONE;
 		TreeNode* valueNode;
 		TreeNode* initialValueNode;
@@ -372,6 +377,7 @@ public:
 		Variant getValue() { return valueNode->evaluate(); }
 		Variant getInitialValue() { return initialValueNode->evaluate(); }
 		int getBundleFieldType() { return (int)bundleFieldType;	};
+		int getBundleIndexType() { return (int)bundleIndexType; }
 
 		int getColumnFormat() { return (int)valueFormat; }
 		bool isDynamic() { return valueApplicationMode == (double)Always; }
@@ -605,12 +611,33 @@ public:
 
 	class QuerySource : public SqlDataSource
 	{
+	protected:
+#ifdef FLEXSIM_ENGINE_COMPILE
+		struct IterInfo
+		{
+			double changeCount = 0;
+			bool isPopulated = false;
+			int compareType = -1;
+			Variant value = Variant();
+			BundleIndex::Range range;
+			BundleIndex::Iterator iter;
+		};
+#else
+		struct IterInfo {};
+#endif
 	public:
+
+		std::map<int, IterInfo> colIDIterInfoMap;
+		
 		virtual int getColID(int tableId, const char* colName, int& colFlags) override;
 		virtual const char* enumerateColNames(int tableId, int colNum) override;
 		virtual Variant getValue(int tableId, int row, int colId) override;
 		// I don't need to set the value; collector tables are read-only for queries
 		// I don't need to worry about table ID either
+
+		virtual bool initIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) override;
+		virtual bool advanceIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) override;
+
 		virtual int getRowCount(int tableID) override;
 		NodeRef collectorLink;
 		StatisticsCollector* __getCollector();
@@ -773,6 +800,7 @@ private:
 public:
 	int getNumColumns();
 	Variant getColName(int colNum);
+	Column* getColumn(int colNum);
 	
 	engine_export void linkColumnAndEvent(TreeNode* column, TreeNode* eventRef);
 	engine_export void unlinkColumnAndEvent(TreeNode* column, TreeNode* eventRef);

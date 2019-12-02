@@ -234,7 +234,7 @@ public:
 		switch (bindMode) {
 		case SDT_BIND_ON_DISPLAY: {
 			char tempStr[1000];
-			sprintf(tempStr, "%s: %s%s", name, val.c_str(), isDisplayVerbose() ? "\r\n" : ", ");
+			snprintf(tempStr, 1000, "%s: %s%s", name, val.c_str(), isDisplayVerbose() ? "\r\n" : ", ");
 			appendToDisplayStr(tempStr);
 			break;
 		}
@@ -919,6 +919,7 @@ public:
 	static const int STAT_TYPE_CATEGORICAL = 0x4; // discrete is a set of discrete values that don't relate mathematically, i.e. state
 	static const int STAT_TYPE_KINETIC_LEVEL = 0x5; // a "moving" level, i.e. you set it to a level and a rate, and the rate causes it to change.
 	static const int STAT_TYPE_POINTER = 0x6; // like categorical, but stores noderefs instead of strings
+	static const int STAT_TYPE_CATEGORICAL_COMBO = 0x7; // multiplies multiple categorical tvs together
 
 	static const int STAT_USE_HISTORY = 0x10;
 	static const int STAT_USE_PROFILE = 0x20;
@@ -1488,7 +1489,7 @@ public:
 	/// <returns>	The value. </returns>
 	virtual Variant getValue(int tableID, int row, int colID) {return SQL_NULL;}
 
-	virtual Variant getValue(int tableID, const SqlCursor& cursor, int colID) { return getValue(tableID, cursor.rowNum, colID); }
+	virtual Variant getValue(int tableID, const SqlCursor& cursor, int colID) { return getValue(tableID, cursor.id, colID); }
 
 	/// <summary>	Sets a value. </summary>
 	/// <remarks>	Anthony.johnson, 2/25/2016. </remarks>
@@ -1498,7 +1499,7 @@ public:
 	/// <param name="toVal">  	to value. </param>
 	/// <returns>	true if it succeeds, false if it fails. </returns>
 	virtual bool setValue(int tableId, int row, int colId, const Variant& toVal) { return false; }
-	virtual bool setValue(int tableID, const SqlCursor& cursor, int colID, const Variant& toVal) { return setValue(tableID, cursor.rowNum, colID, toVal); }
+	virtual bool setValue(int tableID, const SqlCursor& cursor, int colID, const Variant& toVal) { return setValue(tableID, cursor.id, colID, toVal); }
 
 	/// <summary>	Gets a table's identifier. </summary>
 	/// <remarks>	Anthony, 8/27/2014. </remarks>
@@ -1525,8 +1526,8 @@ public:
 	static const int COMP_LE = 4;
 	virtual int getNextIndexedRow(int tableID, int colID, const Variant& value, int lastRow = -1) { return -1; }
 
-	virtual bool initIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) { cursor.rowNum = getNextIndexedRow(tableID, colID, value, -1); return cursor.rowNum >= 0; }
-	virtual bool advanceIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) { cursor.rowNum = getNextIndexedRow(tableID, colID, value, cursor.rowNum); return cursor.rowNum >= 0; }
+	virtual bool initIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) { cursor.id = getNextIndexedRow(tableID, colID, value, -1); return cursor.id >= 0; }
+	virtual bool advanceIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) { cursor.id = getNextIndexedRow(tableID, colID, value, cursor.id); return cursor.id >= 0; }
 
 
 	virtual const char* getClassFactory() override { return "SqlDataSource"; }
@@ -1586,6 +1587,7 @@ public:
 	double lastSetTime;
 	treenode profile = nullptr;
 	treenode onChange = nullptr;
+	treenode dependencies = nullptr;
 	double flags = 0;
 	double lowerBound = -DBL_MAX;
 	double upperBound = DBL_MAX;
@@ -1618,6 +1620,7 @@ public:
 private:
 	void updateKineticCumulative(double endUndboundedValue, double timeAtCurrent);
 	void __setRate(double toRate);
+	static bool blockOnChange;
 public:
 
 	engine_export virtual void bindEvents() override;
@@ -1663,6 +1666,14 @@ public:
 	engine_export static TrackedVariable* create();
 	engine_export void addSubscriber(bool needsHistory, bool needsProfile, bool persist);
 	Variant addSubscriber(FLEXSIMINTERFACE);
+
+private:
+	void onComboStateChange();
+	static bool inComboStateChange;
+	friend class ComboStateChangeEvent;
+public:
+	engine_export void clearListeners();
+	engine_export void listenTo(TrackedVariable* other);
 
 	static bool resetStatsCalled;
 private:

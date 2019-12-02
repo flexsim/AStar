@@ -1760,7 +1760,7 @@ COMPARE_STRING_PAIR(< , false)
 	double operator op (numberType num) const\
 	{\
 		if (type == VariantType::Null)\
-			return num op 0;\
+			return (double)(num op 0);\
 		else if (type == VariantType::Number)\
 			return (double)(asNumber op num);\
 		else throw "Invalid Variant type in " #op " operation";\
@@ -1770,7 +1770,7 @@ COMPARE_STRING_PAIR(< , false)
 	Variant operator op (numberType num) const\
 	{\
 		if (type == VariantType::Null)\
-			return num;\
+			return (double)num;\
 		else if (type == VariantType::Number)\
 			return (double)(asNumber op num);\
 		else if (type == VariantType::String)\
@@ -2583,6 +2583,21 @@ public:
 		return Vec3Generic(newVec);
 	}
 
+	Vec3Generic projectRotation(TreeNode* from, TreeNode* to) const
+	{
+		double newVec[3] = { 0, 0, 0 };
+#if !defined FLEXSIM_ENGINE_COMPILE || defined FLEXSIM_COMMANDS
+		if (!objectexists(from))
+			throw "Error in v.projectRotation(from, to) - from does not exist";
+
+		if (!objectexists(to))
+			throw "Error in v.projectRotation(from, to) - to does not exist";
+
+		rotationproject(from, x, y, z, to, newVec);
+#endif
+		return Vec3Generic(newVec);
+	}
+
 #define VEC3_ROTATE_A_B(degs, a, b) \
 		Number rads = degreestoradians(degrees); \
 		Number cosRads = cos(rads); \
@@ -2677,9 +2692,15 @@ public:
 		x /= length;
 		y /= length;
 	}
-	Vec2Generic rotate(Number degrees)
+
+	Vec2Generic __normalized() const { Vec2Generic temp = *this; temp.normalize(); return temp; }
+	Number __magnitude() const { return getLength(); }
+	__declspec(property(get = __normalized)) Vec2Generic normalized;
+	__declspec(property(get = __magnitude)) Number magnitude;
+	
+	Vec2Generic& rotate(Number degrees)
 	{
-		Number rads = degreestoradians(degrees);
+		Number rads = degrees * 3.14159265358979 / 180;
 		Number cosRads = cos(rads);
 		Number sinRads = sin(rads);
 		Vec2Generic temp = *this;
@@ -2687,11 +2708,44 @@ public:
 		y = sinRads * temp.x + cosRads * temp.y;
 		return *this;
 	}
+
+	Vec2Generic& rotate(double degrees, const Vec2Generic& other)
+	{
+		Number rads = degrees * 3.14159265358979 / 180;
+		Number cosRads = cos(rads);
+		Number sinRads = sin(rads);
+		x -= other.x;
+		y -= other.y;
+		float xnew = x * cosRads - y * sinRads;
+		float ynew = x * sinRads + y * cosRads;
+		x = xnew + other.x;
+		y = ynew + other.y;
+		return *this;
+	}
+	
+
+
 	static Vec2Generic fromRotAndDist(Number degs, Number length)
 	{
 		Number rads = degreestoradians(degs);
 		return Vec2Generic(length * cos(rads), length * sin(rads));
 	}
+	Number angle(const Vec2Generic& other) const
+	{
+		Number degrees = atan2(other.y - y, other.x - x) * 180 / 3.14159265358979;
+		return degrees;
+	}
+	Number dot(const Vec2Generic& other) const { return getDotProduct(other); }
+	
+	Vec2Generic lerp(const Vec2Generic& other, double t) const
+	{
+		double omt = 1 - t;
+		return Vec2Generic(
+			(Number)(x * omt + other.x * t),
+			(Number)(y * omt + other.y * t)
+		);
+	}
+	
 
 };
 
@@ -3348,19 +3402,21 @@ public:
 class engine_export DateTime
 {
 public:
-	DateTime(double);
-	DateTime(const Variant&);
+	DateTime(double fsTime = 0);
+	DateTime(const Variant& val);
 	DateTime(const char*, const char* format = nullptr);
 	DateTime(int days, int hours, int minutes = 0, int seconds = 0, int milliseconds = 0);
-	DateTime(int year, int month, int day, int hour, int minute, int second, int millisecond = 0);
 
 private:
-	void construct(double val) { new (this) DateTime(val); }
+	void construct() { new (this) DateTime(); }
+	void construct(double val = 0) { new (this) DateTime(val); }
 	void construct(const Variant& val) { new (this) DateTime(val); }
 	void construct(const DateTime& other) { new (this) DateTime(other); }
 	void construct(const char* val, const char* format = 0) { new (this) DateTime(val, format); }
 	void construct(int days, int hours, int minutes = 0, int seconds = 0, int milliseconds = 0) { new (this) DateTime(days, hours, minutes, seconds, milliseconds); }
-	void construct(int year, int month, int day, int hour, int minute, int second, int millisecond = 0) { new (this) DateTime(year, month, day, hour, minute, second, millisecond); }
+
+	static std::string replaceAllModifiersInFormat(std::string format, std::string modifier, std::string replaceWith);
+	static std::string expandModifiers(std::string format);
 
 public:
 	static DateTime milliseconds(double value) { return DateTime(value * 0.001); }
@@ -3369,13 +3425,13 @@ public:
 	static DateTime hours(double value) { return DateTime(value * 3600.0); }
 	static DateTime days(double value) { return DateTime(value * 86400.0); }
 
+	static DateTime compose(int year, int month = 1, int day = 1, int hour = 0, int minute = 0, int second = 0, int millisecond = 0);
 	static DateTime fromExcelTime(double excelTime);
-	//static DateTime fromModelTime(double modelTime);
 
 	static std::string datePickerFormatToStrptimeFormat(const char* fmt);
 	static std::string getLocaleName(int type);
 	static char* strptime(const char* timeStr, const char* fmt, tm& _tm);
-	static std::tm* gmtime(const std::time_t* t, std::tm* tm);
+	static std::tm* gmtime(const std::time_t* t);
 	static time_t timegm(std::tm const *t);
 	static bool isLeap(int year);
 
@@ -3579,28 +3635,28 @@ public:
 
 struct SqlCursor {
 	union {
-		int rowNum;
-		int orderingID;
+		size_t id;
+		void* idPtr;
 	};
 	void* ptr = nullptr;
 	void* altPtr = nullptr;
-	SqlCursor& operator = (int row) { rowNum = row; return *this; }
-	SqlCursor(int row) : rowNum(row) {}
+	SqlCursor& operator = (size_t row) { id = row; return *this; }
+	SqlCursor(int row) : id(row) {}
 	SqlCursor() {}
 
-	bool operator < (const SqlCursor& right) const { 
-		return orderingID < right.orderingID;
-	}
-	bool operator <= (const SqlCursor& right) const {
-		return orderingID <= right.orderingID;
-	}
 	bool operator == (const SqlCursor& right) const {
-		return orderingID == right.orderingID;
+		return id == right.id;
 	}
 	bool operator != (const SqlCursor& right) const {
-		return orderingID != right.orderingID;
+		return id != right.id;
 	}
 	engine_export void bind(treenode toNode);
+
+	struct Hash {
+		size_t operator ()(const SqlCursor& val) const {
+			return val.id;
+		}
+	};
 
 };
 class SqlCursorAdvancer : public FlexSimPrivateTypes::NewDelete {
@@ -3611,19 +3667,17 @@ public:
 	SqlCursorAdvancer(int tableSize) : tableSize(tableSize) {}
 	virtual bool advance(SqlCursor& cursor) 
 	{ 
-		cursor.rowNum++; 
-		return cursor.rowNum < tableSize; 
+		cursor.id++; 
+		return cursor.id < tableSize;
 	}
 	virtual bool init(SqlCursor& cursor) 
 	{ 
-		cursor.rowNum = 0; 
+		cursor.id = 0;
 		return tableSize > 0;
 	}
-	virtual bool less(const SqlCursor& left, const SqlCursor& right) 
-		{ return left.rowNum < right.rowNum; }
 	virtual bool equal(const SqlCursor& left, const SqlCursor& right)
 	{
-		return !less(left, right) && !less(right, left);
+		return left == right;
 	}
 };
 

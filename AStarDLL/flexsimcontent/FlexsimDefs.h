@@ -118,6 +118,7 @@ namespace FlexSim {
 	#include "DatabaseConnection.h"
 	#include "ColorPalette.h"
 	#include "TextMesh.h"
+	#include "Light.h"
 
 	#if defined COMPILING_MODULE_DLL
 		#include "allobjects.h"
