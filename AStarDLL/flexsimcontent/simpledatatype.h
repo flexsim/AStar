@@ -234,7 +234,7 @@ public:
 		switch (bindMode) {
 		case SDT_BIND_ON_DISPLAY: {
 			char tempStr[1000];
-			sprintf(tempStr, "%s: %s%s", name, val.c_str(), isDisplayVerbose() ? "\r\n" : ", ");
+			snprintf(tempStr, 1000, "%s: %s%s", name, val.c_str(), isDisplayVerbose() ? "\r\n" : ", ");
 			appendToDisplayStr(tempStr);
 			break;
 		}

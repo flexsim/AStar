@@ -1112,6 +1112,7 @@ namespace FlexSim {
 	typedef void         (*_updateundorecord)(TreeNode* view, int uniqueid, int updatetype, double p1, double p2);
 	typedef double       (*_uselisteners)(double x);
 	typedef char*		 (*_userdatadir_cstr)();
+	typedef const char*  (*_programdatadir_cstr)();
 	typedef double       (*_userinput)(treenode variable, char* prompt);
 	typedef double       (*_validatenamealias)(treenode current, int isview, treenode obj);
 	typedef int          (*_validlink)(treenode , char *);
@@ -1980,6 +1981,7 @@ DECLARE_FLEXSIM_FUNCTION_1(updateundorecord)
 DECLARE_FLEXSIM_FUNCTION_1(uselisteners)
 DECLARE_FLEXSIM_FUNCTION_1(userinput)
 DECLARE_FLEXSIM_FUNCTION_1(userdatadir_cstr)
+DECLARE_FLEXSIM_FUNCTION_1(programdatadir_cstr)
 DECLARE_FLEXSIM_FUNCTION_2(validatenamealias, "validatename")
 DECLARE_FLEXSIM_FUNCTION_1(validlink)
 DECLARE_FLEXSIM_FUNCTION_1(valuetohistogram)

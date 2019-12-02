@@ -99,6 +99,11 @@ private:
 	void savePreservedNodes();
 	void loadPreservedNodes();
 
+	// Anywhere I call doReplacements(), I need to call configure eventually
+	// On save/load, I configure after the preserved nodes are loaded.
+	bool needsConfigure = false;
+	void configure();
+
 public:
 	engine_export void pack();
 	engine_export void clearEvents();
@@ -106,6 +111,7 @@ public:
 
 	void verifyType();
 	engine_export void prepare();
+	engine_export void apply();
 	engine_export void doReplacements(bool installing = false);
 	void replaceEvents();
 	engine_export void unpack();

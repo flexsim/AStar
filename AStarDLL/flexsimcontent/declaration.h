@@ -260,6 +260,7 @@ inline string pdir(){return (string)pdir_cstr();}
 inline string cdir(){return (string)cdir_cstr();}
 inline string modeldir() {return (string)modeldir_cstr();}
 inline string userdatadir() {return (string)userdatadir_cstr();}
+inline string programdatadir() { return programdatadir_cstr(); }
 inline string currentfile() {return (string)currentfile_cstr();}
 inline int pt(string s){return pt_importedfunction((char*)s.c_str());}
 inline int fpt(string s){return fpt_importedfunction((char*)s.c_str());}

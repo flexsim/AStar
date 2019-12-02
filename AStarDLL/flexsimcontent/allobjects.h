@@ -7294,6 +7294,8 @@ public:
 	Element* addElement(int scope);
 	Variant addElement(FLEXSIMINTERFACE) { return addElement(param(1))->holder; }
 
+	Element* getElementByScope(int scope);
+
 	struct Hash
 	{
 		size_t operator()(const std::pair<string, string>& val) const {
@@ -8041,7 +8043,7 @@ public:
 			__declspec(property(get = __getIsVirtual)) int isVirtual;
 			Variant __getLabelProperty(const char* name, unsigned nameHash, bool dieHard);
 			void __setLabelProperty(const char* name, unsigned nameHash, const Variant& value);
-			Vec3 __getLocation() { return location + slot->getLocation(Vec3(0,0,0)); }
+			Vec3 __getLocation() { return location; }
 
 			Vec3 getLocation(const Vec3& sizeRatio);
 			Vec3 getLocation(double xRatio, double yRatio, double zRatio) { return getLocation(Vec3(xRatio, yRatio, zRatio)); }
