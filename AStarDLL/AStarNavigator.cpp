@@ -753,6 +753,7 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 
 TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLoc, const DestinationThreshold& destThreshold, double endSpeed, bool doFullSearch, double startTime)
 {
+	CodeProfileRecord record(holder, "AStar::calculateRoute");
 	TreeNode* travelerNode = traveler->te->holder;
 	routingTraveler = traveler;
 	routingTravelStartTime = startTime < 0 ? time() : startTime;
@@ -812,6 +813,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	// Figure out if this path is in the cache
 	bool shouldUseCache = false;
 	if (cachePaths && !doFullSearch && !routeByTravelTime) {
+		CodeProfileRecord record2(holder, "check cache");
 		requestCount++;
 		traveler->cachedPathKey.startCell = startCell;
 		traveler->cachedPathKey.endCell = destCell;
@@ -829,6 +831,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 		}
 	}
 
+	CodeProfileRecord record3(holder, "search new path");
 	Grid* startGrid = getGrid(startCell);
 	startLoc.x = startGrid->gridOrigin.x + startCell.col * startGrid->nodeWidth;
 	startLoc.y = startGrid->gridOrigin.y + startCell.row * startGrid->nodeWidth;
