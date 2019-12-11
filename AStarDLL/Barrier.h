@@ -236,6 +236,8 @@ public:
 
 	Point * dragAnchorPointX = nullptr;
 	Point * dragAnchorPointY = nullptr;
+
+	Variant finalizeSpatialChanges(FLEXSIMINTERFACE) { isMeshDirty = true; return Variant(); }
 	
 };
 

@@ -50,6 +50,7 @@ void Barrier::bind(void)
 	bindCallback(updateSpatialsToEncompassPoints, Barrier);
 	bindCallback(assertNavigator, Barrier);
 	bindCallback(setSizeComponent, Barrier);
+	bindCallback(finalizeSpatialChanges, Barrier);
 
 	//int bindMode = getBindMode();
 	//if (bindMode == SDT_BIND_ON_LOAD || bindMode == SDT_BIND_ON_CREATE) {
