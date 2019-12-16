@@ -3681,6 +3681,39 @@ public:
 	}
 };
 
+// This class is used to add records to code profiling.
+// It pushes a record when it is constructed, and pops when
+// it is destructed. It is meant to use inline definitions so
+// that it doesn't add tons of overhead to use.
+class engine_export CodeProfileRecord
+{
+private:
+	static int* enableMode;
+	static void _push(TreeNode* involved, const char* description);
+	static void _pop();
+
+public:
+	CodeProfileRecord(TreeNode* involved, const char* description) {
+		push(involved, description);
+	}
+
+	~CodeProfileRecord() {
+		pop();
+	}
+
+	static void push(TreeNode* involved, const char* description) {
+		if (*enableMode) {
+			_push(involved, description);
+		}
+	}
+
+	static void pop() {
+		if (*enableMode) {
+			_pop();
+		}
+	}
+};
+
 
 }
 
