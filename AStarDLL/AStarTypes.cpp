@@ -314,7 +314,7 @@ void AStarNodeExtraData::onReleaseTimeTruncated(NodeAllocation& changedAlloc, do
 	}
 }
 
-NodeAllocation* AStarNodeExtraData::addRequest(NodeAllocation& request, NodeAllocation& blockingAllocation, std::vector<Traveler*>* deadlockList)
+NodeAllocation* AStarNodeExtraData::addRequest(NodeAllocation& request, std::vector<Traveler*>* deadlockList)
 {
 	requests.push_back(request);
 	std::vector<Traveler*> travelers;

@@ -204,7 +204,7 @@ struct AStarNodeExtraData : public SimpleDataType
 	/// <param name="request">			[in,out] The request. </param>
 	/// <param name="blockingAlloc">	[in,out] The blocking allocate. </param>
 	/// <returns>	The request that was added.</returns>
-	NodeAllocation* addRequest(NodeAllocation& request, NodeAllocation& blockingAlloc, std::vector<Traveler*>* travelers = nullptr);
+	NodeAllocation* addRequest(NodeAllocation& request, std::vector<Traveler*>* travelers = nullptr);
 
 	void checkCreateContinueEvent();
 

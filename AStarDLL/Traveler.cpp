@@ -667,7 +667,7 @@ void Traveler::onBlock(Traveler* collidingWith, int atPathIndex, Cell& cell)
 		for (auto& allocation : allocations)
 			allocation->extendReleaseTime(DBL_MAX);
 		NodeAllocation requestedAlloc(this, cell, atPathIndex, 0, curTime, DBL_MAX, 0.0);
-		request = nodeData->addRequest(requestedAlloc, *foundAlloc, &deadlockList);
+		request = nodeData->addRequest(requestedAlloc, &deadlockList);
 		bool isDeadlock = deadlockList.size() > 0;
 		if (onBlockTrigger && (!nodeData->continueEvent || nodeData->continueEvent->time - curTime > tinyTime)) {
 			FIRE_SDT_EVENT(onBlockTrigger, te->holder, isDeadlock);
