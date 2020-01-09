@@ -1791,7 +1791,9 @@ including turn times and time waiting for other travelers.</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/defaultPathWeight</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Default path weight for newly created Preferred Paths.</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>This is the default path weight for any Preferred Paths without 
+a custom weight. Setting a path to have a path weight of 0 will 
+revert the path to using this default value.</data></node>
           </data>
            <node f="40"><name></name></node></node>
          </node>
@@ -2709,8 +2711,33 @@ repaintview(TheTable);
            <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>coldlink</name><data>../../..&gt;objectfocus+&gt;variables/pathWeight</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Path Weight</data></node>
+           <node f="442" dt="2"><name>coldlinkx</name><data>treenode weight = c.find("../..&gt;objectfocus+&gt;variables/pathWeight");
+
+if(!weight)
+	return 0;
+
+if (!eventdata) {
+	double value = weight.value;
+
+	if (value == 0) {
+		setviewtext(c, "Default");
+	} else {
+		setviewtext(c, string.fromNum(value));
+	}
+} else {
+	string text = getviewtext(c);
+	
+	if (text == "Default") {
+		weight.value = 0;
+	} else {
+		weight.value = text.toNum();
+		
+		if (weight.value == 0)
+			setviewtext(c, "Default");
+	}
+}</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data>The path weight added to the nodes associated with the path.
+Set this to 0 to use the A* Navigator's default path weight.</data></node>
           </data>
            <node f="40"><name></name></node></node>
          </node>
@@ -5946,8 +5973,33 @@ repaintview(TheTable);
          <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-         <node f="42" dt="2"><name>coldlink</name><data>../../..&gt;objectfocus+&gt;variables/pathWeight</data></node>
-         <node f="42" dt="2"><name>tooltip</name><data>Path Weight</data></node>
+         <node f="442" dt="2"><name>coldlinkx</name><data>treenode weight = c.find("../..&gt;objectfocus+&gt;variables/pathWeight");
+
+if(!weight)
+	return 0;
+
+if (!eventdata) {
+	double value = weight.value;
+
+	if (value == 0) {
+		setviewtext(c, "Default");
+	} else {
+		setviewtext(c, string.fromNum(value));
+	}
+} else {
+	string text = getviewtext(c);
+	
+	if (text == "Default") {
+		weight.value = 0;
+	} else {
+		weight.value = text.toNum();
+		
+		if (weight.value == 0)
+			setviewtext(c, "Default");
+	}
+}</data></node>
+         <node f="42" dt="2"><name>tooltip</name><data>The path weight added to the nodes associated with the path.
+Set this to 0 to use the A* Navigator's default path weight.</data></node>
          <node f="42" dt="2"><name>OnKillFocus</name><data>applylinks(c);
 treenode focus = node("&gt;coldlink+", c);
 function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
