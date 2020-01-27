@@ -84,6 +84,62 @@
         <node f="42" dt="1"><name>debugRoutingAlgorithm</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>routingAlgorithmCompletionRatio</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>hasCustomUserGrids</name><data>0000000000000000</data></node>
+        <node f="10000042" dt="4"><name>localPalette</name><data>
+         <node f="40"><name></name></node>
+         <node f="42"><name>classes</name>
+          <node f="40"><name></name></node>
+          <node f="42" dt="3"><name>ColorPalette</name><data><coupling>null</coupling></data></node>
+         </node>
+         <node f="42"><name>variables</name>
+          <node f="40"><name></name></node>
+          <node f="42"><name>colorNodes</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="1"><name></name><data>000000003ff00000</data>
+            <node f="40"><name></name></node>
+            <node f="42" dt="1"><name>r</name><data>1c1c1c1c3fbc1c1c</data></node>
+            <node f="42" dt="1"><name>g</name><data>d1d1d1d23fd1d1d1</data></node>
+            <node f="42" dt="1"><name>b</name><data>ddddddde3fdddddd</data></node>
+            <node f="42" dt="1"><name>a</name><data>000000003ff00000</data></node>
+           </node>
+           <node f="42" dt="1"><name></name><data>0000000040000000</data>
+            <node f="40"><name></name></node>
+            <node f="42" dt="1"><name>r</name><data>1b1b1b1b3fbb1b1b</data></node>
+            <node f="42" dt="1"><name>g</name><data>515151513fe15151</data></node>
+            <node f="42" dt="1"><name>b</name><data>969696973fd69696</data></node>
+            <node f="42" dt="1"><name>a</name><data>000000003ff00000</data></node>
+           </node>
+           <node f="42" dt="1"><name></name><data>0000000040080000</data>
+            <node f="40"><name></name></node>
+            <node f="42" dt="1"><name>r</name><data>7f7f7f7f3fef7f7f</data></node>
+            <node f="42" dt="1"><name>g</name><data>565656563fe65656</data></node>
+            <node f="42" dt="1"><name>b</name><data>909090913fc09090</data></node>
+            <node f="42" dt="1"><name>a</name><data>000000003ff00000</data></node>
+           </node>
+           <node f="42" dt="1"><name></name><data>0000000040100000</data>
+            <node f="40"><name></name></node>
+            <node f="42" dt="1"><name>r</name><data>dedededf3feedede</data></node>
+            <node f="42" dt="1"><name>g</name><data>111111113fe11111</data></node>
+            <node f="42" dt="1"><name>b</name><data>1c1c1c1c3fcc1c1c</data></node>
+            <node f="42" dt="1"><name>a</name><data>000000003ff00000</data></node>
+           </node>
+           <node f="42" dt="1"><name></name><data>0000000040140000</data>
+            <node f="40"><name></name></node>
+            <node f="42" dt="1"><name>r</name><data>ddddddde3feddddd</data></node>
+            <node f="42" dt="1"><name>g</name><data>1f1f1f1f3fcf1f1f</data></node>
+            <node f="42" dt="1"><name>b</name><data>191919193fc91919</data></node>
+            <node f="42" dt="1"><name>a</name><data>000000003ff00000</data></node>
+           </node>
+          </node>
+          <node f="42" dt="1"><name>mode</name><data>000000003ff00000</data></node>
+         </node>
+         <node f="42"><name>behaviour</name>
+          <node f="40"><name></name></node></node>
+         <node f="42"><name>visual</name>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>picture</name><data>bitmaps/colorwheel.bmp</data></node>
+         </node>
+        </data></node>
+        <node f="42" dt="3"><name>palette</name><data><coupling>/installdata/add/1/data/astar/AStarNavigator&gt;variables/localPalette</coupling></data></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node>
@@ -163,8 +219,8 @@
         </node>
         <node f="42" dt="1"><name>imageindexobject</name><data>0000000000000000</data>
          <node f="40"><name></name></node>
-         <node f="42" dt="1"><name>split</name><data>0000000040510000</data></node>
-         <node f="42" dt="1"><name>merge</name><data>0000000040514000</data></node>
+         <node f="42" dt="1"><name>split</name><data>000000004050c000</data></node>
+         <node f="42" dt="1"><name>merge</name><data>0000000040510000</data></node>
         </node>
         <node f="42" dt="2"><name>imagebase</name><data>***</data></node>
         <node f="42" dt="1"><name>imageindexbase</name><data>0000000000000000</data></node>
@@ -1841,6 +1897,8 @@ windowgray(windowfromnode(c.find("SelectHeatMapMode")), gray);
 windowgray(windowfromnode(c.find("Max Heat Value")), gray);
 windowgray(windowfromnode(c.find("EditMaxHeatValue")), gray);
 windowgray(windowfromnode(c.find("TransparentBaseColor")), gray);
+windowgray(windowfromnode(c.find("Edit Heat Map Colors")), gray);
+
 </data></node>
           </node>
           <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
@@ -2029,11 +2087,22 @@ if (clickcode() == LEFT_RELEASE) {
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/transparentBaseColor</data></node>
            <node f="42" dt="2"><name>windowtitle</name><data>Transparent Base Color</data></node>
           </data></node>
+          <node f="42" dt="4"><name>Edit Heat Map Colors</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>0000000040418000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040704000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>00000000405c0000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>OnPress</name><data>createview("VIEW:/modules/AStar/Popups/HeatMapColorPalette","MODEL:/AStarNavigator");
+</data></node>
+           <node f="42" dt="2"><name>tooltip</name><data></data></node>
+          </data></node>
           <node f="42" dt="4"><name>Show Travel Threshold</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040704000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040720000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040690000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Check to display the nodes around the highlighted object where
@@ -2044,7 +2113,7 @@ a traveller could end their travel to the object</data></node>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040720000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>000000004073c000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040690000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Check to display the nodes around the highlighted object where
@@ -2067,7 +2136,7 @@ windowgray(windowfromnode(c.find("../CompletionRatioTracker")), gray);
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>0000000040418000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>000000004073f000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>000000004075b000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
            <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) 
@@ -2077,7 +2146,7 @@ windowgray(windowfromnode(c.find("../CompletionRatioTracker")), gray);
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405e8000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>000000004060e000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>000000004073c000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040758000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>5555555540730555</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
@@ -3934,6 +4003,180 @@ if (propertiesView) {
          <node f="42" dt="2"><name>tooltip</name><data>Edit this condition in A* Navigator Properties</data></node>
          <node f="42" dt="2"><name>windowtitle</name><data>...</data></node>
         </data></node>
+       </node>
+      </node>
+      <node f="42"><name>Popups</name>
+       <node f="40"><name></name></node>
+       <node f="42" dt="4"><name>HeatMapColorPalette</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040100000</data>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>ColorPalettes</name><data>VIEW:/active&gt;Tools/ColorPalettes</data>
+          <node f="40"><name></name></node></node>
+         <node f="42" dt="2"><name>ColorPalettes::onChange</name><data>VIEW:/active&gt;DocListeners/CustomAction</data></node>
+        </node>
+        <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
+        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>00000000407c6000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>000000004058c000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>000000004076c000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>00000000406e0000</data></node>
+        <node f="42"><name>eventfunctions</name>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>OnClose</name><data>if (REMEMBER_WINDOW_SIZES) {
+	treenode guiclass = node("VIEW:/pages/tools/ColorPaletteProperties");
+	setnodenum(spatialx(guiclass), getnodenum(spatialx(c)));
+	setnodenum(spatialy(guiclass), getnodenum(spatialy(c)));
+	setnodenum(spatialsx(guiclass), getnodenum(spatialsx(c)));
+	setnodenum(spatialsy(guiclass), getnodenum(spatialsy(c)));
+}
+
+treenode view = c;
+function_s(view.find("@&gt;objectfocus+"), "refresh");
+applicationcommand("closedockedtool", c);</data></node>
+         <node f="442" dt="2"><name>onListChange</name><data>treenode focus = node("&gt;objectfocus+", c);
+
+if(focus != param(1))
+	return 0;
+	
+treenode this = c;
+function_s(this.find("NameEdit"), "refresh");</data></node>
+         <node f="442" dt="2"><name>coldlinkx</name><data>treenode this = c;
+
+function_s(this.find("NameEdit"), "refresh");</data></node>
+        </node>
+        <node f="42" dt="2"><name>bitmap</name><data>bitmaps/colorwheel.bmp</data></node>
+        <node f="42" dt="2"><name>windowtitle</name><data>Heat Map Color Palette</data></node>
+        <node f="42"><name>style</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>WS_CAPTION</name></node>
+         <node f="42"><name>WS_CLIPSIBLINGS</name></node>
+         <node f="42"><name>WS_CLIPCHILDREN</name></node>
+         <node f="42"><name>WS_OVERLAPPED</name></node>
+         <node f="42"><name>WS_SYSMENU</name></node>
+         <node f="42"><name>WS_THICKFRAME</name></node>
+        </node>
+        <node f="42"><name>exstyle</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>WS_EX_TOOLWINDOW</name></node>
+        </node>
+        <node f="42"><name>undohistory</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name>undo limit</name><data>0000000040900000</data></node>
+         <node f="42"><name>history</name></node>
+         <node f="42" dt="1"><name>bin</name><data>0000000000000000</data></node>
+        </node>
+        <node f="42" dt="2"><name>helptopic</name><data>ColorPalette</data></node>
+       </data>
+        <node f="40"><name></name></node>
+        <node f="42" dt="4"><name>Colors</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000040100000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>00000000407a5000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040765000</data></node>
+         <node f="42" dt="2"><name>tooltip</name><data></data></node>
+         <node f="42" dt="1"><name>alignbottommargin</name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
+         <node f="42" dt="2"><name>helptopic</name><data></data></node>
+         <node f="42" dt="2"><name>windowtitle</name><data>Colors</data></node>
+         <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+</data></node>
+         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+        </data>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>Palette</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>00000000401c0000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040490000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+         </data></node>
+         <node f="42" dt="4"><name>ChoosePalette</name><data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>00000000404e0000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>00000000401c0000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>0000000040755000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="42"><name>items</name></node>
+          <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+          <node f="42" dt="2"><name>tooltip</name><data>Choose which palette to use for this chart</data></node>
+          <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/palette</data></node>
+          <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>coldlinkx</name><data>treenode view = c;
+treenode focus = view.find("&gt;objectfocus+");
+var itemList = items(view).subnodes;
+
+if (!eventdata) {
+	itemList.clear();
+	treenode localPalette = focus.find("../localPalette");
+	treenode curPalette = focus.value;
+	if (!curPalette) {
+		focus.value = localPalette;
+		curPalette = localPalette;
+	}
+	int itemRank = 0;
+	
+	treenode paletteFolder = Model.find("Tools/ColorPalettes");
+	if (paletteFolder) {
+		var paletteList = paletteFolder.subnodes;
+		for (int i = 1; i &lt;= paletteList.length; i++) {
+			treenode itemNode = itemList.add();
+			treenode palette = paletteList[i];
+			itemNode.name = palette.name;
+			itemNode.value = palette;
+			if (curPalette == palette) {
+				itemRank = i;
+			}
+		}
+	}
+	
+	treenode localItem = itemList.add();
+	localItem.name = "Internal palette";
+	localItem.value = localPalette;
+	if (curPalette == localPalette) {
+		itemRank = itemList.length;
+	}
+	itemcurrent(view).value = itemRank;
+	comborefresh(view);
+} else {
+	int itemRank = itemcurrent(view).value;
+	if (itemRank &gt; 0 &amp;&amp; itemRank &lt;= itemList.length) {
+		treenode itemNode = itemList[itemRank];
+		treenode palette = itemNode.value;
+		focus.value = palette;
+	}
+}
+</data></node>
+           <node f="442" dt="2"><name>OnSelect</name><data>treenode view = c;
+applylinks(view);
+applylinks(view.up, 1);</data></node>
+          </node>
+         </data></node>
+         <node f="42" dt="4"><name>ColorsPanel</name><data>
+          <node f="40"><name>object</name></node>
+          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040180000</data></node>
+          <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/palette+</data></node>
+          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>spatialy</name><data>0000000040450000</data></node>
+          <node f="42" dt="1"><name>spatialsx</name><data>00000000407c0000</data></node>
+          <node f="42" dt="1"><name>spatialsy</name><data>00000000407b1000</data></node>
+          <node f="42" dt="1"><name>alignbottommargin</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/pages/tools/ColorPaletteProperties/ColorPanel</data></node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="1"><name>showGradient</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>bgSystemColor</name><data>00000000402e0000</data></node>
+          </node>
+         </data>
+          <node f="40"><name></name></node></node>
+        </node>
        </node>
       </node>
      </node>
@@ -6454,7 +6697,7 @@ return 1;
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040180000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000401c0000</data></node>
     <node f="42" dt="2"><name>after</name><data>Task</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>

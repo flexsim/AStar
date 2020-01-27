@@ -97,12 +97,12 @@ public:
 	static const int HEAT_MAP_BLOCKAGE_TIME_PER_TRAVERSAL = 2;
 	static const int HEAT_MAP_BLOCKAGE_TIME_PERCENT = 3;
 	static const int HEAT_MAP_PERCENT_OF_TOTAL_TRAVERSALS = 4;
-	static std::vector<Vec4f> heatMapColorProgression;
 	double showHeatMap;
 	double heatMapMode;
 	double maxHeatValue;
 	double transparentBaseColor;
 	double heatMapTotalTraversals;
+	NodeRef palette;
 	struct HeatMapColorEntry {
 		Vec4f color = Vec4f(0.0f, 0.0f, 0.0f, 0.0f);
 		AStarNodeExtraData* node = nullptr;

@@ -11,16 +11,6 @@
 
 namespace AStar {
 
-
-std::vector<Vec4f> AStarNavigator::heatMapColorProgression =
-{
-	Vec4f(0.110f, 0.280f, 0.467f, 1.0f),
-	Vec4f(0.106f, 0.541f, 0.353f, 1.0f),
-	Vec4f(0.984f, 0.690f, 0.129f, 1.0f),
-	Vec4f(0.964f, 0.533f, 0.220f, 1.0f),
-	Vec4f(0.933f, 0.243f, 0.196f, 1.0f)
-};
-
 AStarNavigator* AStarNavigator::instance = nullptr;
 
 AStarNavigator::AStarNavigator()
@@ -75,6 +65,7 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(heatMapMode);
 	bindVariable(maxHeatValue);
 	bindVariable(transparentBaseColor);
+	bindVariable(palette);
 
 	bindVariable(collisionUpdateIntervalFactor);
 
