@@ -921,7 +921,11 @@ void Grid::drawHeatMap(TreeNode * view)
 		return;
 
 	float z = minPoint.z;
-	auto& heatMapColorProgression = navigator->heatMapColorProgression;
+	double testingtime = time();
+
+	std::vector<Color> heatMapColorProgression;
+	for (int i = 1; i <= 5; i++)
+		heatMapColorProgression.push_back(Color::fromPalette(i, navigator->palette));
 	int width = (numCols + 2);
 	int height = (numRows + 2);
 	int numPixels = width * height;
@@ -929,7 +933,7 @@ void Grid::drawHeatMap(TreeNode * view)
 
 	if (!heatMapBuffer) {
 		heatMapBuffer = std::unique_ptr<unsigned int[]>(new unsigned int[numPixels]);
-		Vec4f baseColor = heatMapColorProgression[0];
+		Color baseColor = heatMapColorProgression[0];
 		if (navigator->transparentBaseColor)
 			baseColor.a = 0;
 		int baseColorInt = (((int)(baseColor.a * 255)) << 24)
@@ -979,9 +983,9 @@ void Grid::drawHeatMap(TreeNode * view)
 		weight = min(0.9999, weight);
 
 		double progressionFactor = (double)(heatMapColorProgression.size() - 1) * weight;
-		Vec4f lowColor = heatMapColorProgression[(int)floor(progressionFactor)];
-		Vec4f highColor = heatMapColorProgression[(int)ceil(progressionFactor)];
-		Vec4f lerpColor = lowColor + ((highColor - lowColor) * frac(progressionFactor));
+		Color lowColor = heatMapColorProgression[(int)floor(progressionFactor)];
+		Color highColor = heatMapColorProgression[(int)ceil(progressionFactor)];
+		Color lerpColor = lowColor + ((highColor - lowColor) * frac(progressionFactor));
 
 		buffer[(data->cell.row + 1) * width + data->cell.col + 1] =
 			(((int)(lerpColor.a * 255)) << 24)
