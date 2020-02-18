@@ -1,0 +1,14 @@
+AStar.dll
+AStar.exp
+AStar.ilk
+AStar.lib
+AStar.pdb
+AStar.t
+AStarDLL/Debug/
+AStarDLL/Release/
+AStarDLL/x64/
+AStarDLL/Win32/
+AStarDLL/.vs/
+AStarDLL/AStar.vcxproj.user
+bin/
+obj/
