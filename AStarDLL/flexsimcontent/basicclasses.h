@@ -48,6 +48,13 @@ struct SelfBoundProperty;
 class EventDataStruct;
 class CodeEditor;
 class Group;
+class PowerPointInterface;
+class PowerPointPresentation;
+class PowerPointSlide;
+class PowerPointShape;
+class PowerPointLayout;
+class SlidesArray;
+class ShapesArray;
 }
 
 //class AviPlayer;

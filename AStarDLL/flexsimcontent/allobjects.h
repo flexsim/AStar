@@ -11,8 +11,10 @@
 #ifdef COMPILING_FLEXSIM_CONTENT
 #include "all.h"
 #define FS_CONTENT_DLL_FUNC __declspec(dllexport)
+#define fs_content_export __declspec(dllexport)
 #else
 #define FS_CONTENT_DLL_FUNC __declspec(dllimport)
+#define fs_content_export __declspec(dllimport)
 #endif
 #define node_b_behaviour Nb_behaviour
 #define node_b_cppfunctions Nb_cppfunctions
@@ -3026,100 +3028,100 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onReceive(treenode item, int port);
+fs_content_export virtual double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual double onSend(treenode item, int port);
+fs_content_export virtual double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onDestroy(treenode view);
+fs_content_export virtual double onDestroy(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onDraw(treenode view);
+fs_content_export virtual double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onDrawPlanar(treenode view);
+fs_content_export virtual double onDrawPlanar(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
+fs_content_export virtual double onPreDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onOutOpen(int port);
+fs_content_export virtual double onOutOpen(int port);
 
-FS_CONTENT_DLL_FUNC virtual double onInOpen(int port);
+fs_content_export virtual double onInOpen(int port);
 
-FS_CONTENT_DLL_FUNC virtual double onClick(treenode view, int code);
+fs_content_export virtual double onClick(treenode view, int code);
 
-FS_CONTENT_DLL_FUNC virtual Variant onMessage(treenode fromobject, const Variant& par1, const Variant& par2, const Variant& par3);
+fs_content_export virtual Variant onMessage(treenode fromobject, const Variant& par1, const Variant& par2, const Variant& par3);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double onStartSimulation();
+fs_content_export virtual double onStartSimulation();
 
-FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
+fs_content_export virtual double onDrag(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+fs_content_export virtual double onRunWarm();
 
-FS_CONTENT_DLL_FUNC virtual double onUndo(bool isUndo, treenode undoRecord);
+fs_content_export virtual double onUndo(bool isUndo, treenode undoRecord);
 
-FS_CONTENT_DLL_FUNC virtual void stop(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
+fs_content_export virtual void stop(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+fs_content_export virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void resume(int id, int stateprofile DEFAULTZERO);
+fs_content_export virtual void resume(int id, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void resume();
+fs_content_export virtual void resume();
 
-FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+fs_content_export virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC virtual void onDragConnection(ObjectDataType* fromObj, ObjectDataType* toObj, char charPressed);
+fs_content_export virtual void onDragConnection(ObjectDataType* fromObj, ObjectDataType* toObj, char charPressed);
 
-FS_CONTENT_DLL_FUNC virtual double getPickOffset(treenode involvedobj, treenode toobject, double* returnarray);
+fs_content_export virtual double getPickOffset(treenode involvedobj, treenode toobject, double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
+fs_content_export virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double rotateAroundAxis(double angle, double x, double y);
+fs_content_export virtual double rotateAroundAxis(double angle, double x, double y);
 
-FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(const Vec2& point1, const Vec2& point2);
+fs_content_export virtual double flipAroundAxis(const Vec2& point1, const Vec2& point2);
 
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode fromObj);
+fs_content_export virtual double copyVariables(treenode fromObj);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
+fs_content_export virtual double onTransportInNotify(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportOutNotify(treenode item, int port);
+fs_content_export virtual double onTransportOutNotify(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportOutComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
+fs_content_export virtual double onTransportOutComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportInComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
+fs_content_export virtual double onTransportInComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
 
-FS_CONTENT_DLL_FUNC treenode getEventInfoObject(const char* eventName);
+fs_content_export treenode getEventInfoObject(const char* eventName);
 
-FS_CONTENT_DLL_FUNC static treenode s_getEventInfoObject(treenode holder, const char* eventTitle);
+fs_content_export static treenode s_getEventInfoObject(treenode holder, const char* eventTitle);
 
-FS_CONTENT_DLL_FUNC double resetLabels();
+fs_content_export double resetLabels();
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
-FS_CONTENT_DLL_FUNC virtual void bindStatistics();
+fs_content_export virtual void bindStatistics();
 
-FS_CONTENT_DLL_FUNC void bindStandardStatistics(bool force);
+fs_content_export void bindStandardStatistics(bool force);
 
-FS_CONTENT_DLL_FUNC treenode stateProfileResolver(const Variant& p1);
+fs_content_export treenode stateProfileResolver(const Variant& p1);
 
-FS_CONTENT_DLL_FUNC int enumerateLabels(treenode destNode, const Variant& p1, const Variant& p2);
+fs_content_export int enumerateLabels(treenode destNode, const Variant& p1, const Variant& p2);
 
-FS_CONTENT_DLL_FUNC treenode resolveLabel(const Variant& p1);
+fs_content_export treenode resolveLabel(const Variant& p1);
 
-FS_CONTENT_DLL_FUNC virtual double usePlaceOffsetForTravel(TaskExecuter* te);
+fs_content_export virtual double usePlaceOffsetForTravel(TaskExecuter* te);
 
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FlexSimObject
@@ -3130,71 +3132,71 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC  FlexSimObject();
+fs_content_export  FlexSimObject();
 
-FS_CONTENT_DLL_FUNC virtual double onDestroy(treenode view);
+fs_content_export virtual double onDestroy(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onDraw(treenode view);
+fs_content_export virtual double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
+fs_content_export virtual double onPreDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onKeyedClick(treenode view, int code, char key);
+fs_content_export virtual double onKeyedClick(treenode view, int code, char key);
 
-FS_CONTENT_DLL_FUNC virtual Variant onMessage(treenode fromobject, const Variant& par1, const Variant& par2, const Variant& par3);
+fs_content_export virtual Variant onMessage(treenode fromobject, const Variant& par1, const Variant& par2, const Variant& par3);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual void stop(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
+fs_content_export virtual void stop(int stopstate, int id, double priority DEFAULTZERO, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+fs_content_export virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void onInitialStop();
+fs_content_export virtual void onInitialStop();
 
-FS_CONTENT_DLL_FUNC virtual void resume(int id, int stateprofile DEFAULTZERO);
+fs_content_export virtual void resume(int id, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void resume();
+fs_content_export virtual void resume();
 
-FS_CONTENT_DLL_FUNC virtual void onFinalResume();
+fs_content_export virtual void onFinalResume();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+fs_content_export virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC double drawStopped(double red, double blue, double green);
+fs_content_export double drawStopped(double red, double blue, double green);
 
-FS_CONTENT_DLL_FUNC virtual double getPickOffset(treenode involvedobj, treenode toobject, double* returnarray);
+fs_content_export virtual double getPickOffset(treenode involvedobj, treenode toobject, double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
+fs_content_export virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC double execDelayedMessage(treenode involved, void * datastring);
+fs_content_export double execDelayedMessage(treenode involved, void * datastring);
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double saveState();
+fs_content_export virtual double saveState();
 
-FS_CONTENT_DLL_FUNC virtual double loadState();
+fs_content_export virtual double loadState();
 
-FS_CONTENT_DLL_FUNC virtual double updateVersion(char* newversion, char* oldversion);
+fs_content_export virtual double updateVersion(char* newversion, char* oldversion);
 
-FS_CONTENT_DLL_FUNC virtual int checkCollisions();
+fs_content_export virtual int checkCollisions();
 
-FS_CONTENT_DLL_FUNC static double catchError(string stra, string strb);
+fs_content_export static double catchError(string stra, string strb);
 
-FS_CONTENT_DLL_FUNC double moveToResetPosition();
+fs_content_export double moveToResetPosition();
 
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+fs_content_export virtual double copyVariables(treenode otherobject);
 
-FS_CONTENT_DLL_FUNC static char* displayMessageData(int code, char* edata);
+fs_content_export static char* displayMessageData(int code, char* edata);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
-FS_CONTENT_DLL_FUNC void bindGeneralEvents();
+fs_content_export void bindGeneralEvents();
 
-FS_CONTENT_DLL_FUNC void bindPickPlaceOffsetEvents(int pick, int place);
+fs_content_export void bindPickPlaceOffsetEvents(int pick, int place);
 
-FS_CONTENT_DLL_FUNC void bindStopResumeEvents();
+fs_content_export void bindStopResumeEvents();
 
 TreeNode* node_v_timetables;
 #define v_timetables node_v_timetables->safedatafloat()[0]
@@ -3239,9 +3241,9 @@ treenode onMessageTrigger = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FixedResource
@@ -3252,109 +3254,109 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onOutOpen(int port);
+fs_content_export double onOutOpen(int port);
 
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+fs_content_export double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+fs_content_export double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double releaseItem(treenode item);
+fs_content_export virtual double releaseItem(treenode item);
 
-FS_CONTENT_DLL_FUNC virtual double releaseItem(treenode item, int port);
+fs_content_export virtual double releaseItem(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC inline int releaseItemToPort(treenode item, int porttoopen);
+fs_content_export inline int releaseItemToPort(treenode item, int porttoopen);
 
-FS_CONTENT_DLL_FUNC virtual double outOpenEvent(FixedResource* otherobject, int search, int port, int otherport);
+fs_content_export virtual double outOpenEvent(FixedResource* otherobject, int search, int port, int otherport);
 
-FS_CONTENT_DLL_FUNC virtual double receiveItem();
+fs_content_export virtual double receiveItem();
 
-FS_CONTENT_DLL_FUNC virtual double receiveItem(int port);
+fs_content_export virtual double receiveItem(int port);
 
-FS_CONTENT_DLL_FUNC inline int receiveItemFromPort(int porttoopen);
+fs_content_export inline int receiveItemFromPort(int porttoopen);
 
-FS_CONTENT_DLL_FUNC virtual double inOpenEvent(FixedResource* otherobject, int search, double port );
+fs_content_export virtual double inOpenEvent(FixedResource* otherobject, int search, double port );
 
-FS_CONTENT_DLL_FUNC virtual double pushItem(treenode item, FixedResource* otherobject, int port, int otherport);
+fs_content_export virtual double pushItem(treenode item, FixedResource* otherobject, int port, int otherport);
 
-FS_CONTENT_DLL_FUNC virtual double pullItem(treenode item, int port, int bypassflags);
+fs_content_export virtual double pullItem(treenode item, int port, int bypassflags);
 
-FS_CONTENT_DLL_FUNC virtual double evaluatePullCriteria(treenode item, int port, int bypassflags);
+fs_content_export virtual double evaluatePullCriteria(treenode item, int port, int bypassflags);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
+fs_content_export virtual double onTransportInNotify(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportOutNotify(treenode item, int port);
+fs_content_export virtual double onTransportOutNotify(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportOutComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
+fs_content_export virtual double onTransportOutComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportInComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
+fs_content_export virtual double onTransportInComplete(treenode item, int portnumber, treenode transporter DEFAULTNULL);
 
-FS_CONTENT_DLL_FUNC virtual void onTransportInFailed(treenode item, int portnumber);
+fs_content_export virtual void onTransportInFailed(treenode item, int portnumber);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC static inline FRItemInfo* getItemInfo(treenode flowitem);
+fs_content_export static inline FRItemInfo* getItemInfo(treenode flowitem);
 
-FS_CONTENT_DLL_FUNC int initItem(treenode flowitem);
+fs_content_export int initItem(treenode flowitem);
 
-FS_CONTENT_DLL_FUNC static int setItemVar(treenode flowitem, int varnum, double val);
+fs_content_export static int setItemVar(treenode flowitem, int varnum, double val);
 
-FS_CONTENT_DLL_FUNC static double getItemVar(treenode flowitem, int varnum);
+fs_content_export static double getItemVar(treenode flowitem, int varnum);
 
-FS_CONTENT_DLL_FUNC static int setItemInvolved(treenode flowitem, treenode involved);
+fs_content_export static int setItemInvolved(treenode flowitem, treenode involved);
 
-FS_CONTENT_DLL_FUNC static treenode getItemInvolved(treenode flowitem);
+fs_content_export static treenode getItemInvolved(treenode flowitem);
 
-FS_CONTENT_DLL_FUNC static FixedResource* getItemCurFR(treenode flowitem);
+fs_content_export static FixedResource* getItemCurFR(treenode flowitem);
 
-FS_CONTENT_DLL_FUNC double holdItem(treenode flowitem);
+fs_content_export double holdItem(treenode flowitem);
 
-FS_CONTENT_DLL_FUNC static inline double getItemState(treenode flowitem);
+fs_content_export static inline double getItemState(treenode flowitem);
 
-FS_CONTENT_DLL_FUNC static double setItemState(treenode flowitem, int state);
+fs_content_export static double setItemState(treenode flowitem, int state);
 
-FS_CONTENT_DLL_FUNC static int getItemSendTo(treenode flowitem);
+fs_content_export static int getItemSendTo(treenode flowitem);
 
-FS_CONTENT_DLL_FUNC static int setItemSendTo(treenode flowitem, int sendto);
+fs_content_export static int setItemSendTo(treenode flowitem, int sendto);
 
-FS_CONTENT_DLL_FUNC double cleanItemData(treenode item);
+fs_content_export double cleanItemData(treenode item);
 
-FS_CONTENT_DLL_FUNC double closeInvolvedPorts(treenode item);
+fs_content_export double closeInvolvedPorts(treenode item);
 
-FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+fs_content_export virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC treenode createMoveTaskSequence(treenode dispatcher, treenode involved, treenode origin, treenode destination, double outportnumber, double inportnumber);
+fs_content_export treenode createMoveTaskSequence(treenode dispatcher, treenode involved, treenode origin, treenode destination, double outportnumber, double inportnumber);
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+fs_content_export virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void resume();
+fs_content_export virtual void resume();
 
-FS_CONTENT_DLL_FUNC double saveState();
+fs_content_export double saveState();
 
-FS_CONTENT_DLL_FUNC double loadState();
+fs_content_export double loadState();
 
-FS_CONTENT_DLL_FUNC double resumeTransportsOut(int trank DEFAULTZERO);
+fs_content_export double resumeTransportsOut(int trank DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resumeTransportsIn(int trank DEFAULTZERO);
+fs_content_export double resumeTransportsIn(int trank DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double saveStoppedTransportOut(treenode transporter);
+fs_content_export double saveStoppedTransportOut(treenode transporter);
 
-FS_CONTENT_DLL_FUNC double saveStoppedTransportIn(treenode transporter);
+fs_content_export double saveStoppedTransportIn(treenode transporter);
 
-FS_CONTENT_DLL_FUNC virtual PullIterator& initPull(int outPort);
+fs_content_export virtual PullIterator& initPull(int outPort);
 
-FS_CONTENT_DLL_FUNC double checkReceiveItem(int maxContent);
+fs_content_export double checkReceiveItem(int maxContent);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
-FS_CONTENT_DLL_FUNC void bindEntryExitEvents(int entry, int exit);
+fs_content_export void bindEntryExitEvents(int entry, int exit);
 
-FS_CONTENT_DLL_FUNC void bindOutputEvents();
+fs_content_export void bindOutputEvents();
 
-FS_CONTENT_DLL_FUNC void bindInputEvents();
+fs_content_export void bindInputEvents();
 
 TreeNode* node_v_nrreleased;
 #define v_nrreleased node_v_nrreleased->safedatafloat()[0]
@@ -3401,9 +3403,9 @@ treenode onExitTrigger = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Navigator
@@ -3414,47 +3416,47 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC virtual void onMemberDestroyed(TaskExecuter* te);
+fs_content_export virtual void onMemberDestroyed(TaskExecuter* te);
 
-FS_CONTENT_DLL_FUNC virtual double navigateToObject(treenode traveler, treenode destination, double endSpeed);
+fs_content_export virtual double navigateToObject(treenode traveler, treenode destination, double endSpeed);
 
-FS_CONTENT_DLL_FUNC virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed);
+fs_content_export virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC treenode createTravelMemberNode(TaskExecuter* involvedtaskexecuter, FlexSimObject* destination, double totaldistance, double extravars);
+fs_content_export treenode createTravelMemberNode(TaskExecuter* involvedtaskexecuter, FlexSimObject* destination, double totaldistance, double extravars);
 
-FS_CONTENT_DLL_FUNC virtual double abortTravel(treenode traveler, treenode newts);
+fs_content_export virtual double abortTravel(treenode traveler, treenode newts);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations(TaskExecuter* te);
+fs_content_export virtual double updateLocations(TaskExecuter* te);
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
+fs_content_export virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
 
-FS_CONTENT_DLL_FUNC double saveState();
+fs_content_export double saveState();
 
-FS_CONTENT_DLL_FUNC double loadState();
+fs_content_export double loadState();
 
-FS_CONTENT_DLL_FUNC static float saveTravelRequestState(treenode reqnode);
+fs_content_export static float saveTravelRequestState(treenode reqnode);
 
-FS_CONTENT_DLL_FUNC static float loadTravelRequestState(treenode reqnode);
+fs_content_export static float loadTravelRequestState(treenode reqnode);
 
-FS_CONTENT_DLL_FUNC virtual treenode addMember(TaskExecuter* te);
+fs_content_export virtual treenode addMember(TaskExecuter* te);
 
-FS_CONTENT_DLL_FUNC virtual treenode addCopiedMember(TaskExecuter* te, TaskExecuter* original);
+fs_content_export virtual treenode addCopiedMember(TaskExecuter* te, TaskExecuter* original);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
-FS_CONTENT_DLL_FUNC virtual void bindTEEvents(TaskExecuter* te);
+fs_content_export virtual void bindTEEvents(TaskExecuter* te);
 
-FS_CONTENT_DLL_FUNC virtual void bindTEStatistics(TaskExecuter* te);
+fs_content_export virtual void bindTEStatistics(TaskExecuter* te);
 
 TreeNode* node_v_travelmembers;
 #define v_travelmembers node_v_travelmembers->safedatafloat()[0]
@@ -3465,9 +3467,9 @@ TreeNode* node_v_lastupdatetime;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // GlobalTable
@@ -3478,9 +3480,9 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_data;
 TreeNode* node_v_resettrigger;
@@ -3497,9 +3499,9 @@ TreeNode* node_v_bundleIndexFields;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // UserEvent
@@ -3510,9 +3512,9 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double updateVersion(char* newversion, char* oldversion);
+fs_content_export double updateVersion(char* newversion, char* oldversion);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_time;
 #define v_time node_v_time->safedatafloat()[0]
@@ -3528,9 +3530,9 @@ TreeNode* node_v_enabled;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // MTBFMTTR
@@ -3541,19 +3543,19 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double updateVersion(char* newversion, char* oldversion);
+fs_content_export double updateVersion(char* newversion, char* oldversion);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
-FS_CONTENT_DLL_FUNC virtual treenode getEventInfoObject(const char* eventName);
+fs_content_export virtual treenode getEventInfoObject(const char* eventName);
 
-FS_CONTENT_DLL_FUNC virtual double CheckBringDown(treenode coupling, treenode profile, int toState, int fromState);
+fs_content_export virtual double CheckBringDown(treenode coupling, treenode profile, int toState, int fromState);
 
 TreeNode* node_v_members;
 #define v_members node_v_members->safedatafloat()[0]
@@ -3576,9 +3578,9 @@ TreeNode* node_v_downBehavior;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // TimeTable
@@ -3589,9 +3591,9 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
-FS_CONTENT_DLL_FUNC virtual treenode getEventInfoObject(const char* eventName);
+fs_content_export virtual treenode getEventInfoObject(const char* eventName);
 
 TreeNode* node_v_table;
 #define v_table node_v_table->safedatafloat()[0]
@@ -3620,9 +3622,9 @@ TreeNode* node_v_pickColor;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // DownBehavior
@@ -3633,9 +3635,9 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
-FS_CONTENT_DLL_FUNC virtual treenode getEventInfoObject(const char* eventName);
+fs_content_export virtual treenode getEventInfoObject(const char* eventName);
 
 TreeNode* node_v_downtrigger;
 TreeNode* node_v_uptrigger;
@@ -3644,9 +3646,9 @@ TreeNode* node_v_upfunction;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // NetworkNavigator
@@ -3657,71 +3659,71 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC virtual double navigateToObject(treenode traveler, treenode destination, double endspeed);
+fs_content_export virtual double navigateToObject(treenode traveler, treenode destination, double endspeed);
 
-FS_CONTENT_DLL_FUNC virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed);
+fs_content_export virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed);
 
-FS_CONTENT_DLL_FUNC double finishTravel(treenode reqnode, int blocking DEFAULTZERO);
+fs_content_export double finishTravel(treenode reqnode, int blocking DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC double generateDistanceTable();
+fs_content_export double generateDistanceTable();
 
-FS_CONTENT_DLL_FUNC virtual treenode addMember(TaskExecuter* te);
+fs_content_export virtual treenode addMember(TaskExecuter* te);
 
-FS_CONTENT_DLL_FUNC virtual NetworkTravelMember* addMember(TaskExecuter* taskexecuter, NetworkNode* networknode);
+fs_content_export virtual NetworkTravelMember* addMember(TaskExecuter* taskexecuter, NetworkNode* networknode);
 
-FS_CONTENT_DLL_FUNC virtual treenode addCopiedMember(TaskExecuter* te, TaskExecuter* original);
+fs_content_export virtual treenode addCopiedMember(TaskExecuter* te, TaskExecuter* original);
 
-FS_CONTENT_DLL_FUNC int getNextOutPort(NetworkRequest* netreq);
+fs_content_export int getNextOutPort(NetworkRequest* netreq);
 
-FS_CONTENT_DLL_FUNC int getNextOutPort(NetworkNode* from, NetworkNode* to);
+fs_content_export int getNextOutPort(NetworkNode* from, NetworkNode* to);
 
-FS_CONTENT_DLL_FUNC double getNextOutPort(int fromRow, int toCol);
+fs_content_export double getNextOutPort(int fromRow, int toCol);
 
-FS_CONTENT_DLL_FUNC double getDistRemaining(NetworkNode * netnode, int destcol);
+fs_content_export double getDistRemaining(NetworkNode * netnode, int destcol);
 
-FS_CONTENT_DLL_FUNC double toggleAllShowModes(double newmode, int selectedonly);
+fs_content_export double toggleAllShowModes(double newmode, int selectedonly);
 
-FS_CONTENT_DLL_FUNC virtual double abortTravel(treenode taskexecuternode, treenode newts);
+fs_content_export virtual double abortTravel(treenode taskexecuternode, treenode newts);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC double reassignNetNode(treenode membernode, NetworkNode* tonetnode, int onreset DEFAULTZERO);
+fs_content_export double reassignNetNode(treenode membernode, NetworkNode* tonetnode, int onreset DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double queryDistance(TaskExecuter* te, FlexSimObject* destobj);
+fs_content_export double queryDistance(TaskExecuter* te, FlexSimObject* destobj);
 
-FS_CONTENT_DLL_FUNC double queryDistanceEx(TaskExecuter* te, FlexSimObject* destobj, NetworkNode* originnetnode, NetworkNode** bestorigin DEFAULTNULL, NetworkNode** bestdestnode DEFAULTNULL, int * bestoriginrow DEFAULTNULL, int * bestdestcol DEFAULTNULL, double* bestdist DEFAULTNULL);
+fs_content_export double queryDistanceEx(TaskExecuter* te, FlexSimObject* destobj, NetworkNode* originnetnode, NetworkNode** bestorigin DEFAULTNULL, NetworkNode** bestdestnode DEFAULTNULL, int * bestoriginrow DEFAULTNULL, int * bestdestcol DEFAULTNULL, double* bestdist DEFAULTNULL);
 
-FS_CONTENT_DLL_FUNC double queryDistance(NetworkNode* from, NetworkNode* to);
+fs_content_export double queryDistance(NetworkNode* from, NetworkNode* to);
 
-FS_CONTENT_DLL_FUNC double queryDistance(int fromCol, int toCol);
+fs_content_export double queryDistance(int fromCol, int toCol);
 
-FS_CONTENT_DLL_FUNC double getTravelerInfo(TaskExecuter* te, FlexSimObject * destobj, int info);
+fs_content_export double getTravelerInfo(TaskExecuter* te, FlexSimObject * destobj, int info);
 
-FS_CONTENT_DLL_FUNC virtual double updateVersion(char* newversion, char* oldversion);
+fs_content_export virtual double updateVersion(char* newversion, char* oldversion);
 
-FS_CONTENT_DLL_FUNC double redirectTraveler(treenode traveler, treenode newdest);
+fs_content_export double redirectTraveler(treenode traveler, treenode newdest);
 
-FS_CONTENT_DLL_FUNC virtual double saveState();
+fs_content_export virtual double saveState();
 
-FS_CONTENT_DLL_FUNC virtual double loadState();
+fs_content_export virtual double loadState();
 
-FS_CONTENT_DLL_FUNC static float saveNetworkRequestState(treenode reqnode);
+fs_content_export static float saveNetworkRequestState(treenode reqnode);
 
-FS_CONTENT_DLL_FUNC static float loadNetworkRequestState(treenode reqnode);
+fs_content_export static float loadNetworkRequestState(treenode reqnode);
 
-FS_CONTENT_DLL_FUNC double validateTravelMemberStructure(treenode curtmemnode);
+fs_content_export double validateTravelMemberStructure(treenode curtmemnode);
 
-FS_CONTENT_DLL_FUNC static treenode getTENetNode(treenode membernode);
+fs_content_export static treenode getTENetNode(treenode membernode);
 
-FS_CONTENT_DLL_FUNC static NetworkNavigator* getInstance();
+fs_content_export static NetworkNavigator* getInstance();
 
-FS_CONTENT_DLL_FUNC virtual void onMemberDestroyed(TaskExecuter* te);
+fs_content_export virtual void onMemberDestroyed(TaskExecuter* te);
 
 TreeNode* node_v_nodemembers;
 #define v_nodemembers node_v_nodemembers->safedatafloat()[0]
@@ -3738,9 +3740,9 @@ TreeNode* node_v_connecting;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // VideoRecorder
@@ -3751,15 +3753,15 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double getMetric(int metric, string sout, treenode seq, string slay);
+fs_content_export double getMetric(int metric, string sout, treenode seq, string slay);
 
-FS_CONTENT_DLL_FUNC double getMetric(int metric, string sout, string sseq, string slay);
+fs_content_export double getMetric(int metric, string sout, string sseq, string slay);
 
-FS_CONTENT_DLL_FUNC double getMetric(int metric, string sout);
+fs_content_export double getMetric(int metric, string sout);
 
-FS_CONTENT_DLL_FUNC double getMetric(int metric);
+fs_content_export double getMetric(int metric);
 
-FS_CONTENT_DLL_FUNC treenode resolveSequence(treenode seqSubNode);
+fs_content_export treenode resolveSequence(treenode seqSubNode);
 
 TreeNode* node_v_outputs;
 #define v_outputs node_v_outputs->safedatafloat()[0]
@@ -3773,9 +3775,9 @@ TreeNode* node_v_active;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // PreLoad
@@ -3786,9 +3788,9 @@ public:
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // ExcelAuto
@@ -3799,37 +3801,37 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double doImport();
+fs_content_export double doImport();
 
-FS_CONTENT_DLL_FUNC double doExport();
+fs_content_export double doExport();
 
-FS_CONTENT_DLL_FUNC double reimport();
+fs_content_export double reimport();
 
-FS_CONTENT_DLL_FUNC double importTables(int onreset);
+fs_content_export double importTables(int onreset);
 
-FS_CONTENT_DLL_FUNC double updateProgress(string status, double value);
+fs_content_export double updateProgress(string status, double value);
 
-FS_CONTENT_DLL_FUNC double updateProgressExport(string status, double value);
+fs_content_export double updateProgressExport(string status, double value);
 
-FS_CONTENT_DLL_FUNC double excelFileChanged(treenode file);
+fs_content_export double excelFileChanged(treenode file);
 
-FS_CONTENT_DLL_FUNC double getAndOpenWorkBook();
+fs_content_export double getAndOpenWorkBook();
 
-FS_CONTENT_DLL_FUNC double openWorkBook();
+fs_content_export double openWorkBook();
 
-FS_CONTENT_DLL_FUNC double getRowHeaders(int startrow, int rows, int col);
+fs_content_export double getRowHeaders(int startrow, int rows, int col);
 
-FS_CONTENT_DLL_FUNC double getColHeaders(int startcol, int cols, int row);
+fs_content_export double getColHeaders(int startcol, int cols, int row);
 
-FS_CONTENT_DLL_FUNC int getBundleColHeaders(int startcol, int cols, int row);
+fs_content_export int getBundleColHeaders(int startcol, int cols, int row);
 
-FS_CONTENT_DLL_FUNC double importData(int startrow, int startcol, int rows, int cols, int curtable, double percentdone, double percentmain);
+fs_content_export double importData(int startrow, int startcol, int rows, int cols, int curtable, double percentdone, double percentmain);
 
-FS_CONTENT_DLL_FUNC double importBundleData(int startrow, int startcol, int rows, int cols, int curtable, double percentdone, double percentmain);
+fs_content_export double importBundleData(int startrow, int startcol, int rows, int cols, int curtable, double percentdone, double percentmain);
 
-FS_CONTENT_DLL_FUNC double exportData(int startrow, int startcol, int headers, int curtable, double percentdone, double percentmain);
+fs_content_export double exportData(int startrow, int startcol, int headers, int curtable, double percentdone, double percentmain);
 
-FS_CONTENT_DLL_FUNC int isNumber(string str);
+fs_content_export int isNumber(string str);
 
 TreeNode* node_v_needtocompile;
 #define v_needtocompile node_v_needtocompile->safedatafloat()[0]
@@ -3857,9 +3859,9 @@ TreeNode* node_v_desccustomexport;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Recorder
@@ -3870,37 +3872,37 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+fs_content_export double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC treenode findNode(treenode startnode, char *name);
+fs_content_export treenode findNode(treenode startnode, char *name);
 
-FS_CONTENT_DLL_FUNC double generateOutput();
+fs_content_export double generateOutput();
 
-FS_CONTENT_DLL_FUNC double drawHisto(treenode view);
+fs_content_export double drawHisto(treenode view);
 
-FS_CONTENT_DLL_FUNC double drawBar(treenode view);
+fs_content_export double drawBar(treenode view);
 
-FS_CONTENT_DLL_FUNC double drawXYGraph(treenode view);
+fs_content_export double drawXYGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC double drawPieGraph(treenode view);
+fs_content_export double drawPieGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC double drawUserGraph(treenode view);
+fs_content_export double drawUserGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC double drawBarChart(treenode view, void * graphdata,int nrofinstances,double xmin, double xmax, double ymin, double ymax, char * charttitle);
+fs_content_export double drawBarChart(treenode view, void * graphdata,int nrofinstances,double xmin, double xmax, double ymin, double ymax, char * charttitle);
 
-FS_CONTENT_DLL_FUNC double drawLineGraph(treenode view, void * graphdata,int nrofinstances,double xmin, double xmax, double ymin, double ymax, char * charttitle);
+fs_content_export double drawLineGraph(treenode view, void * graphdata,int nrofinstances,double xmin, double xmax, double ymin, double ymax, char * charttitle);
 
-FS_CONTENT_DLL_FUNC double drawPieChart(treenode view, void * graphdata,int nrofinstances,double xmin, double xmax, double ymin, double ymax, char * charttitle);
+fs_content_export double drawPieChart(treenode view, void * graphdata,int nrofinstances,double xmin, double xmax, double ymin, double ymax, char * charttitle);
 
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+fs_content_export virtual double copyVariables(treenode otherobject);
 
 TreeNode* node_v_timedriven;
 #define v_timedriven node_v_timedriven->safedatafloat()[0]
@@ -3962,9 +3964,9 @@ TreeNode* node_v_tablerowtemplate;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // VisualTool
@@ -3975,57 +3977,57 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC  VisualTool();
+fs_content_export  VisualTool();
 
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+fs_content_export double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onDestroy(treenode view);
+fs_content_export double onDestroy(treenode view);
 
-FS_CONTENT_DLL_FUNC double onPreDraw(treenode view);
+fs_content_export double onPreDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double buildMesh();
+fs_content_export double buildMesh();
 
-FS_CONTENT_DLL_FUNC double drawSnapMesh(treenode view);
+fs_content_export double drawSnapMesh(treenode view);
 
-FS_CONTENT_DLL_FUNC double drawPlane(treenode view);
+fs_content_export double drawPlane(treenode view);
 
-FS_CONTENT_DLL_FUNC double drawCube();
+fs_content_export double drawCube();
 
-FS_CONTENT_DLL_FUNC double drawColumn();
+fs_content_export double drawColumn();
 
-FS_CONTENT_DLL_FUNC double drawSphere();
+fs_content_export double drawSphere();
 
-FS_CONTENT_DLL_FUNC double drawString(treenode view);
+fs_content_export double drawString(treenode view);
 
-FS_CONTENT_DLL_FUNC double drawFloor(treenode view);
+fs_content_export double drawFloor(treenode view);
 
-FS_CONTENT_DLL_FUNC double arrangeObject(double posx, double posy, double posz, double rotx, double roty, double rotz, double size);
+fs_content_export double arrangeObject(double posx, double posy, double posz, double rotx, double roty, double rotz, double size);
 
-FS_CONTENT_DLL_FUNC double addText(treenode newtextobj);
+fs_content_export double addText(treenode newtextobj);
 
-FS_CONTENT_DLL_FUNC double removeText(treenode textobj);
+fs_content_export double removeText(treenode textobj);
 
-FS_CONTENT_DLL_FUNC double containerEntry(treenode item);
+fs_content_export double containerEntry(treenode item);
 
-FS_CONTENT_DLL_FUNC double containerExit(treenode item);
+fs_content_export double containerExit(treenode item);
 
-FS_CONTENT_DLL_FUNC double regenStayTimeHisto();
+fs_content_export double regenStayTimeHisto();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+fs_content_export virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC unsigned int getClassType();
+fs_content_export unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+fs_content_export virtual double copyVariables(treenode otherobject);
 
-FS_CONTENT_DLL_FUNC double doConnectIndirection(treenode otherobject, char characterpressed, int tome);
+fs_content_export double doConnectIndirection(treenode otherobject, char characterpressed, int tome);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_shapetypes;
 #define v_shapetypes node_v_shapetypes->safedatafloat()[0]
@@ -4073,9 +4075,9 @@ int meshShapeType;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // DatabaseConnector
@@ -4086,21 +4088,21 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC void onReset();
+fs_content_export void onReset();
 
-FS_CONTENT_DLL_FUNC bool testConnection();
+fs_content_export bool testConnection();
 
-FS_CONTENT_DLL_FUNC void updateInformationSchema();
+fs_content_export void updateInformationSchema();
 
-FS_CONTENT_DLL_FUNC void importAll();
+fs_content_export void importAll();
 
-FS_CONTENT_DLL_FUNC void importSingle(treenode importer);
+fs_content_export void importSingle(treenode importer);
 
-FS_CONTENT_DLL_FUNC void exportAll();
+fs_content_export void exportAll();
 
-FS_CONTENT_DLL_FUNC void exportSingle(treenode exporter);
+fs_content_export void exportSingle(treenode exporter);
 
-FS_CONTENT_DLL_FUNC void getColumnInfo(const char* tableName, treenode destNode);
+fs_content_export void getColumnInfo(const char* tableName, treenode destNode);
 
 TreeNode* node_v_connection;
 TreeNode* node_v_importers;
@@ -4120,9 +4122,9 @@ TreeNode* node_v_isInformationSchemaDirty;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // StatisticObject
@@ -4133,69 +4135,69 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual Variant onMessage(treenode from, const Variant& p1, const Variant& p2, const Variant& p3);
+fs_content_export virtual Variant onMessage(treenode from, const Variant& p1, const Variant& p2, const Variant& p3);
 
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+fs_content_export virtual double onRunWarm();
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode  view);
+fs_content_export virtual double onPreDraw(treenode  view);
 
-FS_CONTENT_DLL_FUNC virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
+fs_content_export virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
 
-FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
+fs_content_export virtual double hasAbility(int ability);
 
-FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+fs_content_export virtual double drawGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+fs_content_export virtual double getAggregationType();
 
-FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+fs_content_export virtual double enumerateAggregationList(treenode from);
 
-FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
+fs_content_export virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
 
-FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+fs_content_export virtual double getData(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOfflineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOnlineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
+fs_content_export virtual double getOfflineDependencies(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
+fs_content_export virtual double getOfflineInitializer(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
+fs_content_export virtual double getOfflineData(treenode from, treenode repDataNode);
 
-FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+fs_content_export virtual double createCSV(char* filePath);
 
-FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+fs_content_export virtual treenode addMember(treenode newObj);
 
-FS_CONTENT_DLL_FUNC int checkDestroy();
+fs_content_export int checkDestroy();
 
-FS_CONTENT_DLL_FUNC treenode getStateProfile(treenode object, int profileNum);
+fs_content_export treenode getStateProfile(treenode object, int profileNum);
 
-FS_CONTENT_DLL_FUNC double getStateTime(treenode profile, int state, int curState);
+fs_content_export double getStateTime(treenode profile, int state, int curState);
 
-FS_CONTENT_DLL_FUNC int getStateUsed(treenode profile, int state);
+fs_content_export int getStateUsed(treenode profile, int state);
 
-FS_CONTENT_DLL_FUNC string getStateName(treenode profile, int stateNum);
+fs_content_export string getStateName(treenode profile, int stateNum);
 
-FS_CONTENT_DLL_FUNC int getNumStates(treenode profile);
+fs_content_export int getNumStates(treenode profile);
 
-FS_CONTENT_DLL_FUNC double generateGuid();
+fs_content_export double generateGuid();
 
-FS_CONTENT_DLL_FUNC void bindVariables();
+fs_content_export void bindVariables();
 
-FS_CONTENT_DLL_FUNC static StatisticObject* getStatisticByGuid(const char* guid);
+fs_content_export static StatisticObject* getStatisticByGuid(const char* guid);
 
 TreeNode* node_v_guid;
 
 // System
 
-FS_CONTENT_DLL_FUNC void bindVariablesDefault();
+fs_content_export void bindVariablesDefault();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // StateChart
@@ -4206,87 +4208,87 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+fs_content_export virtual double onRunWarm();
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode  view);
+fs_content_export virtual double onPreDraw(treenode  view);
 
-FS_CONTENT_DLL_FUNC virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
+fs_content_export virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
 
-FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
+fs_content_export virtual double hasAbility(int ability);
 
-FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+fs_content_export virtual double drawGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+fs_content_export virtual double getAggregationType();
 
-FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+fs_content_export virtual double enumerateAggregationList(treenode from);
 
-FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
+fs_content_export virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
 
-FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+fs_content_export virtual double getData(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOfflineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOnlineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
+fs_content_export virtual double getOfflineDependencies(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
+fs_content_export virtual double getOfflineInitializer(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
+fs_content_export virtual double getOfflineData(treenode from, treenode repDataNode);
 
-FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+fs_content_export virtual double createCSV(char* filePath);
 
-FS_CONTENT_DLL_FUNC int initalizeObjects();
+fs_content_export int initalizeObjects();
 
-FS_CONTENT_DLL_FUNC int getMaxGroupNameWidth();
+fs_content_export int getMaxGroupNameWidth();
 
-FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
+fs_content_export int getMaxObjectNameWidth();
 
-FS_CONTENT_DLL_FUNC int initializeObjectMember(treenode membernode);
+fs_content_export int initializeObjectMember(treenode membernode);
 
-FS_CONTENT_DLL_FUNC treenode getNextMemberNode(treenode membernode);
+fs_content_export treenode getNextMemberNode(treenode membernode);
 
-FS_CONTENT_DLL_FUNC int updateAllCurStates();
+fs_content_export int updateAllCurStates();
 
-FS_CONTENT_DLL_FUNC int updateCurState(treenode membernode, int entrynr);
+fs_content_export int updateCurState(treenode membernode, int entrynr);
 
-FS_CONTENT_DLL_FUNC int updateCurStateString(treenode membernode, int entrynr);
+fs_content_export int updateCurStateString(treenode membernode, int entrynr);
 
-FS_CONTENT_DLL_FUNC int updateStates();
+fs_content_export int updateStates();
 
-FS_CONTENT_DLL_FUNC int updateAllStates(treenode membernode, int entrynr, int onreset);
+fs_content_export int updateAllStates(treenode membernode, int entrynr, int onreset);
 
-FS_CONTENT_DLL_FUNC int saveBaseStates(treenode membernode, int entrynr);
+fs_content_export int saveBaseStates(treenode membernode, int entrynr);
 
-FS_CONTENT_DLL_FUNC int filterAllByTime(treenode view);
+fs_content_export int filterAllByTime(treenode view);
 
-FS_CONTENT_DLL_FUNC int filterByTime(treenode membernode);
+fs_content_export int filterByTime(treenode membernode);
 
-FS_CONTENT_DLL_FUNC int unfilterAll(treenode graph);
+fs_content_export int unfilterAll(treenode graph);
 
-FS_CONTENT_DLL_FUNC double getTotalTime();
+fs_content_export double getTotalTime();
 
-FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+fs_content_export double setProperties(treenode view);
 
-FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
+fs_content_export int applyProperties(treenode graph);
 
-FS_CONTENT_DLL_FUNC treenode refreshUtilizedStates();
+fs_content_export treenode refreshUtilizedStates();
 
-FS_CONTENT_DLL_FUNC treenode onChangeObjectSet();
+fs_content_export treenode onChangeObjectSet();
 
-FS_CONTENT_DLL_FUNC int countNrInGroup(treenode objnode);
+fs_content_export int countNrInGroup(treenode objnode);
 
-FS_CONTENT_DLL_FUNC treenode getMember(int nr);
+fs_content_export treenode getMember(int nr);
 
-FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
+fs_content_export treenode getMember(treenode memberNode);
 
-FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+fs_content_export virtual treenode addMember(treenode newObj);
 
-FS_CONTENT_DLL_FUNC treenode addGroup(int groupRank);
+fs_content_export treenode addGroup(int groupRank);
 
 TreeNode* node_v_objects;
 #define v_objects node_v_objects->safedatafloat()[0]
@@ -4338,9 +4340,9 @@ TreeNode* node_v_useprofilenr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // StatChart
@@ -4351,87 +4353,87 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+fs_content_export virtual double onRunWarm();
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode  view);
+fs_content_export virtual double onPreDraw(treenode  view);
 
-FS_CONTENT_DLL_FUNC virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
+fs_content_export virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
 
-FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
+fs_content_export virtual double hasAbility(int ability);
 
-FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+fs_content_export virtual double drawGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+fs_content_export virtual double getAggregationType();
 
-FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+fs_content_export virtual double enumerateAggregationList(treenode from);
 
-FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
+fs_content_export virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
 
-FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+fs_content_export virtual double getData(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOfflineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOnlineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
+fs_content_export virtual double getOfflineDependencies(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
+fs_content_export virtual double getOfflineInitializer(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
+fs_content_export virtual double getOfflineData(treenode from, treenode repDataNode);
 
-FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+fs_content_export virtual double createCSV(char* filePath);
 
-FS_CONTENT_DLL_FUNC int initializeObjects();
+fs_content_export int initializeObjects();
 
-FS_CONTENT_DLL_FUNC int getMaxGroupNameWidth();
+fs_content_export int getMaxGroupNameWidth();
 
-FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
+fs_content_export int getMaxObjectNameWidth();
 
-FS_CONTENT_DLL_FUNC int initializeObjectMember(treenode membernode, treenode bundlenode, int listen DEFAULTZERO);
+fs_content_export int initializeObjectMember(treenode membernode, treenode bundlenode, int listen DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC int initializeAggregateMember(treenode groupnode);
+fs_content_export int initializeAggregateMember(treenode groupnode);
 
-FS_CONTENT_DLL_FUNC treenode getNextMemberNode(treenode membernode);
+fs_content_export treenode getNextMemberNode(treenode membernode);
 
-FS_CONTENT_DLL_FUNC int updateAllStats();
+fs_content_export int updateAllStats();
 
-FS_CONTENT_DLL_FUNC int updateMemberStats(treenode membernode, int entrynr);
+fs_content_export int updateMemberStats(treenode membernode, int entrynr);
 
-FS_CONTENT_DLL_FUNC double updateTimeStats();
+fs_content_export double updateTimeStats();
 
-FS_CONTENT_DLL_FUNC double calculateAvgContent(treenode obj, treenode statnode, int savingbase DEFAULTZERO);
+fs_content_export double calculateAvgContent(treenode obj, treenode statnode, int savingbase DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double calculateAvgStayTime(treenode obj, treenode statnode);
+fs_content_export double calculateAvgStayTime(treenode obj, treenode statnode);
 
-FS_CONTENT_DLL_FUNC int saveBaseStats(treenode membernode, int entrynr);
+fs_content_export int saveBaseStats(treenode membernode, int entrynr);
 
-FS_CONTENT_DLL_FUNC int filterAllByTime(treenode view);
+fs_content_export int filterAllByTime(treenode view);
 
-FS_CONTENT_DLL_FUNC int filterByTime(treenode membernode, int entrynr);
+fs_content_export int filterByTime(treenode membernode, int entrynr);
 
-FS_CONTENT_DLL_FUNC int unfilterAll(treenode graph);
+fs_content_export int unfilterAll(treenode graph);
 
-FS_CONTENT_DLL_FUNC double getTotalTime();
+fs_content_export double getTotalTime();
 
-FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+fs_content_export double setProperties(treenode view);
 
-FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
+fs_content_export int applyProperties(treenode graph);
 
-FS_CONTENT_DLL_FUNC treenode onChangeObjectSet();
+fs_content_export treenode onChangeObjectSet();
 
-FS_CONTENT_DLL_FUNC int countNrInGroup(treenode objnode);
+fs_content_export int countNrInGroup(treenode objnode);
 
-FS_CONTENT_DLL_FUNC treenode getMember(int nr);
+fs_content_export treenode getMember(int nr);
 
-FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
+fs_content_export treenode getMember(treenode memberNode);
 
-FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+fs_content_export virtual treenode addMember(treenode newObj);
 
-FS_CONTENT_DLL_FUNC treenode addGroup(int groupRank);
+fs_content_export treenode addGroup(int groupRank);
 
 TreeNode* node_v_objects;
 #define v_objects node_v_objects->safedatafloat()[0]
@@ -4491,9 +4493,9 @@ TreeNode* node_v_yaxistitle;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // CustomChart
@@ -4504,63 +4506,63 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+fs_content_export virtual double onRunWarm();
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode  view);
+fs_content_export virtual double onPreDraw(treenode  view);
 
-FS_CONTENT_DLL_FUNC virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
+fs_content_export virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
 
-FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
+fs_content_export virtual double hasAbility(int ability);
 
-FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+fs_content_export virtual double drawGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+fs_content_export virtual double getAggregationType();
 
-FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+fs_content_export virtual double enumerateAggregationList(treenode from);
 
-FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
+fs_content_export virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
 
-FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+fs_content_export virtual double getData(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOfflineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOnlineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
+fs_content_export virtual double getOfflineDependencies(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
+fs_content_export virtual double getOfflineInitializer(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
+fs_content_export virtual double getOfflineData(treenode from, treenode repDataNode);
 
-FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+fs_content_export virtual double createCSV(char* filePath);
 
-FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
+fs_content_export int getMaxObjectNameWidth();
 
-FS_CONTENT_DLL_FUNC int initializeAggregateMember(treenode groupnode);
+fs_content_export int initializeAggregateMember(treenode groupnode);
 
-FS_CONTENT_DLL_FUNC treenode getNextMemberNode(treenode membernode);
+fs_content_export treenode getNextMemberNode(treenode membernode);
 
-FS_CONTENT_DLL_FUNC int updateAllStats();
+fs_content_export int updateAllStats();
 
-FS_CONTENT_DLL_FUNC double updateTimeStats();
+fs_content_export double updateTimeStats();
 
-FS_CONTENT_DLL_FUNC double getTotalTime();
+fs_content_export double getTotalTime();
 
-FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+fs_content_export double setProperties(treenode view);
 
-FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
+fs_content_export int applyProperties(treenode graph);
 
-FS_CONTENT_DLL_FUNC treenode onChangeAssociationSet();
+fs_content_export treenode onChangeAssociationSet();
 
-FS_CONTENT_DLL_FUNC treenode getMember(int nr);
+fs_content_export treenode getMember(int nr);
 
-FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
+fs_content_export treenode getMember(treenode memberNode);
 
-FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newNode);
+fs_content_export virtual treenode addMember(treenode newNode);
 
 TreeNode* node_v_associations;
 #define v_associations node_v_associations->safedatafloat()[0]
@@ -4609,9 +4611,9 @@ TreeNode* node_v_yaxistitle;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // GanttChart
@@ -4622,69 +4624,69 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+fs_content_export virtual double onRunWarm();
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode  view);
+fs_content_export virtual double onPreDraw(treenode  view);
 
-FS_CONTENT_DLL_FUNC virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
+fs_content_export virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
 
-FS_CONTENT_DLL_FUNC int getLastEntryNum(int series);
+fs_content_export int getLastEntryNum(int series);
 
-FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
+fs_content_export virtual double hasAbility(int ability);
 
-FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+fs_content_export virtual double drawGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+fs_content_export virtual double getAggregationType();
 
-FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+fs_content_export virtual double enumerateAggregationList(treenode from);
 
-FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
+fs_content_export virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
 
-FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+fs_content_export virtual double getData(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOfflineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOnlineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
+fs_content_export virtual double getOfflineDependencies(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
+fs_content_export virtual double getOfflineInitializer(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
+fs_content_export virtual double getOfflineData(treenode from, treenode repDataNode);
 
-FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+fs_content_export virtual double createCSV(char* filePath);
 
-FS_CONTENT_DLL_FUNC int initalizeObjects();
+fs_content_export int initalizeObjects();
 
-FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
+fs_content_export int getMaxObjectNameWidth();
 
-FS_CONTENT_DLL_FUNC int initializeObjectMember(treenode membernode);
+fs_content_export int initializeObjectMember(treenode membernode);
 
-FS_CONTENT_DLL_FUNC treenode getNextMemberNode(treenode membernode);
+fs_content_export treenode getNextMemberNode(treenode membernode);
 
-FS_CONTENT_DLL_FUNC double updateCurrentStates();
+fs_content_export double updateCurrentStates();
 
-FS_CONTENT_DLL_FUNC double getTotalTime();
+fs_content_export double getTotalTime();
 
-FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+fs_content_export double setProperties(treenode view);
 
-FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
+fs_content_export int applyProperties(treenode graph);
 
-FS_CONTENT_DLL_FUNC treenode refreshStates();
+fs_content_export treenode refreshStates();
 
-FS_CONTENT_DLL_FUNC virtual treenode onChangeObjectSet();
+fs_content_export virtual treenode onChangeObjectSet();
 
-FS_CONTENT_DLL_FUNC treenode getMember(int nr);
+fs_content_export treenode getMember(int nr);
 
-FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
+fs_content_export treenode getMember(treenode memberNode);
 
-FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+fs_content_export virtual treenode addMember(treenode newObj);
 
-FS_CONTENT_DLL_FUNC treenode addGroup(int groupRank);
+fs_content_export treenode addGroup(int groupRank);
 
 TreeNode* node_v_objects;
 #define v_objects node_v_objects->safedatafloat()[0]
@@ -4732,9 +4734,9 @@ TreeNode* node_v_wraptime;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // CustomGanttChart
@@ -4745,29 +4747,29 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+fs_content_export virtual double onRunWarm();
 
-FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+fs_content_export virtual double drawGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC double updateOrderedStats();
+fs_content_export double updateOrderedStats();
 
-FS_CONTENT_DLL_FUNC double updateUnorderedStats();
+fs_content_export double updateUnorderedStats();
 
-FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+fs_content_export virtual double getData(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOfflineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+fs_content_export double setProperties(treenode view);
 
-FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
+fs_content_export int applyProperties(treenode graph);
 
-FS_CONTENT_DLL_FUNC treenode onChangeAssociationSet();
+fs_content_export treenode onChangeAssociationSet();
 
-FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
+fs_content_export treenode getMember(treenode memberNode);
 
-FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newNode);
+fs_content_export virtual treenode addMember(treenode newNode);
 
 TreeNode* node_v_associations;
 #define v_associations node_v_associations->safedatafloat()[0]
@@ -4792,9 +4794,9 @@ TreeNode* node_v_spanbarsize;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // TrackedVariableChart
@@ -4805,43 +4807,43 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
+fs_content_export virtual double hasAbility(int ability);
 
-FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+fs_content_export virtual double drawGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+fs_content_export virtual double getAggregationType();
 
-FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+fs_content_export virtual double enumerateAggregationList(treenode from);
 
-FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
+fs_content_export virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
 
-FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+fs_content_export virtual double getData(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOfflineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOnlineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
+fs_content_export virtual double getOfflineInitializer(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
+fs_content_export virtual double getOfflineDependencies(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
+fs_content_export virtual double getOfflineData(treenode from, treenode repDataNode);
 
-FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+fs_content_export virtual double createCSV(char* filePath);
 
-FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+fs_content_export double setProperties(treenode view);
 
-FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
+fs_content_export int applyProperties(treenode graph);
 
-FS_CONTENT_DLL_FUNC double initializeData(treenode view);
+fs_content_export double initializeData(treenode view);
 
-FS_CONTENT_DLL_FUNC double updateData(treenode view);
+fs_content_export double updateData(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newNode);
+fs_content_export virtual treenode addMember(treenode newNode);
 
-FS_CONTENT_DLL_FUNC treenode addMember(treenode object, const Variant& stat);
+fs_content_export treenode addMember(treenode object, const Variant& stat);
 
 TreeNode* node_v_trackedvariables;
 #define v_trackedvariables node_v_trackedvariables->safedatafloat()[0]
@@ -4866,9 +4868,9 @@ TreeNode* node_v_yaxistitle;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // HtmlStatistic
@@ -4879,19 +4881,19 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+fs_content_export virtual double drawGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOfflineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOnlineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC double parseUserHtml();
+fs_content_export double parseUserHtml();
 
-FS_CONTENT_DLL_FUNC double dumpHtml(treenode toNode, int replace);
+fs_content_export double dumpHtml(treenode toNode, int replace);
 
-FS_CONTENT_DLL_FUNC  HtmlStatistic();
+fs_content_export  HtmlStatistic();
 
-FS_CONTENT_DLL_FUNC  ~HtmlStatistic();
+fs_content_export  ~HtmlStatistic();
 
 TreeNode* node_v_userhtml;
 TreeNode* node_v_userheader;
@@ -4906,9 +4908,9 @@ HWND console;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FinancialAnalysis
@@ -4919,71 +4921,71 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+fs_content_export virtual double onRunWarm();
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode  view);
+fs_content_export virtual double onPreDraw(treenode  view);
 
-FS_CONTENT_DLL_FUNC virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
+fs_content_export virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
 
-FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
+fs_content_export virtual double hasAbility(int ability);
 
-FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+fs_content_export virtual double drawGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+fs_content_export virtual double getAggregationType();
 
-FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+fs_content_export virtual double enumerateAggregationList(treenode from);
 
-FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
+fs_content_export virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
 
-FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+fs_content_export virtual double getData(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOfflineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOnlineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
+fs_content_export virtual double getOfflineDependencies(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
+fs_content_export virtual double getOfflineInitializer(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
+fs_content_export virtual double getOfflineData(treenode from, treenode repDataNode);
 
-FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+fs_content_export virtual double createCSV(char* filePath);
 
-FS_CONTENT_DLL_FUNC int initalizeObjects();
+fs_content_export int initalizeObjects();
 
-FS_CONTENT_DLL_FUNC treenode getNextMemberNode(treenode membernode);
+fs_content_export treenode getNextMemberNode(treenode membernode);
 
-FS_CONTENT_DLL_FUNC int getMaxObjectNameWidth();
+fs_content_export int getMaxObjectNameWidth();
 
-FS_CONTENT_DLL_FUNC int initializeObjectMember(treenode membernode);
+fs_content_export int initializeObjectMember(treenode membernode);
 
-FS_CONTENT_DLL_FUNC int updateAllStats();
+fs_content_export int updateAllStats();
 
-FS_CONTENT_DLL_FUNC double updateMemberStats(treenode membernode, double totalTime, int entrynr);
+fs_content_export double updateMemberStats(treenode membernode, double totalTime, int entrynr);
 
-FS_CONTENT_DLL_FUNC double updateTotals();
+fs_content_export double updateTotals();
 
-FS_CONTENT_DLL_FUNC double getTotalTime();
+fs_content_export double getTotalTime();
 
-FS_CONTENT_DLL_FUNC int isGroup(treenode membernode);
+fs_content_export int isGroup(treenode membernode);
 
-FS_CONTENT_DLL_FUNC double setProperties(treenode view);
+fs_content_export double setProperties(treenode view);
 
-FS_CONTENT_DLL_FUNC int applyProperties(treenode graph);
+fs_content_export int applyProperties(treenode graph);
 
-FS_CONTENT_DLL_FUNC treenode onChangeObjectSet();
+fs_content_export treenode onChangeObjectSet();
 
-FS_CONTENT_DLL_FUNC treenode getMember(int nr);
+fs_content_export treenode getMember(int nr);
 
-FS_CONTENT_DLL_FUNC treenode getMember(treenode memberNode);
+fs_content_export treenode getMember(treenode memberNode);
 
-FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+fs_content_export virtual treenode addMember(treenode newObj);
 
-FS_CONTENT_DLL_FUNC treenode addGroup(int groupRank);
+fs_content_export treenode addGroup(int groupRank);
 
 TreeNode* node_v_objects;
 #define v_objects node_v_objects->safedatafloat()[0]
@@ -5009,9 +5011,9 @@ TreeNode* node_v_reset;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // GenericChart
@@ -5020,123 +5022,254 @@ class GenericChart : public StatisticObject
 public:
 
 
+//ClassIncludeHeaderStart
+class EnumSortDelegate;
+class SimpleSortDelegate;
+class SortDelegate : public SimpleDataType
+{
+protected:
+	treenode canSortNode;
+
+public:
+	virtual bool canSort(const Variant& value, const char* colName, int format);
+	virtual bool compare(const Variant& value1, const Variant& value2) {
+		return value1 < value2;
+	}
+	
+	virtual void bind() override;
+
+	virtual EnumSortDelegate* toEnumSortDelegate() { return nullptr; }
+	virtual SimpleSortDelegate* toSimpleSortDelegate() { return nullptr; }
+
+	Variant getSortType(FLEXSIMINTERFACE);
+	Variant reset(FLEXSIMINTERFACE);
+	Variant canSort(FLEXSIMINTERFACE);
+	Variant compare(FLEXSIMINTERFACE);
+};
+
+class EnumSortDelegate : public SortDelegate
+{
+protected:
+	typedef std::unordered_map<Variant, int, Variant::Hash, Variant::KeyEqual> ValueMap;
+	ValueMap valueMap;
+	bool mapDirty = true;
+	void buildMap();
+	
+public:
+	treenode valueNode;
+	double dynamic = 0.0;
+	void reset();
+	virtual bool canSort(const Variant& value, const char* colName, int format) override;
+	virtual bool compare(const Variant& value1, const Variant& value2) override;
+	virtual void bind() override;
+	virtual const char* getClassFactory() override { return "GenericChartEnumSortDelegate"; }
+
+	virtual EnumSortDelegate* toEnumSortDelegate() override { return this; }
+};
+
+class SimpleSortDelegate : public SortDelegate
+{
+public:
+	double descending = 0.0;
+	virtual bool compare(const Variant& value1, const Variant& value2) override;
+	virtual void bind() override;
+	virtual const char* getClassFactory() override { return "GenericChartSimpleSortDelegate"; }
+
+	virtual SimpleSortDelegate* toSimpleSortDelegate() override { return this; }
+};
+
+static SimpleDataType* createSDTDerivative(const char* className);
+
+double sortCategories = 0.0;
+NodeListArray<SortDelegate>::SdtSubNodeBindingType sortDelegates;
+treenode addEnumSortDelegate() { return sortDelegates.add(new EnumSortDelegate)->holder; }
+treenode addSimpleSortDelegate() { return sortDelegates.add(new SimpleSortDelegate)->holder; }
+
+treenode addSortDelegate(const char* type) {
+	if (strcmp(type, "Enum") == 0) {
+		return addEnumSortDelegate();
+	} else if (strcmp(type, "Simple") == 0) {
+		return addSimpleSortDelegate();
+	}
+	return nullptr;
+}
+
+class RowProcessor
+{
+public:
+	GenericChart& chart;
+	RowProcessor(GenericChart& chart) : chart(chart) {};
+	virtual void prepare() {}
+	virtual void processRow(TreeNode* bundle, int entry) = 0;
+	virtual void postProcess() {}
+};
+
+class CategoryRowProcessor : public RowProcessor
+{
+protected:
+	Array colNames;
+
+public:
+	Array colIndices;
+	Array colFormats;
+	std::vector<Array> categories;
+	std::unordered_map<Variant, std::vector<int>, Variant::Hash, Variant::KeyEqual> categoryMap;
+	CategoryRowProcessor(GenericChart& chart) : RowProcessor(chart) {}
+	virtual void prepare() override;
+	virtual void processRow(TreeNode* bundle, int entry) override;
+	virtual void postProcess() override;
+};
+
+class IntFormatProcessor : public RowProcessor
+{
+protected:
+	int intColumnCount;
+
+public:
+	Array colIndices;
+	Array colFormats;
+	IntFormatProcessor(GenericChart& chart) : RowProcessor(chart) {}
+	virtual void prepare() override;
+	virtual void processRow(TreeNode* bundle, int entry) override;
+};
+
+CategoryRowProcessor colorCategoryProcessor = CategoryRowProcessor(*this);
+CategoryRowProcessor axisCategoryProcessor = CategoryRowProcessor(*this);
+IntFormatProcessor intFormatProcessor = IntFormatProcessor(*this);
+
+void processBundle(TreeNode* tableRef, TreeNode* bundleNode, TreeNode* repData = nullptr);
+
+bool initIntFormatProcessor(TreeNode* bundleNode, Array colFormats);
+bool initColorCategoryProcessor(int numCols, Array colFormats);
+bool initAxisCategoryProcessor(int numCols, Array colFormats);
+
+bool usedIntFormatProcessor = false;
+bool usedColorCategoryProcessor = false;
+bool usedAxisCategoryProcessor = false;
+bool shouldSetAxisCategories = false;
+
+void sortCategoryList(std::vector<Array>& categories, Array colNames, Array colFormats);
+
+fs_content_export void bindVariables() override;
+//ClassIncludeHeaderEnd
+
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC virtual Variant onMessage(treenode from, const Variant& p1, const Variant& p2, const Variant& p3);
+fs_content_export virtual Variant onMessage(treenode from, const Variant& p1, const Variant& p2, const Variant& p3);
 
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual double onRunWarm();
+fs_content_export virtual double onRunWarm();
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode  view);
+fs_content_export virtual double onPreDraw(treenode  view);
 
-FS_CONTENT_DLL_FUNC virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
+fs_content_export virtual double onListen(treenode listenedto, treenode listenercoupling, int listenercode, int ecode, treenode involved, char* edata);
 
-FS_CONTENT_DLL_FUNC virtual double hasAbility(int ability);
+fs_content_export virtual double hasAbility(int ability);
 
-FS_CONTENT_DLL_FUNC virtual double drawGraph(treenode view);
+fs_content_export virtual double drawGraph(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+fs_content_export virtual double getAggregationType();
 
-FS_CONTENT_DLL_FUNC virtual double enumerateAggregationList(treenode from);
+fs_content_export virtual double enumerateAggregationList(treenode from);
 
-FS_CONTENT_DLL_FUNC virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
+fs_content_export virtual double aggregateData(treenode destNode, treenode statNode, treenode pfm);
 
-FS_CONTENT_DLL_FUNC virtual double getData(treenode destNode);
+fs_content_export virtual double getData(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOfflineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOnlineHtml(treenode destNode, int chartNum);
+fs_content_export virtual double getOnlineHtml(treenode destNode, int chartNum);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineDependencies(treenode destNode);
+fs_content_export virtual double getOfflineDependencies(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineInitializer(treenode destNode);
+fs_content_export virtual double getOfflineInitializer(treenode destNode);
 
-FS_CONTENT_DLL_FUNC virtual double getOfflineData(treenode from, treenode repDataNode);
+fs_content_export virtual double getOfflineData(treenode from, treenode repDataNode);
 
-FS_CONTENT_DLL_FUNC virtual double createCSV(char* filePath);
+fs_content_export virtual double createCSV(char* filePath);
 
-FS_CONTENT_DLL_FUNC virtual treenode addMember(treenode newObj);
+fs_content_export virtual treenode addMember(treenode newObj);
 
-FS_CONTENT_DLL_FUNC std::string setProperties(treenode view, treenode repData DEFAULTZERO);
+fs_content_export std::string setProperties(treenode view, treenode repData DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC std::string getBasicPropertiesAsJSON();
+fs_content_export std::string getBasicPropertiesAsJSON();
 
-FS_CONTENT_DLL_FUNC std::string getAxisPropertiesAsJSON(treenode settings);
+fs_content_export std::string getAxisPropertiesAsJSON(treenode settings);
 
-FS_CONTENT_DLL_FUNC std::string getFormatPropertiesAsJSON(treenode tableRef, treenode repData DEFAULTZERO);
+fs_content_export std::string getFormatPropertiesAsJSON(treenode tableRef, treenode repData DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC std::string getColorPropertiesAsJSON(treenode tableRef, treenode repData DEFAULTZERO);
+fs_content_export std::string getColorPropertiesAsJSON(treenode tableRef, treenode repData DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC Array getColorValues(std::vector<int>& objColumns, treenode tableRef, treenode repData DEFAULTZERO);
+fs_content_export Array getColorValues(std::vector<int>& objColumns, treenode tableRef, treenode repData DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC std::vector<int> getObjDisplayColumns(Array columnFormats);
+fs_content_export std::vector<int> getObjDisplayColumns(Array columnFormats);
 
-FS_CONTENT_DLL_FUNC Array getColumnFormats(treenode tableRef, treenode repData DEFAULTZERO);
+fs_content_export Array getColumnFormats(treenode tableRef, treenode repData DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC int getObjectFormatMaxDepth(treenode tableRef, treenode repData DEFAULTZERO);
+fs_content_export int getObjectFormatMaxDepth(treenode tableRef, treenode repData DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC std::set<unsigned __int64> getIDsInBundle(treenode bundle, const std::vector<int>& fields);
+fs_content_export std::set<unsigned __int64> getIDsInBundle(treenode bundle, const std::vector<int>& fields);
 
-FS_CONTENT_DLL_FUNC std::string getColumnListAsJSON(const char* name, treenode colListNode);
+fs_content_export std::string getColumnListAsJSON(const char* name, treenode colListNode);
 
-FS_CONTENT_DLL_FUNC std::string getValueListAsJSON(const char* name, treenode valueListNode);
+fs_content_export std::string getValueListAsJSON(const char* name, treenode valueListNode);
 
-FS_CONTENT_DLL_FUNC Array getColumnListAsArray(treenode colListNode, int base DEFAULTZERO);
+fs_content_export Array getColumnListAsArray(treenode colListNode, int base DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC std::string getNameValueJSON(const char* name, const Variant& value);
+fs_content_export std::string getNameValueJSON(const char* name, const Variant& value);
 
-FS_CONTENT_DLL_FUNC std::string getValueJSON(const Variant& value);
+fs_content_export std::string getValueJSON(const Variant& value);
 
-FS_CONTENT_DLL_FUNC std::string getNameNodeValueJSON(const char* name, treenode valueNode, bool neg1IsNull DEFAULTZERO);
+fs_content_export std::string getNameNodeValueJSON(const char* name, treenode valueNode, bool neg1IsNull DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC treenode getBundleNode(treenode tableRef);
+fs_content_export treenode getBundleNode(treenode tableRef);
 
-FS_CONTENT_DLL_FUNC treenode getBundleFormatter(treenode tableRef);
+fs_content_export treenode getBundleFormatter(treenode tableRef);
 
-FS_CONTENT_DLL_FUNC Variant getNewIDsInSeries(treenode bundleNode, treenode series);
+fs_content_export Variant getNewIDsInSeries(treenode bundleNode, treenode series);
 
-FS_CONTENT_DLL_FUNC void getDataForTable(treenode tableRef, treenode destNode);
+fs_content_export void getDataForTable(treenode tableRef, treenode destNode);
 
-FS_CONTENT_DLL_FUNC treenode getSettingsNode();
+fs_content_export treenode getSettingsNode();
 
-FS_CONTENT_DLL_FUNC treenode getTableRef(treenode settings);
+fs_content_export treenode getTableRef(treenode settings);
 
-FS_CONTENT_DLL_FUNC treenode getKeyColumns(treenode settings);
+fs_content_export treenode getKeyColumns(treenode settings);
 
-FS_CONTENT_DLL_FUNC treenode getAxisKeyColumns(treenode settings);
+fs_content_export treenode getAxisKeyColumns(treenode settings);
 
-FS_CONTENT_DLL_FUNC treenode getColorKeyColumns(treenode settings);
+fs_content_export treenode getColorKeyColumns(treenode settings);
 
-FS_CONTENT_DLL_FUNC Variant getDataColumnsArray(treenode settings, int base DEFAULTZERO);
+fs_content_export Variant getDataColumnsArray(treenode settings, int base DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC void setAxisCategories(treenode tableRef, treenode repData DEFAULTZERO);
+fs_content_export void setAxisCategories(treenode tableRef, treenode repData DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC void onColorAssignment(const Variant& value, const Variant& color, int usedExistingColor);
+fs_content_export void onColorAssignment(const Variant& value, const Variant& color, int usedExistingColor);
 
-FS_CONTENT_DLL_FUNC void onXCategoryFound(std::string category);
+fs_content_export void onXCategoryFound(std::string category);
 
-FS_CONTENT_DLL_FUNC void onColorCategoryFound(std::string category);
+fs_content_export void onColorCategoryFound(std::string category);
 
-FS_CONTENT_DLL_FUNC virtual double onDestroy(treenode view);
+fs_content_export virtual double onDestroy(treenode view);
 
-FS_CONTENT_DLL_FUNC std::string getTimeFormatAsJSON();
+fs_content_export std::string getTimeFormatAsJSON();
 
-FS_CONTENT_DLL_FUNC std::string getNumberFormatAsJSON();
+fs_content_export std::string getNumberFormatAsJSON();
 
-FS_CONTENT_DLL_FUNC std::string getColumnReplacementText(int rank);
+fs_content_export std::string getColumnReplacementText(int rank);
 
-FS_CONTENT_DLL_FUNC std::string getValueReplacementText(int rank);
+fs_content_export std::string getValueReplacementText(int rank);
 
-FS_CONTENT_DLL_FUNC std::map<int, treenode> getReplicationBundles(int scenario);
+fs_content_export std::map<int, treenode> getReplicationBundles(int scenario);
 
-FS_CONTENT_DLL_FUNC Array getReplicationFormats();
+fs_content_export Array getReplicationFormats();
 
-FS_CONTENT_DLL_FUNC GenericChart* getExperimentVersion();
+fs_content_export GenericChart* getExperimentVersion();
 
-FS_CONTENT_DLL_FUNC Array getTextForAxisKeyValue(Array keyValue, treenode repData DEFAULTZERO);
+fs_content_export Array getTextForAxisKeyValue(Array keyValue, treenode repData DEFAULTZERO);
 
 TreeNode* node_v_data;
 TreeNode* node_v_initialized;
@@ -5190,9 +5323,9 @@ TreeNode* node_v_sankeySettings;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export void bindVariablesDefault();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // ScenarioChart
@@ -5203,21 +5336,21 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC int getColumnFormat(int colNr);
+fs_content_export int getColumnFormat(int colNr);
 
-FS_CONTENT_DLL_FUNC Array getColumnFormats();
+fs_content_export Array getColumnFormats();
 
-FS_CONTENT_DLL_FUNC treenode getBundleNode();
+fs_content_export treenode getBundleNode();
 
-FS_CONTENT_DLL_FUNC void setData();
+fs_content_export void setData();
 
-FS_CONTENT_DLL_FUNC void setSettings();
+fs_content_export void setSettings();
 
-FS_CONTENT_DLL_FUNC void setDefaultDataAndSettings();
+fs_content_export void setDefaultDataAndSettings();
 
-FS_CONTENT_DLL_FUNC void bindVariables();
+fs_content_export void bindVariables();
 
-FS_CONTENT_DLL_FUNC virtual double getAggregationType();
+fs_content_export virtual double getAggregationType();
 
 TreeNode* node_v_needsUpdate;
 #define v_needsUpdate node_v_needsUpdate->safedatafloat()[0]
@@ -5262,12 +5395,14 @@ treenode formatList;
 
 treenode infoForSettings;
 
+ObjRef<GenericChart::EnumSortDelegate> scenarioDelegate;
+
 
 // System
 
-FS_CONTENT_DLL_FUNC void bindVariablesDefault();
+fs_content_export void bindVariablesDefault();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Source
@@ -5278,21 +5413,21 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+fs_content_export double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double generateItem(double curitemtype, const string& itemname, double rownumber);
+fs_content_export virtual double generateItem(double curitemtype, const string& itemname, double rownumber);
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
+fs_content_export virtual double onPreDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+fs_content_export virtual double copyVariables(treenode otherobject);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_arrivalmode;
 #define v_arrivalmode node_v_arrivalmode->safedatafloat()[0]
@@ -5320,9 +5455,9 @@ treenode onCreationTrigger = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Queue
@@ -5333,35 +5468,35 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+fs_content_export double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+fs_content_export double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
+fs_content_export virtual double onTransportInNotify(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual void onTransportInFailed(treenode item, int port);
+fs_content_export virtual void onTransportInFailed(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
+fs_content_export virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double getPickOffset(treenode involvedobj, treenode toobject, double* returnarray);
+fs_content_export virtual double getPickOffset(treenode involvedobj, treenode toobject, double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double setLocations(int uptorank);
+fs_content_export virtual double setLocations(int uptorank);
 
-FS_CONTENT_DLL_FUNC void calculateNextLocation(treenode item);
+fs_content_export void calculateNextLocation(treenode item);
 
-FS_CONTENT_DLL_FUNC virtual double checkReceiveItem();
+fs_content_export virtual double checkReceiveItem();
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
-FS_CONTENT_DLL_FUNC void cacheLocationUpdateData();
+fs_content_export void cacheLocationUpdateData();
 
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
@@ -5412,9 +5547,9 @@ double yinc;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Processor
@@ -5425,49 +5560,49 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+fs_content_export double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+fs_content_export double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual double onDraw(treenode view);
+fs_content_export virtual double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
+fs_content_export virtual double onTransportInNotify(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+fs_content_export virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void resume();
+fs_content_export virtual void resume();
 
-FS_CONTENT_DLL_FUNC virtual double callProcessOperators( treenode item, int trigger);
+fs_content_export virtual double callProcessOperators( treenode item, int trigger);
 
-FS_CONTENT_DLL_FUNC virtual double releaseProcessOperators( treenode item);
+fs_content_export virtual double releaseProcessOperators( treenode item);
 
-FS_CONTENT_DLL_FUNC virtual double processorEvents(double code, treenode involved, char * datastr);
+fs_content_export virtual double processorEvents(double code, treenode involved, char * datastr);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
+fs_content_export virtual double onPreDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC double checkSetupOpCall( treenode item, double cursetuptime);
+fs_content_export double checkSetupOpCall( treenode item, double cursetuptime);
 
-FS_CONTENT_DLL_FUNC double checkProcessOpCall(treenode item, double curcycletime);
+fs_content_export double checkProcessOpCall(treenode item, double curcycletime);
 
-FS_CONTENT_DLL_FUNC double checkSetupOpFree(treenode item);
+fs_content_export double checkSetupOpFree(treenode item);
 
-FS_CONTENT_DLL_FUNC double checkProcessOpFree(treenode item);
+fs_content_export double checkProcessOpFree(treenode item);
 
-FS_CONTENT_DLL_FUNC virtual double startSetupTime(treenode item, int port);
+fs_content_export virtual double startSetupTime(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual void onTransportInFailed(treenode item, int port);
+fs_content_export virtual void onTransportInFailed(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_cycletime;
 TreeNode* node_v_setuptime;
@@ -5499,9 +5634,9 @@ treenode onProcessFinishTrigger = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Sink
@@ -5512,28 +5647,28 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+fs_content_export double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int portnumber);
+fs_content_export virtual double onTransportInNotify(treenode item, int portnumber);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_recycle;
 #define v_recycle node_v_recycle->safedatafloat()[0]
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Combiner
@@ -5544,41 +5679,41 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC  Combiner();
+fs_content_export  Combiner();
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+fs_content_export double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+fs_content_export double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
+fs_content_export double onClick(treenode view, int code);
 
-FS_CONTENT_DLL_FUNC double onKeyedClick(treenode view, int code, char key);
+fs_content_export double onKeyedClick(treenode view, int code, char key);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double generateCompList();
+fs_content_export virtual double generateCompList();
 
-FS_CONTENT_DLL_FUNC double receiveItem();
+fs_content_export double receiveItem();
 
-FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
+fs_content_export virtual double onTransportInNotify(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportInComplete(treenode item, int port, treenode transporter DEFAULTNULL);
+fs_content_export virtual double onTransportInComplete(treenode item, int port, treenode transporter DEFAULTNULL);
 
-FS_CONTENT_DLL_FUNC virtual void onTransportInFailed(treenode item, int port);
+fs_content_export virtual void onTransportInFailed(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
+fs_content_export virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double updateVersion(char* newversion, char* oldversion);
+fs_content_export virtual double updateVersion(char* newversion, char* oldversion);
 
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+fs_content_export virtual double copyVariables(treenode otherobject);
 
-FS_CONTENT_DLL_FUNC virtual double checkReceiveItem();
+fs_content_export virtual double checkReceiveItem();
 
 TreeNode* node_v_collectingcontainer;
 #define v_collectingcontainer node_v_collectingcontainer->safedatafloat()[0]
@@ -5599,9 +5734,9 @@ bool internalMove = false;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Separator
@@ -5612,21 +5747,21 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+fs_content_export double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+fs_content_export double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
+fs_content_export virtual double onTransportInNotify(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_unpack;
 #define v_unpack node_v_unpack->safedatafloat()[0]
@@ -5641,9 +5776,9 @@ bool movingItemsNow = false;;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // MultiProcessor
@@ -5654,23 +5789,23 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+fs_content_export double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+fs_content_export double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
+fs_content_export virtual double onPreDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+fs_content_export virtual double copyVariables(treenode otherobject);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
-FS_CONTENT_DLL_FUNC double assertProfile();
+fs_content_export double assertProfile();
 
 TreeNode* node_v_optable;
 #define v_optable node_v_optable->safedatafloat()[0]
@@ -5689,9 +5824,9 @@ treenode onProcessFinishTrigger = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Conveyor
@@ -5702,75 +5837,75 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC  Conveyor();
+fs_content_export  Conveyor();
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+fs_content_export double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+fs_content_export double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+fs_content_export double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double onDrawPlanar(treenode view);
+fs_content_export double onDrawPlanar(treenode view);
 
-FS_CONTENT_DLL_FUNC double onPreDraw(treenode view);
+fs_content_export double onPreDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double onKeyedClick(treenode view, int code, char key);
+fs_content_export double onKeyedClick(treenode view, int code, char key);
 
-FS_CONTENT_DLL_FUNC double setAllLocations();
+fs_content_export double setAllLocations();
 
-FS_CONTENT_DLL_FUNC double setOneLocation(treenode item, double tempmaxloc, double curzoffset);
+fs_content_export double setOneLocation(treenode item, double tempmaxloc, double curzoffset);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC double updateSectionInfo();
+fs_content_export double updateSectionInfo();
 
-FS_CONTENT_DLL_FUNC virtual double getPickOffset(treenode involvedobj, treenode toobject, double* returnarray);
+fs_content_export virtual double getPickOffset(treenode involvedobj, treenode toobject, double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
+fs_content_export virtual double getPlaceOffset(treenode involvedobj, treenode fromobject,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+fs_content_export virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void resume();
+fs_content_export virtual void resume();
 
-FS_CONTENT_DLL_FUNC virtual double photoEyeEntryLogic(treenode item);
+fs_content_export virtual double photoEyeEntryLogic(treenode item);
 
-FS_CONTENT_DLL_FUNC virtual double checkCreatePEYellow(treenode item, double itempos, int onexit DEFAULTZERO);
+fs_content_export virtual double checkCreatePEYellow(treenode item, double itempos, int onexit DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double checkCreatePEGreen(treenode item, double itembackedgepos, int pe, int onexit DEFAULTZERO);
+fs_content_export virtual double checkCreatePEGreen(treenode item, double itembackedgepos, int pe, int onexit DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double photoEyeExitLogic(treenode item);
+fs_content_export virtual double photoEyeExitLogic(treenode item);
 
-FS_CONTENT_DLL_FUNC double alignNextLoc();
+fs_content_export double alignNextLoc();
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC double getProdLength(treenode item);
+fs_content_export double getProdLength(treenode item);
 
-FS_CONTENT_DLL_FUNC virtual double changeSpeed(double newspeed);
+fs_content_export virtual double changeSpeed(double newspeed);
 
-FS_CONTENT_DLL_FUNC virtual double blockedLengthNotify(double length);
+fs_content_export virtual double blockedLengthNotify(double length);
 
-FS_CONTENT_DLL_FUNC virtual double blockedLengthNotifyUpstream(double length);
+fs_content_export virtual double blockedLengthNotifyUpstream(double length);
 
-FS_CONTENT_DLL_FUNC virtual double resetConveyorKinematics();
+fs_content_export virtual double resetConveyorKinematics();
 
-FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(const Vec2& point1, const Vec2& point2);
+fs_content_export virtual double flipAroundAxis(const Vec2& point1, const Vec2& point2);
 
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+fs_content_export virtual double copyVariables(treenode otherobject);
 
-FS_CONTENT_DLL_FUNC double initItem(treenode item);
+fs_content_export double initItem(treenode item);
 
-FS_CONTENT_DLL_FUNC double buildBaseMesh(treenode cursection);
+fs_content_export double buildBaseMesh(treenode cursection);
 
-FS_CONTENT_DLL_FUNC double buildConveyorMesh(treenode cursection, double &curtexperc);
+fs_content_export double buildConveyorMesh(treenode cursection, double &curtexperc);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_speed;
 #define v_speed node_v_speed->safedatafloat()[0]
@@ -5910,9 +6045,9 @@ treenode onUncoverTrigger = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // MergeSort
@@ -5923,45 +6058,45 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+fs_content_export double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+fs_content_export double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
+fs_content_export double onClick(treenode view, int code);
 
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+fs_content_export double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC double updatePortTables();
+fs_content_export double updatePortTables();
 
-FS_CONTENT_DLL_FUNC double updateLocations();
+fs_content_export double updateLocations();
 
-FS_CONTENT_DLL_FUNC double setAllLocations(double updatetime);
+fs_content_export double setAllLocations(double updatetime);
 
-FS_CONTENT_DLL_FUNC double releaseItem(treenode item, int port);
+fs_content_export double releaseItem(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double receiveItem(int port);
+fs_content_export double receiveItem(int port);
 
-FS_CONTENT_DLL_FUNC virtual double inOpenEvent(FixedResource* otherobject, int search, double port );
+fs_content_export virtual double inOpenEvent(FixedResource* otherobject, int search, double port );
 
-FS_CONTENT_DLL_FUNC double drawInPort(int port);
+fs_content_export double drawInPort(int port);
 
-FS_CONTENT_DLL_FUNC double drawOutPort(int port);
+fs_content_export double drawOutPort(int port);
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+fs_content_export virtual double copyVariables(treenode otherobject);
 
-FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int port);
+fs_content_export virtual double onTransportInNotify(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double buildPortMesh();
+fs_content_export double buildPortMesh();
 
 TreeNode* node_v_inputtable;
 #define v_inputtable node_v_inputtable->safedatafloat()[0]
@@ -5983,9 +6118,9 @@ Mesh outputMesh;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // BasicConveyor
@@ -5996,67 +6131,67 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC inline treenode getMainItemKinematics(treenode item);
+fs_content_export inline treenode getMainItemKinematics(treenode item);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+fs_content_export double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+fs_content_export double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+fs_content_export double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC double updateLocations();
+fs_content_export double updateLocations();
 
-FS_CONTENT_DLL_FUNC double setAllLocations();
+fs_content_export double setAllLocations();
 
-FS_CONTENT_DLL_FUNC double initItem(treenode item);
+fs_content_export double initItem(treenode item);
 
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+fs_content_export virtual double copyVariables(treenode otherobject);
 
-FS_CONTENT_DLL_FUNC double setItemConveyState(treenode item, double startpoint, double startspeed, double targetspeed, double accdec);
+fs_content_export double setItemConveyState(treenode item, double startpoint, double startspeed, double targetspeed, double accdec);
 
-FS_CONTENT_DLL_FUNC double setConveyStatesByRange(double frompos, double topos, double startspeed, double targetspeed, double accdec);
+fs_content_export double setConveyStatesByRange(double frompos, double topos, double startspeed, double targetspeed, double accdec);
 
-FS_CONTENT_DLL_FUNC double getDPsFromPosition(double position, double prodlength, double space, int* frontdp, int* backdp, int* backspacedp);
+fs_content_export double getDPsFromPosition(double position, double prodlength, double space, int* frontdp, int* backdp, int* backspacedp);
 
-FS_CONTENT_DLL_FUNC double onSpaceCleared(treenode item);
+fs_content_export double onSpaceCleared(treenode item);
 
-FS_CONTENT_DLL_FUNC double createDPClearEvent(treenode item, int backedgetype);
+fs_content_export double createDPClearEvent(treenode item, int backedgetype);
 
-FS_CONTENT_DLL_FUNC double getItemPosition(treenode item);
+fs_content_export double getItemPosition(treenode item);
 
-FS_CONTENT_DLL_FUNC double setDirection(int direction);
+fs_content_export double setDirection(int direction);
 
-FS_CONTENT_DLL_FUNC double updateAllPositions(int forceupdate DEFAULTZERO);
+fs_content_export double updateAllPositions(int forceupdate DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double resetKinematicsBehind(treenode item);
+fs_content_export double resetKinematicsBehind(treenode item);
 
-FS_CONTENT_DLL_FUNC double getFilledLength();
+fs_content_export double getFilledLength();
 
-FS_CONTENT_DLL_FUNC virtual double getPickOffset(treenode involvedobj, treenode toobject, double* returnarray);
+fs_content_export virtual double getPickOffset(treenode involvedobj, treenode toobject, double* returnarray);
 
-FS_CONTENT_DLL_FUNC treenode getItemKinematics(treenode item, int kintype);
+fs_content_export treenode getItemKinematics(treenode item, int kintype);
 
-FS_CONTENT_DLL_FUNC static char* showDPCacheInfo(treenode dpcache, int verbose);
+fs_content_export static char* showDPCacheInfo(treenode dpcache, int verbose);
 
-FS_CONTENT_DLL_FUNC static double getItemInfo(treenode item, int val);
+fs_content_export static double getItemInfo(treenode item, int val);
 
-FS_CONTENT_DLL_FUNC double destroyItemEvent(treenode item, int event);
+fs_content_export double destroyItemEvent(treenode item, int event);
 
-FS_CONTENT_DLL_FUNC double cleanItemEvent(treenode item, int event);
+fs_content_export double cleanItemEvent(treenode item, int event);
 
-FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+fs_content_export virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void resume();
+fs_content_export virtual void resume();
 
-FS_CONTENT_DLL_FUNC double buildDecisionMesh();
+fs_content_export double buildDecisionMesh();
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_decisionpointtable;
 #define v_decisionpointtable node_v_decisionpointtable->safedatafloat()[0]
@@ -6086,9 +6221,9 @@ treenode stopResume = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // BasicFR
@@ -6099,33 +6234,33 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+fs_content_export virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void resume(int id, int stateprofile DEFAULTZERO);
+fs_content_export virtual void resume(int id, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onTransportInNotify(treenode item, int port);
+fs_content_export double onTransportInNotify(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onTransportOutNotify(treenode item, int port);
+fs_content_export double onTransportOutNotify(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onTransportOutComplete(treenode item, int port, treenode transporter DEFAULTNULL);
+fs_content_export double onTransportOutComplete(treenode item, int port, treenode transporter DEFAULTNULL);
 
-FS_CONTENT_DLL_FUNC double onTransportInComplete(treenode item, int port, treenode transporter DEFAULTNULL);
+fs_content_export double onTransportInComplete(treenode item, int port, treenode transporter DEFAULTNULL);
 
-FS_CONTENT_DLL_FUNC double getPickOffset(treenode item, treenode toobject, double* returnarray);
+fs_content_export double getPickOffset(treenode item, treenode toobject, double* returnarray);
 
-FS_CONTENT_DLL_FUNC double getPlaceOffset(treenode item, treenode fromobject,  double* returnarray);
+fs_content_export double getPlaceOffset(treenode item, treenode fromobject,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+fs_content_export double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
+fs_content_export double onClick(treenode view, int code);
 
-FS_CONTENT_DLL_FUNC double onKeyedClick(treenode view, int code, char key);
+fs_content_export double onKeyedClick(treenode view, int code, char key);
 
-FS_CONTENT_DLL_FUNC double onStateChange(int toState, treenode stateProfile);
+fs_content_export double onStateChange(int toState, treenode stateProfile);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_poffsetx;
 #define v_poffsetx node_v_poffsetx->safedatafloat()[0]
@@ -6150,9 +6285,9 @@ treenode onAdvancedFunctionsTrigger = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Dispatcher
@@ -6163,61 +6298,61 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onOutOpen(int port);
+fs_content_export double onOutOpen(int port);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC virtual double receiveTaskSequence(treenode newtasksequence);
+fs_content_export virtual double receiveTaskSequence(treenode newtasksequence);
 
-FS_CONTENT_DLL_FUNC virtual double finishUtilize(treenode involveditem);
+fs_content_export virtual double finishUtilize(treenode involveditem);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC double rankInOrder(treenode tasksequence);
+fs_content_export double rankInOrder(treenode tasksequence);
 
-FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+fs_content_export virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+fs_content_export virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC void resume(int id, int stateprofile DEFAULTZERO);
+fs_content_export void resume(int id, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void resume();
+fs_content_export virtual void resume();
 
-FS_CONTENT_DLL_FUNC double reorder();
+fs_content_export double reorder();
 
-FS_CONTENT_DLL_FUNC double rerankbest();
+fs_content_export double rerankbest();
 
-FS_CONTENT_DLL_FUNC virtual treenode findBestTS();
+fs_content_export virtual treenode findBestTS();
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC double updateVersion(char* newversion, char* oldversion);
+fs_content_export double updateVersion(char* newversion, char* oldversion);
 
-FS_CONTENT_DLL_FUNC double executeTasks(treenode tasksequence);
+fs_content_export double executeTasks(treenode tasksequence);
 
-FS_CONTENT_DLL_FUNC double executeProxyTask(treenode curtask, Task* taskdata, Task* allocatetaskdata);
+fs_content_export double executeProxyTask(treenode curtask, Task* taskdata, Task* allocatetaskdata);
 
-FS_CONTENT_DLL_FUNC double finishProxyTask(treenode task, treenode executer);
+fs_content_export double finishProxyTask(treenode task, treenode executer);
 
-FS_CONTENT_DLL_FUNC double makeMultipleAllocations(treenode tasksequence, treenode alreadyallocatedtask);
+fs_content_export double makeMultipleAllocations(treenode tasksequence, treenode alreadyallocatedtask);
 
-FS_CONTENT_DLL_FUNC double onAllocationNotify(treenode executer, treenode task);
+fs_content_export double onAllocationNotify(treenode executer, treenode task);
 
-FS_CONTENT_DLL_FUNC inline double finishDeallocation(Task* taskdata, Task* allocatetaskdata, TaskSequence* tsdata);
+fs_content_export inline double finishDeallocation(Task* taskdata, Task* allocatetaskdata, TaskSequence* tsdata);
 
-FS_CONTENT_DLL_FUNC static int recycleTaskSequence(treenode tasksequence);
+fs_content_export static int recycleTaskSequence(treenode tasksequence);
 
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+fs_content_export double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onResourceAvailable(int port);
+fs_content_export virtual double onResourceAvailable(int port);
 
-FS_CONTENT_DLL_FUNC TaskSequenceArray __getTaskSequences();
+fs_content_export TaskSequenceArray __getTaskSequences();
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
-FS_CONTENT_DLL_FUNC virtual void bindInterface();
+fs_content_export virtual void bindInterface();
 
 TreeNode* node_v_tasksequencequeue;
 #define v_tasksequencequeue node_v_tasksequencequeue->safedatafloat()[0]
@@ -6236,9 +6371,9 @@ treenode onResourceAvailableTrigger = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // TaskExecuter
@@ -6255,6 +6390,8 @@ double lastPickPlaceOffsetResult;
 bool isPostLoadUnloadOffset = false;
 bool isNotFirstOffset = false;
 
+treenode onEntryTrigger = nullptr;
+treenode onExitTrigger = nullptr;
 treenode onLoadTrigger = nullptr;
 treenode onUnloadTrigger = nullptr;
 treenode onPreemptTrigger = nullptr;
@@ -6275,6 +6412,8 @@ FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datas
 FS_CONTENT_DLL_FUNC double onDraw(treenode view);
 
 FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+
+FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
 
 FS_CONTENT_DLL_FUNC virtual double onDestinationArrival(double finalspeed);
 
@@ -6435,9 +6574,9 @@ TreeNode* node_v_resetposition;
 
 // System
 
-FS_CONTENT_DLL_FUNC void bindVariablesDefault();
+fs_content_export void bindVariablesDefault();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Operator
@@ -6448,27 +6587,27 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double beginOffset(double endspeed, treenode item);
+fs_content_export double beginOffset(double endspeed, treenode item);
 
-FS_CONTENT_DLL_FUNC double finishOffset();
+fs_content_export double finishOffset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual void onBeginTask(treenode task);
+fs_content_export virtual void onBeginTask(treenode task);
 
-FS_CONTENT_DLL_FUNC virtual void onEndTask(treenode task);
+fs_content_export virtual void onEndTask(treenode task);
 
-FS_CONTENT_DLL_FUNC virtual double getEntryLoc(treenode involved,  double* returnarray);
+fs_content_export virtual double getEntryLoc(treenode involved,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
+fs_content_export virtual bool canRotateOnIncline();
 
-FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
+fs_content_export virtual double onPreDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC void bindVariables();
+fs_content_export void bindVariables();
 
 TreeNode* node_v_activeRoles;
 #define v_activeRoles node_v_activeRoles->safedatafloat()[0]
@@ -6483,9 +6622,9 @@ bool doUpdateAnimation = true;
 
 // System
 
-FS_CONTENT_DLL_FUNC void bindVariablesDefault();
+fs_content_export void bindVariablesDefault();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Transporter
@@ -6496,25 +6635,25 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onPreDraw(treenode view);
+fs_content_export double onPreDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double getForkHeight();
+fs_content_export double getForkHeight();
 
-FS_CONTENT_DLL_FUNC double beginOffset(double endspeed,treenode item);
+fs_content_export double beginOffset(double endspeed,treenode item);
 
-FS_CONTENT_DLL_FUNC double finishOffset();
+fs_content_export double finishOffset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual void onBeginTask(treenode task);
+fs_content_export virtual void onBeginTask(treenode task);
 
-FS_CONTENT_DLL_FUNC virtual double updateOffset();
+fs_content_export virtual double updateOffset();
 
-FS_CONTENT_DLL_FUNC virtual double getEntryLoc(treenode involved,  double* returnarray);
+fs_content_export virtual double getEntryLoc(treenode involved,  double* returnarray);
 
 TreeNode* node_v_forkspeed;
 #define v_forkspeed node_v_forkspeed->safedatafloat()[0]
@@ -6527,9 +6666,9 @@ TreeNode* node_v_forkbegintime;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Elevator
@@ -6540,27 +6679,27 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
+fs_content_export double onClick(treenode view, int code);
 
-FS_CONTENT_DLL_FUNC virtual double beginOffset(double endspeed, treenode item);
+fs_content_export virtual double beginOffset(double endspeed, treenode item);
 
-FS_CONTENT_DLL_FUNC virtual double updateOffset();
+fs_content_export virtual double updateOffset();
 
-FS_CONTENT_DLL_FUNC virtual double getEntryLoc(treenode involvedobj,  double* returnarray);
+fs_content_export virtual double getEntryLoc(treenode involvedobj,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC double scaleComponents();
+fs_content_export double scaleComponents();
 
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+fs_content_export double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
+fs_content_export virtual double onDrag(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
+fs_content_export virtual bool canRotateOnIncline();
 
 TreeNode* node_v_shellzloc;
 #define v_shellzloc node_v_shellzloc->safedatafloat()[0]
@@ -6573,9 +6712,9 @@ double lastzloc;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Robot
@@ -6586,45 +6725,45 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+fs_content_export double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+fs_content_export double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double beginOffset(double endspeed, treenode item);
+fs_content_export double beginOffset(double endspeed, treenode item);
 
-FS_CONTENT_DLL_FUNC double updateOffset();
+fs_content_export double updateOffset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC double updateVersion(char* newversion, char* oldversion);
+fs_content_export double updateVersion(char* newversion, char* oldversion);
 
-FS_CONTENT_DLL_FUNC double moveArm(treenode item, int pathnum, int endrow) ;
+fs_content_export double moveArm(treenode item, int pathnum, int endrow) ;
 
-FS_CONTENT_DLL_FUNC double onPreDraw(treenode view);
+fs_content_export double onPreDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+fs_content_export double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double drawSkeleton(treenode view, double* d, double* a, double xtrans);
+fs_content_export double drawSkeleton(treenode view, double* d, double* a, double xtrans);
 
-FS_CONTENT_DLL_FUNC double autoCalculateTable(double* d, double * a, double * xtrans);
+fs_content_export double autoCalculateTable(double* d, double * a, double * xtrans);
 
-FS_CONTENT_DLL_FUNC double applyJointsToItem(int orientationType);
+fs_content_export double applyJointsToItem(int orientationType);
 
-FS_CONTENT_DLL_FUNC double applyItemToJoints(int orientationType);
+fs_content_export double applyItemToJoints(int orientationType);
 
-FS_CONTENT_DLL_FUNC double calcApproachOffsetDist(treenode item, int orientationType);
+fs_content_export double calcApproachOffsetDist(treenode item, int orientationType);
 
-FS_CONTENT_DLL_FUNC Vec3 calcApproachOffsetRot(int orientationType);
+fs_content_export Vec3 calcApproachOffsetRot(int orientationType);
 
-FS_CONTENT_DLL_FUNC Vec3 calcItemRot(int orientationType);
+fs_content_export Vec3 calcItemRot(int orientationType);
 
-FS_CONTENT_DLL_FUNC double calcClampWidth(treenode item, int orientationType);
+fs_content_export double calcClampWidth(treenode item, int orientationType);
 
-FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
+fs_content_export virtual bool canRotateOnIncline();
 
 TreeNode* node_v_motionmethod;
 #define v_motionmethod node_v_motionmethod->safedatafloat()[0]
@@ -6685,9 +6824,9 @@ static const int PATH_CLAMP_ORIENTATION = 6;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Crane
@@ -6698,39 +6837,39 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+fs_content_export double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double getEntryLoc(treenode involvedobj,  double* returnarray);
+fs_content_export virtual double getEntryLoc(treenode involvedobj,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double beginOffset(double endspeed, treenode item);
+fs_content_export virtual double beginOffset(double endspeed, treenode item);
 
-FS_CONTENT_DLL_FUNC virtual double updateOffset();
+fs_content_export virtual double updateOffset();
 
-FS_CONTENT_DLL_FUNC virtual double onPreempt();
+fs_content_export virtual double onPreempt();
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double updateVersion(char* newversion, char* oldversion);
+fs_content_export virtual double updateVersion(char* newversion, char* oldversion);
 
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+fs_content_export virtual double copyVariables(treenode otherobject);
 
-FS_CONTENT_DLL_FUNC virtual double rotateAroundAxis(double angle, double x, double y);
+fs_content_export virtual double rotateAroundAxis(double angle, double x, double y);
 
-FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(const Vec2& point1, const Vec2& point2);
+fs_content_export virtual double flipAroundAxis(const Vec2& point1, const Vec2& point2);
 
-FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
+fs_content_export virtual double onDrag(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onClick(treenode view, int code);
+fs_content_export virtual double onClick(treenode view, int code);
 
-FS_CONTENT_DLL_FUNC double scaleComponents(int picktype, double newsize);
+fs_content_export double scaleComponents(int picktype, double newsize);
 
-FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
+fs_content_export virtual bool canRotateOnIncline();
 
 TreeNode* node_v_shellxloc;
 #define v_shellxloc node_v_shellxloc->safedatafloat()[0]
@@ -6761,9 +6900,9 @@ double justcreated;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // ASRSvehicle
@@ -6774,31 +6913,31 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+fs_content_export double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double getForkHeight();
+fs_content_export double getForkHeight();
 
-FS_CONTENT_DLL_FUNC double beginOffset(double endspeed, treenode item);
+fs_content_export double beginOffset(double endspeed, treenode item);
 
-FS_CONTENT_DLL_FUNC double finishOffset();
+fs_content_export double finishOffset();
 
-FS_CONTENT_DLL_FUNC double updateOffset();
+fs_content_export double updateOffset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC double getEntryLoc(treenode involvedobj,  double* returnarray);
+fs_content_export double getEntryLoc(treenode involvedobj,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
+fs_content_export virtual double onDrag(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onClick(treenode view, int code);
+fs_content_export virtual double onClick(treenode view, int code);
 
-FS_CONTENT_DLL_FUNC double scaleComponents();
+fs_content_export double scaleComponents();
 
-FS_CONTENT_DLL_FUNC virtual bool canRotateOnIncline();
+fs_content_export virtual bool canRotateOnIncline();
 
 TreeNode* node_v_forkspeed;
 #define v_forkspeed node_v_forkspeed->safedatafloat()[0]
@@ -6820,9 +6959,9 @@ TreeNode* node_v_extensionspeed;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // BasicTE
@@ -6833,33 +6972,33 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double beginOffset(double endspeed, treenode item);
+fs_content_export double beginOffset(double endspeed, treenode item);
 
-FS_CONTENT_DLL_FUNC double updateOffset();
+fs_content_export double updateOffset();
 
-FS_CONTENT_DLL_FUNC double finishOffset();
+fs_content_export double finishOffset();
 
-FS_CONTENT_DLL_FUNC double getPickOffset(treenode item, treenode toobject, double* returnarray);
+fs_content_export double getPickOffset(treenode item, treenode toobject, double* returnarray);
 
-FS_CONTENT_DLL_FUNC double getPlaceOffset(treenode item, treenode fromobject,  double* returnarray);
+fs_content_export double getPlaceOffset(treenode item, treenode fromobject,  double* returnarray);
 
-FS_CONTENT_DLL_FUNC void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+fs_content_export void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void resume(int id, int stateprofile DEFAULTZERO);
+fs_content_export virtual void resume(int id, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+fs_content_export double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
+fs_content_export double onClick(treenode view, int code);
 
-FS_CONTENT_DLL_FUNC virtual double onPreempt();
+fs_content_export virtual double onPreempt();
 
-FS_CONTENT_DLL_FUNC double onKeyedClick(treenode view, int code, char key);
+fs_content_export double onKeyedClick(treenode view, int code, char key);
 
-FS_CONTENT_DLL_FUNC double onStateChange(int toState, treenode stateProfile);
+fs_content_export double onStateChange(int toState, treenode stateProfile);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_poffsetx;
 #define v_poffsetx node_v_poffsetx->safedatafloat()[0]
@@ -6886,9 +7025,9 @@ treenode advancedfunctions = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // NetworkNode
@@ -6899,113 +7038,113 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC  NetworkNode();
+fs_content_export  NetworkNode();
 
-FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+fs_content_export double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double onDrag(treenode view);
+fs_content_export double onDrag(treenode view);
 
-FS_CONTENT_DLL_FUNC double onPreDraw(treenode view);
+fs_content_export double onPreDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double onDrawPlanar(treenode view);
+fs_content_export double onDrawPlanar(treenode view);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onKeyedClick(treenode view, int code, char key);
+fs_content_export double onKeyedClick(treenode view, int code, char key);
 
-FS_CONTENT_DLL_FUNC treenode onMenuPopup(treenode view, treenode theMenu);
+fs_content_export treenode onMenuPopup(treenode view, treenode theMenu);
 
-FS_CONTENT_DLL_FUNC double setViewMode(int viewMode);
+fs_content_export double setViewMode(int viewMode);
 
-FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
+fs_content_export double onClick(treenode view, int code);
 
-FS_CONTENT_DLL_FUNC double onDestroy(treenode view);
+fs_content_export double onDestroy(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double onReceiveTraveler(treenode reqnode, int port, int beginning, int lastport);
+fs_content_export virtual double onReceiveTraveler(treenode reqnode, int port, int beginning, int lastport);
 
-FS_CONTENT_DLL_FUNC virtual double onSendTraveler(treenode reqnode, int nextport);
+fs_content_export virtual double onSendTraveler(treenode reqnode, int nextport);
 
-FS_CONTENT_DLL_FUNC virtual double releaseTraveler(treenode reqnode);
+fs_content_export virtual double releaseTraveler(treenode reqnode);
 
-FS_CONTENT_DLL_FUNC virtual double receiveTraveler(int port);
+fs_content_export virtual double receiveTraveler(int port);
 
-FS_CONTENT_DLL_FUNC virtual double receiveInputRequest(treenode reqnode, int port, int lastport);
+fs_content_export virtual double receiveInputRequest(treenode reqnode, int port, int lastport);
 
-FS_CONTENT_DLL_FUNC static int pushTraveler(treenode reqnode, NetworkNode* tonetnode, int nextport);
+fs_content_export static int pushTraveler(treenode reqnode, NetworkNode* tonetnode, int nextport);
 
-FS_CONTENT_DLL_FUNC virtual double isTrafficControlMember(treenode tcontroller);
+fs_content_export virtual double isTrafficControlMember(treenode tcontroller);
 
-FS_CONTENT_DLL_FUNC static int resumePushTraveler(treenode reqnode, NetworkNode* tonetnode, int nextport);
+fs_content_export static int resumePushTraveler(treenode reqnode, NetworkNode* tonetnode, int nextport);
 
-FS_CONTENT_DLL_FUNC virtual double onTravelInNotify(treenode reqnode, int port);
+fs_content_export virtual double onTravelInNotify(treenode reqnode, int port);
 
-FS_CONTENT_DLL_FUNC virtual double getSplinePos(int port, double perc, double * returnloc);
+fs_content_export virtual double getSplinePos(int port, double perc, double * returnloc);
 
-FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode traveler, treenode reqnode,  int port, double* returnarray);
+fs_content_export virtual double getPlaceOffset(treenode traveler, treenode reqnode,  int port, double* returnarray);
 
-FS_CONTENT_DLL_FUNC virtual double updateData();
+fs_content_export virtual double updateData();
 
-FS_CONTENT_DLL_FUNC virtual double getBurden(int outport);
+fs_content_export virtual double getBurden(int outport);
 
-FS_CONTENT_DLL_FUNC virtual double getEdgeSpeedLimit(int outport);
+fs_content_export virtual double getEdgeSpeedLimit(int outport);
 
-FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toObj, char characterpressed, unsigned int classtype);
+fs_content_export virtual double dragConnection(treenode toObj, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC virtual NetNodeEdge* addEdge(NetworkNode* otherNode, int toType, int backType, bool curved);
+fs_content_export virtual NetNodeEdge* addEdge(NetworkNode* otherNode, int toType, int backType, bool curved);
 
-FS_CONTENT_DLL_FUNC virtual NetNodeEdge* createNewEdge();
+fs_content_export virtual NetNodeEdge* createNewEdge();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC double toggleShowMode(int newmode);
+fs_content_export double toggleShowMode(int newmode);
 
-FS_CONTENT_DLL_FUNC virtual double abortTravel(treenode reqnode);
+fs_content_export virtual double abortTravel(treenode reqnode);
 
-FS_CONTENT_DLL_FUNC virtual double deleteInRequest(treenode reqnode, int searchallports DEFAULTZERO);
+fs_content_export virtual double deleteInRequest(treenode reqnode, int searchallports DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC double invalidateSpline(int port);
+fs_content_export double invalidateSpline(int port);
 
-FS_CONTENT_DLL_FUNC NetworkNavigator* checkNetwork(int changename DEFAULTZERO);
+fs_content_export NetworkNavigator* checkNetwork(int changename DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual char* getNavigatorName();
+fs_content_export virtual char* getNavigatorName();
 
-FS_CONTENT_DLL_FUNC unsigned int getClassType();
+fs_content_export unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC double userCloseEdge(int portnum);
+fs_content_export double userCloseEdge(int portnum);
 
-FS_CONTENT_DLL_FUNC double userOpenEdge(int portnum);
+fs_content_export double userOpenEdge(int portnum);
 
-FS_CONTENT_DLL_FUNC virtual double updateVersion(char* newversion, char* oldversion);
+fs_content_export virtual double updateVersion(char* newversion, char* oldversion);
 
-FS_CONTENT_DLL_FUNC double saveState();
+fs_content_export double saveState();
 
-FS_CONTENT_DLL_FUNC double loadState();
+fs_content_export double loadState();
 
-FS_CONTENT_DLL_FUNC virtual double validateData(int notifyuser DEFAULTONE);
+fs_content_export virtual double validateData(int notifyuser DEFAULTONE);
 
-FS_CONTENT_DLL_FUNC virtual double rotateAroundAxis(double angle, double x, double y);
+fs_content_export virtual double rotateAroundAxis(double angle, double x, double y);
 
-FS_CONTENT_DLL_FUNC virtual double flipAroundAxis(const Vec2& point1, const Vec2& point2);
+fs_content_export virtual double flipAroundAxis(const Vec2& point1, const Vec2& point2);
 
-FS_CONTENT_DLL_FUNC double buildStaticMeshes();
+fs_content_export double buildStaticMeshes();
 
-FS_CONTENT_DLL_FUNC double buildMesh();
+fs_content_export double buildMesh();
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC virtual void setEdgeType(treenode edge, int type);
+fs_content_export virtual void setEdgeType(treenode edge, int type);
 
-FS_CONTENT_DLL_FUNC virtual void setEdgeGeomType(treenode edgeNode, bool straight);
+fs_content_export virtual void setEdgeGeomType(treenode edgeNode, bool straight);
 
-FS_CONTENT_DLL_FUNC double addSplineAtts(treenode obj);
+fs_content_export double addSplineAtts(treenode obj);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_network;
 #define v_network node_v_network->safedatafloat()[0]
@@ -7072,9 +7211,9 @@ treenode onEntryTrigger = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC void bindVariablesDefault();
+fs_content_export void bindVariablesDefault();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // TrafficControl
@@ -7085,51 +7224,51 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double requestEntry(treenode reqnode, NetworkNode* tonetnode, int nextport, int fromrank, int torank);
+fs_content_export virtual double requestEntry(treenode reqnode, NetworkNode* tonetnode, int nextport, int fromrank, int torank);
 
-FS_CONTENT_DLL_FUNC virtual double leaveArea(treenode reqnode, treenode networknode);
+fs_content_export virtual double leaveArea(treenode reqnode, treenode networknode);
 
-FS_CONTENT_DLL_FUNC virtual double searchModeTable(int fromrank, int torank);
+fs_content_export virtual double searchModeTable(int fromrank, int torank);
 
-FS_CONTENT_DLL_FUNC virtual double findDifferentTableMatch(int fromrank, int torank);
+fs_content_export virtual double findDifferentTableMatch(int fromrank, int torank);
 
-FS_CONTENT_DLL_FUNC virtual double allowNewRequests();
+fs_content_export virtual double allowNewRequests();
 
-FS_CONTENT_DLL_FUNC virtual double checkRowForConnection(int row, int fromrank, int torank);
+fs_content_export virtual double checkRowForConnection(int row, int fromrank, int torank);
 
-FS_CONTENT_DLL_FUNC double modeError(int fromrank, int torank);
+fs_content_export double modeError(int fromrank, int torank);
 
-FS_CONTENT_DLL_FUNC unsigned int getClassType();
+fs_content_export unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+fs_content_export virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC virtual double forceReceive(treenode reqnode, treenode netnode);
+fs_content_export virtual double forceReceive(treenode reqnode, treenode netnode);
 
-FS_CONTENT_DLL_FUNC virtual double abortRequest(treenode reqnode);
+fs_content_export virtual double abortRequest(treenode reqnode);
 
-FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+fs_content_export double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double onKeyedClick(treenode view, int code, char key);
+fs_content_export double onKeyedClick(treenode view, int code, char key);
 
-FS_CONTENT_DLL_FUNC double saveState();
+fs_content_export double saveState();
 
-FS_CONTENT_DLL_FUNC double loadState();
+fs_content_export double loadState();
 
-FS_CONTENT_DLL_FUNC static float saveTCRequestState(treenode reqnode);
+fs_content_export static float saveTCRequestState(treenode reqnode);
 
-FS_CONTENT_DLL_FUNC static float loadTCRequestState(treenode reqnode);
+fs_content_export static float loadTCRequestState(treenode reqnode);
 
-FS_CONTENT_DLL_FUNC virtual double getSpeedMultiple();
+fs_content_export virtual double getSpeedMultiple();
 
-FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+fs_content_export virtual double copyVariables(treenode otherobject);
 
-FS_CONTENT_DLL_FUNC virtual double info(int info, double _a, double _b);
+fs_content_export virtual double info(int info, double _a, double _b);
 
-FS_CONTENT_DLL_FUNC virtual void bindEvents();
+fs_content_export virtual void bindEvents();
 
 TreeNode* node_v_requests;
 #define v_requests node_v_requests->safedatafloat()[0]
@@ -7164,9 +7303,9 @@ treenode onRequestTrigger = nullptr;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // StorageSystem
@@ -7177,8 +7316,8 @@ public:
 
 //ClassIncludeHeaderStart
 	  
-StorageSystem() : slots(this) {}
-~StorageSystem();
+fs_content_export StorageSystem() : slots(this) {}
+fs_content_export ~StorageSystem();
 static StorageSystem* instance;
 
 class AddressMapping;
@@ -7186,7 +7325,7 @@ class AddressMapping;
 /// <summary>	Represents a integer-ized slot address.</summary>
 /// <remarks>	  Addresses can be either "mapped" or "raw". Address provides 
 /// 			  conversions between "raw" and "mapped".</remarks>
-class Address {
+class fs_content_export Address {
 public:
 	Address() : storageObject(nullptr), isMapped(false) {}
 	Address(StorageObject* storageObject, int bay, int level, int slot, bool isMapped)
@@ -7210,7 +7349,7 @@ public:
 	bool operator < (const Address& other);
 };
 
-class AddressScheme : public SimpleDataType {
+class fs_content_export AddressScheme : public SimpleDataType {
 public:
 	virtual const char* getClassFactory() override { return "StorageSystemAddressScheme"; }
 	virtual void bind() override;
@@ -7314,7 +7453,7 @@ public:
 ///
 /// <remarks>	 Each storage object owns an address mapping, and the various values 
 /// 			 are defined by the user.</remarks>
-class AddressMapping {
+class fs_content_export AddressMapping {
 public:
 	StorageObject & storageObject;
 	AddressMapping(StorageObject& storageObject) : storageObject(storageObject) {}
@@ -7359,7 +7498,7 @@ class VirtualizedItem;
 static const int INDEX_UNORDERED = 1;
 static const int INDEX_ORDERED = 2;
 
-class SlotLabelSettings : public SimpleDataType {
+class fs_content_export SlotLabelSettings : public SimpleDataType {
 public:
 	virtual const char* getClassFactory() override { return "StorageSystemSlotLabelSettings"; }
 	virtual void bind() override;
@@ -7388,7 +7527,7 @@ public:
 	Color getColor(const Variant& value);
 };
 
-class VirtualizedItem : public CouplingDataType {
+class fs_content_export VirtualizedItem : public CouplingDataType {
 public:
 	class StorageObjectItemMeshData;
 
@@ -7429,7 +7568,7 @@ public:
 
 	class StorageData;
 
-	class StorageObjectItemMeshData : public CouplingDataType {
+	class fs_content_export StorageObjectItemMeshData : public CouplingDataType {
 	public:
 		StorageObjectItemMeshData();
 		virtual const char* getClassFactory() override { return "StorageSystemVirtualizedItemStorageObjectItemMeshData"; }
@@ -7448,7 +7587,7 @@ public:
 		void rebuildMesh();
 	};
 
-	class StorageData : public SimpleDataType {
+	class fs_content_export StorageData : public SimpleDataType {
 	public:
 		struct Key {
 			int shapeIndex;
@@ -7482,7 +7621,7 @@ public:
 	};
 };
 
-class ItemLabelSettings : public SimpleDataType {
+class fs_content_export ItemLabelSettings : public SimpleDataType {
 public:
 	virtual const char* getClassFactory() override { return "StorageSystemItemLabelSettings"; }
 	virtual void bind() override;
@@ -7506,14 +7645,14 @@ public:
 
 	void onReset();
 	void removeFromIndex(const Variant& value, VirtualizedItem* item);
-	void addToIndex(const Variant& value, VirtualizedItem* item) 
+	void addToIndex(const Variant& value, VirtualizedItem* item)
 	{ 
 		if (item) 
 			itemIndex[value].insert(item); 
 	}
 };
 
-struct BoundingBox {
+struct fs_content_export BoundingBox {
 	Vec3f min;
 	Vec3f max;
 	bool contains(const Vec3f& point) const { 
@@ -7530,7 +7669,7 @@ struct BoundingBox {
 	}
 };
 
-class Visualization : public SimpleDataType {
+class fs_content_export Visualization : public SimpleDataType {
 public:
 	virtual const char* getClassFactory() { return "StorageSystemVisualization"; }
 	virtual void bind() override;
@@ -7773,14 +7912,14 @@ NodeListArray<Visualization>::SdtSubNodeBindingType visualizations;
 Variant addVisualization(FLEXSIMINTERFACE) { return visualizations.add(new Visualization)->holder; }
 
 
-static SimpleDataType* createSDTDerivative(const char* className);
-static void addObject(TreeNode* myCouplingNode, StorageObject* obj);
+fs_content_export static SimpleDataType* createSDTDerivative(const char* className);
+fs_content_export static void addObject(TreeNode* myCouplingNode, StorageObject* obj);
 
  
 NodeListArray<StorageObject, addObject>::ObjCouplingType objects;
 typedef NodeListArray<StorageObject, addObject, nullptr, OneBased::rankOffset>::ObjCouplingType StorageObjectArray;
 StorageObjectArray storageObjects;
-StorageObjectArray& __getStorageObjects() { return storageObjects; }
+fs_content_export StorageObjectArray& __getStorageObjects() { return storageObjects; }
 NodeListArray<SlotLabelSettings>::SdtSubNodeBindingType slotLabels;
 
 NodeListArray<ItemLabelSettings>::SdtSubNodeBindingType itemLabels;
@@ -7793,15 +7932,15 @@ NodeListArray<AddressScheme>::SdtSubNodeBindingType addressSchemes;
 Variant addAddressScheme(FLEXSIMINTERFACE) { return addressSchemes.add(new AddressScheme)->holder; }
 
 
-virtual void bind() override;
-virtual void bindVariables() override;
-virtual void bindInterface() override;
-virtual void bindEvents() override;
-virtual double onReset();
-virtual void onCreate();
+fs_content_export virtual void bind() override;
+fs_content_export virtual void bindVariables() override;
+fs_content_export virtual void bindInterface() override;
+fs_content_export virtual void bindEvents() override;
+fs_content_export virtual double onReset();
+fs_content_export virtual void onCreate();
 
-void addAllModelStorageObjects();
-void validateUniqueAddresses();
+fs_content_export void addAllModelStorageObjects();
+fs_content_export void validateUniqueAddresses();
 
 Variant addSlotLabel(FLEXSIMINTERFACE);
 Variant addItemLabel(FLEXSIMINTERFACE);
@@ -7813,8 +7952,8 @@ TreeNode* onSlotExit;
 TreeNode* onSlotAssign;
 
 std::unordered_map<std::string, int> labelRankMap;
-void refreshLabelRankMap();
-int getLabelRank(const char* labelName);
+fs_content_export void refreshLabelRankMap();
+fs_content_export int getLabelRank(const char* labelName);
 
 static const int QUERY_LIMIT_1 = 0x1;
 
@@ -7825,7 +7964,7 @@ static const int QUERY_UNSTORED_ITEMS = 0x400;
 static const int QUERY_REASSIGNED_ITEMS = 0x800;
 static const int QUERY_ALL_ITEMS = 0xc00;
 
-class SlotQueryDataSource : public SqlDataSource
+class fs_content_export SlotQueryDataSource : public SqlDataSource
 {
 public:
 	StorageSystem * __getSystem() { return ownerobject(holder)->objectAs(StorageSystem); }
@@ -7875,27 +8014,27 @@ public:
 };
 std::unordered_map<string, ObjRef<SqlQueryInterface>> slotQueryIndex;
 TreeNode* slotQueries;
-Variant querySlots(const char* query, int flags, VariantParams& params);
-Variant querySlots(const char* query, int flags = 0);
-Variant querySlots(const char* query, int flags, const Variant& p1);
-Variant querySlots(const char* query, int flags, const Variant& p1, const Variant& p2);
-Variant querySlots(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3);
-Variant querySlots(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
-Variant querySlots(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
+fs_content_export Variant querySlots(const char* query, int flags, VariantParams& params);
+fs_content_export Variant querySlots(const char* query, int flags = 0);
+fs_content_export Variant querySlots(const char* query, int flags, const Variant& p1);
+fs_content_export Variant querySlots(const char* query, int flags, const Variant& p1, const Variant& p2);
+fs_content_export Variant querySlots(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3);
+fs_content_export Variant querySlots(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
+fs_content_export Variant querySlots(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
 
 
-AbstractSlot* findSlot(const Variant& queries, int flags, VariantParams& params);
-AbstractSlot* findSlot(const Variant& queries = Variant(), int flags = 0);
-AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1);
-AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1, const Variant& p2ract);
-AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3);
-AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
-AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
+fs_content_export AbstractSlot* findSlot(const Variant& queries, int flags, VariantParams& params);
+fs_content_export AbstractSlot* findSlot(const Variant& queries = Variant(), int flags = 0);
+fs_content_export AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1);
+fs_content_export AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1, const Variant& p2ract);
+fs_content_export AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3);
+fs_content_export AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
+fs_content_export AbstractSlot* findSlot(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
 
 
 AbstractSlot* getSlot(const char* address);
 
-class ItemQueryDataSource : public SlotQueryDataSource
+class fs_content_export ItemQueryDataSource : public SlotQueryDataSource
 {
 public:
 	virtual const char* getClassFactory() override { return "StorageSystemItemQueryDataSource"; }
@@ -7931,38 +8070,38 @@ public:
 std::unordered_map<string, ObjRef<SqlQueryInterface>> itemQueryIndex;
 TreeNode* itemQueries;
 
-Variant queryItems(const char* query, int flags, VariantParams& params);
-Variant queryItems(const char* query, int flags = 0);
-Variant queryItems(const char* query, int flags, const Variant& p1);
-Variant queryItems(const char* query, int flags, const Variant& p1, const Variant& p2);
-Variant queryItems(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3);
-Variant queryItems(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
-Variant queryItems(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
+fs_content_export Variant queryItems(const char* query, int flags, VariantParams& params);
+fs_content_export Variant queryItems(const char* query, int flags = 0);
+fs_content_export Variant queryItems(const char* query, int flags, const Variant& p1);
+fs_content_export Variant queryItems(const char* query, int flags, const Variant& p1, const Variant& p2);
+fs_content_export Variant queryItems(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3);
+fs_content_export Variant queryItems(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
+fs_content_export Variant queryItems(const char* query, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
 
-VirtualizedItem* findItem(const Variant& queries, int flags, VariantParams& params);
-VirtualizedItem* findItem(const Variant& queries, int flags = 0);
-VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1);
-VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1, const Variant& p2);
-VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3);
-VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
-VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
+fs_content_export VirtualizedItem* findItem(const Variant& queries, int flags, VariantParams& params);
+fs_content_export VirtualizedItem* findItem(const Variant& queries, int flags = 0);
+fs_content_export VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1);
+fs_content_export VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1, const Variant& p2);
+fs_content_export VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3);
+fs_content_export VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4);
+fs_content_export VirtualizedItem* findItem(const Variant& queries, int flags, const Variant& p1, const Variant& p2, const Variant& p3, const Variant& p4, const Variant& p5);
 
 double autoRestack = 0;
 double virtualizeItems;
 NodeListArray<VirtualizedItem::StorageData>::SdtSubNodeBindingType virtualizedItems;
 std::unordered_map<VirtualizedItem::StorageData::Key, VirtualizedItem::StorageData*, VirtualizedItem::StorageData::Hash> virtualizedItemMap;
-void refreshVirtualizedItemMap();
+fs_content_export void refreshVirtualizedItemMap();
 
 double itemAssignmentCount;
 
 Variant setDrawElementBoundingBox(FLEXSIMINTERFACE);
 
-void onItemSlotAssigned(AbstractSlot* slot, VirtualizedItem* data);
-void onItemSlotExited(AbstractSlot* slot, VirtualizedItem* data);
-void addToInventory(ObjectDataType* item, VirtualizedItem* data);
-void removeFromInventory(ObjectDataType* item, VirtualizedItem* data);
-void onItemSlotUnassigned(ObjectDataType* item, VirtualizedItem* data);
-void onItemCurrentSlotUpdating(VirtualizedItem* oldCurrentSlotItem);
+fs_content_export void onItemSlotAssigned(AbstractSlot* slot, VirtualizedItem* data);
+fs_content_export void onItemSlotExited(AbstractSlot* slot, VirtualizedItem* data);
+fs_content_export void addToInventory(ObjectDataType* item, VirtualizedItem* data);
+fs_content_export void removeFromInventory(ObjectDataType* item, VirtualizedItem* data);
+fs_content_export void onItemSlotUnassigned(ObjectDataType* item, VirtualizedItem* data);
+fs_content_export void onItemCurrentSlotUpdating(VirtualizedItem* oldCurrentSlotItem);
 
 class StorageNamespace {
 public:
@@ -7972,13 +8111,13 @@ public:
 
 StorageObject* drawFiringStorageObject = nullptr;
 bool shouldFireDraw = false;
-void draw(treenode view);
+fs_content_export void draw(treenode view);
 
 //ClassIncludeHeaderEnd
 
 // System
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // StorageObject
@@ -7988,18 +8127,14 @@ public:
 
 
 //ClassIncludeHeaderStart
-	StorageObject() : 
-		addressMapping(*this),  
-		readyToGoMesh([this](Mesh& mesh) {buildReadyToGoMesh(mesh); })
-	{
-	}
-	~StorageObject();
+	fs_content_export StorageObject();
+	fs_content_export ~StorageObject();
 	typedef StorageSystem::Visualization Visualization;
 
 	class Bay;
 	class Level;
 	class Item;
-	class Slot : public StorageSystem::AbstractSlot {
+	class fs_content_export Slot : public StorageSystem::AbstractSlot {
 	public:
 		virtual const char* getClassFactory() { return "StorageSlot"; }
 		virtual void bind() override;
@@ -8007,7 +8142,7 @@ public:
 		virtual void bindEvents() override;
 		virtual int getCapabilities() override { return CAPABILITY_LABELS; }
 
-		class Item : public StorageSystem::VirtualizedItem {
+		class fs_content_export Item : public StorageSystem::VirtualizedItem {
 		public:
 			virtual const char* getClassFactory() override { return "StorageSlotItem"; }
 			virtual void bind() override;
@@ -8212,7 +8347,7 @@ public:
 		}
 	};
 
-	class Level : public SimpleDataType {
+	class fs_content_export Level : public SimpleDataType {
 	public:
 		virtual const char* getClassFactory() { return "StorageLevel"; }
 		virtual void bind() override;
@@ -8269,7 +8404,7 @@ public:
 		}
 	};
 
-	class Bay : public SimpleDataType {
+	class fs_content_export Bay : public SimpleDataType {
 	public:
 		virtual const char* getClassFactory() { return "StorageBay"; }
 		virtual void bind() override;
@@ -8326,7 +8461,7 @@ public:
 		}
 	};
 
-	class Item : public SimpleDataType {
+	class fs_content_export Item : public SimpleDataType {
 	private:
 		treenode currentSlotNode;
 		treenode assignedSlotNode;
@@ -8377,14 +8512,14 @@ public:
 		}
 		__declspec(property(get = __getState)) int state;
 	};
-	static StorageObject::Item* getItem(treenode item);
-	static StorageObject::Item* assertItem(treenode item);
+	fs_content_export static StorageObject::Item* getItem(treenode item);
+	fs_content_export static StorageObject::Item* assertItem(treenode item);
 
 
-	FS_CONTENT_DLL_FUNC virtual void bind() override;
-	FS_CONTENT_DLL_FUNC virtual void bindInterface() override;
-	FS_CONTENT_DLL_FUNC virtual void bindEvents();
-	FS_CONTENT_DLL_FUNC virtual void bindVariables();
+	fs_content_export virtual void bind() override;
+	fs_content_export virtual void bindInterface() override;
+	fs_content_export virtual void bindEvents();
+	fs_content_export virtual void bindVariables();
 	
 	static SimpleDataType* createSDTDerivative(const char* className);
 
@@ -8396,9 +8531,9 @@ public:
 
 	typedef NodeListArray<Bay>::SdtSubNodeBindingTypeOneBased BaysArray;
 	BaysArray bays;
-	BaysArray& __getBays() { return bays; }
+	fs_content_export BaysArray& __getBays() { return bays; }
 	TreeNode* systemNode;
-	StorageSystem* __getSystem();
+	fs_content_export StorageSystem* __getSystem();
 	__declspec(property(get = __getSystem)) StorageSystem* system;
 
 	/// <summary>	The structural mesh. Draws the column supports, and the orange front-facing
@@ -8414,12 +8549,12 @@ public:
 	/// <summary>	The pickable slot mesh. Draws a colored rectangle for each slot. 
 	/// 			Used in slot label painter mode.</summary>
 	Mesh pickableSlotMesh;
-	std::string pickableSlotMeshLabelName;
+	ByteBlock pickableSlotMeshLabelName;
 	static std::string drawPickableSlotsLabelName;
 	Variant setDrawPickableSlots(FLEXSIMINTERFACE) { drawPickableSlotsLabelName = param(1); return Variant(); }
 	
 
-	void buildReadyToGoMesh(Mesh& mesh);
+	fs_content_export void buildReadyToGoMesh(Mesh& mesh);
 	Mesh::AutoRebuildingMesh readyToGoMesh;
 
 	bool rebuildMeshes = true;
@@ -8434,17 +8569,17 @@ public:
 	StorageSystem::AddressMapping addressMapping;
 	ObjRef<StorageSystem::AddressScheme> addressScheme;
 
-	Bay* getBay(int bay);
-	Bay* getBay(treenode item);
-	Level* getLevel(int bay, int level);
-	Level* getLevel(treenode item);
-	Slot* getSlot(int bay, int level, int position);
-	Slot* getSlot(const Variant& bayID, const Variant& levelID, const Variant& slotID);
-	Slot* getSlot(treenode item);
+	fs_content_export Bay* getBay(int bay);
+	fs_content_export Bay* getBay(treenode item);
+	fs_content_export Level* getLevel(int bay, int level);
+	fs_content_export Level* getLevel(treenode item);
+	fs_content_export Slot* getSlot(int bay, int level, int position);
+	fs_content_export Slot* getSlot(const Variant& bayID, const Variant& levelID, const Variant& slotID);
+	fs_content_export Slot* getSlot(treenode item);
 
-	void visitBays(std::function<void(Bay*)>, const Variant& bayFilter = Variant());
-	void visitLevels(std::function<void(Level*)>, const Variant& levelFilter = Variant());
-	void visitSlots(std::function<void(Slot*)>, const Variant& slotFilter = Variant());
+	fs_content_export void visitBays(std::function<void(Bay*)>, const Variant& bayFilter = Variant());
+	fs_content_export void visitLevels(std::function<void(Level*)>, const Variant& levelFilter = Variant());
+	fs_content_export void visitSlots(std::function<void(Slot*)>, const Variant& slotFilter = Variant());
 
 	template<class Func, class CompareType, class Comp = std::equal_to<CompareType>>
 	CompareType visitSlots(Func func, CompareType stopVal, CompareType finishVal, Comp comp = Comp())
@@ -8464,28 +8599,28 @@ public:
 		}
 	}
 
-	FS_CONTENT_DLL_FUNC void setNumBays(int numBays, bool skipLocRefresh = false);
+	fs_content_export void setNumBays(int numBays, bool skipLocRefresh = false);
 	Variant setNumBays(FLEXSIMINTERFACE) { setNumBays(param(1), (int)param(2)); return Variant(); }
 
-	FS_CONTENT_DLL_FUNC void setBaySize(double width, const Variant& bayFilter = Variant(), bool skipLocRefresh = false);
+	fs_content_export void setBaySize(double width, const Variant& bayFilter = Variant(), bool skipLocRefresh = false);
 	Variant setBaySize(FLEXSIMINTERFACE) { setBaySize(param(1), param(2), (int)param(3)); return Variant(); }
 
-	FS_CONTENT_DLL_FUNC void setNumLevels(int numLevels, const Variant& bayFilter, bool skipLocRefresh = false);
+	fs_content_export void setNumLevels(int numLevels, const Variant& bayFilter, bool skipLocRefresh = false);
 	Variant setNumLevels(FLEXSIMINTERFACE) { setNumLevels(param(1), param(2), (int)param(3)); return Variant(); }
 
-	FS_CONTENT_DLL_FUNC void setLevelSize(double height, const Variant& levelFilter = Variant(), bool skipLocRefresh = false);
+	fs_content_export void setLevelSize(double height, const Variant& levelFilter = Variant(), bool skipLocRefresh = false);
 	Variant setLevelSize(FLEXSIMINTERFACE) { setLevelSize(param(1), param(2), (int)param(3)); return Variant(); }
 
-	FS_CONTENT_DLL_FUNC void setNumSlots(int numSlots, const Variant& slotFilter, bool skipLocRefresh = false);
+	fs_content_export void setNumSlots(int numSlots, const Variant& slotFilter, bool skipLocRefresh = false);
 	Variant setNumSlots(FLEXSIMINTERFACE) { setNumSlots(param(1), param(2), (int)param(3)); return Variant(); }
 
-	FS_CONTENT_DLL_FUNC void setSlotSize(double size, const Variant& slotFilter = Variant(), bool skipLocRefresh = false);
+	fs_content_export void setSlotSize(double size, const Variant& slotFilter = Variant(), bool skipLocRefresh = false);
 	Variant setSlotSize(FLEXSIMINTERFACE) { setSlotSize(param(1), param(2), (int)param(3)); return Variant(); }
 
-	FS_CONTENT_DLL_FUNC void setSlotStorable(bool isStorable, const Variant& slotFilter = Variant());
+	fs_content_export void setSlotStorable(bool isStorable, const Variant& slotFilter = Variant());
 	Variant setSlotStorable(FLEXSIMINTERFACE) { setSlotStorable((int)param(1), param(2)); return Variant(); }
 
-	FS_CONTENT_DLL_FUNC void setSlotPadding(bool isUpperPadding, int vecIndex, double padding, const Variant& slotFilter = Variant());
+	fs_content_export void setSlotPadding(bool isUpperPadding, int vecIndex, double padding, const Variant& slotFilter = Variant());
 	Variant setSlotPadding(FLEXSIMINTERFACE) { setSlotPadding((bool)(int)param(1), (int)param(2), (double)param(3), param(4)); return Variant(); }
 
 	Variant getBaySize(FLEXSIMINTERFACE) { return getBaySize(param(1)); }
@@ -8503,22 +8638,22 @@ public:
 	Variant refreshBayLevelSlotLocations(FLEXSIMINTERFACE) { refreshBayLevelSlotLocations(); return Variant(); }
 	Variant updateProgressions(FLEXSIMINTERFACE) { updateProgressions(); return Variant(); }
 
-	FS_CONTENT_DLL_FUNC virtual double onDrag(treenode view);
-	FS_CONTENT_DLL_FUNC double onClick(treenode view, int code);
-	FS_CONTENT_DLL_FUNC double onUndo(bool isUndo, treenode undoRecord) override { rebuildMeshes = true; return 0; }
+	fs_content_export virtual double onDrag(treenode view);
+	fs_content_export double onClick(treenode view, int code);
+	fs_content_export double onUndo(bool isUndo, treenode undoRecord) override { rebuildMeshes = true; return 0; }
 
-	FS_CONTENT_DLL_FUNC double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
+	fs_content_export double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO);
 
-	FS_CONTENT_DLL_FUNC double onReset();
+	fs_content_export double onReset();
 
-	FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+	fs_content_export double onReceive(treenode item, int port);
 
 
-	void onItemSlotAssigned(Slot* slot, Slot::Item* data);
+	fs_content_export void onItemSlotAssigned(Slot* slot, Slot::Item* data);
 
-	FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+	fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-	FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+	fs_content_export double onSend(treenode item, int port);
 
 	static const int DRAW_RACK = 1;
 	static const int DRAW_SLOTS = 2;
@@ -8526,82 +8661,82 @@ public:
 	static const int DRAW_LINES = 4;
 	static const int DRAW_VISUALIZATION = 5;
 
-	FS_CONTENT_DLL_FUNC double onDraw(treenode view);
+	fs_content_export double onDraw(treenode view);
 
-	FS_CONTENT_DLL_FUNC virtual double getPickOffset(treenode item, treenode toobject, double* returnarray);
+	fs_content_export virtual double getPickOffset(treenode item, treenode toobject, double* returnarray);
 
-	FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode item, treenode fromobject, double* returnarray);
+	fs_content_export virtual double getPlaceOffset(treenode item, treenode fromobject, double* returnarray);
 
-	FS_CONTENT_DLL_FUNC Slot* assignSlot(Item* data, bool throwOnFail);
-	FS_CONTENT_DLL_FUNC Slot* assignSlot(treenode item);
+	fs_content_export Slot* assignSlot(Item* data, bool throwOnFail);
+	fs_content_export Slot* assignSlot(treenode item);
 
-	FS_CONTENT_DLL_FUNC virtual double onTransportOutNotify(treenode item, int port) override;
+	fs_content_export virtual double onTransportOutNotify(treenode item, int port) override;
 
-	FS_CONTENT_DLL_FUNC virtual double onTransportOutComplete(treenode item, int port, treenode transporter = nullptr) override;
+	fs_content_export virtual double onTransportOutComplete(treenode item, int port, treenode transporter = nullptr) override;
 
-	FS_CONTENT_DLL_FUNC virtual double onTransportInNotify(treenode item, int portnumber);
+	fs_content_export virtual double onTransportInNotify(treenode item, int portnumber);
 
-	FS_CONTENT_DLL_FUNC virtual void onTransportInFailed(treenode item, int port);
+	fs_content_export virtual void onTransportInFailed(treenode item, int port);
 
-	FS_CONTENT_DLL_FUNC virtual double onPreDraw(treenode view);
+	fs_content_export virtual double onPreDraw(treenode view);
 
-	FS_CONTENT_DLL_FUNC double getBayOfItem(treenode item);
+	fs_content_export double getBayOfItem(treenode item);
 
-	FS_CONTENT_DLL_FUNC double getBayLoc(int bay);
+	fs_content_export double getBayLoc(int bay);
 
-	FS_CONTENT_DLL_FUNC double getBaySize(int bay);
+	fs_content_export double getBaySize(int bay);
 
-	FS_CONTENT_DLL_FUNC double getItemSlotRank(treenode item);
+	fs_content_export double getItemSlotRank(treenode item);
 
-	FS_CONTENT_DLL_FUNC double getLevelOfItem(treenode item);
+	fs_content_export double getLevelOfItem(treenode item);
 
-	FS_CONTENT_DLL_FUNC double getLevelLoc(int bay, int level);
+	fs_content_export double getLevelLoc(int bay, int level);
 
-	FS_CONTENT_DLL_FUNC double getLevelSize(int bay, int level);
+	fs_content_export double getLevelSize(int bay, int level);
 
-	FS_CONTENT_DLL_FUNC treenode getItem(int bay, int level, int position, int rankinslot);
+	fs_content_export treenode getItem(int bay, int level, int position, int rankinslot);
 
-	FS_CONTENT_DLL_FUNC double getBayContent(int bay);
+	fs_content_export double getBayContent(int bay);
 
-	FS_CONTENT_DLL_FUNC double getSlotContent(int bay, int level, int position);
+	fs_content_export double getSlotContent(int bay, int level, int position);
 
-	FS_CONTENT_DLL_FUNC double getNrOfBays();
+	fs_content_export double getNrOfBays();
 
-	FS_CONTENT_DLL_FUNC double getNrOfLevels(int bay DEFAULTONE);
+	fs_content_export double getNrOfLevels(int bay DEFAULTONE);
 
-	FS_CONTENT_DLL_FUNC virtual double drawFilledSlot(int bay, int level, int position, double x, double y, double z, double sx, double sy, double sz, int red, int green, int blue, int glbeginend DEFAULTONE);
-	FS_CONTENT_DLL_FUNC double recycleItem(treenode item, int binrank);
+	fs_content_export virtual double drawFilledSlot(int bay, int level, int position, double x, double y, double z, double sx, double sy, double sz, int red, int green, int blue, int glbeginend DEFAULTONE);
+	fs_content_export double recycleItem(treenode item, int binrank);
 
-	FS_CONTENT_DLL_FUNC treenode  restoreItem(int binrank, int bay, int level, int position, int itemRank);
+	fs_content_export treenode  restoreItem(int binrank, int bay, int level, int position, int itemRank);
 
-	FS_CONTENT_DLL_FUNC double setSlotContent(int bay, int level, int position, int contentval);
+	fs_content_export double setSlotContent(int bay, int level, int position, int contentval);
 
-	FS_CONTENT_DLL_FUNC virtual double drawVirtualContent(double bayfillperc, double levelfillperc, double itemdepth, double red, double green, double blue, int onlyvirtual DEFAULTONE);
+	fs_content_export virtual double drawVirtualContent(double bayfillperc, double levelfillperc, double itemdepth, double red, double green, double blue, int onlyvirtual DEFAULTONE);
 
-	FS_CONTENT_DLL_FUNC double saveState();
+	fs_content_export double saveState();
 
-	FS_CONTENT_DLL_FUNC double loadState();
+	fs_content_export double loadState();
 
-	FS_CONTENT_DLL_FUNC virtual double copyVariables(treenode otherobject);
+	fs_content_export virtual double copyVariables(treenode otherobject);
 
-	FS_CONTENT_DLL_FUNC double checkRebuildMeshes();
+	fs_content_export double checkRebuildMeshes();
 
-	FS_CONTENT_DLL_FUNC double buildFlatSlotMesh();
+	fs_content_export double buildFlatSlotMesh();
 
-	FS_CONTENT_DLL_FUNC double buildBoxMesh();
+	fs_content_export double buildBoxMesh();
 
-	FS_CONTENT_DLL_FUNC double buildLineMesh();
+	fs_content_export double buildLineMesh();
 
-	FS_CONTENT_DLL_FUNC void buildPickableSlotMesh();
+	fs_content_export void buildPickableSlotMesh();
 
-	FS_CONTENT_DLL_FUNC void refreshBayLevelSlotLocations();
+	fs_content_export void refreshBayLevelSlotLocations();
 
-	FS_CONTENT_DLL_FUNC void setBasicDimensions(int numBays, double bayWidth, int numLevels, double levelHeight, int numPositions);
+	fs_content_export void setBasicDimensions(int numBays, double bayWidth, int numLevels, double levelHeight, int numPositions);
 
-	FS_CONTENT_DLL_FUNC virtual void onDragConnection(ObjectDataType* fromObj, ObjectDataType* toObj, char charPressed) override;
+	fs_content_export virtual void onDragConnection(ObjectDataType* fromObj, ObjectDataType* toObj, char charPressed) override;
 
 	double meshHash = 0;
-	double calculateMeshHash();
+	fs_content_export double calculateMeshHash();
 
 	TreeNode* placeinbay;
 	TreeNode* placeinlevel;
@@ -8641,9 +8776,9 @@ public:
 	void onSlotLabelValueChange(Slot* slot, TreeNode* label, const Variant& newValue);
 
 	enum Progression : int {Positive = 1, Negative = -1, None = 0};
-	Progression getBayProgressionFromGeometry();
-	Progression getLevelProgressionFromGeometry();
-	Progression getSlotProgressionFromGeometry();
+	fs_content_export Progression getBayProgressionFromGeometry();
+	fs_content_export Progression getLevelProgressionFromGeometry();
+	fs_content_export Progression getSlotProgressionFromGeometry();
 	void updateProgressions();
 	double bayProgression;
 	double levelProgression;
@@ -8657,7 +8792,7 @@ public:
 	Variant setDrawElementBoundingBox(FLEXSIMINTERFACE);
 
 	ObjRef<StorageSystem::Visualization> visualization;
-	StorageSystem::Visualization* getEffectiveVisualization();
+	fs_content_export StorageSystem::Visualization* getEffectiveVisualization();
 	struct ElementLess {
 		bool operator()(const Visualization::Element* left, const Visualization::Element* right) const
 		{
@@ -8674,9 +8809,10 @@ public:
 			return leftVal < rightVal;
 		}
 	};
-	std::map<Visualization::Element*, std::unique_ptr<Visualization::ElementMeshEntry>, ElementLess> slotMeshes;
-	void initializeSlotMeshes();
-	void rebuildSlotMesh(StorageSystem::Visualization::ElementMeshEntry& entry, Visualization::Element* element);
+	using ElementMeshMap = std::map<Visualization::Element*, std::unique_ptr<Visualization::ElementMeshEntry>, ElementLess>;
+	std::unique_ptr<ElementMeshMap> slotMeshes;
+	fs_content_export void initializeSlotMeshes();
+	fs_content_export void rebuildSlotMesh(StorageSystem::Visualization::ElementMeshEntry& entry, Visualization::Element* element);
 
 	SlotLabelMatchCache slotLabelMatchCache;
 	bool areSlotLabelsEqual(const char* labelName) {
@@ -8706,25 +8842,27 @@ public:
 		setBasicDimensions(8, 2.5 / getmodelunit(LENGTH_MULTIPLE), 6, 1.4 / getmodelunit(LENGTH_MULTIPLE), 2);
 	}
 
-	virtual void onSlotReceive(Slot* slot, StorageObject::Item* item);
-	virtual void onSlotSend(Slot* slot, StorageObject::Item* item);
-	virtual void setItemStackingLocation(Slot* slot, Slot::Item* slotItem, StorageObject::Item* data) { slot->setItemStackingLocation(slotItem, data); }
+	fs_content_export virtual void onSlotReceive(Slot* slot, StorageObject::Item* item);
+	fs_content_export virtual void onSlotSend(Slot* slot, StorageObject::Item* item);
+	fs_content_export virtual void setItemStackingLocation(Slot* slot, Slot::Item* slotItem, StorageObject::Item* data) { slot->setItemStackingLocation(slotItem, data); }
 
 	virtual const char* getDefaultVisualizationName() { return "Rack"; }
 
 	NodeListArray<StorageSystem::VirtualizedItem::StorageObjectItemMeshData>::CouplingSdtSubNodeBindingType virtualizedItemMeshData;
-	std::unordered_map<
+	
+	using VirtualizedItemMeshMap = std::unordered_map<
 		StorageSystem::VirtualizedItem::StorageData::Key,
 		StorageSystem::VirtualizedItem::StorageObjectItemMeshData*,
 		StorageSystem::VirtualizedItem::StorageData::Hash
-	> virtualizedItemMeshDataMap;
-	void refreshVirtualizedItemMeshDataMap();
+	>;
+	std::unique_ptr<VirtualizedItemMeshMap> virtualizedItemMeshDataMap;
+	fs_content_export void refreshVirtualizedItemMeshDataMap();
 
 //ClassIncludeHeaderEnd
 
 // System
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // Rack
@@ -8735,11 +8873,11 @@ public:
 
 //ClassIncludeHeaderStart
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables() override;
-FS_CONTENT_DLL_FUNC virtual Rack* toRack() override { return this; }
-FS_CONTENT_DLL_FUNC virtual double onReset() override;
-FS_CONTENT_DLL_FUNC double buildFullMeshes();
-void setTiltAngle(StorageObject::Item* item);
+fs_content_export virtual void bindVariables() override;
+fs_content_export virtual Rack* toRack() override { return this; }
+fs_content_export virtual double onReset() override;
+fs_content_export double buildFullMeshes();
+fs_content_export void setTiltAngle(StorageObject::Item* item);
 
 //ClassIncludeHeaderEnd
 
@@ -8758,9 +8896,9 @@ TreeNode* node_v_extendcolumn;
 
 // System
 
-FS_CONTENT_DLL_FUNC void bindVariablesDefault();
+fs_content_export void bindVariablesDefault();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // GravityFlowRack
@@ -8770,17 +8908,18 @@ public:
 
 
 //ClassIncludeHeaderStart
+	fs_content_export GravityFlowRack();
 	double flowSpeed;
 
 	// hasPreDrawFiredSinceReset is a variable for optimization of my flowingSlots set
 	bool hasPreDrawFiredSinceReset = false;
 	double lastFlowUpdateTime = -1;
-	std::set<Slot*> flowingSlots;
-	virtual void bindVariables() override;
-	virtual double onReset() override;
-	virtual double onTimerEvent(treenode involved, int code, char *datastr) override;
-	virtual GravityFlowRack* toGravityFlowRack() override { return this; }
-	virtual void setInitialDimensions() override {
+	std::unique_ptr<std::set<Slot*>> flowingSlots;
+	fs_content_export virtual void bindVariables() override;
+	fs_content_export virtual double onReset() override;
+	fs_content_export virtual double onTimerEvent(treenode involved, int code, char *datastr) override;
+	fs_content_export virtual GravityFlowRack* toGravityFlowRack() override { return this; }
+	fs_content_export virtual void setInitialDimensions() override {
 		setBasicDimensions(5, 2.5 / getmodelunit(LENGTH_MULTIPLE), 6, 0.4 / getmodelunit(LENGTH_MULTIPLE), 4);
 	}
 	FS_CONTENT_DLL_FUNC virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO) override;
@@ -8788,16 +8927,16 @@ public:
 	FS_CONTENT_DLL_FUNC virtual double getPlaceOffset(treenode involvedobj, treenode fromobject, double* returnarray) override;
 
 	FS_CONTENT_DLL_FUNC virtual double getPickOffset(treenode item, treenode toobject, double* returnarray);
-	virtual void onSlotReceive(Slot* slot, StorageObject::Item* item) override;
-	virtual void onSlotSend(Slot* slot, StorageObject::Item* item) override;
-	virtual double updateLocations() override;
-	virtual const char* getDefaultVisualizationName() override { return "Gravity Flow Rack"; }
+	fs_content_export virtual void onSlotReceive(Slot* slot, StorageObject::Item* item) override;
+	fs_content_export virtual void onSlotSend(Slot* slot, StorageObject::Item* item) override;
+	fs_content_export virtual double updateLocations() override;
+	fs_content_export virtual const char* getDefaultVisualizationName() override { return "Gravity Flow Rack"; }
 
 //ClassIncludeHeaderEnd
 
 // System
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // PushBackRack
@@ -8809,7 +8948,7 @@ public:
 //ClassIncludeHeaderStart
 
 virtual PushBackRack* toPushBackRack() override { return this; }
-double getPickPlaceOffset(treenode involved, treenode fromObj, double* returnArray, bool isPickOffset);
+fs_content_export double getPickPlaceOffset(treenode involved, treenode fromObj, double* returnArray, bool isPickOffset);
 virtual double getPlaceOffset(treenode involved, treenode fromObj, double* returnArray) override
 {
 	return getPickPlaceOffset(involved, fromObj, returnArray, false);
@@ -8818,20 +8957,20 @@ virtual double getPickOffset(treenode involved, treenode toObj, double* returnAr
 {
 	return getPickPlaceOffset(involved, toObj, returnArray, true);
 }
-virtual void setItemStackingLocation(Slot* slot, Slot::Item* slotItem, StorageObject::Item* data) override;
+fs_content_export virtual void setItemStackingLocation(Slot* slot, Slot::Item* slotItem, StorageObject::Item* data) override;
 
-virtual void setInitialDimensions() override;
-virtual const char* getDefaultVisualizationName() override { return "Push Back Rack"; }
+fs_content_export virtual void setInitialDimensions() override;
+fs_content_export virtual const char* getDefaultVisualizationName() override { return "Push Back Rack"; }
 
-virtual void onSlotReceive(Slot* slot, StorageObject::Item* item) override;
+fs_content_export virtual void onSlotReceive(Slot* slot, StorageObject::Item* item) override;
 
 //ClassIncludeHeaderEnd
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // DriveInRack
@@ -8842,31 +8981,31 @@ public:
 
 //ClassIncludeHeaderStart
 
-virtual void bind() override;
-bool isDriveThrough() { return stackingAxis1 == STACKING_AXIS_Y; }
-virtual int getPickingOrder() override { return isDriveThrough() ? FIFO : LIFO; }
-virtual void bindVariables() override;
-virtual double onTimerEvent(treenode involved, int code, char *datastr) override;
-virtual DriveInRack* toDriveInRack() override { return this; }
-double getPickPlaceOffset(treenode involved, treenode fromObj, double* returnArray, bool isPickOffset);
-virtual double getPlaceOffset(treenode involved, treenode fromObj, double* returnArray) override 
+fs_content_export virtual void bind() override;
+fs_content_export bool isDriveThrough() { return stackingAxis1 == STACKING_AXIS_Y; }
+fs_content_export virtual int getPickingOrder() override { return isDriveThrough() ? FIFO : LIFO; }
+fs_content_export virtual void bindVariables() override;
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *datastr) override;
+fs_content_export virtual DriveInRack* toDriveInRack() override { return this; }
+fs_content_export double getPickPlaceOffset(treenode involved, treenode fromObj, double* returnArray, bool isPickOffset);
+fs_content_export virtual double getPlaceOffset(treenode involved, treenode fromObj, double* returnArray) override
 { 
 	return getPickPlaceOffset(involved, fromObj, returnArray, false); 
 }
-virtual double getPickOffset(treenode involved, treenode toObj, double* returnArray) override
+fs_content_export virtual double getPickOffset(treenode involved, treenode toObj, double* returnArray) override
 {
 	return getPickPlaceOffset(involved, toObj, returnArray, true);
 }
 
-virtual void onSlotReceive(Slot* slot, StorageObject::Item* item) override;
-virtual void onSlotSend(Slot* slot, StorageObject::Item* item) override;
+fs_content_export virtual void onSlotReceive(Slot* slot, StorageObject::Item* item) override;
+fs_content_export virtual void onSlotSend(Slot* slot, StorageObject::Item* item) override;
 
-virtual void setInitialDimensions() override
+fs_content_export virtual void setInitialDimensions() override
 {
 	setBasicDimensions(10, 1.5 / getmodelunit(LENGTH_MULTIPLE), 4, 1.5 / getmodelunit(LENGTH_MULTIPLE), 1);
 }
-virtual const char* getDefaultVisualizationName() override { return "Drive In Rack"; }
-void customizeAStarGrid(TreeNode* navigator, double nodeWidth);
+fs_content_export virtual const char* getDefaultVisualizationName() override { return "Drive In Rack"; }
+fs_content_export void customizeAStarGrid(TreeNode* navigator, double nodeWidth);
 Variant customizeAStarGrid(FLEXSIMINTERFACE) { customizeAStarGrid(param(1), param(2)); return 1; }
 
 
@@ -8874,7 +9013,7 @@ Variant customizeAStarGrid(FLEXSIMINTERFACE) { customizeAStarGrid(param(1), para
 
 // System
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FloorStorage
@@ -8885,14 +9024,14 @@ public:
 
 //ClassIncludeHeaderStart
 
-	virtual FloorStorage* toFloorStorage() override { return this; }
+	fs_content_export virtual FloorStorage* toFloorStorage() override { return this; }
 	FS_CONTENT_DLL_FUNC virtual double onCreate(double dropx, double dropy, double dropz, int iscopy DEFAULTZERO) override;
 
-	virtual int getPickingOrder() override { return LIFO; }
+	fs_content_export virtual int getPickingOrder() override { return LIFO; }
 
-	virtual const char* getDefaultVisualizationName() override { return "Floor Storage"; }
+	fs_content_export virtual const char* getDefaultVisualizationName() override { return "Floor Storage"; }
 
-	virtual void setInitialDimensions() override
+	fs_content_export virtual void setInitialDimensions() override
 	{
 		setBasicDimensions(10, 1.0 / getmodelunit(LENGTH_MULTIPLE), 10, 1.0 / getmodelunit(LENGTH_MULTIPLE), 1);
 	}
@@ -8903,9 +9042,9 @@ public:
 
 // System
 
-FS_CONTENT_DLL_FUNC void bindVariablesDefault();
+fs_content_export void bindVariablesDefault();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidTicker
@@ -8916,35 +9055,35 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC double defines();
+fs_content_export double defines();
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC double sortObjectList();
+fs_content_export double sortObjectList();
 
-FS_CONTENT_DLL_FUNC double quickSort(treenode table, int low, int high);
+fs_content_export double quickSort(treenode table, int low, int high);
 
-FS_CONTENT_DLL_FUNC double assignValue(treenode obj);
+fs_content_export double assignValue(treenode obj);
 
-FS_CONTENT_DLL_FUNC treenode getLink(treenode obj);
+fs_content_export treenode getLink(treenode obj);
 
-FS_CONTENT_DLL_FUNC double doTick();
+fs_content_export double doTick();
 
-FS_CONTENT_DLL_FUNC double prepareForTick();
+fs_content_export double prepareForTick();
 
-FS_CONTENT_DLL_FUNC double moveFluid();
+fs_content_export double moveFluid();
 
-FS_CONTENT_DLL_FUNC double completeTick();
+fs_content_export double completeTick();
 
-FS_CONTENT_DLL_FUNC double getTransferAmount(treenode upstreamobj, treenode downstreamobj, int outportnum);
+fs_content_export double getTransferAmount(treenode upstreamobj, treenode downstreamobj, int outportnum);
 
-FS_CONTENT_DLL_FUNC static treenode findDefaultTicker();
+fs_content_export static treenode findDefaultTicker();
 
 TreeNode* node_v_ticktime;
 #define v_ticktime node_v_ticktime->safedatafloat()[0]
@@ -8960,9 +9099,9 @@ TreeNode* node_v_ondrawtrigger;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidObject
@@ -8973,45 +9112,45 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double onDraw(treenode view);
+fs_content_export virtual double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+fs_content_export virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC double connectToTicker();
+fs_content_export double connectToTicker();
 
-FS_CONTENT_DLL_FUNC double connectToTicker(treenode ticker);
+fs_content_export double connectToTicker(treenode ticker);
 
-FS_CONTENT_DLL_FUNC double copyProductId(treenode upstreamobj,double amount);
+fs_content_export double copyProductId(treenode upstreamobj,double amount);
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double prepareMoveFluid();
+fs_content_export virtual double prepareMoveFluid();
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double moveMaterialIn(double amount, int port);
+fs_content_export virtual double moveMaterialIn(double amount, int port);
 
-FS_CONTENT_DLL_FUNC virtual double moveMaterialOut(double amount, int port);
+fs_content_export virtual double moveMaterialOut(double amount, int port);
 
-FS_CONTENT_DLL_FUNC virtual double emptyObject();
+fs_content_export virtual double emptyObject();
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+fs_content_export virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void resume();
+fs_content_export virtual void resume();
 
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
@@ -9065,9 +9204,9 @@ TreeNode* node_v_ondrawtrigger;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidTank
@@ -9078,19 +9217,19 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
 TreeNode* node_v_lowmark;
 #define v_lowmark node_v_lowmark->safedatafloat()[0]
@@ -9112,9 +9251,9 @@ TreeNode* node_v_initialproductid;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidGenerator
@@ -9125,21 +9264,21 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
 TreeNode* node_v_refillmode;
 #define v_refillmode node_v_refillmode->safedatafloat()[0]
@@ -9157,9 +9296,9 @@ TreeNode* node_v_adjustoutputrates;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidTerminator
@@ -9170,23 +9309,23 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double materialMovedIn(double amount, int port);
+fs_content_export virtual double materialMovedIn(double amount, int port);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
 TreeNode* node_v_adjustinputrates;
 TreeNode* node_v_totalinput;
@@ -9194,9 +9333,9 @@ TreeNode* node_v_totalinput;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidMixer
@@ -9207,29 +9346,29 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onTimerEvent(treenode involved, int code, char *strdata);
+fs_content_export virtual double onTimerEvent(treenode involved, int code, char *strdata);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double onDraw(treenode view);
+fs_content_export virtual double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double moveMaterialIn(double amount, int port);
+fs_content_export virtual double moveMaterialIn(double amount, int port);
 
-FS_CONTENT_DLL_FUNC virtual double emptyObject();
+fs_content_export virtual double emptyObject();
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
 TreeNode* node_v_curstep;
 #define v_curstep node_v_curstep->safedatafloat()[0]
@@ -9264,9 +9403,9 @@ TreeNode* node_v_avgbatchtime;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidBlender
@@ -9277,21 +9416,21 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
 TreeNode* node_v_maxtotalinrate;
 #define v_maxtotalinrate node_v_maxtotalinrate->safedatafloat()[0]
@@ -9309,9 +9448,9 @@ TreeNode* node_v_numupdates;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidSplitter
@@ -9322,21 +9461,21 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
 TreeNode* node_v_maxtotaloutrate;
 #define v_maxtotaloutrate node_v_maxtotaloutrate->safedatafloat()[0]
@@ -9352,9 +9491,9 @@ TreeNode* node_v_numupdates;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidPipe
@@ -9365,29 +9504,29 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double onDraw(treenode view);
+fs_content_export virtual double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double drawPipe(double color1, double color2, double color3);
+fs_content_export double drawPipe(double color1, double color2, double color3);
 
-FS_CONTENT_DLL_FUNC double drawConveyor(treenode view, double color1, double color2, double color3);
+fs_content_export double drawConveyor(treenode view, double color1, double color2, double color3);
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double emptyObject();
+fs_content_export virtual double emptyObject();
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
 TreeNode* node_v_maxflowrate;
 #define v_maxflowrate node_v_maxflowrate->safedatafloat()[0]
@@ -9416,9 +9555,9 @@ TreeNode* node_v_numupdates;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidProcessor
@@ -9429,23 +9568,23 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double emptyObject();
+fs_content_export virtual double emptyObject();
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
 TreeNode* node_v_maxflowrate;
 #define v_maxflowrate node_v_maxflowrate->safedatafloat()[0]
@@ -9472,9 +9611,9 @@ TreeNode* node_v_numupdates;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidObject2
@@ -9485,45 +9624,45 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onOutOpen(int port);
+fs_content_export double onOutOpen(int port);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double onDraw(treenode view);
+fs_content_export virtual double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
+fs_content_export virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype);
 
-FS_CONTENT_DLL_FUNC double copyProductId(treenode upstreamobj,double amount);
+fs_content_export double copyProductId(treenode upstreamobj,double amount);
 
-FS_CONTENT_DLL_FUNC double connectToTicker();
+fs_content_export double connectToTicker();
 
-FS_CONTENT_DLL_FUNC double connectToTicker(treenode ticker);
+fs_content_export double connectToTicker(treenode ticker);
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double emptyObject();
+fs_content_export virtual double emptyObject();
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double moveMaterialIn(double amount, int port);
+fs_content_export virtual double moveMaterialIn(double amount, int port);
 
-FS_CONTENT_DLL_FUNC virtual double moveMaterialOut(double amount, int port);
+fs_content_export virtual double moveMaterialOut(double amount, int port);
 
-FS_CONTENT_DLL_FUNC virtual unsigned int getClassType();
+fs_content_export virtual unsigned int getClassType();
 
-FS_CONTENT_DLL_FUNC virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
+fs_content_export virtual void stopAndSetState(int stopstate, int stateprofile DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual void resume();
+fs_content_export virtual void resume();
 
 TreeNode* node_v_maxcontent;
 #define v_maxcontent node_v_maxcontent->safedatafloat()[0]
@@ -9579,9 +9718,9 @@ TreeNode* node_v_exittrigger;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // ItemToFluid
@@ -9592,23 +9731,23 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onReceive(treenode item, int port);
+fs_content_export double onReceive(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
 TreeNode* node_v_fluidunitsperdiscrete;
 #define v_fluidunitsperdiscrete node_v_fluidunitsperdiscrete->safedatafloat()[0]
@@ -9624,9 +9763,9 @@ TreeNode* node_v_fulltrigger;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidToItem
@@ -9637,25 +9776,25 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC double onReset();
+fs_content_export double onReset();
 
-FS_CONTENT_DLL_FUNC double onTimerEvent(treenode involved, int code, char *datastr);
+fs_content_export double onTimerEvent(treenode involved, int code, char *datastr);
 
-FS_CONTENT_DLL_FUNC double onSend(treenode item, int port);
+fs_content_export double onSend(treenode item, int port);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC double generateItem(double curitemtype, string itemname);
+fs_content_export double generateItem(double curitemtype, string itemname);
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
 TreeNode* node_v_flowitemclass;
 #define v_flowitemclass node_v_flowitemclass->safedatafloat()[0]
@@ -9679,9 +9818,9 @@ int itemsmade;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 // FluidConveyor
@@ -9692,47 +9831,47 @@ public:
 
 // c++ member functions
 
-FS_CONTENT_DLL_FUNC virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
+fs_content_export virtual double onCreate(double xloc, double yloc, double zloc, int iscopy DEFAULTZERO);
 
-FS_CONTENT_DLL_FUNC virtual double onReset();
+fs_content_export virtual double onReset();
 
-FS_CONTENT_DLL_FUNC double onKeyedClick(treenode view, int code, char key);
+fs_content_export double onKeyedClick(treenode view, int code, char key);
 
-FS_CONTENT_DLL_FUNC double resetVariables();
+fs_content_export double resetVariables();
 
-FS_CONTENT_DLL_FUNC double updateConveyorInfo(double slicewidth, double leftend_y, double rightend_y);
+fs_content_export double updateConveyorInfo(double slicewidth, double leftend_y, double rightend_y);
 
-FS_CONTENT_DLL_FUNC virtual double updateLocations();
+fs_content_export virtual double updateLocations();
 
-FS_CONTENT_DLL_FUNC virtual double onDraw(treenode view);
+fs_content_export virtual double onDraw(treenode view);
 
-FS_CONTENT_DLL_FUNC double sensorCheck();
+fs_content_export double sensorCheck();
 
-FS_CONTENT_DLL_FUNC double rotateSlices();
+fs_content_export double rotateSlices();
 
-FS_CONTENT_DLL_FUNC double materialRepose(double reposerate, int onlyfalling);
+fs_content_export double materialRepose(double reposerate, int onlyfalling);
 
-FS_CONTENT_DLL_FUNC virtual double prepareForTick(double ticktime);
+fs_content_export virtual double prepareForTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double prepareMoveFluid();
+fs_content_export virtual double prepareMoveFluid();
 
-FS_CONTENT_DLL_FUNC virtual double completeTick(double ticktime);
+fs_content_export virtual double completeTick(double ticktime);
 
-FS_CONTENT_DLL_FUNC int updateInputs();
+fs_content_export int updateInputs();
 
-FS_CONTENT_DLL_FUNC int updateOutputs();
+fs_content_export int updateOutputs();
 
-FS_CONTENT_DLL_FUNC int updateSensors();
+fs_content_export int updateSensors();
 
-FS_CONTENT_DLL_FUNC virtual double emptyObject();
+fs_content_export virtual double emptyObject();
 
-FS_CONTENT_DLL_FUNC virtual double updateStats(double ticktime);
+fs_content_export virtual double updateStats(double ticktime);
 
-FS_CONTENT_DLL_FUNC double statsFunction(double ticktime);
+fs_content_export double statsFunction(double ticktime);
 
-FS_CONTENT_DLL_FUNC virtual double moveMaterialIn(double amount, int port);
+fs_content_export virtual double moveMaterialIn(double amount, int port);
 
-FS_CONTENT_DLL_FUNC virtual double moveMaterialOut(double amount, int port);
+fs_content_export virtual double moveMaterialOut(double amount, int port);
 
 TreeNode* node_v_numberofslices;
 #define v_numberofslices node_v_numberofslices->safedatafloat()[0]
@@ -9820,9 +9959,9 @@ IndexedMesh contentMesh;
 
 // System
 
-FS_CONTENT_DLL_FUNC virtual void bindVariables();
+fs_content_export virtual void bindVariables();
 
-FS_CONTENT_DLL_FUNC static int getAllocSize();
+fs_content_export static int getAllocSize();
 };
 
 }

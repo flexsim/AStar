@@ -266,13 +266,10 @@ public:
 		return setLocation(location.x, location.y, location.z, factors.x, factors.y, factors.z);
 	}
 	engine_export ObjectDataType& setRotation(double x, double y, double z);
+	engine_export ObjectDataType& setRotation(const Vec3& rotation);
 	engine_export ObjectDataType& setSize(double x, double y, double z);
 
-	struct BoundingBox {
-		Vec3 min;
-		Vec3 max;
-	};
-	engine_export BoundingBox getAxisAlignedBoundingBox();
+	engine_export virtual BoundingBox3 getAxisAlignedBoundingBox(TreeNode* projectOnto = nullptr);
 
 	engine_export Vec3& __getLocation();
 	engine_export Vec3& __getRotation();

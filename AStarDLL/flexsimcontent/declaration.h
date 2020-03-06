@@ -378,13 +378,15 @@ inline double addkinematic(treenode infonode,double _x, double _y, double _z,
 		double  _startspeed = 0.0, double  _endspeed = 0.0, double  _starttime = -1.0, unsigned short type = KINEMATIC_TRAVEL)
 	{return addkinematicalias(infonode, _x, _y, _z, maxspeed, acc, dec, _startspeed, _endspeed, _starttime, type);}
 
-inline string stringreplace(string text, string searchstr, string repstr)
+inline string stringreplace(string text, const string& searchstr, const string& repstr)
 {
-	for(int pos = text.find(searchstr,0); 
-		pos >= 0; 
-		pos = text.find(searchstr,0)
-	)
+	for(size_t pos = text.find(searchstr,0); 
+		pos != string::npos && pos < text.size(); 
+		pos = text.find(searchstr,pos))
+	{
 		text = text.replace(pos, searchstr.size(), repstr);
+		pos += repstr.size();
+	}
 	return text;
 }
 inline double drawcube(double LocX, double LocY, double LocZ, double SizeX, double SizeY, double SizeZ, 

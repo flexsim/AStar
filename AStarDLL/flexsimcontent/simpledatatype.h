@@ -1161,7 +1161,7 @@ private:
 	engine_export static void bindDestructorVoidPtr(void* destructorCallback);
 public:
 	template <class Type> 
-	static void bindConstructor(Type* constructorCallback, const char* signature)
+	static void bindConstructor(Type constructorCallback, const char* signature)
 	{
 		bindConstructorVoidPtr(force_cast<void*>(constructorCallback), signature);
 	}
@@ -1462,6 +1462,7 @@ public:
 	static const int COL_INDEX_ORDERED = 0x2; // tells the execution engine that the data source has an ordered quick lookup index, so the user can get fast lookups both with an ==, as well as with a <, >, <=, and >=.
 	static const int COL_DYNAMIC = 0x4; // signal to the sql execution engine that it should perhaps be cached because it may change on each execution
 	static const int COL_CONSTANT = 0x8; // signal to the sql execution engine that this column value is constant across all rows of the table (for indexing)
+	static const int COL_DO_NOT_INDEX = 0x10; // signal to the sql execution engine that this column should not be automatically indexed. Specifically used by lists, because indexing lists wastes CPU time.
 	/// <summary>	Returns the column identifier of the column with the defined name in the defined
 	/// 			table. </summary>
 	/// <remarks>	Anthony, 8/27/2014. </remarks>
@@ -1489,7 +1490,7 @@ public:
 	/// <returns>	The value. </returns>
 	virtual Variant getValue(int tableID, int row, int colID) {return SQL_NULL;}
 
-	virtual Variant getValue(int tableID, const SqlCursor& cursor, int colID) { return getValue(tableID, cursor.id, colID); }
+	virtual Variant getValue(int tableID, const SqlCursor& cursor, int colID) { return getValue(tableID, (int)cursor.id, colID); }
 
 	/// <summary>	Sets a value. </summary>
 	/// <remarks>	Anthony.johnson, 2/25/2016. </remarks>
@@ -1499,7 +1500,7 @@ public:
 	/// <param name="toVal">  	to value. </param>
 	/// <returns>	true if it succeeds, false if it fails. </returns>
 	virtual bool setValue(int tableId, int row, int colId, const Variant& toVal) { return false; }
-	virtual bool setValue(int tableID, const SqlCursor& cursor, int colID, const Variant& toVal) { return setValue(tableID, cursor.id, colID, toVal); }
+	virtual bool setValue(int tableID, const SqlCursor& cursor, int colID, const Variant& toVal) { return setValue(tableID, (int)cursor.id, colID, toVal); }
 
 	/// <summary>	Gets a table's identifier. </summary>
 	/// <remarks>	Anthony, 8/27/2014. </remarks>
@@ -1527,7 +1528,7 @@ public:
 	virtual int getNextIndexedRow(int tableID, int colID, const Variant& value, int lastRow = -1) { return -1; }
 
 	virtual bool initIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) { cursor.id = getNextIndexedRow(tableID, colID, value, -1); return cursor.id >= 0; }
-	virtual bool advanceIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) { cursor.id = getNextIndexedRow(tableID, colID, value, cursor.id); return cursor.id >= 0; }
+	virtual bool advanceIndexedCursor(int tableID, int colID, const Variant& value, int compareType, SqlCursor& cursor) { cursor.id = getNextIndexedRow(tableID, colID, value, (int)cursor.id); return cursor.id >= 0; }
 
 
 	virtual const char* getClassFactory() override { return "SqlDataSource"; }

@@ -36,6 +36,7 @@ protected:
 	TreeNode* secondaryGroup;
 
 	TreeNode* processFlow;
+	TreeNode* coreCollector;
 	TreeNode* statisticsCollector;
 	TreeNode* calculatedTable;
 	TreeNode* genericChart;
@@ -56,6 +57,7 @@ public:
 
 	// these values determine which template objects to use
 	ByteBlock flowPath;
+	ByteBlock coreCollectorPath;
 	ByteBlock collectorPath;
 	ByteBlock calculatedTablePath;
 	ByteBlock genericChartPath;

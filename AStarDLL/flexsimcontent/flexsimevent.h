@@ -175,11 +175,11 @@ public:
 	MessageEvent() : FlexSimEvent()
 	{}
 	MessageEvent(treenode toobject, double time, treenode fromobject, const Variant& p1, const Variant& p2, const Variant& p3)
-		: FlexSimEvent(toobject, time, fromobject, 0, NULL),
+		: FlexSimEvent(toobject, time, fromobject, EVENT_SENDMESSAGE, NULL),
 		p1(p1), p2(p2), p3(p3)
 	{}
 	MessageEvent(treenode toobject, double time, treenode fromobject, double p1, double p2, double p3)
-		: FlexSimEvent(toobject, time, fromobject, 0, NULL),
+		: FlexSimEvent(toobject, time, fromobject, EVENT_SENDMESSAGE, NULL),
 		p1(p1), p2(p2), p3(p3)
 	{}
 	engine_export virtual void execute() override;

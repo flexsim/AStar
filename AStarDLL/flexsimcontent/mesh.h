@@ -23,7 +23,7 @@ namespace FlexSim {
 class Mesh : public SimpleDataType
 {
 public:
-	Mesh() : lastShaderProgram(0), numVerts(0), vertByteStride(0), flags(0), perMeshAttribs(0), perVertexAttribs(0),
+	Mesh() : cacheId(0), lastShaderProgram(0), numVerts(0), vertByteStride(0), flags(0), perMeshAttribs(0), perVertexAttribs(0),
 		vertBuffer(0), vbo(0), vao(0), maxBufferSize(0), isDirty(true), customVertexAttribs(0)
 	{
 		holder = 0;
@@ -34,7 +34,7 @@ public:
 	engine_export Mesh(const Mesh& other);
 
 protected:
-	Mesh(int flags) : lastShaderProgram(0), numVerts(0), vertByteStride(0), flags(flags), perMeshAttribs(0), perVertexAttribs(0),
+	Mesh(int flags) : cacheId(0), lastShaderProgram(0), numVerts(0), vertByteStride(0), flags(flags), perMeshAttribs(0), perVertexAttribs(0),
 		vertBuffer(0), vbo(0), vao(0), maxBufferSize(0), isDirty(true), customVertexAttribs(0)
 	{
 		holder = 0;
@@ -94,6 +94,7 @@ protected:
 	static void readFloatVertex(void* readPoint, float* outVert);
 	virtual const char* getClassFactory() {return "Mesh";}
 
+	size_t cacheId = 0;
 
 	std::vector<CustomVertexAttrib*>* customVertexAttribs;
 
@@ -115,6 +116,22 @@ public:
 	static void startOptiXDraw();
 	static void endOptiXDraw();
 
+	struct CachedMesh {
+		Mesh* theMesh = nullptr;
+		IndexedMesh* drawMeshInstanced = nullptr;
+		glm::mat4 shapeModelToWorldMatrix;
+		int drawMode = 0;
+		int offset = 0;
+		int count = 0;
+		int imageIndex = 0;
+		glm::vec4 color;
+	};
+	static std::vector<std::unique_ptr<CachedMesh>> customMeshSceneCache;
+	static glm::mat4 eyeToWorldTransformation;
+	static void startCacheDraw();
+	static void endCacheDraw();
+	static void exportCachedMeshes(std::ostream& out);
+
 protected:
 	void drawRenderMode(int drawMode, int vertOffset, int vertCount, int vertStride);
 
@@ -126,6 +143,8 @@ protected:
 	void printCyclesVertexData(int drawMode);
 
 	void drawOptiXMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+
+	void drawCacheMode(int drawMode, int vertOffset, int vertCount, int vertStride);
 
 	void assertBufferSize(unsigned char*& buffer, unsigned int& maxSize, unsigned int sizeNeeded, int vertByteStride, bool growExactly);
 #endif
@@ -374,6 +393,7 @@ public:
 	engine_export Mesh& merge(const Mesh& other);
 	engine_export void scaleToBounds(const Vec3f& min, const Vec3f& max);
 	engine_export void getBounds(Vec3f& min, Vec3f& max) const;
+	engine_export virtual void exportMesh(std::ostream& out, int exportType);
 protected:
 	template <class MeshType = Mesh>
 	class TemplatedAutoRebuildingMesh
@@ -500,9 +520,11 @@ public:
 	void indexedDrawPOVExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
 	void indexedDrawCyclesExportMode(int drawMode, int vertOffset, int vertCount, int vertStride);
 	void indexedDrawOptiXMode(int drawMode, int vertOffset, int vertCount, int vertStride);
+	void indexedDrawCacheMode(int drawMode, int vertOffset, int vertCount, int vertStride);
 #endif
 public:
 	engine_export IndexedMesh& merge(const IndexedMesh& other);
+	engine_export virtual void exportMesh(std::ostream& out, int exportType) override;
 
 	typedef Mesh::TemplatedAutoRebuildingMesh<IndexedMesh> AutoRebuildingMesh;
 	IndexedMesh* toIndexedMesh() override { return this; }
@@ -579,10 +601,13 @@ public:
 	typedef void (InstancedMesh::*_drawCallback)(int drawMode, IndexedMesh* mesh);
 	static _drawCallback instancedDrawCallback;
 	void instancedDrawOptiXMode(int drawMode, IndexedMesh* mesh);
+	void instancedDrawCacheMode(int drawMode, IndexedMesh* mesh);
 #endif
 public:
 	engine_export void draw(int drawMode) { draw(drawMode, this); }
 	engine_export void draw(int drawMode, IndexedMesh* mesh);
+
+	engine_export virtual void exportMesh(std::ostream& out, int exportType) override;
 
 	typedef Mesh::TemplatedAutoRebuildingMesh<InstancedMesh> AutoRebuildingMesh;
 	InstancedMesh* toInstancedMesh() override { return this; }
