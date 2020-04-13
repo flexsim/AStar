@@ -828,6 +828,7 @@ void Traveler::assertBridgeData(BridgeRoutingData * routing)
 		else data = new TravelerBridgeData;
 		bridgeData = data;
 		nodeaddsimpledata(bridgeDataNode, data, 1);
+		bridgeData->bindEventNodes();
 	}
 }
 
