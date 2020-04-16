@@ -10,6 +10,15 @@ class TravelerBridgeData : public SimpleDataType {
 public:
 	virtual const char* getClassFactory() override { return "AStar::TravelerBridgeData"; }
 
+
+	void bindEventNodes()
+	{
+		#define bindEventNode(x) x = holder->subnodes[#x]
+		bindEventNode(onElevatorBankArrival);
+		bindEventNode(onElevatorEntry);
+		bindEventNode(onElevatorExit);
+		bindEventNode(onElevatorBankContinue);
+	}
 	virtual void bind() override
 	{
 		bindObjPtr(routingData);
