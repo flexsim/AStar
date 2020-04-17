@@ -121,11 +121,6 @@ int ExtendedCell::canGo(int direction)
 	return node->canGo((Direction)direction);
 }
 
-Vec3 ExtendedCell::getLocation(AStarNavigator* nav)
-{
-	return nav->getGrid(*this)->getLocation(*this);
-}
-
 double ExtendedCell::getNodeWidth(AStarNavigator* nav)
 {
 	return nav->getGrid(*this)->nodeWidth;

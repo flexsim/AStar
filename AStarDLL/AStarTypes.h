@@ -157,7 +157,6 @@ public:
 
 	ExtendedCell adjacentCell(int direction);
 	int canGo(int direction);
-	Vec3 getLocation(AStarNavigator* nav);
 	double getNodeWidth(AStarNavigator* nav);
 };
 
