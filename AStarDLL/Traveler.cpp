@@ -76,6 +76,11 @@ TreeNode* Traveler::resolveBridgeData()
 }
 
 
+TravelPath& Traveler::__getTravelPath()
+{
+	return travelPath;
+}
+
 void Traveler::bindInterface()
 {
 	bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Traveler.xml");
@@ -453,6 +458,13 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 	isRoutingNow = false;
 	_ASSERTE(allocations.size() > 0 || !enableCollisionAvoidance || navigator->ignoreInactiveMemberCollisions || bridgeArrival || (bridgeData && bridgeData->routingData));
 	XE
+}
+
+
+void Traveler::navigatePath(TravelPath&& path)
+{
+	travelPath = std::move(path);
+	navigatePath(0);
 }
 
 void Traveler::onBridgeArrival(BridgeRoutingData* data, int pathIndex) 

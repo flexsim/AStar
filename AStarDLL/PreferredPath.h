@@ -21,8 +21,8 @@ public:
 	virtual void addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle drawStyle) override;
 	virtual PreferredPath* toPreferredPath() override { return this; }
 
-	ASTAR_FUNCTION Variant getWeight(FLEXSIMINTERFACE) { return pathWeight; }
-	ASTAR_FUNCTION Variant setWeight(FLEXSIMINTERFACE) { pathWeight = param(1); return Variant(); }
+	astar_export Variant getWeight(FLEXSIMINTERFACE) { return pathWeight; }
+	astar_export Variant setWeight(FLEXSIMINTERFACE) { pathWeight = param(1); return Variant(); }
 
 	/// <summary>	True if the navigator should apply this preferred path as a conditional barrier. 
 	/// 			This is set when the navigator first encounters the preferred path as part of a 

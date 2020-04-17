@@ -69,7 +69,7 @@ public:
 	virtual void bind() override;
 
 	void assertNavigator();
-	ASTAR_FUNCTION Variant assertNavigator(FLEXSIMINTERFACE) { assertNavigator(); return Variant(); }
+	astar_export Variant assertNavigator(FLEXSIMINTERFACE) { assertNavigator(); return Variant(); }
 
 	// This function adds two initial points to a barrier
 	virtual void init(double nodeWidth, const Vec3& pos1, const Vec3& pos2);
@@ -143,7 +143,7 @@ public:
 	virtual double onClick(treenode view, int clickCode, Vec3& pos);
 	virtual double onClick(treenode view, int clickCode) override;
 	virtual double dragPressedPick(treenode view, Vec3& pos, Vec3& diff);
-	ASTAR_FUNCTION Variant dragPressedPick(FLEXSIMINTERFACE) { return dragPressedPick(param(1), Vec3(param(2), param(3), param(4)), Vec3(param(5), param(6), param(7))); }
+	astar_export Variant dragPressedPick(FLEXSIMINTERFACE) { return dragPressedPick(param(1), Vec3(param(2), param(3), param(4)), Vec3(param(5), param(6), param(7))); }
 	virtual double onDrag(treenode view) override;
 	double onPreDraw(treenode view);
 	double onDraw(treenode view);
@@ -154,21 +154,21 @@ public:
 	double onCreate(double dropx, double dropy, double dropz, int iscopy) override;
 
 	void updateSpatialsToEncompassPoints();
-	ASTAR_FUNCTION Variant updateSpatialsToEncompassPoints(FLEXSIMINTERFACE) { updateSpatialsToEncompassPoints(); return Variant(); }
+	astar_export Variant updateSpatialsToEncompassPoints(FLEXSIMINTERFACE) { updateSpatialsToEncompassPoints(); return Variant(); }
 
 	// These functions are for modifying barrier points. They each 
 	// check bounds before making any modifications.
 	Point* addPoint(const Vec3& pos);
-	ASTAR_FUNCTION Variant addPoint(FLEXSIMINTERFACE) { return addPoint(Vec3(param(1), param(2), param(3)))->holder; }
+	astar_export Variant addPoint(FLEXSIMINTERFACE) { return addPoint(Vec3(param(1), param(2), param(3)))->holder; }
 	void removePoint(int pointIndex);
-	ASTAR_FUNCTION Variant removePoint(FLEXSIMINTERFACE) { removePoint((int)param(1));  return Variant(); }
+	astar_export Variant removePoint(FLEXSIMINTERFACE) { removePoint((int)param(1));  return Variant(); }
 	void swapPoints(int index1, int index2);
-	ASTAR_FUNCTION Variant swapPoints(FLEXSIMINTERFACE) { swapPoints((int)param(1), (int)param(2)); return Variant(); }
+	astar_export Variant swapPoints(FLEXSIMINTERFACE) { swapPoints((int)param(1), (int)param(2)); return Variant(); }
 	Vec3 getLocalPointCoords(int pointIndex);
 	Vec3 getPointCoords(int pointIndex);
-	ASTAR_FUNCTION Variant getPointCoord(FLEXSIMINTERFACE);
+	astar_export Variant getPointCoord(FLEXSIMINTERFACE);
 	bool setPointCoords(int pointIndex, const Vec3& point);
-	ASTAR_FUNCTION Variant setPointCoords(FLEXSIMINTERFACE) {
+	astar_export Variant setPointCoords(FLEXSIMINTERFACE) {
 		setPointCoords((int)param(1), Vec3(param(2), param(3), param(4)));
 		return Variant();
 	}
@@ -184,16 +184,16 @@ public:
 	virtual void onReset(AStarNavigator* nav);
 
 	std::string getType() { return node_b_classes->subnodes[1]->name.c_str(); }
-	ASTAR_FUNCTION Variant getType(FLEXSIMINTERFACE) { return getType(); }
+	astar_export Variant getType(FLEXSIMINTERFACE) { return getType(); }
 
 	Variant getEditMode(FLEXSIMINTERFACE) { return mode; }
 	void setEditMode(int toMode) { mode = toMode; }
-	ASTAR_FUNCTION Variant setEditMode(FLEXSIMINTERFACE) { setEditMode((int)param(1)); return Variant(); }
+	astar_export Variant setEditMode(FLEXSIMINTERFACE) { setEditMode((int)param(1)); return Variant(); }
 	void abortCreationMode();
-	ASTAR_FUNCTION Variant abortCreationMode(FLEXSIMINTERFACE) { abortCreationMode(); return Variant(); }
+	astar_export Variant abortCreationMode(FLEXSIMINTERFACE) { abortCreationMode(); return Variant(); }
 
 	void setActiveIndex(int toIndex) { activePointIndex = toIndex; }
-	ASTAR_FUNCTION Variant setActiveIndex(FLEXSIMINTERFACE) { setActiveIndex((int)param(1)); return Variant(); }
+	astar_export Variant setActiveIndex(FLEXSIMINTERFACE) { setActiveIndex((int)param(1)); return Variant(); }
 
 
 	class PatternCell : public SimpleDataType
@@ -232,7 +232,7 @@ public:
 
 	Vec3 getPointToModelOffset();
 	void setSizeComponent(treenode sizeAtt, double toSize);
-	ASTAR_FUNCTION Variant setSizeComponent(FLEXSIMINTERFACE) { setSizeComponent(param(1), param(2)); return Variant(); }
+	astar_export Variant setSizeComponent(FLEXSIMINTERFACE) { setSizeComponent(param(1), param(2)); return Variant(); }
 
 	Point * dragAnchorPointX = nullptr;
 	Point * dragAnchorPointY = nullptr;
