@@ -964,7 +964,7 @@ Vec3 Barrier::getPointCoords(int pointIndex)
 	return getLocalPointCoords(pointIndex) + getPointToModelOffset();
 }
 
-ASTAR_FUNCTION Variant Barrier::getPointCoord(FLEXSIMINTERFACE)
+astar_export Variant Barrier::getPointCoord(FLEXSIMINTERFACE)
 {
 	Vec3 coord = getPointCoords((int)param(1));
 	int coordID = param(2);

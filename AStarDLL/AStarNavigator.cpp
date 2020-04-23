@@ -1090,6 +1090,11 @@ the outside 8 nodes.
 	return travelPath;
 }
 
+void AStarNavigator::calculateRoute(Traveler * traveler, double * destLoc, const DestinationThreshold & destThreshold)
+{
+	traveler->travelPath = calculateRoute(traveler, destLoc, destThreshold, 0.0);
+}
+
 double AStarNavigator::calculateHeuristic(Grid * fromGrid, const Cell & fromCell)
 {
 	Vec3 from(fromGrid->gridOrigin.x + fromCell.col * fromGrid->nodeWidth,
@@ -1635,7 +1640,7 @@ Grid * AStarNavigator::getGrid(const Vec3 & modelPos, bool canReturnNull)
 	return grid;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_getGrid(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_getGrid(FLEXSIMINTERFACE)
 {
 	return o(AStarNavigator, c).getGrid(Vec3(param(1), param(2), param(3)))->holder;
 }
@@ -1999,7 +2004,7 @@ Variant AStarNavigator::createGrid(FLEXSIMINTERFACE)
 	return createGrid(Vec3(param(1), param(2), param(3)), Vec3(param(4), param(5), param(6)))->holder;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)
 {
 	c->objectAs(AStarNavigator)->dumpBlockageData(param(1));
 	return 0;
@@ -2010,13 +2015,13 @@ ASTAR_FUNCTION Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)
 
 using namespace AStar;
 
-ASTAR_FUNCTION Variant AStarNavigator_blockGridModelPos(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_blockGridModelPos(FLEXSIMINTERFACE)
 {
 	o(AStarNavigator, c).blockGridModelPos(Vec3(param(1), param(2), param(3)));
 	return 0;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_divideGridModelLine(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_divideGridModelLine(FLEXSIMINTERFACE)
 {
 	o(AStarNavigator, c).divideGridModelLine(
 		Vec3(param(1), param(2), param(3)),
@@ -2026,13 +2031,13 @@ ASTAR_FUNCTION Variant AStarNavigator_divideGridModelLine(FLEXSIMINTERFACE)
 	return 0;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_addObjectBarrierToTable(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_addObjectBarrierToTable(FLEXSIMINTERFACE)
 {
 	o(AStarNavigator, c).addObjectBarrierToTable(param(1));
 	return 0;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_addObject(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_addObject(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -2041,7 +2046,7 @@ ASTAR_FUNCTION Variant AStarNavigator_addObject(FLEXSIMINTERFACE)
 	return a->addObject(Vec3(param(1), param(2), param(3)), Vec3(param(4), param(5), param(6)), (EditMode)(unsigned int) param(7));
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -2057,7 +2062,7 @@ ASTAR_FUNCTION Variant AStarNavigator_removeBarrier(FLEXSIMINTERFACE)
 	return 1;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -2076,7 +2081,7 @@ ASTAR_FUNCTION Variant AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
 	return 1;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -2087,7 +2092,7 @@ ASTAR_FUNCTION Variant AStarNavigator_onMouseMove(FLEXSIMINTERFACE)
 	return 1;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_setActiveBarrier(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_setActiveBarrier(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	TreeNode* barrierNode = param(1);
@@ -2099,7 +2104,7 @@ ASTAR_FUNCTION Variant AStarNavigator_setActiveBarrier(FLEXSIMINTERFACE)
 	return 1;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -2110,7 +2115,7 @@ ASTAR_FUNCTION Variant AStarNavigator_rebuildMeshes(FLEXSIMINTERFACE)
 	return 1;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_rebuildEdgeTable(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_rebuildEdgeTable(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	if (!isclasstype(navNode, "AStar::AStarNavigator"))
@@ -2121,7 +2126,7 @@ ASTAR_FUNCTION Variant AStarNavigator_rebuildEdgeTable(FLEXSIMINTERFACE)
 	return 1;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_addMember(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_addMember(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	TreeNode* connectTo = param(1);
@@ -2133,7 +2138,7 @@ ASTAR_FUNCTION Variant AStarNavigator_addMember(FLEXSIMINTERFACE)
 	return 1;
 }
 
-ASTAR_FUNCTION Variant AStarNavigator_removeMember(FLEXSIMINTERFACE)
+astar_export Variant AStarNavigator_removeMember(FLEXSIMINTERFACE)
 {
 	TreeNode* navNode = c;
 	TreeNode* disconnect = param(1);

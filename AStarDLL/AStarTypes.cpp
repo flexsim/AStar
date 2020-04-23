@@ -121,6 +121,11 @@ int ExtendedCell::canGo(int direction)
 	return node->canGo((Direction)direction);
 }
 
+double ExtendedCell::getNodeWidth(AStarNavigator* nav)
+{
+	return nav->getGrid(*this)->nodeWidth;
+}
+
 ExtendedCell::operator bool()
 {
 	assertCachedPointers();
@@ -485,6 +490,11 @@ double TravelPath::calculateTotalDistance(AStarNavigator * nav)
 	return dist;
 }
 
+int TravelPath::__getLength()
+{
+	return (int)size();
+}
+
 int TravelPath::indexOf(Cell & cell)
 {
 	for (int i = 0; i < size(); i++) {
@@ -492,6 +502,12 @@ int TravelPath::indexOf(Cell & cell)
 			return i + 1;
 	}
 	return -1;
+}
+
+
+AStarPathEntry& TravelPath::at(int index)
+{
+	return operator[](index);
 }
 
 void TravelPath::bindInterface()

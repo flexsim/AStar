@@ -19,4 +19,10 @@ struct AStarNodeExtraData;
 class BridgeRoutingData;
 class ElevatorBridgeRoutingData;
 class ElevatorBridge;
+#ifdef COMPILING_ASTAR
+#define astar_export __declspec(dllexport)
+#else
+#define astar_export __declspec(dllimport)
+#endif
+
 }

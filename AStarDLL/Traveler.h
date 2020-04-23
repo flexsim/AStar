@@ -34,8 +34,13 @@ public:
 	treenode destNode;
 	bool isActive = false;
 	std::list<Traveler*>::iterator activeEntry;
+	astar_export TravelPath& __getTravelPath();
+#ifdef COMPILING_ASTAR
 	TravelPath travelPath;
-	TravelPath& __getTravelPath() { return travelPath; }
+#else
+	__declspec(property(get = __getTravelPath)) TravelPath& travelPath;
+	TravelPath privateTravelPath;
+#endif
 	//double nodeWidth;
 	typedef std::deque<NodeAllocationIterator> TravelerAllocations;
 	TravelerAllocations allocations;
@@ -59,11 +64,7 @@ public:
 			navigatePath(nextCollisionUpdateTravelIndex, true); 
 	}
 	void navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval = false);
-	void navigatePath(TravelPath&& path)
-	{
-		travelPath = std::move(path);
-		navigatePath(0);
-	}
+	void navigatePath(TravelPath&& path);
 	void onBridgeArrival(BridgeRoutingData* bridge, int pathIndex);
 	void onArrival();
 
