@@ -1369,8 +1369,8 @@ float AStarNavigator::clampDirection(float rotDirection)
 
 void AStarNavigator::drawMembers()
 {
-	memberMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
-	mandatoryPathMemberMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP);
+	memberMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP | MESH_DYNAMIC_DRAW);
+	mandatoryPathMemberMesh.init(0, MESH_POSITION, MESH_FORCE_CLEANUP | MESH_DYNAMIC_DRAW);
 	TreeNode* colorNode = node_b_color;
 	float color[4] = { (float)get(rank(colorNode, 1)), (float)get(rank(colorNode, 2)), (float)get(rank(colorNode, 3)), 0.3f};
 	float mandatoryPathColor[4] = { 0.75f, 0.63f, 0.25f, 0.5f };
