@@ -41,9 +41,15 @@ public:
 
 	double calculateDistance() const;
 	double getTravelToGeomDistScale();
+	/// fired when the bridge is available for a traveler to enter
 	void onEntry(Traveler* traveler, int pathIndex);
+	/// 
 	void onExit(Traveler* traveler);
+	/// fired when the traveler reaches the end of the bridge, and is ready to 
+	/// continue on its path
 	void onEndArrival(Traveler* traveler, int pathIndex);
+	/// fired on "accumulating" bridges, when the traveler is fully "on" the bridge, 
+	/// meaning the bridge is available for the next entrant
 	void onAvailable();
 	void updateBridgeLocations();
 	void updateLocation(Traveler* t, double geomDistAlongBridge, Vec3* offset = nullptr);

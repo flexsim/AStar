@@ -1751,6 +1751,23 @@ void AStarNavigator::buildActiveTravelerList()
 	}
 }
 
+Traveler* AStarNavigator::getTraveler(TaskExecuter* te)
+{
+	// Because the Agent module "dupes" the navigator by moving the traveler coupling around, I have 
+	// actually search for the traveler
+	auto testNode = [](TreeNode* node) -> Traveler* {
+		treenode partner = tonode(get(node));
+		if (partner && isclasstype(ownerobject(partner), "AStar::AStarNavigator"))
+			return partner->objectAs(Traveler);
+	};
+	forobjecttreeunder(te->node_v_navigator) {
+		auto traveler = testNode(a);
+		if (traveler)
+			return traveler;
+	}
+	return nullptr;
+}
+
 
 void AStarNavigator::dumpBlockageData(treenode destNode)
 {

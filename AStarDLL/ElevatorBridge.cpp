@@ -12,7 +12,7 @@ void ElevatorBridge::AStarDelegate::bind()
 void ElevatorBridge::AStarDelegate::onBridgeComplete(TaskExecuter * te)
 {
 	Traveler* traveler = AStarNavigator::getTraveler(te);
-	traveler->navigatePath(traveler->bridgeData->pathIndex + 1);
+	traveler->onBridgeComplete(traveler->bridgeData->pathIndex + 1);
 }
 
 TravelerBridgeData * ElevatorBridge::AStarDelegate::getBridgeData(TaskExecuter * te)

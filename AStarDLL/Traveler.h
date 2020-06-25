@@ -5,6 +5,7 @@
 #include <deque>
 #include "AStarTypes.h"
 #include "Bridge.h"
+#include "ElevatorBridge.h"
 
 namespace AStar {
 
@@ -57,15 +58,17 @@ public:
 	/// <summary>Zero-based index of the travel path element that could not be allocated 
 	/// 		 (the next node after where the traveler is when he gets blocked).</summary>
 	int blockedAtTravelPathIndex = -1;
-	void onReset();
-	void onStartSimulation();
+	astar_export void onReset();
+	astar_export void onStartSimulation();
 	void onCollisionIntervalUpdate() {
 		if (!isBlocked && nextCollisionUpdateTravelIndex >= 0)
 			navigatePath(nextCollisionUpdateTravelIndex, true); 
 	}
 	void navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval = false);
 	void navigatePath(TravelPath&& path);
-	void onBridgeArrival(BridgeRoutingData* bridge, int pathIndex);
+	astar_export void onBridgeArrival(int pathIndex);
+	astar_export void onBridgeArrival(BridgeRoutingData* bridge, int pathIndex);
+	astar_export void onBridgeComplete(int atPathIndex);
 	void onArrival();
 
 	/// <summary>	Adds an allocation to the map's set of allocations. </summary>
@@ -78,18 +81,18 @@ public:
 	NodeAllocation* addAllocation(NodeAllocation& allocation, bool force, bool notifyPendingAllocations);
 	void checkCreateCollisionEvent(NodeAllocation& allocation, AStarNodeExtraData* nodeData = nullptr);
 	static NodeAllocation* findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs);
-	void removeAllocation(TravelerAllocations::iterator iter);
-	void cullExpiredAllocations();
-	void clearAllocationsExcept(const Cell& cell);
-	void clearAllocations();
+	astar_export void removeAllocation(TravelerAllocations::iterator iter);
+	astar_export void cullExpiredAllocations();
+	astar_export void clearAllocationsExcept(const Cell& cell);
+	astar_export void clearAllocations();
 	void clearAllocationsUpTo(TravelerAllocations::iterator iter);
 	/// <summary>	Clears the allocations including and after fromPoint. </summary>
 	/// <remarks>	Anthony.johnson, 4/17/2017. </remarks>
 	/// <param name="fromPoint">	from point. </param>
 	void clearAllocations(TravelerAllocations::iterator fromPoint, bool decrementTraversal = false);
 	TravelerAllocations::iterator find(NodeAllocation* alloc);
-	void abortTravel(TreeNode* newTS);
-	void updateLocation();
+	astar_export void abortTravel(TreeNode* newTS);
+	astar_export void updateLocation();
 
 	class ArrivalEvent : public FlexSimEvent
 	{
@@ -101,7 +104,7 @@ public:
 	};
 	ObjRef<ArrivalEvent> arrivalEvent;
 
-	void onBlock(Traveler* collidingWith, int colliderPathIndex, Cell& cell);
+	astar_export void onBlock(Traveler* collidingWith, int colliderPathIndex, Cell& cell);
 
 	bool isNavigatingAroundDeadlock = false;
 	bool isContinuingFromDeadlock = false;
@@ -149,13 +152,15 @@ public:
 	treenode onBlockTrigger = nullptr;
 	treenode onContinueTrigger = nullptr;
 	treenode onRerouteTrigger = nullptr;
+	treenode onBridgeArrivalTrigger = nullptr;
+	treenode onBridgeContinueTrigger = nullptr;
 
 	ObjRef<BridgeRoutingData::ArrivalEvent> bridgeArrivalEvent;
 	treenode bridgeDataNode = nullptr;
 	TravelerBridgeData* bridgeData = nullptr;
-	void assertBridgeData(BridgeRoutingData* routing);
+	astar_export void assertBridgeData(BridgeRoutingData* routing);
 
-	void onTEDestroyed();
+	astar_export void onTEDestroyed();
 
 	struct RoutingAlgorithmSnapshot {
 		std::vector<AStarSearchEntry> totalSet;

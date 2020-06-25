@@ -305,7 +305,7 @@ public:
 	std::list<Traveler*> activeTravelers;
 	void buildActiveTravelerList();
 
-	static Traveler* getTraveler(TaskExecuter* te) { return tonode(get(first(te->node_v_navigator)))->objectAs(Traveler); }
+	astar_export static Traveler* getTraveler(TaskExecuter* te);
 
 	void dumpBlockageData(treenode destNode);
 
