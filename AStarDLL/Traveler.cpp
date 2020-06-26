@@ -511,7 +511,6 @@ void Traveler::onBridgeComplete(int atPathIndex)
 	FIRE_SDT_EVENT(onBridgeContinueTrigger, te->holder, bridge ? bridge->holder : Variant());
 	if (isAStarNavigator)
 		navigatePath(atPathIndex);
-	else 
 
 }
 
