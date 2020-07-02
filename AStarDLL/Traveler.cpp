@@ -85,7 +85,7 @@ TravelPath& Traveler::__getTravelPath()
 
 void Traveler::bindInterface()
 {
-	bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Traveler.xml");
+	bindDocumentationXMLPath("help\\FlexScriptAPIReference\\AStar\\AStar.Traveler.xml");
 	bindConstructor(&AStarNavigator::getTraveler, "AStar.Traveler Traveler(TaskExecuter te)");
 	SimpleDataType::bindTypedPropertyByName<TravelPath>("travelPath", "AStar.TravelPath&", force_cast<void*>(&Traveler::__getTravelPath), nullptr);
 	bindMethod(getAllocations, Traveler, "AStar.AllocationRange getAllocations(double time = -1)");

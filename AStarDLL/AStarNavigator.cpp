@@ -134,7 +134,7 @@ void AStarNavigator::bindTEStatistics(TaskExecuter* te)
 
 void AStarNavigator::bindInterface()
 {
-	bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Navigator.xml");
+	bindDocumentationXMLPath("help\\FlexScriptAPIReference\\AStar\\AStar.Navigator.xml");
 	bindClassByName<AStarNamespace>("AStar", true);
 	bindClassByName<AStarDirection>("AStar.Direction", true);
 	bindClassByName<NodeAllocation>("AStar.Allocation", true);

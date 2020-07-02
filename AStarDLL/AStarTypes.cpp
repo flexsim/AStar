@@ -54,7 +54,7 @@ void Cell::bind(TreeNode * x)
 
 void ExtendedCell::bindInterface()
 {
-	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Cell.xml");
+	SimpleDataType::bindDocumentationXMLPath("help\\FlexScriptAPIReference\\AStar\\AStar.Cell.xml");
 	SimpleDataType::bindConstructor(force_cast<void*>(&ExtendedCell::construct), "void Cell(int grid, int row, int col)");
 	SimpleDataType::bindCopyConstructor(&ExtendedCell::copyConstruct);
 	SimpleDataType::bindCopyAssigner(&ExtendedCell::operator =);
@@ -155,7 +155,7 @@ struct ExtendedNodeAllocation : public NodeAllocation
 
 void NodeAllocation::bindInterface()
 {
-	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Allocation.xml");
+	SimpleDataType::bindDocumentationXMLPath("help\\FlexScriptAPIReference\\AStar\\AStar.Allocation.xml");
 	SimpleDataType::bindConstructor(force_cast<void*>(&NodeAllocation::construct), "void Cell(int grid, int row, int col)");
 	SimpleDataType::bindCopyConstructor(&NodeAllocation::copyConstruct);
 	SimpleDataType::bindCopyAssigner(&NodeAllocation::operator =);
@@ -520,7 +520,7 @@ void TravelPath::bindInterface()
 
 void AStarNamespace::bindInterface()
 {
-	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.xml");
+	SimpleDataType::bindDocumentationXMLPath("help\\FlexScriptAPIReference\\AStar\\AStar.xml");
 	SimpleDataType::bindStaticTypedPropertyByName<AStarNavigator*>("navigator", "AStar.Navigator", force_cast<void*>(&AStarNamespace::__getNavigator), nullptr);
 }
 
@@ -548,7 +548,7 @@ void AllocationRange::bindInterface()
 
 void AStarDirection::bindInterface()
 {
-	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Direction.xml");
+	SimpleDataType::bindDocumentationXMLPath("help\\FlexScriptAPIReference\\AStar\\AStar.Direction.xml");
 	SimpleDataType::bindStaticConstIntProperty(Left, (int)Direction::Left);
 	SimpleDataType::bindStaticConstIntProperty(Right, (int)Direction::Right);
 	SimpleDataType::bindStaticConstIntProperty(Up, (int)Direction::Up);
