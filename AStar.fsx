@@ -4663,6 +4663,10 @@ applylinks(c, 1);
       <node f="42" dt="1"><name>spatialsx</name><data>0000000040634000</data></node>
       <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
       <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+      <node f="42"><name>variables</name>
+       <node f="40"><name></name></node>
+       <node f="42" dt="2"><name>helptopic</name><data>BarrierProperties</data></node>
+      </node>
      </data>
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>BarrierProperties</name><data>
@@ -5644,6 +5648,10 @@ if (clickcode() == LEFT_RELEASE) {
       <node f="42" dt="1"><name>spatialsx</name><data>0000000040634000</data></node>
       <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
       <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+      <node f="42"><name>variables</name>
+       <node f="40"><name></name></node>
+       <node f="42" dt="2"><name>helptopic</name><data>DividerPathProperties</data></node>
+      </node>
      </data>
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>DividerProperties</name><data>
@@ -6179,6 +6187,10 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);
       <node f="42" dt="1"><name>spatialsx</name><data>0000000040634000</data></node>
       <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
       <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+      <node f="42"><name>variables</name>
+       <node f="40"><name></name></node>
+       <node f="42" dt="2"><name>helptopic</name><data>GridProperties</data></node>
+      </node>
      </data>
       <node f="40"><name></name></node>
       <node f="42" dt="4"><name>GridProperties</name><data>
