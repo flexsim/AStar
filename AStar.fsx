@@ -4649,12 +4649,12 @@ applylinks(c, 1);
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404c8000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404a0000</data></node>
     <node f="42" dt="2"><name>after</name><data>TestQueries</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
-     <node f="42" dt="4"><name>AStarBarrierProperties</name><data>
+     <node f="42" dt="4"><name>AStarBarrier</name><data>
       <node f="40"><name>object</name></node>
       <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040180000</data></node>
       <node f="42" dt="2"><name>guifocusclass</name><data>../../..&gt;variables/QuickPropertiesPanel</data></node>
@@ -4669,7 +4669,7 @@ applylinks(c, 1);
       </node>
      </data>
       <node f="40"><name></name></node>
-      <node f="42" dt="4"><name>BarrierProperties</name><data>
+      <node f="42" dt="4"><name>Barrier</name><data>
        <node f="40"><name>object</name></node>
        <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
@@ -4733,7 +4733,7 @@ if (getvarnum(c, "isExpanded")) {
 </data></node>
        </node>
        <node f="42" dt="2"><name>tooltip</name><data></data></node>
-       <node f="42" dt="2"><name>windowtitle</name><data>Barrier Properties</data></node>
+       <node f="42" dt="2"><name>windowtitle</name><data>Barrier</data></node>
       </data>
        <node f="40"><name></name></node>
        <node f="42" dt="4"><name>SizingPanel</name><data>
@@ -5634,12 +5634,12 @@ if (clickcode() == LEFT_RELEASE) {
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404d0000</data></node>
-    <node f="42" dt="2"><name>after</name><data>AStarBarrierProperties</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404a8000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AStarBarrier</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
-     <node f="42" dt="4"><name>AStarDividerProperties</name><data>
+     <node f="42" dt="4"><name>AStarDivider</name><data>
       <node f="40"><name>object</name></node>
       <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040180000</data></node>
       <node f="42" dt="2"><name>guifocusclass</name><data>../../..&gt;variables/QuickPropertiesPanel</data></node>
@@ -5654,7 +5654,7 @@ if (clickcode() == LEFT_RELEASE) {
       </node>
      </data>
       <node f="40"><name></name></node>
-      <node f="42" dt="4"><name>DividerProperties</name><data>
+      <node f="42" dt="4"><name>Divider</name><data>
        <node f="40"><name>object</name></node>
        <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
@@ -5702,7 +5702,7 @@ if (getvarnum(c, "isExpanded")) {
 </data></node>
        </node>
        <node f="42" dt="2"><name>tooltip</name><data></data></node>
-       <node f="42" dt="2"><name>windowtitle</name><data>Divider / Path Properties</data></node>
+       <node f="42" dt="2"><name>windowtitle</name><data>Divider / Path</data></node>
       </data>
        <node f="40"><name></name></node>
        <node f="42" dt="4"><name>Condition</name><data>
@@ -6173,12 +6173,12 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404d8000</data></node>
-    <node f="42" dt="2"><name>after</name><data>AStarDividerProperties</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404b0000</data></node>
+    <node f="42" dt="2"><name>after</name><data>AStarDivider</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
-     <node f="42" dt="4"><name>AStarGridProperties</name><data>
+     <node f="42" dt="4"><name>AStarGrid</name><data>
       <node f="40"><name>object</name></node>
       <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040180000</data></node>
       <node f="42" dt="2"><name>guifocusclass</name><data>../../..&gt;variables/QuickPropertiesPanel</data></node>
@@ -6193,7 +6193,7 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);
       </node>
      </data>
       <node f="40"><name></name></node>
-      <node f="42" dt="4"><name>GridProperties</name><data>
+      <node f="42" dt="4"><name>Grid</name><data>
        <node f="40"><name>object</name></node>
        <node f="42" dt="3"><name>objectfocus</name><data><coupling>null</coupling></data></node>
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
@@ -6250,7 +6250,7 @@ if (getvarnum(c, "isExpanded")) {
 </data></node>
        </node>
        <node f="42" dt="2"><name>tooltip</name><data></data></node>
-       <node f="42" dt="2"><name>windowtitle</name><data>A* Grid Properties</data></node>
+       <node f="42" dt="2"><name>windowtitle</name><data>A* Grid</data></node>
       </data>
        <node f="40"><name></name></node>
        <node f="42" dt="4"><name>Node Spacing</name><data>
