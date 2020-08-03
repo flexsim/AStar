@@ -1759,6 +1759,7 @@ Traveler* AStarNavigator::getTraveler(TaskExecuter* te)
 		treenode partner = tonode(get(node));
 		if (partner && isclasstype(ownerobject(partner), "AStar::AStarNavigator"))
 			return partner->objectAs(Traveler);
+		return nullptr;
 	};
 	forobjecttreeunder(te->node_v_navigator) {
 		auto traveler = testNode(a);
