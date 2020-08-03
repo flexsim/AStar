@@ -4675,9 +4675,7 @@ applylinks(c, 1);
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42" dt="2"><name>resizefocus</name><data></data></node>
        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040100000</data>
-        <node f="40"><name></name></node>
-        <node f="42" dt="2"><name>GeneralProperties</name><data>VIEW:/active&gt;Tools/GeneralProperties</data></node>
-       </node>
+        <node f="40"><name></name></node></node>
        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
        <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
        <node f="42" dt="1"><name>spatialsx</name><data>000000004066c000</data></node>
@@ -5660,9 +5658,7 @@ if (clickcode() == LEFT_RELEASE) {
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42" dt="2"><name>resizefocus</name><data></data></node>
        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040100000</data>
-        <node f="40"><name></name></node>
-        <node f="42" dt="2"><name>GeneralProperties</name><data>VIEW:/active&gt;Tools/GeneralProperties</data></node>
-       </node>
+        <node f="40"><name></name></node></node>
        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
        <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
        <node f="42" dt="1"><name>spatialsx</name><data>000000004066c000</data></node>
@@ -6199,9 +6195,7 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);
        <node f="42" dt="3"><name>viewfocus</name><data><coupling>null</coupling></data></node>
        <node f="42" dt="2"><name>resizefocus</name><data></data></node>
        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040100000</data>
-        <node f="40"><name></name></node>
-        <node f="42" dt="2"><name>GeneralProperties</name><data>VIEW:/active&gt;Tools/GeneralProperties</data></node>
-       </node>
+        <node f="40"><name></name></node></node>
        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
        <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
        <node f="42" dt="1"><name>spatialsx</name><data>000000004066c000</data></node>
