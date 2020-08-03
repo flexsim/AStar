@@ -8,7 +8,7 @@ Grid::~Grid()
 {
 	if (textureID) {
 		glDeleteTextures(1, &textureID);
-		textureID;
+		textureID = 0;
 	}
 }
 
