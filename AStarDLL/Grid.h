@@ -12,12 +12,16 @@ class Grid : public SimpleDataType
 public:
 	Grid() : gridOrigin(0.0, 0.0, 0.0) {}
 	Grid(AStarNavigator* navigator, double nodeWidth) : gridOrigin(0.0, 0.0, 0.0), navigator(navigator), nodeWidth(nodeWidth) {}
+	virtual ~Grid();
 	virtual void bind();
 	virtual const char* getClassFactory() { return "AStar::Grid"; }
 
 	typedef std::vector<std::vector<AStarNode>> NodeTable;
 	NodeTable nodes;
 	std::unique_ptr<unsigned int[]> heatMapBuffer;
+	int heatMapWidth = 0;
+	int heatMapHeight = 0;
+	GLuint textureID = 0;
 
 	AStarNavigator* navigator = nullptr;
 	double nodeWidth = 1.0;

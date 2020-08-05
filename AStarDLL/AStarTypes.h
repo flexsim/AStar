@@ -16,7 +16,7 @@ enum Direction {
 };
 
 
-struct Cell {
+struct astar_export Cell {
 	union{
 		struct{
 			/// <summary>	The 1-based rank of the grid. Zero means undefined grid. </summary>
@@ -129,7 +129,7 @@ struct NodeAllocation
 
 };
 
-struct ExtendedCell : public Cell {
+struct astar_export ExtendedCell : public Cell {
 	ExtendedCell(unsigned int grid, unsigned short row, unsigned short col) : Cell(grid, row, col) {}
 	ExtendedCell(const Cell& other) : Cell(other) {}
 	void construct(unsigned int grid, unsigned int row, unsigned int col) {
@@ -157,6 +157,7 @@ public:
 
 	ExtendedCell adjacentCell(int direction);
 	int canGo(int direction);
+	double getNodeWidth(AStarNavigator* nav);
 };
 
 typedef std::list<NodeAllocation> NodeAllocationList;
@@ -224,7 +225,7 @@ struct AStarNodeExtraData : public SimpleDataType
 };
 
 
-struct AStarPathEntry {
+struct astar_export AStarPathEntry {
 	AStarPathEntry() : cell(0, 0, 0), bridgeIndex(-1) {}
 	AStarPathEntry(Cell cell, char bridgeIndex) : cell(cell), bridgeIndex(bridgeIndex) {}
 	void bind(TreeNode* toNode);
@@ -233,15 +234,21 @@ struct AStarPathEntry {
 	int bridgeIndex;
 
 	ExtendedCell __getCell();
+	__declspec(property(get = __getCell)) ExtendedCell extendedCell;
 };
 
 class TravelPath : public std::vector<AStarPathEntry>
 {
 public:
-	double calculateTotalDistance(AStarNavigator* nav);
+	astar_export double calculateTotalDistance(AStarNavigator* nav);
 	AStarPathEntry __oneBasedIndex(int index) { return operator [](index - 1); }
-	int __getLength() { return (int)size(); }
-	int indexOf(Cell& cell);
+	astar_export int __getLength();
+	astar_export int indexOf(Cell& cell);
+	astar_export AStarPathEntry& at(int index);
+#ifndef COMPILING_ASTAR
+	AStarPathEntry& operator [](int index) { return at(index); }
+	int size() { return __getLength(); }
+#endif
 	static void bindInterface();
 };
 
@@ -346,7 +353,7 @@ struct AllocationStep {
 	bool isImmediatelyBlocked(Traveler* traveler);
 };
 
-struct DestinationThreshold
+struct astar_export DestinationThreshold
 {
 	DestinationThreshold() : xAxisThreshold(0), yAxisThreshold(0), rotation(0), anyThresholdRadius(0) {}
 	DestinationThreshold(treenode dest, double fudgeFactor);

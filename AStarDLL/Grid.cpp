@@ -4,7 +4,13 @@
 #include "BridgeRoutingData.h"
 
 namespace AStar {
-
+Grid::~Grid()
+{
+	if (textureID) {
+		glDeleteTextures(1, &textureID);
+		textureID = 0;
+	}
+}
 
 void Grid::bind()
 {
@@ -191,6 +197,11 @@ Cell Grid::getCell(const Vec3 & modelLoc)
 void Grid::reset(AStarNavigator* nav)
 {
 	heatMapBuffer.reset(nullptr);
+	heatMapWidth = heatMapHeight = 0;
+	if (textureID) {
+		glDeleteTextures(1, &textureID);
+		textureID = 0;
+	}
 	navigator = nav;
 }
 
@@ -932,7 +943,9 @@ void Grid::drawHeatMap(TreeNode * view)
 	int bufferSize = 4 * numPixels;
 
 	if (!heatMapBuffer) {
-		heatMapBuffer = std::unique_ptr<unsigned int[]>(new unsigned int[numPixels]);
+		heatMapBuffer = std::unique_ptr<unsigned int[]>(new unsigned int[numPixels + 20]);
+		heatMapWidth = width;
+		heatMapHeight = height;
 		Color baseColor = heatMapColorProgression[0];
 		if (navigator->transparentBaseColor)
 			baseColor.a = 0;
@@ -951,6 +964,10 @@ void Grid::drawHeatMap(TreeNode * view)
 				buffer[i * width + j] = baseColorInt;
 			}
 		}
+	}
+	else {
+		if (width != heatMapWidth || height != heatMapHeight)
+			return;
 	}
 
 	unsigned int* buffer = heatMapBuffer.get();
@@ -987,24 +1004,25 @@ void Grid::drawHeatMap(TreeNode * view)
 		Color highColor = heatMapColorProgression[(int)ceil(progressionFactor)];
 		Color lerpColor = lowColor + ((highColor - lowColor) * frac(progressionFactor));
 
-		buffer[(data->cell.row + 1) * width + data->cell.col + 1] =
-			(((int)(lerpColor.a * 255)) << 24)
-			| (((int)(lerpColor.b * 255)) << 16)
-			| (((int)(lerpColor.g * 255)) << 8)
-			| (((int)(lerpColor.r * 255)));
+		int index = (data->cell.row + 1) * width + data->cell.col + 1;
+		if (index < heatMapWidth * heatMapHeight) {
+			buffer[index] =
+				(((int)(lerpColor.a * 255)) << 24)
+				| (((int)(lerpColor.b * 255)) << 16)
+				| (((int)(lerpColor.g * 255)) << 8)
+				| (((int)(lerpColor.r * 255)));
+		}
 	}
 
-
-	GLuint textureID;
-	glGenTextures(1, &textureID);
+	if (!textureID)
+		glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glGenerateTextureMipMap(GL_TEXTURE_2D);
 
 	Mesh trafficMesh;
 	trafficMesh.init(6, MESH_POSITION | MESH_TEX_COORD2, MESH_DYNAMIC_DRAW);
@@ -1037,7 +1055,6 @@ void Grid::drawHeatMap(TreeNode * view)
 	fglEnable(GL_LIGHTING);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glDeleteTextures(1, &textureID);
 }
 
 void Grid::drawDestinationThreshold(treenode destination, const Vec3 & loc, const Vec3 & size)

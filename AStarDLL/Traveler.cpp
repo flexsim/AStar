@@ -55,6 +55,8 @@ void Traveler::bindEvents()
 	bindEventByName("onBlock", onBlockTrigger, "OnBlock", EVENT_TYPE_TRIGGER);
 	bindEventByName("onReroute", onRerouteTrigger, "OnReroute", EVENT_TYPE_TRIGGER);
 	bindEventByName("onContinue", onContinueTrigger, "OnContinue", EVENT_TYPE_TRIGGER);
+	bindEventByName("onBridgeArrival", onBridgeArrivalTrigger, "OnBridgeArrival", EVENT_TYPE_TRIGGER);
+	bindEventByName("onBridgeContinue", onBridgeContinueTrigger, "OnBridgeContinue", EVENT_TYPE_TRIGGER);
 
 	bindRelayedClassEvents<TravelerBridgeData>("", 0, &Traveler::resolveBridgeData, bridgeData);
 }
@@ -76,9 +78,14 @@ TreeNode* Traveler::resolveBridgeData()
 }
 
 
+TravelPath& Traveler::__getTravelPath()
+{
+	return travelPath;
+}
+
 void Traveler::bindInterface()
 {
-	bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Traveler.xml");
+	bindDocumentationXMLPath("help\\FlexScriptAPIReference\\AStar\\AStar.Traveler.xml");
 	bindConstructor(&AStarNavigator::getTraveler, "AStar.Traveler Traveler(TaskExecuter te)");
 	SimpleDataType::bindTypedPropertyByName<TravelPath>("travelPath", "AStar.TravelPath&", force_cast<void*>(&Traveler::__getTravelPath), nullptr);
 	bindMethod(getAllocations, Traveler, "AStar.AllocationRange getAllocations(double time = -1)");
@@ -455,7 +462,24 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 	XE
 }
 
-void Traveler::onBridgeArrival(BridgeRoutingData* data, int pathIndex) 
+
+void Traveler::navigatePath(TravelPath&& path)
+{
+	travelPath = std::move(path);
+	navigatePath(0);
+}
+
+void Traveler::onBridgeArrival(int pathIndex)
+{
+	auto& pathEntry = travelPath[pathIndex];
+	if (pathEntry.bridgeIndex != -1) {
+		AStarNodeExtraData* nodeData = navigator->getExtraData(pathEntry.cell);
+		BridgeRoutingData* data = nodeData->bridges[pathEntry.bridgeIndex];
+		onBridgeArrival(data, pathIndex);
+	}
+}
+
+void Traveler::onBridgeArrival(BridgeRoutingData* data, int pathIndex)
 {
 	XS
 	if (isBlocked)
@@ -465,12 +489,29 @@ void Traveler::onBridgeArrival(BridgeRoutingData* data, int pathIndex)
 
 	updateLocation();
 	assertBridgeData(data);
+	FIRE_SDT_EVENT(onBridgeArrivalTrigger, te->holder, bridgeData->routingData->bridge->holder);
 	bridgeData->routingData = data;
 	bridgeData->spatialz = te->location.z;
 	bridgeData->pathIndex = pathIndex;
 
 	data->onBridgeArrival(this, pathIndex);
 	XE
+}
+
+void Traveler::onBridgeComplete(int atPathIndex)
+{
+	TaskExecuter* te = this->te;
+	Bridge* bridge = bridgeData->routingData->bridge;
+	// With Agent systems, the navigator isn't the A* navigator, so I shouldn't continue navigating 
+	// the path
+	bool isAStarNavigator = ownerobject(te->node_v_navigator->first->value) == navigator->holder;
+	if (!isAStarNavigator)
+		// temporary fix. In reality there should be some travel time for the agent to get out of the way
+		bridgeData->routingData->onExit(this);
+	FIRE_SDT_EVENT(onBridgeContinueTrigger, te->holder, bridge ? bridge->holder : Variant());
+	if (isAStarNavigator)
+		navigatePath(atPathIndex);
+
 }
 
 NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, bool notifyPendingAllocations)
@@ -828,6 +869,7 @@ void Traveler::assertBridgeData(BridgeRoutingData * routing)
 		else data = new TravelerBridgeData;
 		bridgeData = data;
 		nodeaddsimpledata(bridgeDataNode, data, 1);
+		bridgeData->bindEventNodes();
 	}
 }
 

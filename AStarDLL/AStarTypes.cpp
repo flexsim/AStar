@@ -54,7 +54,7 @@ void Cell::bind(TreeNode * x)
 
 void ExtendedCell::bindInterface()
 {
-	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Cell.xml");
+	SimpleDataType::bindDocumentationXMLPath("help\\FlexScriptAPIReference\\AStar\\AStar.Cell.xml");
 	SimpleDataType::bindConstructor(force_cast<void*>(&ExtendedCell::construct), "void Cell(int grid, int row, int col)");
 	SimpleDataType::bindCopyConstructor(&ExtendedCell::copyConstruct);
 	SimpleDataType::bindCopyAssigner(&ExtendedCell::operator =);
@@ -121,6 +121,11 @@ int ExtendedCell::canGo(int direction)
 	return node->canGo((Direction)direction);
 }
 
+double ExtendedCell::getNodeWidth(AStarNavigator* nav)
+{
+	return nav->getGrid(*this)->nodeWidth;
+}
+
 ExtendedCell::operator bool()
 {
 	assertCachedPointers();
@@ -150,7 +155,7 @@ struct ExtendedNodeAllocation : public NodeAllocation
 
 void NodeAllocation::bindInterface()
 {
-	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Allocation.xml");
+	SimpleDataType::bindDocumentationXMLPath("help\\FlexScriptAPIReference\\AStar\\AStar.Allocation.xml");
 	SimpleDataType::bindConstructor(force_cast<void*>(&NodeAllocation::construct), "void Cell(int grid, int row, int col)");
 	SimpleDataType::bindCopyConstructor(&NodeAllocation::copyConstruct);
 	SimpleDataType::bindCopyAssigner(&NodeAllocation::operator =);
@@ -485,6 +490,11 @@ double TravelPath::calculateTotalDistance(AStarNavigator * nav)
 	return dist;
 }
 
+int TravelPath::__getLength()
+{
+	return (int)size();
+}
+
 int TravelPath::indexOf(Cell & cell)
 {
 	for (int i = 0; i < size(); i++) {
@@ -492,6 +502,12 @@ int TravelPath::indexOf(Cell & cell)
 			return i + 1;
 	}
 	return -1;
+}
+
+
+AStarPathEntry& TravelPath::at(int index)
+{
+	return operator[](index);
 }
 
 void TravelPath::bindInterface()
@@ -504,7 +520,7 @@ void TravelPath::bindInterface()
 
 void AStarNamespace::bindInterface()
 {
-	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.xml");
+	SimpleDataType::bindDocumentationXMLPath("help\\FlexScriptAPIReference\\AStar\\AStar.xml");
 	SimpleDataType::bindStaticTypedPropertyByName<AStarNavigator*>("navigator", "AStar.Navigator", force_cast<void*>(&AStarNamespace::__getNavigator), nullptr);
 }
 
@@ -532,7 +548,7 @@ void AllocationRange::bindInterface()
 
 void AStarDirection::bindInterface()
 {
-	SimpleDataType::bindDocumentationXMLPath("manual\\Reference\\CodingInFlexSim\\FlexScriptAPIReference\\AStar\\AStar.Direction.xml");
+	SimpleDataType::bindDocumentationXMLPath("help\\FlexScriptAPIReference\\AStar\\AStar.Direction.xml");
 	SimpleDataType::bindStaticConstIntProperty(Left, (int)Direction::Left);
 	SimpleDataType::bindStaticConstIntProperty(Right, (int)Direction::Right);
 	SimpleDataType::bindStaticConstIntProperty(Up, (int)Direction::Up);
