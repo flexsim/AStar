@@ -4128,7 +4128,6 @@ function_s(this.find("NameEdit"), "refresh");</data></node>
          <node f="42" dt="2"><name>tooltip</name><data></data></node>
          <node f="42" dt="1"><name>alignbottommargin</name><data>0000000040140000</data></node>
          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
-         <node f="42" dt="2"><name>helptopic</name><data></data></node>
          <node f="42" dt="2"><name>windowtitle</name><data>Colors</data></node>
          <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
