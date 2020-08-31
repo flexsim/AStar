@@ -165,6 +165,7 @@ public:
 	static const int SEARCH_DEEP_DIAGONALS = 1;
 	static const int SEARCH_RIGHT_ANGLES_ONLY = 2;
 	double deepSearch;
+	double strictDiagonals;
 	double drawMode;
 	double showAllocations;
 	double showTravelThreshold;

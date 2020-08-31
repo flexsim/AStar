@@ -32,6 +32,7 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(showAllocations);
 	bindVariable(surroundDepth);
 	bindVariable(deepSearch);
+	bindVariable(strictDiagonals);
 
 	bindVariable(routeByTravelTime);
 	bindVariable(stopForTurns);
@@ -702,14 +703,19 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 	cell.row = entryIn->cell.row + AStarNode::rowInc[dir1];
 	cell.col = entryIn->cell.col;
 	AStarNode* vertNode = grid->getNode(cell);
+	bool strictDiagonals = this->strictDiagonals;
+	bool isFirstTryAccessible = false;
 	if (vertNode->canGo(dir2)) {
-		auto iter = entryHash.find(cell.value);
-		if (iter != entryHash.end()) {
-			AStarSearchEntry* vert = &totalSet[iter->second];
-			e1 = checkExpandOpenSet(grid, vertNode, vert, dir2, rotDirection, dist, ROOT2_DIV2, preferredPathData);
+		isFirstTryAccessible = true;
+		if (!strictDiagonals) {
+			auto iter = entryHash.find(cell.value);
+			if (iter != entryHash.end()) {
+				AStarSearchEntry* vert = &totalSet[iter->second];
+				e1 = checkExpandOpenSet(grid, vertNode, vert, dir2, rotDirection, dist, ROOT2_DIV2, preferredPathData);
+			}
 		}
 	}
-	if (e1 == nullptr) {
+	if (e1 == nullptr && (!strictDiagonals || isFirstTryAccessible)) {
 		cell.row = entryIn->cell.row;
 		cell.col = entryIn->cell.col + AStarNode::colInc[dir2];
 		AStarNode* hrzNode = grid->getNode(cell);

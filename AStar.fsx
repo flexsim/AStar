@@ -9,7 +9,7 @@
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>00000000403b0000</data></node>
-    <node f="42"><name>after</name></node>
+    <node f="42" dt="2"><name>after</name><data>warehousing</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -31,6 +31,7 @@
         <node f="42" dt="1"><name>drawMode</name><data>0000000040370000</data></node>
         <node f="42" dt="1"><name>defaultPathWeight</name><data>9999999a3fd99999</data></node>
         <node f="42" dt="1"><name>deepSearch</name><data>000000003ff00000</data></node>
+        <node f="42" dt="1"><name>strictDiagonals</name><data>000000003ff00000</data></node>
         <node f="42" dt="1"><name>ignoreDestBarrier</name><data>000000003ff00000</data></node>
         <node f="42" dt="1"><name>hasEdgeTable</name><data>0000000000000000</data></node>
         <node f="42"><name>grids</name>
@@ -534,7 +535,7 @@
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>0000000040260000</data></node>
-    <node f="42"><name>after</name></node>
+    <node f="42" dt="2"><name>after</name><data>RCreate</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -1685,11 +1686,27 @@ for (int i = 1; i &lt;= content(members); i++) {
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/deepSearch</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Choose a path routing configuration</data></node>
           </data></node>
+          <node f="42" dt="4"><name>Strict Diagonals</name><data>
+           <node f="40"><name>object</name></node>
+           <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+           <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
+           <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
+           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+           <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/strictDiagonals</data></node>
+           <node f="42"><name>eventfunctions</name>
+            <node f="40"><name></name></node></node>
+           <node f="42" dt="2"><name>tooltip</name><data>If checked, travelers will only travel diagonals if both 
+travel orderings are available (x then y and y then x)
+
+Checking this box ensures travelers don't go around corners 
+by cutting a short diagonal.</data></node>
+          </data></node>
           <node f="42" dt="4"><name>CollisionAvoidancePanel</name><data>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040508000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040790000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040538000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
@@ -1762,7 +1779,7 @@ other inactive travelers.</data></node>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000405e8000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>000000004062c000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040790000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040538000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
@@ -1845,7 +1862,7 @@ forobjecttreeunder(up(c)) {
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>000000004069c000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>00000000406d4000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Do routing calculations based on the calculated travel time, 
@@ -1856,7 +1873,7 @@ including turn times and time waiting for other travelers.</data></node>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000406da000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040709000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>000000004064c000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
           </data></node>
@@ -1864,7 +1881,7 @@ including turn times and time waiting for other travelers.</data></node>
            <node f="40"><name>object</name></node>
            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
            <node f="42" dt="1"><name>spatialx</name><data>0000000040690000</data></node>
-           <node f="42" dt="1"><name>spatialy</name><data>00000000406d4000</data></node>
+           <node f="42" dt="1"><name>spatialy</name><data>0000000040706000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/defaultPathWeight</data></node>
@@ -4348,7 +4365,7 @@ return 0;</data></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>00000000401c0000</data></node>
-    <node f="42"><name>after</name></node>
+    <node f="42" dt="2"><name>after</name><data>Visual</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -4394,7 +4411,7 @@ return 0;
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>0000000040100000</data></node>
-    <node f="42"><name>after</name></node>
+    <node f="42" dt="2"><name>after</name><data>OnStateChange</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -4460,7 +4477,7 @@ return 0;
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>0000000040140000</data></node>
-    <node f="42"><name>after</name></node>
+    <node f="42" dt="2"><name>after</name><data>AStarTraveler</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -4568,7 +4585,7 @@ return 0;
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040488000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040478000</data></node>
     <node f="42" dt="2"><name>after</name><data>FollowObject</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6351,7 +6368,7 @@ repaintall();</data>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>0000000040000000</data></node>
-    <node f="42"><name>after</name></node>
+    <node f="42" dt="2"><name>after</name><data>AStar::AStarNavigator</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6361,7 +6378,7 @@ repaintall();</data>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>0000000040080000</data></node>
-    <node f="42"><name>after</name></node>
+    <node f="42" dt="2"><name>after</name><data>AStar::Barrier</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6371,7 +6388,7 @@ repaintall();</data>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>0000000040100000</data></node>
-    <node f="42"><name>after</name></node>
+    <node f="42" dt="2"><name>after</name><data>AStar::Divider</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6381,7 +6398,7 @@ repaintall();</data>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>0000000040140000</data></node>
-    <node f="42"><name>after</name></node>
+    <node f="42" dt="2"><name>after</name><data>AStar::PreferredPath</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6391,7 +6408,7 @@ repaintall();</data>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>0000000040180000</data></node>
-    <node f="42"><name>after</name></node>
+    <node f="42" dt="2"><name>after</name><data>AStar::Bridge</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6519,7 +6536,7 @@ return 1;
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000401c0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040140000</data></node>
     <node f="42" dt="2"><name>after</name><data>Task</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6578,7 +6595,7 @@ return updated;</data></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>00000000403f0000</data></node>
-    <node f="42"><name>after</name></node>
+    <node f="42" dt="2"><name>after</name><data>GUIs</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6611,7 +6628,7 @@ return updated;</data></node>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name>Barrier</name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403a0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000403b0000</data></node>
     <node f="42" dt="2"><name>after</name><data>VisualTool</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6621,12 +6638,36 @@ return updated;</data></node>
    </node>
    <node f="42" dt="3"><name>Divider</name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403b0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000403c0000</data></node>
     <node f="42" dt="2"><name>after</name><data>Barrier</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
      <node f="42" dt="2"><name>Divider</name><data>VIEW:/modules/AStar/Pages/DividerProperties</data></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add_Update to 21.0</name><data>MAIN:/project/events/OnUpdateModel/Update to 21.0</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name>update astar strictDiagonal</name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>update astar strictDiagonal</name><data>treenode updaterootnode = param(1);
+double oldVersion = param(2);
+
+if (oldVersion &gt;= 21.0)
+	return 0;
+	
+treenode aStarNav = updaterootnode.find("AStarNavigator");
+if (aStarNav)
+	setvarnum(aStarNav, "strictDiagonals", 0);
+
+return 1;
+</data></node>
     </node>
    </node>
   </node>
