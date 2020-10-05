@@ -35,6 +35,7 @@ public:
 
 	virtual void onBridgeArrival(Traveler* traveler, int pathIndex);
 	virtual void onExit(Traveler* traveler);
+	virtual void onAbort(Traveler* traveler);
 	virtual void updateLocation(Traveler* traveler);
 	void checkExpandOpenSet(AStarNavigator* nav, Traveler * traveler, Grid* grid, int bridgeEntryIndex);
 	virtual double getTravelDistance(TravelPath* path, int travelPathIndex, Grid* grid);

@@ -149,7 +149,7 @@ public:
 	treenode onContinueTrigger = nullptr;
 	treenode onRerouteTrigger = nullptr;
 
-	ObjRef<BridgeRoutingData::ArrivalEvent> bridgeArrivalEvent;
+	ObjRef<FlexSimEvent> bridgeEvent;
 	treenode bridgeDataNode = nullptr;
 	TravelerBridgeData* bridgeData = nullptr;
 	void assertBridgeData(BridgeRoutingData* routing);
