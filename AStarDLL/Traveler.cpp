@@ -44,7 +44,7 @@ void Traveler::bind()
 	bindNumber(turnDelay);
 
 	bindDouble(useMandatoryPath, 1);
-	bindObjRef(bridgeArrivalEvent, 0);
+	bindObjRef(bridgeEvent, 0);
 	//bindNumber(estimatedIndefiniteAllocTimeDelay);
 	//bindStlContainer(allocations);
 }
@@ -443,10 +443,10 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 
 	if (bridgeArrival) {
 		// Create a BridgeArrivalEvent
-		if (bridgeArrivalEvent)
-			destroyevent(bridgeArrivalEvent->holder);
+		if (bridgeEvent)
+			destroyevent(bridgeEvent->holder);
 		assertBridgeData(bridgeArrival);
-		bridgeArrivalEvent = createevent(new BridgeRoutingData::ArrivalEvent(bridgeArrival, this, i - 1, endTime))->objectAs(BridgeRoutingData::ArrivalEvent);
+		bridgeEvent = createevent(new BridgeRoutingData::ArrivalEvent(bridgeArrival, this, i - 1, endTime))->objectAs(BridgeRoutingData::ArrivalEvent);
 	}
 
 	if (!isActive) {
@@ -555,8 +555,8 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, 
 						destroyevent(laterTraveler->blockEvent->holder);
 					laterTraveler->blockEvent = createevent(event)->objectAs(BlockEvent);
 
-					if (laterTraveler->bridgeArrivalEvent)
-						destroyevent(laterTraveler->bridgeArrivalEvent->holder);
+					if (laterTraveler->bridgeEvent)
+						destroyevent(laterTraveler->bridgeEvent->holder);
 				}
 
 				if (laterAllocation != &allocation) {
@@ -956,8 +956,14 @@ void Traveler::abortTravel(TreeNode* newTS)
 	if (arrivalEvent)
 		destroyevent(arrivalEvent->holder);
 
-	if (bridgeArrivalEvent)
-		destroyevent(bridgeArrivalEvent->holder);
+	if (bridgeEvent) {
+		destroyevent(bridgeEvent->holder);
+	}
+
+	if (bridgeData && bridgeData->routingData) {
+		bridgeData->routingData->onAbort(this);
+		bridgeData->routingData = nullptr;
+	}
 
 	navigator->activeTravelers.erase(activeEntry);
 	isActive = false;
