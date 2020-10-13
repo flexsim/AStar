@@ -157,6 +157,7 @@ void Bridge::onExit(Traveler * traveler)
 
 void Bridge::onEndArrival(Traveler * traveler, int pathIndex)
 {
+	traveler->bridgeEvent = nullptr;
 	updateLocation(traveler, geometricDistance - getGrid(traveler)->nodeWidth);
 	traveler->navigatePath(pathIndex);
 }
