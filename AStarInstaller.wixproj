@@ -14,16 +14,16 @@
     </IncludeSearchPaths>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <OutputPath>wix\bin\</OutputPath>
+    <IntermediateOutputPath>wix\obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>Debug</DefineConstants>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
     <SuppressIces>ICE03</SuppressIces>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <OutputPath>wix\bin\</OutputPath>
+    <IntermediateOutputPath>wix\obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
     <SuppressIces>ICE03</SuppressIces>
@@ -41,22 +41,22 @@
   </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DefineConstants>Debug</DefineConstants>
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <OutputPath>wix\bin\</OutputPath>
+    <IntermediateOutputPath>wix\obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
     <SuppressIces>ICE03</SuppressIces>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <OutputPath>wix\bin\</OutputPath>
+    <IntermediateOutputPath>wix\obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <CompilerAdditionalOptions>
     </CompilerAdditionalOptions>
     <SuppressIces>ICE03</SuppressIces>
   </PropertyGroup>
   <Import Project="$(WixTargetsPath)" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(ProjectDir)$(OutDir)AStar.msm" "$(ProjectDir)../../wix/AStar.msm"</PostBuildEvent>
+    <PostBuildEvent></PostBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.

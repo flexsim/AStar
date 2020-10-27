@@ -21,6 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{340EB70E-DFC3-405D-B723-4C9BE0977380}</ProjectGuid>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -73,6 +74,18 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>
@@ -92,9 +105,7 @@
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <OutputFile>$(OutDir)$(TargetName)_x86$(TargetExt)</OutputFile>
     </Link>
-    <BuildLog>
-      <Path>$(Platform)\$(Configuration)\$(MSBuildProjectName).log</Path>
-    </BuildLog>
+    <BuildLog />
     <PreBuildEvent>
       <Command>copyheaders.bat</Command>
     </PreBuildEvent>
@@ -120,9 +131,7 @@
       <AdditionalDependencies>opengl32.lib;flexsimcontent\flexsimcontent.lib;flexsimcontent\flexsim.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
-    <BuildLog>
-      <Path>$(Platform)\$(Configuration)\$(MSBuildProjectName).log</Path>
-    </BuildLog>
+    <BuildLog />
     <PreBuildEvent>
       <Command>copyheaders.bat</Command>
     </PreBuildEvent>
@@ -153,9 +162,7 @@
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <OutputFile>$(OutDir)$(TargetName)_x86$(TargetExt)</OutputFile>
     </Link>
-    <BuildLog>
-      <Path>$(Platform)\$(Configuration)\$(MSBuildProjectName).log</Path>
-    </BuildLog>
+    <BuildLog />
     <PreBuildEvent>
       <Command>copyheaders.bat</Command>
     </PreBuildEvent>
@@ -185,9 +192,7 @@
       <AdditionalDependencies>opengl32.lib;flexsimcontent\flexsimcontent.lib;flexsimcontent\flexsim.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
-    <BuildLog>
-      <Path>$(Platform)\$(Configuration)\$(MSBuildProjectName).log</Path>
-    </BuildLog>
+    <BuildLog />
     <PreBuildEvent>
       <Command>copyheaders.bat</Command>
     </PreBuildEvent>
