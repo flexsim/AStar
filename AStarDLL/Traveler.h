@@ -155,7 +155,7 @@ public:
 	treenode onBridgeArrivalTrigger = nullptr;
 	treenode onBridgeContinueTrigger = nullptr;
 
-	ObjRef<BridgeRoutingData::ArrivalEvent> bridgeArrivalEvent;
+	ObjRef<FlexSimEvent> bridgeEvent;
 	treenode bridgeDataNode = nullptr;
 	TravelerBridgeData* bridgeData = nullptr;
 	astar_export void assertBridgeData(BridgeRoutingData* routing);

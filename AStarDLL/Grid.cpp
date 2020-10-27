@@ -1002,7 +1002,7 @@ void Grid::drawHeatMap(TreeNode * view)
 		double progressionFactor = (double)(heatMapColorProgression.size() - 1) * weight;
 		Color lowColor = heatMapColorProgression[(int)floor(progressionFactor)];
 		Color highColor = heatMapColorProgression[(int)ceil(progressionFactor)];
-		Color lerpColor = lowColor + ((highColor - lowColor) * frac(progressionFactor));
+		Color lerpColor = lowColor.lerp(highColor, frac(progressionFactor));
 
 		int index = (data->cell.row + 1) * width + data->cell.col + 1;
 		if (index < heatMapWidth * heatMapHeight) {

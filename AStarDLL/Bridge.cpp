@@ -104,7 +104,7 @@ void Bridge::onEntry(Traveler * traveler, int pathIndex)
 	lastTraveler = traveler;
 	filledDistance += grid->nodeWidth;
 	if (!nav->enableCollisionAvoidance || firstTraveler == traveler) {
-		createevent(new Bridge::EndArrivalEvent(this, traveler, pathIndex, time() + (travelDistance / te->v_maxspeed)));
+		traveler->bridgeEvent = createevent(new Bridge::EndArrivalEvent(this, traveler, pathIndex, time() + (travelDistance / te->v_maxspeed)))->object<FlexSimEvent>();
 	}
 	if (nav->enableCollisionAvoidance) {
 		isAvailable = false;
@@ -138,8 +138,8 @@ void Bridge::onExit(Traveler * traveler)
 		}
 
 		double distRemaining = travelDistance - distTraveled;
-		createevent(new Bridge::EndArrivalEvent(this, firstTraveler, firstTraveler->bridgeData->pathIndex,
-			time() + (distRemaining / firstTraveler->te->v_maxspeed)));
+		firstTraveler->bridgeEvent = createevent(new Bridge::EndArrivalEvent(this, firstTraveler, firstTraveler->bridgeData->pathIndex,
+			time() + (distRemaining / firstTraveler->te->v_maxspeed)))->object<FlexSimEvent>();
 	}
 
 	bool wasFull = !isAvailable && filledDistance >= travelDistance;
@@ -157,6 +157,7 @@ void Bridge::onExit(Traveler * traveler)
 
 void Bridge::onEndArrival(Traveler * traveler, int pathIndex)
 {
+	traveler->bridgeEvent = nullptr;
 	updateLocation(traveler, geometricDistance - getGrid(traveler)->nodeWidth);
 	traveler->onBridgeComplete(pathIndex);
 }
