@@ -4585,7 +4585,7 @@ return 0;
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040478000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404b0000</data></node>
     <node f="42" dt="2"><name>after</name><data>FollowObject</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -4665,7 +4665,7 @@ applylinks(c, 1);
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404a0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404d8000</data></node>
     <node f="42" dt="2"><name>after</name><data>TestQueries</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -5648,7 +5648,7 @@ if (clickcode() == LEFT_RELEASE) {
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404a8000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404e0000</data></node>
     <node f="42" dt="2"><name>after</name><data>AStarBarrier</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6185,7 +6185,7 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404b0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404e8000</data></node>
     <node f="42" dt="2"><name>after</name><data>AStarDivider</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6628,7 +6628,7 @@ return updated;</data></node>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name>Barrier</name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403b0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000403c0000</data></node>
     <node f="42" dt="2"><name>after</name><data>VisualTool</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6638,7 +6638,7 @@ return updated;</data></node>
    </node>
    <node f="42" dt="3"><name>Divider</name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403c0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000403d0000</data></node>
     <node f="42" dt="2"><name>after</name><data>Barrier</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
