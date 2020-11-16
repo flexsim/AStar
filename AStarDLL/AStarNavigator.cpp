@@ -1947,6 +1947,8 @@ treenode AStarNavigator::addMember(TaskExecuter* te)
 	nodejoin(traveler->holder, nodeadddata(nodeinsertinto(te->node_v_navigator), DATATYPE_COUPLING));
 	te->v_useoffsets = OFFSET_BY_NAV_LOGIC;
 	traveler->onReset();
+	if (getrunstate(1) && enableCollisionAvoidance && !ignoreInactiveMemberCollisions)
+		traveler->onStartSimulation();
 	return traveler->holder;
 }
 
