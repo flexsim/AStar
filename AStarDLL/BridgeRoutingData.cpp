@@ -102,9 +102,10 @@ void BridgeRoutingData::onExit(Traveler * traveler)
 
 void BridgeRoutingData::onAbort(Traveler * traveler)
 {
-	if (bridge)
+	if (bridge) {
 		bridge->updateLocation(traveler, bridge->geometricDistance);
-	onExit(traveler);
+		bridge->onExit(traveler);
+	}
 }
 
 void BridgeRoutingData::updateLocation(Traveler * traveler)

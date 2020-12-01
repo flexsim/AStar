@@ -102,6 +102,8 @@ public:
 	virtual void getBoundingBox(Vec3& outMin, Vec3& outMax) = 0;
 	virtual TravelerBridgeData* createBridgeData() = 0;
 	virtual const char* getBridgeDataClassFactory() = 0;
+
+	virtual void onAbort(TaskExecuter* te) {}
 };
 
 }

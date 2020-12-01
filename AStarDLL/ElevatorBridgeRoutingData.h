@@ -24,7 +24,7 @@ protected:
 	virtual double getTravelDistance(TravelPath* path, int travelPathIndex, Grid* grid) override;
 	virtual TravelerBridgeData* createBridgeData() override;
 	virtual const char* getBridgeDataClassFactory() override;
-
+	void onAbort(Traveler* traveler) override;
 };
 
 }

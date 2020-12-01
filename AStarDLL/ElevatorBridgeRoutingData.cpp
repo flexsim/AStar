@@ -73,4 +73,9 @@ const char * ElevatorBridgeRoutingData::getBridgeDataClassFactory()
 	return bridge->getBridgeDataClassFactory();
 }
 
+void ElevatorBridgeRoutingData::onAbort(Traveler* traveler)
+{
+	bridge->onAbort(traveler->te);
+}
+
 }
