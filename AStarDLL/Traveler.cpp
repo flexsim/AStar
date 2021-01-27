@@ -127,6 +127,7 @@ void Traveler::onReset()
 	isActive = false;
 	isBlocked = false;
 	lastBlockTime = 0;
+	expectedtotaltraveldist = 0;
 	isNavigatingAroundDeadlock = false;
 	blockedAtTravelPathIndex = -1;
 	allocations.clear();
@@ -399,8 +400,8 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 			didBlockPathIndex = i;
 			break;
 		}
-
-		te->v_totaltraveldist += totalTravelDist;
+		expectedtotaltraveldist += totalTravelDist;
+		//te->v_totaltraveldist += totalTravelDist;
 
 		//Traffic info
 		nav->assertExtraData(e.cell, TraversalData)->totalTraversals++;
@@ -891,6 +892,20 @@ void Traveler::onArrival()
 	arrivalEvent = nullptr;
 	TreeNode* kinematics = te->node_v_kinematics;
 	updatekinematics(kinematics, te->holder, time());
+	Task* taskdata = &o(Task, te->activetask);
+	switch (taskdata->type) {
+	case TASKTYPE_TRAVELTOLOC:
+	case TASKTYPE_TRAVELRELATIVE:
+	case TASKTYPE_PICKOFFSET:
+	case TASKTYPE_PLACEOFFSET:
+		te->updateTotalTravelDist(expectedtotaltraveldist - getkinematics(kinematics, KINEMATIC_TOTALDIST));
+		break;
+	default:
+		te->updateTotalTravelDist(expectedtotaltraveldist);
+		break;
+	}
+	expectedtotaltraveldist = 0;
+	
 	te->b_spatialx -= 0.5*te->b_spatialsx;
 	te->b_spatialy += 0.5*te->b_spatialsy;
 	if (!isNavigatingAroundDeadlock) {
@@ -923,7 +938,13 @@ void Traveler::onArrival()
 void Traveler::abortTravel(TreeNode* newTS)
 {
 	updateLocation();
-
+	double x = getkinematics(te->node_v_kinematics, KINEMATIC_X, 1, time());
+	double y = getkinematics(te->node_v_kinematics, KINEMATIC_Y, 1, time());
+	double z = getkinematics(te->node_v_kinematics, KINEMATIC_Z, 1, time());
+	double curdist = sqrt(sqr(x) + sqr(y) + sqr(z));
+	double distancetraveled = expectedtotaltraveldist- getkinematics(te->node_v_kinematics, KINEMATIC_TOTALDIST) + curdist;
+	te->updateTotalTravelDist(distancetraveled);
+	expectedtotaltraveldist = 0;
 	if (navigator->enableCollisionAvoidance) {
 		if (request) {
 			navigator->getExtraData(request->cell)->requests.remove_if([&](NodeAllocation& alloc) { return &alloc == request; });

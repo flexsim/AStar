@@ -30,6 +30,7 @@ public:
 	double endSpeed;
 	double turnSpeed;
 	double turnDelay;
+	double expectedtotaltraveldist;
 	//double estimatedIndefiniteAllocTimeDelay;
 	DestinationThreshold destThreshold;
 	treenode destNode;
