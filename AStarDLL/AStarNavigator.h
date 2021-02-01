@@ -270,6 +270,7 @@ public:
 	virtual void bindEvents() override;
 	virtual void bindTEEvents(TaskExecuter* te) override;
 	virtual void bindTEStatistics(TaskExecuter* te) override;
+	virtual double getTotalTravelDistance(TaskExecuter* te) override;
 	virtual void bindInterface() override;
 	virtual void bind() override;
 	TreeNode* resolveTraveler();

@@ -2025,6 +2025,17 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 	return grid;
 }
 
+double AStarNavigator::getTotalTravelDistance(TaskExecuter* te)
+{
+	Traveler* traveler = getTraveler(te);
+	double x = getkinematics(te->node_v_kinematics, KINEMATIC_X, 1, time());
+	double y = getkinematics(te->node_v_kinematics, KINEMATIC_Y, 1, time());
+	double z = getkinematics(te->node_v_kinematics, KINEMATIC_Z, 1, time());
+	double curdist = sqrt(sqr(x) + sqr(y) + sqr(z));
+	double distancetraveled = traveler->expectedtotaltraveldist - getkinematics(te->node_v_kinematics, KINEMATIC_TOTALDIST) + curdist + get(te->node_v_totaltraveldist);
+	return distancetraveled;
+}
+
 Variant AStarNavigator::createGrid(FLEXSIMINTERFACE)
 {
 	return createGrid(Vec3(param(1), param(2), param(3)), Vec3(param(4), param(5), param(6)))->holder;
