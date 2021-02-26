@@ -26,7 +26,8 @@ void Barrier::bindVariables(void)
 
 	bindVariable(conditionRule);
 	bindVariable(patternTable);
-	bindStateVariable(nodeWidth);
+	bindStateVariable(nodeSize.x);
+	bindStateVariable(nodeSize.y);
 }
 
 void Barrier::bind(void)
@@ -80,9 +81,10 @@ void Barrier::assertNavigator()
 	navNode->objectAs(AStarNavigator)->barrierList.add(this);
 }
 
-void Barrier::init(double nodeWidth, const Vec3& pos1, const Vec3& pos2)
+void Barrier::init(const Vec2& nodeSize, const Vec3& pos1, const Vec3& pos2)
 {
-	this->nodeWidth = nodeWidth;
+	this->nodeSize = nodeSize;
+	drawNodeSize = nodeSize;
 	pointList.clear();
 	addPoint(pos1);
 	addPoint(pos2);
@@ -101,8 +103,8 @@ bool Barrier::getLocalBoundingBox(Vec3& min, Vec3& max)
 	Vec3 p0 = getLocalPointCoords(0);
 	Vec3 p1 = getLocalPointCoords(1);
 
-	min = Vec3(min(p0.x, p1.x), min(p0.y, p1.y), min(p0.z, p1.z));
-	max = Vec3(max(p0.x, p1.x), max(p0.y, p1.y), max(p0.z, p1.z));
+	min = Vec3(std::min(p0.x, p1.x), std::min(p0.y, p1.y), std::min(p0.z, p1.z));
+	max = Vec3(std::max(p0.x, p1.x), std::max(p0.y, p1.y), std::max(p0.z, p1.z));
 	return true;
 }
 
@@ -150,8 +152,8 @@ void Barrier::addBarriersToTable(Grid* grid)
 	if (isTrivialSolidBarrier) {
 		grid->addSolidBarrierToTable(myMin, myMax, this);
 	} else {
-		Cell minCell = grid->getCell(myMin + Vec3(0.5 * grid->nodeWidth, 0.5 * grid->nodeWidth, 0.0));
-		Cell maxCell = grid->getCell(myMax + Vec3(-0.5 * grid->nodeWidth, -0.5 * grid->nodeWidth, 0.0));
+		Cell minCell = grid->getCell(myMin + Vec3(0.5 * grid->nodeSize.x, 0.5 * grid->nodeSize.y, 0.0));
+		Cell maxCell = grid->getCell(myMax + Vec3(-0.5 * grid->nodeSize.x, -0.5 * grid->nodeSize.y, 0.0));
 		for (Cell cell = minCell; cell.row <= maxCell.row; cell.row++) {
 			for (cell.col = minCell.col; cell.col <= maxCell.col; cell.col++) {
 				PatternCell* patternCell = getPatternCell(grid->getLocation(cell));
@@ -220,11 +222,11 @@ void Barrier::drawManipulationHandles(treenode view)
 	//grid->growToEncompassBoundingBox(myModelMin, myModelMax, false);
 	if (grid)
 		grid->resolveGridOrigin();
-	nodeWidth = grid ? grid->nodeWidth : navigator->grids.front()->nodeWidth;
+	auto nodeSize = grid ? grid->nodeSize : navigator->grids.front()->nodeSize;
 	Vec3 size = myMax - myMin;
 	float width = (float)(myMax.x - myMin.x);
 	float height = (float)(myMax.y - myMin.y);
-	float scale = max(this->nodeWidth, 0.15 * max(height, width));
+	float scale = std::max({ this->nodeSize.x, this->nodeSize.y, 0.15 * std::max(height, width) });
 	float lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 	float z = (float)myMin.z + 0.01 / lengthMultiple;
 	Vec4f baseColor(0.4f, 0.4f, 0.4f, 1.0f);
@@ -284,8 +286,8 @@ void Barrier::drawManipulationHandles(treenode view)
 	setpickingdrawfocus(view, holder, PICK_ARROW_BOTTOM, pointList[0]->holder);
 	mesh.draw(GL_TRIANGLES, 9, 3);
 
-	Vec3f colAddPos(myMax.x + 0.5 * nodeWidth, myMax.y - 0.5 * nodeWidth, z);
-	Vec3f rowAddPos(myMin.x + 0.5 * nodeWidth, myMin.y - 0.5 * nodeWidth, z);
+	Vec3f colAddPos(myMax.x + 0.5 * nodeSize.x, myMax.y - 0.5 * nodeSize.y, z);
+	Vec3f rowAddPos(myMin.x + 0.5 * nodeSize.x, myMin.y - 0.5 * nodeSize.y, z);
 	Table patterns(patternTable);
 
 	Vec4f green(0.0f, 0.6f, 0.0f, 1.0f);
@@ -299,18 +301,18 @@ void Barrier::drawManipulationHandles(treenode view)
 
 	auto drawCellSizer = [&](Vec3f& center, float arrowDirection) {
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
-		Vec3f p1(0.1f * nodeWidth, 0.2f * nodeWidth, z);
+		Vec3f p1(0.1f * nodeSize.x, 0.2f * nodeSize.y, z);
 		p1.rotateXY(arrowDirection);
-		Vec3f p2(0.1f * nodeWidth, -0.2f * nodeWidth, z);
+		Vec3f p2(0.1f * nodeSize.x, -0.2f * nodeSize.y, z);
 		p2.rotateXY(arrowDirection);
-		Vec3f p3(0.3f * nodeWidth, 0.0f, z);
+		Vec3f p3(0.3f * nodeSize.x, 0.0f, z);
 		p3.rotateXY(arrowDirection);
 
-		Vec3f p4(-0.1f * nodeWidth, -0.2f * nodeWidth, z);
+		Vec3f p4(-0.1f * nodeSize.x, -0.2f * nodeSize.y, z);
 		p4.rotateXY(arrowDirection);
-		Vec3f p5(-0.1f * nodeWidth, 0.2f * nodeWidth, z);
+		Vec3f p5(-0.1f * nodeSize.x, 0.2f * nodeSize.y, z);
 		p5.rotateXY(arrowDirection);
-		Vec3f p6(-0.3f * nodeWidth, 0.0f, z);
+		Vec3f p6(-0.3f * nodeSize.x, 0.0f, z);
 		p6.rotateXY(arrowDirection);
 
 		addMeshTriangle(&mesh, center + p1, center + p2, center + p3, red);
@@ -324,13 +326,13 @@ void Barrier::drawManipulationHandles(treenode view)
 
 	auto drawTexButton = [&](Vec3f& center, float rotation, int pickType, int textureIndex, PatternCell* cell, Vec4f& baseColor, Vec4f& hoverColor) {
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4 | MESH_TEX_COORD2, MESH_DYNAMIC_DRAW);
-		Vec3f p1(0.2f * nodeWidth, 0.2f * nodeWidth, z);
+		Vec3f p1(0.2f * nodeSize.x, 0.2f * nodeSize.y, z);
 		p1.rotateXY(rotation);
-		Vec3f p2(-0.2f * nodeWidth, 0.2f * nodeWidth, z);
+		Vec3f p2(-0.2f * nodeSize.x, 0.2f * nodeSize.y, z);
 		p2.rotateXY(rotation);
-		Vec3f p3(-0.2f * nodeWidth, -0.2f * nodeWidth, z);
+		Vec3f p3(-0.2f * nodeSize.x, -0.2f * nodeSize.y, z);
 		p3.rotateXY(rotation);
-		Vec3f p4(0.2f * nodeWidth, -0.2f * nodeWidth, z);
+		Vec3f p4(0.2f * nodeSize.x, -0.2f * nodeSize.y, z);
 		p4.rotateXY(rotation);
 
 		bool isHovered = hoverType == pickType && hoverSecondary == cell->holder;
@@ -374,20 +376,20 @@ void Barrier::drawManipulationHandles(treenode view)
 			Vec3f cellCenter = cellTopLeftPos + Vec3f(0.5f * colWidth, -0.5f * rowHeight, 0.0f);
 			PatternCell* cell = patterns.cell(row, col)->objectAs(PatternCell);
 			auto drawArrow = [&](float direction, bool condition, int pickType) {
-				Vec3f p1(0.05 * nodeWidth, -0.05 * nodeWidth, z);
+				Vec3f p1(0.05 * nodeSize.x, -0.05 * nodeSize.y, z);
 				p1.rotateXY(direction);
-				Vec3f p2(0.2 * nodeWidth, -0.05 * nodeWidth, z);
+				Vec3f p2(0.2 * nodeSize.x, -0.05 * nodeSize.y, z);
 				p2.rotateXY(direction);
-				Vec3f p3(0.2 * nodeWidth, 0.05 * nodeWidth, z);
+				Vec3f p3(0.2 * nodeSize.x, 0.05 * nodeSize.y, z);
 				p3.rotateXY(direction);
-				Vec3f p4(0.05 * nodeWidth, 0.05 * nodeWidth, z);
+				Vec3f p4(0.05 * nodeSize.x, 0.05 * nodeSize.y, z);
 				p4.rotateXY(direction);
 
-				Vec3f p5(0.2 * nodeWidth, -0.1 * nodeWidth, z);
+				Vec3f p5(0.2 * nodeSize.x, -0.1 * nodeSize.y, z);
 				p5.rotateXY(direction);
-				Vec3f p6(0.3 * nodeWidth, 0.0f, z);
+				Vec3f p6(0.3 * nodeSize.x, 0.0f, z);
 				p6.rotateXY(direction);
-				Vec3f p7(0.2 * nodeWidth, 0.1 * nodeWidth, z);
+				Vec3f p7(0.2 * nodeSize.x, 0.1 * nodeSize.y, z);
 				p7.rotateXY(direction);
 
 				bool isHovered = hoverType == pickType && hoverSecondary == cell->holder;
@@ -416,17 +418,17 @@ void Barrier::drawManipulationHandles(treenode view)
 					borderMesh.draw(GL_LINES);
 				}
 
-				drawCellSizer(Vec3f(cellTopLeftPos.x, myMax.y - 0.2 * nodeWidth, z), 0.0f);
-				drawCellSizer(Vec3f(cellTopLeftPos.x, myMin.y + 0.2 * nodeWidth, z), 0.0f);
-				drawTexButton(Vec3f(cellTopLeftPos.x, myMax.y - 0.8 * nodeWidth, z), 0.0f, 
+				drawCellSizer(Vec3f(cellTopLeftPos.x, myMax.y - 0.2 * nodeSize.y, z), 0.0f);
+				drawCellSizer(Vec3f(cellTopLeftPos.x, myMin.y + 0.2 * nodeSize.y, z), 0.0f);
+				drawTexButton(Vec3f(cellTopLeftPos.x, myMax.y - 0.8 * nodeSize.y, z), 0.0f,
 					PICK_MERGE_PATTERN_COLS, stitchesTexture, cell, black, darkGray);
-				drawTexButton(Vec3f(cellTopLeftPos.x, myMin.y + 0.8 * nodeWidth, z), 0.0f, 
+				drawTexButton(Vec3f(cellTopLeftPos.x, myMin.y + 0.8 * nodeSize.y, z), 0.0f,
 					PICK_MERGE_PATTERN_COLS, stitchesTexture, cell, black, darkGray);
 			}
 
-			drawTexButton(Vec3f(cellTopLeftPos.x - 0.5f * colWidth, myMax.y - 0.2 * nodeWidth, z), 180.0f, 
+			drawTexButton(Vec3f(cellTopLeftPos.x - 0.5f * colWidth, myMax.y - 0.2 * nodeSize.y, z), 180.0f,
 				PICK_SPLIT_PATTERN_COL, scissorTexture, cell, black, darkGray);
-			drawTexButton(Vec3f(cellTopLeftPos.x - 0.5f * colWidth, myMin.y + 0.2 * nodeWidth, z), 0.0f, 
+			drawTexButton(Vec3f(cellTopLeftPos.x - 0.5f * colWidth, myMin.y + 0.2 * nodeSize.y, z), 0.0f,
 				PICK_SPLIT_PATTERN_COL, scissorTexture, cell, black, darkGray);
 			
 			if (hoverType == PICK_SPLIT_PATTERN_COL && hoverSecondary == cell->holder) {
@@ -448,17 +450,17 @@ void Barrier::drawManipulationHandles(treenode view)
 				borderMesh.draw(GL_LINES);
 			}
 
-			drawCellSizer(Vec3f(myMin.x + 0.2 * nodeWidth, cellTopLeftPos.y, z), 90.0f);
-			drawCellSizer(Vec3f(myMax.x - 0.2 * nodeWidth, cellTopLeftPos.y, z), 90.0f);
-			drawTexButton(Vec3f(myMin.x + 0.8 * nodeWidth, cellTopLeftPos.y, z), 90.0f, 
+			drawCellSizer(Vec3f(myMin.x + 0.2 * nodeSize.x, cellTopLeftPos.y, z), 90.0f);
+			drawCellSizer(Vec3f(myMax.x - 0.2 * nodeSize.x, cellTopLeftPos.y, z), 90.0f);
+			drawTexButton(Vec3f(myMin.x + 0.8 * nodeSize.x, cellTopLeftPos.y, z), 90.0f,
 				PICK_MERGE_PATTERN_ROWS, stitchesTexture, cell, black, darkGray);
-			drawTexButton(Vec3f(myMax.x - 0.8 * nodeWidth, cellTopLeftPos.y, z), 90.0f, 
+			drawTexButton(Vec3f(myMax.x - 0.8 * nodeSize.x, cellTopLeftPos.y, z), 90.0f,
 				PICK_MERGE_PATTERN_ROWS, stitchesTexture, cell, black, darkGray);
 		}
 
-		drawTexButton(Vec3f(myMax.x - 0.2 * nodeWidth, cellTopLeftPos.y + 0.5f * rowHeight, z), 90.0f, 
+		drawTexButton(Vec3f(myMax.x - 0.2 * nodeSize.x, cellTopLeftPos.y + 0.5f * rowHeight, z), 90.0f,
 			PICK_SPLIT_PATTERN_ROW, scissorTexture, cell, black, darkGray);
-		drawTexButton(Vec3f(myMin.x + 0.2 * nodeWidth, cellTopLeftPos.y + 0.5f * rowHeight, z), -90.0f, 
+		drawTexButton(Vec3f(myMin.x + 0.2 * nodeSize.x, cellTopLeftPos.y + 0.5f * rowHeight, z), -90.0f,
 			PICK_SPLIT_PATTERN_ROW, scissorTexture, cell, black, darkGray);
 
 		if (hoverType == PICK_SPLIT_PATTERN_ROW && hoverSecondary == cell->holder && !pickingMode) {
@@ -476,8 +478,8 @@ void Barrier::drawManipulationHandles(treenode view)
 		Mesh gridPointsMesh;
 		gridPointsMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
 		Vec4f lightGray(0.7f, 0.7f, 0.7f, 1.0f);
-		Cell minCell = grid->getCell(myModelMin + Vec3(0.5 * nodeWidth, 0.5 * nodeWidth, 0.0));
-		Cell maxCell = grid->getCell(myModelMax + Vec3(-0.5 * nodeWidth, -0.5 * nodeWidth, 0.0));
+		Cell minCell = grid->getCell(myModelMin + Vec3(0.5 * nodeSize.x, 0.5 * nodeSize.y, 0.0));
+		Cell maxCell = grid->getCell(myModelMax + Vec3(-0.5 * nodeSize.x, -0.5 * nodeSize.y, 0.0));
 		Vec3f offset(-b_spatialx, -b_spatialy, -b_spatialz);
 		for (Cell cell = minCell; cell.row <= maxCell.row; cell.row++) {
 			for (cell.col = minCell.col; cell.col <= maxCell.col; cell.col++) {
@@ -489,19 +491,19 @@ void Barrier::drawManipulationHandles(treenode view)
 				if (patternCell) {
 					if (patternCell->canGoUp) {
 						addMeshVertex(&mesh, localPos, lightGray);
-						addMeshVertex(&mesh, localPos + Vec3f(0.0f, 0.2 * nodeWidth, 0.0f), lightGray);
+						addMeshVertex(&mesh, localPos + Vec3f(0.0f, 0.2 * nodeSize.y, 0.0f), lightGray);
 					}
 					if (patternCell->canGoDown) {
 						addMeshVertex(&mesh, localPos, lightGray);
-						addMeshVertex(&mesh, localPos + Vec3f(0.0f, -0.2 * nodeWidth, 0.0f), lightGray);
+						addMeshVertex(&mesh, localPos + Vec3f(0.0f, -0.2 * nodeSize.y, 0.0f), lightGray);
 					}
 					if (patternCell->canGoRight) {
 						addMeshVertex(&mesh, localPos, lightGray);
-						addMeshVertex(&mesh, localPos + Vec3f(0.2 * nodeWidth, 0.0f, 0.0f), lightGray);
+						addMeshVertex(&mesh, localPos + Vec3f(0.2 * nodeSize.x, 0.0f, 0.0f), lightGray);
 					}
 					if (patternCell->canGoLeft) {
 						addMeshVertex(&mesh, localPos, lightGray);
-						addMeshVertex(&mesh, localPos + Vec3f(-0.2 * nodeWidth, 0.0f, 0.0f), lightGray);
+						addMeshVertex(&mesh, localPos + Vec3f(-0.2 * nodeSize.x, 0.0f, 0.0f), lightGray);
 					}
 				}
 			}
@@ -621,17 +623,17 @@ double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 			double height = topRight->y - bottomLeft->y;
 
 			// Enforce a minimum size
-			if (width < nodeWidth / 2) {
+			if (width < drawNodeSize.x / 2.0) {
 				if (activePoint == bottomLeft)
-					activePoint->x = topRight->x - nodeWidth / 2;
+					activePoint->x = topRight->x - drawNodeSize.x / 2;
 				else
-					activePoint->x = bottomLeft->x + nodeWidth / 2;
+					activePoint->x = bottomLeft->x + drawNodeSize.x / 2;
 			}
-			if (height < nodeWidth / 2) {
+			if (height < drawNodeSize.y / 2.0) {
 				if (activePoint == bottomLeft)
-					activePoint->y = topRight->y - nodeWidth / 2;
+					activePoint->y = topRight->y - drawNodeSize.y / 2;
 				else
-					activePoint->y = bottomLeft->y + nodeWidth / 2;
+					activePoint->y = bottomLeft->y + drawNodeSize.y / 2;
 			}
 		
 			activePointIndex = 0;
@@ -790,7 +792,7 @@ double Barrier::onDraw(treenode view)
 	if (!((int)nav->drawMode & ASTAR_DRAW_MODE_BARRIERS))
 		return 0;
 
-	if (nodeWidth != nav->minNodeWidth)
+	if (drawNodeSize != nav->minNodeSize)
 		isMeshDirty = true;
 
 	float factor, units;
@@ -802,12 +804,12 @@ double Barrier::onDraw(treenode view)
 	double vpRadius = get(viewpointradius(view));
 	if (get(viewprojectiontype(view)) == 1)
 		vpRadius = maxof(get(spatialsx(view)), get(spatialsy(view))) / get(viewmagnification(view));
-	double offset = max(-1, -50 / (vpRadius * getmodelunit(LENGTH_MULTIPLE)));
+	double offset = std::max(-1.0, -50.0 / (vpRadius * getmodelunit(LENGTH_MULTIPLE)));
 
 	glPolygonOffset(offset - 0.025, -5);
 
 	if (isMeshDirty || mode != 0) {
-		nodeWidth = nav->minNodeWidth;
+		drawNodeSize = nav->minNodeSize;
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4);
 		addVertices(view, &mesh, 0.0f, Basic);
 		isMeshDirty = false;
@@ -890,7 +892,8 @@ double Barrier::onCreate(double dropx, double dropy, double dropz, int iscopy)
 {
 	assertNavigator();
 
-	nodeWidth = navigator->minNodeWidth;
+	drawNodeSize = navigator->minNodeSize;
+	nodeSize = drawNodeSize;
 
 	if (holder->up == model()) {
 		holder->name = applicationcommand("getuniquename", getname(classobject(holder)), navigator->holder);
@@ -942,8 +945,8 @@ void Barrier::removePoint(int pointIndex)
 
 void Barrier::swapPoints(int index1, int index2)
 {
-	int maxIndex = max(index1, index2);
-	int minIndex = min(index1, index2);
+	int maxIndex = std::max(index1, index2);
+	int minIndex = std::min(index1, index2);
 
 	if (maxIndex >= pointList.size() || minIndex < 0)
 		return;
@@ -1013,7 +1016,7 @@ bool Barrier::setPointCoords(int pointIndex, const Vec3& modelPoint)
 
 void Barrier::addPathVertices(treenode view, Mesh* barrierMesh, float z, const Vec4f& color, DrawStyle drawStyle, bool twoWay)
 {
-	Vec4f theColor( min(1.0f, color.r + 0.2f), min(1.0f, color.g + 0.2f), min(1.0f, color.b + 0.2f), color.a );
+	Vec4f theColor( std::min(1.0f, color.r + 0.2f), std::min(1.0f, color.g + 0.2f), std::min(1.0f, color.b + 0.2f), color.a );
 	Vec4f lightGray( 0.4f, 0.4f, 0.4f, 1.0f );
 	Vec4f highlightColor(1.0f, 1.0f, 0.0f, 1.0f);
 	if (drawStyle == Highlighted) {
@@ -1027,7 +1030,7 @@ void Barrier::addPathVertices(treenode view, Mesh* barrierMesh, float z, const V
 	}
 
 	// Add circles at each node
-	float radius = nodeWidth * 0.15;
+	float radius = drawNodeWidth * 0.15;
 	for (int i = 0; i < pointList.size(); i++) {
 		Point* point = pointList[i];
 		bool shouldDraw = drawStyle == Basic;
@@ -1046,7 +1049,7 @@ void Barrier::addPathVertices(treenode view, Mesh* barrierMesh, float z, const V
 	}
 
 	// Draw a series of triangles
-	float maxTriangleWidth = nodeWidth;
+	float maxTriangleWidth = drawNodeWidth;
 	float distToCorner = radius;
 	float height = 2 * radius;
 	bool isBridge = toBridge() ? true : false;
@@ -1140,7 +1143,8 @@ void Barrier::onReset(AStarNavigator * nav)
 {
 	Vec3 min, max;
 	getBoundingBox(min, max);
-	nodeWidth = nav->getGrid(min)->nodeWidth;
+	nodeSize = nav->getGrid(min)->nodeSize;
+	drawNodeSize = nav->minNodeSize;
 	isMeshDirty = true;
 	if (isBasicBarrier()) {
 		assertValidPatternTable();

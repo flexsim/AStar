@@ -154,7 +154,7 @@ void Traveler::onReset()
 
 	travelPath.clear();
 	travelPath.push_back(AStarPathEntry(resetCell, -1));
-	tinyTime = 0.001 * navigator->minNodeWidth / te->v_maxspeed;
+	tinyTime = 0.001 * navigator->minNodeSize.x / te->v_maxspeed;
 	nextCollisionUpdateEndTime = 0.0;
 	nextCollisionUpdateTravelIndex = -1;
 	needsContinueTrigger = false;
@@ -309,8 +309,8 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 			Vec3 diff;
 			double startTime = endTime;
 			if (!isExitingBridge) {
-				diff.x = (e.cell.col - laste.cell.col) * grid->nodeWidth;
-				diff.y = (e.cell.row - laste.cell.row) * grid->nodeWidth;
+				diff.x = (e.cell.col - laste.cell.col) * grid->nodeSize.x;
+				diff.y = (e.cell.row - laste.cell.row) * grid->nodeSize.y;
 				diff.z = 0;
 				if (containerRot)
 					diff.rotateXY(-containerRot);
@@ -343,7 +343,7 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 				}
 				else {
 					double timeToRot = fabs(rotDiff) / rotLerpSpeed;
-					double rotStartTime = max(time(), startTime - 0.5 * timeToRot);
+					double rotStartTime = std::max(time(), startTime - 0.5 * timeToRot);
 					addkinematic(kinematics, 0, 0, rotDiff, rotLerpSpeed, 0, 0, 0, 0, rotStartTime, KINEMATIC_ROTATE);
 				}
 				lastRotation = nextRot;
@@ -547,7 +547,7 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, 
 
 			double eventTime = laterAllocation->acquireTime;
 			BlockEvent* event = new BlockEvent(laterTraveler, laterAllocation->travelPathIndex, laterAllocation->intermediateAllocationIndex,
-				earlierTraveler, allocation.cell, max(time(), eventTime));
+				earlierTraveler, allocation.cell, std::max(time(), eventTime));
 
 			// check to see if I need to create a block event for the later traveler
 			if (!laterTraveler->blockEvent || *(event) < *(laterTraveler->blockEvent)) {

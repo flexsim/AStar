@@ -41,7 +41,7 @@ void Bridge::onReset(AStarNavigator* nav)
 	firstTraveler = nullptr;
 	lastTraveler = nullptr;
 	geometricDistance = calculateDistance();
-	travelDistance = useVirtualDistance ? virtualDistance : max(0.001 * nodeWidth, geometricDistance - nodeWidth);
+	travelDistance = useVirtualDistance ? virtualDistance : std::max(0.001 * nodeWidth, geometricDistance - nodeWidth);
 	filledDistance = 0.0;
 	isAvailable = true;
 	lastUpdateTime = -1;
@@ -49,9 +49,10 @@ void Bridge::onReset(AStarNavigator* nav)
 	Cell fromCell = nav->getCell(getPointToModelOffset() + *pointList.front());
 	Cell toCell = nav->getCell(getPointToModelOffset() + *pointList.back());
 	if (fromCell != toCell) {
+		nodeWidth = DBL_MAX;
 		auto assertRoutingData = [this, nav](int index, Cell& cell) {
 			Grid* grid = nav->getGrid(cell);
-			nodeWidth = grid->nodeWidth;
+			nodeWidth = std::min(nodeWidth, grid->minNodeSize);
 			if (routingData.size() <= index) {
 				auto data = grid->bridgeData.add(new BridgeRoutingData(this, index == 0));
 				nodejoin(data->holder, ((treenode)routingData)->subnodes.add()->addData(DATATYPE_COUPLING));
@@ -67,6 +68,7 @@ void Bridge::onReset(AStarNavigator* nav)
 		else if (routingData.size() > 1)
 			routingData.remove(1);
 	} else {
+		nodeWidth = 1.0;
 		routingData.clear();
 	}
 }
@@ -102,14 +104,14 @@ void Bridge::onEntry(Traveler * traveler, int pathIndex)
 	if (lastTraveler)
 		lastTraveler->bridgeData->nextTraveler = traveler;
 	lastTraveler = traveler;
-	filledDistance += grid->nodeWidth;
+	filledDistance += nodeWidth;
 	if (!nav->enableCollisionAvoidance || firstTraveler == traveler) {
 		traveler->bridgeEvent = createevent(new Bridge::EndArrivalEvent(this, traveler, pathIndex, time() + (travelDistance / te->v_maxspeed)))->object<FlexSimEvent>();
 	}
 	if (nav->enableCollisionAvoidance) {
 		isAvailable = false;
 		if (filledDistance < travelDistance) {
-			createevent(new AvailableEvent(this, time() + (grid->nodeWidth / te->v_maxspeed)));
+			createevent(new AvailableEvent(this, time() + (nodeWidth / te->v_maxspeed)));
 		}
 	}
 }
@@ -132,8 +134,8 @@ void Bridge::onExit(Traveler * traveler)
 		// check to see if I should adjust the firstTraveler's entryTime if he has accumulated,
 		// to avoid "jumping" ahead
 		double distTraveled = (time() - firstTraveler->bridgeData->entryTime) * firstTraveler->te->v_maxspeed;
-		if (distTraveled > travelDistance - grid->nodeWidth) {
-			distTraveled = travelDistance - grid->nodeWidth;
+		if (distTraveled > travelDistance - nodeWidth) {
+			distTraveled = travelDistance - nodeWidth;
 			firstTraveler->bridgeData->entryTime = time() - distTraveled / firstTraveler->te->v_maxspeed;
 		}
 
@@ -143,12 +145,12 @@ void Bridge::onExit(Traveler * traveler)
 	}
 
 	bool wasFull = !isAvailable && filledDistance >= travelDistance;
-	filledDistance -= grid->nodeWidth;
+	filledDistance -= nodeWidth;
 	if (wasFull && (filledDistance < travelDistance || filledDistance <= 0.0)) {
 		if (lastTraveler) {
 			double distRemainingByTravelTime = nodeWidth - (time() - lastTraveler->bridgeData->entryTime) / lastTraveler->te->v_maxspeed;
-			double distRemainingByFilledDistance = filledDistance + grid->nodeWidth - travelDistance;
-			double distRemaining = max(distRemainingByFilledDistance, distRemainingByTravelTime);
+			double distRemainingByFilledDistance = filledDistance + nodeWidth - travelDistance;
+			double distRemaining = std::max(distRemainingByFilledDistance, distRemainingByTravelTime);
 			createevent(new AvailableEvent(this, time() + (distRemaining / lastTraveler->te->v_maxspeed)));
 		}
 		else onAvailable();
@@ -158,7 +160,7 @@ void Bridge::onExit(Traveler * traveler)
 void Bridge::onEndArrival(Traveler * traveler, int pathIndex)
 {
 	traveler->bridgeEvent = nullptr;
-	updateLocation(traveler, geometricDistance - getGrid(traveler)->nodeWidth);
+	updateLocation(traveler, geometricDistance - nodeWidth);
 	traveler->onBridgeComplete(pathIndex);
 }
 
@@ -186,9 +188,9 @@ void Bridge::updateBridgeLocations()
 	double curMax = travelDistance;
 	double curTime = time();
 	while (t) {
-		double dist = min(curMax, (curTime - t->bridgeData->entryTime) * t->te->v_maxspeed);
+		double dist = std::min(curMax, (curTime - t->bridgeData->entryTime) * t->te->v_maxspeed);
 		updateLocation(t, dist * distScale, &offset);
-		curMax = dist - grid->nodeWidth;
+		curMax = dist - nodeWidth;
 
 		t = t->bridgeData->nextTraveler;
 	}

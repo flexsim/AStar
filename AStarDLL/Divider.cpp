@@ -17,9 +17,9 @@ void Divider::bindVariables(void)
 	bindVariable(isTwoWay);
 }
 
-void Divider::init(double nodeWidth, const Vec3& pos1, const Vec3& pos2)
+void Divider::init(const Vec2& nodeSize, const Vec3& pos1, const Vec3& pos2)
 {
-	Barrier::init(nodeWidth, pos1, pos2);
+	Barrier::init(nodeSize, pos1, pos2);
 }
 
 bool Divider::getLocalBoundingBox(Vec3& min, Vec3& max)
@@ -32,12 +32,12 @@ bool Divider::getLocalBoundingBox(Vec3& min, Vec3& max)
 	for (int i = 0; i < pointList.size(); i++) {
 		Vec3 point = getLocalPointCoords(i);
 
-		min.x = min(min.x, point.x);
-		max.x = max(max.x, point.x);
-		min.y = min(min.y, point.y);
-		max.y = max(max.y, point.y);
-		min.z = min(min.z, point.z);
-		max.z = max(max.z, point.z);
+		min.x = std::min(min.x, point.x);
+		max.x = std::max(max.x, point.x);
+		min.y = std::min(min.y, point.y);
+		max.y = std::max(max.y, point.y);
+		min.z = std::min(min.z, point.z);
+		max.z = std::max(max.z, point.z);
 	}
 
 	return true;
@@ -64,7 +64,7 @@ void Divider::drawManipulationHandles(treenode view, float zOffset)
 {
 	Mesh mesh;
 	// Add circles at each node
-	float radius = nodeWidth * 0.15;
+	float radius = drawNodeWidth * 0.15f;
 	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 	for (int i = 0; i < pointList.size(); i++) {
@@ -97,7 +97,7 @@ void Divider::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle d
 			break;
 		default: break;
 	}
-	float radius = nodeWidth * 0.15;
+	float radius = drawNodeWidth * 0.15;
 	if (isTwoWay || drawStyle != Basic) {
 
 		// Add circles at each node
@@ -162,7 +162,7 @@ void Divider::addVertices(treenode view, Mesh* barrierMesh, float z, DrawStyle d
 		}
 		// Draw alternating light and dark triangles
 
-		float maxTriangleWidth = 2 * nodeWidth;
+		float maxTriangleWidth = 2 * drawNodeWidth;
 		float distToCorner = radius;
 		float height = 2 * radius;
 		float dTheta = atan2(radius, 0.0f);
@@ -246,6 +246,7 @@ double Divider::dragPressedPick(treenode view, Vec3& modelPos, Vec3& diff)
 	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
 	Vec3 localPos = modelPos.project(model(), holder);
 	treenode pointNode = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED));
+	double nodeWidth = drawNodeWidth;
 	if (pickType == PICK_POINT && pointNode) {
 		Point* activePoint = pointNode->objectAs(Point);
 		// Snap between grid points
@@ -305,7 +306,7 @@ double Divider::onDestroy(TreeNode * view)
 void Divider::drawPickObjects(treenode view)
 {
 	Mesh mesh;
-	float radius = 0.15 * nodeWidth;
+	float radius = 0.15 * drawNodeWidth;
 	float zOffset = 0.004 / getmodelunit(LENGTH_MULTIPLE);
 	Vec4f color(0.0f, 0.0f, 0.0f, 1.0f);
 	for (int i = 0; i < pointList.length; i++) {

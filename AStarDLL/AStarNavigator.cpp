@@ -93,7 +93,8 @@ void AStarNavigator::bindVariables(void)
 
 	bindVariable(barrierConditions);
 
-	bindStateVariable(minNodeWidth);
+	bindStateVariable(minNodeSize.x);
+	bindStateVariable(minNodeSize.y);
 	bindStateVariable(hasConditionalBarriers);
 	bindStateVariable(hasMandatoryPaths);
 
@@ -188,14 +189,14 @@ void AStarNavigator::resolveGridBounds()
 	for (auto iter = tempGrids.begin(); iter != tempGrids.end();) {
 		Grid* grid = *iter;
 		auto nextGreaterZIter = iter + 1;
-		while (nextGreaterZIter != tempGrids.end() && (*nextGreaterZIter)->minPoint.z <= grid->minPoint.z + grid->nodeWidth) {
+		while (nextGreaterZIter != tempGrids.end() && (*nextGreaterZIter)->minPoint.z <= grid->minPoint.z + grid->nodeSize.x) {
 			nextGreaterZIter++;
 		}
 
 		bool isBounded = nextGreaterZIter - iter > 1;
 		for (; iter < nextGreaterZIter; iter++) {
 			Grid* grid = *iter;
-			if (grid->minPoint.z <= lowestZ + grid->nodeWidth)
+			if (grid->minPoint.z <= lowestZ + grid->nodeSize.x)
 				grid->isLowestGrid = true;
 			grid->isBounded = isBounded;
 			grid->maxPoint.z = (nextGreaterZIter != tempGrids.end() ? std::nextafter((*nextGreaterZIter)->minPoint.z, -DBL_MAX) : DBL_MAX);
@@ -236,7 +237,7 @@ void AStarNavigator::buildCustomBarriers()
 	// populate array of custom barriers
 	for (int i = 0; i < objectBarrierList.size(); i++) {
 		TreeNode* theObj = objectBarrierList[i]->holder;
-		if (function_s(theObj, "customizeAStarGrid", holder, minNodeWidth))
+		if (function_s(theObj, "customizeAStarGrid", holder, minNodeSize.x, minNodeSize.y))
 			continue;
 		addObjectBarrierToTable(theObj);
 	}
@@ -281,14 +282,14 @@ double AStarNavigator::onReset()
 	if (deepSearch)
 		directionChangePenalty = 0.025;
 
-	resolveMinNodeWidth();
+	resolveMinNodeSize();
 
 	maxPathWeight = 0.0;
 	for (int i = 0; i < barrierList.size(); i++) {
 		PreferredPath* path = barrierList[i]->toPreferredPath();
 		if (path) {
 			double weight = path->pathWeight == 0 ? this->defaultPathWeight : path->pathWeight;
-			maxPathWeight = max(weight, maxPathWeight);
+			maxPathWeight = std::max(weight, maxPathWeight);
 		}
 	}
 	activeTravelers.clear();
@@ -320,7 +321,7 @@ double AStarNavigator::onReset()
 
 	if (enableCollisionAvoidance && collisionUpdateIntervalFactor > 0 && travelers.size() > 0) {
 		double avgSpeed = sumSpeed / travelers.size();
-		double avgNodeMoveTime = minNodeWidth / avgSpeed;
+		double avgNodeMoveTime = std::min(minNodeSize.x, minNodeSize.y) / avgSpeed;
 		collisionUpdateInterval = collisionUpdateIntervalFactor * avgNodeMoveTime;
 	}
 	else {
@@ -354,7 +355,7 @@ double AStarNavigator::onRunWarm()
 double AStarNavigator::onPreDraw(TreeNode * view)
 {
 	__super::onPreDraw(view);
-	resolveMinNodeWidth();
+	resolveMinNodeSize();
 	return 0.0;
 }
 
@@ -429,7 +430,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 	double vpRadius = get(viewpointradius(view));
 	if (get(viewprojectiontype(view)) == 1)
 		vpRadius = maxof(get(spatialsx(view)), get(spatialsy(view))) / get(viewmagnification(view));
-	double offset = max(-1, -50 / (vpRadius * getmodelunit(LENGTH_MULTIPLE)));
+	double offset = std::max(-1.0, -50.0 / (vpRadius * getmodelunit(LENGTH_MULTIPLE)));
 
 
 	glPolygonOffset(offset - 0.010, -2);
@@ -610,7 +611,7 @@ double AStarNavigator::navigateToObject(TreeNode* traveler, TreeNode* destinatio
 	vectorproject(destination, 0.5 * size.x, -0.5 * size.y, 0, model(), loc);
 
 	Traveler* t = getTraveler(traveler->objectAs(TaskExecuter));
-	t->destThreshold = DestinationThreshold(destination, minNodeWidth);
+	t->destThreshold = DestinationThreshold(destination, minNodeSize);
 	t->destNode = destination;
 	return navigateToLoc(t, loc, endSpeed);
 }
@@ -678,22 +679,21 @@ void AStarNavigator::addBarrier(treenode x, Barrier * newBarrier)
 }
 
 AStarSearchEntry* AStarNavigator::checkExpandOpenSet(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn, Direction direction, 
-	float rotDirection, double distFactor, double bonusMod, AStarNodeExtraData* preferredPathData)
+	float rotDirection, double addedDist, double bonusMod, AStarNodeExtraData* preferredPathData)
 {
 	if (node->canGo(direction)) {
 		int theCol = entryIn->cell.col + AStarNode::colInc[direction];
 		int theRow = entryIn->cell.row + AStarNode::rowInc[direction];
-		double distance = distFactor;
 		if (preferredPathData && preferredPathData->getBonus(direction) != 0) {
-			distance *= 1.0 - (bonusMod * (double)(int)preferredPathData->getBonus(direction)) / 127;
+			addedDist *= 1.0 - (bonusMod * (double)(int)preferredPathData->getBonus(direction)) / 127;
 		}
-		return expandOpenSet(grid, theRow, theCol, distance, rotDirection);
+		return expandOpenSet(grid, theRow, theCol, addedDist, rotDirection);
 	}
 	return nullptr;
 }
 
 AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn,
-	Direction dir1, Direction dir2, float rotDirection, double dist, AStarNodeExtraData* preferredPathData)
+	Direction dir1, Direction dir2, float rotDirection, AStarNodeExtraData* preferredPathData)
 {
 	if (!node->canGo(dir1) || !node->canGo(dir2))
 		return nullptr;
@@ -711,7 +711,7 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 			auto iter = entryHash.find(cell.value);
 			if (iter != entryHash.end()) {
 				AStarSearchEntry* vert = &totalSet[iter->second];
-				e1 = checkExpandOpenSet(grid, vertNode, vert, dir2, rotDirection, dist, ROOT2_DIV2, preferredPathData);
+				e1 = checkExpandOpenSet(grid, vertNode, vert, dir2, rotDirection, grid->diagDist, ROOT2_DIV2, preferredPathData);
 			}
 		}
 	}
@@ -723,12 +723,12 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 			auto iter = entryHash.find(cell.value);
 			if (iter != entryHash.end()) {
 				AStarSearchEntry* hrz = &totalSet[iter->second];
-				e1 = checkExpandOpenSet(grid, hrzNode, hrz, dir1, rotDirection, dist, ROOT2_DIV2, preferredPathData);
+				e1 = checkExpandOpenSet(grid, hrzNode, hrz, dir1, rotDirection, grid->diagDist, ROOT2_DIV2, preferredPathData);
 			}
 		}
 	}
 
-	if (e1 && deepSearch == SEARCH_DEEP_DIAGONALS) {
+	if (e1 && deepSearch == SEARCH_DEEP_DIAGONALS && grid->canDoDeepDiag) {
 		AStarNode* n1 = grid->getNode(e1->cell);
 		AStarSearchEntry e1StackCopy = *e1;
 
@@ -738,11 +738,11 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 
 		checkExpandOpenSet(grid, n1, (&e1StackCopy), dir1, 
 			clampDirection(rotDirection + deepDiagonalUpRotOffset), 
-			ROOT5_DIVROOT2 * dist, ROOT5_DIV5, preferredPathData);
+			grid->deepDiagDist, ROOT5_DIV5, preferredPathData);
 		
 		checkExpandOpenSet(grid, n1, (&e1StackCopy), dir2, 
 			clampDirection(rotDirection - deepDiagonalUpRotOffset),
-			ROOT5_DIVROOT2 * dist, ROOT5_DIV5, preferredPathData);
+			grid->deepDiagDist, ROOT5_DIV5, preferredPathData);
 	}
 	return e1;
 }
@@ -830,8 +830,8 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 
 	CodeProfileRecord record3(holder, "search new path");
 	Grid* startGrid = getGrid(startCell);
-	startLoc.x = startGrid->gridOrigin.x + startCell.col * startGrid->nodeWidth;
-	startLoc.y = startGrid->gridOrigin.y + startCell.row * startGrid->nodeWidth;
+	startLoc.x = startGrid->gridOrigin.x + startCell.col * startGrid->nodeSize.x;
+	startLoc.y = startGrid->gridOrigin.y + startCell.row * startGrid->nodeSize.y;
 
 	this->destGrid = getGrid(destCell);
 
@@ -960,16 +960,16 @@ the outside 8 nodes.
 			}
 		}
 
-		checkExpandOpenSet(grid, n, (&shortest), Up, 90.0f, 1.0, 1.0, preferredPathData);
-		checkExpandOpenSet(grid, n, (&shortest), Right, 0.0f, 1.0, 1.0, preferredPathData);
-		checkExpandOpenSet(grid, n, (&shortest), Down, -90.0f, 1.0, 1.0, preferredPathData);
-		checkExpandOpenSet(grid, n, (&shortest), Left, 180.0f, 1.0, 1.0, preferredPathData);
+		checkExpandOpenSet(grid, n, (&shortest), Up, 90.0f, grid->nodeSize.y, 1.0, preferredPathData);
+		checkExpandOpenSet(grid, n, (&shortest), Right, 0.0f, grid->nodeSize.x, 1.0, preferredPathData);
+		checkExpandOpenSet(grid, n, (&shortest), Down, -90.0f, grid->nodeSize.y, 1.0, preferredPathData);
+		checkExpandOpenSet(grid, n, (&shortest), Left, 180.0f, grid->nodeSize.x, 1.0, preferredPathData);
 
 		if (deepSearch != SEARCH_RIGHT_ANGLES_ONLY) {
-			checkExpandOpenSetDiagonal(grid, n, (&shortest), Up, Right, 45.0f, ROOT2, preferredPathData);
-			checkExpandOpenSetDiagonal(grid, n, (&shortest), Up, Left, 135.0f, ROOT2, preferredPathData);
-			checkExpandOpenSetDiagonal(grid, n, (&shortest), Down, Right, -45.0f, ROOT2, preferredPathData);
-			checkExpandOpenSetDiagonal(grid, n, (&shortest), Down, Left, -135.0f, ROOT2, preferredPathData);
+			checkExpandOpenSetDiagonal(grid, n, (&shortest), Up, Right, 45.0f, preferredPathData);
+			checkExpandOpenSetDiagonal(grid, n, (&shortest), Up, Left, 135.0f, preferredPathData);
+			checkExpandOpenSetDiagonal(grid, n, (&shortest), Down, Right, -45.0f, preferredPathData);
+			checkExpandOpenSetDiagonal(grid, n, (&shortest), Down, Left, -135.0f, preferredPathData);
 		}
 
 		if (n->hasBridgeStartPoint) {
@@ -1103,8 +1103,8 @@ void AStarNavigator::calculateRoute(Traveler * traveler, double * destLoc, const
 
 double AStarNavigator::calculateHeuristic(Grid * fromGrid, const Cell & fromCell)
 {
-	Vec3 from(fromGrid->gridOrigin.x + fromCell.col * fromGrid->nodeWidth,
-		fromGrid->gridOrigin.y + fromCell.row * fromGrid->nodeWidth,
+	Vec3 from(fromGrid->gridOrigin.x + fromCell.col * fromGrid->nodeSize.x,
+		fromGrid->gridOrigin.y + fromCell.row * fromGrid->nodeSize.y,
 		fromGrid->gridOrigin.z);
 	if (fromCell.grid == destCell.grid) {
 		return (1.0 - maxPathWeight) * Vec3(destCellLoc.x - from.x, destCellLoc.y - from.y, destCellLoc.z - from.z).magnitude;
@@ -1130,7 +1130,7 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 	double destLoc[3];
 	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), destLoc);
 
-	DestinationThreshold destThreshold(destination->holder, minNodeWidth);
+	DestinationThreshold destThreshold(destination->holder, minNodeSize);
 	TravelPath path = calculateRoute(traveler, destLoc, destThreshold, 0, true);
 	return path.calculateTotalDistance(this);
 }
@@ -1155,7 +1155,7 @@ void AStarNavigator::updateConditionalBarrierDataOnOpenSetExpanded(const Cell& c
 	}
 }
 
-AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float multiplier, float rotDirection, char bridgeIndex)
+AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float addedDist, float rotDirection, char bridgeIndex)
 {
 	AStarSearchEntry* entry = NULL;
 	int closed = 0;
@@ -1185,7 +1185,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 	}
 
 	float speedScale = routeByTravelTime ? 1.0 / routingTraveler->te->v_maxspeed : 1.0;
-	float newG = shortest.g + multiplier * grid->nodeWidth * speedScale;
+	float newG = shortest.g + addedDist * speedScale;
 
 	float rotationTime = 0.0f;
 	/*  Check if the guy is changing directions. If so, I want to increase the distance so it will be a penalty to make turns*/
@@ -1202,14 +1202,14 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 			rotationTime += fabs(diff) / routingTraveler->turnSpeed;
 			newG += rotationTime;
 		} else {
-			newG += directionChangePenalty * grid->nodeWidth;
+			newG += directionChangePenalty * grid->minNodeSize;
 			// if it's a right angle turn or more, then add more penalty
 			if (fabs(diff) >= 90.0f)
-				newG += directionChangePenalty * grid->nodeWidth;
+				newG += directionChangePenalty * grid->minNodeSize;
 		}
 	}
 	
-	if (!entry || newG < entry->g - 0.01 * grid->nodeWidth) {
+	if (!entry || newG < entry->g - 0.01 * grid->minNodeSize) {
 		// if entry is NULL, that means he's not in the total set yet,
 		// so I need to add him.
 		if (!entry) {
@@ -1519,7 +1519,7 @@ void AStarNavigator::drawAllocations(float z)
 		return;
 	Mesh allocMesh;
 	Mesh lineMesh;
-	double diamondRadius = 0.2 * minNodeWidth;
+	double diamondRadius = 0.2 * std::min(minNodeSize.x, minNodeSize.y);
 	fglColor(0.8f, 0.5f, 0.0f, 1.0f);
 	Vec4f fullClr(0.8f, 0.4f, 0.0f, 1.0f);
 	Vec4f partialClr(0.8f, 0.4f, 0.0f, 0.4f);
@@ -1609,18 +1609,18 @@ Cell AStarNavigator::getCell(const Vec3& modelLoc)
 
 Vec3 AStarNavigator::getLocation(const Cell & cell)
 {
-	return grids[max(1, cell.grid) - 1]->getLocation(cell);
+	return grids[std::max(1u, cell.grid) - 1]->getLocation(cell);
 }
 
 AStarNode * AStarNavigator::getNode(const Cell & cell)
 {
-	return grids[max(1, cell.grid) - 1]->getNode(cell);
+	return grids[std::max(1u, cell.grid) - 1]->getNode(cell);
 }
 
 
 Grid* AStarNavigator::getGrid(const Cell& cell) 
 { 
-	return grids[max(1, cell.grid) - 1];
+	return grids[std::max(1u, cell.grid) - 1];
 }
 
 Grid * AStarNavigator::getGrid(const Vec3 & modelPos, bool canReturnNull)
@@ -1824,7 +1824,7 @@ void AStarNavigator::drawRoutingAlgorithm(Traveler * traveler, treenode view)
 	if (traveler->routingAlgorithmSnapshots.size() == 0)
 		return;
 
-	float diamondRadius = 0.1f * (float)minNodeWidth;
+	float diamondRadius = 0.1f * (float)std::min(minNodeSize.x, minNodeSize.y);
 
 	size_t index = (size_t)(routingAlgorithmCompletionRatio * traveler->routingAlgorithmSnapshots.size());
 	if (index >= traveler->routingAlgorithmSnapshots.size())
@@ -1870,14 +1870,17 @@ void AStarNavigator::drawRoutingAlgorithm(Traveler * traveler, treenode view)
 
 }
 
-void AStarNavigator::resolveMinNodeWidth()
+void AStarNavigator::resolveMinNodeSize()
 {
-	minNodeWidth = DBL_MAX;
+	minNodeSize = Vec2{ DBL_MAX, DBL_MAX };
 	for (Grid* grid : grids) {
-		minNodeWidth = min(grid->nodeWidth, minNodeWidth);
+		minNodeSize.x = std::min(grid->nodeSize.x, minNodeSize.x);
+		minNodeSize.y = std::min(grid->nodeSize.y, minNodeSize.y);
 	}
-	if (minNodeWidth == DBL_MAX)
-		minNodeWidth = 1.0;
+	if (minNodeSize.x == DBL_MAX)
+		minNodeSize.x = 1.0;
+	if (minNodeSize.y == DBL_MAX)
+		minNodeSize.y = 1.0;
 }
 
 TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode barrierType) 
@@ -1893,8 +1896,8 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	case EditMode::BRIDGE: newBarrier = barrierList.add(new Bridge); break;
 	case EditMode::MANDATORY_PATH: newBarrier = barrierList.add(new MandatoryPath); break;
 	case EditMode::GRID: {
-		double nodeWidth = grids.front()->nodeWidth;
-		newGrid = createGrid(pos1, Vec3(nodeWidth, nodeWidth, 0.0));
+		auto nodeSize = grids.front()->nodeSize;
+		newGrid = createGrid(pos1, Vec3(nodeSize.x, nodeSize.y, 0.0));
 		break;
 	}
 	}
@@ -1904,7 +1907,7 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	}
 	string className;
 	if (newBarrier) {
-		newBarrier->init(minNodeWidth, pos1, pos2);
+		newBarrier->init(minNodeSize, pos1, pos2);
 		newBarrier->activePointIndex = 1;
 		newNode = newBarrier->holder;
 		className = newBarrier->getClassFactory();
@@ -1991,7 +1994,7 @@ bool AStarNavigator::removeElevatorBridge(ObjectDataType * object)
 Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 {
 	Grid* grid = nullptr;
-	double nodeWidth = grids.front()->nodeWidth;
+	double nodeWidth = grids.front()->nodeSize.x;
 	if (!isBoundsMeshBuilt && !areGridsUserCustomized && grids.size() == 1) {
 		// if I'm in a "pristine" condition where I am not yet drawing the main grid,
 		// then the grid should be the main grid.
@@ -2109,8 +2112,8 @@ astar_export Variant AStarNavigator_swapBarriers(FLEXSIMINTERFACE)
 	int index1 = (int)param(1);
 	int index2 = (int)param(2);
 
-	int maxIndex = max(index1, index2);
-	int minIndex = min(index1, index2);
+	int maxIndex = std::max(index1, index2);
+	int minIndex = std::min(index1, index2);
 	if (maxIndex > a->barrierList.size() || minIndex < 0)
 		return 0;
 

@@ -157,7 +157,6 @@ public:
 
 	ExtendedCell adjacentCell(int direction);
 	int canGo(int direction);
-	double getNodeWidth(AStarNavigator* nav);
 };
 
 typedef std::list<NodeAllocation> NodeAllocationList;
@@ -329,13 +328,13 @@ struct AllocationStep {
 			} else {
 				if (sign(toCell.col - fromCell.col) == sign(toCell.row - fromCell.row)) {
 					// it's a "forward-slash diagonal"
-					intermediateCell1 = Cell(fromCell.grid, max(toCell.row, fromCell.row), min(toCell.col, fromCell.col));
-					intermediateCell2 = Cell(fromCell.grid, min(toCell.row, fromCell.row), max(toCell.col, fromCell.col));
+					intermediateCell1 = Cell(fromCell.grid, std::max(toCell.row, fromCell.row), std::min(toCell.col, fromCell.col));
+					intermediateCell2 = Cell(fromCell.grid, std::min(toCell.row, fromCell.row), std::max(toCell.col, fromCell.col));
 				}
 				else {
 					// it's a "back-slash diagonal"
-					intermediateCell1 = Cell(fromCell.grid, min(toCell.row, fromCell.row), min(toCell.col, fromCell.col));
-					intermediateCell2 = Cell(fromCell.grid, max(toCell.row, fromCell.row), max(toCell.col, fromCell.col));
+					intermediateCell1 = Cell(fromCell.grid, std::min(toCell.row, fromCell.row), std::min(toCell.col, fromCell.col));
+					intermediateCell2 = Cell(fromCell.grid, std::max(toCell.row, fromCell.row), std::max(toCell.col, fromCell.col));
 				}
 
 			}
@@ -356,7 +355,7 @@ struct AllocationStep {
 struct astar_export DestinationThreshold
 {
 	DestinationThreshold() : xAxisThreshold(0), yAxisThreshold(0), rotation(0), anyThresholdRadius(0) {}
-	DestinationThreshold(treenode dest, double fudgeFactor);
+	DestinationThreshold(treenode dest, const Vec2& fudgeFactor);
 	double xAxisThreshold;
 	double yAxisThreshold;
 	double rotation;

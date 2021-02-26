@@ -14,9 +14,21 @@ Grid::~Grid()
 
 void Grid::bind()
 {
-	if (getBindMode() == SDT_BIND_ON_LOAD)
+	int bindMode = getBindMode();
+	if (bindMode == SDT_BIND_ON_LOAD)
 		bindNavigator();
-	bindDouble(nodeWidth, 1);
+	bindDoubleByName("nodeSizeX", nodeSize.x, 1);
+	bindDoubleByName("nodeSizeY", nodeSize.y, 1);
+	if (bindMode == SDT_BIND_ON_LOAD) {
+		treenode width = holder->subnodes["nodeWidth"];
+		if (width) {
+			nodeSize.x = nodeSize.y = width->safedatafloat()[0];
+			width->destroy();
+		}
+	}
+	bindNumber(minNodeSize);
+	bindNumber(diagDist);
+	bindNumber(deepDiagDist);
 	bindNumber(isBounded);
 	bindNumber(isLowestGrid);
 	bindDoubleByName("minPointX", minPoint.x, 1);
@@ -38,13 +50,13 @@ void Grid::bind()
 bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand, bool addSurroundDepth) const
 {
 
-	double offset = addSurroundDepth ? (navigator->surroundDepth + 1) * nodeWidth : 0;
-	double z = modelLoc.z + 0.001 * nodeWidth;
+	Vec2 offset = addSurroundDepth ? nodeSize * (navigator->surroundDepth + 1.0) : Vec2{ 0.0, 0.0 };
+	double z = modelLoc.z + 0.001 * nodeSize.x;
 	// return false if it's not in the z range
 	if ((z < minPoint.z && !isLowestGrid) || z >= maxPoint.z)
 		return false;
-	if ((modelLoc.x - offset >= minPoint.x && modelLoc.y - offset >= minPoint.y)
-			&& (modelLoc.x + offset <= maxPoint.x && modelLoc.y + offset <= maxPoint.y))
+	if ((modelLoc.x - offset.x >= minPoint.x && modelLoc.y - offset.y >= minPoint.y)
+			&& (modelLoc.x + offset.x <= maxPoint.x && modelLoc.y + offset.y <= maxPoint.y))
 		return true;
 
 	if (canExpand) {
@@ -52,8 +64,8 @@ bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand, bool addSurr
 			return true;
 		Vec2 min, max;
 		findGrowthBounds(min, max);
-		if ((modelLoc.x - offset >= min.x && modelLoc.y - offset >= min.y)
-				&& (modelLoc.x + offset <= max.x && modelLoc.y + offset <= max.y))
+		if ((modelLoc.x - offset.x >= min.x && modelLoc.y - offset.y >= min.y)
+				&& (modelLoc.x + offset.y <= max.x && modelLoc.y + offset.y <= max.y))
 			return true;
 	}
 	return false;
@@ -61,7 +73,7 @@ bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand, bool addSurr
 
 bool Grid::isLocWithinVerticalBounds(double z) const
 {
-	return (isLowestGrid || z >= minPoint.z - 0.001 * nodeWidth) && z < maxPoint.z - 0.001 * nodeWidth;
+	return (isLowestGrid || z >= minPoint.z - 0.001 * nodeSize.x) && z < maxPoint.z - 0.001 * nodeSize.x;
 }
 
 bool Grid::intersectBoundingBox(Vec3 & min, Vec3 & max) const
@@ -72,11 +84,11 @@ bool Grid::intersectBoundingBox(Vec3 & min, Vec3 & max) const
 bool Grid::growToEncompassBoundingBox(Vec3 min, Vec3 max, bool addSurroundDepth)
 {
 	if (addSurroundDepth) {
-		double offset = (navigator->surroundDepth + 2) * nodeWidth;
-		min.x -= offset;
-		min.y -= offset;
-		max.x += offset;
-		max.y += offset;
+		Vec2 offset = nodeSize * (navigator->surroundDepth + 2.0);
+		min.x -= offset.x;
+		min.y -= offset.y;
+		max.x += offset.x;
+		max.y += offset.y;
 	}
 
 	if (max.x <= maxPoint.x && min.x >= minPoint.x && max.y <= maxPoint.y && min.y >= minPoint.y)
@@ -91,21 +103,21 @@ bool Grid::growToEncompassBoundingBox(Vec3 min, Vec3 max, bool addSurroundDepth)
 	bool didGrowX = false;
 	if (max.x > maxPoint.x && growthBoundMax.x > maxPoint.x) {
 		didGrowX = true;
-		maxPoint.x = min(max.x, std::nextafter(growthBoundMax.x, -DBL_MAX));
+		maxPoint.x = std::min(max.x, std::nextafter(growthBoundMax.x, -DBL_MAX));
 	}
 	if (min.x < minPoint.x && growthBoundMin.x < minPoint.x) {
 		didGrowX = true;
-		minPoint.x = max(min.x, std::nextafter(growthBoundMin.x, DBL_MAX));
+		minPoint.x = std::max(min.x, std::nextafter(growthBoundMin.x, DBL_MAX));
 	}
 
 	if (didGrowX)
 		findGrowthBounds(growthBoundMin, growthBoundMax);
 
 	if (max.y > maxPoint.y && growthBoundMax.y > maxPoint.y) {
-		maxPoint.y = min(max.y, std::nextafter(growthBoundMax.y, -DBL_MAX));
+		maxPoint.y = std::min(max.y, std::nextafter(growthBoundMax.y, -DBL_MAX));
 	}
 	if (min.y < minPoint.y && growthBoundMin.y < minPoint.y) {
-		minPoint.y = max(min.y, std::nextafter(growthBoundMin.y, DBL_MAX));
+		minPoint.y = std::max(min.y, std::nextafter(growthBoundMin.y, DBL_MAX));
 	}
 
 	navigator->setDirty();
@@ -143,8 +155,8 @@ bool Grid::shrinkToFitGrowthBounds()
 			*compare.gridLoc = std::nextafter(*compare.growthBound, compare.shouldBeLess ? -DBL_MAX : DBL_MAX);
 			findGrowthBounds(min, max);
 		}
-		minPoint.x = min(minPoint.x, maxPoint.x);
-		minPoint.y = min(minPoint.y, maxPoint.y);
+		minPoint.x = std::min(minPoint.x, maxPoint.x);
+		minPoint.y = std::min(minPoint.y, maxPoint.y);
 		return true;
 	}
 	return false;
@@ -155,7 +167,7 @@ void Grid::findGrowthBounds(Vec2 & min, Vec2 & max) const
 	min = Vec2(-DBL_MAX, -DBL_MAX);
 	max = Vec2(DBL_MAX, DBL_MAX);
 	for (Grid* grid : navigator->grids) {
-		if (grid == this || fabs(grid->minPoint.z - minPoint.z) > nodeWidth)
+		if (grid == this || fabs(grid->minPoint.z - minPoint.z) > nodeSize.x)
 			continue;
 		if ((grid->minPoint.y >= minPoint.y && grid->minPoint.y <= maxPoint.y)
 			|| (grid->maxPoint.y >= minPoint.y && grid->maxPoint.y <= maxPoint.y)
@@ -163,8 +175,8 @@ void Grid::findGrowthBounds(Vec2 & min, Vec2 & max) const
 			|| (maxPoint.y >= grid->minPoint.y && maxPoint.y <= grid->maxPoint.y)) {
 
 			if (grid->minPoint.x > minPoint.x)
-				max.x = min(max.x, grid->minPoint.x);
-			else min.x = max(min.x, grid->maxPoint.x);
+				max.x = std::min(max.x, grid->minPoint.x);
+			else min.x = std::max(min.x, grid->maxPoint.x);
 		}
 
 		if ((grid->minPoint.x >= minPoint.x && grid->minPoint.x <= maxPoint.x)
@@ -173,8 +185,8 @@ void Grid::findGrowthBounds(Vec2 & min, Vec2 & max) const
 			|| (maxPoint.x >= grid->minPoint.x && maxPoint.x <= grid->maxPoint.x)) {
 
 			if (grid->minPoint.y > minPoint.y)
-				max.y = min(max.y, grid->minPoint.y);
-			else min.y = max(min.y, grid->maxPoint.y);
+				max.y = std::min(max.y, grid->minPoint.y);
+			else min.y = std::max(min.y, grid->maxPoint.y);
 		}
 
 	}
@@ -184,18 +196,21 @@ Cell Grid::getCell(const Vec3 & modelLoc)
 {
 	Cell cell;
 	cell.grid = rank;
-	int col = (int)round((modelLoc.x - gridOrigin.x) / nodeWidth);
-	cell.col = max(0, col);
+	int col = (int)round((modelLoc.x - gridOrigin.x) / nodeSize.x);
+	cell.col = std::max(0, col);
 	if (nodes.size() > 0)
-		cell.col = min(nodes[0].size() - 1, cell.col);
-	int row = (int)round((modelLoc.y - gridOrigin.y) / nodeWidth);
-	cell.row = max(0, row);
-	cell.row = min(nodes.size() - 1, cell.row);
+		cell.col = std::min((unsigned short)(nodes[0].size() - 1), cell.col);
+	int row = (int)round((modelLoc.y - gridOrigin.y) / nodeSize.y);
+	cell.row = std::max(0, row);
+	cell.row = std::min((unsigned short)(nodes.size() - 1), cell.row);
 	return cell;
 }
 
 void Grid::reset(AStarNavigator* nav)
 {
+	minNodeSize = std::min(nodeSize.x, nodeSize.y);
+	diagDist = sqrt(nodeSize.x * nodeSize.x + nodeSize.y * nodeSize.y);
+	deepDiagDist = sqrt(4 * nodeSize.x * nodeSize.x + nodeSize.y * nodeSize.y);
 	heatMapBuffer.reset(nullptr);
 	heatMapWidth = heatMapHeight = 0;
 	if (textureID) {
@@ -254,8 +269,8 @@ void Grid::growToBarriers()
 		}
 		else if (customBarriers[i].size() == 7) {
 			// divideGridModelLine
-			Vec3 min = Vec3(min(element[1], element[4]), min(element[2], element[5]), element[3]);
-			Vec3 max = Vec3(max(element[1], element[4]), max(element[2], element[5]), element[6]);
+			Vec3 min = Vec3(std::min(element[1], element[4]), std::min(element[2], element[5]), element[3]);
+			Vec3 max = Vec3(std::max(element[1], element[4]), std::max(element[2], element[5]), element[6]);
 
 			if (isLocWithinVerticalBounds(min.z)) {
 				if ((!isLocWithinBounds(min, false, true) && isLocWithinBounds(min, true, true))
@@ -277,8 +292,8 @@ void Grid::buildNodeTable()
 
 	int numCols, numRows;
 	if (maxPoint.x >= gridOrigin.x && maxPoint.y >= gridOrigin.y) {
-		numCols = (int)round((maxPoint.x - gridOrigin.x) / nodeWidth);
-		numRows = (int)round((maxPoint.y - gridOrigin.y) / nodeWidth);
+		numCols = (int)round((maxPoint.x - gridOrigin.x) / nodeSize.x);
+		numRows = (int)round((maxPoint.y - gridOrigin.y) / nodeSize.y);
 	} else {
 		numCols = numRows = 1;
 	}
@@ -352,11 +367,11 @@ void Grid::buildNodeTable()
 
 void Grid::resolveGridOrigin()
 {
-	int xOffset = (int)(floor(minPoint.x / nodeWidth));
-	int yOffset = (int)(floor(minPoint.y / nodeWidth));
+	int xOffset = (int)(floor(minPoint.x / nodeSize.x));
+	int yOffset = (int)(floor(minPoint.y / nodeSize.y));
 
-	gridOrigin.x = (xOffset + 0.5) * nodeWidth;
-	gridOrigin.y = (yOffset + 0.5) * nodeWidth;
+	gridOrigin.x = (xOffset + 0.5) * nodeSize.x;
+	gridOrigin.y = (yOffset + 0.5) * nodeSize.y;
 	gridOrigin.z = minPoint.z;
 }
 
@@ -377,8 +392,8 @@ void Grid::addSolidBarrierToTable(const Vec3 & min, const Vec3 & max, Barrier* b
 {
 	// minCell and maxCell are based on the min and max bounds, offset half a node with 
 	// into the boundary. This makes it so it doesn't affect stuff outside the barrier
-	Cell minCell = getCell(min + Vec3(0.5 * nodeWidth, 0.5 * nodeWidth, 0.0));
-	Cell maxCell = getCell(max + Vec3(-0.5 * nodeWidth, -0.5 * nodeWidth, 0.0));
+	Cell minCell = getCell(min + Vec3(0.5 * nodeSize.x, 0.5 * nodeSize.y, 0.0));
+	Cell maxCell = getCell(max + Vec3(-0.5 * nodeSize.x, -0.5 * nodeSize.y, 0.0));
 	int gridRank = rank;
 
 	for (int row = minCell.row; row <= maxCell.row; row++) {
@@ -418,8 +433,8 @@ void Grid::addObjectBarrierToTable(treenode obj)
 		vectorproject(obj, halfXSize, -halfYSize, 0, model(), modelCenter);
 
 		if (isLocWithinVerticalBounds(modelCenter.z)) {
-			double objSX = maxof(xsize(obj), nodeWidth);
-			double objSY = maxof(ysize(obj), nodeWidth);
+			double objSX = maxof(xsize(obj), nodeSize.x);
+			double objSY = maxof(ysize(obj), nodeSize.y);
 
 
 			if (rotation != 0 && rotation % 180 != 0 && rotation % 90 == 0) {
@@ -435,16 +450,16 @@ void Grid::addObjectBarrierToTable(treenode obj)
 				objMin.y = objMax.y - objSY;
 			}
 			// Shrink the bounding box for objects
-			double halfNodeWidth = 0.5 * nodeWidth;
-			objMin.x += halfNodeWidth;
-			objMax.x -= halfNodeWidth;
-			objMin.y += halfNodeWidth;
-			objMax.y -= halfNodeWidth;
+			Vec2 halfNodeSize = nodeSize * 0.5;
+			objMin.x += halfNodeSize.x;
+			objMax.x -= halfNodeSize.x;
+			objMin.y += halfNodeSize.y;
+			objMax.y -= halfNodeSize.y;
 
-			int colleft = (int)round((objMin.x - gridOrigin.x) / nodeWidth);
-			int rowbottom = (int)round((objMin.y - gridOrigin.y) / nodeWidth);
-			int colright = (int)round((objMax.x - gridOrigin.x) / nodeWidth);
-			int rowtop = (int)round((objMax.y - gridOrigin.y) / nodeWidth);
+			int colleft = (int)round((objMin.x - gridOrigin.x) / nodeSize.x);
+			int rowbottom = (int)round((objMin.y - gridOrigin.y) / nodeSize.y);
+			int colright = (int)round((objMax.x - gridOrigin.x) / nodeSize.x);
+			int rowtop = (int)round((objMax.y - gridOrigin.y) / nodeSize.y);
 			for (int row = rowbottom; row <= rowtop; row++) {
 				AStarNode * left = getNode(row, colleft - 1);
 				left->canGoRight = 0;
@@ -473,24 +488,24 @@ void Grid::addObjectBarrierToTable(treenode obj)
 		// in this case, the object is rotated weird, so I need to manually go through and apply each 
 
 		AStarNavigator::getBoundingBox(obj, objMin, objMax);
-		double halfNodeWidth = 0.5 * nodeWidth;
-		objMin += Vec3(halfNodeWidth, halfNodeWidth, 0.0);
-		objMax -= Vec3(halfNodeWidth, halfNodeWidth, 0.0);
+		Vec2 halfNodeSize = nodeSize * 0.5;
+		objMin += Vec3(halfNodeSize.x, halfNodeSize.y, 0.0);
+		objMax -= Vec3(halfNodeSize.x, halfNodeSize.y, 0.0);
 
 		if (isLocWithinVerticalBounds(objMin.z)) {
-			int minCol = max(0, (int)((objMin.x - gridOrigin.x) / nodeWidth));
-			int maxCol = min(numCols - 1, (int)((objMax.x - gridOrigin.x) / nodeWidth) + 1);
-			int minRow = max(0, (int)((objMin.y - gridOrigin.y) / nodeWidth));
-			int maxRow = min(numRows - 1, (int)((objMax.y - gridOrigin.y) / nodeWidth) + 1);
+			int minCol = std::max(0, (int)((objMin.x - gridOrigin.x) / nodeSize.x));
+			int maxCol = std::min(numCols - 1, (int)((objMax.x - gridOrigin.x) / nodeSize.x) + 1);
+			int minRow = std::max(0, (int)((objMin.y - gridOrigin.y) / nodeSize.y));
+			int maxRow = std::min(numRows - 1, (int)((objMax.y - gridOrigin.y) / nodeSize.y) + 1);
 
 			Vec2 minThreshold(0, -ysize(obj));
 			Vec2 maxThreshold(xsize(obj), 0);
-			double yPadding = nodeWidth - ysize(obj);
+			double yPadding = nodeSize.y - ysize(obj);
 			if (yPadding > 0) {
 				minThreshold.y -= 0.5 * yPadding;
 				maxThreshold.y += 0.5 * yPadding;
 			}
-			double xPadding = nodeWidth - xsize(obj);
+			double xPadding = nodeSize.x - xsize(obj);
 			if (xPadding > 0) {
 				minThreshold.x -= 0.5 * xPadding;
 				maxThreshold.x += 0.5 * xPadding;
@@ -498,7 +513,7 @@ void Grid::addObjectBarrierToTable(treenode obj)
 
 			for (int row = minRow; row <= maxRow; row++) {
 				for (int col = minCol; col <= maxCol; col++) {
-					Vec3 modelPos(gridOrigin.x + col * nodeWidth, gridOrigin.y + row * nodeWidth, 0);
+					Vec3 modelPos(gridOrigin.x + col * nodeSize.x, gridOrigin.y + row * nodeSize.y, 0);
 					Vec3 objPos;
 					vectorproject(model(), modelPos.x, modelPos.y, modelPos.z, obj, objPos);
 					if (objPos.x > minThreshold.x && objPos.x < maxThreshold.x && objPos.y > minThreshold.y && objPos.y < maxThreshold.y) {
@@ -558,16 +573,16 @@ void Grid::blockNodeDirection(const Cell& cell, Direction direction, Barrier* ba
 void Grid::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, bool oneWay, Barrier* barrier)
 {
 	// Apply the line only if it is within the minPoint.z and maxPoint.z
-	if (minPoint.z > min(modelPos1.z, modelPos2.z) + 0.000001 || maxPoint.z < min(modelPos1.z, modelPos2.z) + 0.000001)
+	if (minPoint.z > std::min(modelPos1.z, modelPos2.z) + 0.000001 || maxPoint.z < std::min(modelPos1.z, modelPos2.z) + 0.000001)
 		return;
 
 	double low, high, step, pos;
 	int gridRank = rank;
 	// calculate columns and rows from the model points
-	double col = (modelPos1.x - gridOrigin.x) / nodeWidth;
-	double row = (modelPos1.y - gridOrigin.y) / nodeWidth;
-	double nextCol = (modelPos2.x - gridOrigin.x) / nodeWidth;
-	double nextRow = (modelPos2.y - gridOrigin.y) / nodeWidth;
+	double col = (modelPos1.x - gridOrigin.x) / nodeSize.x;
+	double row = (modelPos1.y - gridOrigin.y) / nodeSize.y;
+	double nextCol = (modelPos2.x - gridOrigin.x) / nodeSize.x;
+	double nextRow = (modelPos2.y - gridOrigin.y) / nodeSize.y;
 
 	// x-axis grid cross
 	low = 1;
@@ -637,12 +652,12 @@ void Grid::divideGridModelLine(const Vec3& modelPos1, const Vec3& modelPos2, boo
 
 void Grid::visitGridModelLine(const Vec3& fromPos, const Vec3& toPos, std::function<void(const Cell& cell)> callback)
 {
-	int fromCol = (int)round((fromPos.x - gridOrigin.x) / nodeWidth);
-	int fromRow = (int)round((fromPos.y - gridOrigin.y) / nodeWidth);
+	int fromCol = (int)round((fromPos.x - gridOrigin.x) / nodeSize.x);
+	int fromRow = (int)round((fromPos.y - gridOrigin.y) / nodeSize.y);
 
 	// calculate the column and row numbers for that point
-	int toCol = (int)round((toPos.x - gridOrigin.x) / nodeWidth);
-	int toRow = (int)round((toPos.y - gridOrigin.y) / nodeWidth);
+	int toCol = (int)round((toPos.x - gridOrigin.x) / nodeSize.x);
+	int toRow = (int)round((toPos.y - gridOrigin.y) / nodeSize.y);
 
 	// set dx and dy, the differences between the rows and columns
 	double dx = toCol - fromCol;
@@ -841,7 +856,7 @@ void Grid::buildGridMesh(float zOffset)
 	gridMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_FORCE_CLEANUP);
 
 	float z = minPoint.z + zOffset;
-	double quarterNodeWidth = 0.25 * nodeWidth;
+	Vec2 quarterNodeSize = nodeSize * 0.25;
 	float gold[4] = { 0.8f,0.8f,0.0f, 1.0f };
 	float red[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
@@ -854,8 +869,8 @@ void Grid::buildGridMesh(float zOffset)
 			AStarNodeExtraData* e = NULL;
 			if (n->hasPreferredPathWeight)
 				e = navigator->edgeTableExtraData[s.cell.value];
-			double x = gridOrigin.x + col * nodeWidth;
-			double y = gridOrigin.y + row * nodeWidth;
+			double x = gridOrigin.x + col * nodeSize.x;
+			double y = gridOrigin.y + row * nodeSize.y;
 
 #define ADD_GRID_LINE(dir, x1, y1, z1, x2, y2, z2)\
 	if (n->canGo##dir) {\
@@ -877,29 +892,29 @@ void Grid::buildGridMesh(float zOffset)
 		gridMesh.setVertexAttrib(newVertex2, MESH_POSITION, pos2);\
 	}
 			if (n->canGoUp && n->canGoDown && n->canGoLeft && n->canGoRight && !n->hasPreferredPathWeight) {
-				ADD_GRID_LINE(Up, x, y - quarterNodeWidth, z, x, y + quarterNodeWidth, z);
-				ADD_GRID_LINE(Right, x - quarterNodeWidth, y, z, x + quarterNodeWidth, y, z);
+				ADD_GRID_LINE(Up, x, y - quarterNodeSize.y, z, x, y + quarterNodeSize.y, z);
+				ADD_GRID_LINE(Right, x - quarterNodeSize.x, y, z, x + quarterNodeSize.x, y, z);
 				continue;
 			}
 
 			if (n->canGoUp && n->canGoDown && !n->hasPreferredPathWeight) {
-				ADD_GRID_LINE(Up, x, y - quarterNodeWidth, z, x, y + quarterNodeWidth, z);
-				ADD_GRID_LINE(Right, x, y, z, x + 0.25 * nodeWidth, y, z);
-				ADD_GRID_LINE(Left, x, y, z, x - 0.25 * nodeWidth, y, z);
+				ADD_GRID_LINE(Up, x, y - quarterNodeSize.y, z, x, y + quarterNodeSize.y, z);
+				ADD_GRID_LINE(Right, x, y, z, x + quarterNodeSize.x, y, z);
+				ADD_GRID_LINE(Left, x, y, z, x - quarterNodeSize.x, y, z);
 				continue;
 			}
 
 			if (n->canGoLeft && n->canGoRight && !n->hasPreferredPathWeight) {
-				ADD_GRID_LINE(Right, x - quarterNodeWidth, y, z, x + quarterNodeWidth, y, z);
-				ADD_GRID_LINE(Up, x, y, z, x, y + 0.25 * nodeWidth, z);
-				ADD_GRID_LINE(Down, x, y, z, x, y - 0.25 * nodeWidth, z);
+				ADD_GRID_LINE(Right, x - quarterNodeSize.x, y, z, x + quarterNodeSize.x, y, z);
+				ADD_GRID_LINE(Up, x, y, z, x, y + quarterNodeSize.y, z);
+				ADD_GRID_LINE(Down, x, y, z, x, y - quarterNodeSize.y, z);
 				continue;
 			}
 
-			ADD_GRID_LINE(Up, x, y, z, x, y + 0.25 * nodeWidth, z);
-			ADD_GRID_LINE(Down, x, y, z, x, y - 0.25 * nodeWidth, z);
-			ADD_GRID_LINE(Right, x, y, z, x + 0.25 * nodeWidth, y, z);
-			ADD_GRID_LINE(Left, x, y, z, x - 0.25 * nodeWidth, y, z);
+			ADD_GRID_LINE(Up, x, y, z, x, y + quarterNodeSize.y, z);
+			ADD_GRID_LINE(Down, x, y, z, x, y - quarterNodeSize.y, z);
+			ADD_GRID_LINE(Right, x, y, z, x + quarterNodeSize.x, y, z);
+			ADD_GRID_LINE(Left, x, y, z, x - quarterNodeSize.x, y, z);
 
 			if (n->isInTotalSet) {
 				mpt("Grid error at x "); mpd(col); mpt(" y "); mpd(row); mpr();
@@ -910,7 +925,7 @@ void Grid::buildGridMesh(float zOffset)
 				gridMesh.setVertexAttrib(newVertex2, MESH_DIFFUSE4, red);
 
 				float pos1[3] = { (float)x, (float)y, z };
-				float pos2[3] = { (float)(x + 0.25 * nodeWidth), (float)(y + 0.25 * nodeWidth), z };
+				float pos2[3] = { (float)(x + quarterNodeSize.x), (float)(y + quarterNodeSize.y), z };
 				gridMesh.setVertexAttrib(newVertex1, MESH_POSITION, pos1);
 				gridMesh.setVertexAttrib(newVertex2, MESH_POSITION, pos2);
 			}
@@ -989,15 +1004,15 @@ void Grid::drawHeatMap(TreeNode * view)
 			weight = 100.0 * data->totalTraversals / navigator->heatMapTotalTraversals;
 			break;
 		case AStarNavigator::HEAT_MAP_BLOCKAGE_TIME_PER_TRAVERSAL:
-			weight = (data->totalBlockedTime / max(1, data->totalTraversals));
+			weight = (data->totalBlockedTime / std::max(1.0, data->totalTraversals));
 			break;
 		case AStarNavigator::HEAT_MAP_BLOCKAGE_TIME_PERCENT:
 			weight = 100.0 * data->totalBlockedTime / statisticaltime();
 			break;
 		}
 		weight /= navigator->maxHeatValue;
-		weight = max(0, weight);
-		weight = min(0.9999, weight);
+		weight = std::max(0.0, weight);
+		weight = std::min(0.9999, weight);
 
 		double progressionFactor = (double)(heatMapColorProgression.size() - 1) * weight;
 		Color lowColor = heatMapColorProgression[(int)floor(progressionFactor)];
@@ -1027,12 +1042,12 @@ void Grid::drawHeatMap(TreeNode * view)
 	Mesh trafficMesh;
 	trafficMesh.init(6, MESH_POSITION | MESH_TEX_COORD2, MESH_DYNAMIC_DRAW);
 	Vec3f verts[] = {
-		Vec3f(gridOrigin.x - 1.5 * nodeWidth, gridOrigin.y - 1.5 * nodeWidth, z),
-		Vec3f(gridOrigin.x - 1.5 * nodeWidth, gridOrigin.y + (numRows + 0.5) * nodeWidth, z),
-		Vec3f(gridOrigin.x + (numCols + 0.5) * nodeWidth, gridOrigin.y - 1.5 * nodeWidth, z),
-		Vec3f(gridOrigin.x - 1.5 * nodeWidth, gridOrigin.y + (numRows + 0.5) * nodeWidth, z),
-		Vec3f(gridOrigin.x + (numCols + 0.5) * nodeWidth, gridOrigin.y + (numRows + 0.5) * nodeWidth, z),
-		Vec3f(gridOrigin.x + (numCols + 0.5) * nodeWidth, gridOrigin.y - 1.5 * nodeWidth, z),
+		Vec3f(gridOrigin.x - 1.5 * nodeSize.x, gridOrigin.y - 1.5 * nodeSize.y, z),
+		Vec3f(gridOrigin.x - 1.5 * nodeSize.x, gridOrigin.y + (numRows + 0.5) * nodeSize.y, z),
+		Vec3f(gridOrigin.x + (numCols + 0.5) * nodeSize.x, gridOrigin.y - 1.5 * nodeSize.y, z),
+		Vec3f(gridOrigin.x - 1.5 * nodeSize.x, gridOrigin.y + (numRows + 0.5) * nodeSize.y, z),
+		Vec3f(gridOrigin.x + (numCols + 0.5) * nodeSize.x, gridOrigin.y + (numRows + 0.5) * nodeSize.y, z),
+		Vec3f(gridOrigin.x + (numCols + 0.5) * nodeSize.x, gridOrigin.y - 1.5 * nodeSize.y, z),
 	};
 
 	Vec2f texCoords[] = {
@@ -1060,7 +1075,8 @@ void Grid::drawHeatMap(TreeNode * view)
 void Grid::drawDestinationThreshold(treenode destination, const Vec3 & loc, const Vec3 & size)
 {
 	float z = minPoint.z;
-	DestinationThreshold dt = DestinationThreshold(destination, nodeWidth);
+	auto minNodeSize = std::min(nodeSize.x, nodeSize.y);
+	DestinationThreshold dt = DestinationThreshold(destination, minNodeSize);
 	// Set the desination outside a barrier if necessary
 	if (navigator->ignoreDestBarrier) {
 		Cell destCell = getCell(Vec3(loc));
@@ -1070,7 +1086,7 @@ void Grid::drawDestinationThreshold(treenode destination, const Vec3 & loc, cons
 	Mesh mesh, mesh2;
 	mesh.init(0, MESH_POSITION, MESH_DYNAMIC_DRAW);
 	mesh2.init(0, MESH_POSITION, MESH_DYNAMIC_DRAW);
-	double diamondRadius = 0.1 * nodeWidth;
+	double diamondRadius = 0.1 * minNodeSize;
 	for (int row = 0; row < numRows; row++) {
 		for (int col = 0; col < numCols; col++) {
 			AStarNode* n = getNode(row, col);
@@ -1148,7 +1164,7 @@ void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDes
 		currDir = (currDir + 1) % 4;
 		distance = (counter++) / 4;
 
-		if (distance >= max(numRows, numCols))
+		if (distance >= std::max(numRows, numCols))
 			break;
 
 		switch (currDir) {
@@ -1165,7 +1181,7 @@ void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDes
 	cell.row = currRow;
 	cell.col = currCol;
 	if (threshold && cell != originalCell) {
-		double newRadius = nodeWidth * (0.9 + sqrt(sqr(cell.row - originalCell.row) + sqr(cell.col - originalCell.col)));
+		double newRadius = minNodeSize * (0.9 + sqrt(sqr(cell.row - originalCell.row) + sqr(cell.col - originalCell.col)));
 		if (newRadius > threshold->anyThresholdRadius)
 			threshold->anyThresholdRadius = newRadius;
 	}
@@ -1187,14 +1203,14 @@ void Grid::onDrag(treenode view, Vec3& offset)
 			maxPoint += offset;
 			break;
 		}
-		case PICK_SIZERX: maxPoint.x = max(minPoint.x, maxPoint.x + offset.x); break;
-		case PICK_SIZERXNEG: minPoint.x = min(maxPoint.x, minPoint.x + offset.x); break;
-		case PICK_SIZERY: maxPoint.y = max(minPoint.y, maxPoint.y + offset.y); break;
-		case PICK_SIZERYNEG: minPoint.y = min(maxPoint.y, minPoint.y + offset.y); break;
+		case PICK_SIZERX: maxPoint.x = std::max(minPoint.x, maxPoint.x + offset.x); break;
+		case PICK_SIZERXNEG: minPoint.x = std::min(maxPoint.x, minPoint.x + offset.x); break;
+		case PICK_SIZERY: maxPoint.y = std::max(minPoint.y, maxPoint.y + offset.y); break;
+		case PICK_SIZERYNEG: minPoint.y = std::min(maxPoint.y, minPoint.y + offset.y); break;
 	}
 	bool didShrink = shrinkToFitGrowthBounds();
 	if (didShrink && pickType == 0) {
-		bool isZeroSize = (maxPoint - minPoint).magnitude < 0.1 * nodeWidth;
+		bool isZeroSize = (maxPoint - minPoint).magnitude < 0.1 * std::min(nodeSize.x, nodeSize.y);
 		minPoint = originalMin;
 		maxPoint = originalMax;
 		if (isZeroSize) {
@@ -1260,8 +1276,8 @@ void Grid::drawSizerHandles(treenode view, int pickingMode)
 	Vec3f bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight;
 	getBoundsVertices(bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight);
 
-	float arrowSize = 0.5 * min(oTopRight.x - oTopLeft.x, oTopRight.y - oBottomRight.y);
-	arrowSize = min(arrowSize, 2 * nodeWidth);
+	float arrowSize = 0.5 * std::min(oTopRight.x - oTopLeft.x, oTopRight.y - oBottomRight.y);
+	arrowSize = std::min(arrowSize, 2.0f * (float)std::min(nodeSize.x, nodeSize.y));
 	Mesh tempMesh;
 	tempMesh.init(0, MESH_POSITION);
 	Vec3f arrowRight(arrowSize, 0.0f, 0.0f);
@@ -1313,18 +1329,18 @@ void Grid::getBoundsVertices(Vec3f & bottomLeft, Vec3f & topRight, Vec3f & topLe
 	int numCols, numRows;
 	if (isDirtyByUser || this->numRows == 0 || this->numCols == 0) {
 		resolveGridOrigin();
-		numCols = (int)round((maxPoint.x - gridOrigin.x) / nodeWidth);
-		numRows = (int)round((maxPoint.y - gridOrigin.y) / nodeWidth);
+		numCols = (int)round((maxPoint.x - gridOrigin.x) / nodeSize.x);
+		numRows = (int)round((maxPoint.y - gridOrigin.y) / nodeSize.y);
 	} else {
 		numCols = this->numCols;
 		numRows = this->numRows;
 	}
-	float width = (float)numCols * nodeWidth;
-	float height = (float)numRows * nodeWidth;
+	float width = (float)numCols * nodeSize.x;
+	float height = (float)numRows * nodeSize.y;
 
-	float borderWidth = nodeWidth;
+	float borderWidth = std::min(nodeSize.x, nodeSize.y);
 	float z = minPoint.z;
-	bottomLeft = Vec3f((float)(gridOrigin.x - 0.5 * nodeWidth), (float)(gridOrigin.y - 0.5 * nodeWidth), (float)minPoint.z);
+	bottomLeft = Vec3f((float)(gridOrigin.x - 0.5 * nodeSize.x), (float)(gridOrigin.y - 0.5 * nodeSize.y), (float)minPoint.z);
 	topRight = Vec3f(bottomLeft.x + width, bottomLeft.y + height, z);
 	topLeft = Vec3f(bottomLeft.x, topRight.y, z);
 	bottomRight = Vec3f(topRight.x, bottomLeft.y, z);

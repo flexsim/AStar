@@ -121,11 +121,6 @@ int ExtendedCell::canGo(int direction)
 	return node->canGo((Direction)direction);
 }
 
-double ExtendedCell::getNodeWidth(AStarNavigator* nav)
-{
-	return nav->getGrid(*this)->nodeWidth;
-}
-
 ExtendedCell::operator bool()
 {
 	assertCachedPointers();
@@ -263,7 +258,7 @@ void AStarNodeExtraData::fulfillTopRequest()
 		else cell = traveler->travelPath[topRequest.travelPathIndex - 1].cell;
 		AStarNodeExtraData* blockedCell = traveler->navigator->getExtraData(cell);
 		if (blockedCell != nullptr) {
-			blockedTime = min(blockedTime, statisticaltime());
+			blockedTime = std::min(blockedTime, statisticaltime());
 			blockedCell->totalBlockedTime += blockedTime;
 			blockedCell->totalBlocks++;
 		}
@@ -349,7 +344,7 @@ void AStarNodeExtraData::checkCreateContinueEvent()
 		}
 	}
 	if (releaseTime < FLT_MAX)
-		continueEvent = createevent(new ContinueEvent(std::nextafter(max(releaseTime, time()), FLT_MAX), requests.front().traveler, blocker, cell))->objectAs(ContinueEvent);
+		continueEvent = createevent(new ContinueEvent(std::nextafter(std::max(releaseTime, time()), FLT_MAX), requests.front().traveler, blocker, cell))->objectAs(ContinueEvent);
 
 }
 
@@ -423,11 +418,11 @@ bool AllocationStep::isImmediatelyBlocked(Traveler* traveler)
 
 }
 
-DestinationThreshold::DestinationThreshold(treenode dest, double fudgeFactor)
+DestinationThreshold::DestinationThreshold(treenode dest, const Vec2& fudgeFactor)
 {
 	Vec3 size = dest->objectAs(ObjectDataType)->size;
-	xAxisThreshold = 0.5 * size.x + fudgeFactor;
-	yAxisThreshold = 0.5 * size.y + fudgeFactor;
+	xAxisThreshold = 0.5 * size.x + fudgeFactor.x;
+	yAxisThreshold = 0.5 * size.y + fudgeFactor.y;
 	rotation = dest->objectAs(ObjectDataType)->rotation.z;
 	while (dest->findOwnerObject() != model()) {
 		dest = dest->findOwnerObject();
@@ -441,8 +436,8 @@ bool DestinationThreshold::isWithinThreshold(const Cell & cell, Grid* grid, cons
 	if (anyThresholdRadius <= 0 && xAxisThreshold <= 0 && yAxisThreshold <= 0)
 		return false;
 
-	Vec3 cellLoc(grid->gridOrigin.x + cell.col * grid->nodeWidth, 
-		grid->gridOrigin.y + cell.row * grid->nodeWidth,
+	Vec3 cellLoc(grid->gridOrigin.x + cell.col * grid->nodeSize.x, 
+		grid->gridOrigin.y + cell.row * grid->nodeSize.y,
 		grid->gridOrigin.z);
 	Vec3 diff(destLoc - cellLoc);
 	if (anyThresholdRadius > 0 && anyThresholdRadius >= diff.getLength())
@@ -478,12 +473,14 @@ double TravelPath::calculateTotalDistance(AStarNavigator * nav)
 		} else {
 			bool isDeepDiagonal = (abs(from.cell.row - to.cell.row) >= 2 || abs(from.cell.col - to.cell.col) >= 2);
 			if (isDeepDiagonal)
-				dist += grid->nodeWidth * 2.236067977499789696409;
+				dist += grid->deepDiagDist;
 			else {
-				bool isDiagonal = from.cell.row != to.cell.row && from.cell.col != to.cell.col;
-				if (isDiagonal)
-					dist += grid->nodeWidth * 1.4142135623730950488;
-				else dist += grid->nodeWidth;
+				if (from.cell.row != to.cell.row) {
+					if (from.cell.col != to.cell.col)
+						dist += grid->diagDist;
+					else dist += grid->nodeSize.y;
+				}
+				else dist += grid->nodeSize.x;
 			}
 		}
 	}

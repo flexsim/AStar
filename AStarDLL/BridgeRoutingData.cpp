@@ -120,13 +120,13 @@ void BridgeRoutingData::checkExpandOpenSet(AStarNavigator* nav, Traveler * trave
 
 	auto adjacentCells = getAdjacentCells(grid);
 	for (auto& entry : adjacentCells) {
-		nav->expandOpenSet(nav->getGrid(entry.toCell), entry.toCell.row, entry.toCell.col, entry.heuristic / grid->nodeWidth, 0, bridgeEntryIndex);
+		nav->expandOpenSet(nav->getGrid(entry.toCell), entry.toCell.row, entry.toCell.col, entry.heuristic, 0, bridgeEntryIndex);
 	}
 }
 
 double BridgeRoutingData::getTravelDistance(TravelPath * path, int travelPathIndex, Grid* grid)
 {
-	return bridge->travelDistance + grid->nodeWidth;
+	return bridge->travelDistance + grid->minNodeSize;
 }
 
 void BridgeRoutingData::addEntriesToNodeTable(Grid * grid)

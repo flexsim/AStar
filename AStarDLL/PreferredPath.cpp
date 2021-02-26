@@ -44,10 +44,10 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 		Vec3 toPos = toPoint->project(holder, model());
 
 		// calculate the column and row numbers for that point
-		int fromCol = (int)round((fromPos.x - grid->gridOrigin.x) / nodeWidth);
-		int fromRow = (int)round((fromPos.y - grid->gridOrigin.y) / nodeWidth);
-		int toCol = (int)round((toPos.x - grid->gridOrigin.x) / nodeWidth);
-		int toRow = (int)round((toPos.y - grid->gridOrigin.y) / nodeWidth);
+		int fromCol = (int)round((fromPos.x - grid->gridOrigin.x) / nodeSize.x);
+		int fromRow = (int)round((fromPos.y - grid->gridOrigin.y) / nodeSize.y);
+		int toCol = (int)round((toPos.x - grid->gridOrigin.x) / nodeSize.x);
+		int toRow = (int)round((toPos.y - grid->gridOrigin.y) / nodeSize.y);
 
 		// set dx and dy, the differences between the rows and columns
 		double dx = toCol - fromCol;

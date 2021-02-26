@@ -12,7 +12,7 @@ public:
 	virtual void bindVariables(void);
 
 	// See Barrier.h for descriptions of these functions
-	virtual void init(double nodeWidth, const Vec3& pos1, const Vec3& pos2) override;
+	virtual void init(const Vec2& nodeWidth, const Vec3& pos1, const Vec3& pos2) override;
 	virtual bool getLocalBoundingBox(Vec3& min, Vec3& max) override;
 	virtual void addBarriersToTable(Grid* grid) override;
 	void drawManipulationHandles(treenode view, float zOffset);

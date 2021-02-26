@@ -80,7 +80,7 @@ protected:
 	bool isGridMeshBuilt = false;
 
 	void updateConditionalBarrierDataOnOpenSetExpanded(const Cell& cell, AStarNode* n);
-	inline AStarSearchEntry* expandOpenSet(Grid* grid, int r, int c, float multiplier, float rotOnArrival, char bridgeIndex = -1);
+	inline AStarSearchEntry* expandOpenSet(Grid* grid, int r, int c, float addedDist, float rotOnArrival, char bridgeIndex = -1);
 
 	void buildBoundsMesh(float z);
 	void drawMembers();
@@ -130,7 +130,7 @@ public:
 	//static EditMode editMode;
 	static AStarNavigator* globalASN;
 	double defaultPathWeight;
-	double minNodeWidth;
+	Vec2 minNodeSize;
 	double surroundDepth;
 
 	/// <summary>Route by travel time. Boolean. If 1, the routing algorithm will use estimated travel time, including 
@@ -237,9 +237,9 @@ public:
 	virtual void onMemberDestroyed(TaskExecuter* te) override;
 	virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
 
-	AStarSearchEntry* checkExpandOpenSet(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn, Direction direction, float rotDirection, double dist, double bonusMod, AStarNodeExtraData* preferredPathData);
+	AStarSearchEntry* checkExpandOpenSet(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn, Direction direction, float rotDirection, double addedDist, double bonusMod, AStarNodeExtraData* preferredPathData);
 	AStarSearchEntry* checkExpandOpenSetDiagonal(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn,
-		Direction dir1, Direction dir2, float rotDirection, double dist, AStarNodeExtraData* preferredPathData);
+		Direction dir1, Direction dir2, float rotDirection, AStarNodeExtraData* preferredPathData);
 
 	/// <summary>Calculates the route.</summary>
 	///
@@ -317,7 +317,7 @@ public:
 	bool areGridNodeTablesBuilt = false;
 	NodeListArray<Grid>::SdtSubNodeBindingType grids;
 
-	void resolveMinNodeWidth();
+	void resolveMinNodeSize();
 
 	TreeNode* addObject(const Vec3& pos1, const Vec3& pos2, EditMode mode);
 

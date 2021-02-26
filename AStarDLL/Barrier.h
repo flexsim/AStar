@@ -54,7 +54,17 @@ public:
 	static const int PICK_PATTERN_DIRECTION_UP = 15;
 	static const int PICK_PATTERN_DIRECTION_DOWN = 16;
 
-	double nodeWidth = 1.0;
+	/// <summary>
+	/// nodeSize is the node size associated with functionality. It is cached off from the barrier's grid's nodeSize
+	/// </summary>
+	Vec2 nodeSize{ 1.0, 1.0 };
+
+	/// <summary>
+	/// drawNodeSize is the node size associated with drawing. It is cached off from the navigator's minNodeSize variable
+	/// </summary>
+	Vec2 drawNodeSize{ 1.0, 1.0 };
+	float __getDrawNodeWidth() { return (float)std::min(drawNodeSize.x, drawNodeSize.y); }
+	__declspec(property(get = __getDrawNodeWidth)) float drawNodeWidth;
 	NodeRef conditionRule;
 	bool evaluateCondition(Traveler* traveler);
 
@@ -72,7 +82,7 @@ public:
 	astar_export Variant assertNavigator(FLEXSIMINTERFACE) { assertNavigator(); return Variant(); }
 
 	// This function adds two initial points to a barrier
-	virtual void init(double nodeWidth, const Vec3& pos1, const Vec3& pos2);
+	virtual void init(const Vec2& nodeSize, const Vec3& pos1, const Vec3& pos2);
 
 protected:
 

@@ -10,8 +10,8 @@ namespace AStar {
 class Grid : public SimpleDataType
 {
 public:
-	Grid() : gridOrigin(0.0, 0.0, 0.0) {}
-	Grid(AStarNavigator* navigator, double nodeWidth) : gridOrigin(0.0, 0.0, 0.0), navigator(navigator), nodeWidth(nodeWidth) {}
+	Grid() : nodeSize{ 1.0, 1.0 }, gridOrigin(0.0, 0.0, 0.0) {}
+	Grid(AStarNavigator* navigator, double nodeWidth) : nodeSize{ nodeWidth, nodeWidth }, gridOrigin(0.0, 0.0, 0.0), navigator(navigator) {}
 	virtual ~Grid();
 	virtual void bind();
 	virtual const char* getClassFactory() { return "AStar::Grid"; }
@@ -24,7 +24,12 @@ public:
 	GLuint textureID = 0;
 
 	AStarNavigator* navigator = nullptr;
-	double nodeWidth = 1.0;
+	Vec2 nodeSize;
+	double minNodeSize;
+	double diagDist = 1.41421356;
+	double deepDiagDist = 2.236067977;
+	bool __canDoDeepDiag() { return nodeSize.x == nodeSize.y; }
+	__declspec(property(get = __canDoDeepDiag)) bool canDoDeepDiag;
 	/// <summary>	True if there is no grid below this grid on the z axis. </summary>
 	bool isLowestGrid = false;
 	/// <summary>	True if this object is bounded on its xy plane, meaning there is another 
@@ -62,7 +67,7 @@ public:
 	bool shrinkToFitGrowthBounds();
 	void findGrowthBounds(Vec2& min, Vec2& max) const;
 	Cell getCell(const Vec3& modelLoc);
-	Vec3 getLocation(const Cell& cell) { return Vec3(gridOrigin.x + cell.col * nodeWidth, gridOrigin.y + cell.row * nodeWidth, minPoint.z); }
+	Vec3 getLocation(const Cell& cell) { return Vec3(gridOrigin.x + cell.col * nodeSize.x, gridOrigin.y + cell.row * nodeSize.y, minPoint.z); }
 	void reset(AStarNavigator* nav);
 
 	void growToBarriers();

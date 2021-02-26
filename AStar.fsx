@@ -38,7 +38,6 @@
          <node f="40"><name></name></node>
          <node f="42" dt="7"><name>MainGrid</name><data/>
           <node f="40"><name></name></node>
-          <node f="42" dt="1"><name>nodeWidth</name><data>000000003ff00000</data></node>
           <node f="42" dt="1"><name>minPointX</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>minPointY</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>minPointZ</name><data>0000000000000000</data></node>
@@ -50,8 +49,13 @@
           <node f="42" dt="1"><name>gridOriginZ</name><data>0000000000000000</data></node>
           <node f="42" dt="1"><name>isUserCustomized</name><data>0000000000000000</data></node>
           <node f="42"><name>bridgeData</name></node>
+          <node f="42" dt="1"><name>nodeSizeX</name><data>000000003ff00000</data></node>
+          <node f="42" dt="1"><name>nodeSizeY</name><data>000000003ff00000</data></node>
           <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Grid</data>
            <node f="40"><name></name></node>
+           <node f="42" dt="1"><name>minNodeSize</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>diagDist</name><data>0000000000000000</data></node>
+           <node f="42" dt="1"><name>deepDiagDist</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>isBounded</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>isLowestGrid</name><data>0000000000000000</data></node>
           </node>
@@ -661,7 +665,7 @@ switch (clickCode) {
 			// I only create a new object on the left release if the user did not drag the mouse (pan the view)
 			if (fabs(dx) &lt; 2 &amp;&amp; fabs(dy) &lt; 2) {
 				
-				double nodeWidth = function_s(activeNavigator, "getGrid", modelPos.x, modelPos.y, modelPos.z).find("nodeWidth").value;
+				double nodeWidth = function_s(activeNavigator, "getGrid", modelPos.x, modelPos.y, modelPos.z).find("nodeSizeX").value;
 				if (mode != EDITMODE_GRID) {
 					// Snap between grid points
 					if (getvarnum(activeNavigator, "snapBetweenGrid") &amp;&amp; (mode == EDITMODE_DIVIDER || mode == EDITMODE_ONE_WAY_DIVIDER)) {
@@ -6215,7 +6219,7 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);
        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
        <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
        <node f="42" dt="1"><name>spatialsx</name><data>000000004066c000</data></node>
-       <node f="42" dt="1"><name>spatialsy</name><data>0000000040544000</data></node>
+       <node f="42" dt="1"><name>spatialsy</name><data>00000000405a8000</data></node>
        <node f="42" dt="2"><name>undohistory</name><data>..&gt;viewfocus+</data></node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -6263,25 +6267,57 @@ if (getvarnum(c, "isExpanded")) {
        <node f="42" dt="2"><name>windowtitle</name><data>A* Grid</data></node>
       </data>
        <node f="40"><name></name></node>
-       <node f="42" dt="4"><name>Node Spacing</name><data>
+       <node f="42" dt="4"><name>Node Spacing X</name><data>
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
         <node f="42" dt="1"><name>spatialy</name><data>0000000040220000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>000000004055c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-        <node f="42" dt="2"><name>windowtitle</name><data>Node Spacing</data></node>
+        <node f="42" dt="2"><name>windowtitle</name><data>Node Spacing X</data></node>
        </data></node>
-       <node f="42" dt="4"><name>EditNodeSpacing</name><data>
+       <node f="42" dt="4"><name>EditNodeSizeX</name><data>
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040568000</data></node>
         <node f="42" dt="1"><name>spatialy</name><data>0000000040140000</data></node>
-        <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040540000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
-        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/nodeWidth</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/nodeSizeX</data></node>
+        <node f="42" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
+        <node f="42"><name>variables</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>valueType</name><data>length</data></node>
+         <node f="42" dt="1"><name>spinner</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>isHotlink</name><data>000000003ff00000</data></node>
+        </node>
+        <node f="42"><name>eventfunctions</name>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>onApply</name><data>function_s(c.find("..&gt;objectfocus+"), "makeDirty");</data></node>
+        </node>
+       </data>
+        <node f="40"><name></name></node></node>
+       <node f="42" dt="4"><name>Node Spacing Y</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040410000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>000000004055c000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+        <node f="42" dt="2"><name>windowtitle</name><data>Node Spacing Y</data></node>
+       </data></node>
+       <node f="42" dt="4"><name>EditNodeSizeY</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000040568000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>00000000403e0000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040540000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/nodeSizeY</data></node>
         <node f="42" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
@@ -6299,7 +6335,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
-        <node f="42" dt="1"><name>spatialy</name><data>0000000040410000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>00000000404d8000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>000000004055c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
         <node f="42" dt="2"><name>windowtitle</name><data>Z Position</data></node>
@@ -6309,8 +6345,8 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>viewwindowopen</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040568000</data></node>
-        <node f="42" dt="1"><name>spatialy</name><data>00000000403e0000</data></node>
-        <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>00000000404b8000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040540000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/minPointZ</data></node>
@@ -6331,7 +6367,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
-        <node f="42" dt="1"><name>spatialy</name><data>00000000404b8000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040540000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="2"><name>windowtitle</name><data>Set View Grid Z</data></node>

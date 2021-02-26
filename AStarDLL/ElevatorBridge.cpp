@@ -33,7 +33,7 @@ void ElevatorBridge::reset()
 	bridgeData.clear();
 	AStarNavigator* nav = aStarDelegate->navigator;
 	for (Grid* grid : nav->grids) {
-		if (grid->minPoint.z >= min.z - 0.0001 * grid->nodeWidth && grid->minPoint.z <= max.z + 0.0001 * grid->nodeWidth) {
+		if (grid->minPoint.z >= min.z - 0.0001 * grid->nodeSize.x && grid->minPoint.z <= max.z + 0.0001 * grid->nodeSize.x) {
 			Vec3 arrivalPoint = getArrivalLoc(grid->minPoint.z);
 			if (grid->isLocWithinBounds(arrivalPoint, false, false)) {
 				auto data = new ElevatorBridgeRoutingData;
