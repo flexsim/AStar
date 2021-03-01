@@ -157,6 +157,7 @@ public:
 
 	ExtendedCell adjacentCell(int direction);
 	int canGo(int direction);
+	Vec2 getNodeSize(AStarNavigator* nav);
 };
 
 typedef std::list<NodeAllocation> NodeAllocationList;

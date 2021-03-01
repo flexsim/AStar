@@ -121,6 +121,11 @@ int ExtendedCell::canGo(int direction)
 	return node->canGo((Direction)direction);
 }
 
+Vec2 ExtendedCell::getNodeSize(AStarNavigator* nav)
+{
+	return nav->getGrid(*this)->nodeSize;
+}
+
 ExtendedCell::operator bool()
 {
 	assertCachedPointers();
