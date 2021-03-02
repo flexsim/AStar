@@ -8,7 +8,7 @@
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403b0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000403d0000</data></node>
     <node f="42" dt="2"><name>after</name><data>warehousing</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -220,8 +220,8 @@
         </node>
         <node f="42" dt="1"><name>imageindexobject</name><data>0000000000000000</data>
          <node f="40"><name></name></node>
-         <node f="42" dt="1"><name>split</name><data>0000000040518000</data></node>
-         <node f="42" dt="1"><name>merge</name><data>000000004051c000</data></node>
+         <node f="42" dt="1"><name>split</name><data>0000000040534000</data></node>
+         <node f="42" dt="1"><name>merge</name><data>0000000040538000</data></node>
         </node>
         <node f="42" dt="2"><name>imagebase</name><data>***</data></node>
         <node f="42" dt="1"><name>imageindexbase</name><data>0000000000000000</data></node>
@@ -2819,7 +2819,7 @@ repaintview(TheTable);
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="442" dt="2"><name>coldlinkx</name><data>treenode weight = c.find("../..&gt;objectfocus+&gt;variables/pathWeight");
-
+int precision = get(node("MAIN:/project/environment/settings/precision"));	
 if(!weight)
 	return 0;
 
@@ -2829,7 +2829,7 @@ if (!eventdata) {
 	if (value == 0) {
 		setviewtext(c, "Default");
 	} else {
-		setviewtext(c, string.fromNum(value));
+		setviewtext(c, string.fromNum(value, precision));
 	}
 } else {
 	string text = getviewtext(c);
@@ -6078,6 +6078,7 @@ repaintview(TheTable);
          <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
          <node f="442" dt="2"><name>coldlinkx</name><data>treenode weight = c.find("../..&gt;objectfocus+&gt;variables/pathWeight");
+int precision = get(node("MAIN:/project/environment/settings/precision"));
 
 if(!weight)
 	return 0;
@@ -6088,7 +6089,7 @@ if (!eventdata) {
 	if (value == 0) {
 		setviewtext(c, "Default");
 	} else {
-		setviewtext(c, string.fromNum(value));
+		setviewtext(c, string.fromNum(value, precision));
 	}
 } else {
 	string text = getviewtext(c);
@@ -6105,7 +6106,7 @@ if (!eventdata) {
          <node f="42" dt="2"><name>tooltip</name><data>The path weight added to the nodes associated with the path.
 Set this to 0 to use the A* Navigator's default path weight.</data></node>
          <node f="42" dt="2"><name>OnKillFocus</name><data>applylinks(c);
-treenode focus = node("&gt;coldlink+", c);
+treenode focus = c.find("../..&gt;objectfocus+&gt;variables/pathWeight");
 function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
         </data>
          <node f="40"><name></name></node></node>
@@ -6594,7 +6595,7 @@ return updated;</data></node>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403f0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040400000</data></node>
     <node f="42" dt="2"><name>after</name><data>GUIs</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
