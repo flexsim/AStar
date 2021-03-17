@@ -88,7 +88,9 @@ void BridgeRoutingData::onBridgeArrival(Traveler * traveler, int pathIndex)
 	} else {
 		if (traveler->allocations.size() > 0)
 			traveler->allocations.back()->extendReleaseTime(DBL_MAX);
+#ifdef _WINDOWS
 		_ASSERTE(bridge->blockedTraveler == nullptr);
+#endif
 		// Traveler is blocked trying to get on the bridge
 		bridge->blockedTraveler = traveler;
 		bridge->blockedPathIndex = traveler->bridgeData->pathIndex;

@@ -1,4 +1,3 @@
-#pragma once
 #include "AStarClasses.h"
 #include "AStarTypes.h"
 #include "FlexsimDefs.h"

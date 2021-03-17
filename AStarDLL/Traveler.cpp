@@ -459,7 +459,9 @@ void Traveler::navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval
 		arrivalEvent = createevent(new ArrivalEvent(this, endTime))->objectAs(ArrivalEvent);
 
 	isRoutingNow = false;
+#ifdef _WINDOWS
 	_ASSERTE(allocations.size() > 0 || !enableCollisionAvoidance || navigator->ignoreInactiveMemberCollisions || bridgeArrival || (bridgeData && bridgeData->routingData));
+#endif
 	XE
 }
 
@@ -509,7 +511,7 @@ void Traveler::onBridgeComplete(int atPathIndex)
 	if (!isAStarNavigator)
 		// temporary fix. In reality there should be some travel time for the agent to get out of the way
 		bridgeData->routingData->onExit(this);
-	FIRE_SDT_EVENT(onBridgeContinueTrigger, te->holder, bridge ? bridge->holder : Variant());
+	FIRE_SDT_EVENT(onBridgeContinueTrigger, te->holder, bridge ? (Variant)bridge->holder : Variant());
 	if (isAStarNavigator)
 		navigatePath(atPathIndex);
 
@@ -585,6 +587,11 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, 
 
 	return &(nodeData->allocations.front());
 	XE
+}
+
+NodeAllocation* Traveler::addAllocation(NodeAllocation&& allocation, bool force, bool notifyPendingAllocations)
+{
+	return addAllocation(allocation, force, notifyPendingAllocations);
 }
 
 

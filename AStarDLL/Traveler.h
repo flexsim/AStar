@@ -80,6 +80,7 @@ public:
 	/// 			(it can't add the allocation because that would cause allocation overlaps)
 	/// 			it will return nullptr and create a collision event. </returns>
 	NodeAllocation* addAllocation(NodeAllocation& allocation, bool force, bool notifyPendingAllocations);
+	NodeAllocation* addAllocation(NodeAllocation&& allocation, bool force, bool notifyPendingAllocations);
 	void checkCreateCollisionEvent(NodeAllocation& allocation, AStarNodeExtraData* nodeData = nullptr);
 	static NodeAllocation* findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs);
 	astar_export void removeAllocation(TravelerAllocations::iterator iter);

@@ -11,7 +11,7 @@ public:
 
 	Bridge();
 
-	virtual void bindVariables(void);
+	virtual void bindVariables(void) override;
 
 	virtual void addBarriersToTable(Grid* grid) override {}
 	virtual void addPassagesToTable(Grid* grid) override {}
@@ -61,7 +61,7 @@ public:
 		EndArrivalEvent() : FlexSimEvent() {}
 		EndArrivalEvent(Bridge* bridge, Traveler* object, int pathIndex, double time);
 		virtual const char* getClassFactory() override { return "AStar::Bridge::EndArrivalEvent"; }
-		virtual void execute() { partner()->objectAs(Bridge)->onEndArrival(involved->objectAs(Traveler), pathIndex); }
+		virtual void execute() override { partner()->objectAs(Bridge)->onEndArrival(involved->objectAs(Traveler), pathIndex); }
 		virtual void bind() override { __super::bind(); bindNumber(pathIndex); }
 
 		int pathIndex;
@@ -74,7 +74,7 @@ public:
 		AvailableEvent(Bridge* bridge, double time)
 			: FlexSimEvent(bridge->holder, time, nullptr, 0) {}
 		virtual const char* getClassFactory() override { return "AStar::Bridge::AvailableEvent"; }
-		virtual void execute() { partner()->objectAs(Bridge)->onAvailable(); }
+		virtual void execute() override { partner()->objectAs(Bridge)->onAvailable(); }
 	};
 
 	Grid* getGrid(Traveler* traveler);

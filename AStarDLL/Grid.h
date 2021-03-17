@@ -13,8 +13,8 @@ public:
 	Grid() : nodeSize{ 1.0, 1.0 }, gridOrigin(0.0, 0.0, 0.0) {}
 	Grid(AStarNavigator* navigator, double nodeWidth) : nodeSize{ nodeWidth, nodeWidth }, gridOrigin(0.0, 0.0, 0.0), navigator(navigator) {}
 	virtual ~Grid();
-	virtual void bind();
-	virtual const char* getClassFactory() { return "AStar::Grid"; }
+	virtual void bind() override;
+	virtual const char* getClassFactory() override { return "AStar::Grid"; }
 
 	typedef std::vector<std::vector<AStarNode>> NodeTable;
 	NodeTable nodes;
@@ -140,6 +140,7 @@ public:
 
 
 	void onDrag(treenode view, Vec3& offset);
+	void onDrag(treenode view, Vec3&& offset);
 	double onDrag(treenode view) override;
 	void onClick(treenode view, int clickCode, const Vec3& pos);
 	double onClick(treenode view, int clickCode) override;
@@ -155,6 +156,7 @@ public:
 	static void addTriangle(Mesh& mesh, Vec3f& p1, Vec3f& p2, Vec3f& p3);
 	static void addQuad(Mesh& mesh, Vec3f& p1, Vec3f& p2, Vec3f& p3, Vec3f& p4);
 	void dragPressedPick(treenode view, Vec3& pos, Vec3& diff);
+	void dragPressedPick(treenode view, Vec3&& pos, Vec3&& diff);
 	Variant dragPressedPick(FLEXSIMINTERFACE)
 	{
 		dragPressedPick(param(1), Vec3(param(2), param(3), param(4)), Vec3(param(5), param(6), param(7)));

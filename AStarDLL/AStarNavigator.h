@@ -235,7 +235,7 @@ public:
 	double navigateToLoc(Traveler* traveler, double* destLoc, double endSpeed);
 	virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed) override;
 	virtual void onMemberDestroyed(TaskExecuter* te) override;
-	virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination);
+	virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination) override;
 
 	AStarSearchEntry* checkExpandOpenSet(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn, Direction direction, float rotDirection, double addedDist, double bonusMod, AStarNodeExtraData* preferredPathData);
 	AStarSearchEntry* checkExpandOpenSetDiagonal(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn,
@@ -325,7 +325,7 @@ public:
 	double hasConditionalBarriers = 0.0;
 	double hasMandatoryPaths = 0.0;
 
-	treenode addMember(TaskExecuter* te);
+	treenode addMember(TaskExecuter* te) override;
 	void addObjectBarrier(ObjectDataType* object);
 	bool addElevatorBridge(ObjectDataType* object);
 	bool removeElevatorBridge(ObjectDataType* object);
