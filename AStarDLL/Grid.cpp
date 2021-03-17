@@ -1248,7 +1248,7 @@ double Grid::onCreate(bool isCopy)
 	maxPoint.x += size.x;
 	minPoint.x += size.x;
 	if (holder->up->name != "grids") {
-		PostMessage(systemwindow(0), FLEXSIM_MESSAGE_USER_CALLBACK, (WPARAM)&Grid::onPostCreate, (LPARAM)this);
+		sendwindowmessage((treenode)systemwindow(0), FLEXSIM_MESSAGE_USER_CALLBACK, (WindowParam1)&Grid::onPostCreate, (WindowParam2)this);
 	}
 	return 0;
 }

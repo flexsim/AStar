@@ -294,7 +294,9 @@ void AStarNodeExtraData::onReleaseTimeExtended(NodeAllocation& changedAlloc, dou
 				destroyevent(copy.traveler->arrivalEvent->holder);
 			// this will cause him to create collision event
 			NodeAllocation* nullAlloc = copy.traveler->addAllocation(copy, false, true);
+#ifdef _WINDOWS
 			_ASSERTE(nullAlloc == nullptr);
+#endif
 		}
 	}
 
