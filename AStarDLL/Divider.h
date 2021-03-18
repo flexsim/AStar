@@ -9,7 +9,7 @@ class Divider : public Barrier
 public:
 	Divider();
 
-	virtual void bindVariables(void);
+	virtual void bindVariables(void) override;
 
 	// See Barrier.h for descriptions of these functions
 	virtual void init(const Vec2& nodeWidth, const Vec3& pos1, const Vec3& pos2) override;

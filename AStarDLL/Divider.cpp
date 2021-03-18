@@ -69,7 +69,7 @@ void Divider::drawManipulationHandles(treenode view, float zOffset)
 
 	for (int i = 0; i < pointList.size(); i++) {
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4);
-		pointList[i]->addVertices(&mesh, radius, black, false, zOffset);
+		pointList[i]->addVertices(&mesh, radius, black, zOffset, false);
 		setpickingdrawfocus(view, holder, PICK_POINT, pointList[i]->holder);
 		mesh.draw(GL_TRIANGLES);
 	}

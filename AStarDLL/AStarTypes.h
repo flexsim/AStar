@@ -167,7 +167,7 @@ struct AStarNodeExtraData : public SimpleDataType
 {
 
 	AStarNodeExtraData() : cell(0, 0, 0), bonusRight(0), bonusLeft(0), bonusUp(0), bonusDown(0) {}
-	virtual const char* getClassFactory() { return "AStar::NodeExtraData"; }
+	virtual const char* getClassFactory() override { return "AStar::NodeExtraData"; }
 	virtual void bind() override;
 	Cell cell;
 

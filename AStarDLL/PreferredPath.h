@@ -12,7 +12,7 @@ public:
 	PreferredPath();
 	PreferredPath(double pathWeight);
 
-	virtual void bindVariables(void);
+	virtual void bindVariables(void) override;
 	virtual void bind(void) override;
 
 	// See Barrier.h for a description of these methods

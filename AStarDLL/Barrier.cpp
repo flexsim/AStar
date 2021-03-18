@@ -179,7 +179,7 @@ void Barrier::addMeshVertex(Mesh* mesh, float* pos, float* color)
 	mesh->setVertexAttrib(newVertex, MESH_DIFFUSE4, color);
 }
 
-void Barrier::addMeshVertex(Mesh * mesh, Vec3f & pos, Vec2f & tex, Vec4f & color)
+void Barrier::addMeshVertex(Mesh* mesh, Vec3f& pos, Vec2f& tex, Vec4f& color)
 {
 	int newVertex = mesh->addVertex();
 	mesh->setVertexAttrib(newVertex, MESH_POSITION, pos);
@@ -187,21 +187,26 @@ void Barrier::addMeshVertex(Mesh * mesh, Vec3f & pos, Vec2f & tex, Vec4f & color
 	mesh->setVertexAttrib(newVertex, MESH_DIFFUSE4, color);
 }
 
-void Barrier::addMeshTriangle(Mesh * mesh, float * p1, float * p2, float * p3, float * color)
+void Barrier::addMeshTriangle(Mesh* mesh, float* p1, float* p2, float* p3, float* color)
 {
 	addMeshVertex(mesh, p1, color);
 	addMeshVertex(mesh, p2, color);
 	addMeshVertex(mesh, p3, color);
 }
 
-void Barrier::addMeshTriangle(Mesh * mesh, Vec3f & p1, Vec2f & tex1, Vec3f & p2, Vec2f & tex2, Vec3f & p3, Vec2f & tex3, Vec4f & color)
+void Barrier::addMeshTriangle(Mesh* mesh, Vec3f& p1, Vec2f& tex1, Vec3f& p2, Vec2f& tex2, Vec3f& p3, Vec2f& tex3, Vec4f& color)
 {
 	addMeshVertex(mesh, p1, tex1, color);
 	addMeshVertex(mesh, p2, tex2, color);
 	addMeshVertex(mesh, p3, tex3, color);
 }
 
-void Barrier::addMeshLine(Mesh * mesh, Vec3f & p1, Vec3f & p2, Vec4f & color)
+void Barrier::addMeshTriangle(Mesh* mesh, Vec3f&& p1, Vec2f&& tex1, Vec3f&& p2, Vec2f&& tex2, Vec3f&& p3, Vec2f&& tex3, Vec4f& color)
+{
+	addMeshTriangle(mesh, p1, tex1, p2, tex2, p3, tex3, color);
+}
+
+void Barrier::addMeshLine(Mesh* mesh, Vec3f& p1, Vec3f& p2, Vec4f& color)
 {
 	addMeshVertex(mesh, p1, color);
 	addMeshVertex(mesh, p2, color);
@@ -299,7 +304,7 @@ void Barrier::drawManipulationHandles(treenode view)
 	Mesh borderMesh;
 	borderMesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
 
-	auto drawCellSizer = [&](Vec3f& center, float arrowDirection) {
+	auto drawCellSizer = [&](Vec3f&& center, float arrowDirection) {
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
 		Vec3f p1(0.1f * nodeSize.x, 0.2f * nodeSize.y, z);
 		p1.rotateXY(arrowDirection);
@@ -324,7 +329,7 @@ void Barrier::drawManipulationHandles(treenode view)
 		mesh.draw(GL_TRIANGLES);
 	};
 
-	auto drawTexButton = [&](Vec3f& center, float rotation, int pickType, int textureIndex, PatternCell* cell, Vec4f& baseColor, Vec4f& hoverColor) {
+	auto drawTexButton = [&](Vec3f&& center, float rotation, int pickType, int textureIndex, PatternCell* cell, Vec4f& baseColor, Vec4f& hoverColor) {
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4 | MESH_TEX_COORD2, MESH_DYNAMIC_DRAW);
 		Vec3f p1(0.2f * nodeSize.x, 0.2f * nodeSize.y, z);
 		p1.rotateXY(rotation);
@@ -754,6 +759,11 @@ double Barrier::dragPressedPick(treenode view, Vec3& pos, Vec3& diff)
 		return 0;
 	}
 	return 0;
+}
+
+double Barrier::dragPressedPick(treenode view, Vec3&& pos, Vec3&& diff)
+{
+	return dragPressedPick(view, pos, diff);
 }
 
 double Barrier::onDrag(treenode view)
@@ -1284,7 +1294,7 @@ void Barrier::scalePatternColsOnSizeChange(double newXSize)
 	}
 }
 
-Barrier::PatternCell * Barrier::getPatternCell(Vec3 & modelPos)
+Barrier::PatternCell* Barrier::getPatternCell(Vec3& modelPos)
 {
 	Vec3 myMin, myMax;
 	if (!getBoundingBox(myMin, myMax))
@@ -1315,6 +1325,11 @@ Barrier::PatternCell * Barrier::getPatternCell(Vec3 & modelPos)
 	if (col <= patterns.numCols && row <= patterns.numRows)
 		return patterns.cell(row, col)->objectAs(PatternCell);
 	return nullptr;
+}
+
+Barrier::PatternCell* Barrier::getPatternCell(Vec3&& modelPos)
+{
+	return getPatternCell(modelPos);
 }
 
 Barrier::PatternCell* Barrier::getPatternCell(const Cell& cell) 

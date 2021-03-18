@@ -115,6 +115,7 @@ public:
 	static void addMeshVertex(Mesh* mesh, Vec3f& pos, Vec2f& tex, Vec4f& color);
 	static void addMeshTriangle(Mesh* mesh, float* p1, float* p2, float* p3, float* color);
 	static void addMeshTriangle(Mesh* mesh, Vec3f& p1, Vec2f& tex1, Vec3f& p2, Vec2f& tex2, Vec3f& p3, Vec2f& tex3, Vec4f& color);
+	static void addMeshTriangle(Mesh* mesh, Vec3f&& p1, Vec2f&& tex1, Vec3f&& p2, Vec2f&& tex2, Vec3f&& p3, Vec2f&& tex3, Vec4f& color);
 	static void addMeshLine(Mesh* mesh, Vec3f& p1, Vec3f& p2, Vec4f& color);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -153,10 +154,11 @@ public:
 	virtual double onClick(treenode view, int clickCode, Vec3& pos);
 	virtual double onClick(treenode view, int clickCode) override;
 	virtual double dragPressedPick(treenode view, Vec3& pos, Vec3& diff);
+	virtual double dragPressedPick(treenode view, Vec3&& pos, Vec3&& diff);
 	astar_export Variant dragPressedPick(FLEXSIMINTERFACE) { return dragPressedPick(param(1), Vec3(param(2), param(3), param(4)), Vec3(param(5), param(6), param(7))); }
 	virtual double onDrag(treenode view) override;
-	double onPreDraw(treenode view);
-	double onDraw(treenode view);
+	double onPreDraw(treenode view) override;
+	double onDraw(treenode view) override;
 	unsigned int getClassType() override;
 	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType) override;
 	double onDestroy(TreeNode* view) override;
@@ -230,6 +232,7 @@ public:
 	void scalePatternColsOnSizeChange(double newXSize);
 
 	PatternCell* getPatternCell(Vec3& modelPos);
+	PatternCell* getPatternCell(Vec3&& modelPos);
 	PatternCell* getPatternCell(const Cell& cell);
 
 	void dragPatternCellSizer(PatternCell* cell, double diff, bool isXSizer);

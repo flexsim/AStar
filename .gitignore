@@ -11,5 +11,6 @@ AStarDLL/Win32/
 AStarDLL/.vs/
 AStarDLL/AStar.vcxproj.user
 AStarDLL/flexsimcontent/
+AStarDLL/out/
 bin/
 obj/

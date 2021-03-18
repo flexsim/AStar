@@ -66,7 +66,7 @@ public:
 	class AStarDelegate : public SimpleDataType {
 	public:
 		AStarNavigator* navigator;
-		virtual const char* getClassFactory() { return "AStar::ElevatorBridge::AStarDelegate"; }
+		virtual const char* getClassFactory() override { return "AStar::ElevatorBridge::AStarDelegate"; }
 		virtual void bind() override;
 		virtual void onBridgeComplete(TaskExecuter* te);
 		virtual TravelerBridgeData* getBridgeData(TaskExecuter* te);

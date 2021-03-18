@@ -1222,6 +1222,11 @@ void Grid::onDrag(treenode view, Vec3& offset)
 	resolveGridOrigin();
 }
 
+void Grid::onDrag(treenode view, Vec3&& offset)
+{
+	onDrag(view, offset);
+}
+
 double Grid::onDrag(treenode view)
 {
 	double dx = draginfo(DRAG_INFO_DX);
@@ -1248,7 +1253,7 @@ double Grid::onCreate(bool isCopy)
 	maxPoint.x += size.x;
 	minPoint.x += size.x;
 	if (holder->up->name != "grids") {
-		PostMessage(systemwindow(0), FLEXSIM_MESSAGE_USER_CALLBACK, (WPARAM)&Grid::onPostCreate, (LPARAM)this);
+		sendwindowmessage((treenode)systemwindow(0), FLEXSIM_MESSAGE_USER_CALLBACK, (WindowParam1)&Grid::onPostCreate, (WindowParam2)this);
 	}
 	return 0;
 }
@@ -1285,7 +1290,7 @@ void Grid::drawSizerHandles(treenode view, int pickingMode)
 	Vec3f arrowTop(0.0f, arrowSize, 0.0f);
 	addTriangle(tempMesh, arrowLeft, arrowRight, arrowTop);
 
-	auto drawSizer = [pickingMode, this, &tempMesh, view](Vec3f& arrowBase, int pickType, float rotation)
+	auto drawSizer = [pickingMode, this, &tempMesh, view](Vec3f&& arrowBase, int pickType, float rotation)
 	{
 		fglPushMatrix();
 		fglTranslate(arrowBase.x, arrowBase.y, arrowBase.z);
@@ -1389,6 +1394,11 @@ void Grid::dragPressedPick(treenode view, Vec3& pos, Vec3& diff)
 	navigator->setDirty();
 	isUserCustomized = true;
 	isDirtyByUser = true;
+}
+
+void Grid::dragPressedPick(treenode view, Vec3&& pos, Vec3&& diff)
+{
+	dragPressedPick(view, pos, diff);
 }
 
 void Grid::makeDirty()
