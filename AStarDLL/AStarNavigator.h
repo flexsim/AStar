@@ -80,7 +80,7 @@ protected:
 	bool isGridMeshBuilt = false;
 
 	void updateConditionalBarrierDataOnOpenSetExpanded(const Cell& cell, AStarNode* n);
-	inline AStarSearchEntry* expandOpenSet(Grid* grid, int r, int c, float addedDist, float rotOnArrival, char bridgeIndex = -1);
+	AStarSearchEntry* expandOpenSet(Grid* grid, int r, int c, float addedDist, float rotOnArrival, char bridgeIndex = -1);
 
 	void buildBoundsMesh(float z);
 	void drawMembers();
