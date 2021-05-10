@@ -4010,7 +4010,7 @@ if (clickcode() == LEFT_RELEASE) {
 </data>
         <node f="40"><name></name></node>
         <node f="2000000042" dt="2"><name>By Traveler Label</name><data>return /**/traveler.type == 1/**direct*/;</data></node>
-        <node f="2000000042" dt="2"><name>Staff Only</name><data>/**Staff Only*/
+        <node f="a000000042" dt="2"><name>Staff Only</name><data>/**Staff Only*/
 return !isclasstype(traveler, "People::Staff") || traveler.TravelingWithPatient?;</data></node>
        </node>
       </node>
@@ -4363,7 +4363,7 @@ applylinks(view.up, 1);</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
-     <node f="42" dt="2"><name>AStar: Task Executer as Flowitem</name><data>/**AStar: Task Executer as Flowitem*/
+     <node f="a000000042" dt="2"><name>AStar: Task Executer as Flowitem</name><data>/**AStar: Task Executer as Flowitem*/
 /**\nMove the item into the model, then connect it to the AStar Navigator. Then tell it to travel to the destination and unload itself into the object. Note: this will only work for flow items created from the TaskExecuterFlowItem in the flow item bin.*/
 
 Array absloc = Array(3);
