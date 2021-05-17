@@ -166,6 +166,28 @@
          <node f="1000042" dt="2"><name>addObjectBarrierToTable</name><data>dll:"module:AStar" func:"AStarNavigator_addObjectBarrierToTable"</data></node>
          <node f="42" dt="2"><name>flexScriptInterface</name><data>AStar.Navigator</data></node>
         </node>
+        <node f="42"><name>eventInfo</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>OnGridChange</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42"><name>params</name>
+            <node f="40"><name></name></node>
+            <node f="42" dt="2"><name>Added Barrier</name><data></data>
+             <node f="40"><name></name></node>
+             <node f="42" dt="2"><name>Title</name><data>Added Barrier</data></node>
+             <node f="42" dt="2"><name>Name</name><data>addedBarrier</data></node>
+             <node f="42" dt="2"><name>Type</name><data>int</data></node>
+            </node>
+           </node>
+           <node f="42" dt="2"><name>classType</name><data>AStar.Navigator</data></node>
+          </node>
+          <node f="42" dt="2"><name>windowtitle</name><data>OnGridChange</data></node>
+          <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/OnGridChange</data></node>
+          <node f="4000000042" dt="2"><name>tooltip</name><data>Define logic that executes when the A* grid is dynamically changed</data></node>
+         </data></node>
+        </node>
         <node f="42"><name>cppfunctions</name>
          <node f="40"><name></name></node></node>
         <node f="42"><name>cppvariables</name></node>
@@ -4013,6 +4035,26 @@ if (clickcode() == LEFT_RELEASE) {
         <node f="a000000042" dt="2"><name>Staff Only</name><data>/**Staff Only*/
 return !isclasstype(traveler, "People::Staff") || traveler.TravelingWithPatient?;</data></node>
        </node>
+       <node f="42" dt="2"><name>OnGridChange</name><data>AStar.Navigator current = ownerobject(c);
+int addedBarrier = param(1);
+</data>
+        <node f="40"><name></name></node>
+        <node f="42" dt="2"><name>Reroute Travelers</name><data>/**Reroute Travelers*/
+int condition = /**\nGeneral Condition: *//**/addedBarrier/**/;
+if (condition) {
+	for (int i = 1; i &lt;= current.travelers.length; i++) {
+		AStar.Traveler traveler = current.travelers[i];
+		TaskExecuter te = traveler.object;
+		int condition = /**\nPer Traveler Condition: *//**/traveler.isActive &amp;&amp; traveler.travelPath.isBlocked()/**/;
+		if (condition &amp;&amp; te.activeTaskSequence) {
+			TaskSequence ts = TaskSequence.create(te, te.activeTaskSequence.priority + 1, PREEMPT_ONLY);
+			ts.addTask(TASKTYPE_BREAK, 0, te.activeTaskSequence);
+			ts.dispatch();
+		}
+	}
+}
+</data></node>
+       </node>
       </node>
       <node f="42"><name>GUIClasses</name>
        <node f="40"><name></name></node>
@@ -4521,6 +4563,44 @@ return 0;
        </node>
        <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object is rerouted along a different path on the AStar network</data></node>
       </data></node>
+      <node f="42" dt="4"><name>OnCalculatePath</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>params</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Current</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Current</data></node>
+          <node f="42" dt="2"><name>Name</name><data>current</data></node>
+          <node f="42" dt="2"><name>Type</name><data>Object</data></node>
+         </node>
+         <node f="42" dt="2"><name>DestLoc</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Destination Location</data></node>
+          <node f="42" dt="2"><name>Name</name><data>destLoc</data></node>
+          <node f="42" dt="2"><name>Type</name><data>Vec3</data></node>
+         </node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object is rerouted along a different path on the AStar network</data></node>
+      </data></node>
+      <node f="42" dt="4"><name>OnNavigatePath</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>params</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Current</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Current</data></node>
+          <node f="42" dt="2"><name>Name</name><data>current</data></node>
+          <node f="42" dt="2"><name>Type</name><data>Object</data></node>
+         </node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object is rerouted along a different path on the AStar network</data></node>
+      </data></node>
      </node>
     </node>
    </node>
@@ -4635,7 +4715,7 @@ return 0;
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404b0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404b8000</data></node>
     <node f="42" dt="2"><name>after</name><data>FollowObject</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>

@@ -44,6 +44,7 @@ struct astar_export Cell {
 		return ((unsigned long) value) ^ ((unsigned long)(value >> 32));
 #endif
 	}
+	Cell adjacentCell(int direction);
 };
 
 enum ExtraDataReason : char {
@@ -52,7 +53,8 @@ enum ExtraDataReason : char {
 	BridgeData = 2,
 	PreferredPathData = 3,
 	MandatoryPathData = 4,
-	ConditionalBarrierData = 5
+	ConditionalBarrierData = 5,
+	DynamicBarrierData = 6
 };
 
 class AStarNode
@@ -117,14 +119,19 @@ struct NodeAllocation
 	void extendReleaseTime(double toTime);
 	void truncateReleaseTime(double toTime);
 	void bind(TreeNode* x);
+
+	// FlexScript interface Methods
 	static void bindInterface();
 	double __getAcquireTime() { return acquireTime; }
 	double __getReleaseTime() { return releaseTime; }
 	Traveler* __getTraveler() { return traveler; }
+	int __getTravelPathIndex() { return travelPathIndex + 1; }
 
 	operator bool() const { return traveler != nullptr; }
 	bool operator !() const { return traveler == nullptr; }
 	void construct() { new (this) NodeAllocation(); }
+	void construct(Traveler* traveler, const Cell& cell, int travelPathIndexOneBased, double acquireTime, double releaseTime) 
+	{ new (this) NodeAllocation(traveler, cell, travelPathIndexOneBased - 1, 0, acquireTime, releaseTime, 0.0); }
 	void copyConstruct(const NodeAllocation& other) { new (this) NodeAllocation(other); }
 
 };
@@ -158,14 +165,22 @@ public:
 	ExtendedCell adjacentCell(int direction);
 	int canGo(int direction);
 	Vec2 getNodeSize(AStarNavigator* nav);
+	double __getTotalTraversals();
+	void __setTotalTraversals(double toVal);
 };
 
 typedef std::list<NodeAllocation> NodeAllocationList;
 typedef std::list<NodeAllocation>::iterator NodeAllocationIterator;
 
+struct DynamicBarrierChange {
+	DynamicBarrierChange(TemporaryBarrier* barrier, int entryIndex) : barrier(barrier), entryIndex(entryIndex) {}
+	DynamicBarrierChange() {}
+	TemporaryBarrier* barrier = nullptr;
+	int entryIndex = 0;
+};
+
 struct AStarNodeExtraData : public SimpleDataType
 {
-
 	AStarNodeExtraData() : cell(0, 0, 0), bonusRight(0), bonusLeft(0), bonusUp(0), bonusDown(0) {}
 	virtual const char* getClassFactory() override { return "AStar::NodeExtraData"; }
 	virtual void bind() override;
@@ -191,6 +206,8 @@ struct AStarNodeExtraData : public SimpleDataType
 
 	std::vector<Barrier*> conditionalBarriers;
 	void addConditionalBarrier(Barrier* barrier);
+
+	std::vector<DynamicBarrierChange> dynamicBarrierChanges;
 
 	NodeAllocationList allocations;
 	NodeAllocationList requests;
@@ -232,9 +249,14 @@ struct astar_export AStarPathEntry {
 	static void bindInterface();
 	Cell cell;
 	int bridgeIndex;
+	double arrivalTime = -1;
 
 	ExtendedCell __getCell();
 	__declspec(property(get = __getCell)) ExtendedCell extendedCell;
+	int __getIsBridgePoint() { return bridgeIndex != -1; }
+	__declspec(property(get = __getIsBridgePoint)) int isBridgePoint;
+	double __getArrivalTime() { return arrivalTime; }
+	void __setArrivalTime(double toVal) { arrivalTime = toVal; }
 };
 
 class TravelPath : public std::vector<AStarPathEntry>
@@ -250,6 +272,9 @@ public:
 	int size() { return __getLength(); }
 #endif
 	static void bindInterface();
+
+	int isBlocked(int startIndexOneBased = 0);
+
 };
 
 class AllocationRange {

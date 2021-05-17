@@ -50,6 +50,14 @@ void Cell::bind(TreeNode * x)
 	SimpleDataType::bindNumber(col, x);
 }
 
+Cell Cell::adjacentCell(int direction)
+{
+	Cell cell(*this);
+	cell.row += AStarNode::rowInc[direction];
+	cell.col += AStarNode::colInc[direction];
+	return cell;
+}
+
 
 void ExtendedCell::bindInterface()
 {
@@ -67,6 +75,7 @@ void ExtendedCell::bindInterface()
 	bindMethod(adjacentCell, ExtendedCell, "AStar.Cell adjacentCell(int direction)");
 	bindMethod(canGo, ExtendedCell, "int canGo(int direction)");
 
+	bindTypedProperty(totalTraversals, double, &ExtendedCell::__getTotalTraversals, &ExtendedCell::__setTotalTraversals);
 }
 
 void ExtendedCell::__assertCachedPointers()
@@ -133,6 +142,25 @@ ExtendedCell::operator bool()
 }
 
 
+double ExtendedCell::__getTotalTraversals()
+{
+	assertCachedPointers();
+	if (!extra)
+		return 0.0;
+	return extra->totalTraversals;
+}
+
+void ExtendedCell::__setTotalTraversals(double toVal)
+{
+	assertCachedPointers();
+	if (!node)
+		return;
+	if (!extra)
+		extra = AStarNavigator::instance->assertExtraData(*this, TraversalData);
+	extra->totalTraversals = toVal;
+}
+
+
 
 void NodeAllocation::bind(TreeNode* x)
 {
@@ -155,7 +183,10 @@ struct ExtendedNodeAllocation : public NodeAllocation
 void NodeAllocation::bindInterface()
 {
 	SimpleDataType::bindDocumentationXMLPath("help\\FlexScriptAPIReference\\AStar\\AStar.Allocation.xml");
-	SimpleDataType::bindConstructor(force_cast<void*>(&NodeAllocation::construct), "void Cell(int grid, int row, int col)");
+	auto construct1 = (void (NodeAllocation::*)()) & NodeAllocation::construct;
+	SimpleDataType::bindConstructor(construct1, "void Allocation()");
+	auto construct2 = (void (NodeAllocation::*)(Traveler * traveler, const Cell & cell, int travelPathIndexOneBased, double acquireTime, double releaseTime)) & NodeAllocation::construct;
+	SimpleDataType::bindConstructor(construct2, "void Allocation(AStar.Traveler traveler, AStar.Cell cell, int travelPathIndex, double acquireTime, double releaseTime)");
 	SimpleDataType::bindCopyConstructor(&NodeAllocation::copyConstruct);
 	SimpleDataType::bindCopyAssigner(&NodeAllocation::operator =);
 	SimpleDataType::bindOperator(bool, NodeAllocation, "int bool()");
@@ -164,6 +195,7 @@ void NodeAllocation::bindInterface()
 	bindTypedProperty(releaseTime, double, &NodeAllocation::__getReleaseTime, nullptr);
 	SimpleDataType::bindTypedPropertyByName<ExtendedCell>("cell", "AStar.Cell", force_cast<void*>(&ExtendedNodeAllocation::__getCell), nullptr);
 	SimpleDataType::bindTypedPropertyByName<Traveler>("traveler", "AStar.Traveler", force_cast<void*>(&NodeAllocation::__getTraveler), nullptr);
+	bindTypedProperty("travelPathIndex", int, &NodeAllocation::__getTravelPathIndex, nullptr);
 }
 
 void AStarPathEntry::bind(TreeNode* toNode)
@@ -173,11 +205,14 @@ void AStarPathEntry::bind(TreeNode* toNode)
 		SimpleDataType::appendToDisplayStr("\r\n");
 	cell.bind(toNode);
 	SimpleDataType::bindNumber(bridgeIndex, toNode);
+	SimpleDataType::bindNumber(arrivalTime, toNode);
 }
 
 void AStarPathEntry::bindInterface()
 {
 	SimpleDataType::bindTypedPropertyByName<ExtendedCell>("cell", "AStar.Cell", force_cast<void*>(&AStarPathEntry::__getCell), nullptr);
+	bindTypedProperty(isBridgePoint, int, &AStarPathEntry::__getIsBridgePoint, nullptr);
+	bindTypedProperty(arrivalTime, double, &AStarPathEntry::__getArrivalTime, &AStarPathEntry::__setArrivalTime);
 }
 
 ExtendedCell AStarPathEntry::__getCell()
@@ -519,6 +554,68 @@ void TravelPath::bindInterface()
 	auto funcPtr = &TravelPath::__oneBasedIndex;
 	SimpleDataType::bindOperatorByName<decltype(funcPtr)>("[]", funcPtr, "AStar.TravelPathEntry arrayDeref(int index)");
 	bindMethod(indexOf, TravelPath, "int indexOf(AStar.Cell& cell)");
+	bindMethod(isBlocked, TravelPath, "int isBlocked(int startAtIndex = 0)");
+}
+
+int TravelPath::isBlocked(int startIndexOneBased)
+{
+	if (startIndexOneBased == 0) {
+		startIndexOneBased = 1;
+		double curTime = time();
+		for (int i = 0; i < size(); i++) {
+			auto& entry = operator[](i);
+			if (entry.arrivalTime != -1) {
+				startIndexOneBased = i + 1;
+				if (entry.arrivalTime >= curTime)
+					break;
+			}
+		}
+	}
+	auto* navigator = AStarNavigator::instance;
+	int startIndex = startIndexOneBased - 1;// startIndex is one-based, so
+	for (int i = startIndex; i < size() - 1; i++) {
+		auto& prevCell = operator[](i).cell;
+		auto& nextCell = operator[](i + 1).cell;
+		if (nextCell.grid != prevCell.grid)
+			continue;
+
+		AStarNode* node = navigator->getNode(prevCell);
+		Direction horDir = nextCell.col > prevCell.col ? Right : Left;
+		Direction vertDir = nextCell.row > prevCell.row ? Up : Down;
+		if (prevCell.col == nextCell.col) { // vertical move
+			if (!node->canGo(vertDir))
+				return true;
+		}
+		else if (prevCell.row == nextCell.row) { // horizontal move
+			if (!node->canGo(horDir))
+				return true;
+		}
+		else  { // diagonal move
+			auto horCell = prevCell.adjacentCell(horDir);
+			AStarNode* middleHorThenVert = navigator->getNode(horCell);
+			bool canGoHorThenVert = node->canGo(horDir) && middleHorThenVert->canGo(vertDir);
+
+			auto vertCell = prevCell.adjacentCell(vertDir);
+			AStarNode* middleVertThenHor = navigator->getNode(vertCell);
+			bool canGoVertThenHor = node->canGo(vertDir) && middleVertThenHor->canGo(horDir);
+
+			bool canGoDiagonal = navigator->strictDiagonals ? canGoHorThenVert && canGoVertThenHor : canGoHorThenVert || canGoVertThenHor;
+			if (!canGoDiagonal)
+				return true;
+			auto diagCell = horCell.adjacentCell(vertDir);
+			if (diagCell != nextCell) { // deep diagonal
+				if (abs(prevCell.row - nextCell.row) == 2) {
+					if (!navigator->getNode(diagCell)->canGo(vertDir))
+						return true;
+				}
+				else {
+					if (!navigator->getNode(diagCell)->canGo(horDir))
+						return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 void AStarNamespace::bindInterface()

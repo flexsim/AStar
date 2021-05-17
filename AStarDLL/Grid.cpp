@@ -461,26 +461,23 @@ void Grid::addObjectBarrierToTable(treenode obj)
 			int colright = (int)round((objMax.x - gridOrigin.x) / nodeSize.x);
 			int rowtop = (int)round((objMax.y - gridOrigin.y) / nodeSize.y);
 			for (int row = rowbottom; row <= rowtop; row++) {
-				AStarNode * left = getNode(row, colleft - 1);
-				left->canGoRight = 0;
-				AStarNode * right = getNode(row, colright + 1);
-				right->canGoLeft = 0;
+				blockNodeDirection(Cell(rank, row, colleft - 1), Direction::Right, nullptr);
+				blockNodeDirection(Cell(rank, row, colright + 1), Direction::Left, nullptr);
 			}
 
 			for (int col = colleft; col <= colright; col++) {
-				AStarNode * top = getNode(rowtop + 1, col);
-				top->canGoDown = 0;
-				AStarNode * bottom = getNode(rowbottom - 1, col);
-				bottom->canGoUp = 0;
+				blockNodeDirection(Cell(rank, rowtop + 1, col), Direction::Down, nullptr);
+				blockNodeDirection(Cell(rank, rowbottom - 1, col), Direction::Up, nullptr);
 			}
 
 			for (int row = rowbottom; row <= rowtop; row++) {
 				for (int col = colleft; col <= colright; col++) {
 					AStarNode* theNode = getNode(row, col);
-					theNode->canGoUp = 0;
-					theNode->canGoDown = 0;
-					theNode->canGoLeft = 0;
-					theNode->canGoRight = 0;
+					Cell cell(rank, row, col);
+					blockNodeDirection(cell, Direction::Up, nullptr);
+					blockNodeDirection(cell, Direction::Down, nullptr);
+					blockNodeDirection(cell, Direction::Left, nullptr);
+					blockNodeDirection(cell, Direction::Right, nullptr);
 				}
 			}
 		}
@@ -517,20 +514,22 @@ void Grid::addObjectBarrierToTable(treenode obj)
 					Vec3 objPos;
 					vectorproject(model(), modelPos.x, modelPos.y, modelPos.z, obj, objPos);
 					if (objPos.x > minThreshold.x && objPos.x < maxThreshold.x && objPos.y > minThreshold.y && objPos.y < maxThreshold.y) {
+						Cell cell(rank, row, col);
+
 						AStarNode& theNode = *getNode(row, col);
-						theNode.canGoUp = false;
-						theNode.canGoDown = false;
-						theNode.canGoLeft = false;
-						theNode.canGoRight = false;
+						blockNodeDirection(cell, Direction::Up, nullptr);
+						blockNodeDirection(cell, Direction::Down, nullptr);
+						blockNodeDirection(cell, Direction::Left, nullptr);
+						blockNodeDirection(cell, Direction::Right, nullptr);
 
 						if (col > 0)
-							getNode(row, col - 1)->canGoRight = false;
+							blockNodeDirection(Cell(rank, row, col - 1), Direction::Right, nullptr);
 						if (col < numCols - 1)
-							getNode(row, col + 1)->canGoLeft = false;
+							blockNodeDirection(Cell(rank, row, col + 1), Direction::Left, nullptr);
 						if (row > 0)
-							getNode(row - 1, col)->canGoUp = false;
+							blockNodeDirection(Cell(rank, row - 1, col), Direction::Up, nullptr);
 						if (row < numRows - 1)
-							getNode(row + 1, col)->canGoDown = false;
+							blockNodeDirection(Cell(rank, row + 1, col), Direction::Down, nullptr);
 					}
 				}
 			}
@@ -561,12 +560,13 @@ void Grid::blockGridModelPos(const Cell& cell)
 void Grid::blockNodeDirection(const Cell& cell, Direction direction, Barrier* barrier) {
 	AStarNode* node = getNode(cell);
 	bool isConditionalBarrier = barrier && barrier->conditionRule;
-	if (navigator->applyToTemporaryBarrier == nullptr || !isConditionalBarrier) {
+	if (navigator->applyToTemporaryBarrier == nullptr || (barrier && !isConditionalBarrier)) {
 		node->setCanGo(direction, false);
 	} else {
-		AStarNode& entryNode = (*navigator->applyToTemporaryBarrier)[cell].newValue;
-		entryNode.setCanGo(direction, false);
-		navigator->assertExtraData(cell, ConditionalBarrierData)->addConditionalBarrier(barrier);
+		auto& entry = (*navigator->applyToTemporaryBarrier)[cell];
+		entry.setCanGo(direction, false);
+		if (barrier)
+			navigator->assertExtraData(cell, ConditionalBarrierData)->addConditionalBarrier(barrier);
 	}
 }
 

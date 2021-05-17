@@ -13,7 +13,6 @@ void MandatoryPath::onReset(AStarNavigator* nav)
 {
 	__super::onReset(nav);
 	if (conditionRule) {
-		conditionalBarrierChanges.valueMask.isOnMandatoryPath = true;
 		nav->hasConditionalBarriers = 1.0;
 	}
 }
@@ -49,7 +48,8 @@ void MandatoryPath::addPassagesToTable(Grid * grid)
 					newValue.setCanGo(Down, false);
 			}
 
-			conditionalBarrierChanges.addEntry(cell, newValue);
+			auto& entry = conditionalBarrierChanges.addEntry(cell, newValue);
+			entry.changeMask.isOnMandatoryPath = true;
 		});
 	}
 }

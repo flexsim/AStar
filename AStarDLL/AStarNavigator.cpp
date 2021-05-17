@@ -51,6 +51,7 @@ void AStarNavigator::bindVariables(void)
 
 	bindVariable(fixedResourceBarriers);
 	objectBarrierList.init(fixedResourceBarriers);
+	bindVariable(dynamicBarriers);
 
 	bindVariable(cachePaths);
 	bindVariable(pathCount);
@@ -67,11 +68,6 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(maxHeatValue);
 	bindVariable(transparentBaseColor);
 	bindVariable(palette);
-
-	bindVariable(collisionUpdateIntervalFactor);
-
-	bindStateVariable(collisionUpdateInterval);
-	bindStateVariable(nextCollisionUpdateTime);
 	bindStateVariable(heatMapTotalTraversals);
 
 
@@ -121,6 +117,7 @@ void AStarNavigator::bindVariables(void)
 void AStarNavigator::bindEvents()
 {
 	bindGeneralEvents();
+	bindEvent(GridChange, EVENT_TYPE_TRIGGER);
 }
 
 void AStarNavigator::bindTEEvents(TaskExecuter* te)
@@ -147,6 +144,25 @@ void AStarNavigator::bindInterface()
 	auto callback = &AStarNavigator::getExtendedCell;
 	bindMethodByName<decltype(callback)>("getCell", callback, "AStar.Cell getCell(Vec3& loc)");
 	bindMethod(getLocation, AStarNavigator, "Vec3 getLocation(AStar.Cell& loc)");
+	auto adb1 = (Variant(AStarNavigator::*)(const Variant&, int)) &AStarNavigator::addDynamicBarrier;
+	bindMethodByName<decltype(adb1)>("addDynamicBarrier", adb1, "Variant addDynamicBarrier(Variant& obj, int skipOnChange = 0)");
+	auto adb2 = (treenode(AStarNavigator::*)(const Vec3&, const Vec3&, const Vec3&, int)) &AStarNavigator::addDynamicBarrier;
+	bindMethodByName<decltype(adb2)>("addDynamicBarrier", adb2, "treenode addDynamicBarrier(Vec3& loc, Vec3& size, Vec3& rot, int skipOnChange = 0)");
+	bindMethod(removeDynamicBarrier, AStarNavigator, "void removeDynamicBarrier(Variant& obj, int skipOnChange = 0)");
+
+	typedef NodeListArray<Traveler>::CouplingSdtSubNodeBindingTypeOneBased AStarTravelerArray;
+	class NavigatorListHelper : public AStarNavigator
+	{
+	public:
+		AStarTravelerArray getTravelers() { return AStarTravelerArray(travelers); }
+	};
+	bindNodeListArrayClassByName<AStarTravelerArray>("AStar.TravelerArray", "AStar.Traveler", true);
+	bindTypedPropertyByName<AStarTravelerArray>("travelers", "AStar.TravelerArray", force_cast<void*>(&NavigatorListHelper::getTravelers), nullptr);
+
+	auto cp1 = (void(AStarNavigator::*)(Traveler* t, ObjectDataType* dest)) &AStarNavigator::calculatePath;
+	bindMethodByName<decltype(cp1)>("calculatePath", cp1, "void calculatePath(AStar.Traveler traveler, Object obj)");
+	auto cp2 = (void(AStarNavigator::*)(Traveler * t, const Vec3& dest)) &AStarNavigator::calculatePath;
+	bindMethodByName<decltype(cp2)>("calculatePath", cp2, "void calculatePath(AStar.Traveler traveler, Vec3& dest)");
 }
 
 void AStarNavigator::bind()
@@ -316,18 +332,10 @@ double AStarNavigator::onReset()
 		sumSpeed += travelers[i]->te->v_maxspeed;
 	}
 
+	dynamicBarriers.clear();
 
 	SimulationStartEvent::addObject(this);
 
-	if (enableCollisionAvoidance && collisionUpdateIntervalFactor > 0 && travelers.size() > 0) {
-		double avgSpeed = sumSpeed / travelers.size();
-		double avgNodeMoveTime = std::min(minNodeSize.x, minNodeSize.y) / avgSpeed;
-		collisionUpdateInterval = collisionUpdateIntervalFactor * avgNodeMoveTime;
-	}
-	else {
-		collisionUpdateInterval = DBL_MAX;
-	}
-	nextCollisionUpdateTime = DBL_MAX;
 	return 0;
 }
 
@@ -373,7 +381,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 	int pickingMode = getpickingmode(view);
 
 	double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
-	if (isGridDirty) {
+	if (isGridDirty && (drawMode & ASTAR_DRAW_MODE_GRID)) {
 		if (drawMode & ASTAR_DRAW_MODE_GRID)
 			buildGridMesh(0.05f / lengthMultiple);
 		if (isGridMeshBuilt)
@@ -443,6 +451,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 	if (!pickingMode) {
 
 		if (isGridMeshBuilt && (drawMode & ASTAR_DRAW_MODE_GRID)) {
+			glLineWidth(1.0f);
 			bool isPatternBarrierSelected = objectexists(selObj) && isclasstype(selObj, "AStar::Barrier") && selObj->objectAs(Barrier)->patternTable->subnodes.length > 0;
 			if (!isPatternBarrierSelected) {
 				for (Grid* grid : grids)
@@ -627,12 +636,7 @@ double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double
 	traveler->destLoc = Vec3(destLoc[0], destLoc[1], destLoc[2]);
 	traveler->endSpeed = endSpeed;
 
-	if (activeTravelers.size() == 0 && collisionUpdateInterval < FLT_MAX && nextCollisionUpdateTime == DBL_MAX) {
-		nextCollisionUpdateTime = time() + collisionUpdateInterval;
-		createevent(new CollisionIntervalUpdateEvent(this, nextCollisionUpdateTime));
-	}
-
-	TravelPath path = calculateRoute(traveler, traveler->destLoc, traveler->destThreshold, endSpeed, false);
+	TravelPath path = calculatePath(traveler, traveler->destLoc, traveler->destThreshold, 0);
 	traveler->navigatePath(std::move(path));
 	return 0;
 }
@@ -653,21 +657,6 @@ double AStarNavigator::navigateToLoc(treenode traveler, double * destLoc, double
 void AStarNavigator::onMemberDestroyed(TaskExecuter * te)
 {
 	getTraveler(te)->onTEDestroyed();
-}
-
-void AStarNavigator::onCollisionIntervalUpdate()
-{
-	if (activeTravelers.size() == 0) {
-		nextCollisionUpdateTime = DBL_MAX;
-		return;
-	}
-
-	nextCollisionUpdateTime = time() + collisionUpdateInterval;
-	for (Traveler* traveler : activeTravelers) {
-		traveler->onCollisionIntervalUpdate();
-	}
-
-	createevent(new CollisionIntervalUpdateEvent(this, nextCollisionUpdateTime));
 }
 
 void AStarNavigator::addBarrier(treenode x, Barrier * newBarrier)
@@ -748,9 +737,15 @@ AStarSearchEntry* AStarNavigator::checkExpandOpenSetDiagonal(Grid* grid, AStarNo
 }
 
 
-TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLoc, const DestinationThreshold& destThreshold, double endSpeed, bool doFullSearch, double startTime)
+template <class Callback>
+struct ScopeGuard {
+	ScopeGuard(Callback& callback) : callback(callback) { }
+	Callback& callback;
+	~ScopeGuard() { callback(); }
+};
+TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc, const DestinationThreshold& destThreshold, int flags, double startTime)
 {
-	CodeProfileRecord record(holder, "AStar::calculateRoute");
+	CodeProfileRecord record(holder, "AStar::calculatePath");
 	TreeNode* travelerNode = traveler->te->holder;
 	routingTraveler = traveler;
 	routingTravelStartTime = startTime < 0 ? time() : startTime;
@@ -763,6 +758,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	//if (routeByTravelTime && enableCollisionAvoidance) {
 	//	traveler->estimatedIndefiniteAllocTimeDelay = indefiniteAllocTimePenalty->evaluate(traveler->te->holder);
 	//}
+
 	double centerx = 0.5 * xsize(travelerNode);
 	double centery = 0.5 * ysize(travelerNode);
 
@@ -771,6 +767,20 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	destLoc.x = tempDestLoc[0];
 	destLoc.y = tempDestLoc[1];
 	destLoc.z = tempDestLoc[2];
+	Variant userBarriers;
+	if (traveler->onCalculatePath) {
+		Array destLocArray;
+		destLocArray.push(destLoc.x).push(destLoc.y).push(destLoc.z);
+		Variant result = FIRE_SDT_EVENT_VALUE_GETTER(traveler->onCalculatePath, traveler->te->holder, destLocArray);
+		if (result.type == VariantType::Array || result.type == VariantType::Array) {
+			userBarriers = addDynamicBarrier(result, 1);
+		}
+	}
+
+	auto removeBarriers = [this, &userBarriers]() {
+		removeDynamicBarrier(userBarriers, 1);
+	};
+	ScopeGuard<decltype(removeBarriers)> scopeGuard(removeBarriers);
 
 	TaskExecuter* te = traveler->te;
 
@@ -809,7 +819,7 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 
 	// Figure out if this path is in the cache
 	bool shouldUseCache = false;
-	if (cachePaths && !doFullSearch && !routeByTravelTime) {
+	if (cachePaths && !(flags & DoFullSearch) && !routeByTravelTime) {
 		CodeProfileRecord record2(holder, "check cache");
 		requestCount++;
 		traveler->cachedPathKey.startCell = startCell;
@@ -823,8 +833,12 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	
 		auto e = pathCache.find(traveler->cachedPathKey);
 		if (e != pathCache.end()) {
-			cacheUseCount++;
-			return e->second;
+			auto& path = e->second;
+			// if there are active dynamic barriers, then I should check that the path is not blocked
+			if (dynamicBarriers.length == 0 || !path.isBlocked()) {
+				cacheUseCount++;
+				return e->second;
+			}
 		}
 	}
 
@@ -849,13 +863,14 @@ TravelPath AStarNavigator::calculateRoute(Traveler* traveler, double* tempDestLo
 	start->cell = startCell;
 
 	// Set the destination outside a barrier if necessary
-	if (ignoreDestBarrier) {
+	if (ignoreDestBarrier && !(flags & KeepEndpointsConst)) {
 		Cell tempDestCell = destCell;
 		checkGetOutOfBarrier(tempDestCell, te, startCell.row, startCell.col, &traveler->destThreshold);
 	}
 
 	// Get out of a barrier if necessary
-	checkGetOutOfBarrier(start->cell, te, destCell.row, destCell.col, nullptr);
+	if (!(flags & KeepEndpointsConst))
+		checkGetOutOfBarrier(start->cell, te, destCell.row, destCell.col, nullptr);
 
 	start->g = 0;
 	start->h = calculateHeuristic(startGrid, startCell);
@@ -995,7 +1010,7 @@ the outside 8 nodes.
 		for (auto iter = visitedConditionalBarriers.rbegin(); iter != visitedConditionalBarriers.rend(); iter++) {
 			Barrier* barrier = *iter;
 			if (barrier->conditionalBarrierChanges.isApplied)
-				barrier->conditionalBarrierChanges.unapply();
+				barrier->conditionalBarrierChanges.revert();
 		}
 		visitedConditionalBarriers.clear();
 	}
@@ -1004,7 +1019,7 @@ the outside 8 nodes.
 		for (int i = barrierList.size() - 1; i >= 0; i--) {
 			MandatoryPath* path = barrierList[i]->toMandatoryPath();
 			if (path && path->conditionalBarrierChanges.isApplied) {
-				path->conditionalBarrierChanges.unapply();
+				path->conditionalBarrierChanges.revert();
 			}
 		}
 	}
@@ -1085,7 +1100,7 @@ the outside 8 nodes.
 		}
 	}
 
-	if (cachePaths && !doFullSearch && !routeByTravelTime) {
+	if (cachePaths && !(flags & DoFullSearch) && !routeByTravelTime && dynamicBarriers.length == 0) {
 		pathCache[traveler->cachedPathKey] = travelPath;
 		pathCount++;
 	}
@@ -1096,9 +1111,21 @@ the outside 8 nodes.
 	return travelPath;
 }
 
-void AStarNavigator::calculateRoute(Traveler * traveler, double * destLoc, const DestinationThreshold & destThreshold)
+void AStarNavigator::calculatePath(Traveler * traveler, double * destLoc, const DestinationThreshold & destThreshold)
 {
-	traveler->travelPath = calculateRoute(traveler, destLoc, destThreshold, 0.0);
+	traveler->travelPath = calculatePath(traveler, destLoc, destThreshold, 0);
+}
+
+
+void AStarNavigator::calculatePath(Traveler* traveler, const Vec3& destLoc)
+{
+	calculatePath(traveler, (double*)(Vec3&)destLoc, DestinationThreshold());
+}
+void AStarNavigator::calculatePath(Traveler* traveler, ObjectDataType* dest)
+{
+	Vec3 center = dest->getLocation(0.5, 0.5, 0.5).project(dest->holder->up, model());
+	calculatePath(traveler, (double*)center, DestinationThreshold(dest->holder, minNodeSize));
+
 }
 
 double AStarNavigator::calculateHeuristic(Grid * fromGrid, const Cell & fromCell)
@@ -1131,7 +1158,7 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), destLoc);
 
 	DestinationThreshold destThreshold(destination->holder, minNodeSize);
-	TravelPath path = calculateRoute(traveler, destLoc, destThreshold, 0, true);
+	TravelPath path = calculatePath(traveler, destLoc, destThreshold, DoFullSearch);
 	return path.calculateTotalDistance(this);
 }
 
@@ -1299,8 +1326,7 @@ void AStarNavigator::getBoundingBox(TreeNode* theObj, Vec3& min, Vec3& max)
 	max = Vec3(-DBL_MAX, -DBL_MAX, -DBL_MAX);
 	// Shrink the bounding box for objects
 	auto checkBound = [theObj, &min, &max](double x, double y, double z) {
-		Vec3 outVec;
-		vectorproject(theObj, x, y, z, model(), outVec);
+		Vec3 outVec = Vec3(x, y, z).project(theObj, model());
 		if (outVec.x < min.x)
 			min.x = outVec.x;
 		if (outVec.x > max.x)
@@ -1947,7 +1973,9 @@ treenode AStarNavigator::addMember(TaskExecuter* te)
 	}
 	Traveler* traveler = travelers.add(new Traveler);
 	clearcontents(te->node_v_navigator);
-	nodejoin(traveler->holder, nodeadddata(nodeinsertinto(te->node_v_navigator), DATATYPE_COUPLING));
+	treenode partner = nodeadddata(nodeinsertinto(te->node_v_navigator), DATATYPE_COUPLING);
+	nodejoin(traveler->holder, partner);
+	switch_preservecoupling(partner, 1);
 	te->v_useoffsets = OFFSET_BY_NAV_LOGIC;
 	traveler->onReset();
 	if (getrunstate(1) && enableCollisionAvoidance && !ignoreInactiveMemberCollisions)
@@ -2042,6 +2070,118 @@ double AStarNavigator::getTotalTravelDistance(TaskExecuter* te)
 Variant AStarNavigator::createGrid(FLEXSIMINTERFACE)
 {
 	return createGrid(Vec3(param(1), param(2), param(3)), Vec3(param(4), param(5), param(6)))->holder;
+}
+
+treenode AStarNavigator::addDynamicBarrier(const Vec3& loc, const Vec3& size, const Vec3& rot, int skipOnChange)
+{
+	auto& thisLoc = this->location;
+	auto& thisSize = this->size;
+	auto& thisRot = this->rotation;
+
+	auto savedLoc = thisLoc;
+	auto savedSize = thisSize;
+	auto savedRot = thisRot;
+
+	thisLoc = loc;
+	thisSize = size;
+	thisRot = rot;
+	auto result = addDynamicBarrier(holder, skipOnChange);
+	thisLoc = savedRot;
+	thisSize = savedSize;
+	thisRot = savedRot;
+
+	return result;
+}
+
+Variant AStarNavigator::addDynamicBarrier(const Variant& val, int skipOnChange)
+{
+	static int stackDepth = 0;
+	Variant result;
+	stackDepth++;
+	try {
+		if (val.type == VariantType::Array && val.size() > 0) {
+			Array array = val;
+			auto first = array[1];
+			if (array.size() == 3 && first.type == VariantType::Array && first.size() > 0 && first[1].type == VariantType::Number) {
+				// it's an array or Vec3s
+				Vec3 loc(array[1][1], array[1][2], array[1][3]);
+				Vec3 size(array[2][1], array[2][2], array[2][3]);
+				Vec3 rot(array[3][1], array[3][2], array[3][3]);
+				result = addDynamicBarrier(loc, size, rot);
+			}
+			else {
+				result = Array();
+				for (int i = 1; i <= array.size(); i++) {
+					result.push(addDynamicBarrier(array[i]));
+				}
+			}
+		}
+		else if (val.type == VariantType::TreeNode) {
+			TreeNode* node = val;
+			if (node->dataType == DATATYPE_OBJECT) {
+				auto barrier = dynamicBarriers.add(new TemporaryBarrier(this, true));
+				ObjectDataType* obj = node->object<ObjectDataType>();
+				if (!obj->Nb_stored)
+					assertattribute(obj->holder, "stored", 0);
+				nodejoin(barrier->holder, obj->Nb_stored->subnodes.add()->addData(DATATYPE_COUPLING));
+
+				applyToTemporaryBarrier = barrier;
+				addObjectBarrierToTable(obj->holder);
+				applyToTemporaryBarrier = nullptr;
+				barrier->apply();
+				result = barrier->holder;
+			}
+		}
+		isGridDirty = true;
+	}
+	catch (...) { stackDepth--; throw; }
+	stackDepth--;
+	if (stackDepth == 0 && !skipOnChange)
+		FIRE_SDT_EVENT(onGridChange, 1);
+	return result;
+}
+
+void AStarNavigator::removeDynamicBarrier(const Variant& val, int skipOnChange)
+{
+	static int stackDepth = 0;
+	stackDepth++;
+	try {
+		if (val.type == VariantType::Array && val.size() > 0) {
+			Array array = val;
+			for (int i = array.size(); i >= 1; i--) {
+				removeDynamicBarrier(array[i]);
+			}
+		}
+		else if (val.type == VariantType::TreeNode) {
+			TreeNode* node = val;
+			TemporaryBarrier* found = nullptr;
+			if (node->dataType == DATATYPE_OBJECT) {
+				ObjectDataType* obj = node->object<ObjectDataType>();
+				if (obj->Nb_stored) {
+					TreeNode* barriers = dynamicBarriers;
+					for (int i = obj->Nb_stored->subnodes.length; i >= 1; i--) {
+						TreeNode* barrier = obj->Nb_stored->subnodes[i]->value;
+						if (barrier && barrier->up == barriers) {
+							found = barrier->object<TemporaryBarrier>();
+							break;
+						}
+					}
+				}
+			}
+			else if (node->dataType == DATATYPE_COUPLING)
+				found = node->object<TemporaryBarrier>();
+
+			if (found) {
+				found->revert();
+				found->holder->destroy();
+			}
+		}
+		isGridDirty = true;
+	}
+	catch (...) { stackDepth--; throw; }
+	stackDepth--;
+	if (stackDepth == 0 && !skipOnChange)
+		FIRE_SDT_EVENT(onGridChange, 0);
 }
 
 astar_export Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)

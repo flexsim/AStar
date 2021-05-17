@@ -35,6 +35,7 @@ public:
 	DestinationThreshold destThreshold;
 	treenode destNode;
 	bool isActive = false;
+	int __getIsActive() { return (int)isActive; }
 	std::list<Traveler*>::iterator activeEntry;
 	astar_export TravelPath& __getTravelPath();
 #ifdef COMPILING_ASTAR
@@ -48,41 +49,54 @@ public:
 	TravelerAllocations allocations;
 	AllocationRange getAllocations(double atTime);
 	NodeAllocation* request = nullptr;
-	int nextCollisionUpdateTravelIndex;
-	double nextCollisionUpdateEndTime;
 	
 
 	AStarNavigator* navigator;
 	TaskExecuter* te;
+	TaskExecuter* __getObject() { return te; }
 	bool isBlocked = false;
+	int __getIsBlocked() { return (int)isBlocked; }
 	bool needsContinueTrigger = false;
 	/// <summary>Zero-based index of the travel path element that could not be allocated 
 	/// 		 (the next node after where the traveler is when he gets blocked).</summary>
 	int blockedAtTravelPathIndex = -1;
 	astar_export void onReset();
 	astar_export void onStartSimulation();
-	void onCollisionIntervalUpdate() {
-		if (!isBlocked && nextCollisionUpdateTravelIndex >= 0)
-			navigatePath(nextCollisionUpdateTravelIndex, true); 
-	}
-	void navigatePath(int startAtPathIndex, bool isCollisionUpdateInterval = false);
+
+
+	/// <summary>A result that can be returned by the user as part of the onNavigatePath trigger. 
+	/// This allows the user to manually manage kinematics and allocations.</summary>
+	enum UserResult : int {
+		Default = 0, // default functionality, means A* logic controls 
+		Moving = 1, // for when the traveler is able to move forward at least one square (so A* can deallocate the square he's on)
+		Blocked = 2, // for when the traveler is immediately blocked, so user wants navigatePath() to keep its current allocations
+		None = 3, // for when the user wants no more logic to fire, e.g. if the user has recalculated the route and called navigatePath() again.
+	};
+	void navigatePath(int startAtPathIndex);
+	void navigatePath_flexScript(int startAtPathIndexOneBased) { navigatePath(startAtPathIndexOneBased - 1); }
 	void navigatePath(TravelPath&& path);
 	astar_export void onBridgeArrival(int pathIndex);
 	astar_export void onBridgeArrival(BridgeRoutingData* bridge, int pathIndex);
 	astar_export void onBridgeComplete(int atPathIndex);
 	void onArrival();
+	void finishTravel() { onArrival(); }
 
 	/// <summary>	Adds an allocation to the map's set of allocations. </summary>
 	/// <remarks>	Anthony.johnson, 4/17/2017. </remarks>
 	/// <param name="allocation">	The allocation. </param>
-	/// <param name="force">	 	(Optional) the force. </param>
+	/// <param name="force">	 	(Optional) force. </param>
 	/// <returns>	If it succeeds it will return the added allocation. If it fails 
 	/// 			(it can't add the allocation because that would cause allocation overlaps)
 	/// 			it will return nullptr and create a collision event. </returns>
 	NodeAllocation* addAllocation(NodeAllocation& allocation, bool force, bool notifyPendingAllocations);
 	NodeAllocation* addAllocation(NodeAllocation&& allocation, bool force, bool notifyPendingAllocations);
+	NodeAllocation addAllocation_flexScript(NodeAllocation& allocation, int force, int notifyPendingAllocations);
 	void checkCreateCollisionEvent(NodeAllocation& allocation, AStarNodeExtraData* nodeData = nullptr);
 	static NodeAllocation* findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs);
+
+	// FlexScript-accessible method
+	static NodeAllocation findCollision(NodeAllocation& test, int ignoreSameTravelerAllocs);
+	
 	astar_export void removeAllocation(TravelerAllocations::iterator iter);
 	astar_export void cullExpiredAllocations();
 	astar_export void clearAllocationsExcept(const Cell& cell);
@@ -156,6 +170,8 @@ public:
 	treenode onRerouteTrigger = nullptr;
 	treenode onBridgeArrivalTrigger = nullptr;
 	treenode onBridgeContinueTrigger = nullptr;
+	treenode onCalculatePath = nullptr;
+	treenode onNavigatePath = nullptr;
 
 	ObjRef<FlexSimEvent> bridgeEvent;
 	treenode bridgeDataNode = nullptr;
