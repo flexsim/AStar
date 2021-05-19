@@ -102,6 +102,14 @@ void Traveler::bindInterface()
 	bindMethodByName<decltype(fc)>("findCollision", fc, "AStar.Allocation findCollision(AStar.Allocation& alloc, int ignoreSameTravelerAllocs)", BIND_METHOD_STATIC);
 
 	bindTypedProperty(object, TaskExecuter, &Traveler::__getObject, nullptr);
+
+	bindMethod(finishPath, Traveler, "void finishPath()");
+	bindMethod(arriveAtBridge, Traveler, "void arriveAtBridge(int pathIndex)");
+
+	auto cp1 = (void(Traveler::*)(ObjectDataType *, int)) & Traveler::calculatePath;
+	bindMethodByName<decltype(cp1)>("calculatePath", cp1, "void calculatePath(Object obj, int flags = 0)");
+	auto cp2 = (void(Traveler::*)(const Vec3 &, int)) &Traveler::calculatePath;
+	bindMethodByName<decltype(cp2)>("calculatePath", cp2, "void calculatePath(Vec3& dest, int flags = 0)");
 }
 
 TreeNode* Traveler::getEventInfoObject(const char* eventTitle)
@@ -269,21 +277,21 @@ void Traveler::navigatePath(int startAtPathIndex)
 	isContinuingFromDeadlock = false;
 	blockedAtTravelPathIndex = -1;
 
-	UserResult userResult = (UserResult)(int)FIRE_SDT_EVENT_VALUE_GETTER(onNavigatePath, te->holder, startAtPathIndex + 1, kinematics);
-	if (userResult == UserResult::None)
+	UserNavigationResult userResult = (UserNavigationResult)(int)FIRE_SDT_EVENT_VALUE_GETTER(onNavigatePath, te->holder, startAtPathIndex + 1, kinematics);
+	if ((userResult & UserNavigationResult::AbortAll))
 		return;
 
 	int didBlockPathIndex = -1;
 	NodeAllocation* lastAllocation = nullptr;
 	BridgeRoutingData* bridgeArrival = nullptr;
-	int i;
+	int i = startAtPathIndex;
 	double deallocTimeOffset = nav->deallocTimeOffset;
 	double firstCellDeallocTime = time() + deallocTimeOffset;
 	Grid* grid = nullptr;
 	int lastGridNum = -1;
 
 
-	if (userResult == UserResult::Default) {
+	if (!(userResult & UserNavigationResult::UserNavigated)) {
 
 		double containerRot = 0;
 		if (te->holder->up != model()) {
@@ -429,14 +437,14 @@ void Traveler::navigatePath(int startAtPathIndex)
 	// remove the original allocations and get off the bridge if I was able to allocate ahead at least one
 	// This will trigger other travelers who might be waiting for me to move on 
 	// from the current point I'm at.
-	if ((numNodes > startAtPathIndex + 1 && (didBlockPathIndex == -1 || didBlockPathIndex > startAtPathIndex + 1)) || userResult == UserResult::Moving) {
+	if (numNodes > startAtPathIndex + 1 && (didBlockPathIndex == -1 || didBlockPathIndex > startAtPathIndex + 1) && !(userResult & UserNavigationResult::Blocked)) {
 		if (exitingBridgeRoutingData) {
 			if (bridgeData->routingData == exitingBridgeRoutingData)
 				bridgeData->routingData = nullptr;
 			exitingBridgeRoutingData->onExit(this);
 		}
 
-		if (enableCollisionAvoidance && initialAllocsSize > 0) {
+		if (enableCollisionAvoidance && initialAllocsSize > 0 && !(userResult & UserNavigationResult::KeepAllocations)) {
 			for (int i = initialAllocsSize - 1; i >= 0; i--) {
 				if (allocations[i]->isMarkedForDeletion) {
 					if (firstCellDeallocTime == time())
@@ -460,13 +468,10 @@ void Traveler::navigatePath(int startAtPathIndex)
 		isActive = true;
 		activeEntry = nav->activeTravelers.begin();
 	}
-	if (didBlockPathIndex == -1 && !blockEvent && !isBlocked && i == numNodes && userResult == UserResult::Default)
+	if (didBlockPathIndex == -1 && !blockEvent && !isBlocked && i == numNodes && userResult == UserNavigationResult::Default)
 		arrivalEvent = createevent(new ArrivalEvent(this, endTime))->objectAs(ArrivalEvent);
 
 	isRoutingNow = false;
-#ifdef _WINDOWS
-	_ASSERTE(allocations.size() > 0 || !enableCollisionAvoidance || navigator->ignoreInactiveMemberCollisions || bridgeArrival || (bridgeData && bridgeData->routingData));
-#endif
 	XE
 }
 
@@ -475,6 +480,18 @@ void Traveler::navigatePath(TravelPath&& path)
 {
 	travelPath = std::move(path);
 	navigatePath(0);
+}
+
+
+void Traveler::calculatePath(const Vec3& destLoc, int flags)
+{
+	navigator->calculatePath(this, (double*)(Vec3&)destLoc, DestinationThreshold(), flags);
+}
+
+void Traveler::calculatePath(ObjectDataType* dest, int flags)
+{
+	Vec3 center = dest->getLocation(0.5, 0.5, 0.5).project(dest->holder->up, model());
+	navigator->calculatePath(this, (double*)center, DestinationThreshold(dest->holder, navigator->minNodeSize), flags);
 }
 
 void Traveler::onBridgeArrival(int pathIndex)
@@ -798,7 +815,7 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 	}
 
 
-	TravelPath bestPath, secondBestPath;
+	TravelPath bestPath, secondBestPath, thirdBestPath;
 	Traveler* bestTraveler = nullptr, *secondBestTraveler = nullptr;
 	for (int i = 0; i <= deadlockList.size() && !bestTraveler; i++) {
 		Traveler* traveler = (i == 0 ? this : deadlockList[i - 1]);
@@ -823,18 +840,37 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 
 		Cell destCell = traveler->travelPath.back().cell;
 		Vec3 destLoc = navigator->getGrid(destCell)->getLocation(destCell);
-		TravelPath testPath = navigator->calculatePath(traveler, destLoc, DestinationThreshold(), AStarNavigator::DoFullSearch | AStarNavigator::KeepEndpointsConst);
+		TravelPath testPath = navigator->calculatePath(traveler, destLoc, DestinationThreshold(), AStarNavigator::DoFullSearch | AStarNavigator::KeepEndpointsConst, -1.0);
+
+		bool isBestTraveler = testPath.back().cell == destCell;
+		if (!isBestTraveler && !secondBestTraveler) {
+			if (testPath.size() > 1) {
+				secondBestPath = std::move(testPath);
+				secondBestPath.resize(2);
+				secondBestTraveler = traveler;
+			}
+			else {
+				for (int i = 0; i < 4; i++) {
+					auto neighborCell = traveler->allocations.back()->cell.adjacentCell(directions[i]);
+					destLoc = navigator->getGrid(neighborCell)->getLocation(neighborCell);
+					testPath = navigator->calculatePath(traveler, destLoc, DestinationThreshold(), AStarNavigator::DoFullSearch | AStarNavigator::KeepEndpointsConst, -1.0);
+					if (testPath.size() > 1) {
+						secondBestPath = std::move(testPath);
+						secondBestTraveler = traveler;
+					}
+				}
+
+			}
+		}
 
 		addDynamicBarrier(traveler);
-		if (testPath.back().cell == destCell) {
+
+		if (isBestTraveler) {
 			bestPath = std::move(testPath);
 			bestTraveler = traveler;
 			break;
 		}
-		else if (testPath.size() > 1 && testPath.size() > secondBestPath.size()) {
-			secondBestPath = std::move(testPath);
-			secondBestTraveler = traveler;
-		}
+
 	}
 
 	for (auto entry : dynamicBarriers)
@@ -1034,7 +1070,7 @@ void Traveler::onArrival()
 		if (navigator->enableCollisionAvoidance) {
 			if (navigator->ignoreInactiveMemberCollisions)
 				clearAllocations();
-			else {
+			else if (allocations.size() > 0) {
 				if (allocations.size() > 1)
 					clearAllocationsUpTo(allocations.end() - 2);
 				allocations.front()->extendReleaseTime(DBL_MAX);
@@ -1047,7 +1083,7 @@ void Traveler::onArrival()
 		allocations.front()->extendReleaseTime(DBL_MAX);
 		isNavigatingAroundDeadlock = false;
 		isContinuingFromDeadlock = true; 
-		travelPath = navigator->calculatePath(this, destLoc, destThreshold, 0);
+		travelPath = navigator->calculatePath(this, destLoc, destThreshold, 0, -1.0);
 		navigatePath(0);
 	}
 }

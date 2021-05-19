@@ -135,7 +135,7 @@ public:
 	void buildGridMesh(float zOffset);
 	void drawHeatMap(TreeNode* view);
 	void drawDestinationThreshold(treenode obj, const Vec3& loc, const Vec3& size);
-	void checkGetOutOfBarrier(Cell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold);
+	void checkGetOutOfBarrier(Cell& cell, TaskExecuter* traveler, int rowDest, int colDest, const DestinationThreshold* threshold);
 	void buildBridgeDijkstraTables();
 
 

@@ -88,7 +88,7 @@ protected:
 public:
 	void setDirty() { isGridDirty = isBoundsDirty = true; }
 
-	void checkGetOutOfBarrier(Cell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold)
+	void checkGetOutOfBarrier(Cell& cell, TaskExecuter* traveler, int rowDest, int colDest, const DestinationThreshold* threshold)
 	{
 		getGrid(cell)->checkGetOutOfBarrier(cell, traveler, rowDest, colDest, threshold);
 	}
@@ -234,6 +234,7 @@ public:
 
 	static const int DoFullSearch = 0x1;
 	static const int KeepEndpointsConst = 0x2;
+	static const int AppendPath = 0x4;
 	/// <summary>Calculates the route.</summary>
 	///
 	/// <remarks>Anthony Johnson, 2/12/2018.</remarks>
@@ -241,18 +242,15 @@ public:
 	/// <param name="traveler">		  [in,out] If non-null, the traveler.</param>
 	/// <param name="destLoc">		  [in,out] If non-null, destination location.</param>
 	/// <param name="endSpeed">		  The end speed.</param>
-	/// <param name="doFullSearch">   (Optional) True to do full search (no cached paths).</param>
+	/// <param name="flags">   (Optional) True to do full search (no cached paths).</param>
 	/// <param name="travelStartTime">(Optional) The travel start time.</param>
 	///
 	/// <returns>The calculated route.</returns>
-	TravelPath calculatePath(Traveler* traveler, double* destLoc, const DestinationThreshold& destThreshold, int flags, double travelStartTime = -1);
+	TravelPath calculatePath(Traveler* traveler, double* destLoc, const DestinationThreshold& destThreshold, int flags, double travelStartTime);
 
 	/// <summary>Exported calculatePath() function.</summary>
 	/// <remarks>Calls main calculatePath() function, but applies the return value to the Traveler.</remarks>
-	astar_export void calculatePath(Traveler* traveler, double* destLoc, const DestinationThreshold& destThreshold);
-
-	void calculatePath(Traveler* traveler, const Vec3& destLoc);
-	void calculatePath(Traveler* traveler, ObjectDataType* dest);
+	astar_export void calculatePath(Traveler* traveler, double* destLoc, const DestinationThreshold& destThreshold, int flags = 0);
 
 	double calculateHeuristic(Grid* fromGrid, const Cell& fromCell);
 

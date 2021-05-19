@@ -4597,6 +4597,18 @@ return 0;
           <node f="42" dt="2"><name>Name</name><data>current</data></node>
           <node f="42" dt="2"><name>Type</name><data>Object</data></node>
          </node>
+         <node f="42" dt="2"><name>StartIndex</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Start Index</data></node>
+          <node f="42" dt="2"><name>Name</name><data>startIndex</data></node>
+          <node f="42" dt="2"><name>Type</name><data>int</data></node>
+         </node>
+         <node f="42" dt="2"><name>Kinematics</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Kinematics</data></node>
+          <node f="42" dt="2"><name>Name</name><data>kinematics</data></node>
+          <node f="42" dt="2"><name>Type</name><data>treenode</data></node>
+         </node>
         </node>
        </node>
        <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object is rerouted along a different path on the AStar network</data></node>
@@ -4800,7 +4812,7 @@ applylinks(c, 1);
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404e0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404e8000</data></node>
     <node f="42" dt="2"><name>after</name><data>TestQueries</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -5784,7 +5796,7 @@ if (clickcode() == LEFT_RELEASE) {
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404e8000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404f0000</data></node>
     <node f="42" dt="2"><name>after</name><data>AStarBarrier</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6325,7 +6337,7 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404f0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404f8000</data></node>
     <node f="42" dt="2"><name>after</name><data>AStarDivider</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>

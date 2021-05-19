@@ -66,20 +66,25 @@ public:
 
 	/// <summary>A result that can be returned by the user as part of the onNavigatePath trigger. 
 	/// This allows the user to manually manage kinematics and allocations.</summary>
-	enum UserResult : int {
-		Default = 0, // default functionality, means A* logic controls 
-		Moving = 1, // for when the traveler is able to move forward at least one square (so A* can deallocate the square he's on)
-		Blocked = 2, // for when the traveler is immediately blocked, so user wants navigatePath() to keep its current allocations
-		None = 3, // for when the user wants no more logic to fire, e.g. if the user has recalculated the route and called navigatePath() again.
+	enum UserNavigationResult : int {
+		Default = 0x0, // default functionality, means A* logic controls 
+		UserNavigated = 0x1, // for telling the navigator that the user has performed the navigation/allocation
+		Blocked = 0x2, // for when the traveler is immediately blocked, so user wants navigatePath() to keep its current allocations and skip bridge OnExit
+		KeepAllocations = 0x4, // for when the traveler does not want navigatePath() to remove any initial allocations
+		AbortAll = 0x8, // for when the user wants no more logic to fire, e.g. if the user has recalculated the route and called navigatePath() again.
 	};
 	void navigatePath(int startAtPathIndex);
 	void navigatePath_flexScript(int startAtPathIndexOneBased) { navigatePath(startAtPathIndexOneBased - 1); }
 	void navigatePath(TravelPath&& path);
+
+	void calculatePath(const Vec3& destLoc, int flags = 0);
+	void calculatePath(ObjectDataType* dest, int flags = 0);
 	astar_export void onBridgeArrival(int pathIndex);
 	astar_export void onBridgeArrival(BridgeRoutingData* bridge, int pathIndex);
 	astar_export void onBridgeComplete(int atPathIndex);
+	void arriveAtBridge(int pathIndexOneBased) { onBridgeArrival(pathIndexOneBased - 1); }
 	void onArrival();
-	void finishTravel() { onArrival(); }
+	void finishPath() { onArrival(); }
 
 	/// <summary>	Adds an allocation to the map's set of allocations. </summary>
 	/// <remarks>	Anthony.johnson, 4/17/2017. </remarks>

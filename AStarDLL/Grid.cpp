@@ -1134,7 +1134,7 @@ void Grid::drawDestinationThreshold(treenode destination, const Vec3 & loc, cons
 	fglEnable(GL_TEXTURE_2D);
 }
 
-void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDest, int colDest, DestinationThreshold * threshold)
+void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDest, int colDest, const DestinationThreshold * threshold)
 {
 	AStarNode* node = getNode(cell);
 	int dy = rowDest - cell.row;
@@ -1183,7 +1183,7 @@ void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDes
 	if (threshold && cell != originalCell) {
 		double newRadius = minNodeSize * (0.9 + sqrt(sqr(cell.row - originalCell.row) + sqr(cell.col - originalCell.col)));
 		if (newRadius > threshold->anyThresholdRadius)
-			threshold->anyThresholdRadius = newRadius;
+			const_cast<DestinationThreshold*>(threshold)->anyThresholdRadius = newRadius;
 	}
 }
 

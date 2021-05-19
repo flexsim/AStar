@@ -158,11 +158,6 @@ void AStarNavigator::bindInterface()
 	};
 	bindNodeListArrayClassByName<AStarTravelerArray>("AStar.TravelerArray", "AStar.Traveler", true);
 	bindTypedPropertyByName<AStarTravelerArray>("travelers", "AStar.TravelerArray", force_cast<void*>(&NavigatorListHelper::getTravelers), nullptr);
-
-	auto cp1 = (void(AStarNavigator::*)(Traveler* t, ObjectDataType* dest)) &AStarNavigator::calculatePath;
-	bindMethodByName<decltype(cp1)>("calculatePath", cp1, "void calculatePath(AStar.Traveler traveler, Object obj)");
-	auto cp2 = (void(AStarNavigator::*)(Traveler * t, const Vec3& dest)) &AStarNavigator::calculatePath;
-	bindMethodByName<decltype(cp2)>("calculatePath", cp2, "void calculatePath(AStar.Traveler traveler, Vec3& dest)");
 }
 
 void AStarNavigator::bind()
@@ -636,7 +631,7 @@ double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double
 	traveler->destLoc = Vec3(destLoc[0], destLoc[1], destLoc[2]);
 	traveler->endSpeed = endSpeed;
 
-	TravelPath path = calculatePath(traveler, traveler->destLoc, traveler->destThreshold, 0);
+	TravelPath path = calculatePath(traveler, traveler->destLoc, traveler->destThreshold, 0, -1);
 	traveler->navigatePath(std::move(path));
 	return 0;
 }
@@ -743,6 +738,7 @@ struct ScopeGuard {
 	Callback& callback;
 	~ScopeGuard() { callback(); }
 };
+
 TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc, const DestinationThreshold& destThreshold, int flags, double startTime)
 {
 	CodeProfileRecord record(holder, "AStar::calculatePath");
@@ -762,7 +758,10 @@ TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc
 	double centerx = 0.5 * xsize(travelerNode);
 	double centery = 0.5 * ysize(travelerNode);
 
-	vectorproject(travelerNode, centerx, - centery, 0, model(), startLoc);
+	if (!(flags & AppendPath))
+		vectorproject(travelerNode, centerx, - centery, 0, model(), startLoc);
+	else
+		startLoc = getLocation(traveler->travelPath.back().cell);
 	
 	destLoc.x = tempDestLoc[0];
 	destLoc.y = tempDestLoc[1];
@@ -771,14 +770,17 @@ TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc
 	if (traveler->onCalculatePath) {
 		Array destLocArray;
 		destLocArray.push(destLoc.x).push(destLoc.y).push(destLoc.z);
-		Variant result = FIRE_SDT_EVENT_VALUE_GETTER(traveler->onCalculatePath, traveler->te->holder, destLocArray);
+		Array startLocArray;
+		startLocArray.push(startLoc.x).push(startLoc.y).push(startLoc.z);
+		Variant result = FIRE_SDT_EVENT_VALUE_GETTER(traveler->onCalculatePath, traveler->te->holder, destLocArray, startLocArray);
 		if (result.type == VariantType::Array || result.type == VariantType::Array) {
 			userBarriers = addDynamicBarrier(result, 1);
 		}
 	}
 
 	auto removeBarriers = [this, &userBarriers]() {
-		removeDynamicBarrier(userBarriers, 1);
+		if (userBarriers.type != VariantType::Null)
+			removeDynamicBarrier(userBarriers, 1);
 	};
 	ScopeGuard<decltype(removeBarriers)> scopeGuard(removeBarriers);
 
@@ -865,7 +867,7 @@ TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc
 	// Set the destination outside a barrier if necessary
 	if (ignoreDestBarrier && !(flags & KeepEndpointsConst)) {
 		Cell tempDestCell = destCell;
-		checkGetOutOfBarrier(tempDestCell, te, startCell.row, startCell.col, &traveler->destThreshold);
+		checkGetOutOfBarrier(tempDestCell, te, startCell.row, startCell.col, &destThreshold);
 	}
 
 	// Get out of a barrier if necessary
@@ -933,7 +935,7 @@ TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc
 		// if I am at the destination, then break out of the solve loop
 		if ((shortest.cell == destCell) 
 				|| (shortest.cell.grid == destCell.grid
-					&& traveler->destThreshold.isWithinThreshold(shortest.cell, destGrid, destLoc))) {
+					&& destThreshold.isWithinThreshold(shortest.cell, destGrid, destLoc))) {
 			final = &shortest;
 			break;
 		}
@@ -1111,21 +1113,14 @@ the outside 8 nodes.
 	return travelPath;
 }
 
-void AStarNavigator::calculatePath(Traveler * traveler, double * destLoc, const DestinationThreshold & destThreshold)
+void AStarNavigator::calculatePath(Traveler * traveler, double * destLoc, const DestinationThreshold & destThreshold, int flags)
 {
-	traveler->travelPath = calculatePath(traveler, destLoc, destThreshold, 0);
-}
-
-
-void AStarNavigator::calculatePath(Traveler* traveler, const Vec3& destLoc)
-{
-	calculatePath(traveler, (double*)(Vec3&)destLoc, DestinationThreshold());
-}
-void AStarNavigator::calculatePath(Traveler* traveler, ObjectDataType* dest)
-{
-	Vec3 center = dest->getLocation(0.5, 0.5, 0.5).project(dest->holder->up, model());
-	calculatePath(traveler, (double*)center, DestinationThreshold(dest->holder, minNodeSize));
-
+	auto newPath = calculatePath(traveler, destLoc, destThreshold, flags, -1.0);
+	if (!(flags & AppendPath))
+		traveler->travelPath = std::move(newPath);
+	else {
+		traveler->travelPath.insert(traveler->travelPath.end(), newPath.begin() + 1, newPath.end());
+	}
 }
 
 double AStarNavigator::calculateHeuristic(Grid * fromGrid, const Cell & fromCell)
@@ -1158,7 +1153,7 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 	vectorproject(destination->holder, 0.5 * xsize(destination->holder), -0.5 * ysize(destination->holder), 0, model(), destLoc);
 
 	DestinationThreshold destThreshold(destination->holder, minNodeSize);
-	TravelPath path = calculatePath(traveler, destLoc, destThreshold, DoFullSearch);
+	TravelPath path = calculatePath(traveler, destLoc, destThreshold, DoFullSearch, -1.0);
 	return path.calculateTotalDistance(this);
 }
 

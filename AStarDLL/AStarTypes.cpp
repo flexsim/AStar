@@ -71,11 +71,17 @@ void ExtendedCell::bindInterface()
 	SimpleDataType::bindOperator(!, ExtendedCell, "int not()");
 	SimpleDataType::bindOperator(== , Cell, "int equal(AStar.Cell& other)");
 	SimpleDataType::bindOperator(!= , Cell, "int notEqual(AStar.Cell& other)");
-	bindMethod(getAllocation, ExtendedCell, "AStar.Allocation getAllocation(double time = -1)");
+	auto ga1 = (NodeAllocation(ExtendedCell::*)(double)) & ExtendedCell::getAllocation;
+	SimpleDataType::bindMethodByName<decltype(ga1)>("getAllocation", ga1, "AStar.Allocation getAllocation(double time = -1)");
+	auto ga2 = (NodeAllocation(ExtendedCell::*)(double, double)) & ExtendedCell::getAllocation;
+	SimpleDataType::bindMethodByName<decltype(ga2)>("getAllocation", ga2, "AStar.Allocation getAllocation(double fromTime, double toTime)");
+	auto ga3 = (NodeAllocation(ExtendedCell::*)(Traveler*)) & ExtendedCell::getAllocation;
+	SimpleDataType::bindMethodByName<decltype(ga3)>("getAllocation", ga3, "AStar.Allocation getAllocation(AStar.Traveler traveler)");
 	bindMethod(adjacentCell, ExtendedCell, "AStar.Cell adjacentCell(int direction)");
 	bindMethod(canGo, ExtendedCell, "int canGo(int direction)");
 
 	bindTypedProperty(totalTraversals, double, &ExtendedCell::__getTotalTraversals, &ExtendedCell::__setTotalTraversals);
+	SimpleDataType::bindToVariantFunc(&ExtendedCell::s_toVariant);
 }
 
 void ExtendedCell::__assertCachedPointers()
@@ -107,6 +113,39 @@ NodeAllocation ExtendedCell::getAllocation(double atTime)
 
 	auto found = std::find_if(extra->allocations.begin(), extra->allocations.end(), [atTime](NodeAllocation& alloc) {return alloc.acquireTime <= atTime && alloc.releaseTime > atTime; });
 	if (found != extra->allocations.end())
+		return *found;
+	else return NodeAllocation(nullptr, *this, 0, 0, -1.0, -1.0, 1.0);
+}
+
+NodeAllocation ExtendedCell::getAllocation(double fromTime, double toTime)
+{
+	assertCachedPointers();
+	if (!extra)
+		return NodeAllocation(nullptr, *this, 0, 0, -1.0, -1.0, 1.0);
+
+	auto found = std::min_element(extra->allocations.begin(), extra->allocations.end(), 
+		[fromTime, toTime](NodeAllocation& left, NodeAllocation& right) {
+			bool leftIsValid = left.acquireTime <= toTime && left.releaseTime > fromTime;
+			bool rightIsValid = left.acquireTime <= toTime && left.releaseTime > fromTime;
+			if (!leftIsValid && !rightIsValid)
+				return false;
+			if (leftIsValid && rightIsValid)
+				return left.acquireTime < right.acquireTime;
+			return leftIsValid;
+		});
+	if (found != extra->allocations.end() && found->acquireTime <= toTime && found->releaseTime > fromTime)
+		return *found;
+	else return NodeAllocation(nullptr, *this, 0, 0, -1.0, -1.0, 1.0);
+}
+
+NodeAllocation ExtendedCell::getAllocation(Traveler* t)
+{
+	assertCachedPointers();
+	if (!extra)
+		return NodeAllocation(nullptr, *this, 0, 0, -1.0, -1.0, 1.0);
+
+	auto found = std::find_if(extra->allocations.begin(), extra->allocations.end(),[t](NodeAllocation& alloc) { return alloc.traveler == t; });
+	if (found != extra->allocations.end() && found->traveler == t)
 		return *found;
 	else return NodeAllocation(nullptr, *this, 0, 0, -1.0, -1.0, 1.0);
 }
@@ -160,6 +199,15 @@ void ExtendedCell::__setTotalTraversals(double toVal)
 	extra->totalTraversals = toVal;
 }
 
+ExtendedCell::operator Variant()
+{
+	Map map;
+	map["grid"] = grid;
+	map["row"] = row;
+	map["col"] = col;
+	return map;
+}
+
 
 
 void NodeAllocation::bind(TreeNode* x)
@@ -189,13 +237,31 @@ void NodeAllocation::bindInterface()
 	SimpleDataType::bindConstructor(construct2, "void Allocation(AStar.Traveler traveler, AStar.Cell cell, int travelPathIndex, double acquireTime, double releaseTime)");
 	SimpleDataType::bindCopyConstructor(&NodeAllocation::copyConstruct);
 	SimpleDataType::bindCopyAssigner(&NodeAllocation::operator =);
-	SimpleDataType::bindOperator(bool, NodeAllocation, "int bool()");
+	bindCastOperator(bool, &NodeAllocation::operator bool);
 	SimpleDataType::bindOperator(!, NodeAllocation, "int not()");
 	bindTypedProperty(acquireTime, double, &NodeAllocation::__getAcquireTime, nullptr);
 	bindTypedProperty(releaseTime, double, &NodeAllocation::__getReleaseTime, nullptr);
 	SimpleDataType::bindTypedPropertyByName<ExtendedCell>("cell", "AStar.Cell", force_cast<void*>(&ExtendedNodeAllocation::__getCell), nullptr);
 	SimpleDataType::bindTypedPropertyByName<Traveler>("traveler", "AStar.Traveler", force_cast<void*>(&NodeAllocation::__getTraveler), nullptr);
+	auto ert = &NodeAllocation::extendReleaseTime_flexScript;
+	SimpleDataType::bindMethodByName<decltype(ert)>("extendReleaseTime", ert, "void extendReleaseTime(double toTime)");
+	auto trt = &NodeAllocation::truncateReleaseTime_flexScript;
+	SimpleDataType::bindMethodByName<decltype(trt)>("truncateReleaseTime", trt, "void truncateReleaseTime(double toTime)");
 	bindTypedProperty("travelPathIndex", int, &NodeAllocation::__getTravelPathIndex, nullptr);
+	SimpleDataType::bindToVariantFunc(&NodeAllocation::s_toVariant);
+}
+
+NodeAllocation::operator Variant()
+{
+	Map map;
+	map["traveler"] = traveler->holder;
+	map["cell.grid"] = cell.grid;
+	map["cell.row"] = cell.row;
+	map["cell.col"] = cell.col;
+	map["travelPathIndex"] = travelPathIndex + 1;
+	map["acquireTime"] = acquireTime;
+	map["releaseTime"] = releaseTime;
+	return map;
 }
 
 void AStarPathEntry::bind(TreeNode* toNode)
@@ -213,11 +279,23 @@ void AStarPathEntry::bindInterface()
 	SimpleDataType::bindTypedPropertyByName<ExtendedCell>("cell", "AStar.Cell", force_cast<void*>(&AStarPathEntry::__getCell), nullptr);
 	bindTypedProperty(isBridgePoint, int, &AStarPathEntry::__getIsBridgePoint, nullptr);
 	bindTypedProperty(arrivalTime, double, &AStarPathEntry::__getArrivalTime, &AStarPathEntry::__setArrivalTime);
+	SimpleDataType::bindToVariantFunc(&AStarPathEntry::s_toVariant);
 }
 
 ExtendedCell AStarPathEntry::__getCell()
 {
 	return ExtendedCell(cell.grid, cell.row, cell.col);
+}
+
+AStarPathEntry::operator Variant()
+{
+	Map map;
+	map["cell.grid"] = cell.grid;
+	map["cell.row"] = cell.row;
+	map["cell.col"] = cell.col;
+	map["arrivalTime"] = arrivalTime;
+	map["isBridgePoint"] = isBridgePoint;
+	return map;
 }
 
 void AStarNodeExtraData::bind()
@@ -421,23 +499,51 @@ void AStarNodeExtraData::ContinueEvent::execute()
 void NodeAllocation::extendReleaseTime(double toTime)
 {
 	double oldReleaseTime = releaseTime;
-	releaseTime = toTime;
 	if (toTime <= oldReleaseTime)
 		return;
+	releaseTime = toTime;
 	AStarNodeExtraData* nodeData = traveler->navigator->getExtraData(cell);
 	nodeData->onReleaseTimeExtended(*this, oldReleaseTime);
+}
+
+void NodeAllocation::extendReleaseTime_flexScript(double toTime)
+{
+	if (toTime <= releaseTime)
+		return;
+	releaseTime = toTime;
+	AStarNodeExtraData* nodeData = AStarNavigator::instance->getExtraData(cell);
+	if (!nodeData)
+		throw "AStar.Allocation.extendReleaseTime(): invalid allocation cannot extend release time";
+	auto found = std::find_if(nodeData->allocations.begin(), nodeData->allocations.end(), 
+		[this](NodeAllocation& alloc) { return alloc.traveler == traveler && alloc.acquireTime == acquireTime; });
+	if (found != nodeData->allocations.end())
+		found->extendReleaseTime(toTime);
 }
 
 void NodeAllocation::truncateReleaseTime(double toTime)
 {
 	double oldReleaseTime = releaseTime;
-	releaseTime = toTime;
 	if (toTime >= oldReleaseTime)
 		return;
+	releaseTime = toTime;
 	AStarNodeExtraData* nodeData = traveler->navigator->getExtraData(cell);
 	nodeData->onReleaseTimeTruncated(*this, oldReleaseTime);
 }
 
+
+void NodeAllocation::truncateReleaseTime_flexScript(double toTime)
+{
+	if (toTime >= releaseTime)
+		return;
+	releaseTime = toTime;
+	AStarNodeExtraData* nodeData = AStarNavigator::instance->getExtraData(cell);
+	if (!nodeData)
+		throw "AStar.Allocation.extendReleaseTime(): invalid allocation cannot truncate release time";
+	auto found = std::find_if(nodeData->allocations.begin(), nodeData->allocations.end(),
+		[this](NodeAllocation& alloc) { return alloc.traveler == traveler && alloc.acquireTime == acquireTime; });
+	if (found != nodeData->allocations.end())
+		found->truncateReleaseTime(toTime);
+}
 
 
 bool AllocationStep::isImmediatelyBlocked(Traveler* traveler)
@@ -472,7 +578,7 @@ DestinationThreshold::DestinationThreshold(treenode dest, const Vec2& fudgeFacto
 	anyThresholdRadius = 0.0;
 }
 
-bool DestinationThreshold::isWithinThreshold(const Cell & cell, Grid* grid, const Vec3& destLoc)
+bool DestinationThreshold::isWithinThreshold(const Cell & cell, Grid* grid, const Vec3& destLoc) const
 {
 	if (anyThresholdRadius <= 0 && xAxisThreshold <= 0 && yAxisThreshold <= 0)
 		return false;
@@ -552,7 +658,7 @@ void TravelPath::bindInterface()
 {
 	bindTypedProperty(length, int, &TravelPath::__getLength, nullptr);
 	auto funcPtr = &TravelPath::__oneBasedIndex;
-	SimpleDataType::bindOperatorByName<decltype(funcPtr)>("[]", funcPtr, "AStar.TravelPathEntry arrayDeref(int index)");
+	SimpleDataType::bindOperatorByName<decltype(funcPtr)>("[]", funcPtr, "AStar.TravelPathEntry& arrayDeref(int index)");
 	bindMethod(indexOf, TravelPath, "int indexOf(AStar.Cell& cell)");
 	bindMethod(isBlocked, TravelPath, "int isBlocked(int startAtIndex = 0)");
 }
@@ -631,7 +737,7 @@ AStarNavigator * AStarNamespace::__getNavigator()
 
 NodeAllocation AllocationRange::operator[](int oneBasedIndex)
 {
-	if (!traveler || oneBasedIndex > size || startIndex + oneBasedIndex >= traveler->allocations.size())
+	if (!traveler || oneBasedIndex > size || startIndex + oneBasedIndex > traveler->allocations.size())
 		return NodeAllocation();
 
 	return *(traveler->allocations[startIndex + oneBasedIndex - 1]);

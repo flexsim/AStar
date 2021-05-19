@@ -116,7 +116,9 @@ struct NodeAllocation
 	double traversalWeight;
 	bool isMarkedForDeletion = false;
 
+	void extendReleaseTime_flexScript(double toTime);
 	void extendReleaseTime(double toTime);
+	void truncateReleaseTime_flexScript(double toTime);
 	void truncateReleaseTime(double toTime);
 	void bind(TreeNode* x);
 
@@ -133,6 +135,9 @@ struct NodeAllocation
 	void construct(Traveler* traveler, const Cell& cell, int travelPathIndexOneBased, double acquireTime, double releaseTime) 
 	{ new (this) NodeAllocation(traveler, cell, travelPathIndexOneBased - 1, 0, acquireTime, releaseTime, 0.0); }
 	void copyConstruct(const NodeAllocation& other) { new (this) NodeAllocation(other); }
+
+	operator Variant();
+	static Variant s_toVariant(void* ptr) { return ((NodeAllocation*)ptr)->operator Variant(); }
 
 };
 
@@ -161,12 +166,16 @@ private:
 
 public:
 	NodeAllocation getAllocation(double atTime = -1);
+	NodeAllocation getAllocation(double fromTime, double toTime);
+	NodeAllocation getAllocation(Traveler* t);
 
 	ExtendedCell adjacentCell(int direction);
 	int canGo(int direction);
 	Vec2 getNodeSize(AStarNavigator* nav);
 	double __getTotalTraversals();
 	void __setTotalTraversals(double toVal);
+	operator Variant();
+	static Variant s_toVariant(void* ptr) { return ((ExtendedCell*)ptr)->operator Variant(); }
 };
 
 typedef std::list<NodeAllocation> NodeAllocationList;
@@ -257,13 +266,20 @@ struct astar_export AStarPathEntry {
 	__declspec(property(get = __getIsBridgePoint)) int isBridgePoint;
 	double __getArrivalTime() { return arrivalTime; }
 	void __setArrivalTime(double toVal) { arrivalTime = toVal; }
+	operator Variant();
+	static Variant s_toVariant(void* ptr) { return ((AStarPathEntry*)ptr)->operator Variant(); }
 };
 
 class TravelPath : public std::vector<AStarPathEntry>
 {
 public:
 	astar_export double calculateTotalDistance(AStarNavigator* nav);
-	AStarPathEntry __oneBasedIndex(int index) { return operator [](index - 1); }
+	AStarPathEntry& __oneBasedIndex(int index) 
+	{ 
+		if (index < 1 || index > size())
+			throw "AStar.TravelPath index out of bounds";
+		return operator [](index - 1); 
+	}
 	astar_export int __getLength();
 	astar_export int indexOf(Cell& cell);
 	astar_export AStarPathEntry& at(int index);
@@ -386,7 +402,7 @@ struct astar_export DestinationThreshold
 	double yAxisThreshold;
 	double rotation;
 	double anyThresholdRadius;
-	bool isWithinThreshold(const Cell& cell, Grid* grid, const Vec3& destLoc);
+	bool isWithinThreshold(const Cell& cell, Grid* grid, const Vec3& destLoc) const;
 	void bind(SimpleDataType* sdt, const char* prefix);
 };
 
