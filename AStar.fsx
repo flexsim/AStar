@@ -1721,7 +1721,6 @@ for (int i = 1; i &lt;= content(members); i++) {
            <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>00000000405e0000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="4000000042" dt="2"><name>tooltip</name><data></data></node>
            <node f="42"><name>items</name>
             <node f="40"><name></name></node>
             <node f="2000000042" dt="1"><name>Right Angles Only</name><data>0000000040000000</data></node>
