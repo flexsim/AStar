@@ -12,6 +12,7 @@ public:
 	Point(double x, double y, double z) : Vec3(x, y, z) {}
 	virtual const char * getClassFactory(void);
 	virtual void bind(void);
+	Point& operator = (const Vec3& pos) { x = pos.x; y = pos.y; z = pos.z; return *this; }
 
 	void addVertices(Mesh* mesh, float radius, float* color, float zOffset, bool linesOnly);
 };

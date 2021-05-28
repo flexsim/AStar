@@ -22,7 +22,7 @@ void Divider::init(const Vec2& nodeSize, const Vec3& pos1, const Vec3& pos2)
 	Barrier::init(nodeSize, pos1, pos2);
 }
 
-bool Divider::getLocalBoundingBox(Vec3& min, Vec3& max)
+bool Divider::getBoundingBox(Vec3& min, Vec3& max, treenode projectOnto)
 {
 	if (pointList.size() < 2)
 		return false;
@@ -31,7 +31,8 @@ bool Divider::getLocalBoundingBox(Vec3& min, Vec3& max)
 	max = Vec3(-DBL_MAX, -DBL_MAX, -DBL_MAX);
 	for (int i = 0; i < pointList.size(); i++) {
 		Vec3 point = getLocalPointCoords(i);
-
+		if (projectOnto)
+			point = point.project(holder, projectOnto);
 		min.x = std::min(min.x, point.x);
 		max.x = std::max(max.x, point.x);
 		min.y = std::min(min.y, point.y);

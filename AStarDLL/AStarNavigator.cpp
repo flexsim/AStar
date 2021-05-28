@@ -400,19 +400,20 @@ double AStarNavigator::onDraw(TreeNode* view)
 			Vec3f loc(odt->location);
 			fglTranslate(loc.x, loc.y, loc.z);
 			fglRotate(90.0f, 1.0f, 0.0f, 0.0f);
-			fglEnable(GL_LIGHTING);
-			setpickingdrawfocus(view, holder, PICK_SIZERX);
-			drawobjectpart(view, surrogate, OBJECT_PART_SIZER_X);
-			setpickingdrawfocus(view, holder, PICK_SIZERXNEG);
-			drawobjectpart(view, surrogate, OBJECT_PART_SIZER_X_NEG);
-			setpickingdrawfocus(view, holder, PICK_SIZERY);
-			drawobjectpart(view, surrogate, OBJECT_PART_SIZER_Y);
-			setpickingdrawfocus(view, holder, PICK_SIZERYNEG);
-			drawobjectpart(view, surrogate, OBJECT_PART_SIZER_Y_NEG);
-			setpickingdrawfocus(view, holder, PICK_SIZERZ, 0, DETECT_DRAG_Z);
-			drawobjectpart(view, surrogate, OBJECT_PART_SIZER_Z);
-			fglDisable(GL_LIGHTING);
+			if (selObj == holder) {
+				setpickingdrawfocus(view, holder, PICK_SIZERX);
+				drawobjectpart(view, surrogate, OBJECT_PART_SIZER_X);
+				setpickingdrawfocus(view, holder, PICK_SIZERXNEG);
+				drawobjectpart(view, surrogate, OBJECT_PART_SIZER_X_NEG);
+				setpickingdrawfocus(view, holder, PICK_SIZERY);
+				drawobjectpart(view, surrogate, OBJECT_PART_SIZER_Y);
+				setpickingdrawfocus(view, holder, PICK_SIZERYNEG);
+				drawobjectpart(view, surrogate, OBJECT_PART_SIZER_Y_NEG);
+				setpickingdrawfocus(view, holder, PICK_SIZERZ, 0, DETECT_DRAG_Z);
+				drawobjectpart(view, surrogate, OBJECT_PART_SIZER_Z);
+			}
 			glLineWidth(3.0f);
+			setpickingdrawfocus(view, holder, 0, 0, 0);
 			if (selObj == holder)
 				drawobjectpart(view, surrogate, OBJECT_PART_YELLOW_HIGHLIGHT);
 			else if (hoveredObj == holder)
@@ -420,7 +421,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 			fglPopMatrix();
 			glLineWidth(1.0f);
-			fglDisable(GL_LIGHTING);
 		}
 	}
 

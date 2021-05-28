@@ -84,8 +84,6 @@ public:
 	// This function adds two initial points to a barrier
 	virtual void init(const Vec2& nodeSize, const Vec3& pos1, const Vec3& pos2);
 
-protected:
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	/// <summary>	Gets the object's bounding box in local coordinates. </summary>
 	///
@@ -96,12 +94,8 @@ protected:
 	///
 	/// <returns>	True if it succeeds, false if it fails. </returns>
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	virtual bool getLocalBoundingBox(Vec3& min, Vec3& max);
+	virtual bool getBoundingBox(Vec3& min, Vec3& max, treenode projectOnto = nullptr);
 public:
-	// This function is used by the AStarNavigator to determine the size of the grid.
-	// It should return the bottom left [x0, y0, z0] and top right [x1, y1, z1] corners
-	// of the barrier's 3D bounding box, in model coordinates.
-	bool getBoundingBox(Vec3& min, Vec3& max, bool inLocalCoords = false);
 
 	// This function is called by the AStarNavigator to determine the effect a barrier
 	// will have on the nodes it influences.
@@ -167,6 +161,8 @@ public:
 
 	void updateSpatialsToEncompassPoints();
 	astar_export Variant updateSpatialsToEncompassPoints(FLEXSIMINTERFACE) { updateSpatialsToEncompassPoints(); return Variant(); }
+	void updatePointsFromSpatials();
+	astar_export Variant updatePointsFromSpatials(FLEXSIMINTERFACE) { updatePointsFromSpatials(); return Variant(); }
 
 	// These functions are for modifying barrier points. They each 
 	// check bounds before making any modifications.

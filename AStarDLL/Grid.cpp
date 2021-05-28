@@ -235,7 +235,7 @@ void Grid::growToBarriers()
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
 		Vec3 min, max;
-		barrier->getBoundingBox(min, max);
+		barrier->getBoundingBox(min, max, model());
 		if (isLocWithinVerticalBounds(min.z)) {
 			if ((!isLocWithinBounds(min, false, true) && isLocWithinBounds(min, true, true))
 				|| (!isLocWithinBounds(max, false, true) && isLocWithinBounds(max, true, true)))
@@ -316,7 +316,7 @@ void Grid::buildNodeTable()
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
 		Vec3 min, max;
-		barrier->getBoundingBox(min, max);
+		barrier->getBoundingBox(min, max, model());
 		if (isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z)) {
 			bool isConditional = barrier->conditionRule;
 			if (isConditional) {
@@ -353,7 +353,7 @@ void Grid::buildNodeTable()
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
 		Vec3 min, max;
-		barrier->getBoundingBox(min, max);
+		barrier->getBoundingBox(min, max, model());
 		if (isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z)) {
 			barrier->addPassagesToTable(this);
 		}

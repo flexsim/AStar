@@ -355,7 +355,29 @@
         <node f="42" dt="3"><name>conditionRule</name><data><coupling>null</coupling></data></node>
        </node>
        <node f="42"><name>behaviour</name>
-        <node f="40"><name></name></node></node>
+        <node f="40"><name></name></node>
+        <node f="42"><name>properties</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>AStarCondition</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/ComboProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/conditionRule</data></node>
+           <node f="42" dt="2"><name>options</name><data>MODEL:/AStarNavigator&gt;variables/barrierConditions</data>
+            <node f="40"><name></name></node>
+            <node f="42" dt="3"><name>None</name><data><coupling>null</coupling></data></node>
+           </node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node></node>
+         </data></node>
+        </node>
+       </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node>
         <node f="42"><name>navigator</name></node>
@@ -400,7 +422,92 @@
         <node f="42" dt="1"><name>isTwoWay</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
-        <node f="40"><name></name></node></node>
+        <node f="40"><name></name></node>
+        <node f="42"><name>properties</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>IsTwoWay</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/CheckboxProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/isTwoWay</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="42"><name>excludeClasses</name>
+            <node f="40"><name></name></node>
+            <node f="42"><name>AStar::Bridge</name></node>
+           </node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>setValue</name><data>string varPath = getvarstr(c, "varPath");
+Object obj = param(1);
+obj.find(varPath).value = param(2);
+function_s(obj, "makeMeshDirty");
+return 0;</data></node>
+           <node f="442" dt="2"><name>OnUndo</name><data>treenode undoRecord = i;
+treenode object = undoRecord.find("/object+");
+function_s(object, "makeMeshDirty");
+</data></node>
+          </node>
+         </data></node>
+         <node f="42" dt="4"><name>PathPoints</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/ArrayProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/points</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>getValue</name><data>string varPath = getvarstr(c, "varPath");
+Object obj = param(1);
+treenode points = obj.find(varPath);
+Array result;
+Array sdtVals = ["x", "y", "z"];
+Array loc = obj.location;
+for (int i = 1; i &lt;= points.subnodes.length; i++) {
+	treenode point = points.subnodes[i];
+	Array pointVal;
+	for (int j = 1; j &lt;= 3; j++) {
+		pointVal.push(getsdtvalue(point, sdtVals[j]) + loc[j]);
+	}
+	result.push(pointVal);
+}
+return result;
+</data></node>
+           <node f="442" dt="2"><name>setValue</name><data>string varPath = getvarstr(c, "varPath");
+Object obj = param(1);
+Variant val = param(2);
+if (val.type == VAR_TYPE_STRING)
+	val = function_s(c, "parseStringToArray", val);
+treenode points = obj.find(varPath);
+while (points.subnodes.length &lt; val.length)
+	function_s(obj, "addPoint", 0, 0, 0);
+while (points.subnodes.length &gt; val.length)
+	points.last.destroy();
+
+Array sdtVals = ["x", "y", "z"];
+Array loc = obj.location;
+for (int i = 1; i &lt;= points.subnodes.length; i++) {
+	treenode point = points.subnodes[i];
+	for (int j = 1; j &lt;= 3; j++) {
+		setsdtvalue(point, sdtVals[j], val[i][j] - loc[j]);
+	}
+}
+function_s(obj, "updateSpatialsToEncompassPoints");
+function_s(obj, "makeMeshDirty");
+</data></node>
+          </node>
+         </data></node>
+        </node>
+       </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node></node>
        <node f="42"><name>spatial</name>
@@ -443,7 +550,25 @@
         <node f="42" dt="1"><name>isTwoWay</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
-        <node f="40"><name></name></node></node>
+        <node f="40"><name></name></node>
+        <node f="42"><name>properties</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>PathWeight</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/NumberProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/pathWeight</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node></node>
+         </data></node>
+        </node>
+       </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node></node>
        <node f="42"><name>spatial</name>
@@ -482,7 +607,40 @@
         <node f="42" dt="1"><name>isTwoWay</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
-        <node f="40"><name></name></node></node>
+        <node f="40"><name></name></node>
+        <node f="42"><name>properties</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>UseVirtualDistance</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/CheckboxProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/useVirtualDistance</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node></node>
+         </data></node>
+         <node f="42" dt="4"><name>VirtualDistance</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/UnitValueProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/virtualLength</data></node>
+           <node f="42" dt="2"><name>unitType</name><data>length</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node></node>
+         </data></node>
+        </node>
+       </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node>
         <node f="42" dt="1"><name>geometricDistance</name><data>0000000000000000</data></node>
@@ -635,7 +793,9 @@ switch (clickCode) {
 		setvarnum(c, "mouseState", 0);
 		
 		//Adding onto the ends of dividers
-		if(!objectexists(curObjectNode) || up(curObjectNode) != activeNavigator) {
+		if(!objectexists(curObjectNode) 
+			|| (up(curObjectNode) != activeNavigator &amp;&amp; !isclasstype(curObjectNode.up, CLASSTYPE_VISUALTOOL))
+		) {
 			treenode pointNode = tonode(getpickingdrawfocus(i, PICK_SECONDARY_OBJECT, PICK_PRESSED));
 			treenode classNode = first(classes(ownerobject(pointNode)));
 			
@@ -654,7 +814,11 @@ switch (clickCode) {
 			}
 		}
 		
-		if (objectexists(curObjectNode) &amp;&amp; (curObjectNode.up == activeNavigator || curObjectNode.up.up == variables(activeNavigator))) {
+		if (objectexists(curObjectNode) 
+			&amp;&amp; (curObjectNode.up == activeNavigator 
+				|| curObjectNode.up.up == variables(activeNavigator) 
+				|| isclasstype(curObjectNode.up, CLASSTYPE_VISUALTOOL))
+		) {
 			// if I'm currently editing a solid barrier or grid, (it's the second up click)
 			// then I should set curObjectNode to 0, meaning I'm done editing the barrier
 			if (mode == EDITMODE_SOLID_BARRIER || mode == EDITMODE_GRID) {
@@ -697,7 +861,16 @@ switch (clickCode) {
 				}
 				string classPath = getvarstr(c, "class");
 				if (classPath.length &gt; 0) {
-					curObjectNode = createinstance(library().find(classPath), activeNavigator);
+					treenode container = activeNavigator;
+					treenode selObj = selectedobject(i);
+					treenode vFocus = viewfocus(i).find("+");
+					if (!selObj &amp;&amp; vFocus != model())
+						selObj = vFocus;
+					if (selObj &amp;&amp; isclasstype(selObj, CLASSTYPE_VISUALTOOL)) {
+						container = selObj;
+						modelPos = modelPos.project(vFocus, container);
+					}
+					curObjectNode = createinstance(library().find(classPath), container);
 					curObjectNode.as(Object).setLocation(modelPos.x, modelPos.y, modelPos.z);
 					treenode firstPoint = first(getvarnode(curObjectNode, "points"));
 					treenode lastPoint = last(getvarnode(curObjectNode, "points"));
@@ -750,9 +923,14 @@ int mouseState = getvarnum(c, "mouseState");
 Vec3 modelPos = Vec3(cursorinfo(i, 2, 1, 1), cursorinfo(i, 2, 2, 1), cursorinfo(i, 2, 3, 1));
 if (mouseState == 0) {
 	if (createdObj) {
-		double dx = modelPos.x - getvarnum(c, "lastModelX");
-		double dy = modelPos.y - getvarnum(c, "lastModelY");
-		function_s(createdObj, "dragPressedPick", i, modelPos.x, modelPos.y, modelPos.z, dx, dy);
+		treenode vFocus = viewfocus(i).find("+");
+		Vec3 pos = modelPos;
+		Vec3 lastPos = Vec3(getvarnum(c, "lastModelX"), getvarnum(c, "lastModelY"), 0);
+		if (createdObj.up != vFocus &amp;&amp; createdObj.up != getvarnode(c, "activeNavigator").value) {
+			pos = pos.project(vFocus, createdObj.up);
+			lastPos = lastPos.project(vFocus, createdObj.up);
+		}
+		function_s(createdObj, "dragPressedPick", i, pos.x, pos.y, pos.z, pos.x - lastPos.x, pos.y - lastPos.y);
 		
 		#define WM_PAINT 0x000F
 		postwindowmessage(windowfromnode(i), WM_PAINT,0,0);
@@ -6851,6 +7029,21 @@ if (aStarNav)
 
 return 1;
 </data></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add_onSet</name><data>MAIN:/project/exec/globals/properties/Size&gt;variables/onSet</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name>astar</name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>astar</name><data>if (isclasstype(param(1), "AStar::Barrier") &amp;&amp; !isclasstype(param(1), "AStar::Divider")) {
+	function_s(param(1), "updatePointsFromSpatials");
+}</data></node>
     </node>
    </node>
   </node>
