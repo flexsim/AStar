@@ -53,6 +53,7 @@ void Barrier::bind(void)
 	bindCallback(assertNavigator, Barrier);
 	bindCallback(setSizeComponent, Barrier);
 	bindCallback(finalizeSpatialChanges, Barrier);
+	bindCallback(makeMeshDirty, Barrier);
 
 	//int bindMode = getBindMode();
 	//if (bindMode == SDT_BIND_ON_LOAD || bindMode == SDT_BIND_ON_CREATE) {
@@ -142,6 +143,7 @@ void Barrier::addBarriersToTable(Grid* grid)
 				isInRotatedContainer = true;
 				break;
 			}
+			test = test->up;
 		}
 	}
 	if (patterns.numCols == 1 && patterns.numRows == 1) {
@@ -766,6 +768,7 @@ double Barrier::dragPressedPick(treenode view, Vec3& pos, Vec3& diff)
 			scalePatternRowsOnSizeChange(fabs(pointList[1]->y - pointList[0]->y));
 		}
 		updateSpatialsToEncompassPoints();
+		applyProperties("PathPoints");
 		return 1;
 	} else if (pickType == 0) {
 		if (mode & Barrier::CREATE) {
@@ -786,6 +789,11 @@ double Barrier::onDrag(treenode view)
 {
 	Vec3 diff(draginfo(DRAG_INFO_DX), draginfo(DRAG_INFO_DY), draginfo(DRAG_INFO_DZ));
 	Vec3 pos(cursorinfo(view, 2, 1, 1), cursorinfo(view, 2, 2, 1), cursorinfo(view, 2, 3, 1));
+	if (holder->up != navigator->holder) {
+		treenode vFocus = view->find(">viewfocus+");
+		if (vFocus != holder->up)
+			pos = pos.project(vFocus, holder->up);
+	}
 	double returnVal = dragPressedPick(view, pos, diff);
 	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, PICK_PRESSED);
 	if (pickType != 0) {

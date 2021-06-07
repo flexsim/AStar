@@ -242,16 +242,16 @@ double Divider::onClick(treenode view, int clickCode, Vec3& pos)
 	return 0;
 }
 
-double Divider::dragPressedPick(treenode view, Vec3& modelPos, Vec3& diff)
+double Divider::dragPressedPick(treenode view, Vec3& parentPos, Vec3& diff)
 {
 	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
-	Vec3 localPos = modelPos.project(model(), holder);
+	Vec3 localPos = parentPos.project(holder->up, holder);
 	treenode pointNode = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED));
 	double nodeWidth = drawNodeWidth;
 	if (pickType == PICK_POINT && pointNode) {
 		Point* activePoint = pointNode->objectAs(Point);
 		// Snap between grid points
-		if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge() && !toMandatoryPath()) {
+		if (navigator->snapBetweenGrid && !toPreferredPath() && !toBridge() && !toMandatoryPath()) {
 			activePoint->x = floor((localPos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 			activePoint->y = floor((localPos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 		} else {
@@ -262,7 +262,7 @@ double Divider::dragPressedPick(treenode view, Vec3& modelPos, Vec3& diff)
 			activePoint->z += diff.z;
 	} else {
 		// Snap between grid points
-		if (o(AStarNavigator, ownerobject(holder)).snapBetweenGrid && !toPreferredPath() && !toBridge() && !toMandatoryPath()) {
+		if (navigator->snapBetweenGrid && !toPreferredPath() && !toBridge() && !toMandatoryPath()) {
 			diff.x = floor((localPos.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth
 				- floor((localPos.x - diff.x + 0.5 * nodeWidth) / nodeWidth) * nodeWidth;
 			diff.y = floor((localPos.y + 0.5 * nodeWidth) / nodeWidth) * nodeWidth
@@ -275,6 +275,7 @@ double Divider::dragPressedPick(treenode view, Vec3& modelPos, Vec3& diff)
 		}
 	}
 	updateSpatialsToEncompassPoints();
+	applyProperties("PathPoints");
 	isMeshDirty = true;
 
 	return 1;
