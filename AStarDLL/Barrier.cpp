@@ -667,6 +667,7 @@ double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 			TreeNode* cellNode = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_RELEASED));
 			PatternCell* cell = cellNode ? cellNode->objectAs(PatternCell) : nullptr;
 			cursorinfo(view, 4, 0, 0); // update the hover (I think)
+			bool changedPatterns = true;
 			switch (pickType) {
 				case PICK_SPLIT_PATTERN_COL: splitPatternCol(cell->holder->rank, view); break;
 				case PICK_SPLIT_PATTERN_ROW: splitPatternRow(cell->holder->up->rank, view); break;
@@ -686,9 +687,10 @@ double Barrier::onClick(treenode view, int clickCode, Vec3& pos)
 					endaggregatedundo(view, undoID);
 					break;
 				}
-				default: break;
+				default: changedPatterns = false; break;
 			}
-
+			if (changedPatterns)
+				applyProperties("TravelPatterns");
 		}
 	}
 
@@ -1194,6 +1196,7 @@ void Barrier::onReset(AStarNavigator * nav)
 		assertValidPatternTable();
 	}
 	conditionalBarrierChanges = TemporaryBarrier(nav);
+	mode = 0;
 }
 
 void Barrier::abortCreationMode()
@@ -1429,6 +1432,7 @@ void Barrier::dragPatternCellSizer(PatternCell * cell, double diff, bool isXSize
 			}
 		}
 	}, isXSizer ? VISIT_FIRST_ROW_ONLY : VISIT_FIRST_COL_ONLY);
+	applyProperties("TravelPatterns");
 }
 
 void Barrier::assertValidPatternTable()

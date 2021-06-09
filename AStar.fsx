@@ -358,6 +358,89 @@
         <node f="40"><name></name></node>
         <node f="42"><name>properties</name>
          <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>TravelPatterns</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="42"><name>excludeClasses</name>
+            <node f="40"><name></name></node>
+            <node f="42"><name>AStar::Divider</name></node>
+           </node>
+           <node f="42" dt="1"><name>noDirectEdit</name><data>000000003ff00000</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>getValue</name><data>Object obj = param(1);
+if (isclasstype(obj, "AStar::Divider"))
+	return nullvar;
+
+Array value;
+treenode patterns = obj.find("&gt;variables/patternTable");
+for (int i = 1; i &lt;= patterns.subnodes.length; i++) {
+	treenode rowNode = patterns.subnodes[i];
+	Array row;
+	for (int j = 1; j &lt;= rowNode.subnodes.length; j++) {
+		treenode cellNode = rowNode.subnodes[j];
+		Array cell;
+		cell.push(patterns.first.subnodes[j].subnodes["width"].value);
+		cell.push(rowNode.first.subnodes["height"].value);
+		cell.push(cellNode.subnodes["canGoUp"].value);
+		cell.push(cellNode.subnodes["canGoDown"].value);
+		cell.push(cellNode.subnodes["canGoLeft"].value);
+		cell.push(cellNode.subnodes["canGoRight"].value);
+		row.push(cell);
+	}
+	value.push(row);
+}
+return value;
+
+</data></node>
+           <node f="442" dt="2"><name>setValue</name><data>Object obj = param(1);
+if (isclasstype(obj, "AStar::Divider"))
+	return nullvar;
+
+Array value = param(2);
+if (value.length &lt; 1 || value[1].length &lt; 1 || value[1][1].length &lt; 6)
+	return nullvar;
+
+double totalSX = 0;
+for (int i = 1; i &lt;= value[1].length; i++) {
+	totalSX += value[1][i][1];
+}
+double totalSY = 0;
+for (int i = 1; i &lt;= value.length; i++) {
+	totalSY += value[i][1][2];
+}
+treenode patterns = obj.find("&gt;variables/patternTable");
+treenode copy = patterns.first.first;
+copy.up = c;
+patterns.subnodes.clear();
+for (int i = 1; i &lt;= value.length; i++) {
+	
+	treenode rowNode = patterns.subnodes.add();
+	Array row = value[i];
+	for (int j = 1; j &lt;= row.length; j++) {
+		Array cell = row[j];
+		treenode cellNode = createcopy(copy, rowNode, 1);
+		if (cell.length &lt; 6)
+			continue;
+		cellNode.subnodes["width"].value = value[1][j][1] * obj.size.x / totalSX;
+		cellNode.subnodes["height"].value = value[i][1][2] * obj.size.y / totalSY;
+		cellNode.subnodes["canGoUp"].value = cell[3];
+		cellNode.subnodes["canGoDown"].value = cell[4];
+		cellNode.subnodes["canGoLeft"].value = cell[5];
+		cellNode.subnodes["canGoRight"].value = cell[6];
+	}
+}
+copy.destroy();
+
+return value;
+
+</data></node>
+          </node>
+         </data>
+          <node f="40"><name></name></node></node>
          <node f="42" dt="4"><name>PathPoints</name><data>
           <node f="40"><name></name></node>
           <node f="42"><name>superclasses</name>
@@ -5032,6 +5115,37 @@ applylinks(c, 1);
       <node f="42"><name>variables</name>
        <node f="40"><name></name></node>
        <node f="42" dt="2"><name>helptopic</name><data>BarrierProperties</data></node>
+       <node f="42"><name>propTableQueryTree</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>SELECT</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>Location</name></node>
+         <node f="42"><name>Size</name></node>
+         <node f="42"><name>ConditionalRule</name></node>
+         <node f="42"><name>TravelPatterns</name></node>
+        </node>
+        <node f="42"><name>FROM</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>Objects()</name></node>
+        </node>
+        <node f="42"><name>WHERE</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>AND</name>
+          <node f="40"><name></name></node>
+          <node f="42"><name>IN</name>
+           <node f="40"><name></name></node>
+           <node f="42"><name>"AStar::Barrier"</name></node>
+           <node f="42"><name>Classes</name></node>
+          </node>
+          <node f="42"><name>NOT IN</name>
+           <node f="40"><name></name></node>
+           <node f="42"><name>"AStar::Divider"</name></node>
+           <node f="42"><name>Classes</name></node>
+          </node>
+         </node>
+        </node>
+        <node f="42"><name>ORDER BY</name></node>
+       </node>
       </node>
      </data>
       <node f="40"><name></name></node>
@@ -5321,6 +5435,31 @@ if (propertiesView) {
       <node f="42"><name>variables</name>
        <node f="40"><name></name></node>
        <node f="42" dt="2"><name>helptopic</name><data>DividerPathProperties</data></node>
+       <node f="42"><name>propTableQueryTree</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>SELECT</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>ConditionalRule</name></node>
+         <node f="42"><name>IsTwoWay</name></node>
+         <node f="42"><name>PathPoints</name></node>
+         <node f="42"><name>UseVirtualDistance</name></node>
+         <node f="42"><name>VirtualDistance</name></node>
+         <node f="42"><name>PathWeight</name></node>
+        </node>
+        <node f="42"><name>FROM</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>Objects()</name></node>
+        </node>
+        <node f="42"><name>WHERE</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>IN</name>
+          <node f="40"><name></name></node>
+          <node f="42"><name>"AStar::Divider"</name></node>
+          <node f="42"><name>Classes</name></node>
+         </node>
+        </node>
+        <node f="42"><name>ORDER BY</name></node>
+       </node>
       </node>
      </data>
       <node f="40"><name></name></node>
