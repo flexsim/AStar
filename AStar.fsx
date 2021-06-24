@@ -994,7 +994,8 @@ switch (clickCode) {
 				int undoId = beginaggregatedundo(i, "Create A* Object");
 				createundorecord(i, activeNavigator, UNDO_UPDATE_LINKS_ON_UNDO, 0, 0, 0);
 				createundorecord(i, curObjectNode, UNDO_CREATE_OBJECT, 0, 0, 0);
-				applicationcommand("checkcreatetemplateinstancesoncreate", curObjectNode);
+				if (curObjectNode.dataType == DATATYPE_OBJECT)
+					applicationcommand("checkcreatetemplateinstancesoncreate", curObjectNode);
 				createundorecord(i, activeNavigator, UNDO_UPDATE_LINKS_ON_REDO, 0, 0, 0);
 				endaggregatedundo(i, undoId);
 				
@@ -1512,15 +1513,15 @@ iterate(1, content(tabcontrol), 1){
 }</data></node>
         <node f="42"><name>eventfunctions</name>
          <node f="40"><name></name></node>
-         <node f="442" dt="2"><name>addBarrierCondition</name><data>treenode addedView = function_s(c.find("/tabcontrol/BarrierConditions/Panel"), "addItem");
+         <node f="442" dt="2"><name>addConditionalRule</name><data>treenode addedView = function_s(c.find("/tabcontrol/ConditionalRules/Panel"), "addItem");
 treenode addedCondition = addedView.find("&gt;objectfocus+");
-function_s(c, "selectBarrierCondition", addedCondition, addedView);
+function_s(c, "selectConditionalRule", addedCondition, addedView);
 return addedCondition;
 </data></node>
-         <node f="442" dt="2"><name>selectBarrierCondition</name><data>treenode focusedCondition = param(1);
+         <node f="442" dt="2"><name>selectConditionalRule</name><data>treenode focusedCondition = param(1);
 treenode focusedPanel = param(2);
 Object tabControl = c.find("/tabcontrol");
-Object conditionsTab = tabControl.find("/BarrierConditions");
+Object conditionsTab = tabControl.find("/ConditionalRules");
 Object dragPanel = conditionsTab.find("/Panel");
 if (!focusedPanel &amp;&amp; focusedCondition) {
 	focusedPanel = dragPanel.find("ViewPort/ItemPanel").subnodes[focusedCondition.rank].find("PropertiesPanel").first;
@@ -2550,7 +2551,7 @@ windowgray(windowfromnode(c.find("../CompletionRatioTracker")), gray);
 see the progression of that traveler's last routing algorithm execution.</data></node>
           </data></node>
          </node>
-         <node f="42" dt="4"><name>BarrierConditions</name><data>
+         <node f="42" dt="4"><name>ConditionalRules</name><data>
           <node f="40"><name>object</name></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
@@ -2559,7 +2560,7 @@ see the progression of that traveler's last routing algorithm execution.</data><
           <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
           <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
-          <node f="4000000042" dt="2"><name>windowtitle</name><data>Barrier Conditions</data></node>
+          <node f="4000000042" dt="2"><name>windowtitle</name><data>Conditional Rules</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>Panel</name><data>
@@ -2617,7 +2618,7 @@ see the progression of that traveler's last routing algorithm execution.</data><
                <node f="42"><name>variables</name>
                 <node f="40"><name></name></node>
                 <node f="42" dt="2"><name>codedescription</name><data>Barrier Condition</data></node>
-                <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/BarrierCondition</data>
+                <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/ConditionalRule</data>
                  <node f="40"><name></name></node></node>
                 <node f="42" dt="1"><name>hasDragTarget</name><data>0000000000000000</data></node>
                 <node f="42" dt="1"><name>valType</name><data>000000003ff00000</data>
@@ -4314,7 +4315,7 @@ if (clickcode() == LEFT_RELEASE) {
       </node>
       <node f="42"><name>PickLists</name>
        <node f="40"><name></name></node>
-       <node f="42" dt="2"><name>BarrierCondition</name><data>treenode traveler = param(1);
+       <node f="42" dt="2"><name>ConditionalRule</name><data>treenode traveler = param(1);
 </data>
         <node f="40"><name></name></node>
         <node f="2000000042" dt="2"><name>By Traveler Label</name><data>return /**/traveler.type == 1/**direct*/;</data></node>
@@ -4365,7 +4366,7 @@ if (condition) {
          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040350000</data></node>
          <node f="42" dt="2"><name>tooltip</name><data></data></node>
          <node f="42"><name>items</name></node>
-         <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>itemcurrent</name><data>0000000040080000</data></node>
          <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+</data></node>
          <node f="42"><name>eventfunctions</name>
           <node f="40"><name></name></node>
@@ -4398,7 +4399,7 @@ if (selected == items(c).subnodes.length) {
 	createview(navigator.attrs.guifocusclass.value, navigator.getPath(), "");
 	Object propertiesView = Model.find("VIEW:/active/AStarProperties");
 	if (propertiesView) {
-		newRule = function_s(propertiesView, "addBarrierCondition");
+		newRule = function_s(propertiesView, "addConditionalRule");
 	}
 } 
 
@@ -4441,7 +4442,7 @@ Object navigator = Model.find("AStarNavigator");
 createview(navigator.attrs.guifocusclass.value, navigator.getPath(), "");
 Object propertiesView = Model.find("VIEW:/active/AStarProperties");
 if (propertiesView) {
-	function_s(propertiesView, "selectBarrierCondition", focus.value);
+	function_s(propertiesView, "selectConditionalRule", focus.value);
 }</data></node>
          <node f="4000000042" dt="2"><name>tooltip</name><data>Edit this condition in A* Navigator Properties</data></node>
          <node f="42" dt="2"><name>bitmap</name><data>buttons\properties.png</data></node>
@@ -5406,7 +5407,7 @@ Object navigator = Model.find("AStarNavigator");
 createview(navigator.attrs.guifocusclass.value, navigator.getPath(), "");
 Object propertiesView = Model.find("VIEW:/active/AStarProperties");
 if (propertiesView) {
-	function_s(propertiesView, "selectBarrierCondition", focus.getProperty("ConditionalRule"));
+	function_s(propertiesView, "selectConditionalRule", focus.getProperty("ConditionalRule"));
 }</data></node>
         <node f="4000000042" dt="2"><name>tooltip</name><data>Edit this condition in A* Navigator Properties</data></node>
         <node f="42" dt="2"><name>bitmap</name><data>buttons\properties.png</data></node>
@@ -5560,7 +5561,7 @@ Object navigator = Model.find("AStarNavigator");
 createview(navigator.attrs.guifocusclass.value, navigator.getPath(), "");
 Object propertiesView = Model.find("VIEW:/active/AStarProperties");
 if (propertiesView) {
-	function_s(propertiesView, "selectBarrierCondition", focus.getProperty("ConditionalRule"));
+	function_s(propertiesView, "selectConditionalRule", focus.getProperty("ConditionalRule"));
 }</data></node>
         <node f="4000000042" dt="2"><name>tooltip</name><data>Edit this condition in A* Navigator Properties</data></node>
         <node f="42" dt="2"><name>bitmap</name><data>buttons\properties.png</data></node>
