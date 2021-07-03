@@ -804,10 +804,12 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 				dynamicBarriers.insert({ traveler, navigator->addDynamicBarrier(loc + Vec3(-0.5 * width, 0.5 * width, 0.0), size, Vec3(0.0, 0.0, 0.0), 1) });
 			}
 		}
-		auto node = navigator->getExtraData(traveler->allocations.back()->cell);
-		for (auto request : node->requests) {
-			if (dynamicBarriers.find(request.traveler) == dynamicBarriers.end())
-				addDynamicBarrier(request.traveler);
+		if (traveler->allocations.size() > 0) {
+			auto node = navigator->getExtraData(traveler->allocations.back()->cell);
+			for (auto request : node->requests) {
+				if (dynamicBarriers.find(request.traveler) == dynamicBarriers.end())
+					addDynamicBarrier(request.traveler);
+			}
 		}
 	};
 	for (Traveler* traveler : deadlockList) {

@@ -46,8 +46,8 @@ void Bridge::onReset(AStarNavigator* nav)
 	isAvailable = true;
 	lastUpdateTime = -1;
 
-	Cell fromCell = nav->getCell(*pointList.front()->project(holder, model()));
-	Cell toCell = nav->getCell(*pointList.back()->project(holder, model()));
+	Cell fromCell = nav->getCell(pointList.front()->project(holder, model()));
+	Cell toCell = nav->getCell(pointList.back()->project(holder, model()));
 	if (fromCell != toCell) {
 		nodeWidth = DBL_MAX;
 		auto assertRoutingData = [this, nav](int index, Cell& cell) {
