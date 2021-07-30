@@ -845,8 +845,12 @@ void Grid::buildGridMesh(float zOffset)
 	float gold[4] = { 0.8f,0.8f,0.0f, 1.0f };
 	float red[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
-	for (int row = 0; row < numRows; row++) {
+	// Until I make grid rendering use instanced rendering, I'm only going to draw up to a 
+	// million entries, because really big grids can use up tons of graphics memory and freeze the computer.
+	int count = 0; 
+	for (int row = 0; row < numRows && count < 1000000; row++) {
 		for (int col = 0; col < numCols; col++) {
+			count++;
 			AStarNode* n = getNode(row, col);
 			AStarSearchEntry s;
 			s.cell.col = col;
