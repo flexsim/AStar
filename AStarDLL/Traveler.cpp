@@ -513,6 +513,7 @@ void Traveler::onBridgeArrival(BridgeRoutingData* data, int pathIndex)
 	AStarPathEntry e = travelPath[pathIndex];
 
 	updateLocation();
+	updateTravelDistOnInterrupt();
 	assertBridgeData(data);
 	FIRE_SDT_EVENT(onBridgeArrivalTrigger, te->holder, bridgeData->routingData->bridge->holder);
 	bridgeData->routingData = data;
@@ -732,6 +733,28 @@ Traveler::TravelerAllocations::iterator Traveler::find(NodeAllocation* alloc)
 	return std::find_if(allocations.begin(), allocations.end(), [&](NodeAllocationIterator& iter) { return &(*iter) == alloc; });
 }
 
+void Traveler::updateTravelDistOnInterrupt()
+{
+	// this code piggybacks on a weird side effect of kinematic pruning. If a kinematic is pruning, then its total distance actually 
+	// decreases as it prunes through the kinematic, such that the total distance is closer to the "remaining distance", minus the 
+	// amount that the object has traveled into the first kinematic.
+
+	// Technically I (Anthony) don't like this design and would like to do it differently, because it's utilizing this weird side 
+	// effect. But Phil has prevented me from actually doing it the way I want it done, in favor of stability, with the hope 
+	// of a future fix. So, I'm leaving it the way it is.
+
+	// first, get the distance into the first kinematic
+	double x = getkinematics(te->node_v_kinematics, KINEMATIC_X, 1, time());
+	double y = getkinematics(te->node_v_kinematics, KINEMATIC_Y, 1, time());
+	double z = getkinematics(te->node_v_kinematics, KINEMATIC_Z, 1, time());
+	double curdist = sqrt(sqr(x) + sqr(y) + sqr(z));
+	// the distance traveled to this point is the expected total distance minus the "total distance" (i.e. the kind-of-remaining- 
+	// distance) plus the distance into the first kinematic
+	double distancetraveled = expectedtotaltraveldist - getkinematics(te->node_v_kinematics, KINEMATIC_TOTALDIST) + curdist;
+	te->updateTotalTravelDist(distancetraveled);
+	expectedtotaltraveldist = 0;
+}
+
 void Traveler::onBlock(Traveler* collidingWith, int atPathIndex, Cell& cell)
 {
 	XS
@@ -750,6 +773,7 @@ void Traveler::onBlock(Traveler* collidingWith, int atPathIndex, Cell& cell)
 		shouldStop = false;
 
 	updateLocation();
+	updateTravelDistOnInterrupt();
 	if (shouldStop) {
 		Vec3 pos = te->getLocation(0.5, 0.5, 0.0);
 		initkinematics(te->node_v_kinematics, pos.x, pos.y, te->b_spatialz, 0.0, 0.0, 0.0, 1, 0);
@@ -1093,13 +1117,7 @@ void Traveler::onArrival()
 void Traveler::abortTravel(TreeNode* newTS)
 {
 	updateLocation();
-	double x = getkinematics(te->node_v_kinematics, KINEMATIC_X, 1, time());
-	double y = getkinematics(te->node_v_kinematics, KINEMATIC_Y, 1, time());
-	double z = getkinematics(te->node_v_kinematics, KINEMATIC_Z, 1, time());
-	double curdist = sqrt(sqr(x) + sqr(y) + sqr(z));
-	double distancetraveled = expectedtotaltraveldist- getkinematics(te->node_v_kinematics, KINEMATIC_TOTALDIST) + curdist;
-	te->updateTotalTravelDist(distancetraveled);
-	expectedtotaltraveldist = 0;
+	updateTravelDistOnInterrupt();
 	if (navigator->enableCollisionAvoidance) {
 		if (request) {
 			navigator->getExtraData(request->cell)->requests.remove_if([&](NodeAllocation& alloc) { return &alloc == request; });

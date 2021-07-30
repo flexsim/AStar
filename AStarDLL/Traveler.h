@@ -112,6 +112,7 @@ public:
 	/// <param name="fromPoint">	from point. </param>
 	void clearAllocations(TravelerAllocations::iterator fromPoint, bool decrementTraversal = false);
 	TravelerAllocations::iterator find(NodeAllocation* alloc);
+	void updateTravelDistOnInterrupt();
 	astar_export void abortTravel(TreeNode* newTS);
 	astar_export void updateLocation();
 
