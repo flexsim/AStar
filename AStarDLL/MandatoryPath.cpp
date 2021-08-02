@@ -35,7 +35,7 @@ void MandatoryPath::addPassagesToTable(Grid * grid)
 			AStarNode newValue(*node);
 			if (!conditionRule)
 				node->isOnMandatoryPath = true;
-			else newValue.isOnMandatoryPath = true;
+			newValue.isOnMandatoryPath = true;
 			if (!isTwoWay) {
 				if (direction > 135.0 || direction < -135.0)
 					newValue.setCanGo(Right, false);
