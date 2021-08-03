@@ -36,20 +36,31 @@ void MandatoryPath::addPassagesToTable(Grid * grid)
 			if (!conditionRule)
 				node->isOnMandatoryPath = true;
 			newValue.isOnMandatoryPath = true;
+			AStarNode mask;
+			mask.value = 0;
+			mask.isOnMandatoryPath = true;
 			if (!isTwoWay) {
-				if (direction > 135.0 || direction < -135.0)
-					newValue.setCanGo(Right, false);
-				else if (direction < 45.0 && direction > -45.0)
-					newValue.setCanGo(Left, false);
+				if (direction > 135.0 || direction < -135.0) {
+					newValue.canGoRight = false;
+					mask.canGoRight = true;
+				}
+				else if (direction < 45.0 && direction > -45.0) {
+					newValue.canGoLeft = false;
+					mask.canGoLeft = true;
+				}
 
-				if (direction < -45.0 && direction > -135.0)
-					newValue.setCanGo(Up, false);
-				else if (direction < 135.0 && direction > 45.0)
-					newValue.setCanGo(Down, false);
+				if (direction < -45.0 && direction > -135.0) {
+					newValue.canGoUp = false;
+					mask.canGoUp = true;
+				}
+				else if (direction < 135.0 && direction > 45.0) {
+					newValue.canGoDown = false;
+					mask.canGoDown = true;
+				}
 			}
 
 			auto& entry = conditionalBarrierChanges.addEntry(cell, newValue);
-			entry.changeMask.isOnMandatoryPath = true;
+			entry.changeMask = mask;
 		});
 	}
 }

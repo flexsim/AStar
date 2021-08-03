@@ -630,7 +630,7 @@ double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double
 
 	traveler->destLoc = Vec3(destLoc[0], destLoc[1], destLoc[2]);
 	traveler->endSpeed = endSpeed;
-
+	traveler->numDeadlocksSinceLastNavigate = 0;
 	TravelPath path = calculatePath(traveler, traveler->destLoc, traveler->destThreshold, 0, -1);
 	traveler->navigatePath(std::move(path));
 	return 0;
@@ -773,7 +773,7 @@ TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc
 		Array startLocArray;
 		startLocArray.push(startLoc.x).push(startLoc.y).push(startLoc.z);
 		Variant result = FIRE_SDT_EVENT_VALUE_GETTER(traveler->onCalculatePath, traveler->te->holder, destLocArray, startLocArray);
-		if (result.type == VariantType::Array || result.type == VariantType::Array) {
+		if (result.type == VariantType::Array || result.type == VariantType::TreeNode) {
 			userBarriers = addDynamicBarrier(result, 1);
 		}
 	}

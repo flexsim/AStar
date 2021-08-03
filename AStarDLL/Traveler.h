@@ -97,6 +97,33 @@ public:
 	NodeAllocation* addAllocation(NodeAllocation&& allocation, bool force, bool notifyPendingAllocations);
 	NodeAllocation addAllocation_flexScript(NodeAllocation& allocation, int force, int notifyPendingAllocations);
 	void checkCreateCollisionEvent(NodeAllocation& allocation, AStarNodeExtraData* nodeData = nullptr);
+
+	template<class Callback>
+	static NodeAllocation* visitCollisions(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs, Callback predicate)
+	{
+		NodeAllocationIterator bestIter = nodeData->allocations.end();
+		double minAcquireTime = DBL_MAX;
+		double curTime = time();
+
+		for (auto iter = nodeData->allocations.begin(); iter != nodeData->allocations.end();) {
+			NodeAllocation& other = *iter;
+			++iter; // I want to pre-increment, so that if the allocation is removed, I still have a valid iterator
+			if (&other == &myAllocation)
+				continue;
+			if (ignoreSameTravelerAllocs && other.traveler == myAllocation.traveler)
+				continue;
+			bool isCollision;
+			if (other.acquireTime <= myAllocation.acquireTime)
+				isCollision = other.releaseTime > myAllocation.acquireTime;
+			else isCollision = myAllocation.releaseTime > other.acquireTime;
+			if (isCollision) {
+				if (predicate(other))
+					return &other;
+			}
+		}
+		return nullptr;
+	}
+
 	static NodeAllocation* findCollision(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs);
 
 	// FlexScript-accessible method
@@ -196,6 +223,7 @@ public:
 
 	CachedPathKey cachedPathKey;
 	bool isCachedPathKeyValid = false;
+	int numDeadlocksSinceLastNavigate = 0;
 };
 
 }
