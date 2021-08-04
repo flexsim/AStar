@@ -166,6 +166,28 @@
          <node f="1000042" dt="2"><name>addObjectBarrierToTable</name><data>dll:"module:AStar" func:"AStarNavigator_addObjectBarrierToTable"</data></node>
          <node f="42" dt="2"><name>flexScriptInterface</name><data>AStar.Navigator</data></node>
         </node>
+        <node f="42"><name>eventInfo</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>OnGridChange</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42"><name>params</name>
+            <node f="40"><name></name></node>
+            <node f="42" dt="2"><name>Added Barrier</name><data></data>
+             <node f="40"><name></name></node>
+             <node f="42" dt="2"><name>Title</name><data>Added Barrier</data></node>
+             <node f="42" dt="2"><name>Name</name><data>addedBarrier</data></node>
+             <node f="42" dt="2"><name>Type</name><data>int</data></node>
+            </node>
+           </node>
+           <node f="42" dt="2"><name>classType</name><data>AStar.Navigator</data></node>
+          </node>
+          <node f="42" dt="2"><name>windowtitle</name><data>OnGridChange</data></node>
+          <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/OnGridChange</data></node>
+          <node f="4000000042" dt="2"><name>tooltip</name><data>Define logic that executes when the A* grid is dynamically changed</data></node>
+         </data></node>
+        </node>
         <node f="42"><name>cppfunctions</name>
          <node f="40"><name></name></node></node>
         <node f="42"><name>cppvariables</name></node>
@@ -333,7 +355,166 @@
         <node f="42" dt="3"><name>conditionRule</name><data><coupling>null</coupling></data></node>
        </node>
        <node f="42"><name>behaviour</name>
-        <node f="40"><name></name></node></node>
+        <node f="40"><name></name></node>
+        <node f="42"><name>properties</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>TravelPatterns</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="42"><name>excludeClasses</name>
+            <node f="40"><name></name></node>
+            <node f="42"><name>AStar::Divider</name></node>
+           </node>
+           <node f="42" dt="1"><name>noDirectEdit</name><data>000000003ff00000</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>getValue</name><data>Object obj = param(1);
+if (isclasstype(obj, "AStar::Divider"))
+	return nullvar;
+
+Array value;
+treenode patterns = obj.find("&gt;variables/patternTable");
+for (int i = 1; i &lt;= patterns.subnodes.length; i++) {
+	treenode rowNode = patterns.subnodes[i];
+	Array row;
+	for (int j = 1; j &lt;= rowNode.subnodes.length; j++) {
+		treenode cellNode = rowNode.subnodes[j];
+		Array cell;
+		cell.push(patterns.first.subnodes[j].subnodes["width"].value);
+		cell.push(rowNode.first.subnodes["height"].value);
+		cell.push(cellNode.subnodes["canGoUp"].value);
+		cell.push(cellNode.subnodes["canGoDown"].value);
+		cell.push(cellNode.subnodes["canGoLeft"].value);
+		cell.push(cellNode.subnodes["canGoRight"].value);
+		row.push(cell);
+	}
+	value.push(row);
+}
+return value;
+
+</data></node>
+           <node f="442" dt="2"><name>setValue</name><data>Object obj = param(1);
+if (isclasstype(obj, "AStar::Divider"))
+	return nullvar;
+
+Array value = param(2);
+if (value.length &lt; 1 || value[1].length &lt; 1 || value[1][1].length &lt; 6)
+	return nullvar;
+
+double totalSX = 0;
+for (int i = 1; i &lt;= value[1].length; i++) {
+	totalSX += value[1][i][1];
+}
+double totalSY = 0;
+for (int i = 1; i &lt;= value.length; i++) {
+	totalSY += value[i][1][2];
+}
+treenode patterns = obj.find("&gt;variables/patternTable");
+treenode copy = patterns.first.first;
+copy.up = c;
+patterns.subnodes.clear();
+for (int i = 1; i &lt;= value.length; i++) {
+	
+	treenode rowNode = patterns.subnodes.add();
+	Array row = value[i];
+	for (int j = 1; j &lt;= row.length; j++) {
+		Array cell = row[j];
+		treenode cellNode = createcopy(copy, rowNode, 1);
+		if (cell.length &lt; 6)
+			continue;
+		cellNode.subnodes["width"].value = value[1][j][1] * obj.size.x / totalSX;
+		cellNode.subnodes["height"].value = value[i][1][2] * obj.size.y / totalSY;
+		cellNode.subnodes["canGoUp"].value = cell[3];
+		cellNode.subnodes["canGoDown"].value = cell[4];
+		cellNode.subnodes["canGoLeft"].value = cell[5];
+		cellNode.subnodes["canGoRight"].value = cell[6];
+	}
+}
+copy.destroy();
+
+return value;
+
+</data></node>
+          </node>
+         </data>
+          <node f="40"><name></name></node></node>
+         <node f="42" dt="4"><name>PathPoints</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/ArrayProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/points</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="42" dt="1"><name>noDirectEdit</name><data>000000003ff00000</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>getValue</name><data>string varPath = getvarstr(c, "varPath");
+Object obj = param(1);
+treenode points = obj.find(varPath);
+Array result;
+Array sdtVals = ["x", "y", "z"];
+Array loc = obj.location;
+for (int i = 1; i &lt;= points.subnodes.length; i++) {
+	treenode point = points.subnodes[i];
+	Array pointVal;
+	for (int j = 1; j &lt;= 3; j++) {
+		pointVal.push(getsdtvalue(point, sdtVals[j]) + loc[j]);
+	}
+	result.push(pointVal);
+}
+return result;
+</data></node>
+           <node f="442" dt="2"><name>setValue</name><data>string varPath = getvarstr(c, "varPath");
+Object obj = param(1);
+Variant val = param(2);
+if (val.type == VAR_TYPE_STRING)
+	val = function_s(c, "parseStringToArray", val);
+treenode points = obj.find(varPath);
+while (points.subnodes.length &lt; val.length)
+	function_s(obj, "addPoint", 0, 0, 0);
+while (points.subnodes.length &gt; val.length)
+	points.last.destroy();
+
+Array sdtVals = ["x", "y", "z"];
+Array loc = obj.location;
+for (int i = 1; i &lt;= points.subnodes.length; i++) {
+	treenode point = points.subnodes[i];
+	for (int j = 1; j &lt;= 3; j++) {
+		setsdtvalue(point, sdtVals[j], val[i][j] - loc[j]);
+	}
+}
+function_s(obj, "updateSpatialsToEncompassPoints");
+function_s(obj, "makeMeshDirty");
+</data></node>
+          </node>
+         </data></node>
+         <node f="42" dt="4"><name>ConditionalRule</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/ComboProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/conditionRule</data></node>
+           <node f="42" dt="2"><name>options</name><data>MODEL:/AStarNavigator&gt;variables/barrierConditions</data>
+            <node f="40"><name></name></node>
+            <node f="42" dt="3"><name>None</name><data><coupling>null</coupling></data></node>
+           </node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node></node>
+         </data></node>
+        </node>
+       </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node>
         <node f="42"><name>navigator</name></node>
@@ -378,7 +559,43 @@
         <node f="42" dt="1"><name>isTwoWay</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
-        <node f="40"><name></name></node></node>
+        <node f="40"><name></name></node>
+        <node f="42"><name>properties</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>IsTwoWay</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/CheckboxProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/isTwoWay</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="42"><name>excludeClasses</name>
+            <node f="40"><name></name></node>
+            <node f="42"><name>AStar::Bridge</name></node>
+           </node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node>
+           <node f="442" dt="2"><name>setValue</name><data>string varPath = getvarstr(c, "varPath");
+Object obj = param(1);
+obj.find(varPath).value = param(2);
+function_s(obj, "makeMeshDirty");
+return 0;</data></node>
+           <node f="442" dt="2"><name>OnUndo</name><data>treenode undoRecord = i;
+treenode object = undoRecord.find("/object+");
+function_s(object, "makeMeshDirty");
+</data></node>
+          </node>
+         </data></node>
+        </node>
+        <node f="42"><name>templateoverrides</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>PathPoints</name></node>
+        </node>
+       </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node></node>
        <node f="42"><name>spatial</name>
@@ -421,7 +638,44 @@
         <node f="42" dt="1"><name>isTwoWay</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
-        <node f="40"><name></name></node></node>
+        <node f="40"><name></name></node>
+        <node f="42"><name>properties</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>PathWeight</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/NumberProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/pathWeight</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="42" dt="7"><name>cellFormatting</name><data/>
+            <node f="40"><name></name></node>
+            <node f="42" dt="1"><name>minCol</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>maxCol</name><data>0000000000000000</data></node>
+            <node f="42" dt="1"><name>minRow</name><data>000000003ff00000</data></node>
+            <node f="42" dt="1"><name>maxRow</name><data>00000000bff00000</data></node>
+            <node f="442" dt="2"><name>displayText</name><data>treenode cellNode = param(1);
+Variant value = cellNode.value;
+if (value.type == VAR_TYPE_NULL)
+	return "";
+if (value == 0)
+	return "Default";
+return string.fromNum(value);
+
+</data></node>
+            <node f="42" dt="3"><name>property</name><data><coupling>null</coupling></data></node>
+            <node f="42" dt="2"><name>sdt::attributetree</name><data>TableViewFormatRange</data>
+             <node f="40"><name></name></node></node>
+           </node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node></node>
+         </data></node>
+        </node>
+       </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node></node>
        <node f="42"><name>spatial</name>
@@ -460,7 +714,40 @@
         <node f="42" dt="1"><name>isTwoWay</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
-        <node f="40"><name></name></node></node>
+        <node f="40"><name></name></node>
+        <node f="42"><name>properties</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>UseVirtualDistance</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/CheckboxProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/useVirtualDistance</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node></node>
+         </data></node>
+         <node f="42" dt="4"><name>VirtualDistance</name><data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/UnitValueProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/virtualDistance</data></node>
+           <node f="42" dt="2"><name>unitType</name><data>length</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+          </node>
+          <node f="42"><name>eventfunctions</name>
+           <node f="40"><name></name></node></node>
+         </data></node>
+        </node>
+       </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node>
         <node f="42" dt="1"><name>geometricDistance</name><data>0000000000000000</data></node>
@@ -613,7 +900,9 @@ switch (clickCode) {
 		setvarnum(c, "mouseState", 0);
 		
 		//Adding onto the ends of dividers
-		if(!objectexists(curObjectNode) || up(curObjectNode) != activeNavigator) {
+		if(!objectexists(curObjectNode) 
+			|| (up(curObjectNode) != activeNavigator &amp;&amp; !isclasstype(curObjectNode.up, CLASSTYPE_VISUALTOOL))
+		) {
 			treenode pointNode = tonode(getpickingdrawfocus(i, PICK_SECONDARY_OBJECT, PICK_PRESSED));
 			treenode classNode = first(classes(ownerobject(pointNode)));
 			
@@ -632,7 +921,11 @@ switch (clickCode) {
 			}
 		}
 		
-		if (objectexists(curObjectNode) &amp;&amp; (curObjectNode.up == activeNavigator || curObjectNode.up.up == variables(activeNavigator))) {
+		if (objectexists(curObjectNode) 
+			&amp;&amp; (curObjectNode.up == activeNavigator 
+				|| curObjectNode.up.up == variables(activeNavigator) 
+				|| isclasstype(curObjectNode.up, CLASSTYPE_VISUALTOOL))
+		) {
 			// if I'm currently editing a solid barrier or grid, (it's the second up click)
 			// then I should set curObjectNode to 0, meaning I'm done editing the barrier
 			if (mode == EDITMODE_SOLID_BARRIER || mode == EDITMODE_GRID) {
@@ -675,7 +968,17 @@ switch (clickCode) {
 				}
 				string classPath = getvarstr(c, "class");
 				if (classPath.length &gt; 0) {
-					curObjectNode = createinstance(library().find(classPath), activeNavigator);
+					treenode container = activeNavigator;
+					treenode selObj = selectedobject(i);
+					treenode vFocus = viewfocus(i).find("+");
+					if (!selObj &amp;&amp; vFocus != model())
+						selObj = vFocus;
+					if (selObj &amp;&amp; isclasstype(selObj, CLASSTYPE_VISUALTOOL)) {
+						container = selObj;
+						modelPos = modelPos.project(vFocus, container);
+						modelPos.z = 0;
+					}
+					curObjectNode = createinstance(library().find(classPath), container);
 					curObjectNode.as(Object).setLocation(modelPos.x, modelPos.y, modelPos.z);
 					treenode firstPoint = first(getvarnode(curObjectNode, "points"));
 					treenode lastPoint = last(getvarnode(curObjectNode, "points"));
@@ -691,6 +994,8 @@ switch (clickCode) {
 				int undoId = beginaggregatedundo(i, "Create A* Object");
 				createundorecord(i, activeNavigator, UNDO_UPDATE_LINKS_ON_UNDO, 0, 0, 0);
 				createundorecord(i, curObjectNode, UNDO_CREATE_OBJECT, 0, 0, 0);
+				if (curObjectNode.dataType == DATATYPE_OBJECT)
+					applicationcommand("checkcreatetemplateinstancesoncreate", curObjectNode);
 				createundorecord(i, activeNavigator, UNDO_UPDATE_LINKS_ON_REDO, 0, 0, 0);
 				endaggregatedundo(i, undoId);
 				
@@ -728,9 +1033,14 @@ int mouseState = getvarnum(c, "mouseState");
 Vec3 modelPos = Vec3(cursorinfo(i, 2, 1, 1), cursorinfo(i, 2, 2, 1), cursorinfo(i, 2, 3, 1));
 if (mouseState == 0) {
 	if (createdObj) {
-		double dx = modelPos.x - getvarnum(c, "lastModelX");
-		double dy = modelPos.y - getvarnum(c, "lastModelY");
-		function_s(createdObj, "dragPressedPick", i, modelPos.x, modelPos.y, modelPos.z, dx, dy);
+		treenode vFocus = viewfocus(i).find("+");
+		Vec3 pos = modelPos;
+		Vec3 lastPos = Vec3(getvarnum(c, "lastModelX"), getvarnum(c, "lastModelY"), 0);
+		if (createdObj.up != vFocus &amp;&amp; createdObj.up != getvarnode(c, "activeNavigator").value) {
+			pos = pos.project(vFocus, createdObj.up);
+			lastPos = lastPos.project(vFocus, createdObj.up);
+		}
+		function_s(createdObj, "dragPressedPick", i, pos.x, pos.y, pos.z, pos.x - lastPos.x, pos.y - lastPos.y);
 		
 		#define WM_PAINT 0x000F
 		postwindowmessage(windowfromnode(i), WM_PAINT,0,0);
@@ -1031,7 +1341,7 @@ set(spatialz(asn), z);
 return asn;
 </data></node>
         <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
-        <node f="42" dt="2"><name>windowtitle</name><data>A* Navigator</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>A* Navigator</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\astarnavigatorsmall.png</data></node>
        </data></node>
        <node f="42" dt="4"><name>Barrier</name><data>
@@ -1052,9 +1362,10 @@ if (ontoView) {
 } else {
 	modeleditmode(0);
 }</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>An area where travelers cannot go 
+        <node f="4000000042" dt="2"><name>tooltip</name><data>An area where travelers cannot go 
 or where travel direction is constrained</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Barrier</data></node>
        </data></node>
        <node f="42" dt="4"><name>Divider</name><data>
         <node f="40"><name></name></node>
@@ -1074,9 +1385,10 @@ if (ontoView) {
 } else {
 	modeleditmode(0);
 }</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>A line or set of lines that blocks travel
+        <node f="4000000042" dt="2"><name>tooltip</name><data>A line or set of lines that blocks travel
 like a wall</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\divider.bmp</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Divider</data></node>
        </data></node>
        <node f="42" dt="4"><name>Preferred Path</name><data>
         <node f="40"><name></name></node>
@@ -1096,8 +1408,9 @@ if (ontoView) {
 } else {
 	modeleditmode(0);
 }</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>A path that acts as a "magnet" for travelers to travel on</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>A path that acts as a "magnet" for travelers to travel on</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Preferred Path</data></node>
        </data></node>
        <node f="42" dt="4"><name>Bridge</name><data>
         <node f="40"><name></name></node>
@@ -1117,8 +1430,9 @@ if (ontoView) {
 } else {
 	modeleditmode(0);
 }</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>A path that directly connects one location to another.</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>A path that directly connects one location to another.</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\bridge.bmp</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Bridge</data></node>
        </data></node>
        <node f="42" dt="4"><name>Mandatory Path</name><data>
         <node f="40"><name></name></node>
@@ -1138,8 +1452,9 @@ if (ontoView) {
 } else {
 	modeleditmode(0);
 }</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>A path that designated travelers must travel on</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>A path that designated travelers must travel on</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\mandatorypath.bmp</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Mandatory Path</data></node>
        </data></node>
        <node f="42" dt="4"><name>Grid</name><data>
         <node f="40"><name></name></node>
@@ -1161,8 +1476,9 @@ if (ontoView) {
 } else {
 	modeleditmode(0);
 }</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>A custom-definable A* grid</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>A custom-definable A* grid</data></node>
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\grid.bmp</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Grid</data></node>
        </data></node>
       </node>
       <node f="42"><name>Pages</name>
@@ -1197,15 +1513,15 @@ iterate(1, content(tabcontrol), 1){
 }</data></node>
         <node f="42"><name>eventfunctions</name>
          <node f="40"><name></name></node>
-         <node f="442" dt="2"><name>addBarrierCondition</name><data>treenode addedView = function_s(c.find("/tabcontrol/BarrierConditions/Panel"), "addItem");
+         <node f="442" dt="2"><name>addConditionalRule</name><data>treenode addedView = function_s(c.find("/tabcontrol/ConditionalRules/Panel"), "addItem");
 treenode addedCondition = addedView.find("&gt;objectfocus+");
-function_s(c, "selectBarrierCondition", addedCondition, addedView);
+function_s(c, "selectConditionalRule", addedCondition, addedView);
 return addedCondition;
 </data></node>
-         <node f="442" dt="2"><name>selectBarrierCondition</name><data>treenode focusedCondition = param(1);
+         <node f="442" dt="2"><name>selectConditionalRule</name><data>treenode focusedCondition = param(1);
 treenode focusedPanel = param(2);
 Object tabControl = c.find("/tabcontrol");
-Object conditionsTab = tabControl.find("/BarrierConditions");
+Object conditionsTab = tabControl.find("/ConditionalRules");
 Object dragPanel = conditionsTab.find("/Panel");
 if (!focusedPanel &amp;&amp; focusedCondition) {
 	focusedPanel = dragPanel.find("ViewPort/ItemPanel").subnodes[focusedCondition.rank].find("PropertiesPanel").first;
@@ -1265,6 +1581,7 @@ listboxrefresh(node("/Members/MemberChooser", up(c)));
 
 nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
           <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
+          <node f="4000000042" dt="2"><name>windowtitle</name><data>Setup</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>Surround Depth</name><data>
@@ -1274,6 +1591,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>00000000402e0000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Surround Depth</data></node>
           </data></node>
           <node f="42" dt="4"><name>EditSurround</name><data>
            <node f="40"><name>object</name></node>
@@ -1285,7 +1603,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/MeasuredValueEdit</data></node>
            <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/surroundDepth</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Specify how many nodes will appear around the outside of the A* area.</data></node>
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Specify how many nodes will appear around the outside of the A* area.</data></node>
            <node f="42" dt="1"><name>rangemin</name><data>000000003ff00000</data></node>
            <node f="42"><name>variables</name>
             <node f="40"><name></name></node>
@@ -1308,6 +1626,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/smoothRotations</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Smooth Rotations</data></node>
           </data></node>
           <node f="42" dt="4"><name>Snap Dividers to Grid</name><data>
            <node f="40"><name>object</name></node>
@@ -1316,8 +1635,9 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040510000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Snap dividers between points of the A* grid</data></node>
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Snap dividers between points of the A* grid</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/snapBetweenGrid</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Snap Dividers to Grid</data></node>
           </data></node>
           <node f="42" dt="4"><name>Paths</name><data>
            <node f="40"><name>object</name></node>
@@ -1330,6 +1650,7 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>000000004062a000</data></node>
            <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Paths</data></node>
           </data>
            <node f="40"><name></name></node>
            <node f="42" dt="4"><name>Cache Paths</name><data>
@@ -1344,7 +1665,8 @@ nodefunction(node("/Members/MembersList&gt;refresh", up(c)));</data></node>
 
 forobjectsbehind (c)
 	windowgray(windowfromnode(a), gray);</data></node>
-            <node f="42" dt="2"><name>tooltip</name><data>Toggle cache paths</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>Toggle cache paths</data></node>
+            <node f="4000000042" dt="2"><name>windowtitle</name><data>Cache Paths</data></node>
            </data></node>
            <node f="42" dt="4"><name>Paths Cached</name><data>
             <node f="40"><name>object</name></node>
@@ -1353,6 +1675,7 @@ forobjectsbehind (c)
             <node f="42" dt="1"><name>spatialy</name><data>0000000040440000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+            <node f="4000000042" dt="2"><name>windowtitle</name><data>Paths Cached</data></node>
            </data></node>
            <node f="42" dt="4"><name>pathCount</name><data>
             <node f="40"><name>object</name></node>
@@ -1361,7 +1684,7 @@ forobjectsbehind (c)
             <node f="42" dt="1"><name>spatialy</name><data>0000000040428000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040530000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-            <node f="42" dt="2"><name>tooltip</name><data>The total number of paths that have been cached.</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>The total number of paths that have been cached.</data></node>
             <node f="42" dt="1"><name>alignrightmargin</name><data>00000000402c0000</data></node>
             <node f="42" dt="2"><name>hotlink</name><data>@&gt;objectfocus+&gt;variables/pathCount</data></node>
             <node f="42"><name>style</name>
@@ -1377,6 +1700,7 @@ forobjectsbehind (c)
             <node f="42" dt="1"><name>spatialy</name><data>0000000040504000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+            <node f="4000000042" dt="2"><name>windowtitle</name><data>Path Requests</data></node>
            </data></node>
            <node f="42" dt="4"><name>requestCount</name><data>
             <node f="40"><name>object</name></node>
@@ -1385,7 +1709,7 @@ forobjectsbehind (c)
             <node f="42" dt="1"><name>spatialy</name><data>00000000404f0000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040530000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-            <node f="42" dt="2"><name>tooltip</name><data>The total number of travel requests made.</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>The total number of travel requests made.</data></node>
             <node f="42" dt="1"><name>alignrightmargin</name><data>00000000402c0000</data></node>
             <node f="42" dt="2"><name>hotlink</name><data>@&gt;objectfocus+&gt;variables/requestCount</data></node>
             <node f="42"><name>style</name>
@@ -1401,6 +1725,7 @@ forobjectsbehind (c)
             <node f="42" dt="1"><name>spatialy</name><data>0000000040568000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+            <node f="4000000042" dt="2"><name>windowtitle</name><data>Cached Paths Used</data></node>
            </data></node>
            <node f="42" dt="4"><name>useCount</name><data>
             <node f="40"><name>object</name></node>
@@ -1409,7 +1734,7 @@ forobjectsbehind (c)
             <node f="42" dt="1"><name>spatialy</name><data>000000004055c000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040530000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-            <node f="42" dt="2"><name>tooltip</name><data>Total number of travel requests that have utilized a cached path.</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>Total number of travel requests that have utilized a cached path.</data></node>
             <node f="42" dt="1"><name>alignrightmargin</name><data>00000000402c0000</data></node>
             <node f="42" dt="2"><name>hotlink</name><data>@&gt;objectfocus+&gt;variables/cacheUseCount</data></node>
             <node f="42"><name>style</name>
@@ -1425,6 +1750,7 @@ forobjectsbehind (c)
             <node f="42" dt="1"><name>spatialy</name><data>00000000405cc000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+            <node f="4000000042" dt="2"><name>windowtitle</name><data>Utilization</data></node>
            </data></node>
            <node f="42" dt="4"><name>utilization</name><data>
             <node f="40"><name>object</name></node>
@@ -1433,7 +1759,7 @@ forobjectsbehind (c)
             <node f="42" dt="1"><name>spatialy</name><data>00000000405c0000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040530000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-            <node f="42" dt="2"><name>tooltip</name><data>Percentage of travel requests that utilized a cached path.</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>Percentage of travel requests that utilized a cached path.</data></node>
             <node f="42" dt="1"><name>alignrightmargin</name><data>00000000402c0000</data></node>
             <node f="42" dt="2"><name>hotlinkx</name><data>if (!eventdata) {
 	treenode objfocus = node("@&gt;objectfocus+", c);
@@ -1466,6 +1792,7 @@ forobjectsbehind (c)
            <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
            <node f="42" dt="1"><name>alignbottommargin</name><data>00000000401c0000</data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Members</data></node>
           </data>
            <node f="40"><name></name></node>
            <node f="42" dt="4"><name>MemberChooser</name><data>
@@ -1477,9 +1804,9 @@ forobjectsbehind (c)
             <node f="42" dt="1"><name>spatialsy</name><data>00000000404e0000</data></node>
             <node f="42"><name>items</name>
              <node f="40"><name></name></node>
-             <node f="42"><name>All Members</name></node>
-             <node f="42"><name>Traveler Members</name></node>
-             <node f="42"><name>FR Members</name></node>
+             <node f="2000000042"><name>All Members</name></node>
+             <node f="2000000042"><name>Traveler Members</name></node>
+             <node f="2000000042"><name>FR Members</name></node>
             </node>
             <node f="42" dt="1"><name>itemcurrent</name><data>000000003ff00000</data></node>
             <node f="42" dt="2"><name>OnSelect</name><data>nodefunction(node("../MembersList&gt;refresh",c));</data>
@@ -1508,7 +1835,8 @@ if (objectexists(member)) {
 	);
 }</data>
              <node f="40"><name></name></node></node>
-            <node f="42" dt="2"><name>tooltip</name><data>Open Properties Window of highlighted member</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>Open Properties Window of highlighted member</data></node>
+            <node f="4000000042" dt="2"><name>windowtitle</name><data>Properties</data></node>
            </data>
             <node f="40"><name></name></node></node>
            <node f="42" dt="4"><name>Sampler</name><data>
@@ -1520,7 +1848,7 @@ if (objectexists(member)) {
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-            <node f="42" dt="2"><name>tooltip</name><data>Click this button then "sample" an object in FlexSim</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>Click this button then "sample" an object in FlexSim</data></node>
             <node f="42"><name>variables</name>
              <node f="40"><name></name></node>
              <node f="42" dt="1"><name>valType</name><data>0000000040700000</data>
@@ -1547,7 +1875,7 @@ repaintall();</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42" dt="2"><name>OnPress</name><data>createpopup("VIEW:/standardviews/other/UniversalSelect", "", nodetopath(node("&gt;SelectDelegate",c), 1), c, 0, 0, 0,0);</data></node>
-            <node f="42" dt="2"><name>tooltip</name><data>Add a new member</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>Add a new member</data></node>
             <node f="42" dt="2"><name>bitmap</name><data>buttons\add.png</data></node>
             <node f="42" dt="4"><name>SelectDelegate</name><data>
              <node f="40"><name></name></node>
@@ -1599,7 +1927,7 @@ if (objectexists(member)) {
 	repaintall();
 }
 </data></node>
-            <node f="42" dt="2"><name>tooltip</name><data>Remove the selected member</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>Remove the selected member</data></node>
             <node f="42" dt="2"><name>bitmap</name><data>buttons\remove.png</data></node>
            </data></node>
            <node f="42" dt="4"><name>MembersList</name><data>
@@ -1662,6 +1990,7 @@ for (int i = 1; i &lt;= content(members); i++) {
           <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
           <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
+          <node f="4000000042" dt="2"><name>windowtitle</name><data>Behavior</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>Path Routing</name><data>
@@ -1671,6 +2000,7 @@ for (int i = 1; i &lt;= content(members); i++) {
            <node f="42" dt="1"><name>spatialy</name><data>00000000402a0000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Path Routing</data></node>
           </data></node>
           <node f="42" dt="4"><name>ChooseDeepSearch</name><data>
            <node f="40"><name>object</name></node>
@@ -1679,12 +2009,11 @@ for (int i = 1; i &lt;= content(members); i++) {
            <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>00000000405e0000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data></data></node>
            <node f="42"><name>items</name>
             <node f="40"><name></name></node>
-            <node f="42" dt="1"><name>Right Angles Only</name><data>0000000040000000</data></node>
-            <node f="42" dt="1"><name>Diagonals</name><data>0000000000000000</data></node>
-            <node f="42" dt="1"><name>Deep Diagonals</name><data>000000003ff00000</data></node>
+            <node f="2000000042" dt="1"><name>Right Angles Only</name><data>0000000040000000</data></node>
+            <node f="2000000042" dt="1"><name>Diagonals</name><data>0000000000000000</data></node>
+            <node f="2000000042" dt="1"><name>Deep Diagonals</name><data>000000003ff00000</data></node>
            </node>
            <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/deepSearch</data></node>
@@ -1700,11 +2029,12 @@ for (int i = 1; i &lt;= content(members); i++) {
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/strictDiagonals</data></node>
            <node f="42"><name>eventfunctions</name>
             <node f="40"><name></name></node></node>
-           <node f="42" dt="2"><name>tooltip</name><data>If checked, travelers will only travel diagonals if both 
+           <node f="4000000042" dt="2"><name>tooltip</name><data>If checked, travelers will only travel diagonals if both 
 travel orderings are available (x then y and y then x)
 
 Checking this box ensures travelers don't go around corners 
 by cutting a short diagonal.</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Strict Diagonals</data></node>
           </data></node>
           <node f="42" dt="4"><name>CollisionAvoidancePanel</name><data>
            <node f="40"><name>object</name></node>
@@ -1740,9 +2070,10 @@ forobjecttreeunder(up(c)) {
              <node f="42" dt="2"><name>OnPress</name><data>function_s(c, "grayWindows");
 </data></node>
             </node>
-            <node f="42" dt="2"><name>tooltip</name><data>If checked, travelers will allocate nodes in the travel grid as 
+            <node f="4000000042" dt="2"><name>tooltip</name><data>If checked, travelers will allocate nodes in the travel grid as 
 part of their travel, preventing travelers from running 
 over each other.</data></node>
+            <node f="4000000042" dt="2"><name>windowtitle</name><data>Collision Avoidance</data></node>
            </data></node>
            <node f="42" dt="4"><name>Ignore Inactive Members</name><data>
             <node f="40"><name>object</name></node>
@@ -1752,8 +2083,9 @@ over each other.</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040618000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/ignoreInactiveMemberCollisions</data></node>
-            <node f="42" dt="2"><name>tooltip</name><data>If checked, travelers will travel through nodes allocated to 
+            <node f="4000000042" dt="2"><name>tooltip</name><data>If checked, travelers will travel through nodes allocated to 
 other inactive travelers.</data></node>
+            <node f="4000000042" dt="2"><name>windowtitle</name><data>Ignore Inactive Members</data></node>
            </data></node>
            <node f="42" dt="4"><name>Deallocation Time Offset Factor</name><data>
             <node f="40"><name>object</name></node>
@@ -1762,6 +2094,7 @@ other inactive travelers.</data></node>
             <node f="42" dt="1"><name>spatialy</name><data>00000000404d8000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040624000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+            <node f="4000000042" dt="2"><name>windowtitle</name><data>Deallocation Time Offset Factor</data></node>
            </data></node>
            <node f="42" dt="4"><name>EditDeallocTimeOffset</name><data>
             <node f="40"><name>object</name></node>
@@ -1797,7 +2130,7 @@ other inactive travelers.</data></node>
             <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-            <node f="42" dt="2"><name>tooltip</name><data>Travelers will stop and rotate when they need to turn</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>Travelers will stop and rotate when they need to turn</data></node>
             <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/stopForTurns</data></node>
             <node f="42"><name>eventfunctions</name>
              <node f="40"><name></name></node>
@@ -1814,6 +2147,7 @@ forobjecttreeunder(up(c)) {
              <node f="42" dt="2"><name>OnPress</name><data>function_s(c, "grayWindows");
 </data></node>
             </node>
+            <node f="4000000042" dt="2"><name>windowtitle</name><data>Stop for Turns</data></node>
            </data></node>
            <node f="42" dt="4"><name>Turn Speed</name><data>
             <node f="40"><name>object</name></node>
@@ -1822,6 +2156,7 @@ forobjecttreeunder(up(c)) {
             <node f="42" dt="1"><name>spatialy</name><data>00000000403f0000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+            <node f="4000000042" dt="2"><name>windowtitle</name><data>Turn Speed</data></node>
            </data></node>
            <node f="42" dt="4"><name>EditTurnSpeed</name><data>
             <node f="40"><name>object</name></node>
@@ -1831,7 +2166,7 @@ forobjecttreeunder(up(c)) {
             <node f="42" dt="1"><name>spatialy</name><data>00000000403c0000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-            <node f="42" dt="2"><name>tooltip</name><data>Enter the rotation speed for when stopping to rotate</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>Enter the rotation speed for when stopping to rotate</data></node>
             <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/turnSpeed</data></node>
             <node f="42"><name>variables</name>
              <node f="40"><name></name></node>
@@ -1845,6 +2180,7 @@ forobjecttreeunder(up(c)) {
             <node f="42" dt="1"><name>spatialy</name><data>00000000404d8000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+            <node f="4000000042" dt="2"><name>windowtitle</name><data>Turn Delay</data></node>
            </data></node>
            <node f="42" dt="4"><name>EditTurnDelay</name><data>
             <node f="40"><name>object</name></node>
@@ -1854,7 +2190,7 @@ forobjecttreeunder(up(c)) {
             <node f="42" dt="1"><name>spatialy</name><data>00000000404c0000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-            <node f="42" dt="2"><name>tooltip</name><data>Enter the rotation speed for when stopping to rotate</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>Enter the rotation speed for when stopping to rotate</data></node>
             <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/turnDelay</data></node>
             <node f="42"><name>variables</name>
              <node f="40"><name></name></node>
@@ -1869,9 +2205,10 @@ forobjecttreeunder(up(c)) {
            <node f="42" dt="1"><name>spatialy</name><data>00000000406d4000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Do routing calculations based on the calculated travel time, 
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Do routing calculations based on the calculated travel time, 
 including turn times and time waiting for other travelers.</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/routeByTravelTime</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Route By Travel Time</data></node>
           </data></node>
           <node f="42" dt="4"><name>Default Preferred Path Weight</name><data>
            <node f="40"><name>object</name></node>
@@ -1880,6 +2217,7 @@ including turn times and time waiting for other travelers.</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>0000000040709000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>000000004064c000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Default Preferred Path Weight</data></node>
           </data></node>
           <node f="42" dt="4"><name>EditPathWeight</name><data>
            <node f="40"><name>object</name></node>
@@ -1889,7 +2227,7 @@ including turn times and time waiting for other travelers.</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/defaultPathWeight</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>This is the default path weight for any Preferred Paths without 
+           <node f="4000000042" dt="2"><name>tooltip</name><data>This is the default path weight for any Preferred Paths without 
 a custom weight. Setting a path to have a path weight of 0 will 
 revert the path to using this default value.</data></node>
           </data>
@@ -1946,6 +2284,7 @@ windowgray(windowfromnode(c.find("Edit Heat Map Colors")), gray);
 </data></node>
           </node>
           <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
+          <node f="4000000042" dt="2"><name>windowtitle</name><data>Visual</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>Show Barriers</name><data>
@@ -1955,7 +2294,8 @@ windowgray(windowfromnode(c.find("Edit Heat Map Colors")), gray);
            <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Check to show A* Barriers</data></node>
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Check to show A* Barriers</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Show Barriers</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Grid Bounds</name><data>
            <node f="40"><name>object</name></node>
@@ -1964,7 +2304,8 @@ windowgray(windowfromnode(c.find("Edit Heat Map Colors")), gray);
            <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Check to show A* grid boundaries</data></node>
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Check to show A* grid boundaries</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Show Grid Bounds</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Grid Nodes</name><data>
            <node f="40"><name>object</name></node>
@@ -1973,7 +2314,8 @@ windowgray(windowfromnode(c.find("Edit Heat Map Colors")), gray);
            <node f="42" dt="1"><name>spatialy</name><data>0000000040508000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040604000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Check to show A* grid nodes</data></node>
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Check to show A* grid nodes</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Show Grid Nodes</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Members</name><data>
            <node f="40"><name>object</name></node>
@@ -1982,7 +2324,8 @@ windowgray(windowfromnode(c.find("Edit Heat Map Colors")), gray);
            <node f="42" dt="1"><name>spatialy</name><data>0000000040578000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Check to draw a circle beneath A* Traveler members and a square beneath A* FR members</data></node>
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Check to draw a circle beneath A* Traveler members and a square beneath A* FR members</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Show Members</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Allocations</name><data>
            <node f="40"><name>object</name></node>
@@ -1991,8 +2334,9 @@ windowgray(windowfromnode(c.find("Edit Heat Map Colors")), gray);
            <node f="42" dt="1"><name>spatialy</name><data>00000000405e8000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>When using collision avoidance, check to show grid node allocations for each traveller</data></node>
+           <node f="4000000042" dt="2"><name>tooltip</name><data>When using collision avoidance, check to show grid node allocations for each traveller</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/showAllocations</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Show Allocations</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Heat Map</name><data>
            <node f="40"><name>object</name></node>
@@ -2001,10 +2345,11 @@ windowgray(windowfromnode(c.find("Edit Heat Map Colors")), gray);
            <node f="42" dt="1"><name>spatialy</name><data>000000004062c000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Check to show a heat map of the A* grid</data></node>
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Check to show a heat map of the A* grid</data></node>
            <node f="42" dt="2"><name>OnPress</name><data>function_s(up(c), "enableHeatMapControls");</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/showHeatMap</data></node>
            <node f="42" dt="2"><name>tooltip</name><data>Check to draw a heatmap over the A* grid</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Show Heat Map</data></node>
           </data></node>
           <node f="42" dt="4"><name>SelectHeatMapMode</name><data>
            <node f="40"><name>object</name></node>
@@ -2014,13 +2359,13 @@ windowgray(windowfromnode(c.find("Edit Heat Map Colors")), gray);
            <node f="42" dt="1"><name>spatialsx</name><data>00000000406e0000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/heatMapMode</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Enter the calculation that determines the colors of the heat map</data></node>
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Enter the calculation that determines the colors of the heat map</data></node>
            <node f="42"><name>items</name>
             <node f="40"><name></name></node>
-            <node f="42"><name>Traversals Per Time</name></node>
-            <node f="42"><name>Average Blockage Time Per Traversal</name></node>
-            <node f="42"><name>Percent of Total Time Blocked</name></node>
-            <node f="42"><name>Percent of Total Traversals</name></node>
+            <node f="2000000042"><name>Traversals Per Time</name></node>
+            <node f="2000000042"><name>Average Blockage Time Per Traversal</name></node>
+            <node f="2000000042"><name>Percent of Total Time Blocked</name></node>
+            <node f="2000000042"><name>Percent of Total Traversals</name></node>
            </node>
            <node f="42" dt="1"><name>itemcurrent</name><data>0000000040080000</data></node>
           </data></node>
@@ -2033,6 +2378,7 @@ windowgray(windowfromnode(c.find("Edit Heat Map Colors")), gray);
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
            <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) 
 	function_s(up(c), "enableHeatMapControls");</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Max Heat Value</data></node>
           </data></node>
           <node f="42" dt="4"><name>EditMaxHeatValue</name><data>
            <node f="40"><name>object</name></node>
@@ -2042,7 +2388,7 @@ windowgray(windowfromnode(c.find("Edit Heat Map Colors")), gray);
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040618000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/maxHeatValue</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Enter the value that corresponds to "maximum heat", or 
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Enter the value that corresponds to "maximum heat", or 
 bright red, in the heat map.</data></node>
           </data>
            <node f="40"><name></name></node></node>
@@ -2126,10 +2472,10 @@ if (clickcode() == LEFT_RELEASE) {
            <node f="42" dt="1"><name>spatialy</name><data>00000000406d6000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040690000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Check to make the base color of the heat map transparent</data></node>
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Check to make the base color of the heat map transparent</data></node>
            <node f="42" dt="2"><name>OnPress</name><data></data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/transparentBaseColor</data></node>
-           <node f="42" dt="2"><name>windowtitle</name><data>Transparent Base Color</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Transparent Base Color</data></node>
           </data></node>
           <node f="42" dt="4"><name>Edit Heat Map Colors</name><data>
            <node f="40"><name>object</name></node>
@@ -2141,6 +2487,7 @@ if (clickcode() == LEFT_RELEASE) {
            <node f="42" dt="2"><name>OnPress</name><data>createview("VIEW:/modules/AStar/Popups/HeatMapColorPalette","MODEL:/AStarNavigator");
 </data></node>
            <node f="42" dt="2"><name>tooltip</name><data></data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Edit Heat Map Colors</data></node>
           </data></node>
           <node f="42" dt="4"><name>Show Travel Threshold</name><data>
            <node f="40"><name>object</name></node>
@@ -2149,9 +2496,10 @@ if (clickcode() == LEFT_RELEASE) {
            <node f="42" dt="1"><name>spatialy</name><data>0000000040720000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040690000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Check to display the nodes around the highlighted object where
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Check to display the nodes around the highlighted object where
 a traveller could end their travel to the object</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/showTravelThreshold</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Show Travel Threshold</data></node>
           </data></node>
           <node f="42" dt="4"><name>Debug Routing Algorithm</name><data>
            <node f="40"><name>object</name></node>
@@ -2160,7 +2508,7 @@ a traveller could end their travel to the object</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>000000004073c000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040690000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>Check to display the nodes around the highlighted object where
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Check to display the nodes around the highlighted object where
 a traveller could end their travel to the object</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/debugRoutingAlgorithm</data></node>
            <node f="42"><name>eventfunctions</name>
@@ -2173,7 +2521,7 @@ windowgray(windowfromnode(c.find("../Completion Percent")), gray);
 windowgray(windowfromnode(c.find("../CompletionRatioTracker")), gray);
 </data></node>
            </node>
-           <node f="42" dt="2"><name>windowtitle</name><data>Debug/Show Routing Algorithm</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Debug/Show Routing Algorithm</data></node>
            <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
           </data></node>
           <node f="42" dt="4"><name>Completion Percent</name><data>
@@ -2185,6 +2533,7 @@ windowgray(windowfromnode(c.find("../CompletionRatioTracker")), gray);
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
            <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) 
 	function_s(up(c), "enableHeatMapControls");</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Completion Percent</data></node>
           </data></node>
           <node f="42" dt="4"><name>CompletionRatioTracker</name><data>
            <node f="40"><name>object</name></node>
@@ -2198,11 +2547,11 @@ windowgray(windowfromnode(c.find("../CompletionRatioTracker")), gray);
            <node f="42" dt="1"><name>itemcurrent</name><data>000000003fe00000</data></node>
            <node f="42" dt="1"><name>rangemin</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>rangemax</name><data>000000003ff00000</data></node>
-           <node f="42" dt="2"><name>tooltip</name><data>To use this, click on an A* traveler in the model, then move this tracker to 
+           <node f="4000000042" dt="2"><name>tooltip</name><data>To use this, click on an A* traveler in the model, then move this tracker to 
 see the progression of that traveler's last routing algorithm execution.</data></node>
           </data></node>
          </node>
-         <node f="42" dt="4"><name>BarrierConditions</name><data>
+         <node f="42" dt="4"><name>ConditionalRules</name><data>
           <node f="40"><name>object</name></node>
           <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
           <node f="42" dt="1"><name>spatialx</name><data>0000000040000000</data></node>
@@ -2211,7 +2560,7 @@ see the progression of that traveler's last routing algorithm execution.</data><
           <node f="42" dt="1"><name>spatialsy</name><data>00000000407aa000</data></node>
           <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
           <node f="42" dt="2"><name>helptopic</name><data>AStarTool</data></node>
-          <node f="42" dt="2"><name>windowtitle</name><data>Barrier Conditions</data></node>
+          <node f="4000000042" dt="2"><name>windowtitle</name><data>Conditional Rules</data></node>
          </data>
           <node f="40"><name></name></node>
           <node f="42" dt="4"><name>Panel</name><data>
@@ -2269,7 +2618,7 @@ see the progression of that traveler's last routing algorithm execution.</data><
                <node f="42"><name>variables</name>
                 <node f="40"><name></name></node>
                 <node f="42" dt="2"><name>codedescription</name><data>Barrier Condition</data></node>
-                <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/BarrierCondition</data>
+                <node f="42" dt="2"><name>picklist</name><data>VIEW:/modules/AStar/PickLists/ConditionalRule</data>
                  <node f="40"><name></name></node></node>
                 <node f="42" dt="1"><name>hasDragTarget</name><data>0000000000000000</data></node>
                 <node f="42" dt="1"><name>valType</name><data>000000003ff00000</data>
@@ -2483,6 +2832,7 @@ forobjecttreeunder(node("/BarrierPoints", c))
           <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
           <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+          <node f="4000000042" dt="2"><name>windowtitle</name><data>Condition</data></node>
          </data></node>
          <node f="42" dt="4"><name>ChooseCondition</name><data>
           <node f="40"><name>object</name></node>
@@ -2511,6 +2861,7 @@ forobjecttreeunder(node("/BarrierPoints", c))
 	windowgray(windowfromnode(c), isclasstype(focus, "AStar::Bridge"));
 }</data></node>
           <node f="42" dt="2"><name>tooltip</name><data>Tells if the object's rule applies both ways</data></node>
+          <node f="4000000042" dt="2"><name>windowtitle</name><data>Two Way</data></node>
          </data></node>
          <node f="42" dt="4"><name>PointsEdit</name><data>
           <node f="40"><name>object</name></node>
@@ -2531,6 +2882,7 @@ forobjecttreeunder(node("/BarrierPoints", c))
            <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040440000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Points</data></node>
           </data></node>
           <node f="42" dt="4"><name>Add</name><data>
            <node f="40"><name>object</name></node>
@@ -2814,6 +3166,7 @@ repaintview(TheTable);
            <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Path Weight</data></node>
           </data></node>
           <node f="42" dt="4"><name>EditPathWeight</name><data>
            <node f="40"><name>object</name></node>
@@ -2892,6 +3245,7 @@ forobjecttreeunder(c.find("../EditVirtualDistance")) {
 </data></node>
            </node>
            <node f="42" dt="2"><name>tooltip</name><data>Use a virtual distance instead of the actual bridge distance.</data></node>
+           <node f="4000000042" dt="2"><name>windowtitle</name><data>Virtual Distance</data></node>
           </data></node>
           <node f="42" dt="4"><name>EditVirtualDistance</name><data>
            <node f="40"><name>object</name></node>
@@ -3065,6 +3419,7 @@ forobjecttreeunder(node("/BarrierPoints", c))
           <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
           <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+          <node f="4000000042" dt="2"><name>windowtitle</name><data>Condition</data></node>
          </data></node>
          <node f="42" dt="4"><name>ChooseCondition</name><data>
           <node f="40"><name>object</name></node>
@@ -3960,12 +4315,32 @@ if (clickcode() == LEFT_RELEASE) {
       </node>
       <node f="42"><name>PickLists</name>
        <node f="40"><name></name></node>
-       <node f="42" dt="2"><name>BarrierCondition</name><data>treenode traveler = param(1);
+       <node f="42" dt="2"><name>ConditionalRule</name><data>treenode traveler = param(1);
 </data>
         <node f="40"><name></name></node>
-        <node f="42" dt="2"><name>By Traveler Label</name><data>return /**/traveler.type == 1/**direct*/;</data></node>
-        <node f="42" dt="2"><name>Staff Only</name><data>/**Staff Only*/
+        <node f="2000000042" dt="2"><name>By Traveler Label</name><data>return /**/traveler.type == 1/**direct*/;</data></node>
+        <node f="a000000042" dt="2"><name>Staff Only</name><data>/**Staff Only*/
 return !isclasstype(traveler, "People::Staff") || traveler.TravelingWithPatient?;</data></node>
+       </node>
+       <node f="42" dt="2"><name>OnGridChange</name><data>AStar.Navigator current = ownerobject(c);
+int addedBarrier = param(1);
+</data>
+        <node f="40"><name></name></node>
+        <node f="42" dt="2"><name>Reroute Travelers</name><data>/**Reroute Travelers*/
+int condition = /**\nGeneral Condition: *//**/addedBarrier/**/;
+if (condition) {
+	for (int i = 1; i &lt;= current.travelers.length; i++) {
+		AStar.Traveler traveler = current.travelers[i];
+		TaskExecuter te = traveler.object;
+		int condition = /**\nPer Traveler Condition: *//**/traveler.isActive &amp;&amp; traveler.travelPath.isBlocked()/**/;
+		if (condition &amp;&amp; te.activeTaskSequence) {
+			TaskSequence ts = TaskSequence.create(te, te.activeTaskSequence.priority + 1, PREEMPT_ONLY);
+			ts.addTask(TASKTYPE_BREAK, 0, te.activeTaskSequence);
+			ts.dispatch();
+		}
+	}
+}
+</data></node>
        </node>
       </node>
       <node f="42"><name>GUIClasses</name>
@@ -3991,7 +4366,7 @@ return !isclasstype(traveler, "People::Staff") || traveler.TravelingWithPatient?
          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040350000</data></node>
          <node f="42" dt="2"><name>tooltip</name><data></data></node>
          <node f="42"><name>items</name></node>
-         <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>itemcurrent</name><data>0000000040080000</data></node>
          <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+</data></node>
          <node f="42"><name>eventfunctions</name>
           <node f="40"><name></name></node>
@@ -4024,7 +4399,7 @@ if (selected == items(c).subnodes.length) {
 	createview(navigator.attrs.guifocusclass.value, navigator.getPath(), "");
 	Object propertiesView = Model.find("VIEW:/active/AStarProperties");
 	if (propertiesView) {
-		newRule = function_s(propertiesView, "addBarrierCondition");
+		newRule = function_s(propertiesView, "addConditionalRule");
 	}
 } 
 
@@ -4067,9 +4442,9 @@ Object navigator = Model.find("AStarNavigator");
 createview(navigator.attrs.guifocusclass.value, navigator.getPath(), "");
 Object propertiesView = Model.find("VIEW:/active/AStarProperties");
 if (propertiesView) {
-	function_s(propertiesView, "selectBarrierCondition", focus.value);
+	function_s(propertiesView, "selectConditionalRule", focus.value);
 }</data></node>
-         <node f="42" dt="2"><name>tooltip</name><data>Edit this condition in A* Navigator Properties</data></node>
+         <node f="4000000042" dt="2"><name>tooltip</name><data>Edit this condition in A* Navigator Properties</data></node>
          <node f="42" dt="2"><name>bitmap</name><data>buttons\properties.png</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
         </data></node>
@@ -4171,7 +4546,7 @@ function_s(this.find("NameEdit"), "refresh");</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
           <node f="42"><name>items</name></node>
           <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data>Choose which palette to use for this chart</data></node>
+          <node f="4000000042" dt="2"><name>tooltip</name><data>Choose which palette to use for this chart</data></node>
           <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+&gt;variables/palette</data></node>
           <node f="42" dt="1"><name>alignrightmargin</name><data>00000000401c0000</data></node>
           <node f="42"><name>eventfunctions</name>
@@ -4317,7 +4692,7 @@ applylinks(view.up, 1);</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
-     <node f="42" dt="2"><name>AStar: Task Executer as Flowitem</name><data>/**AStar: Task Executer as Flowitem*/
+     <node f="a000000042" dt="2"><name>AStar: Task Executer as Flowitem</name><data>/**AStar: Task Executer as Flowitem*/
 /**\nMove the item into the model, then connect it to the AStar Navigator. Then tell it to travel to the destination and unload itself into the object. Note: this will only work for flow items created from the TaskExecuterFlowItem in the flow item bin.*/
 
 Array absloc = Array(3);
@@ -4378,7 +4753,7 @@ return 0;</data></node>
       <node f="42" dt="2"><name>viewfocus</name><data>VIEW:/modules/AStar/LibraryGroup</data></node>
       <node f="42" dt="1"><name>picturealignleft</name><data>0000000040360000</data></node>
       <node f="42" dt="1"><name>expanded</name><data>0000000000000000</data></node>
-      <node f="42" dt="2"><name>windowtitle</name><data>A* Navigation</data></node>
+      <node f="4000000042" dt="2"><name>windowtitle</name><data>A* Navigation</data></node>
      </data></node>
     </node>
    </node>
@@ -4470,6 +4845,56 @@ return 0;
           <node f="42" dt="2"><name>Title</name><data>Current</data></node>
           <node f="42" dt="2"><name>Name</name><data>current</data></node>
           <node f="42" dt="2"><name>Type</name><data>Object</data></node>
+         </node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object is rerouted along a different path on the AStar network</data></node>
+      </data></node>
+      <node f="42" dt="4"><name>OnCalculatePath</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>params</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Current</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Current</data></node>
+          <node f="42" dt="2"><name>Name</name><data>current</data></node>
+          <node f="42" dt="2"><name>Type</name><data>Object</data></node>
+         </node>
+         <node f="42" dt="2"><name>DestLoc</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Destination Location</data></node>
+          <node f="42" dt="2"><name>Name</name><data>destLoc</data></node>
+          <node f="42" dt="2"><name>Type</name><data>Vec3</data></node>
+         </node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>tooltip</name><data>Define logic that executes when the object is rerouted along a different path on the AStar network</data></node>
+      </data></node>
+      <node f="42" dt="4"><name>OnNavigatePath</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>params</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Current</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Current</data></node>
+          <node f="42" dt="2"><name>Name</name><data>current</data></node>
+          <node f="42" dt="2"><name>Type</name><data>Object</data></node>
+         </node>
+         <node f="42" dt="2"><name>StartIndex</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Start Index</data></node>
+          <node f="42" dt="2"><name>Name</name><data>startIndex</data></node>
+          <node f="42" dt="2"><name>Type</name><data>int</data></node>
+         </node>
+         <node f="42" dt="2"><name>Kinematics</name><data></data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>Title</name><data>Kinematics</data></node>
+          <node f="42" dt="2"><name>Name</name><data>kinematics</data></node>
+          <node f="42" dt="2"><name>Type</name><data>treenode</data></node>
          </node>
         </node>
        </node>
@@ -4589,7 +5014,7 @@ return 0;
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404b0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404b8000</data></node>
     <node f="42" dt="2"><name>after</name><data>FollowObject</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -4652,7 +5077,7 @@ applylinks(c, 1);
        </node>
        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
        <node f="42" dt="2"><name>tooltip</name><data></data></node>
-       <node f="42" dt="2"><name>windowtitle</name><data>A* Traveler</data></node>
+       <node f="4000000042" dt="2"><name>windowtitle</name><data>A* Traveler</data></node>
        <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
       </data>
        <node f="40"><name></name></node>
@@ -4666,6 +5091,7 @@ applylinks(c, 1);
         <node f="42" dt="2"><name>tooltip</name><data>When checked, the A* traveler will always travel along mandatory paths</data></node>
         <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+/useMandatoryPath</data></node>
         <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Use Mandatory Paths</data></node>
        </data></node>
       </node>
      </node>
@@ -4673,7 +5099,7 @@ applylinks(c, 1);
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404d8000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404e8000</data></node>
     <node f="42" dt="2"><name>after</name><data>TestQueries</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -4690,6 +5116,37 @@ applylinks(c, 1);
       <node f="42"><name>variables</name>
        <node f="40"><name></name></node>
        <node f="42" dt="2"><name>helptopic</name><data>BarrierProperties</data></node>
+       <node f="42"><name>propTableQueryTree</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>SELECT</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>Location</name></node>
+         <node f="42"><name>Size</name></node>
+         <node f="42"><name>ConditionalRule</name></node>
+         <node f="42"><name>TravelPatterns</name></node>
+        </node>
+        <node f="42"><name>FROM</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>Objects()</name></node>
+        </node>
+        <node f="42"><name>WHERE</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>AND</name>
+          <node f="40"><name></name></node>
+          <node f="42"><name>IN</name>
+           <node f="40"><name></name></node>
+           <node f="42"><name>"AStar::Barrier"</name></node>
+           <node f="42"><name>Classes</name></node>
+          </node>
+          <node f="42"><name>NOT IN</name>
+           <node f="40"><name></name></node>
+           <node f="42"><name>"AStar::Divider"</name></node>
+           <node f="42"><name>Classes</name></node>
+          </node>
+         </node>
+        </node>
+        <node f="42"><name>ORDER BY</name></node>
+       </node>
       </node>
      </data>
       <node f="40"><name></name></node>
@@ -4755,10 +5212,10 @@ if (getvarnum(c, "isExpanded")) {
 </data></node>
        </node>
        <node f="42" dt="2"><name>tooltip</name><data></data></node>
-       <node f="42" dt="2"><name>windowtitle</name><data>Barrier</data></node>
+       <node f="4000000042" dt="2"><name>windowtitle</name><data>Barrier</data></node>
       </data>
        <node f="40"><name></name></node>
-       <node f="42" dt="4"><name>SizingPanel</name><data>
+       <node f="42" dt="4"><name>GeomPanel</name><data>
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
@@ -4767,27 +5224,9 @@ if (getvarnum(c, "isExpanded")) {
          <node f="40"><name></name></node>
          <node f="42" dt="1"><name>min</name><data>0000000040590000</data></node>
         </node>
-        <node f="42" dt="1"><name>spatialsy</name><data>0000000040520000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>000000004052c000</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
-         <node f="42"><name>X</name>
-          <node f="40"><name></name></node>
-          <node f="442" dt="2"><name>loc</name><data>return spatialx(param(1));</data></node>
-          <node f="442" dt="2"><name>rot</name><data>return spatialrx(param(1));</data></node>
-          <node f="442" dt="2"><name>size</name><data>return spatialsx(param(1));</data></node>
-         </node>
-         <node f="42"><name>Y</name>
-          <node f="40"><name></name></node>
-          <node f="442" dt="2"><name>loc</name><data>return spatialy(param(1));</data></node>
-          <node f="442" dt="2"><name>rot</name><data>return spatialry(param(1));</data></node>
-          <node f="442" dt="2"><name>size</name><data>return spatialsy(param(1));</data></node>
-         </node>
-         <node f="42"><name>Z</name>
-          <node f="40"><name></name></node>
-          <node f="442" dt="2"><name>loc</name><data>return spatialz(param(1));</data></node>
-          <node f="442" dt="2"><name>rot</name><data>return spatialrz(param(1));</data></node>
-          <node f="442" dt="2"><name>size</name><data>return spatialsz(param(1));</data></node>
-         </node>
          <node f="42" dt="1"><name>isDirect</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>selectedGroup</name><data>0000000040080000</data></node>
          <node f="42" dt="1"><name>selectedIcon</name><data>0000000040180000</data></node>
@@ -4801,825 +5240,128 @@ Switch to Direct Spatials mode before sampling.</data></node>
         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
-        <node f="42"><name>splitterx</name></node>
         <node f="42"><name>eventfunctions</name>
          <node f="40"><name></name></node>
-         <node f="442" dt="2"><name>convertCoord</name><data>string axis = param(1);
-treenode obj = param(2);
+         <node f="442" dt="2"><name>toGUI</name><data>Vec3 loc = param(1);
+Object obj = c.find("..&gt;objectfocus+");
 
-double xFactor = getvarnum(c, "xCoordFactor") * xsize(obj); 
-double yFactor = -getvarnum(c, "yCoordFactor") * ysize(obj);
-double zFactor = getvarnum(c, "zCoordFactor") * zsize(obj);
+if (getvarnum(c, "isDirect"))
+	return loc;
 
-if (axis == "x")
-	return vectorprojectx(obj, xFactor, yFactor, zFactor, up(obj));
-if (axis == "y")
-	return vectorprojecty(obj, xFactor, yFactor, zFactor, up(obj));
-if (axis == "z")
-	return vectorprojectz(obj, xFactor, yFactor, zFactor, up(obj));</data></node>
+return obj.getLocation(
+	getvarnum(c, "xCoordFactor"), 
+	getvarnum(c, "yCoordFactor"), 
+	getvarnum(c, "zCoordFactor"));</data></node>
+         <node f="442" dt="2"><name>toObj</name><data>Vec3 loc = param(1);
+Object obj = c.find("..&gt;objectfocus+");
+
+if (getvarnum(c, "isDirect"))
+	return loc;
+
+Vec3 curLoc = obj.getLocation(
+	getvarnum(c, "xCoordFactor"), 
+	getvarnum(c, "yCoordFactor"), 
+	getvarnum(c, "zCoordFactor"));
+
+Vec3 offset = loc - curLoc;
+return obj.location + offset;
+</data></node>
         </node>
        </data>
         <node f="40"><name></name></node>
-        <node f="42" dt="4"><name>Labels</name><data>
+        <node f="42" dt="4"><name>Vec3TopLabels</name><data>
          <node f="40"><name>object</name></node>
          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>0000000040390000</data>
-          <node f="40"><name></name></node>
-          <node f="42" dt="1"><name>min</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>max</name><data>0000000040390000</data></node>
-          <node f="42" dt="1"><name>desired</name><data>0000000040390000</data></node>
-         </node>
-         <node f="42" dt="1"><name>spatialsy</name><data>0000000040590000</data></node>
-         <node f="42" dt="1"><name>alignbottommargin</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-         <node f="42" dt="2"><name>undohistory</name><data>../../..</data></node>
-        </data>
-         <node f="40"><name></name></node>
-         <node f="42" dt="4"><name>Loc</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040390000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040390000</data></node>
-          <node f="42" dt="1"><name>aligncenterx</name><data>0000000000000000</data></node>
-          <node f="42"><name>eventfunctions</name>
-           <node f="40"><name></name></node>
-           <node f="42" dt="2"><name>OnPress</name><data>createpopup("VIEW:/popups/CoordinateSystem", nodetopath(up(up(c))), nodetopath(c), c, -260, 0, 260, 642);</data>
-            <node f="40"><name></name></node></node>
-          </node>
-          <node f="42" dt="2"><name>bitmap</name><data>bitmaps/CoordinateSystems/Mid6_small.png</data></node>
-          <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data>Select the point on the object where the location will be measured</data></node>
-         </data></node>
-         <node f="42" dt="4"><name>Size</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040480000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040390000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040390000</data></node>
-          <node f="42" dt="1"><name>aligncenterx</name><data>0000000000000000</data></node>
-          <node f="42" dt="2"><name>bitmap</name><data>buttons\resize.png</data></node>
-         </data></node>
-        </node>
-        <node f="42" dt="4"><name>X</name><data>
-         <node f="40"><name>object</name></node>
-         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-         <node f="42" dt="2"><name>focus</name><data>../..&gt;variables/X</data></node>
+         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/QuickProps/Vec3TopLabels</data></node>
          <node f="42" dt="1"><name>spatialx</name><data>0000000040390000</data></node>
          <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data>
-          <node f="40"><name></name></node>
-          <node f="42" dt="1"><name>min</name><data>00000000403e0000</data></node>
-          <node f="42" dt="1"><name>desired</name><data>00000000404e0000</data></node>
-         </node>
-         <node f="42" dt="1"><name>spatialsy</name><data>0000000040590000</data></node>
-         <node f="42" dt="1"><name>alignbottommargin</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>00000000403e0000</data>
+          <node f="40"><name></name></node></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040310000</data></node>
+         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040390000</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-         <node f="42" dt="2"><name>undohistory</name><data>../../..</data></node>
+         <node f="42"><name>variables</name>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>strutSize</name><data>0000000000000000</data></node>
+         </node>
         </data>
-         <node f="40"><name></name></node>
-         <node f="42" dt="4"><name>Label</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-          <node f="42" dt="1"><name>aligncenterx</name><data>0000000040140000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040140000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>00000000402c0000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>00000000402c0000</data></node>
-          <node f="42" dt="2"><name>coldlinkname</name><data>../..</data></node>
-         </data></node>
-         <node f="42" dt="4"><name>EditLoc</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-          <node f="42" dt="2"><name>undohistory</name><data>../../../..</data></node>
-          <node f="42" dt="2"><name>focus</name><data>../..&gt;focus+/loc</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>00000000405dc000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
-          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040280000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          <node f="42"><name>variables</name>
-           <node f="40"><name></name></node>
-           <node f="42" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
-           <node f="442" dt="2"><name>onSample</name><data>treenode panel = up(up(c));
-
-if(getvarnum(panel, "isDirect"))
-	return 1;	
-
-applicationcommand("setcursortext", getvarstr(panel, "cantSampleText"));
-return 0;</data></node>
-           <node f="42" dt="1"><name>onFocusVal</name><data>0000000000000000</data></node>
-          </node>
-          <node f="42"><name>eventfunctions</name>
-           <node f="40"><name></name></node>
-           <node f="442" dt="2"><name>coldlinkx</name><data>treenode obj = node("../../..&gt;objectfocus+", c);
-treenode sizePanel = node("../..", c);
-if(getvarnum(sizePanel, "isDirect"))
-	return nodefunction(node("&gt;focus+",c), obj);
-
-if(!eventdata) {
-	int precision = get(node("MAIN:/project/environment/settings/precision"));
-	setviewtext(c, numtostring(function_s(sizePanel, "convertCoord", "x", obj), 0, precision));
-} else
-	function_s(c, "applyUndoable");</data></node>
-           <node f="42" dt="2"><name>OnKeyUp</name><data>int k = lastkeyup();
-
-if (k==13) {  // enter
-	function_s(c, "applyUndoable", 1);
-} </data></node>
-           <node f="42" dt="2"><name>OnKillFocus</name><data>function_s(c, "applyUndoable");</data></node>
-           <node f="442" dt="2"><name>applyUndoable</name><data>treenode obj = node("../../..&gt;objectfocus+", c);
-treenode sizePanel = node("../..", c);
-treenode focus = nodefunction(node("&gt;focus+",c), obj);
-int precision = get(node("MAIN:/project/environment/settings/precision"));
-double toVal = function_s(sizePanel, "convertCoord", "x", obj);
-int isChanged = (numtostring(toVal, 0, precision) != getviewtext(c) &amp;&amp; fabs(stringtonum(getviewtext(c)) - toVal) &gt; 0.0000001)
-	|| param(1) == 1;
-if (isChanged) {
-	set(focus, getvarnum(c, "onFocusVal"));
-	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
-	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
-	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
-	double data = stringtonum(getviewtext(c));
-	function_s(up(up(c)), "ApplyChangesToSelected", data, 0, 0, c);
-	if(!getvarnum(sizePanel, "isDirect"))
-		data = xloc(obj) + data - function_s(sizePanel, "convertCoord", "x", obj);
-	set(focus, data);
-	function_s(ownerobject(focus), "updateResetPosition");
-	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
-	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
-	endaggregatedundo(c, undoId);
-	repaintall();
-}
-</data></node>
-           <node f="42" dt="2"><name>OnFocus</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
-setvarnum(c, "onFocusVal", get(focus));</data></node>
-          </node>
-         </data>
-          <node f="40"><name></name></node></node>
-         <node f="42" dt="4"><name>Spinner</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ec000</data></node>
-          <node f="42" dt="2"><name>viewfocus</name><data>../../EditLoc</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000040624000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040280000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
-          <node f="42" dt="1"><name>alignrightposition</name><data>0000000040280000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
-          <node f="42" dt="1"><name>coefficient</name><data>47ae147b3f847ae1</data></node>
-          <node f="42" dt="1"><name>exponent</name><data>333333333ff33333</data></node>
-          <node f="42"><name>eventfunctions</name>
-           <node f="40"><name></name></node>
-           <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_PRESS) {
-	set(itemcurrent(c),stringtonum(getviewtext(node("&gt;viewfocus+",c))));
-	executefsnode(OnFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
-}
-if (clickcode() == LEFT_RELEASE) {
-	setcursor(1);
-	set(node("&gt;editing",c),0);
-	executefsnode(OnKillFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
-}
-</data></node>
-           <node f="442" dt="2"><name>OnMouseMove</name><data>if (i) {  // off the spinner
-	int y = cursorinfo(c, 6, 2, 0);
-	if (get(node("&gt;editing",c))==0) {  // first time falling off the spinner
-		setcursor(11);
-		set(node("&gt;lastval",c),get(itemcurrent(c)));
-		set(node("&gt;lasty",c),y);
-		set(node("&gt;editing",c),1);
-	}
-	
-	int monitortop = getsystemmetric(5);
-	int monitorbottom = getsystemmetric(6);
-	if (y &lt;= monitortop+1) {
-		double newy = monitorbottom - 2;
-		cursorinfo(0, 7, 2, newy);
-		inc(node("&gt;lasty",c), newy - y);
-		y = newy;
-	} else if (y &gt;= monitorbottom-1) {
-		double newy = monitortop + 2;
-		cursorinfo(0, 7, 2, newy);
-		inc(node("&gt;lasty", c), newy - y);
-		y = newy;
-	}
-	int dy = -(y - get(node("&gt;lasty",c)));
-	
-	double prevvalue = get(node("&gt;lastval",c));
-	double newvalue;
-	double coefficient = getnodenum(node("&gt;coefficient",c));
-	double exponent = getnodenum(node("&gt;exponent",c));
-	if (dy &gt; 0)
-		newvalue = prevvalue + coefficient*pow(dy,exponent);
-	else newvalue = prevvalue - coefficient*pow(-dy,exponent);
-	
-	if (objectexists(rangemin(c)) &amp;&amp; newvalue&lt;get(rangemin(c)))
-		newvalue = get(rangemin(c));
-	if (objectexists(rangemax(c)) &amp;&amp; newvalue&gt;get(rangemax(c)))
-		newvalue = get(rangemax(c));
-	set(itemcurrent(c),newvalue);
-	setviewtext(node("&gt;viewfocus+",c), numtostring(newvalue,0,2));
-	applylinks(node("&gt;viewfocus+", c));
-}
-</data></node>
-          </node>
-          <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>lastval</name><data>47ae147b3fc47ae1</data></node>
-          <node f="42" dt="1"><name>lasty</name><data>00000000407c4000</data></node>
-         </data></node>
-         <node f="42" dt="4"><name>EditSize</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-          <node f="42" dt="2"><name>undohistory</name><data>../../../..</data></node>
-          <node f="42" dt="2"><name>focus</name><data>../..&gt;focus+/size</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040488000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>00000000405dc000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
-          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040280000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          <node f="42"><name>variables</name>
-           <node f="40"><name></name></node>
-           <node f="42" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
-           <node f="42" dt="1"><name>onFocusVal</name><data>0000000000000000</data></node>
-          </node>
-          <node f="42"><name>eventfunctions</name>
-           <node f="40"><name></name></node>
-           <node f="442" dt="2"><name>coldlinkx</name><data>if (eventdata)
-	function_s(c, "applyUndoable");
-else return nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));</data></node>
-           <node f="42" dt="2"><name>OnKeyUp</name><data>int k = lastkeyup();
-
-if (k==13) {  // enter
-	function_s(c, "applyUndoable", 1);
-} </data></node>
-           <node f="42" dt="2"><name>OnKillFocus</name><data>function_s(c, "applyUndoable");</data></node>
-           <node f="442" dt="2"><name>applyUndoable</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
-int precision = get(node("MAIN:/project/environment/settings/precision"));
-double toVal = stringtonum(getviewtext(c));
-if ((numtostring(get(focus), 0, precision) != getviewtext(c) &amp;&amp; toVal != get(focus)) || param(1) == 1) {
-	set(focus, getvarnum(c, "onFocusVal"));
-	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
-	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
-	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
-	function_s(ownerobject(focus), "setSizeComponent", focus, toVal);
-	set(focus, toVal);
-	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
-	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
-	endaggregatedundo(c, undoId);
-	repaintall();
-}
-</data></node>
-           <node f="42" dt="2"><name>OnFocus</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
-setvarnum(c, "onFocusVal", get(focus));</data></node>
-          </node>
-         </data>
-          <node f="40"><name></name></node></node>
-         <node f="42" dt="4"><name>Spinner</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ec000</data></node>
-          <node f="42" dt="2"><name>viewfocus</name><data>../../EditSize</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000040624000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040488000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040280000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
-          <node f="42" dt="1"><name>alignrightposition</name><data>0000000040280000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
-          <node f="42" dt="1"><name>coefficient</name><data>47ae147b3f847ae1</data></node>
-          <node f="42" dt="1"><name>exponent</name><data>333333333ff33333</data></node>
-          <node f="42"><name>eventfunctions</name>
-           <node f="40"><name></name></node>
-           <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_PRESS) {
-	set(itemcurrent(c),stringtonum(getviewtext(node("&gt;viewfocus+",c))));
-	executefsnode(OnFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
-}
-if (clickcode() == LEFT_RELEASE) {
-	setcursor(1);
-	set(node("&gt;editing",c),0);
-	executefsnode(OnKillFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
-}
-</data></node>
-           <node f="442" dt="2"><name>OnMouseMove</name><data>if (i) {  // off the spinner
-	int y = cursorinfo(c, 6, 2, 0);
-	if (get(node("&gt;editing",c))==0) {  // first time falling off the spinner
-		setcursor(11);
-		set(node("&gt;lastval",c),get(itemcurrent(c)));
-		set(node("&gt;lasty",c),y);
-		set(node("&gt;editing",c),1);
-	}
-	
-	int monitortop = getsystemmetric(5);
-	int monitorbottom = getsystemmetric(6);
-	if (y &lt;= monitortop+1) {
-		double newy = monitorbottom - 2;
-		cursorinfo(0, 7, 2, newy);
-		inc(node("&gt;lasty",c), newy - y);
-		y = newy;
-	} else if (y &gt;= monitorbottom-1) {
-		double newy = monitortop + 2;
-		cursorinfo(0, 7, 2, newy);
-		inc(node("&gt;lasty", c), newy - y);
-		y = newy;
-	}
-	int dy = -(y - get(node("&gt;lasty",c)));
-	
-	double prevvalue = get(node("&gt;lastval",c));
-	double newvalue;
-	double coefficient = getnodenum(node("&gt;coefficient",c));
-	double exponent = getnodenum(node("&gt;exponent",c));
-	if (dy &gt; 0)
-		newvalue = prevvalue + coefficient*pow(dy,exponent);
-	else newvalue = prevvalue - coefficient*pow(-dy,exponent);
-	
-	if (objectexists(rangemin(c)) &amp;&amp; newvalue&lt;get(rangemin(c)))
-		newvalue = get(rangemin(c));
-	if (objectexists(rangemax(c)) &amp;&amp; newvalue&gt;get(rangemax(c)))
-		newvalue = get(rangemax(c));
-	set(itemcurrent(c),newvalue);
-	setviewtext(node("&gt;viewfocus+",c), numtostring(newvalue,0,2));
-	applylinks(node("&gt;viewfocus+", c));
-}
-</data></node>
-          </node>
-          <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>lastval</name><data>47ae147b3fc47ae1</data></node>
-          <node f="42" dt="1"><name>lasty</name><data>00000000407c4000</data></node>
-         </data></node>
-        </node>
-        <node f="42" dt="4"><name>Y</name><data>
+         <node f="40"><name></name></node></node>
+        <node f="42" dt="4"><name>LocButton</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000040310000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040390000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040390000</data></node>
+         <node f="42"><name>eventfunctions</name>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>OnPress</name><data>createpopup("VIEW:/popups/CoordinateSystem", c.up.getPath(), c.getPath(), c, -260, 0, 260, 642);</data>
+           <node f="40"><name></name></node></node>
+         </node>
+         <node f="42" dt="2"><name>bitmap</name><data>bitmaps/CoordinateSystems/Mid6_small.png</data></node>
+         <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
+         <node f="42" dt="2"><name>tooltip</name><data>Select the point on the object where the location will be measured</data></node>
+        </data></node>
+        <node f="42" dt="4"><name>Location</name><data>
          <node f="40"><name>object</name></node>
          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-         <node f="42" dt="2"><name>focus</name><data>../..&gt;variables/Y</data></node>
-         <node f="42" dt="1"><name>spatialx</name><data>000000004054c000</data></node>
-         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data>
-          <node f="40"><name></name></node>
-          <node f="42" dt="1"><name>min</name><data>00000000403e0000</data></node>
-          <node f="42" dt="1"><name>desired</name><data>00000000404e0000</data></node>
-         </node>
-         <node f="42" dt="1"><name>spatialsy</name><data>0000000040590000</data></node>
-         <node f="42" dt="1"><name>alignbottommargin</name><data>0000000000000000</data></node>
+         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/QuickProps/Vec3</data></node>
+         <node f="42" dt="2"><name>objectfocus</name><data>../../..&gt;objectfocus+</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000040390000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000040310000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data>
+          <node f="40"><name></name></node></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040080000</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-         <node f="42" dt="2"><name>undohistory</name><data>../../..</data></node>
-        </data>
-         <node f="40"><name></name></node>
-         <node f="42" dt="4"><name>Label</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-          <node f="42" dt="1"><name>aligncenterx</name><data>0000000040140000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040140000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>00000000402c0000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>00000000402c0000</data></node>
-          <node f="42" dt="2"><name>coldlinkname</name><data>../..</data></node>
-         </data></node>
-         <node f="42" dt="4"><name>EditLoc</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-          <node f="42" dt="2"><name>undohistory</name><data>../../../..</data></node>
-          <node f="42" dt="2"><name>focus</name><data>../..&gt;focus+/loc</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>00000000405dc000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
-          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040280000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          <node f="42"><name>variables</name>
-           <node f="40"><name></name></node>
-           <node f="42" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
-           <node f="442" dt="2"><name>onSample</name><data>treenode panel = up(up(c));
-
-if(getvarnum(panel, "isDirect"))
-	return 1;	
-
-applicationcommand("setcursortext", getvarstr(panel, "cantSampleText"));
-return 0;</data></node>
-           <node f="42" dt="1"><name>onFocusVal</name><data>0000000000000000</data></node>
-          </node>
-          <node f="42"><name>eventfunctions</name>
-           <node f="40"><name></name></node>
-           <node f="442" dt="2"><name>coldlinkx</name><data>treenode obj = node("../../..&gt;objectfocus+", c);
-treenode sizePanel = node("../..", c);
-if(getvarnum(sizePanel, "isDirect"))
-	return nodefunction(node("&gt;focus+",c), obj);
-
-if(!eventdata) {
-	int precision = get(node("MAIN:/project/environment/settings/precision"));								
-	setviewtext(c, numtostring(function_s(sizePanel, "convertCoord", "y", obj), 0, precision));
-} else
-	function_s(c, "applyUndoable");</data></node>
-           <node f="42" dt="2"><name>OnKeyUp</name><data>int k = lastkeyup();
-
-if (k==13) {  // enter
-	function_s(c, "applyUndoable", 1);
-} </data></node>
-           <node f="42" dt="2"><name>OnKillFocus</name><data>function_s(c, "applyUndoable");</data></node>
-           <node f="442" dt="2"><name>applyUndoable</name><data>treenode obj = node("../../..&gt;objectfocus+", c);
-treenode sizePanel = node("../..", c);
-treenode focus = nodefunction(node("&gt;focus+",c), obj);
-int precision = get(node("MAIN:/project/environment/settings/precision"));
-double toVal = function_s(sizePanel, "convertCoord", "y", obj);
-int isChanged = (numtostring(toVal, 0, precision) != getviewtext(c) &amp;&amp; stringtonum(getviewtext(c)) != toVal)
-	|| param(1) == 1;
-if (isChanged) {
-	set(focus, getvarnum(c, "onFocusVal"));
-	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
-	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
-	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
-	double data = stringtonum(getviewtext(c));
-	function_s(up(up(c)), "ApplyChangesToSelected", data, 1, 0, c);
-	if(!getvarnum(sizePanel, "isDirect"))
-		data = yloc(obj) + data - function_s(sizePanel, "convertCoord", "y", obj);
-	set(focus, data);
-	function_s(ownerobject(focus), "updateResetPosition");
-	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
-	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
-	endaggregatedundo(c, undoId);
-	repaintall();
-}
-</data></node>
-           <node f="42" dt="2"><name>OnFocus</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
-setvarnum(c, "onFocusVal", get(focus));</data></node>
-          </node>
-         </data>
-          <node f="40"><name></name></node></node>
-         <node f="42" dt="4"><name>Spinner</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ec000</data></node>
-          <node f="42" dt="2"><name>viewfocus</name><data>../../EditLoc</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000040624000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040280000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
-          <node f="42" dt="1"><name>alignrightposition</name><data>0000000040280000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
-          <node f="42" dt="1"><name>coefficient</name><data>47ae147b3f847ae1</data></node>
-          <node f="42" dt="1"><name>exponent</name><data>333333333ff33333</data></node>
-          <node f="42"><name>eventfunctions</name>
-           <node f="40"><name></name></node>
-           <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_PRESS) {
-	set(itemcurrent(c),stringtonum(getviewtext(node("&gt;viewfocus+",c))));
-	executefsnode(OnFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
-}
-if (clickcode() == LEFT_RELEASE) {
-	setcursor(1);
-	set(node("&gt;editing",c),0);
-	executefsnode(OnKillFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
-}
-</data></node>
-           <node f="442" dt="2"><name>OnMouseMove</name><data>if (i) {  // off the spinner
-	int y = cursorinfo(c, 6, 2, 0);
-	if (get(node("&gt;editing",c))==0) {  // first time falling off the spinner
-		setcursor(11);
-		set(node("&gt;lastval",c),get(itemcurrent(c)));
-		set(node("&gt;lasty",c),y);
-		set(node("&gt;editing",c),1);
-	}
-	
-	int monitortop = getsystemmetric(5);
-	int monitorbottom = getsystemmetric(6);
-	if (y &lt;= monitortop+1) {
-		double newy = monitorbottom - 2;
-		cursorinfo(0, 7, 2, newy);
-		inc(node("&gt;lasty",c), newy - y);
-		y = newy;
-	} else if (y &gt;= monitorbottom-1) {
-		double newy = monitortop + 2;
-		cursorinfo(0, 7, 2, newy);
-		inc(node("&gt;lasty", c), newy - y);
-		y = newy;
-	}
-	int dy = -(y - get(node("&gt;lasty",c)));
-	
-	double prevvalue = get(node("&gt;lastval",c));
-	double newvalue;
-	double coefficient = getnodenum(node("&gt;coefficient",c));
-	double exponent = getnodenum(node("&gt;exponent",c));
-	if (dy &gt; 0)
-		newvalue = prevvalue + coefficient*pow(dy,exponent);
-	else newvalue = prevvalue - coefficient*pow(-dy,exponent);
-	
-	if (objectexists(rangemin(c)) &amp;&amp; newvalue&lt;get(rangemin(c)))
-		newvalue = get(rangemin(c));
-	if (objectexists(rangemax(c)) &amp;&amp; newvalue&gt;get(rangemax(c)))
-		newvalue = get(rangemax(c));
-	set(itemcurrent(c),newvalue);
-	setviewtext(node("&gt;viewfocus+",c), numtostring(newvalue,0,2));
-	applylinks(node("&gt;viewfocus+", c));
-}
-</data></node>
-          </node>
-          <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>lastval</name><data>47ae147b3fc47ae1</data></node>
-          <node f="42" dt="1"><name>lasty</name><data>00000000407c4000</data></node>
-         </data></node>
-         <node f="42" dt="4"><name>EditSize</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-          <node f="42" dt="2"><name>undohistory</name><data>../../../..</data></node>
-          <node f="42" dt="2"><name>focus</name><data>../..&gt;focus+/size</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040488000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>00000000405dc000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
-          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040280000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          <node f="42"><name>variables</name>
-           <node f="40"><name></name></node>
-           <node f="42" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
-           <node f="42" dt="1"><name>onFocusVal</name><data>0000000000000000</data></node>
-          </node>
-          <node f="42"><name>eventfunctions</name>
-           <node f="40"><name></name></node>
-           <node f="442" dt="2"><name>coldlinkx</name><data>if (eventdata)
-	function_s(c, "applyUndoable");
-else return nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));</data></node>
-           <node f="42" dt="2"><name>OnKeyUp</name><data>int k = lastkeyup();
-
-if (k==13) {  // enter
-	function_s(c, "applyUndoable", 1);
-} </data></node>
-           <node f="42" dt="2"><name>OnKillFocus</name><data>function_s(c, "applyUndoable");</data></node>
-           <node f="442" dt="2"><name>applyUndoable</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
-int precision = get(node("MAIN:/project/environment/settings/precision"));
-double toVal = stringtonum(getviewtext(c));
-if ((numtostring(get(focus), 0, precision) != getviewtext(c) &amp;&amp; toVal != get(focus)) || param(1) == 1) {
-	set(focus, getvarnum(c, "onFocusVal"));
-	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
-	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
-	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
-	function_s(ownerobject(focus), "setSizeComponent", focus, toVal);
-	set(focus, toVal);
-	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
-	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
-	endaggregatedundo(c, undoId);
-	repaintall();
-}
-</data></node>
-           <node f="42" dt="2"><name>OnFocus</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
-setvarnum(c, "onFocusVal", get(focus));</data></node>
-          </node>
-         </data>
-          <node f="40"><name></name></node></node>
-         <node f="42" dt="4"><name>Spinner</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ec000</data></node>
-          <node f="42" dt="2"><name>viewfocus</name><data>../../EditSize</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000040624000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040488000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040280000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
-          <node f="42" dt="1"><name>alignrightposition</name><data>0000000040280000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
-          <node f="42" dt="1"><name>coefficient</name><data>47ae147b3f847ae1</data></node>
-          <node f="42" dt="1"><name>exponent</name><data>333333333ff33333</data></node>
-          <node f="42"><name>eventfunctions</name>
-           <node f="40"><name></name></node>
-           <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_PRESS) {
-	set(itemcurrent(c),stringtonum(getviewtext(node("&gt;viewfocus+",c))));
-	executefsnode(OnFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
-}
-if (clickcode() == LEFT_RELEASE) {
-	setcursor(1);
-	set(node("&gt;editing",c),0);
-	executefsnode(OnKillFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
-}
-</data></node>
-           <node f="442" dt="2"><name>OnMouseMove</name><data>if (i) {  // off the spinner
-	int y = cursorinfo(c, 6, 2, 0);
-	if (get(node("&gt;editing",c))==0) {  // first time falling off the spinner
-		setcursor(11);
-		set(node("&gt;lastval",c),get(itemcurrent(c)));
-		set(node("&gt;lasty",c),y);
-		set(node("&gt;editing",c),1);
-	}
-	
-	int monitortop = getsystemmetric(5);
-	int monitorbottom = getsystemmetric(6);
-	if (y &lt;= monitortop+1) {
-		double newy = monitorbottom - 2;
-		cursorinfo(0, 7, 2, newy);
-		inc(node("&gt;lasty",c), newy - y);
-		y = newy;
-	} else if (y &gt;= monitorbottom-1) {
-		double newy = monitortop + 2;
-		cursorinfo(0, 7, 2, newy);
-		inc(node("&gt;lasty", c), newy - y);
-		y = newy;
-	}
-	int dy = -(y - get(node("&gt;lasty",c)));
-	
-	double prevvalue = get(node("&gt;lastval",c));
-	double newvalue;
-	double coefficient = getnodenum(node("&gt;coefficient",c));
-	double exponent = getnodenum(node("&gt;exponent",c));
-	if (dy &gt; 0)
-		newvalue = prevvalue + coefficient*pow(dy,exponent);
-	else newvalue = prevvalue - coefficient*pow(-dy,exponent);
-	
-	if (objectexists(rangemin(c)) &amp;&amp; newvalue&lt;get(rangemin(c)))
-		newvalue = get(rangemin(c));
-	if (objectexists(rangemax(c)) &amp;&amp; newvalue&gt;get(rangemax(c)))
-		newvalue = get(rangemax(c));
-	set(itemcurrent(c),newvalue);
-	setviewtext(node("&gt;viewfocus+",c), numtostring(newvalue,0,2));
-	applylinks(node("&gt;viewfocus+", c));
-}
-</data></node>
-          </node>
-          <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>lastval</name><data>47ae147b3fc47ae1</data></node>
-          <node f="42" dt="1"><name>lasty</name><data>00000000407c4000</data></node>
-         </data></node>
-        </node>
-        <node f="42" dt="4"><name>Z</name><data>
+         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
+         <node f="42"><name>variables</name>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>propName</name><data>Location</data></node>
+          <node f="42" dt="2"><name>leftLabel</name><data></data></node>
+          <node f="42" dt="2"><name>transformDelegate</name><data>~/..</data></node>
+         </node>
+         <node f="42"><name>eventfunctions</name>
+          <node f="40"><name></name></node>
+          <node f="442" dt="2"><name>onApply</name><data>applylinks(c.up, 1);</data></node>
+         </node>
+        </data></node>
+        <node f="42" dt="4"><name>SizeImage</name><data>
+         <node f="40"><name>object</name></node>
+         <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000040450000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040390000</data></node>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040390000</data></node>
+         <node f="42" dt="2"><name>bitmap</name><data>buttons\resize.png</data></node>
+        </data></node>
+        <node f="42" dt="4"><name>Size</name><data>
          <node f="40"><name>object</name></node>
          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
-         <node f="42" dt="2"><name>focus</name><data>../..&gt;variables/Z</data></node>
-         <node f="42" dt="1"><name>spatialx</name><data>000000004061e000</data></node>
-         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data>
-          <node f="40"><name></name></node>
-          <node f="42" dt="1"><name>min</name><data>00000000403e0000</data></node>
-          <node f="42" dt="1"><name>desired</name><data>00000000404e0000</data></node>
-         </node>
-         <node f="42" dt="1"><name>spatialsy</name><data>0000000040590000</data></node>
-         <node f="42" dt="1"><name>alignbottommargin</name><data>0000000000000000</data></node>
-         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-         <node f="42" dt="2"><name>undohistory</name><data>../../..</data></node>
-        </data>
-         <node f="40"><name></name></node>
-         <node f="42" dt="4"><name>Label</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-          <node f="42" dt="1"><name>aligncenterx</name><data>0000000040140000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040140000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>00000000402c0000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>00000000402c0000</data></node>
-          <node f="42" dt="2"><name>coldlinkname</name><data>../..</data></node>
-         </data></node>
-         <node f="42" dt="4"><name>EditLoc</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040594000</data></node>
-          <node f="42" dt="2"><name>undohistory</name><data>../../../..</data></node>
-          <node f="42" dt="2"><name>focus</name><data>../..&gt;focus+/loc</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>00000000405dc000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
-          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040280000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          <node f="42"><name>variables</name>
-           <node f="40"><name></name></node>
-           <node f="42" dt="1"><name>isSampleTarget</name><data>000000003ff00000</data></node>
-           <node f="442" dt="2"><name>onSample</name><data>treenode panel = up(up(c));
-
-if(getvarnum(panel, "isDirect"))
-	return 1;	
-
-applicationcommand("setcursortext", getvarstr(panel, "cantSampleText"));
-return 0;</data></node>
-           <node f="42" dt="1"><name>onFocusVal</name><data>0000000000000000</data></node>
-          </node>
-          <node f="42"><name>eventfunctions</name>
-           <node f="40"><name></name></node>
-           <node f="442" dt="2"><name>coldlinkx</name><data>treenode obj = node("../../..&gt;objectfocus+", c);
-treenode sizePanel = node("../..", c);
-if(getvarnum(sizePanel, "isDirect"))
-	return nodefunction(node("&gt;focus+",c), obj);
-
-if(!eventdata) {
-	int precision = get(node("MAIN:/project/environment/settings/precision"));
-	setviewtext(c, numtostring(function_s(sizePanel, "convertCoord", "z", obj), 0, precision));
-} else
-	function_s(c, "applyUndoable");</data></node>
-           <node f="42" dt="2"><name>OnKeyUp</name><data>int k = lastkeyup();
-
-if (k==13) {  // enter
-	function_s(c, "applyUndoable", 1);
-} </data></node>
-           <node f="42" dt="2"><name>OnKillFocus</name><data>function_s(c, "applyUndoable");</data></node>
-           <node f="442" dt="2"><name>applyUndoable</name><data>treenode obj = node("../../..&gt;objectfocus+", c);
-treenode sizePanel = node("../..", c);
-treenode focus = nodefunction(node("&gt;focus+",c), obj);
-int precision = get(node("MAIN:/project/environment/settings/precision"));
-double toVal = function_s(sizePanel, "convertCoord", "z", obj);
-int isChanged = (numtostring(toVal, 0, precision) != getviewtext(c) &amp;&amp; stringtonum(getviewtext(c)) != toVal)
-	|| param(1) == 1;
-if (isChanged) {
-	set(focus, getvarnum(c, "onFocusVal"));
-	int undoId = beginaggregatedundo(c, "Modify Object Spatials");
-	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_UNDO);
-	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_UNDO);
-	double data = stringtonum(getviewtext(c));
-	function_s(up(up(c)), "ApplyChangesToSelected", data, 2, 0, c);
-	if(!getvarnum(sizePanel, "isDirect"))
-		data = zloc(obj) + data - function_s(sizePanel, "convertCoord", "z", obj);
-	set(focus, data);
-	function_s(ownerobject(focus), "updateResetPosition");
-	createundorecord(c, ownerobject(focus), UNDO_UPDATE_LINKS_ON_REDO);
-	createundorecord(c, c, UNDO_UPDATE_LINKS_ON_REDO);
-	endaggregatedundo(c, undoId);
-	repaintall();
-}
-</data></node>
-           <node f="42" dt="2"><name>OnFocus</name><data>treenode focus = nodefunction(node("&gt;focus+",c), node("../../..&gt;objectfocus+", c));
-setvarnum(c, "onFocusVal", get(focus));</data></node>
-          </node>
-         </data>
+         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/QuickProps/Vec3</data></node>
+         <node f="42" dt="2"><name>objectfocus</name><data>../../..&gt;objectfocus+</data></node>
+         <node f="42" dt="1"><name>spatialx</name><data>0000000040390000</data></node>
+         <node f="42" dt="1"><name>spatialy</name><data>0000000040450000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040590000</data>
           <node f="40"><name></name></node></node>
-         <node f="42" dt="4"><name>Spinner</name><data>
-          <node f="40"><name>object</name></node>
-          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405ec000</data></node>
-          <node f="42" dt="2"><name>viewfocus</name><data>../../EditLoc</data></node>
-          <node f="42" dt="1"><name>spatialx</name><data>0000000040624000</data></node>
-          <node f="42" dt="1"><name>spatialy</name><data>0000000040350000</data></node>
-          <node f="42" dt="1"><name>spatialsx</name><data>0000000040280000</data></node>
-          <node f="42" dt="1"><name>spatialsy</name><data>0000000040370000</data></node>
-          <node f="42" dt="1"><name>alignrightposition</name><data>0000000040280000</data></node>
-          <node f="42" dt="2"><name>tooltip</name><data></data></node>
-          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>itemcurrent</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>step</name><data>47ae147b3f847ae1</data></node>
-          <node f="42" dt="1"><name>coefficient</name><data>47ae147b3f847ae1</data></node>
-          <node f="42" dt="1"><name>exponent</name><data>333333333ff33333</data></node>
-          <node f="42"><name>eventfunctions</name>
+         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040080000</data></node>
+         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
+         <node f="42"><name>variables</name>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>propName</name><data>Size</data></node>
+          <node f="42" dt="2"><name>leftLabel</name><data></data></node>
+          <node f="42"><name>exclude</name>
            <node f="40"><name></name></node>
-           <node f="442" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_PRESS) {
-	set(itemcurrent(c),stringtonum(getviewtext(node("&gt;viewfocus+",c))));
-	executefsnode(OnFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
-}
-if (clickcode() == LEFT_RELEASE) {
-	setcursor(1);
-	set(node("&gt;editing",c),0);
-	executefsnode(OnKillFocus(node("&gt;viewfocus+", c)), node("&gt;viewfocus+", c));
-}
-</data></node>
-           <node f="442" dt="2"><name>OnMouseMove</name><data>if (i) {  // off the spinner
-	int y = cursorinfo(c, 6, 2, 0);
-	if (get(node("&gt;editing",c))==0) {  // first time falling off the spinner
-		setcursor(11);
-		set(node("&gt;lastval",c),get(itemcurrent(c)));
-		set(node("&gt;lasty",c),y);
-		set(node("&gt;editing",c),1);
-	}
-	
-	int monitortop = getsystemmetric(5);
-	int monitorbottom = getsystemmetric(6);
-	if (y &lt;= monitortop+1) {
-		double newy = monitorbottom - 2;
-		cursorinfo(0, 7, 2, newy);
-		inc(node("&gt;lasty",c), newy - y);
-		y = newy;
-	} else if (y &gt;= monitorbottom-1) {
-		double newy = monitortop + 2;
-		cursorinfo(0, 7, 2, newy);
-		inc(node("&gt;lasty", c), newy - y);
-		y = newy;
-	}
-	int dy = -(y - get(node("&gt;lasty",c)));
-	
-	double prevvalue = get(node("&gt;lastval",c));
-	double newvalue;
-	double coefficient = getnodenum(node("&gt;coefficient",c));
-	double exponent = getnodenum(node("&gt;exponent",c));
-	if (dy &gt; 0)
-		newvalue = prevvalue + coefficient*pow(dy,exponent);
-	else newvalue = prevvalue - coefficient*pow(-dy,exponent);
-	
-	if (objectexists(rangemin(c)) &amp;&amp; newvalue&lt;get(rangemin(c)))
-		newvalue = get(rangemin(c));
-	if (objectexists(rangemax(c)) &amp;&amp; newvalue&gt;get(rangemax(c)))
-		newvalue = get(rangemax(c));
-	set(itemcurrent(c),newvalue);
-	setviewtext(node("&gt;viewfocus+",c), numtostring(newvalue,0,2));
-	applylinks(node("&gt;viewfocus+", c));
-}
-</data></node>
+           <node f="42" dt="2"><name></name><data>~/Z</data></node>
           </node>
-          <node f="42" dt="1"><name>editing</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>lastval</name><data>47ae147b3fc47ae1</data></node>
-          <node f="42" dt="1"><name>lasty</name><data>00000000407c4000</data></node>
-         </data></node>
-        </node>
+         </node>
+         <node f="42"><name>eventfunctions</name>
+          <node f="40"><name></name></node>
+          <node f="442" dt="2"><name>onApply</name><data>applylinks(c.up, 1);</data></node>
+         </node>
+        </data></node>
        </node>
        <node f="42" dt="4"><name>Condition</name><data>
         <node f="40"><name>object</name></node>
@@ -5628,27 +5370,48 @@ if (clickcode() == LEFT_RELEASE) {
         <node f="42" dt="1"><name>spatialy</name><data>0000000040540000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Condition</data></node>
        </data></node>
        <node f="42" dt="4"><name>ChooseCondition</name><data>
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
+        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/QuickProps/Options</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
         <node f="42" dt="1"><name>spatialy</name><data>000000004057c000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040710000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040080000</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which this barrier is enabled</data></node>
+        <node f="42" dt="1"><name>alignrightmargin</name><data>00000000403a0000</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>Define the condition by which this barrier/path is enabled</data></node>
         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
-        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/conditionRule</data></node>
-        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/modules/AStar/GUIClasses/ChooseCondition</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
-         <node f="42" dt="1"><name>isHotLink</name><data>000000003ff00000</data></node>
+         <node f="42" dt="2"><name>propName</name><data>ConditionalRule</data></node>
+         <node f="42" dt="2"><name>inheritanceIndicator</name><data>~/../Condition</data></node>
         </node>
         <node f="42"><name>eventfunctions</name>
-         <node f="40"><name></name></node>
-         <node f="442" dt="2"><name>onApply</name><data>function_s(c.up.up.up.up, "applyChangesToSelected", c.find("&gt;objectfocus+"), c);</data></node>
-        </node>
+         <node f="40"><name></name></node></node>
+       </data>
+        <node f="40"><name></name></node></node>
+       <node f="42" dt="4"><name>More</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>000000004057c000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+        <node f="42" dt="1"><name>alignrightposition</name><data>00000000403a0000</data></node>
+        <node f="42" dt="2"><name>OnPress</name><data>Object focus = c.find("..&gt;objectfocus+");
+
+Object navigator = Model.find("AStarNavigator");
+createview(navigator.attrs.guifocusclass.value, navigator.getPath(), "");
+Object propertiesView = Model.find("VIEW:/active/AStarProperties");
+if (propertiesView) {
+	function_s(propertiesView, "selectConditionalRule", focus.getProperty("ConditionalRule"));
+}</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>Edit this condition in A* Navigator Properties</data></node>
+        <node f="42" dt="2"><name>bitmap</name><data>buttons\properties.png</data></node>
+        <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
        </data></node>
       </node>
      </node>
@@ -5656,7 +5419,7 @@ if (clickcode() == LEFT_RELEASE) {
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404e0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404f0000</data></node>
     <node f="42" dt="2"><name>after</name><data>AStarBarrier</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -5673,6 +5436,31 @@ if (clickcode() == LEFT_RELEASE) {
       <node f="42"><name>variables</name>
        <node f="40"><name></name></node>
        <node f="42" dt="2"><name>helptopic</name><data>DividerPathProperties</data></node>
+       <node f="42"><name>propTableQueryTree</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>SELECT</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>ConditionalRule</name></node>
+         <node f="42"><name>IsTwoWay</name></node>
+         <node f="42"><name>PathPoints</name></node>
+         <node f="42"><name>UseVirtualDistance</name></node>
+         <node f="42"><name>VirtualDistance</name></node>
+         <node f="42"><name>PathWeight</name></node>
+        </node>
+        <node f="42"><name>FROM</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>Objects()</name></node>
+        </node>
+        <node f="42"><name>WHERE</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>IN</name>
+          <node f="40"><name></name></node>
+          <node f="42"><name>"AStar::Divider"</name></node>
+          <node f="42"><name>Classes</name></node>
+         </node>
+        </node>
+        <node f="42"><name>ORDER BY</name></node>
+       </node>
       </node>
      </data>
       <node f="40"><name></name></node>
@@ -5720,9 +5508,13 @@ if (getvarnum(c, "isExpanded")) {
 	applylinks(c, 1);	
 }
 </data></node>
+        <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) {
+	treenode focus = c.find("&gt;objectfocus+");
+	windowgray(windowfromnode(c.find("Two Way")), isclasstype(focus, "AStar::Bridge"));
+}</data></node>
        </node>
        <node f="42" dt="2"><name>tooltip</name><data></data></node>
-       <node f="42" dt="2"><name>windowtitle</name><data>Divider / Path</data></node>
+       <node f="4000000042" dt="2"><name>windowtitle</name><data>Divider / Path</data></node>
       </data>
        <node f="40"><name></name></node>
        <node f="42" dt="4"><name>Condition</name><data>
@@ -5730,49 +5522,71 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
         <node f="42" dt="1"><name>spatialy</name><data>0000000040140000</data></node>
-        <node f="42" dt="1"><name>spatialsx</name><data>0000000040518000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>000000004062c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-        <node f="42" dt="2"><name>windowtitle</name><data>Condition</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Conditional Rule</data></node>
        </data></node>
        <node f="42" dt="4"><name>ChooseCondition</name><data>
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
+        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/QuickProps/Options</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
         <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040710000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>Define the condition by which this barrier/path is enabled</data></node>
+        <node f="42" dt="1"><name>alignrightmargin</name><data>00000000403a0000</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>Define the condition by which this barrier/path is enabled</data></node>
         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
-        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/conditionRule</data></node>
-        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/modules/AStar/GUIClasses/ChooseCondition</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
-         <node f="42" dt="1"><name>isHotLink</name><data>000000003ff00000</data></node>
+         <node f="42" dt="2"><name>propName</name><data>ConditionalRule</data></node>
+         <node f="42" dt="2"><name>inheritanceIndicator</name><data>~/../Condition</data></node>
         </node>
         <node f="42"><name>eventfunctions</name>
-         <node f="40"><name></name></node>
-         <node f="442" dt="2"><name>onApply</name><data>function_s(c.up.up.up.up, "applyChangesToSelected", c.find("&gt;objectfocus+"), c);</data></node>
-        </node>
+         <node f="40"><name></name></node></node>
        </data>
         <node f="40"><name></name></node></node>
+       <node f="42" dt="4"><name>More</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040340000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+        <node f="42" dt="1"><name>alignrightposition</name><data>00000000403a0000</data></node>
+        <node f="42" dt="2"><name>OnPress</name><data>Object focus = c.find("..&gt;objectfocus+");
+
+Object navigator = Model.find("AStarNavigator");
+createview(navigator.attrs.guifocusclass.value, navigator.getPath(), "");
+Object propertiesView = Model.find("VIEW:/active/AStarProperties");
+if (propertiesView) {
+	function_s(propertiesView, "selectConditionalRule", focus.getProperty("ConditionalRule"));
+}</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>Edit this condition in A* Navigator Properties</data></node>
+        <node f="42" dt="2"><name>bitmap</name><data>buttons\properties.png</data></node>
+        <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
+       </data></node>
        <node f="42" dt="4"><name>Two Way</name><data>
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/QuickProps/Checkbox</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+</data></node>
         <node f="42" dt="1"><name>spatialx</name><data>0000000040080000</data></node>
         <node f="42" dt="1"><name>spatialy</name><data>0000000040490000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-        <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+&gt;variables/isTwoWay</data></node>
-        <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) {
-	treenode focus = c.find("..&gt;objectfocus+");
-	windowgray(windowfromnode(c), isclasstype(focus, "AStar::Bridge"));
-}</data></node>
+        <node f="42"><name>variables</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>propName</name><data>IsTwoWay</data></node>
+        </node>
+        <node f="42"><name>eventfunctions</name>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>onApply</name><data>repaintall();</data></node>
+        </node>
         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
-        <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);
-treenode focus = node("&gt;coldlink+", c);
-function_s(c.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>Tells if the object's rule applies both ways</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>Tells if the object's rule applies both ways</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Two Way</data></node>
        </data></node>
        <node f="42" dt="4"><name>PointsEdit</name><data>
         <node f="40"><name>object</name></node>
@@ -5792,7 +5606,7 @@ function_s(c.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
          <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
          <node f="42" dt="1"><name>spatialsx</name><data>0000000040440000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-         <node f="42" dt="2"><name>windowtitle</name><data>Points</data></node>
+         <node f="4000000042" dt="2"><name>windowtitle</name><data>Points</data></node>
         </data></node>
         <node f="42" dt="4"><name>Add</name><data>
          <node f="40"><name>object</name></node>
@@ -5802,7 +5616,7 @@ function_s(c.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
          <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
          <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
-treenode barrier = node("../..&gt;objectfocus+", c);
+Object barrier = node("../..&gt;objectfocus+", c);
 treenode pointsNode = node("&gt;variables/points", barrier);
 double x = get(node("/x", last(pointsNode)));
 double y = get(node("/y", last(pointsNode)));
@@ -5811,11 +5625,12 @@ function_s(barrier, "addPoint", x +2, y +2);
 applylinks(table, 1);
 refreshview(table);
 function_s(barrier, "setActiveIndex", content(pointsNode) -1);
-function_s(ownerobject(barrier), "rebuildMeshes");
+barrier.applyProperties("PathPoints");
+function_s(Model.find("AStarNavigator"), "rebuildMeshes");
 repaintall();
 </data>
           <node f="40"><name></name></node></node>
-         <node f="42" dt="2"><name>tooltip</name><data>Add a new point</data></node>
+         <node f="4000000042" dt="2"><name>tooltip</name><data>Add a new point</data></node>
          <node f="42" dt="2"><name>bitmap</name><data>buttons\add.png</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
         </data>
@@ -5828,7 +5643,7 @@ repaintall();
          <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
          <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
-treenode barrier = node("../..&gt;objectfocus+", c);
+Object barrier = node("../..&gt;objectfocus+", c);
 treenode pointsNode = node("&gt;variables/points", barrier);
 
 if (content(node("&gt;viewfocus+", table)) &lt;= 2) {
@@ -5846,11 +5661,12 @@ function_s(barrier, "removePoint", index-1);
 applylinks(table, 1);
 refreshview(table);
 function_s(barrier, "setActiveIndex", index -2);
-function_s(ownerobject(barrier), "rebuildMeshes");
+barrier.applyProperties("PathPoints");
+function_s(Model.find("AStarNavigator"), "rebuildMeshes");
 repaintall();
 settableviewselection(table, maxof(1, index -1), 0, maxof(1, index -1), 2);
 repaintview(table);</data></node>
-         <node f="42" dt="2"><name>tooltip</name><data>Remove the selected point</data></node>
+         <node f="4000000042" dt="2"><name>tooltip</name><data>Remove the selected point</data></node>
          <node f="42" dt="2"><name>bitmap</name><data>buttons\remove.png</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
         </data></node>
@@ -5863,7 +5679,7 @@ repaintview(table);</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
          <node f="42" dt="2"><name>bitmap</name><data>buttons\uparrow_blue.png</data></node>
          <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
-treenode barrier = node("../..&gt;objectfocus+", c);
+Object barrier = node("../..&gt;objectfocus+", c);
 treenode pointsNode = node("&gt;variables/points", barrier);
 
 int index = gettableviewselection(table,1);
@@ -5879,11 +5695,12 @@ function_s(barrier, "swapPoints", index -1, index -2);
 applylinks(table, 1);
 refreshview(table);
 function_s(barrier, "setActiveIndex", index -2);
-function_s(ownerobject(barrier), "rebuildMeshes");
+barrier.applyProperties("PathPoints");
+function_s(Model.find("AStarNavigator"), "rebuildMeshes");
 repaintall();
 settableviewselection(table, index -1, 0, index -1, 2);
 repaintview(table);</data></node>
-         <node f="42" dt="2"><name>tooltip</name><data>Move the selected point up in the list</data></node>
+         <node f="4000000042" dt="2"><name>tooltip</name><data>Move the selected point up in the list</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
         </data></node>
         <node f="42" dt="4"><name>Down</name><data>
@@ -5895,7 +5712,7 @@ repaintview(table);</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
          <node f="42" dt="2"><name>bitmap</name><data>buttons\downarrow_blue.png</data></node>
          <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
-treenode barrier = node("../..&gt;objectfocus+", c);
+Object barrier = node("../..&gt;objectfocus+", c);
 treenode pointsNode = node("&gt;variables/points", barrier);
 
 int index = gettableviewselection(table,1);
@@ -5911,11 +5728,12 @@ function_s(barrier, "swapPoints", index -1, index);
 applylinks(table, 1);
 refreshview(table);
 function_s(barrier, "setActiveIndex", index);
-function_s(ownerobject(barrier), "rebuildMeshes");
+barrier.applyProperties("PathPoints");
+function_s(Model.find("AStarNavigator"), "rebuildMeshes");
 repaintall();
 settableviewselection(table, index +1, 0, index +1, 2);
 repaintview(table);</data></node>
-         <node f="42" dt="2"><name>tooltip</name><data>Move the selected point down in the list</data></node>
+         <node f="4000000042" dt="2"><name>tooltip</name><data>Move the selected point down in the list</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
         </data></node>
         <node f="42" dt="4"><name>PointsTable</name><data>
@@ -5933,7 +5751,7 @@ repaintview(table);</data></node>
 #define POINT_Y 2
 #define POINT_Z 3
 
-treenode focus = node("../..&gt;objectfocus+", c);
+Object focus = node("../..&gt;objectfocus+", c);
 treenode table = node("&gt;table", c);
 
 if (!objectexists(focus))
@@ -5981,6 +5799,7 @@ if (!eventdata) {
 		}
 	}
 	
+	focus.applyProperties("PathPoints");
 	if (rebuildMeshes) {
 		repaintall();
 	}	
@@ -6051,6 +5870,15 @@ repaintview(TheTable);
           <node f="42" dt="3"><name>history</name><data><coupling>null</coupling></data></node>
           <node f="42" dt="1"><name>bin</name><data>0000000000000000</data></node>
          </node>
+         <node f="42"><name>style</name>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>FS_INHERITANCE_INDICATOR</name><data>~</data>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>property</name><data>PathPoints</data></node>
+           <node f="42" dt="2"><name>focus</name><data>~/../..&gt;objectfocus+</data></node>
+           <node f="42" dt="2"><name>additional</name><data>~/../Points</data></node>
+          </node>
+         </node>
         </data>
          <node f="40"><name></name></node></node>
        </node>
@@ -6077,6 +5905,7 @@ repaintview(TheTable);
          <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
          <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
+         <node f="4000000042" dt="2"><name>windowtitle</name><data>Path Weight</data></node>
         </data></node>
         <node f="42" dt="4"><name>EditPathWeight</name><data>
          <node f="40"><name>object</name></node>
@@ -6110,12 +5939,18 @@ if (!eventdata) {
 		if (weight.value == 0)
 			setviewtext(c, "Default");
 	}
+	ownerobject(weight).as(Object).applyProperties("PathWeight");
 }</data></node>
-         <node f="42" dt="2"><name>tooltip</name><data>The path weight added to the nodes associated with the path.
+         <node f="4000000042" dt="2"><name>tooltip</name><data>The path weight added to the nodes associated with the path.
 Set this to 0 to use the A* Navigator's default path weight.</data></node>
          <node f="42" dt="2"><name>OnKillFocus</name><data>applylinks(c);
 treenode focus = c.find("../..&gt;objectfocus+&gt;variables/pathWeight");
 function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
+         <node f="42" dt="2"><name>FS_INHERITANCE_INDICATOR</name><data>~</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>property</name><data>PathWeight</data></node>
+          <node f="42" dt="2"><name>focus</name><data>~/../..&gt;objectfocus+</data></node>
+         </node>
         </data>
          <node f="40"><name></name></node></node>
        </node>
@@ -6138,30 +5973,20 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
         <node f="42" dt="4"><name>Virtual Distance</name><data>
          <node f="40"><name>object</name></node>
          <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405a4000</data></node>
+         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/QuickProps/Checkbox</data></node>
+         <node f="42" dt="2"><name>objectfocus</name><data>../../..&gt;objectfocus+</data></node>
          <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
          <node f="42" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-         <node f="42" dt="2"><name>coldlink</name><data>../../..&gt;objectfocus+&gt;variables/useVirtualDistance</data></node>
          <node f="42" dt="2"><name>undohistory</name><data>../../..</data></node>
-         <node f="42"><name>eventfunctions</name>
+         <node f="42"><name>variables</name>
           <node f="40"><name></name></node>
-          <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);
-function_s(c, "grayWindows");
-treenode focus = node("&gt;coldlink+", c);
-function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
-          <node f="42" dt="2"><name>coldlinkx</name><data>if (!eventdata) {
-	setchecked(c, c.find("&gt;coldlink+")?.value);
-	function_s(c, "grayWindows");
-}
-</data></node>
-          <node f="442" dt="2"><name>grayWindows</name><data>int useVirtualDistance = getchecked(c);
-forobjecttreeunder(c.find("../EditVirtualDistance")) {
-	windowgray(windowfromnode(a), !useVirtualDistance);
-}
-</data></node>
+          <node f="42" dt="2"><name>grayPanel</name><data>~/../EditVirtualDistance</data></node>
+          <node f="42" dt="2"><name>propName</name><data>UseVirtualDistance</data></node>
          </node>
-         <node f="42" dt="2"><name>tooltip</name><data>Use a virtual distance instead of the actual bridge distance.</data></node>
+         <node f="4000000042" dt="2"><name>tooltip</name><data>Use a virtual distance instead of the actual bridge distance.</data></node>
+         <node f="4000000042" dt="2"><name>windowtitle</name><data>Virtual Distance</data></node>
         </data></node>
         <node f="42" dt="4"><name>EditVirtualDistance</name><data>
          <node f="40"><name>object</name></node>
@@ -6173,17 +5998,14 @@ forobjecttreeunder(c.find("../EditVirtualDistance")) {
          <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
          <node f="42" dt="2"><name>objectfocus</name><data>../../..&gt;objectfocus+&gt;variables/virtualDistance</data></node>
          <node f="42" dt="2"><name>undohistory</name><data>../../..</data></node>
-         <node f="42" dt="2"><name>tooltip</name><data>Virtual Distance</data></node>
+         <node f="4000000042" dt="2"><name>tooltip</name><data>Virtual Distance</data></node>
          <node f="42"><name>variables</name>
           <node f="40"><name></name></node>
           <node f="42" dt="2"><name>valueType</name><data>length</data></node>
           <node f="42" dt="1"><name>isHotlink</name><data>000000003ff00000</data></node>
-         </node>
-         <node f="42"><name>eventfunctions</name>
-          <node f="40"><name></name></node>
-          <node f="442" dt="2"><name>onApply</name><data>treenode focus = node("&gt;objectfocus+", c);
-function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);
-</data></node>
+          <node f="42" dt="1"><name>isQuickProp</name><data>000000003ff00000</data></node>
+          <node f="42" dt="2"><name>propName</name><data>VirtualDistance</data></node>
+          <node f="42" dt="2"><name>inheritanceIndicator</name><data>~</data></node>
          </node>
         </data>
          <node f="40"><name></name></node></node>
@@ -6194,7 +6016,7 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404e8000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000404f8000</data></node>
     <node f="42" dt="2"><name>after</name><data>AStarDivider</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6269,7 +6091,7 @@ if (getvarnum(c, "isExpanded")) {
 </data></node>
        </node>
        <node f="42" dt="2"><name>tooltip</name><data></data></node>
-       <node f="42" dt="2"><name>windowtitle</name><data>A* Grid</data></node>
+       <node f="4000000042" dt="2"><name>windowtitle</name><data>A* Grid</data></node>
       </data>
        <node f="40"><name></name></node>
        <node f="42" dt="4"><name>Node Spacing X</name><data>
@@ -6343,7 +6165,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>spatialy</name><data>00000000404d8000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>000000004055c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-        <node f="42" dt="2"><name>windowtitle</name><data>Z Position</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Z Position</data></node>
        </data></node>
        <node f="42" dt="4"><name>EditZPosition</name><data>
         <node f="40"><name>object</name></node>
@@ -6355,7 +6177,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/minPointZ</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>Enter the Z position of the grid</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>Enter the Z position of the grid</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
          <node f="42" dt="2"><name>valueType</name><data>length</data></node>
@@ -6375,7 +6197,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>spatialy</name><data>0000000040540000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-        <node f="42" dt="2"><name>windowtitle</name><data>Set View Grid Z</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Set View Grid Z</data></node>
         <node f="42" dt="2"><name>OnPress</name><data>treenode activedoc = activedocumentnode();
 
 if (get(viewwindowtype(activedoc)) != 2)
@@ -6386,7 +6208,7 @@ set(first(gridplane(activedoc)), zpos);
 set(viewpointz(activedoc), zpos);
 repaintall();</data>
          <node f="40"><name></name></node></node>
-        <node f="42" dt="2"><name>tooltip</name><data>Set the current Grid Z of the 3D view to this position</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>Set the current Grid Z of the 3D view to this position</data></node>
         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040080000</data></node>
        </data></node>
       </node>
@@ -6512,7 +6334,8 @@ surrogate.size = Vec3(1.0, 1.0, 1.0);
 navigator.attrs.shape.value = "***";
 navigator.attrs.shapeindex.value = 0;
 navigator.attrs.guifocusclass.value = "VIEW:/modules/AStar/Pages/AStarProperties";
-navigator.find("&gt;variables/grids/1/nodeWidth").value = getvarnum(navigator, "nodeWidth");
+navigator.find("&gt;variables/grids/1/nodeSizeX").value = getvarnum(navigator, "nodeWidth");
+navigator.find("&gt;variables/grids/1/nodeSizeY").value = getvarnum(navigator, "nodeWidth");
 clearcontents(navigator.attrs.variables.find("resetposition"));
 switch_hidecontents(navigator, 0);
 createcopy(libNavigator.attrs.imageindexobject, navigator.attrs.imageindexobject, 1, 0, 0, 1);
@@ -6659,7 +6482,7 @@ return updated;</data></node>
 }
 </data></node>
       </node>
-      <node f="42" dt="2"><name>windowtitle</name><data>A* Navigator</data></node>
+      <node f="4000000042" dt="2"><name>windowtitle</name><data>A* Navigator</data></node>
      </data>
       <node f="40"><name></name></node></node>
     </node>
@@ -6712,8 +6535,55 @@ return 1;
     </node>
    </node>
   </node>
+  <node f="42" dt="2"><name>add_onSet</name><data>MAIN:/project/exec/globals/properties/Size&gt;variables/onSet</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name>astar</name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>astar</name><data>Object obj = param(1);
+if (isclasstype(obj, "AStar::Barrier") &amp;&amp; !isclasstype(obj, "AStar::Divider")) {
+	function_s(obj, "updatePointsFromSpatials");
+	function_s(obj, "makeMeshDirty");
+}</data></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add_ignoreClasses</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels/Triggers/Triggers&gt;variables/ignoreClasses</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name>AStar::Barrier</name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStar::Barrier</name></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add_onSet</name><data>MAIN:/project/exec/globals/properties/Location&gt;variables/onSet</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name>astar</name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>astar</name><data>Object obj = param(1);
+if (isclasstype(obj, "AStar::Barrier") &amp;&amp; !isclasstype(obj, "AStar::Divider")) {
+	function_s(obj, "updatePointsFromSpatials");
+	function_s(obj, "makeMeshDirty");
+}</data></node>
+    </node>
+   </node>
+  </node>
  </node>
- <node f="42" dt="2"><name>release</name><data>21.1</data></node>
+ <node f="42" dt="2"><name>release</name><data>21.2</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
- <node f="42" dt="2"><name>flexsim release</name><data>21.1</data></node>
+ <node f="42" dt="2"><name>flexsim release</name><data>21.2</data></node>
 </node></flexsim-tree>

@@ -235,7 +235,7 @@ void Grid::growToBarriers()
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
 		Vec3 min, max;
-		barrier->getBoundingBox(min, max);
+		barrier->getBoundingBox(min, max, model());
 		if (isLocWithinVerticalBounds(min.z)) {
 			if ((!isLocWithinBounds(min, false, true) && isLocWithinBounds(min, true, true))
 				|| (!isLocWithinBounds(max, false, true) && isLocWithinBounds(max, true, true)))
@@ -316,7 +316,7 @@ void Grid::buildNodeTable()
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
 		Vec3 min, max;
-		barrier->getBoundingBox(min, max);
+		barrier->getBoundingBox(min, max, model());
 		if (isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z)) {
 			bool isConditional = barrier->conditionRule;
 			if (isConditional) {
@@ -353,7 +353,7 @@ void Grid::buildNodeTable()
 	for (int i = 0; i < barrierList.size(); i++) {
 		Barrier* barrier = barrierList[i];
 		Vec3 min, max;
-		barrier->getBoundingBox(min, max);
+		barrier->getBoundingBox(min, max, model());
 		if (isLocWithinVerticalBounds(min.z) || isLocWithinVerticalBounds(max.z)) {
 			barrier->addPassagesToTable(this);
 		}
@@ -461,26 +461,23 @@ void Grid::addObjectBarrierToTable(treenode obj)
 			int colright = (int)round((objMax.x - gridOrigin.x) / nodeSize.x);
 			int rowtop = (int)round((objMax.y - gridOrigin.y) / nodeSize.y);
 			for (int row = rowbottom; row <= rowtop; row++) {
-				AStarNode * left = getNode(row, colleft - 1);
-				left->canGoRight = 0;
-				AStarNode * right = getNode(row, colright + 1);
-				right->canGoLeft = 0;
+				blockNodeDirection(Cell(rank, row, colleft - 1), Direction::Right, nullptr);
+				blockNodeDirection(Cell(rank, row, colright + 1), Direction::Left, nullptr);
 			}
 
 			for (int col = colleft; col <= colright; col++) {
-				AStarNode * top = getNode(rowtop + 1, col);
-				top->canGoDown = 0;
-				AStarNode * bottom = getNode(rowbottom - 1, col);
-				bottom->canGoUp = 0;
+				blockNodeDirection(Cell(rank, rowtop + 1, col), Direction::Down, nullptr);
+				blockNodeDirection(Cell(rank, rowbottom - 1, col), Direction::Up, nullptr);
 			}
 
 			for (int row = rowbottom; row <= rowtop; row++) {
 				for (int col = colleft; col <= colright; col++) {
 					AStarNode* theNode = getNode(row, col);
-					theNode->canGoUp = 0;
-					theNode->canGoDown = 0;
-					theNode->canGoLeft = 0;
-					theNode->canGoRight = 0;
+					Cell cell(rank, row, col);
+					blockNodeDirection(cell, Direction::Up, nullptr);
+					blockNodeDirection(cell, Direction::Down, nullptr);
+					blockNodeDirection(cell, Direction::Left, nullptr);
+					blockNodeDirection(cell, Direction::Right, nullptr);
 				}
 			}
 		}
@@ -517,20 +514,22 @@ void Grid::addObjectBarrierToTable(treenode obj)
 					Vec3 objPos;
 					vectorproject(model(), modelPos.x, modelPos.y, modelPos.z, obj, objPos);
 					if (objPos.x > minThreshold.x && objPos.x < maxThreshold.x && objPos.y > minThreshold.y && objPos.y < maxThreshold.y) {
+						Cell cell(rank, row, col);
+
 						AStarNode& theNode = *getNode(row, col);
-						theNode.canGoUp = false;
-						theNode.canGoDown = false;
-						theNode.canGoLeft = false;
-						theNode.canGoRight = false;
+						blockNodeDirection(cell, Direction::Up, nullptr);
+						blockNodeDirection(cell, Direction::Down, nullptr);
+						blockNodeDirection(cell, Direction::Left, nullptr);
+						blockNodeDirection(cell, Direction::Right, nullptr);
 
 						if (col > 0)
-							getNode(row, col - 1)->canGoRight = false;
+							blockNodeDirection(Cell(rank, row, col - 1), Direction::Right, nullptr);
 						if (col < numCols - 1)
-							getNode(row, col + 1)->canGoLeft = false;
+							blockNodeDirection(Cell(rank, row, col + 1), Direction::Left, nullptr);
 						if (row > 0)
-							getNode(row - 1, col)->canGoUp = false;
+							blockNodeDirection(Cell(rank, row - 1, col), Direction::Up, nullptr);
 						if (row < numRows - 1)
-							getNode(row + 1, col)->canGoDown = false;
+							blockNodeDirection(Cell(rank, row + 1, col), Direction::Down, nullptr);
 					}
 				}
 			}
@@ -561,12 +560,13 @@ void Grid::blockGridModelPos(const Cell& cell)
 void Grid::blockNodeDirection(const Cell& cell, Direction direction, Barrier* barrier) {
 	AStarNode* node = getNode(cell);
 	bool isConditionalBarrier = barrier && barrier->conditionRule;
-	if (navigator->applyToTemporaryBarrier == nullptr || !isConditionalBarrier) {
+	if (navigator->applyToTemporaryBarrier == nullptr || (barrier && !isConditionalBarrier)) {
 		node->setCanGo(direction, false);
 	} else {
-		AStarNode& entryNode = (*navigator->applyToTemporaryBarrier)[cell].newValue;
-		entryNode.setCanGo(direction, false);
-		navigator->assertExtraData(cell, ConditionalBarrierData)->addConditionalBarrier(barrier);
+		auto& entry = (*navigator->applyToTemporaryBarrier)[cell];
+		entry.setCanGo(direction, false);
+		if (barrier)
+			navigator->assertExtraData(cell, ConditionalBarrierData)->addConditionalBarrier(barrier);
 	}
 }
 
@@ -860,8 +860,12 @@ void Grid::buildGridMesh(float zOffset)
 	float gold[4] = { 0.8f,0.8f,0.0f, 1.0f };
 	float red[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
-	for (int row = 0; row < numRows; row++) {
+	// Until I make grid rendering use instanced rendering, I'm only going to draw up to a 
+	// million entries, because really big grids can use up tons of graphics memory and freeze the computer.
+	int count = 0; 
+	for (int row = 0; row < numRows && count < 1000000; row++) {
 		for (int col = 0; col < numCols; col++) {
+			count++;
 			AStarNode* n = getNode(row, col);
 			AStarSearchEntry s;
 			s.cell.col = col;
@@ -1134,7 +1138,7 @@ void Grid::drawDestinationThreshold(treenode destination, const Vec3 & loc, cons
 	fglEnable(GL_TEXTURE_2D);
 }
 
-void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDest, int colDest, DestinationThreshold * threshold)
+void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDest, int colDest, const DestinationThreshold * threshold)
 {
 	AStarNode* node = getNode(cell);
 	int dy = rowDest - cell.row;
@@ -1183,7 +1187,7 @@ void Grid::checkGetOutOfBarrier(Cell & cell, TaskExecuter * traveler, int rowDes
 	if (threshold && cell != originalCell) {
 		double newRadius = minNodeSize * (0.9 + sqrt(sqr(cell.row - originalCell.row) + sqr(cell.col - originalCell.col)));
 		if (newRadius > threshold->anyThresholdRadius)
-			threshold->anyThresholdRadius = newRadius;
+			const_cast<DestinationThreshold*>(threshold)->anyThresholdRadius = newRadius;
 	}
 }
 

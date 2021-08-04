@@ -88,7 +88,7 @@ protected:
 public:
 	void setDirty() { isGridDirty = isBoundsDirty = true; }
 
-	void checkGetOutOfBarrier(Cell& cell, TaskExecuter* traveler, int rowDest, int colDest, DestinationThreshold* threshold)
+	void checkGetOutOfBarrier(Cell& cell, TaskExecuter* traveler, int rowDest, int colDest, const DestinationThreshold* threshold)
 	{
 		getGrid(cell)->checkGetOutOfBarrier(cell, traveler, rowDest, colDest, threshold);
 	}
@@ -183,17 +183,6 @@ public:
 
 	double snapBetweenGrid;
 
-	double collisionUpdateIntervalFactor;
-	double collisionUpdateInterval;
-	double nextCollisionUpdateTime; 
-	void onCollisionIntervalUpdate();
-	class CollisionIntervalUpdateEvent : public FlexSimEvent {
-	public:
-		virtual const char* getClassFactory() override { return "AStar::AStarNavigator::CollisionIntervalUpdateEvent"; }
-		CollisionIntervalUpdateEvent() : FlexSimEvent() {}
-		CollisionIntervalUpdateEvent(AStarNavigator* nav, double time) : FlexSimEvent(nav->holder, time, nullptr, 0) {}
-		virtual void execute() override { partner()->objectAs(AStarNavigator)->onCollisionIntervalUpdate(); }
-	};
 
 	static void addBarrier(treenode x, Barrier* newBarrier);
 	TreeNode* barriers;
@@ -212,6 +201,7 @@ public:
 
 	TreeNode* fixedResourceBarriers;
 	NodeListArray<ObjectDataType>::ObjStoredAttCouplingType objectBarrierList;
+	NodeListArray<TemporaryBarrier>::CouplingSdtSubNodeType dynamicBarriers;
 
 	AStarNavigator();
 	~AStarNavigator();
@@ -241,6 +231,10 @@ public:
 	AStarSearchEntry* checkExpandOpenSetDiagonal(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn,
 		Direction dir1, Direction dir2, float rotDirection, AStarNodeExtraData* preferredPathData);
 
+
+	static const int DoFullSearch = 0x1;
+	static const int KeepEndpointsConst = 0x2;
+	static const int AppendPath = 0x4;
 	/// <summary>Calculates the route.</summary>
 	///
 	/// <remarks>Anthony Johnson, 2/12/2018.</remarks>
@@ -248,16 +242,15 @@ public:
 	/// <param name="traveler">		  [in,out] If non-null, the traveler.</param>
 	/// <param name="destLoc">		  [in,out] If non-null, destination location.</param>
 	/// <param name="endSpeed">		  The end speed.</param>
-	/// <param name="doFullSearch">   (Optional) True to do full search (no cached paths).</param>
+	/// <param name="flags">   (Optional) True to do full search (no cached paths).</param>
 	/// <param name="travelStartTime">(Optional) The travel start time.</param>
 	///
 	/// <returns>The calculated route.</returns>
-	TravelPath calculateRoute(Traveler* traveler, double* destLoc, const DestinationThreshold& destThreshold, double endSpeed, bool doFullSearch = false, double travelStartTime = -1);
+	TravelPath calculatePath(Traveler* traveler, double* destLoc, const DestinationThreshold& destThreshold, int flags, double travelStartTime);
 
-	/// <summary>Exported calculateRoute() function.</summary>
-	///
-	/// <remarks>Calls main calculateRoute() function, but applies the return value to the Traveler.</remarks>
-	astar_export void calculateRoute(Traveler* traveler, double* destLoc, const DestinationThreshold& destThreshold);
+	/// <summary>Exported calculatePath() function.</summary>
+	/// <remarks>Calls main calculatePath() function, but applies the return value to the Traveler.</remarks>
+	astar_export void calculatePath(Traveler* traveler, double* destLoc, const DestinationThreshold& destThreshold, int flags = 0);
 
 	double calculateHeuristic(Grid* fromGrid, const Cell& fromCell);
 
@@ -304,6 +297,7 @@ public:
 
 	NodeListArray<Traveler>::CouplingSdtSubNodeBindingType travelers;
 	std::list<Traveler*> activeTravelers;
+
 	void buildActiveTravelerList();
 
 	astar_export static Traveler* getTraveler(TaskExecuter* te);
@@ -342,6 +336,12 @@ public:
 	ElevatorBridge::AStarDelegate* elevatorDelegate;
 
 	NodeListArray<>::SubNodeType barrierConditions;
+
+	treenode addDynamicBarrier(const Vec3& loc, const Vec3& size, const Vec3& rot, int skipOnChange = 0);
+	Variant addDynamicBarrier(const Variant& val, int skipOnChange = 0);
+	void removeDynamicBarrier(const Variant& val, int skipOnChange = 0);
+
+	treenode onGridChange = nullptr;
 };
 
 }

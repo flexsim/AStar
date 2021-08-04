@@ -13,7 +13,6 @@ void MandatoryPath::onReset(AStarNavigator* nav)
 {
 	__super::onReset(nav);
 	if (conditionRule) {
-		conditionalBarrierChanges.valueMask.isOnMandatoryPath = true;
 		nav->hasConditionalBarriers = 1.0;
 	}
 }
@@ -36,20 +35,32 @@ void MandatoryPath::addPassagesToTable(Grid * grid)
 			AStarNode newValue(*node);
 			if (!conditionRule)
 				node->isOnMandatoryPath = true;
-			else newValue.isOnMandatoryPath = true;
+			newValue.isOnMandatoryPath = true;
+			AStarNode mask;
+			mask.value = 0;
+			mask.isOnMandatoryPath = true;
 			if (!isTwoWay) {
-				if (direction > 135.0 || direction < -135.0)
-					newValue.setCanGo(Right, false);
-				else if (direction < 45.0 && direction > -45.0)
-					newValue.setCanGo(Left, false);
+				if (direction > 135.0 || direction < -135.0) {
+					newValue.canGoRight = false;
+					mask.canGoRight = true;
+				}
+				else if (direction < 45.0 && direction > -45.0) {
+					newValue.canGoLeft = false;
+					mask.canGoLeft = true;
+				}
 
-				if (direction < -45.0 && direction > -135.0)
-					newValue.setCanGo(Up, false);
-				else if (direction < 135.0 && direction > 45.0)
-					newValue.setCanGo(Down, false);
+				if (direction < -45.0 && direction > -135.0) {
+					newValue.canGoUp = false;
+					mask.canGoUp = true;
+				}
+				else if (direction < 135.0 && direction > 45.0) {
+					newValue.canGoDown = false;
+					mask.canGoDown = true;
+				}
 			}
 
-			conditionalBarrierChanges.addEntry(cell, newValue);
+			auto& entry = conditionalBarrierChanges.addEntry(cell, newValue);
+			entry.changeMask = mask;
 		});
 	}
 }
