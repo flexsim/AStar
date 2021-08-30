@@ -6101,7 +6101,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>spatialy</name><data>0000000040220000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>000000004055c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-        <node f="42" dt="2"><name>windowtitle</name><data>Node Spacing X</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Node Spacing X</data></node>
        </data></node>
        <node f="42" dt="4"><name>EditNodeSizeX</name><data>
         <node f="40"><name>object</name></node>
@@ -6113,7 +6113,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/nodeSizeX</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
          <node f="42" dt="2"><name>valueType</name><data>length</data></node>
@@ -6133,7 +6133,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>spatialy</name><data>0000000040410000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>000000004055c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
-        <node f="42" dt="2"><name>windowtitle</name><data>Node Spacing Y</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Node Spacing Y</data></node>
        </data></node>
        <node f="42" dt="4"><name>EditNodeSizeY</name><data>
         <node f="40"><name>object</name></node>
@@ -6145,7 +6145,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
         <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/nodeSizeY</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
          <node f="42" dt="2"><name>valueType</name><data>length</data></node>
