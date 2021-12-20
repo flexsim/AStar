@@ -41,6 +41,7 @@ void Grid::bind()
 	bindDoubleByName("gridOriginY", gridOrigin.y, 1);
 	bindDoubleByName("gridOriginZ", gridOrigin.z, 1);
 	bindDouble(isUserCustomized, 1);
+	bindDouble(noSelect, 1);
 	bindSubNode(bridgeData, 0);
 
 	bindCallback(dragPressedPick, Grid);
@@ -1314,23 +1315,30 @@ void Grid::drawSizerHandles(treenode view, int pickingMode)
 
 void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode)
 {
-	if (pickingMode == PICK_PRESSED)
-	if (!pickingMode && (selObj == holder || hoverObj == holder)) {
-		Mesh tempMesh;
-		Vec4f color(1.0f, 1.0f, 0.0f, selObj == holder ? 1.0f : 0.2f);
-		buildBoundsMesh(tempMesh, true, color);
-		glLineWidth(5.0f);
-		tempMesh.draw(GL_LINES);
-		glLineWidth(1.0f);
+	if (switch_hideshape(holder, -1))
+		return;
+	
+	if (!noSelect) {
+		if (pickingMode == PICK_PRESSED) {
+			if (!pickingMode && (selObj == holder || hoverObj == holder)) {
+				Mesh tempMesh;
+				Vec4f color(1.0f, 1.0f, 0.0f, selObj == holder ? 1.0f : 0.2f);
+				buildBoundsMesh(tempMesh, true, color);
+				glLineWidth(5.0f);
+				tempMesh.draw(GL_LINES);
+				glLineWidth(1.0f);
+			}
+		}
+
+		if (selObj == holder) {
+			drawSizerHandles(view, pickingMode);
+		}
+		if (pickingMode)
+			setpickingdrawfocus(view, holder, 0);
 	}
 
-
-	if (selObj == holder) {
-		drawSizerHandles(view, pickingMode);
-	}
-	if (pickingMode)
-		setpickingdrawfocus(view, holder, 0);
-	boundsMesh.draw(GL_TRIANGLES);
+	if (!noSelect || !pickingMode)
+		boundsMesh.draw(GL_TRIANGLES);
 }
 
 void Grid::getBoundsVertices(Vec3f & bottomLeft, Vec3f & topRight, Vec3f & topLeft, Vec3f & bottomRight, Vec3f & oBottomLeft, Vec3f & oTopRight, Vec3f & oTopLeft, Vec3f & oBottomRight)

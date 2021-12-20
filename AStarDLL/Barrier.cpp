@@ -828,6 +828,9 @@ double Barrier::onDraw(treenode view)
 	if (!((int)nav->drawMode & ASTAR_DRAW_MODE_BARRIERS))
 		return 0;
 
+	if (switch_hideshape(holder, -1))
+		return 0;
+
 	if (drawNodeSize != nav->minNodeSize)
 		isMeshDirty = true;
 
