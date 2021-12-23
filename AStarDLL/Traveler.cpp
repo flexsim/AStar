@@ -1,3 +1,4 @@
+#include <random>
 #include "Traveler.h"
 #include "AStarNavigator.h"
 #include "Bridge.h"
@@ -845,9 +846,9 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 	TravelPath bestPath, secondBestPath;
 	Traveler* bestTraveler = nullptr, *secondBestTraveler = nullptr;
 	if (numDeadlocksSinceLastNavigate > 0) {
-		std::srand(numDeadlocksSinceLastNavigate * 10283);
-		auto randCallback = [](int val) { return std::rand() % val; };
-		std::random_shuffle(deadlockList.begin(), deadlockList.end(), randCallback);
+		std::minstd_rand rand;
+		rand.seed(numDeadlocksSinceLastNavigate * 10283);
+		std::shuffle(deadlockList.begin(), deadlockList.end(), rand);
 	}
 
 	int startAt = numDeadlocksSinceLastNavigate == 0 ? 0 : 1;
