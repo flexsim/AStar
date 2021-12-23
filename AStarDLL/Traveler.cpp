@@ -246,7 +246,8 @@ void Traveler::navigatePath(int startAtPathIndex)
 	double lastRotation;
 	lastRotation = te->b_spatialrz;
 	endTime = time();
-	if (objectexists(te->node_v_modifyrotation) && te->node_v_modifyrotation->value) {
+	bool teCanRotate = objectexists(te->node_v_modifyrotation) && te->node_v_modifyrotation->value;
+	if (teCanRotate) {
 
 		if (rotLerpSize == 0 && !nav->stopForTurns)
 			kinFlags |= KINEMATIC_MANAGE_ROTATIONS;
@@ -354,7 +355,10 @@ void Traveler::navigatePath(int startAtPathIndex)
 
 					if (nav->stopForTurns) {
 						if (fabs(rotDiff) > 0.1) {
-							startTime = addkinematic(kinematics, 0, 0, rotDiff, turnSpeed, 0, 0, 0, 0, startTime + 0.5 * turnDelay, KINEMATIC_ROTATE) + 0.5 * turnDelay;
+							if (teCanRotate) {
+								startTime = addkinematic(kinematics, 0, 0, rotDiff, turnSpeed, 0, 0, 0, 0, startTime + 0.5 * turnDelay, KINEMATIC_ROTATE) + 0.5 * turnDelay;
+							}
+							else startTime += turnDelay + fabs(rotDiff / turnSpeed);
 							if (lastAllocation)
 								lastAllocation->extendReleaseTime(startTime + deallocTimeOffset);
 							if (i == startAtPathIndex + 1)
@@ -362,9 +366,11 @@ void Traveler::navigatePath(int startAtPathIndex)
 						}
 					}
 					else {
-						double timeToRot = fabs(rotDiff) / rotLerpSpeed;
-						double rotStartTime = std::max(time(), startTime - 0.5 * timeToRot);
-						addkinematic(kinematics, 0, 0, rotDiff, rotLerpSpeed, 0, 0, 0, 0, rotStartTime, KINEMATIC_ROTATE);
+						if (teCanRotate) {
+							double timeToRot = fabs(rotDiff) / rotLerpSpeed;
+							double rotStartTime = std::max(time(), startTime - 0.5 * timeToRot);
+							addkinematic(kinematics, 0, 0, rotDiff, rotLerpSpeed, 0, 0, 0, 0, rotStartTime, KINEMATIC_ROTATE);
+						}
 					}
 					lastRotation = nextRot;
 				}
