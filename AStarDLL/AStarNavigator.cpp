@@ -449,8 +449,10 @@ double AStarNavigator::onDraw(TreeNode* view)
 			glLineWidth(1.0f);
 			bool isPatternBarrierSelected = objectexists(selObj) && isclasstype(selObj, "AStar::Barrier") && selObj->objectAs(Barrier)->patternTable->subnodes.length > 0;
 			if (!isPatternBarrierSelected) {
-				for (Grid* grid : grids)
-					grid->gridMesh.draw(GL_LINES);
+				for (Grid* grid : grids) {
+					if (!switch_hideshape(grid->holder, -1))
+						grid->gridMesh.draw(GL_LINES);
+				}
 			}
 		}
 
@@ -1364,8 +1366,10 @@ void AStarNavigator::buildBoundsMesh(float z)
 
 void AStarNavigator::drawHeatMap(TreeNode* view)
 {
-	for (Grid* grid : grids)
-		grid->drawHeatMap(view);
+	for (Grid* grid : grids) {
+		if (!switch_hideshape(grid->holder, -1))
+			grid->drawHeatMap(view);
+	}
 
 }
 
@@ -1415,6 +1419,9 @@ void AStarNavigator::drawMembers()
 		ObjectDataType* theFR = objectBarrierList[i];
 		TreeNode* theNode = theFR->holder;
 
+		if (switch_hideshape(theNode, -1))
+			continue;
+
 		Vec3 topLeft = Vec3(0, 0, 0).project(theNode, model());
 		Vec3 bottomLeft = Vec3(0, -ysize(theNode), 0).project(theNode, model());
 		Vec3 bottomRight = Vec3(xsize(theNode), -ysize(theNode), 0).project(theNode, model());
@@ -1454,6 +1461,8 @@ void AStarNavigator::drawMembers()
 		if (t->isActive)
 			continue;
 		TaskExecuter* te = t->te;
+		if (switch_hideshape(te->holder, -1))
+			continue;
 
 		Vec3f center = te->getLocation(0.5, 0.5, 0.0).project(te->holder->up, model());
 
@@ -1484,6 +1493,8 @@ void AStarNavigator::drawMembers()
 	for (auto i = activeTravelers.begin(); i != activeTravelers.end(); i++) {
 		Traveler* t = *i;
 		TaskExecuter* te = t->te;
+		if (switch_hideshape(te->holder, -1))
+			continue;
 
 		Vec3f center = te->getLocation(0.5, 0.5, 0.0).project(te->holder->up, model());
 
