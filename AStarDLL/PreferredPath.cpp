@@ -60,7 +60,7 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 		int horizontalWeight = (int)(weight * 127 * dx / (fabs(dx) + fabs(dy)));
 		int verticalWeight = (int)(weight * 127 * dy / (fabs(dx) + fabs(dy)));
 
-		grid->visitGridModelLine(fromPos, toPos, [this, grid, horizontalWeight, verticalWeight, dx, dy](const Cell& cell) -> void {
+		grid->visitGridModelLine(fromPos, toPos, [this, grid, horizontalWeight, verticalWeight, dx, dy, fromRow, fromCol, toRow, toCol](const Cell& cell) -> void {
 			AStarNode* node = grid->getNode(cell);
 			AStarNodeExtraData * extra = grid->navigator->assertExtraData(cell, PreferredPathData);
 			node->hasPreferredPathWeight = true;
@@ -77,14 +77,17 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 				extra->bonusDown = (char)maxof(-128, minof(127, extra->bonusDown + fabs(verticalWeight)));
 			}
 
-			if (dx > 0 || (isTwoWay && dx != 0))
+			bool isStart = cell.row == fromRow && cell.col == fromCol;
+			bool isEnd = cell.row == toRow && cell.col == toCol;
+
+			if ((dx > 0 && !isEnd) || (isTwoWay && dx < 0 && !isStart))
 				node->canGoRight = true;
-			if (dx < 0 || (isTwoWay && dx != 0))
+			if ((dx < 0 && !isEnd) || (isTwoWay && dx > 0 && !isStart))
 				node->canGoLeft = true;
-			if (dy > 0 || (isTwoWay && dy != 0))
+			if ((dy > 0 && !isEnd) || (isTwoWay && dy < 0 && !isStart))
 				node->canGoUp = true;
-			if (dy < 0 || (isTwoWay && dy != 0))
-				node->canGoDown = true;
+			if ((dy < 0 && !isEnd) || (isTwoWay && dy > 0 && !isStart))
+				node->canGoDown = true;			
 
 			if (conditionRule) {
 				node->hasConditionalBarrier = true;
