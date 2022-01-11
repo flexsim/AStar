@@ -258,8 +258,6 @@ double Divider::dragPressedPick(treenode view, Vec3& parentPos, Vec3& diff)
 			activePoint->x += diff.x;
 			activePoint->y += diff.y;
 		}
-		if (toBridge())
-			activePoint->z += diff.z;
 	} else {
 		// Snap between grid points
 		if (navigator->snapBetweenGrid && !toPreferredPath() && !toBridge() && !toMandatoryPath()) {
@@ -271,7 +269,6 @@ double Divider::dragPressedPick(treenode view, Vec3& parentPos, Vec3& diff)
 		for (int i = 0; i < pointList.size(); i++) {
 			pointList[i]->x += diff.x;
 			pointList[i]->y += diff.y;
-			pointList[i]->z += diff.z;
 		}
 	}
 	updateSpatialsToEncompassPoints();
