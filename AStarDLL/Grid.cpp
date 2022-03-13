@@ -43,9 +43,15 @@ void Grid::bind()
 	bindDouble(isUserCustomized, 1);
 	bindDouble(noSelect, 1);
 	bindSubNode(bridgeData, 0);
+	bindSubNode(neighborGrids, 0);
 
 	bindCallback(dragPressedPick, Grid);
 	bindCallback(makeDirty, Grid);
+}
+
+TreeNode* Grid::getNeighborContainer(Grid* other)
+{ 
+	return other->neighborGrids;
 }
 
 bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand, bool addSurroundDepth) const
@@ -362,6 +368,17 @@ void Grid::buildNodeTable()
 
 	for (BridgeRoutingData* data : bridgeData) {
 		data->addEntriesToNodeTable(this);
+	}
+
+	for (int i = 0; i < neighborGrids.size(); i++) {
+		Grid* grid = neighborGrids[i];
+		auto walker = NeighborWalker(this, grid);
+		for (auto neighbors : walker) {
+			auto cell = neighbors.first.grid == rank ? neighbors.first : neighbors.second;
+			auto& node = nodes[cell.row][cell.col];
+			auto extraData = navigator->assertExtraData(cell, NeighborGridData);
+			extraData->neighborGridRanks.push_back(i);
+		}
 	}
 	isDirtyByUser = false;
 }
@@ -1263,6 +1280,28 @@ double Grid::onCreate(bool isCopy)
 	return 0;
 }
 
+double Grid::dragConnection(treenode toObj, char pressed, unsigned int classtype)
+{
+	if (toObj->dataType != DATATYPE_SIMPLE)
+		return 0;
+	Grid* grid = toObj->object<Grid>();
+	if (strcmp(grid->getClassFactory(), "AStar::Grid") != 0)
+		return 0;
+
+	auto existing = std::find(neighborGrids.begin(), neighborGrids.end(), grid);
+	if (pressed == 'A') {
+		if (existing == neighborGrids.end())
+			neighborGrids.add(grid);
+	}
+
+	if (pressed == 'Q') {
+		if (existing != neighborGrids.end()) {
+			neighborGrids.remove(existing - neighborGrids.begin());
+		}
+	}
+	return 0;
+}
+
 
 void Grid::onPostCreate(void * data)
 {
@@ -1279,6 +1318,58 @@ void Grid::onPostCreate(void * data)
 	grid->bindNavigator();
 	if (grid->navigator)
 		grid->navigator->isGridDirty = grid->navigator->isBoundsDirty = true;
+}
+
+void Grid::drawNodeDots(treenode view)
+{
+	Vec3f bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight;
+	getBoundsVertices(bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight);
+	Mesh mesh;
+	mesh.init(0, MESH_POSITION);
+
+	double diamondSize = 0.1 * std::min(nodeSize.x, nodeSize.y);
+	Vec3f nodeSize(this->nodeSize.x, this->nodeSize.y, 0.0f);
+	Vec3f pos(bottomLeft + nodeSize * 0.5);
+	while (pos.y < topLeft.y) {
+		
+		while (pos.x < bottomRight.x) {
+			mesh.setVertexAttrib(mesh.addVertex(), MESH_POSITION, pos + Vec3f(0.0f, diamondSize, 0.0f));
+			mesh.setVertexAttrib(mesh.addVertex(), MESH_POSITION, pos + Vec3f(-diamondSize, 0.0f, 0.0f));
+			mesh.setVertexAttrib(mesh.addVertex(), MESH_POSITION, pos + Vec3f(0.0f, -diamondSize, 0.0f));
+
+			mesh.setVertexAttrib(mesh.addVertex(), MESH_POSITION, pos + Vec3f(0.0f, diamondSize, 0.0f));
+			mesh.setVertexAttrib(mesh.addVertex(), MESH_POSITION, pos + Vec3f(0.0f, -diamondSize, 0.0f));
+			mesh.setVertexAttrib(mesh.addVertex(), MESH_POSITION, pos + Vec3f(diamondSize, 0.0f, 0.0f));
+			pos.x += nodeSize.x;
+		}
+		pos.x = bottomLeft.x + 0.5f * nodeSize.x;
+		pos.y += nodeSize.y;
+	}
+	fglColor(1.0f, 0.0f, 0.0f);
+	glPointSize(3.0f);
+	mesh.draw(GL_TRIANGLES);
+	glPointSize(1.0f);
+}
+
+
+void Grid::drawNeighborGrids(treenode view)
+{
+	Mesh mesh;
+	mesh.init(0, MESH_POSITION);
+	for (auto grid : neighborGrids) {
+		NeighborWalker walker(this, grid);
+
+		for (auto cells : walker) {
+			auto from = Vec3f(navigator->getLocation(cells.first));
+			mesh.setVertexAttrib(mesh.addVertex(), MESH_POSITION, from);
+			auto to = Vec3f(navigator->getLocation(cells.second));
+			mesh.setVertexAttrib(mesh.addVertex(), MESH_POSITION, to);
+		}
+	}
+	fglColor(0.3f, 0.6f, 0.1f);
+	glLineWidth(2.0f);
+	mesh.draw(GL_LINES);
+	glLineWidth(1.0f);
 }
 
 void Grid::drawSizerHandles(treenode view, int pickingMode)
@@ -1332,6 +1423,10 @@ void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pic
 
 		if (selObj == holder) {
 			drawSizerHandles(view, pickingMode);
+			if (!pickingMode) {
+				drawNodeDots(view);
+				drawNeighborGrids(view);
+			}
 		}
 		if (pickingMode)
 			setpickingdrawfocus(view, holder, 0);
@@ -1341,27 +1436,33 @@ void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pic
 		boundsMesh.draw(GL_TRIANGLES);
 }
 
-void Grid::getBoundsVertices(Vec3f & bottomLeft, Vec3f & topRight, Vec3f & topLeft, Vec3f & bottomRight, Vec3f & oBottomLeft, Vec3f & oTopRight, Vec3f & oTopLeft, Vec3f & oBottomRight)
+void Grid::getBoundsVertices(Vec3f& bottomLeft, Vec3f& topRight, Vec3f& topLeft, Vec3f& bottomRight)
 {
 	int numCols, numRows;
 	if (isDirtyByUser || this->numRows == 0 || this->numCols == 0) {
 		resolveGridOrigin();
 		numCols = (int)round((maxPoint.x - gridOrigin.x) / nodeSize.x);
 		numRows = (int)round((maxPoint.y - gridOrigin.y) / nodeSize.y);
-	} else {
+	}
+	else {
 		numCols = this->numCols;
 		numRows = this->numRows;
 	}
 	float width = (float)numCols * nodeSize.x;
 	float height = (float)numRows * nodeSize.y;
 
-	float borderWidth = std::min(nodeSize.x, nodeSize.y);
 	float z = minPoint.z;
 	bottomLeft = Vec3f((float)(gridOrigin.x - 0.5 * nodeSize.x), (float)(gridOrigin.y - 0.5 * nodeSize.y), (float)minPoint.z);
 	topRight = Vec3f(bottomLeft.x + width, bottomLeft.y + height, z);
 	topLeft = Vec3f(bottomLeft.x, topRight.y, z);
 	bottomRight = Vec3f(topRight.x, bottomLeft.y, z);
+}
 
+void Grid::getBoundsVertices(Vec3f& bottomLeft, Vec3f& topRight, Vec3f& topLeft, Vec3f& bottomRight, Vec3f& oBottomLeft, Vec3f& oTopRight, Vec3f& oTopLeft, Vec3f& oBottomRight)
+{
+	getBoundsVertices(bottomLeft, topRight, topLeft, bottomRight);
+	float borderWidth = std::min(nodeSize.x, nodeSize.y);
+	float z = minPoint.z;
 	oBottomLeft = Vec3f(bottomLeft.x - borderWidth, bottomLeft.y - borderWidth, z);
 	oTopRight = Vec3f(topRight.x + borderWidth, topRight.y + borderWidth, z);
 	oTopLeft = Vec3f(topLeft.x - borderWidth, topLeft.y + borderWidth, z);
@@ -1446,5 +1547,104 @@ double Grid::onUndo(bool isUndo, treenode undoRecord)
 		navigator->setDirty(); 
 	return 0;
 }
+
+Grid::NeighborWalker::NeighborWalker(Grid* _a, Grid* _b) : a(_a), b(_b)
+{
+	BoundingBox3f aBB, bBB;
+	Vec3f unused1, unused2;
+	a->getBoundsVertices(aBB.min, aBB.max, unused1, unused2);
+	b->getBoundsVertices(bBB.min, bBB.max, unused1, unused2);
+
+	enum AxisOverlap {
+		Overlap, 
+		Greater,
+		Less
+	};
+	AxisOverlap xOverlap = aBB.min.x >= bBB.max.x ? Greater : (bBB.min.x >= aBB.max.x ? Less : Overlap);
+	AxisOverlap yOverlap = aBB.min.y >= bBB.max.y ? Greater : (bBB.min.y >= aBB.max.y ? Less : Overlap);
+
+	auto swapAandB = [&, this]() {
+		auto tempG = a;
+		a = b;
+		b = tempG;
+		auto tempBB = aBB;
+		aBB = bBB;
+		bBB = tempBB; 
+
+		xOverlap = (xOverlap == Greater ? Less : (xOverlap == Less ? Greater : Overlap));
+		yOverlap = (yOverlap == Greater ? Less : (yOverlap == Less ? Greater : Overlap));
+	};
+
+	if (xOverlap != Overlap && yOverlap != Overlap) {
+		// they only access each other at the corners
+		numANodes = 1;
+		aStartCell = Cell(a->rank, yOverlap == Less ? a->numRows - 1 : 0, xOverlap == Less ? a->numCols - 1 : 0);
+		walkDirection = Vec3(0.0, 0.0, 0.0);
+	}
+	else if (xOverlap != Overlap && yOverlap == Overlap) {
+		// they are to the left/Greater of each other
+		if (b->nodeSize.y > a->nodeSize.y)
+			swapAandB();
+		aStartCell = Cell(a->rank, 0, xOverlap == Less  ? a->numCols - 1 : 0);
+		Vec3 loc = a->getLocation(aStartCell);
+
+		loc.y = std::max(aBB.min.y, bBB.min.y);
+		aStartCell = a->getCell(loc);
+		walkDirection = Vec3(0.0, a->nodeSize.y, 0.0);
+		double maxY = std::min(aBB.max.y, bBB.max.y);
+		numANodes = (int)std::round((maxY - loc.y) / a->nodeSize.y);
+		numANodes = std::max(1, std::min(numANodes, a->numRows - aStartCell.row));
+	}
+	else if (xOverlap == Overlap && yOverlap != Overlap) {
+		// they are above/below each other
+		if (b->nodeSize.x > a->nodeSize.x)
+			swapAandB();
+		aStartCell = Cell(a->rank, yOverlap == Less ? a->numRows - 1 : 0, 0);
+		Vec3 loc = a->getLocation(aStartCell);
+
+		loc.x = std::max(aBB.min.x, bBB.min.x);
+		aStartCell = a->getCell(loc);
+		walkDirection = Vec3(a->nodeSize.x, 0.0, 0.0);
+		double maxX = std::min(aBB.max.x, bBB.max.x);
+		numANodes = (int)std::round((maxX - loc.x) / a->nodeSize.x);
+		numANodes = std::max(1, std::min(numANodes, a->numCols - aStartCell.col));
+	}
+	else {
+		numANodes = 0;
+		// They overlap each other completely. This is bad
+	}
+}
+
+std::pair<Cell, Cell> Grid::NeighborWalker::walkTo(int index)
+{
+	auto loc = a->getLocation(aStartCell) + walkDirection * (double)index;
+	return { a->getCell(loc), b->getCell(loc) };
+}
+
+Cell Grid::NeighborWalker::getPartner(const Cell& cell)
+{
+	if (cell.grid == aStartCell.grid) {
+		if (numANodes <= 1)
+			return walkTo(0).second;
+
+		// one of the below components will be zero, so I'm just getting the 
+		// relevant diff component
+		int diff = (cell.row - aStartCell.row) + (cell.col - aStartCell.col);
+		return walkTo(diff).second;
+	}
+	else {
+		Vec3 loc = b->getLocation(cell);
+		Cell aCell = a->getCell(loc);
+		// one of the below components will be zero, so I'm just getting the 
+		// relevant diff component
+		int diff = (aCell.row - aStartCell.row) + (aCell.col - aStartCell.col);
+		auto neighbors =  walkTo(diff);
+		if (neighbors.second == cell)
+			return neighbors.first;
+		return Cell(Cell::INVALID_ROW, Cell::INVALID_ROW, Cell::INVALID_ROW);
+
+	}
+}
+
 
 }

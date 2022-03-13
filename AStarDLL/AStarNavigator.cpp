@@ -991,6 +991,24 @@ the outside 8 nodes.
 			checkExpandOpenSetDiagonal(grid, n, (&shortest), Down, Left, -135.0f, preferredPathData);
 		}
 
+		if (n->hasNeighborGrids) {
+			auto e = edgeTableExtraData.find(shortest.cell.value);
+			AStarNodeExtraData* extra = e->second;
+			Grid* grid = getGrid(shortest.cell);
+			for (auto i : extra->neighborGridRanks) {
+				Grid* neighbor = grid->neighborGrids[i];
+				auto walker = Grid::NeighborWalker(grid, neighbor);
+				auto partnerCell = walker.getPartner(shortest.cell);
+				if (partnerCell.row != Cell::INVALID_ROW) {
+					Vec3 fromLoc = grid->getLocation(shortest.cell);
+					Vec3 toLoc = neighbor->getLocation(partnerCell);
+					Vec3 diff(toLoc - fromLoc);
+					expandOpenSet(neighbor, partnerCell.row, partnerCell.col, (float)diff.magnitude, (float)diff.getXYAngle());
+				}
+			}
+
+		}
+
 		if (n->hasBridgeStartPoint) {
 			auto e = edgeTableExtraData.find(shortest.cell.value);
 			AStarNodeExtraData* extra = e->second;
@@ -1134,6 +1152,11 @@ double AStarNavigator::calculateHeuristic(Grid * fromGrid, const Cell & fromCell
 		return (1.0 - maxPathWeight) * Vec3(destCellLoc.x - from.x, destCellLoc.y - from.y, destCellLoc.z - from.z).magnitude;
 	} else {
 		double bestHeuristic = DBL_MAX;
+		if (fromGrid->neighborGrids.size() > 0) {
+			Grid* toGrid = getGrid(destCell);
+			if (fabs(toGrid->gridOrigin.z - fromGrid->gridOrigin.z) < 0.1 * fromGrid->nodeSize.x)
+				bestHeuristic =  Vec3(destCellLoc.x - from.x, destCellLoc.y - from.y, destCellLoc.z - from.z).magnitude;
+		}
 		for (BridgeRoutingData* data : fromGrid->bridgeData) {
 			auto& entry = data->toCellHeuristics[destCell.grid];
 			if (entry.heuristic < DBL_MAX) {
@@ -1213,7 +1236,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 
 	float rotationTime = 0.0f;
 	/*  Check if the guy is changing directions. If so, I want to increase the distance so it will be a penalty to make turns*/
-	if(rotDirection != shortest.rotOnArrival) {
+	if(fabs(rotDirection - shortest.rotOnArrival) > 5.0) {
 		float diff = rotDirection - shortest.rotOnArrival;
 		if (diff > 180.0f)
 			diff -= 360.0f;
@@ -1747,6 +1770,7 @@ AStarNodeExtraData*  AStarNavigator::assertExtraData(const Cell& cell, ExtraData
 			node->hasConditionalBarrier = true; 
 			hasConditionalBarriers = 1.0;
 			break;
+		case NeighborGridData: node->hasNeighborGrids = true; break;
 		default: break;
 	}
 	return extra;

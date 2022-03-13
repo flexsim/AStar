@@ -309,7 +309,9 @@ void Traveler::navigatePath(int startAtPathIndex)
 
 		for (i = startAtPathIndex + 1; i < numNodes; i++) {
 			e = &travelPath[i];
-			if (e->cell.grid != lastGridNum) {
+			bool isSameGrid = e->cell.grid == lastGridNum;
+			if (!isSameGrid) {
+				isSameGrid = lastGridNum == -1;
 				lastGridNum = e->cell.grid;
 				grid = navigator->getGrid(e->cell);
 			}
@@ -329,7 +331,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 				int numSuccessfulAllocations = 0;
 				Vec3 diff;
 				double startTime = endTime;
-				if (!isExitingBridge) {
+				if (!isExitingBridge && isSameGrid) {
 					diff.x = (e->cell.col - laste->cell.col) * grid->nodeSize.x;
 					diff.y = (e->cell.row - laste->cell.row) * grid->nodeSize.y;
 					diff.z = 0;
@@ -341,7 +343,8 @@ void Traveler::navigatePath(int startAtPathIndex)
 					step.isDiagonal = false;
 					step.isHorizontalDeepSearch = false;
 					step.isVerticalDeepSearch = false;
-					diff = toLoc - startLoc;
+					Vec3 fromLoc = (isExitingBridge ? startLoc : nav->getLocation(laste->cell).project(model(), up(te->holder)));
+					diff = toLoc - fromLoc;
 					isExitingBridge = false;
 				}
 

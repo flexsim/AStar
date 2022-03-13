@@ -54,7 +54,8 @@ enum ExtraDataReason : char {
 	PreferredPathData = 3,
 	MandatoryPathData = 4,
 	ConditionalBarrierData = 5,
-	DynamicBarrierData = 6
+	DynamicBarrierData = 6,
+	NeighborGridData = 7
 };
 
 class AStarNode
@@ -86,7 +87,9 @@ public:
 			bool isOnMandatoryPath : 1;
 
 			bool hasConditionalBarrier : 1;
-			// 3 unused bits here
+
+			bool hasNeighborGrids : 1;
+			// 2 unused bits here
 		};
 		unsigned short value;
 	};
@@ -217,6 +220,8 @@ struct AStarNodeExtraData : public SimpleDataType
 	void addConditionalBarrier(Barrier* barrier);
 
 	std::vector<DynamicBarrierChange> dynamicBarrierChanges;
+
+	std::vector<int> neighborGridRanks;
 
 	NodeAllocationList allocations;
 	NodeAllocationList requests;

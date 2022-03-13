@@ -46,6 +46,32 @@ public:
 	/// 			grid directly, or created it directly, then it is user-customized. </summary>
 	double isUserCustomized = false;
 	double noSelect = false;
+
+	static TreeNode* getNeighborContainer(Grid* other);
+	NodeListArray<Grid, NodeListArray<Grid>::CustomCouplingAdder<getNeighborContainer>>::SdtSubSubNodeCouplingType neighborGrids;
+	class NeighborWalker {
+		Grid* a;
+		Grid* b;
+		Cell aStartCell; // the larger 
+		int numANodes;
+		Vec3 walkDirection;
+	public:
+		NeighborWalker(Grid* a, Grid* b);
+		struct Iterator {
+			NeighborWalker* walker;
+			int atIndex;
+			std::pair<Cell, Cell> operator *() const { return walker->walkTo(atIndex); }
+			Iterator& operator++() { atIndex++; return *this; }
+			bool operator == (const Iterator& other) const { return walker == other.walker && atIndex == other.atIndex; }
+			bool operator != (const Iterator& other) const { return !operator ==(other); }
+		};
+		Iterator begin() { return { this, 0 }; }
+		Iterator end() { return { this, numANodes }; }
+		std::pair<Cell, Cell> walkTo(int index);
+		Cell getPartner(const Cell& cell);
+		operator bool() { return numANodes > 0; }
+	};
+
 	bool isLocWithinBounds(const Vec3& modelLoc, bool canExpand, bool addSurroundDepth) const;
 	bool isLocWithinVerticalBounds(double) const;
 	bool intersectBoundingBox(Vec3& min, Vec3& max) const;
@@ -142,15 +168,19 @@ public:
 
 	void onDrag(treenode view, Vec3& offset);
 	void onDrag(treenode view, Vec3&& offset);
-	double onDrag(treenode view) override;
+	virtual double onDrag(treenode view) override;
 	void onClick(treenode view, int clickCode, const Vec3& pos);
-	double onClick(treenode view, int clickCode) override;
-	double onCreate(bool isCopy) override;
+	virtual double onClick(treenode view, int clickCode) override;
+	virtual double onCreate(bool isCopy) override;
+	virtual double dragConnection(treenode toobject, char characterpressed, unsigned int classtype) override;
 	static void onPostCreate(void* data);
 
 	void drawSizerHandles(treenode view, int pickingMode);
+	void drawNodeDots(treenode view);
+	void drawNeighborGrids(treenode view);
 	void drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode);
 
+	void getBoundsVertices(Vec3f& bottomLeft, Vec3f& topRight, Vec3f& topLeft, Vec3f& bottomRight);
 	void getBoundsVertices(Vec3f& bottomLeft, Vec3f& topRight, Vec3f& topLeft, Vec3f& bottomRight,
 		Vec3f& oBottomLeft, Vec3f& oTopRight, Vec3f& oTopLeft, Vec3f& oBottomRight);
 	static void addVertex(Mesh& mesh, Vec3f& point);
