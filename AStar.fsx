@@ -4698,47 +4698,32 @@ applylinks(view.up, 1);</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
      <node f="a000000042" dt="2"><name>AStar: Task Executer as Flowitem</name><data>/**AStar: Task Executer as Flowitem*/
-/**\nMove the item into the model, then connect it to the AStar Navigator. Then tell it to travel to the destination and unload itself into the object. Note: this will only work for flow items created from the TaskExecuterFlowItem in the flow item bin.*/
+/**\nMove the item into the model, then connect it to the AStar Navigator. Then tell it to travel to the destination and unload itself into the object. Note: this will only work for Person or TaskExecuter flow items.*/
 
-Array absloc = Array(3);
-Array absrot = Array(3);
-// find out the location of the item relative to the model.
+// Store the location and rotation of the item relative to the model
 updatelocations(current);
-absloc[1] = vectorprojectx(item, 0.5*xsize(item),-0.5*ysize(item),0, model());
-absloc[2] = vectorprojecty(item, 0.5*xsize(item),-0.5*ysize(item),0, model());
-absloc[3] = vectorprojectz(item, 0.5*xsize(item),-0.5*ysize(item),0, model());
+Vec3 center = Vec3(0.5, 0.5, 0);
+Vec3 modelLoc = item.getLocation(center).project(item.up, model());
+Vec3 modelRot = item.rotation.projectRotation(item.up, model());
 
-// find out the rotation of the item relative to the model.
-treenode container = up(item);
-absrot[1] = xrot(item);
-absrot[2] = yrot(item);
-absrot[3] = zrot(item);
-while (container != model()){
-	absrot[1]+=xrot(container);
-	absrot[2]+=yrot(container);
-	absrot[3]+=zrot(container);
-	container = up(container);
-}
-
-// notify myself that the item is about to be loaded.
+// Notify myself that the item is about to be loaded
 transportoutcomplete(current, item, port);
 // move the item into the model.
 moveobject(item, model(), port);
-// set the location of the item.
-setloc(item, absloc[1] - (0.5*xsize(item)), absloc[2] + (0.5*ysize(item)), absloc[3]);
-// set the rotation of the item
-setrot(item,absrot[1], absrot[2], absrot[3]);
 
-// connect the item to the AStar Navigator
-treenode aStar = node("AStarNavigator", model());
-if (objectexists(aStar)) {
-	contextdragconnection(aStar, item, 'A');
-}
+// Restore the model location and rotation of the item
+item.setLocation(modelLoc, center);
+item.rotation = modelRot;
 
-// create a task sequence to travel to the destination location and unload itself into the object.
-TaskSequence ts = TaskSequence.create(item,0,0);
-ts.addTask(TASKTYPE_TRAVEL,current.outObjects[port],NULL);
-ts.addTask(TASKTYPE_FRUNLOAD,item,current.outObjects[port],opipno(current,port));
+// Connect the item to the AStar Navigator
+treenode aStar = Model.find("AStarNavigator");
+if (aStar)
+	function_s(aStar, "addMember", item);
+
+// Create a task sequence to travel to the destination location and unload itself into the object
+TaskSequence ts = TaskSequence.create(item, 0, 0);
+ts.addTask(TASKTYPE_TRAVEL, current.outObjects[port], NULL);
+ts.addTask(TASKTYPE_FRUNLOAD, item, current.outObjects[port], opipno(current, port));
 ts.dispatch();
 return 0;</data></node>
     </node>
@@ -6588,7 +6573,7 @@ if (isclasstype(obj, "AStar::Barrier") &amp;&amp; !isclasstype(obj, "AStar::Divi
    </node>
   </node>
  </node>
- <node f="42" dt="2"><name>release</name><data>22.0</data></node>
+ <node f="42" dt="2"><name>release</name><data>22.1</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
- <node f="42" dt="2"><name>flexsim release</name><data>22.0</data></node>
+ <node f="42" dt="2"><name>flexsim release</name><data>22.1</data></node>
 </node></flexsim-tree>
