@@ -168,7 +168,7 @@ void Grid::findGrowthBounds(Vec2 & min, Vec2 & max) const
 	min = Vec2(-DBL_MAX, -DBL_MAX);
 	max = Vec2(DBL_MAX, DBL_MAX);
 	for (Grid* grid : navigator->grids) {
-		if (grid == this || fabs(grid->minPoint.z - minPoint.z) > nodeSize.x)
+		if (grid == this || fabs(grid->minPoint.z - minPoint.z) > 0.1 * std::min(nodeSize.x, nodeSize.y))
 			continue;
 		if ((grid->minPoint.y >= minPoint.y && grid->minPoint.y <= maxPoint.y)
 			|| (grid->maxPoint.y >= minPoint.y && grid->maxPoint.y <= maxPoint.y)
