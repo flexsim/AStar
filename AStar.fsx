@@ -1466,6 +1466,8 @@ if (ontoView) {
         <node f="42" dt="2"><name>helptopic</name><data>AStarTool#grids</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
+if (ontoObj) 
+	ontoLoc = ontoLoc.project(ontoObj, model());
 treenode ontoView = param(5);
 if (ontoView) {
 	Object nav = model().find("AStarNavigator");
