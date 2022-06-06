@@ -1234,6 +1234,9 @@ void Grid::onDrag(treenode view, Vec3&& offset)
 
 double Grid::onDrag(treenode view)
 {
+	if (!draginfo(DRAG_INFO_BUTTON_STATE)) // mouse wheel
+		return 0; // let view zoom
+
 	double dx = draginfo(DRAG_INFO_DX);
 	double dy = draginfo(DRAG_INFO_DY);
 	double dz = draginfo(DRAG_INFO_DZ);

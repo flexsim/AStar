@@ -244,6 +244,9 @@ double Divider::onClick(treenode view, int clickCode, Vec3& pos)
 
 double Divider::dragPressedPick(treenode view, Vec3& parentPos, Vec3& diff)
 {
+	if (!draginfo(DRAG_INFO_BUTTON_STATE)) // mouse wheel
+		return 0; // let view zoom
+
 	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
 	Vec3 localPos = parentPos.project(holder->up, holder);
 	treenode pointNode = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_PRESSED));
@@ -258,6 +261,8 @@ double Divider::dragPressedPick(treenode view, Vec3& parentPos, Vec3& diff)
 			activePoint->x += diff.x;
 			activePoint->y += diff.y;
 		}
+		if (toBridge())
+			activePoint->z += diff.z;
 	} else {
 		// Snap between grid points
 		if (navigator->snapBetweenGrid && !toPreferredPath() && !toBridge() && !toMandatoryPath()) {
@@ -269,6 +274,7 @@ double Divider::dragPressedPick(treenode view, Vec3& parentPos, Vec3& diff)
 		for (int i = 0; i < pointList.size(); i++) {
 			pointList[i]->x += diff.x;
 			pointList[i]->y += diff.y;
+			pointList[i]->z += diff.z;
 		}
 	}
 	updateSpatialsToEncompassPoints();
