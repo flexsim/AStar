@@ -244,8 +244,8 @@ double Divider::onClick(treenode view, int clickCode, Vec3& pos)
 
 double Divider::dragPressedPick(treenode view, Vec3& parentPos, Vec3& diff)
 {
-	if (!draginfo(DRAG_INFO_BUTTON_STATE)) // mouse wheel
-		return 0; // let view zoom
+	if (!draginfo(DRAG_INFO_BUTTON_STATE)) // No buttons pressed - usually mouse wheeling
+		diff.z = 0; // Don't let mouse wheeling adjust Z heights
 
 	int pickType = (int)getpickingdrawfocus(view, PICK_TYPE, 0);
 	Vec3 localPos = parentPos.project(holder->up, holder);
