@@ -142,7 +142,7 @@
           <node f="40"><name></name></node></node>
          <node f="42"><name>visual</name>
           <node f="40"><name></name></node>
-          <node f="42" dt="2"><name>picture</name><data>bitmaps/colorwheel.bmp</data></node>
+          <node f="42" dt="2"><name>picture</name><data>bitmaps/colorwheel.png</data></node>
          </node>
         </data></node>
         <node f="42" dt="3"><name>palette</name><data><coupling>/installdata/add/1/data/astar/AStarNavigator&gt;variables/localPalette</coupling></data></node>
@@ -4493,7 +4493,7 @@ function_s(this.find("NameEdit"), "refresh");</data></node>
 
 function_s(this.find("NameEdit"), "refresh");</data></node>
         </node>
-        <node f="42" dt="2"><name>bitmap</name><data>bitmaps/colorwheel.bmp</data></node>
+        <node f="42" dt="2"><name>bitmap</name><data>bitmaps/colorwheel.png</data></node>
         <node f="42" dt="2"><name>windowtitle</name><data>Heat Map Color Palette</data></node>
         <node f="42"><name>style</name>
          <node f="40"><name></name></node>
