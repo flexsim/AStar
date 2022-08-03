@@ -6175,6 +6175,7 @@ if (getvarnum(c, "isExpanded")) {
          <node f="42" dt="2"><name>valueType</name><data>length</data></node>
          <node f="42" dt="1"><name>spinner</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>isHotlink</name><data>000000003ff00000</data></node>
+         <node f="42" dt="1"><name>unsigned</name><data>0000000000000000</data></node>
         </node>
         <node f="42"><name>eventfunctions</name>
          <node f="40"><name></name></node>
