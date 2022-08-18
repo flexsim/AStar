@@ -6575,6 +6575,24 @@ if (isclasstype(obj, "AStar::Barrier") &amp;&amp; !isclasstype(obj, "AStar::Divi
     </node>
    </node>
   </node>
+  <node f="42" dt="2"><name>add_modules</name><data>MAIN:/project/exec/globals/bonsai/exportExcludes/modules</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStar</name>
+      <node f="40"><name></name></node>
+      <node f="42"><name>bitmaps</name></node>
+      <node f="42"><name>cursors</name></node>
+      <node f="42"><name>shapes</name></node>
+     </node>
+    </node>
+   </node>
+  </node>
  </node>
  <node f="42" dt="2"><name>release</name><data>22.2</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
