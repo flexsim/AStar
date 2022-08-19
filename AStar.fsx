@@ -6575,7 +6575,7 @@ if (isclasstype(obj, "AStar::Barrier") &amp;&amp; !isclasstype(obj, "AStar::Divi
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add_modules</name><data>MAIN:/project/exec/globals/bonsai/exportExcludes/modules</data>
+  <node f="42" dt="2"><name>add_modules</name><data>MAIN:/project/exec/globals/exportExcludes/modules</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
