@@ -226,6 +226,7 @@ public:
 	virtual double navigateToLoc(treenode traveler, double* destLoc, double endSpeed) override;
 	virtual void onMemberDestroyed(TaskExecuter* te) override;
 	virtual double queryDistance(TaskExecuter* taskexecuter, FlexSimObject* destination) override;
+	virtual double getCost(const Variant& origin, const Variant& destination, const Variant& info) override;
 
 	AStarSearchEntry* checkExpandOpenSet(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn, Direction direction, float rotDirection, double addedDist, double bonusMod, AStarNodeExtraData* preferredPathData);
 	AStarSearchEntry* checkExpandOpenSetDiagonal(Grid* grid, AStarNode* node, AStarSearchEntry* entryIn,

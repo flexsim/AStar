@@ -1159,6 +1159,49 @@ double AStarNavigator::queryDistance(TaskExecuter* taskexecuter, FlexSimObject* 
 	return path.calculateTotalDistance(this);
 }
 
+double AStarNavigator::getCost(const Variant& origin, const Variant& destination, const Variant& info)
+{
+	double testCost = __super::getCost(origin, destination, info);
+	if (testCost < FLT_MAX)
+		return testCost;
+	Vec3 originLoc(DBL_MAX, DBL_MAX, DBL_MAX), destLoc(DBL_MAX, DBL_MAX, DBL_MAX);
+	Traveler* traveler = travelers.front();
+	auto analyzeVal = [&](const Variant& val, Vec3& loc, bool isOrigin) {
+		if (val.type == VariantType::Array && val.size() == 3)
+			loc = Vec3(val[1], val[2], val[3]);
+		else {
+			treenode valNode = val;
+			if (valNode && valNode->dataType == DATATYPE_OBJECT) {
+				loc = valNode->object<ObjectDataType>()->getLocation(0.5, 0.5, 0).project(valNode->up, model());
+				if (isOrigin && isclasstype(valNode, "TaskExecuter"))
+					traveler = getTraveler(valNode->object<TaskExecuter>());
+			}
+		}
+	};
+	analyzeVal(origin, originLoc, true);
+	analyzeVal(destination, destLoc, false);
+
+	if (originLoc.x != DBL_MAX && destLoc.x != DBL_MAX) {
+
+		treenode infoNode = info;
+		if (infoNode && infoNode->dataType == DATATYPE_OBJECT && isclasstype(infoNode, "TaskExecuter")) {
+			traveler = getTraveler(infoNode->object<TaskExecuter>());
+		}
+
+		DestinationThreshold destThreshold;
+		if (destination.type == VariantType::TreeNode)
+			destThreshold = DestinationThreshold(destination, minNodeSize);
+		auto savedLoc = traveler->te->location;
+		traveler->te->setLocation(originLoc, Vec3(0.5, 0.5, 0));
+		TravelPath path = calculatePath(traveler, destLoc, destThreshold, 0, -1.0);
+		double cost = path.calculateTotalDistance(this);
+		Vec3& loc = traveler->te->location;
+		loc = savedLoc;
+		return cost;
+	}
+	return DBL_MAX;
+}
+
 void AStarNavigator::updateConditionalBarrierDataOnOpenSetExpanded(const Cell& cell, AStarNode* n)
 {
 	AStarNodeExtraData* barrierData = edgeTableExtraData[cell.value];
