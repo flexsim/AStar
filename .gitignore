@@ -10,8 +10,12 @@ AStarDLL/x64/
 AStarDLL/Win32/
 AStarDLL/.vs/
 AStarDLL/AStar.vcxproj.user
-AStarDLL/flexsimcontent/
+AStarDLL/[Ff]lex[Ss]im[Cc]ontent/
 AStarDLL/out/
 bin/
 obj/
+*.so
+*.dylib
+build/
+AStarDLL/build/
 .vs
