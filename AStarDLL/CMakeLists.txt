@@ -56,9 +56,7 @@ target_sources(AStar PRIVATE
 target_compile_options(AStar PRIVATE ${FLEXSIM_COMPILER_OPTIONS})
 target_link_options(AStar PRIVATE ${FLEXSIM_LINKER_OPTIONS})
 
-if (MSVC)
-else()
-    add_custom_command(TARGET AStar POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/libAStar.so ${CMAKE_CURRENT_SOURCE_DIR}/../AStar.so
-    )
-endif()
+# after building, copy the dll to the main module directory
+add_custom_command(TARGET AStar POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}AStar${CMAKE_SHARED_LIBRARY_SUFFIX} ${CMAKE_CURRENT_SOURCE_DIR}/../
+)
