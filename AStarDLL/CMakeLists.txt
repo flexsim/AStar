@@ -21,7 +21,7 @@ if (MSVC)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     set(FLEXSIM_COMPILER_OPTIONS -fms-extensions -fno-operator-names 
             -Wno-division-by-zero -Wno-undefined-bool-conversion -Wno-tautological-undefined-compare 
-            -Wno-return-type-c-linkage -Wno-ignored-attributes -Wno-null-conversion
+            -Wno-return-type-c-linkage -Wno-ignored-attributes -Wno-null-conversion -Wno-inconsistent-missing-override
 #            -Wno-cpp
     )
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -33,7 +33,9 @@ if (MSVC)
 endif()
 
 target_compile_definitions(AStar PRIVATE COMPILING_MODULE_DLL COMPILING_ASTAR FLEXSIM_TARGET_VER=700 _USRDLL FLEXSIM_CMAKE_BUILD)
-target_include_directories(AStar PRIVATE source FlexSimContent)
+target_include_directories(AStar PRIVATE FlexSimContent)
+target_link_directories(AStar PRIVATE FlexSimContent)
+target_link_libraries(AStar PRIVATE FlexSimContent)
 
 # Utilities sources
 target_sources(AStar PRIVATE 
