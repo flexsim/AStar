@@ -313,7 +313,6 @@ void Traveler::navigatePath(int startAtPathIndex)
 				grid = navigator->getGrid(e->cell);
 			}
 			AllocationStep step(laste->cell, e->cell);
-			double totalTravelDist;
 			bridgeArrival = nullptr;
 
 			if (laste->isBridgePoint) {
@@ -374,9 +373,9 @@ void Traveler::navigatePath(int startAtPathIndex)
 					lastRotation = nextRot;
 				}
 
-				endTime = addkinematic(kinematics, diff.x, diff.y, diff.z,
-					te->v_maxspeed, 0, 0, 0, 0, startTime, KINEMATIC_TRAVEL);
+				endTime = addkinematic(kinematics, diff.x, diff.y, diff.z, te->v_maxspeed, 0, 0, 0, 0, startTime, KINEMATIC_TRAVEL);
 				e->arrivalTime = endTime;
+				expectedtotaltraveldist += diff.magnitude;
 
 				if (enableCollisionAvoidance) {
 					double middleReleaseTime = 0.5 * (startTime + endTime);
@@ -418,16 +417,12 @@ void Traveler::navigatePath(int startAtPathIndex)
 						break;
 					}
 				}
-				totalTravelDist = diff.magnitude;
 			}
 			else {
 				// travel onto a bridge
-				totalTravelDist = 0;
 				didBlockPathIndex = i;
 				break;
 			}
-			expectedtotaltraveldist += totalTravelDist;
-			//te->v_totaltraveldist += totalTravelDist;
 
 			//Traffic info
 			nav->assertExtraData(e->cell, TraversalData)->totalTraversals++;
