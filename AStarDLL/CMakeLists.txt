@@ -35,7 +35,7 @@ endif()
 target_compile_definitions(AStar PRIVATE COMPILING_MODULE_DLL COMPILING_ASTAR FLEXSIM_TARGET_VER=700 _USRDLL FLEXSIM_CMAKE_BUILD)
 target_include_directories(AStar PRIVATE FlexSimContent)
 target_link_directories(AStar PRIVATE FlexSimContent)
-target_link_libraries(AStar PRIVATE FlexSimContent)
+target_link_libraries(AStar PRIVATE FlexSimContent FlexSimEngine)
 
 # Utilities sources
 target_sources(AStar PRIVATE 
