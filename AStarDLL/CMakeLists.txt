@@ -14,7 +14,7 @@ add_library(AStar SHARED FlexSimContent/DLLMain.cpp)
 
 if (MSVC) 
     set(FLEXSIM_COMPILER_OPTIONS 
-            /EHs /GS- /W3 /wd4101 /wd4996 /wd4800 /wd4018 /wd4190 /wd4244 /wd4305 /wd4099 /wd4297 /wd5033 /Gy- 
+            /EHs /GS- /W3 /wd4101 /wd4996 /wd4800 /wd4018 /wd4190 /wd4244 /wd4305 /wd4099 /wd4297 /wd5033 /wd4251 /wd4005 /wd4275 /Gy- 
             /errorReport:prompt /GF /WX- /Zc:forScope /Gd /Oy- /openmp- /FC /MP ${FLEXSIM_RUNTIME})
     set(FLEXSIM_LINKER_OPTIONS
             /NODEFAULTLIB:"libcmt.lib" /NODEFAULTLIB:"msvcrt.lib" /INCREMENTAL /ERRORREPORT:PROMPT /NOLOGO)
@@ -28,14 +28,15 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     set(FLEXSIM_LINKER_OPTIONS -ldl)
 endif()
 
-if (MSVC)
-    target_compile_definitions(AStar PRIVATE NOMINMAX)
-endif()
-
 target_compile_definitions(AStar PRIVATE COMPILING_MODULE_DLL COMPILING_ASTAR FLEXSIM_TARGET_VER=700 _USRDLL FLEXSIM_CMAKE_BUILD)
 target_include_directories(AStar PRIVATE FlexSimContent)
 target_link_directories(AStar PRIVATE FlexSimContent)
 target_link_libraries(AStar PRIVATE FlexSimContent FlexSimEngine)
+
+if (MSVC)
+    target_compile_definitions(AStar PRIVATE NOMINMAX)
+    target_link_libraries(AStar PRIVATE opengl32)
+endif()
 
 # Utilities sources
 target_sources(AStar PRIVATE 
@@ -58,7 +59,10 @@ target_sources(AStar PRIVATE
 target_compile_options(AStar PRIVATE ${FLEXSIM_COMPILER_OPTIONS})
 target_link_options(AStar PRIVATE ${FLEXSIM_LINKER_OPTIONS})
 
-# after building, copy the dll to the main module directory
-add_custom_command(TARGET AStar POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}AStar${CMAKE_SHARED_LIBRARY_SUFFIX} ${CMAKE_CURRENT_SOURCE_DIR}/../
-)
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/.. CACHE PATH "..." FORCE)
+endif()
+
+install(TARGETS AStar RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS AStar ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX})
+

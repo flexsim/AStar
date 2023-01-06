@@ -609,7 +609,7 @@ void DestinationThreshold::bind(SimpleDataType * sdt, const char* prefix)
 double TravelPath::calculateTotalDistance(AStarNavigator * nav)
 {
 	double dist = 0.0;
-	for (size_t i = 1; i < size(); i++) {
+	for (int i = 1; i < size(); i++) {
 		AStarPathEntry& from = operator [](i - 1);
 		AStarPathEntry& to = operator [](i);
 		Grid* grid = nav->getGrid(from.cell);

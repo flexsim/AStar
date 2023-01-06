@@ -51,7 +51,7 @@ void TemporaryBarrier::revert()
 {
 	if (!isApplied)
 		return;
-	for (int i = entries.size() - 1; i >= 0; i--) {
+	for (int i = (int)entries.size() - 1; i >= 0; i--) {
 		revertEntry(entries[i], i);
 	}
 	isApplied = false;

@@ -77,9 +77,9 @@ public:
 
 	int __getRank() { return holder->rank; }
 	__declspec(property(get = __getRank)) int rank;
-	int __getNumRows() { return nodes.size(); }
+	int __getNumRows() { return (int)nodes.size(); }
 	__declspec(property(get = __getNumRows)) int numRows;
-	int __getNumCols() { return nodes.size() > 0 ? nodes[0].size() : 0; }
+	int __getNumCols() { return nodes.size() > 0 ? (int)nodes[0].size() : 0; }
 	__declspec(property(get = __getNumCols)) int numCols;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////

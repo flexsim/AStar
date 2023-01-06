@@ -305,7 +305,7 @@ double AStarNavigator::onReset()
 	}
 	activeTravelers.clear();
 
-	for (size_t i = 1; i <= content(node_v_travelmembers); i++) {
+	for (int i = 1; i <= content(node_v_travelmembers); i++) {
 		treenode teNode = ownerobject(tonode(get(rank(node_v_travelmembers, i))));
 		teNode->objectAs(TaskExecuter)->moveToResetPosition();
 	}
@@ -904,7 +904,7 @@ TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc
 	// closestSoFar is the closest h I've found so far
 		
 	int size;
-	while ((size = openSetHeap.size()) > 0) {
+	while ((size = (int)openSetHeap.size()) > 0) {
 		HeapEntry heapEntry(0.0f, 0); 
 		AStarSearchEntry * entry = NULL;
 		// here I pop off an entry from the heap.
@@ -1077,7 +1077,7 @@ the outside 8 nodes.
 		}
 	}
 
-	for (int i = 0, totalSetSize = totalSet.size(); i < totalSetSize; i++) {
+	for (int i = 0, totalSetSize = (int)totalSet.size(); i < totalSetSize; i++) {
 		AStarSearchEntry & e = totalSet[i];
 		AStarNode* n = getNode(e.cell);
 		n->isInTotalSet = false;
@@ -1280,7 +1280,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 		// if entry is NULL, that means he's not in the total set yet,
 		// so I need to add him.
 		if (!entry) {
-			totalSetIndex = totalSet.size();
+			totalSetIndex = (int)totalSet.size();
 			totalSet.push_back(AStarSearchEntry());
 			entry = &totalSet.back();
 			entry->cell.grid = grid->rank;
@@ -2197,7 +2197,7 @@ void AStarNavigator::removeDynamicBarrier(const Variant& val, int skipOnChange)
 	try {
 		if (val.type == VariantType::Array && val.size() > 0) {
 			Array array = val;
-			for (int i = array.size(); i >= 1; i--) {
+			for (int i = (int)array.size(); i >= 1; i--) {
 				removeDynamicBarrier(array[i]);
 			}
 		}

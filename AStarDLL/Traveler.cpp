@@ -261,7 +261,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 
 
 	AStarPathEntry* e, *laste;
-	int numNodes = travelPath.size();
+	int numNodes = (int)travelPath.size();
 	laste = &travelPath[startAtPathIndex];
 	bool enableCollisionAvoidance = nav->enableCollisionAvoidance;
 
@@ -269,7 +269,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 	if (laste->arrivalTime < endTime)
 		laste->arrivalTime = endTime;
 
-	int initialAllocsSize = allocations.size();
+	int initialAllocsSize = (int)allocations.size();
 	if (enableCollisionAvoidance && (!nav->ignoreInactiveMemberCollisions || isBlocked || isContinuingFromDeadlock)) {
 		for (auto& allocation : allocations) {
 			allocation->extendReleaseTime(DBL_MAX);
@@ -1148,7 +1148,7 @@ void Traveler::abortTravel(TreeNode* newTS)
 			while (allocations.size() > 1 && allocations.back()->acquireTime > time())
 				clearAllocations(allocations.end() - 1);
 
-			for (int i = allocations.size() - 1; i >= 0; i--) {
+			for (int i = (int)allocations.size() - 1; i >= 0; i--) {
 				if (allocations[i]->cell != cell)
 					removeAllocation(allocations.begin() + i);
 				else allocations[i]->extendReleaseTime(DBL_MAX);
