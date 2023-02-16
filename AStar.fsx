@@ -1495,7 +1495,7 @@ if (ontoView) {
         <node f="42" dt="1"><name>spatialy</name><data>000000004057c000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>00000000407db000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>000000004082a000</data></node>
-        <node f="42" dt="2"><name>windowtitle</name><data>A* Navigator Properties</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>A* Navigator Properties</data></node>
         <node f="442" dt="2"><name>OnOpen</name><data>treenode tabcontrol = node("/tabcontrol",c);
 iterate(1, content(tabcontrol), 1){
   if (objectexists(node("&gt;PageOnOpen",rank(tabcontrol,count))))
@@ -1558,7 +1558,6 @@ if (focusedPanel) {
          <node f="42" dt="1"><name>itemcurrent</name><data>000000003ff00000</data></node>
          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040100000</data></node>
          <node f="42" dt="1"><name>alignbottommargin</name><data>0000000040440000</data></node>
-         <node f="42" dt="2"><name>tooltip</name><data>Source pages</data></node>
         </data>
          <node f="40"><name></name></node>
          <node f="42" dt="4"><name>Setup</name><data>
@@ -4469,31 +4468,9 @@ if (propertiesView) {
         <node f="42" dt="1"><name>spatialsx</name><data>000000004076c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>00000000406e0000</data></node>
         <node f="42"><name>eventfunctions</name>
-         <node f="40"><name></name></node>
-         <node f="442" dt="2"><name>OnClose</name><data>if (REMEMBER_WINDOW_SIZES) {
-	treenode guiclass = node("VIEW:/pages/tools/ColorPaletteProperties");
-	setnodenum(spatialx(guiclass), getnodenum(spatialx(c)));
-	setnodenum(spatialy(guiclass), getnodenum(spatialy(c)));
-	setnodenum(spatialsx(guiclass), getnodenum(spatialsx(c)));
-	setnodenum(spatialsy(guiclass), getnodenum(spatialsy(c)));
-}
-
-treenode view = c;
-function_s(view.find("@&gt;objectfocus+"), "refresh");
-applicationcommand("closedockedtool", c);</data></node>
-         <node f="442" dt="2"><name>onListChange</name><data>treenode focus = node("&gt;objectfocus+", c);
-
-if(focus != param(1))
-	return 0;
-	
-treenode this = c;
-function_s(this.find("NameEdit"), "refresh");</data></node>
-         <node f="442" dt="2"><name>coldlinkx</name><data>treenode this = c;
-
-function_s(this.find("NameEdit"), "refresh");</data></node>
-        </node>
+         <node f="40"><name></name></node></node>
         <node f="42" dt="2"><name>bitmap</name><data>bitmaps/colorwheel.bmp</data></node>
-        <node f="42" dt="2"><name>windowtitle</name><data>Heat Map Color Palette</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Heat Map Color Palette</data></node>
         <node f="42"><name>style</name>
          <node f="40"><name></name></node>
          <node f="42"><name>WS_CAPTION</name></node>
@@ -4523,10 +4500,8 @@ function_s(this.find("NameEdit"), "refresh");</data></node>
          <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
          <node f="42" dt="1"><name>spatialsx</name><data>00000000407a5000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040765000</data></node>
-         <node f="42" dt="2"><name>tooltip</name><data></data></node>
          <node f="42" dt="1"><name>alignbottommargin</name><data>0000000040140000</data></node>
          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
-         <node f="42" dt="2"><name>windowtitle</name><data>Colors</data></node>
          <node f="42" dt="2"><name>objectfocus</name><data>@&gt;objectfocus+</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
         </data>
@@ -4538,6 +4513,7 @@ function_s(this.find("NameEdit"), "refresh");</data></node>
           <node f="42" dt="1"><name>spatialy</name><data>0000000040240000</data></node>
           <node f="42" dt="1"><name>spatialsx</name><data>0000000040490000</data></node>
           <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+          <node f="4000000042" dt="2"><name>windowtitle</name><data>Palette</data></node>
          </data></node>
          <node f="42" dt="4"><name>ChoosePalette</name><data>
           <node f="40"><name></name></node>
@@ -4582,7 +4558,7 @@ if (!eventdata) {
 	}
 	
 	treenode localItem = itemList.add();
-	localItem.name = "Internal palette";
+	localItem.name = getvarstr(c, "internal");
 	localItem.value = localPalette;
 	if (curPalette == localPalette) {
 		itemRank = itemList.length;
@@ -4600,7 +4576,13 @@ if (!eventdata) {
 </data></node>
            <node f="442" dt="2"><name>OnSelect</name><data>treenode view = c;
 applylinks(view);
-applylinks(view.up, 1);</data></node>
+applylinks(view.up, 1);
+
+repaintview(view.find("../ColorsPanel/ColorListGraph"));</data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="4000000042" dt="2"><name>internal</name><data>Internal Palette</data></node>
           </node>
          </data></node>
          <node f="42" dt="4"><name>ColorsPanel</name><data>
