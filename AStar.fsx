@@ -6576,7 +6576,7 @@ if (isclasstype(obj, "AStar::Barrier") &amp;&amp; !isclasstype(obj, "AStar::Divi
    </node>
   </node>
  </node>
- <node f="42" dt="2"><name>release</name><data>23.0</data></node>
+ <node f="42" dt="2"><name>release</name><data>23.1</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
- <node f="42" dt="2"><name>flexsim release</name><data>23.0</data></node>
+ <node f="42" dt="2"><name>flexsim release</name><data>23.1</data></node>
 </node></flexsim-tree>
