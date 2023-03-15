@@ -979,7 +979,8 @@ switch (clickCode) {
 						modelPos.z = 0;
 					}
 					curObjectNode = createinstance(library().find(classPath), container);
-					curObjectNode.as(Object).setLocation(modelPos.x, modelPos.y, modelPos.z);
+					double adjustedZLoc = container == activeNavigator ? gridplane(i).first.value : 0;
+					curObjectNode.as(Object).setLocation(modelPos.x, modelPos.y, adjustedZLoc);
 					treenode firstPoint = first(getvarnode(curObjectNode, "points"));
 					treenode lastPoint = last(getvarnode(curObjectNode, "points"));
 					firstPoint.find("y").value = -0.01 * nodeWidth;
