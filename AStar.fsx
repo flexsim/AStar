@@ -8,7 +8,7 @@
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403d0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000403f0000</data></node>
     <node f="42" dt="2"><name>after</name><data>warehousing</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -974,13 +974,19 @@ switch (clickCode) {
 					treenode vFocus = viewfocus(i).find("+");
 					if (!selObj &amp;&amp; vFocus != model())
 						selObj = vFocus;
-					if (selObj &amp;&amp; isclasstype(selObj, CLASSTYPE_VISUALTOOL)) {
+					if (selObj &amp;&amp; isclasstype(selObj, CLASSTYPE_VISUALTOOL))
 						container = selObj;
+					if (selObj &amp;&amp; isclasstype(selObj, "AStar::Barrier"))
+						container = selObj.up;
+					if (container == activeNavigator){
+						modelPos.z = gridplane(i).first.value;
+					}
+					else {
 						modelPos = modelPos.project(vFocus, container);
 						modelPos.z = 0;
 					}
 					curObjectNode = createinstance(library().find(classPath), container);
-					curObjectNode.as(Object).setLocation(modelPos.x, modelPos.y, modelPos.z);
+					curObjectNode.as(Object).setLocation(modelPos.x, modelPos.y, modelPos.z );
 					treenode firstPoint = first(getvarnode(curObjectNode, "points"));
 					treenode lastPoint = last(getvarnode(curObjectNode, "points"));
 					firstPoint.find("y").value = -0.01 * nodeWidth;
@@ -6433,7 +6439,7 @@ return updated;</data></node>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040400000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040408000</data></node>
     <node f="42" dt="2"><name>after</name><data>GUIs</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
