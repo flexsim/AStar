@@ -1040,8 +1040,11 @@ the outside 8 nodes.
 	unsigned int startPrevVal =  ~((unsigned int)0);
 	AStarSearchEntry* temp = final;
 	char prevBridgeIndex = -1;
+
+
 	while (1) {
 		travelPath.push_back(AStarPathEntry(temp->cell, prevBridgeIndex));
+		auto& entry = travelPath.back();
 		if (temp->previous != startPrevVal) {
 			prevBridgeIndex = temp->prevBridgeIndex;
 			temp = &(totalSet[temp->previous]);
@@ -1055,6 +1058,7 @@ the outside 8 nodes.
 		// I reverse it later on.
 		Cell curCell = start->cell;
 		while (curCell != startCell) {
+			auto lastCell = curCell;
 			int rowDiff = startCell.row - curCell.row;
 			int colDiff = startCell.col - curCell.col;
 			bool isMovedVertical = false;
@@ -1101,6 +1105,45 @@ the outside 8 nodes.
 			if (diff.magnitude > threshold)
 				break;
 			travelPath.pop_back();
+		}
+	}
+
+	// now update speed info
+	double maxSpeed = traveler->te->v_maxspeed;
+	double dec = traveler->te->v_deceleration;
+	if (dec > 0) {
+		// the following is only needed if the te has non-zero deceleration
+		// in which case we have to calculate various speed data on the path
+		double distToNextStop = 0;
+		double travelDirection = 1000;
+		for (int i = travelPath.size() - 1; i >= 0; i--) {
+			auto& entry = travelPath[i];
+			entry.distToNextStop = distToNextStop;
+			entry.resolveMaxArrivalSpeed(maxSpeed, dec);
+			if (i > 0) {
+				auto& toCell = entry.cell;
+				auto& fromCell = travelPath[i - 1].cell;
+
+				auto diff = getLocation(toCell) - getLocation(fromCell);
+				auto dist = diff.magnitude;
+				entry.distFromPrev = dist;
+				if (stopForTurns) {
+					double newDirection = diff.getXYAngle();
+					if (fabs(newDirection - travelDirection) > 1.0) {
+						distToNextStop = 0;
+						entry.distToNextStop = 0;
+						entry.maxArrivalSpeed = 0;
+						travelDirection = newDirection;
+					}
+				}
+				if (entry.bridgeIndex == -1 && distToNextStop != DBL_MAX) {
+					distToNextStop += dist;
+				}
+				else distToNextStop = DBL_MAX;
+			}
+			else {
+				entry.distFromPrev = 0;
+			}
 		}
 	}
 
@@ -1305,7 +1348,7 @@ double AStarNavigator::abortTravel(TreeNode* travelerNode, TreeNode* newTS)
 {
 	TaskExecuter* te = travelerNode->objectAs(TaskExecuter);
 	Traveler* traveler = getTraveler(te);
-	if (!traveler->isActive)
+	if (traveler->activeState != Traveler::Active)
 		return 0;
 	traveler->abortTravel(newTS);
 	return 0;
@@ -1342,7 +1385,7 @@ double AStarNavigator::updateLocations(TaskExecuter* te)
 		return 0;
 	
 	Traveler* traveler = getTraveler(te);
-	if (traveler->isActive)
+	if (traveler->activeState != Traveler::Inactive)
 		traveler->updateLocation();
 	return 0;
 }
@@ -1501,7 +1544,7 @@ void AStarNavigator::drawMembers()
 	// Draw circles under every traveler
 	for (int i = 0; i < travelers.size(); i++) {
 		Traveler * t = travelers[i];
-		if (t->isActive)
+		if (t->activeState != Traveler::Active)
 			continue;
 		TaskExecuter* te = t->te;
 		if (switch_hideshape(te->holder, -1))
@@ -1825,7 +1868,7 @@ void AStarNavigator::buildActiveTravelerList()
 	activeTravelers.clear();
 	for (int i = 0; i < travelers.size(); i++) {
 		Traveler* traveler = travelers[i];
-		if (traveler->isActive) {
+		if (traveler->activeState != Traveler::Inactive) {
 			activeTravelers.push_front(travelers[i]);
 			traveler->activeEntry = activeTravelers.begin();
 		}

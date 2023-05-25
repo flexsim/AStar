@@ -259,6 +259,19 @@ struct astar_export AStarPathEntry {
 	Cell cell;
 	int bridgeIndex;
 	double arrivalTime = -1;
+	double distToNextStop = DBL_MAX;
+	double maxArrivalSpeed = DBL_MAX;
+	double startSpeed = 0; // speed of te when starting to travel from previous cell to this cell
+	double distFromPrev = 0; // travel distance from previous path entry to this one
+	void resolveMaxArrivalSpeed(double teMaxSpeed, double deceleration) {
+		if (deceleration <= 0 || distToNextStop == DBL_MAX)
+			maxArrivalSpeed = teMaxSpeed;
+		// distToEnd = (maxArrivalSpeed / 2) * timeToDecel
+		// timeToDecel = maxArrivalSpeed / decel;
+		// distToEnd = (maxArrivalSpeed ^ 2) / (2 * decel)
+		// maxArrivalSpeed = sqrt(distToEnd * 2 * decel)
+		maxArrivalSpeed = std::min(teMaxSpeed, sqrt(distToNextStop * 2 * deceleration));
+	}
 
 	ExtendedCell __getCell();
 	__declspec(property(get = __getCell)) ExtendedCell extendedCell;

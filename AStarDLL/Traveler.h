@@ -34,8 +34,13 @@ public:
 	//double estimatedIndefiniteAllocTimeDelay;
 	DestinationThreshold destThreshold;
 	treenode destNode;
-	bool isActive = false;
-	int __getIsActive() { return (int)isActive; }
+	enum ActiveState {
+		Inactive = 0,
+		Active = 1,
+		DecelToStop = 2, // finished task, but still decelerating
+	};
+	ActiveState activeState;
+	int __getIsActive() { return (int)activeState == Active; }
 	std::list<Traveler*>::iterator activeEntry;
 	astar_export TravelPath& __getTravelPath();
 #ifdef COMPILING_ASTAR
@@ -83,8 +88,8 @@ public:
 	astar_export void onBridgeArrival(BridgeRoutingData* bridge, int pathIndex);
 	astar_export void onBridgeComplete(int atPathIndex);
 	void arriveAtBridge(int pathIndexOneBased) { onBridgeArrival(pathIndexOneBased - 1); }
-	void onArrival();
-	void finishPath() { onArrival(); }
+	void onArrival(bool isZeroSpeed);
+	void finishPath() { onArrival(true); }
 
 	/// <summary>	Adds an allocation to the map's set of allocations. </summary>
 	/// <remarks>	Anthony.johnson, 4/17/2017. </remarks>
@@ -142,14 +147,17 @@ public:
 	void updateTravelDistOnInterrupt();
 	astar_export void abortTravel(TreeNode* newTS);
 	astar_export void updateLocation();
+	astar_export void updateSpeedMarkers();
+	astar_export double getCurSpeed();
 
 	class ArrivalEvent : public FlexSimEvent
 	{
 	public:
+		bool isZeroSpeedEvent = false;
 		ArrivalEvent() : FlexSimEvent() {}
-		ArrivalEvent(Traveler* object, double time) : FlexSimEvent(object->holder, time, nullptr, 0) {}
+		ArrivalEvent(Traveler* object, double time, bool isZeroSpeedEvent) : FlexSimEvent(object->holder, time, nullptr, 0), isZeroSpeedEvent(isZeroSpeedEvent) {}
 		virtual const char* getClassFactory() override { return "AStar::Traveler::ArrivalEvent"; }
-		virtual void execute() override { partner()->objectAs(Traveler)->onArrival(); }
+		virtual void execute() override { partner()->objectAs(Traveler)->onArrival(isZeroSpeedEvent); }
 	};
 	ObjRef<ArrivalEvent> arrivalEvent;
 
