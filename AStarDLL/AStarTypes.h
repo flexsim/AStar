@@ -101,13 +101,12 @@ public:
 struct NodeAllocation
 {
 	NodeAllocation() : traveler(nullptr), acquireTime(0.0), releaseTime(0.0), traversalWeight(0.0), travelPathIndex(0), intermediateAllocationIndex(0) {}
-	NodeAllocation(Traveler* traveler, const Cell& cell, int travelPathIndex, int intermediateAllocationIndex, double acquireTime, double releaseTime, double traversalWeight) :
-		traveler(traveler), cell(cell), travelPathIndex(travelPathIndex), intermediateAllocationIndex(intermediateAllocationIndex), acquireTime(acquireTime), releaseTime(releaseTime), traversalWeight(traversalWeight)
-	{}
+	NodeAllocation(Traveler* traveler, const Cell& cell, int travelPathIndex, int intermediateAllocationIndex, double acquireTime, double releaseTime, double traversalWeight);
 	NodeAllocation& operator = (const NodeAllocation& other) { new (this) NodeAllocation(other); return *this; }
 	Traveler* traveler;
 	Cell cell;
 	int travelPathIndex;
+	double atTravelDist; // travel distance at which this allocation's 'point' will be 'traversed'
 	int intermediateAllocationIndex;
 	/// <summary>The acquire time of the allocation.</summary>
 	double acquireTime;
@@ -120,6 +119,13 @@ struct NodeAllocation
 	void extendReleaseTime(double toTime);
 	void truncateReleaseTime_flexScript(double toTime);
 	void truncateReleaseTime(double toTime);
+	void changeReleaseTime(double toTime)
+	{
+		if (releaseTime < toTime)
+			extendReleaseTime(toTime);
+		else if (releaseTime > toTime)
+			truncateReleaseTime(toTime);
+	}
 	void bind(TreeNode* x);
 
 	// FlexScript interface Methods
@@ -261,8 +267,11 @@ struct astar_export AStarPathEntry {
 	double arrivalTime = -1;
 	double distToNextStop = DBL_MAX;
 	double maxArrivalSpeed = DBL_MAX;
-	double startSpeed = 0; // speed of te when starting to travel from previous cell to this cell
 	double distFromPrev = 0; // travel distance from previous path entry to this one
+	Vec3 modelLoc;
+	double atTravelDist = DBL_MAX;
+	double turnStartTime = -1.0;
+
 	void resolveMaxArrivalSpeed(double teMaxSpeed, double deceleration) {
 		if (deceleration <= 0 || distToNextStop == DBL_MAX)
 			maxArrivalSpeed = teMaxSpeed;
@@ -304,6 +313,16 @@ public:
 
 	int isBlocked(int startIndexOneBased = 0);
 
+	void update(Traveler* traveler, double atDist);
+	int findNearestNext(Traveler* traveler, double minDist);
+	double lastUpdateDist = -1.0;
+	int startIndex = 0;
+	Vec3 startModelLoc;
+	double startDist;
+	double startZRot;
+	int updateIndex = 0;
+	Vec3 updateLoc;
+	double updateZRot = 0; // z rotation in parent coordinates
 };
 
 class AllocationRange {

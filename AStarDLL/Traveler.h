@@ -30,7 +30,6 @@ public:
 	double endSpeed;
 	double turnSpeed;
 	double turnDelay;
-	double expectedtotaltraveldist;
 	//double estimatedIndefiniteAllocTimeDelay;
 	DestinationThreshold destThreshold;
 	treenode destNode;
@@ -144,9 +143,10 @@ public:
 	/// <param name="fromPoint">	from point. </param>
 	void clearAllocations(TravelerAllocations::iterator fromPoint, bool decrementTraversal = false);
 	TravelerAllocations::iterator find(NodeAllocation* alloc);
-	void updateTravelDistOnInterrupt();
+	void resetTravelDist(double& atTravelDist);
 	astar_export void abortTravel(TreeNode* newTS);
-	astar_export void updateLocation();
+	double lastUpdateTravelDist = 0.0;
+	astar_export double updateLocation(bool updateTravelDistStats = false);
 	astar_export void updateSpeedMarkers();
 	astar_export double getCurSpeed();
 
@@ -202,9 +202,12 @@ public:
 	ObjRef<BlockEvent> blockEvent;
 	double lastBlockTime;
 	double tinyTime = 0.0;
+	double tinyDist = 0.0;
 	bool isRoutingNow = false;
 
 	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);
+
+	treenode kinematics;
 
 	treenode onBlockTrigger = nullptr;
 	treenode onContinueTrigger = nullptr;

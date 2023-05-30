@@ -741,7 +741,7 @@ struct ScopeGuard {
 	~ScopeGuard() { callback(); }
 };
 
-TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc, const DestinationThreshold& destThreshold, int flags, double startTime)
+TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc, const DestinationThreshold& destThreshold, int flags, double startTime, int fromCurrentIndex)
 {
 	CodeProfileRecord record(holder, "AStar::calculatePath");
 	TreeNode* travelerNode = traveler->te->holder;
@@ -757,13 +757,18 @@ TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc
 	//	traveler->estimatedIndefiniteAllocTimeDelay = indefiniteAllocTimePenalty->evaluate(traveler->te->holder);
 	//}
 
-	double centerx = 0.5 * xsize(travelerNode);
-	double centery = 0.5 * ysize(travelerNode);
+	if (fromCurrentIndex == -1) {
+		double centerx = 0.5 * xsize(travelerNode);
+		double centery = 0.5 * ysize(travelerNode);
 
-	if (!(flags & AppendPath))
-		vectorproject(travelerNode, centerx, - centery, 0, model(), startLoc);
-	else
-		startLoc = getLocation(traveler->travelPath.back().cell);
+		if (!(flags & AppendPath))
+			vectorproject(travelerNode, centerx, -centery, 0, model(), startLoc);
+		else
+			startLoc = getLocation(traveler->travelPath.back().cell);
+	}
+	else {
+		startLoc = getLocation(traveler->travelPath[fromCurrentIndex].cell);
+	}
 	
 	destLoc.x = tempDestLoc[0];
 	destLoc.y = tempDestLoc[1];
@@ -1045,6 +1050,7 @@ the outside 8 nodes.
 	while (1) {
 		travelPath.push_back(AStarPathEntry(temp->cell, prevBridgeIndex));
 		auto& entry = travelPath.back();
+		entry.modelLoc = getLocation(temp->cell);
 		if (temp->previous != startPrevVal) {
 			prevBridgeIndex = temp->prevBridgeIndex;
 			temp = &(totalSet[temp->previous]);
@@ -1078,6 +1084,7 @@ the outside 8 nodes.
 			}
 
 			travelPath.push_back(AStarPathEntry(curCell, -1));
+			travelPath.back().modelLoc = getLocation(travelPath.back().cell);
 		}
 	}
 
@@ -1641,10 +1648,12 @@ void AStarNavigator::drawAllocations(float z)
 	fglColor(0.8f, 0.5f, 0.0f, 1.0f);
 	Vec4f fullClr(0.8f, 0.4f, 0.0f, 1.0f);
 	Vec4f partialClr(0.8f, 0.4f, 0.0f, 0.4f);
+	Vec3f blueClr(0.0f, 0.0f, 1.0f);
+	Vec3f redClr(1.0f, 0.0f, 0.0f);
 	// Draw the grid one row at a time, using the large dimension
 	
 	allocMesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE4, MESH_DYNAMIC_DRAW);
-	lineMesh.init(0, MESH_POSITION, MESH_DYNAMIC_DRAW);
+	lineMesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE, MESH_DYNAMIC_DRAW);
 	for (auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
 		AStarNodeExtraData* nodeData = iter->second;
 		if (!nodeData)
@@ -1677,23 +1686,33 @@ void AStarNavigator::drawAllocations(float z)
 		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
 
 		if (isAllocCurrent) {
-			while (currentAllocation != nodeData->allocations.end()) {
-				lineMesh.setVertexAttrib(lineMesh.addVertex(), MESH_POSITION, Vec3f(centerPos.x, centerPos.y, centerPos.z));
-				TaskExecuter* te = currentAllocation->traveler->te;
+			auto addToMesh = [&lineMesh, &centerPos](NodeAllocation& alloc, Vec3f& clr) {
+				int vert = lineMesh.addVertex();
+				lineMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y, centerPos.z));
+				lineMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE, clr);
+
+				TaskExecuter* te = alloc.traveler->te;
 				Vec3 topPos = te->getLocation(0.5, 0.5, 1.1);
 				if (te->holder->up != model())
 					topPos = topPos.project(te->holder->up, model());
-				lineMesh.setVertexAttrib(lineMesh.addVertex(), MESH_POSITION, Vec3f(topPos.x, topPos.y, topPos.z));
+				vert = lineMesh.addVertex();
+				lineMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(topPos.x, topPos.y, topPos.z));
+				lineMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE, clr);
+			};
+			while (currentAllocation != nodeData->allocations.end()) {
+				addToMesh(*currentAllocation, blueClr);
 				currentAllocation++;
 				currentAllocation = std::find_if(currentAllocation, nodeData->allocations.end(),
 					[](NodeAllocation& alloc) { return alloc.acquireTime <= time() && alloc.releaseTime > time(); });
+			}
+			for (auto iter = nodeData->requests.begin(); iter != nodeData->requests.end(); iter++) {
+				addToMesh(*iter, redClr);
 			}
 		}
 	}
 	fglDisable(GL_LIGHTING);
 	fglDisable(GL_TEXTURE_2D);
 	allocMesh.draw(GL_TRIANGLES);
-	fglColor(0.0f, 0.0f, 1.0f, 1.0f);
 	lineMesh.draw(GL_LINES);
 	fglEnable(GL_LIGHTING);
 	fglEnable(GL_TEXTURE_2D);
@@ -2151,11 +2170,8 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 double AStarNavigator::getTotalTravelDistance(TaskExecuter* te)
 {
 	Traveler* traveler = getTraveler(te);
-	double x = getkinematics(te->node_v_kinematics, KINEMATIC_X, 1, time());
-	double y = getkinematics(te->node_v_kinematics, KINEMATIC_Y, 1, time());
-	double z = getkinematics(te->node_v_kinematics, KINEMATIC_Z, 1, time());
-	double curdist = sqrt(sqr(x) + sqr(y) + sqr(z));
-	double distancetraveled = traveler->expectedtotaltraveldist - getkinematics(te->node_v_kinematics, KINEMATIC_TOTALDIST) + curdist + get(te->node_v_totaltraveldist);
+	double dist = getkinematics(traveler->kinematics, KINEMATIC_X, 1, time());
+	double distancetraveled = get(te->node_v_totaltraveldist) + dist;
 	return distancetraveled;
 }
 

@@ -272,6 +272,14 @@ void AStarPathEntry::bind(TreeNode* toNode)
 	cell.bind(toNode);
 	SimpleDataType::bindNumber(bridgeIndex, toNode);
 	SimpleDataType::bindNumber(arrivalTime, toNode);
+	SimpleDataType::bindNumber(atTravelDist, toNode);
+	SimpleDataType::bindNumber(distToNextStop, toNode);
+	SimpleDataType::bindNumber(maxArrivalSpeed, toNode);
+	SimpleDataType::bindNumber(distFromPrev, toNode);
+	SimpleDataType::bindNumber(turnStartTime, toNode);
+	SimpleDataType::bindNumber(modelLoc.x, toNode);
+	SimpleDataType::bindNumber(modelLoc.y, toNode);
+	SimpleDataType::bindNumber(modelLoc.z, toNode);
 }
 
 void AStarPathEntry::bindInterface()
@@ -495,6 +503,11 @@ void AStarNodeExtraData::ContinueEvent::execute()
 	partner()->objectAs(Traveler)->navigator->getExtraData(cell)->onContinue(involved ? involved->objectAs(Traveler) : nullptr);
 }
 
+NodeAllocation::NodeAllocation(Traveler* traveler, const Cell& cell, int travelPathIndex, int intermediateAllocationIndex, double acquireTime, double releaseTime, double traversalWeight) :
+	traveler(traveler), cell(cell), travelPathIndex(travelPathIndex), intermediateAllocationIndex(intermediateAllocationIndex), acquireTime(acquireTime), releaseTime(releaseTime), traversalWeight(traversalWeight)
+{
+	atTravelDist = traveler ? traveler->travelPath[travelPathIndex].atTravelDist : 0.0;
+}
 
 void NodeAllocation::extendReleaseTime(double toTime)
 {
@@ -722,6 +735,106 @@ int TravelPath::isBlocked(int startIndexOneBased)
 		}
 	}
 	return false;
+}
+
+
+void TravelPath::update(Traveler* traveler, double atDist)
+{
+	auto te = traveler->te;
+	if (lastUpdateDist != atDist) {
+		lastUpdateDist = atDist;
+		if (updateIndex > startIndex && atDist <= operator[](updateIndex - 1).atTravelDist)
+			updateIndex = startIndex;
+		while (updateIndex < size() - 1 && atDist > operator[](updateIndex).atTravelDist + traveler->tinyDist)
+			updateIndex++;
+
+		auto* fromEntry = updateIndex > startIndex ? &(operator[](updateIndex - 1)) : nullptr;
+		Vec3 fromLoc = (fromEntry ? fromEntry->modelLoc : startModelLoc).project(model(), traveler->te->holder->up);
+		auto& toEntry = operator[](updateIndex);
+		Vec3 toLoc = toEntry.modelLoc.project(model(), traveler->te->holder->up);
+		double lerpRatio = fromEntry ? (atDist - fromEntry->atTravelDist) / (toEntry.atTravelDist - fromEntry->atTravelDist) : (atDist - startDist) / (toEntry.atTravelDist - startDist);
+		lerpRatio = std::max(0.0, std::min(1.0, lerpRatio));
+		auto diff = toLoc - fromLoc;
+		updateLoc = fromLoc + diff * lerpRatio;
+		if (te->v_modifyrotation) {
+			if (traveler->navigator->stopForTurns) {
+				// do logic for stopping and turning
+				auto fromAngle = (toLoc - fromLoc).getXYAngle();
+				if (toEntry.turnStartTime >= 0 && time() > toEntry.turnStartTime) {
+					double turnSpeed = traveler->turnSpeed;
+					auto nextLoc = operator[](updateIndex + 1).modelLoc.project(model(), traveler->holder->up);
+					double maxTurnAngle = (nextLoc - toLoc).getXYAngle() - fromAngle;
+					if (maxTurnAngle < -180)
+						maxTurnAngle += 360;
+					if (maxTurnAngle > 180)
+						maxTurnAngle -= 360;
+					double turnAngle = sign(maxTurnAngle) * std::min(fabs(maxTurnAngle), turnSpeed * (time() - toEntry.turnStartTime));
+					updateZRot = fromAngle + turnAngle;
+				}
+				else updateZRot = fromAngle;
+			}
+			else if (traveler->navigator->smoothRotations != 0.0) {
+				double sx = te->b_spatialsx;
+				double maxSpeed = te->v_maxspeed;
+				// speed based on the ability to rotate 90 degrees in traveling te's x size
+				double rotLerpSpeed = 90.0 / (sx / maxSpeed);
+				// go backwards along the travel path to at least 2 * sx before this point
+				// (which means he can rotate at least 180 degrees)
+				int startRotIndex = updateIndex - 1;
+				while (startRotIndex > startIndex && operator[](startRotIndex - 1).atTravelDist > atDist - 2 * sx)
+					startRotIndex--;
+				double fromAngle = startZRot;
+				updateZRot = startZRot;
+				// Now go forward along the path and linearly interpolate rotation changes 
+				for (int i = startRotIndex; i < size() - 1; i++) {
+					auto* fromEntry = i > startIndex ? &(operator[](i - 1)) : nullptr;
+					Vec3 fromLoc = (fromEntry ? fromEntry->modelLoc : startModelLoc).project(model(), traveler->holder->up);
+					auto& toEntry = operator[](i);
+					Vec3 toLoc = toEntry.modelLoc.project(model(), traveler->holder->up);
+					auto diff = toLoc - fromLoc;
+					double toAngle = diff.getXYAngle();
+					if (i == startRotIndex && diff.magnitude < traveler->tinyDist) {
+						startRotIndex++; // will cause it to do this again next loop so it can get a proper angle
+					}
+					else {
+						double diffAngle = toAngle - fromAngle;
+						if (diffAngle < -180)
+							diffAngle += 360;
+						if (diffAngle > 180)
+							diffAngle -= 360;
+
+						double timeToRotate = fabs(diffAngle) / rotLerpSpeed;
+						double distToRotate = maxSpeed * timeToRotate;
+						double startDist = std::max(0.0, fromEntry ? fromEntry->atTravelDist - 0.5 * distToRotate : 0.0);
+						if (atDist > startDist) {
+							double endDist = startDist + distToRotate;
+							double lerpRatio = std::min(1.0, (atDist - startDist) / (endDist - startDist));
+							updateZRot += lerpRatio * diffAngle;
+						}
+						if (toEntry.atTravelDist > atDist + 2.0 * sx)
+							break;
+						fromAngle = toAngle;
+					}
+				}
+			}
+			else {
+				updateZRot = diff.getXYAngle();
+			}
+		}
+		else updateZRot = te->b_spatialrz;
+	}
+	te->setLocation(updateLoc, Vec3(0.5, 0.5, 0.0));
+	te->rotation.z = updateZRot;
+}
+
+int TravelPath::findNearestNext(Traveler* traveler, double minDist)
+{
+	auto updateIndex = this->updateIndex;
+	if (updateIndex > startIndex && minDist <= operator[](updateIndex - 1).atTravelDist)
+		updateIndex = startIndex;
+	while (updateIndex < size() - 1 && minDist > operator[](updateIndex).atTravelDist + traveler->tinyDist)
+		updateIndex++;
+	return updateIndex;
 }
 
 void AStarNamespace::bindInterface()

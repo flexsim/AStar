@@ -19,6 +19,7 @@ void Traveler::bind()
 	bindNumber(isNavigatingAroundDeadlock);
 	bindNumber(blockedAtTravelPathIndex);
 	bindNumber(needsContinueTrigger);
+	bindSubNode(kinematics, 0);
 	destThreshold.bind(this, "destThreshold.");
 	navigator = holder->ownerObject->objectAs(AStarNavigator);
 	te = partner()->ownerObject->objectAs(TaskExecuter);
@@ -150,7 +151,7 @@ void Traveler::onReset()
 	activeState = Inactive;
 	isBlocked = false;
 	lastBlockTime = 0;
-	expectedtotaltraveldist = 0;
+	lastUpdateTravelDist = 0;
 	isNavigatingAroundDeadlock = false;
 	blockedAtTravelPathIndex = -1;
 	allocations.clear();
@@ -177,7 +178,9 @@ void Traveler::onReset()
 
 	travelPath.clear();
 	travelPath.push_back(AStarPathEntry(resetCell, -1));
+	travelPath.back().modelLoc = navigator->getLocation(resetCell);
 	tinyTime = 0.001 * navigator->minNodeSize.x / te->v_maxspeed;
+	tinyDist = 0.001 * navigator->minNodeSize.x;
 	needsContinueTrigger = false;
 	destThreshold = DestinationThreshold();
 	destLoc = Vec3(0.0, 0.0, 0.0);
@@ -197,6 +200,7 @@ void Traveler::onStartSimulation()
 		Cell resetCell = navigator->getCell(loc);
 		travelPath.clear();
 		travelPath.push_back(AStarPathEntry(resetCell, -1));
+		travelPath.back().modelLoc = navigator->getLocation(resetCell);
 		addAllocation(NodeAllocation(this, resetCell, 0, 0, 0.0, DBL_MAX, 1.0), true, false);
 	}
 XE}
@@ -217,46 +221,41 @@ void Traveler::navigatePath(int startAtPathIndex)
 	}
 
 	double curSpeed = getCurSpeed();
-	bool shouldTravelToFirstCell = curSpeed > 0 && te->v_deceleration > 0;
+	bool shouldTravelToFirstCell = te->v_deceleration > 0 && (curSpeed > 0 || isBlocked) ;
+	double atDist = 0.0;
 	// if I'm blocked and using acc/dec, then I may be continuing from being in the middle of 
 	// traveling between two cells.
-	if (isBlocked && shouldTravelToFirstCell) {
-		while (startAtPathIndex > 1 && travelPath[startAtPathIndex - 1].arrivalTime > time())
+	if (shouldTravelToFirstCell) {
+		atDist = updateLocation(true);
+		while (startAtPathIndex > 0 && travelPath[startAtPathIndex - 1].atTravelDist > atDist - tinyTime)
 			startAtPathIndex--;
-		startAtPathIndex = std::max(0, startAtPathIndex - 1);
 	}
+	else lastUpdateTravelDist = 0.0;
 
-	// Don't know why this was here. I'm commenting it out.
-	//if (!isDistQueryOnly) {
-	//	coupling = tonode(get(first(te->node_v_navigator)));
-	//	while (content(holder) < 1)
-	//		nodeinsertinto(holder);
-	//TreeNode* idList = first(coupling);
-	// TODO: figure out idLists
-	//}
-	// update TE state
 	setstate(te->holder, content(te->holder) > 0 ? STATE_TRAVEL_LOADED : STATE_TRAVEL_EMPTY);
 
-
-	treenode kinematics = te->node_v_kinematics;
 	double outputVector[3];
 	Vec3 startLoc;
 	BridgeRoutingData* exitingBridgeRoutingData = (bridgeData ? bridgeData->routingData : nullptr);
 	bool isExitingBridge = exitingBridgeRoutingData != nullptr;
-	if (isExitingBridge || shouldTravelToFirstCell)
-		startLoc = te->getLocation(0.5, 0.5, 0);
-	else {
-		startLoc = nav->getLocation(travelPath[startAtPathIndex].cell);
-		if (up(te->holder) != model())
-			startLoc = startLoc.project(model(), up(te->holder));
+	if (isExitingBridge || shouldTravelToFirstCell) {
+		startLoc = te->getLocation(0.5, 0.5, 0).project(te->holder->up, model());
 	}
+	else {
+		startLoc = travelPath[startAtPathIndex].modelLoc;
+	}
+	travelPath.startIndex = startAtPathIndex;
+	travelPath.startZRot = te->b_spatialrz;
+	travelPath.startModelLoc = startLoc;
+	travelPath.startDist = atDist;
+	travelPath.lastUpdateDist = -1.0;
 
 	int kinFlags = 0;
 	double endTime = time();
 	double rotLerpSize = navigator->smoothRotations;
 	double rotLerpSpeed = 90 / (te->b_spatialsx * rotLerpSize / te->v_maxspeed);
 	double lastRotation;
-	lastRotation = te->b_spatialrz;
+	lastRotation = Vec3(0.0, 0.0, te->b_spatialrz).projectRotation(te->holder->up, model()).z;
 	bool teCanRotate = objectexists(te->node_v_modifyrotation) && te->node_v_modifyrotation->value;
 	if (teCanRotate) {
 
@@ -274,18 +273,28 @@ void Traveler::navigatePath(int startAtPathIndex)
 	AStarPathEntry* e, * laste;
 	int numNodes = (int)travelPath.size();
 	laste = &travelPath[startAtPathIndex];
-	laste->startSpeed = curSpeed;
 	bool enableCollisionAvoidance = nav->enableCollisionAvoidance;
 
-	clearAllocationsExcept(laste->cell);
+	//clearAllocationsExcept(laste->cell);
+
 	if (laste->arrivalTime < endTime)
 		laste->arrivalTime = endTime;
 
+	double deallocTimeOffset = nav->deallocTimeOffset;
+
 	int initialAllocsSize = (int)allocations.size();
 	if (enableCollisionAvoidance && (!nav->ignoreInactiveMemberCollisions || isBlocked || isContinuingFromDeadlock)) {
+		// here I want to 'clear out' the allocations that I'm no longer going to travel over. I first 
+		// mark all current allocations for deletion. Then later as I go through the path I will readd 
+		// them, which will unmark them for deletion. Then those that are still marked for deletion at 
+		// the end will be deleted.
 		for (auto& allocation : allocations) {
-			allocation->extendReleaseTime(DBL_MAX);
-			allocation->isMarkedForDeletion = true;
+			//allocation->extendReleaseTime(DBL_MAX);
+			if (allocation->cell != laste->cell)
+				allocation->isMarkedForDeletion = true;
+			else if (!shouldTravelToFirstCell) {
+				allocation->changeReleaseTime(endTime + deallocTimeOffset);
+			}
 		}
 	}
 
@@ -301,11 +310,10 @@ void Traveler::navigatePath(int startAtPathIndex)
 	NodeAllocation* lastAllocation = nullptr;
 	BridgeRoutingData* bridgeArrival = nullptr;
 	int i = startAtPathIndex;
-	double deallocTimeOffset = nav->deallocTimeOffset;
 	double firstCellDeallocTime = time() + deallocTimeOffset;
 	Grid* grid = nullptr;
 	int lastGridNum = -1;
-	double arrivalTime = endTime;
+	double endArrivalTime = endTime;
 	double tinyDist = navigator->grids.front()->diagDist * 0.001;
 
 	double dec = te->v_deceleration;
@@ -322,18 +330,32 @@ void Traveler::navigatePath(int startAtPathIndex)
 				containerRot += zrot(obj);
 			}
 		}
-		initkinematics(kinematics, startLoc.x, startLoc.y, te->b_spatialz, 0, 0, te->b_spatialrz, kinFlags, 0);
+		initkinematics(kinematics, atDist, 0, 0, 0, 0, te->b_spatialrz, kinFlags, 0);
+		auto& first = travelPath[startAtPathIndex];
 		if (shouldTravelToFirstCell) {
-			auto& first = travelPath[startAtPathIndex];
-			auto toLoc = navigator->getLocation(first.cell);
+			auto& toLoc = first.modelLoc;
 			auto diff = toLoc - startLoc;
-			if (diff.magnitude > navigator->getGrid(first.cell)->diagDist * 0.001) {
-				endTime = addkinematic(kinematics, diff.x, diff.y, diff.z, maxSpeed, acc, dec, curSpeed, first.maxArrivalSpeed, time(), KINEMATIC_TRAVEL);
+			auto dist = diff.magnitude;
+			if (dist > tinyDist) {
+				endTime = addkinematic(kinematics, dist, 0, 0, maxSpeed, acc, dec, curSpeed, first.maxArrivalSpeed, time(), KINEMATIC_TRAVEL);
 				first.arrivalTime = endTime;
+				first.atTravelDist = atDist + dist;
 				curSpeed = getkinematics(kinematics, KINEMATIC_ENDSPEED, 1);
+				atDist = first.atTravelDist;
+			}
+			else {
+				first.arrivalTime = time();
+				first.atTravelDist = atDist;
+			}
+			if (navigator->enableCollisionAvoidance) {
+				NodeAllocation allocation(this, first.cell, startAtPathIndex, 0, time(), std::nextafter(endTime + deallocTimeOffset, DBL_MAX), 1.0);
+				addAllocation(allocation, true, true);
 			}
 		}
-		else travelPath[startAtPathIndex].arrivalTime = time();
+		else {
+			first.arrivalTime = time();
+			first.atTravelDist = 0.0;
+		}
 
 		for (i = startAtPathIndex + 1; i < numNodes; i++) {
 			e = &travelPath[i];
@@ -360,11 +382,9 @@ void Traveler::navigatePath(int startAtPathIndex)
 					diff.x = (e->cell.col - laste->cell.col) * grid->nodeSize.x;
 					diff.y = (e->cell.row - laste->cell.row) * grid->nodeSize.y;
 					diff.z = 0;
-					if (containerRot)
-						diff.rotateXY(-containerRot);
 				}
 				else {
-					Vec3 toLoc = nav->getLocation(e->cell).project(model(), up(te->holder));
+					Vec3 toLoc = e->modelLoc;
 					step.isDiagonal = false;
 					step.isHorizontalDeepSearch = false;
 					step.isVerticalDeepSearch = false;
@@ -372,8 +392,8 @@ void Traveler::navigatePath(int startAtPathIndex)
 					isExitingBridge = false;
 				}
 
-				if (rotLerpSize != 0 || nav->stopForTurns) {
-					double nextRot = radianstodegrees(atan2(diff.y, diff.x));
+				if (nav->stopForTurns) {
+					double nextRot = diff.getXYAngle();
 					double rotDiff = nextRot - lastRotation;
 					while (rotDiff > 180)
 						rotDiff -= 360;
@@ -382,33 +402,26 @@ void Traveler::navigatePath(int startAtPathIndex)
 
 					if (nav->stopForTurns) {
 						if (fabs(rotDiff) > 0.1) {
-							if (teCanRotate) {
-								startTime = addkinematic(kinematics, 0, 0, rotDiff, turnSpeed, 0, 0, 0, 0, startTime + 0.5 * turnDelay, KINEMATIC_ROTATE) + 0.5 * turnDelay;
-							}
-							else startTime += turnDelay + fabs(rotDiff / turnSpeed);
+							e->turnStartTime = startTime;
+							startTime += turnDelay + fabs(rotDiff / turnSpeed);
 							if (lastAllocation)
 								lastAllocation->extendReleaseTime(startTime + deallocTimeOffset);
 							if (i == startAtPathIndex + 1)
 								firstCellDeallocTime = startTime + deallocTimeOffset;
 						}
 					}
-					else {
-						if (teCanRotate && fabs(rotDiff) > 1.0) {
-							double timeToRot = fabs(rotDiff) / rotLerpSpeed;
-							double rotStartTime = std::max(time(), startTime - 0.5 * timeToRot);
-							addkinematic(kinematics, 0, 0, rotDiff, rotLerpSpeed, 0, 0, 0, 0, rotStartTime, KINEMATIC_ROTATE);
-						}
-					}
 					lastRotation = nextRot;
 				}
 
-				e->startSpeed = curSpeed;
-				endTime = addkinematic(kinematics, diff.x, diff.y, diff.z, maxSpeed, acc, dec, e->startSpeed, e->maxArrivalSpeed, startTime, KINEMATIC_TRAVEL);
+				double dist = diff.magnitude;
+				atDist += dist;
+				e->atTravelDist = atDist;
+				double startSpeed = curSpeed;
+				endTime = addkinematic(kinematics, dist, 0, 0, maxSpeed, acc, dec, startSpeed, e->maxArrivalSpeed, startTime, KINEMATIC_TRAVEL);
 				if (dec == 0 || e->maxArrivalSpeed >= endSpeed)
-					arrivalTime = endTime;
+					endArrivalTime = endTime;
 				curSpeed = getkinematics(kinematics, KINEMATIC_ENDSPEED, getkinematics(kinematics, KINEMATIC_NR));
 				e->arrivalTime = endTime;
-				expectedtotaltraveldist += diff.magnitude;
 
 				if (enableCollisionAvoidance) {
 					double allocTime = startTime;
@@ -418,7 +431,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 						for (int j = i - 1; j >= 0; j--) {
 							auto& entry = travelPath[j];
 							totalDist += entry.distFromPrev;
-							double distToDecel = 0.5 * entry.startSpeed * (entry.startSpeed / dec);
+							double distToDecel = 0.5 * startSpeed * (startSpeed / dec);
 							if (distToDecel <= totalDist + tinyDist) {
 								// te can decelerate to stop after starting to travel to this cell, so 
 								// set the allocation time to the arrival time at the previous cell
@@ -525,7 +538,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 	}
 	activeState = Active;
 	if (didBlockPathIndex == -1 && !blockEvent && !isBlocked && i == numNodes && userResult == UserNavigationResult::Default) {
-		arrivalEvent = createevent(new ArrivalEvent(this, arrivalTime, dec == 0 || arrivalTime == endTime))->objectAs(ArrivalEvent);
+		arrivalEvent = createevent(new ArrivalEvent(this, endArrivalTime, dec == 0 || endArrivalTime == endTime))->objectAs(ArrivalEvent);
 	}
 
 	isRoutingNow = false;
@@ -591,8 +604,7 @@ void Traveler::onBridgeArrival(BridgeRoutingData* data, int pathIndex)
 
 	AStarPathEntry e = travelPath[pathIndex];
 
-	updateLocation();
-	updateTravelDistOnInterrupt();
+	updateLocation(true);
 	assertBridgeData(data);
 	FIRE_SDT_EVENT(onBridgeArrivalTrigger, te->holder, bridgeData->routingData->bridge->holder);
 	bridgeData->routingData = data;
@@ -607,6 +619,7 @@ void Traveler::onBridgeComplete(int atPathIndex)
 {
 	TaskExecuter* te = this->te;
 	Bridge* bridge = bridgeData->routingData->bridge;
+	te->updateTotalTravelDist(bridge->travelDistance);
 	// With Agent systems, the navigator isn't the A* navigator, so I shouldn't continue navigating 
 	// the path
 	bool isAStarNavigator = ownerobject(te->node_v_navigator->first->value) == navigator->holder;
@@ -677,20 +690,19 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, 
 
 		if (selfCollision) {
 			double oldReleaseTime = selfCollision->releaseTime;
+			double oldAcquireTime = selfCollision->acquireTime;
 			*selfCollision = allocation;
-			if (allocation.releaseTime > selfCollision->releaseTime) {
+			if (allocation.releaseTime > oldReleaseTime) {
 				selfCollision->releaseTime = oldReleaseTime;
 				selfCollision->extendReleaseTime(allocation.releaseTime);
 			}
 			else if (nodeData->requests.size() > 0) {
 				nodeData->checkCreateContinueEvent();
 			}
+			if (allocation.acquireTime > oldAcquireTime) // don't push acquireTime back
+				allocation.acquireTime = oldAcquireTime;
 			selfCollision->isMarkedForDeletion = false;
 
-			auto iter = find(selfCollision);
-			NodeAllocationIterator val = *iter;
-			allocations.erase(iter);
-			allocations.push_back(val);
 			return selfCollision;
 		}
 	}
@@ -813,26 +825,18 @@ Traveler::TravelerAllocations::iterator Traveler::find(NodeAllocation* alloc)
 	return std::find_if(allocations.begin(), allocations.end(), [&](NodeAllocationIterator& iter) { return &(*iter) == alloc; });
 }
 
-void Traveler::updateTravelDistOnInterrupt()
+void Traveler::resetTravelDist(double& atTravelDist)
 {
-	// this code piggybacks on a weird side effect of kinematic pruning. If a kinematic is pruning, then its total distance actually 
-	// decreases as it prunes through the kinematic, such that the total distance is closer to the "remaining distance", minus the 
-	// amount that the object has traveled into the first kinematic.
+	for (auto& entry : travelPath) {
+		if (entry.atTravelDist == DBL_MAX)
+			break;
+		entry.atTravelDist -= atTravelDist;
+	}
 
-	// Technically I (Anthony) don't like this design and would like to do it differently, because it's utilizing this weird side 
-	// effect. But Phil has prevented me from actually doing it the way I want it done, in favor of stability, with the hope 
-	// of a future fix. So, I'm leaving it the way it is.
-
-	// first, get the distance into the first kinematic
-	double x = getkinematics(te->node_v_kinematics, KINEMATIC_X, 1, time());
-	double y = getkinematics(te->node_v_kinematics, KINEMATIC_Y, 1, time());
-	double z = getkinematics(te->node_v_kinematics, KINEMATIC_Z, 1, time());
-	double curdist = sqrt(sqr(x) + sqr(y) + sqr(z));
-	// the distance traveled to this point is the expected total distance minus the "total distance" (i.e. the kind-of-remaining- 
-	// distance) plus the distance into the first kinematic
-	double distancetraveled = expectedtotaltraveldist - getkinematics(te->node_v_kinematics, KINEMATIC_TOTALDIST) + curdist;
-	te->updateTotalTravelDist(distancetraveled);
-	expectedtotaltraveldist = 0;
+	for (auto& alloc : allocations) {
+		alloc->atTravelDist -= atTravelDist;
+	}
+	atTravelDist = 0;
 }
 
 void Traveler::onBlock(Traveler* collidingWith, int allocPathIndex, Cell& cell)
@@ -852,14 +856,13 @@ void Traveler::onBlock(Traveler* collidingWith, int allocPathIndex, Cell& cell)
 	if (shouldStop && foundAlloc == nodeData->allocations.end())
 		shouldStop = false;
 
-	updateLocation();
-	updateTravelDistOnInterrupt();
+	double atTravelDist = updateLocation(true);
 	if (shouldStop) {
 		double curSpeed = getCurSpeed();
 		int atPathIndex = allocPathIndex - 1;
 		double distToStop = 0;
 		double dec = te->v_deceleration;
-		if (curSpeed > 0 && dec > 0) {
+		if (dec > 0) {
 			while (atPathIndex > 0) {
 				auto& entry = travelPath[atPathIndex];
 				if (entry.arrivalTime > curTime + tinyTime) {
@@ -870,7 +873,7 @@ void Traveler::onBlock(Traveler* collidingWith, int allocPathIndex, Cell& cell)
 			}
 		}
 		Vec3 pos = te->getLocation(0.5, 0.5, 0.0);
-		initkinematics(te->node_v_kinematics, pos.x, pos.y, te->b_spatialz, 0.0, 0.0, 0.0, 1, 0);
+		initkinematics(kinematics, atTravelDist, 0, 0, 0.0, 0.0, 0.0, 1, 0);
 
 		setstate(te->holder, STATE_BLOCKED);
 
@@ -883,6 +886,8 @@ void Traveler::onBlock(Traveler* collidingWith, int allocPathIndex, Cell& cell)
 		if (distToStop > 0) {
 			double startSpeed = curSpeed;
 			double tempTime = curTime;
+			double maxSpeed = te->v_maxspeed;
+			double acc = te->v_acceleration;
 			for (int i = atPathIndex - 1; i < allocPathIndex - 1; i++) {
 				auto fromLoc = i == atPathIndex - 1 ? pos : navigator->getLocation(travelPath[i].cell);
 				auto& toEntry = travelPath[i + 1];
@@ -900,7 +905,7 @@ void Traveler::onBlock(Traveler* collidingWith, int allocPathIndex, Cell& cell)
 						distToStop -= toEntry.distFromPrev;
 						endSpeed = sqrt(std::max(0.0, distToStop * 2 * dec));
 					}
-					tempTime = addkinematic(te->node_v_kinematics, diff.x, diff.y, diff.z, startSpeed, 0, dec, startSpeed, endSpeed, tempTime, KINEMATIC_TRAVEL);
+					tempTime = addkinematic(kinematics, dist, 0, 0, maxSpeed, acc, dec, startSpeed, endSpeed, tempTime, KINEMATIC_TRAVEL);
 					startSpeed = endSpeed;
 				}
 				toEntry.arrivalTime = tempTime;
@@ -909,7 +914,7 @@ void Traveler::onBlock(Traveler* collidingWith, int allocPathIndex, Cell& cell)
 
 		std::vector<Traveler*> deadlockList;
 		for (auto& allocation : allocations) {
-			if (allocation->travelPathIndex == allocPathIndex - 1)
+			if (allocation->travelPathIndex == allocPathIndex - 1 && allocation->cell == travelPath[allocPathIndex - 1].cell)
 				allocation->extendReleaseTime(DBL_MAX);
 			else if (allocation->travelPathIndex < travelPath.size() - 1) {
 				auto& nextEntry = travelPath[allocation->travelPathIndex + 1];
@@ -932,7 +937,7 @@ void Traveler::onBlock(Traveler* collidingWith, int allocPathIndex, Cell& cell)
 			navigateAroundDeadlock(deadlockList, requestedAlloc);
 		}
 	} else {
-		navigatePath(allocPathIndex);
+		navigatePath(allocPathIndex - 1);
 	}
 	XE
 }
@@ -999,7 +1004,8 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 
 		Cell destCell = traveler->travelPath.back().cell;
 		Vec3 destLoc = navigator->getGrid(destCell)->getLocation(destCell);
-		TravelPath testPath = navigator->calculatePath(traveler, destLoc, DestinationThreshold(), AStarNavigator::DoFullSearch | AStarNavigator::KeepEndpointsConst, -1.0);
+		auto atCurrent = traveler->travelPath.findNearestNext(traveler, getkinematics(traveler->kinematics, KINEMATIC_X));
+		TravelPath testPath = navigator->calculatePath(traveler, destLoc, DestinationThreshold(), AStarNavigator::DoFullSearch | AStarNavigator::KeepEndpointsConst, -1.0, atCurrent);
 
 		bool isBestTraveler = testPath.back().cell == destCell;
 		if (!isBestTraveler && !secondBestTraveler) {
@@ -1036,94 +1042,6 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 	for (auto entry : dynamicBarriers)
 		navigator->removeDynamicBarrier(entry.second);
 
-	/*
-
-	Cell bestCell, bestAlternateCell;
-	Traveler* bestTraveler = nullptr, * bestAlternateTraveler = nullptr;
-	for (int i = 0; i <= deadlockList.size() && !bestTraveler; i++) {
-		Traveler* traveler = (i == 0 ? this : deadlockList[i - 1]);
-		if (traveler == this && i > 0)
-			continue;
-
-		Cell curCell = traveler->travelPath[traveler->blockedAtTravelPathIndex - 1].cell;
-
-		Cell blockingCell = traveler->request->cell;
-		AStarNodeExtraData* extra = navigator->getExtraData(blockingCell);
-		auto found = std::find_if(extra->allocations.begin(), extra->allocations.end(),
-			[&](NodeAllocation& alloc) -> bool {return alloc.acquireTime <= curTime && alloc.releaseTime >= curTime; });
-		Traveler* blockingTraveler = found->traveler;
-
-		struct ShimmyInfo {
-			Cell cell;
-			bool isValid = true;
-			ShimmyInfo(unsigned int grid, unsigned short row, unsigned short col, bool isValid) : cell(grid, row, col), isValid(isValid) {}
-			ShimmyInfo() {}
-		};
-		AStarNode* curNode = navigator->getNode(curCell);
-		ShimmyInfo leftCell(curCell.grid, curCell.row, curCell.col - 1, curNode->canGoLeft);
-		ShimmyInfo rightCell(curCell.grid, curCell.row, curCell.col + 1, curNode->canGoRight);
-		ShimmyInfo upCell(curCell.grid, curCell.row + 1, curCell.col, curNode->canGoUp);
-		ShimmyInfo downCell(curCell.grid, curCell.row - 1, curCell.col, curNode->canGoDown);
-
-		ShimmyInfo check[4];
-		if (blockingCell.col > curCell.col) {
-			check[0] = downCell;
-			check[1] = upCell;
-			check[2] = leftCell;
-			check[3] = rightCell;
-		} else if (blockingCell.col < curCell.col) {
-			check[0] = upCell;
-			check[1] = downCell;
-			check[2] = rightCell;
-			check[3] = leftCell;
-		} else if (blockingCell.row > curCell.row) {
-			check[0] = rightCell;
-			check[1] = leftCell;
-			check[2] = downCell;
-			check[3] = upCell;
-		} else {
-			check[0] = leftCell;
-			check[1] = rightCell;
-			check[2] = upCell;
-			check[3] = downCell;
-		}
-
-		Grid* grid = navigator->getGrid(check[i].cell);
-
-		for (int i = 0; i < 4; i++) {
-			if (!check[i].isValid || check[i].cell.col >= grid->numCols || check[i].cell.row >= grid->numRows)
-				continue;
-
-			AStarNodeExtraData* extra = navigator->getExtraData(check[i].cell);
-			if (extra) {
-				auto found = std::find_if(extra->allocations.begin(), extra->allocations.end(),
-					[&](NodeAllocation& alloc) -> bool {return alloc.acquireTime <= curTime && alloc.releaseTime >= curTime && alloc.traveler != traveler; });
-				if (found == extra->allocations.end()) {
-					if (!bestAlternateTraveler) {
-						bestAlternateCell = check[i].cell;
-						bestAlternateTraveler = traveler;
-					}
-					if (blockingTraveler->blockedAtTravelPathIndex >= blockingTraveler->travelPath.size() - 1
-						|| blockingTraveler->travelPath[blockingTraveler->blockedAtTravelPathIndex + 1].cell != check[i].cell)
-					{
-						bestCell = check[i].cell;
-						bestTraveler = traveler;
-						break;
-					}
-				}
-			} else {
-				bestCell = check[i].cell;
-				bestTraveler = traveler;
-				break;
-			}
-		}
-	}
-	if (!bestTraveler) {
-		bestTraveler = bestAlternateTraveler;
-		bestCell = bestAlternateCell;
-	}
-	*/
-
 	numDeadlocksSinceLastNavigate++;
 	if (!bestTraveler && secondBestTraveler) {
 		bestTraveler = secondBestTraveler;
@@ -1139,12 +1057,16 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 		//TravelPath newPath;
 		//newPath.push_back(AStarPathEntry(curCell, -1));
 		//newPath.push_back(AStarPathEntry(bestCell, -1));
-		while (bestTraveler->allocations.size() > 1 && bestTraveler->allocations.front()->cell != curCell)
-			bestTraveler->removeAllocation(bestTraveler->allocations.begin());
-		while (bestTraveler->allocations.size() > 1)
-			bestTraveler->removeAllocation(bestTraveler->allocations.end() - 1);
+		bestTraveler->cullExpiredAllocations();
+		double curSpeed = bestTraveler->getCurSpeed();
+		double atTravelDist = bestTraveler->updateLocation(true);
+		Vec3 curModelLoc = bestTraveler->te->getLocation(0.5, 0.5, 0.0).project(bestTraveler->te->holder->up, model());
 		if (bestPath.back().cell != destCell)
-			bestTraveler->isNavigatingAroundDeadlock = true;
+			bestTraveler->isNavigatingAroundDeadlock = true; // flag it to reroute again on arrival if this rerouted path doesn't get me there
+		bestPath[0].atTravelDist = atTravelDist + (bestPath[0].modelLoc - curModelLoc).magnitude;
+		bestPath.startModelLoc = curModelLoc;
+		bestPath.startIndex = 0;
+		bestPath.startZRot = bestTraveler->te->b_spatialrz;
 		bestTraveler->navigatePath(std::move(bestPath));
 	} else {
 		string error = "Unrecoverable deadlock encountered for ";
@@ -1204,14 +1126,15 @@ void Traveler::onTEDestroyed()
 void Traveler::onArrival(bool isAtZeroSpeed)
 {
 	arrivalEvent = nullptr;
-	TreeNode* kinematics = te->node_v_kinematics;
-	updateLocation();
+	double atTravelDist = updateLocation(true);
 	updateSpeedMarkers();
+	cullExpiredAllocations();
 	
 	if (isAtZeroSpeed) {
 		AStarPathEntry back = travelPath.back();
 		travelPath.clear();
 		travelPath.push_back(back);
+		resetTravelDist(atTravelDist);
 		if (navigator->enableCollisionAvoidance && !isNavigatingAroundDeadlock) {
 			if (navigator->ignoreInactiveMemberCollisions)
 				clearAllocations();
@@ -1222,29 +1145,8 @@ void Traveler::onArrival(bool isAtZeroSpeed)
 			}
 		}
 	}
-	else {
-		auto eraseTo = travelPath.end() - 1;
-		while (eraseTo != travelPath.begin() && eraseTo->arrivalTime > time() + tinyTime)
-			eraseTo--;
-		travelPath.erase(travelPath.begin(), eraseTo);
-	}
-
 
 	if (activeState == Active) {
-
-		Task* taskdata = &o(Task, te->activetask);
-		switch (taskdata->type) {
-		case TASKTYPE_TRAVELTOLOC:
-		case TASKTYPE_TRAVELRELATIVE:
-		case TASKTYPE_PICKOFFSET:
-		case TASKTYPE_PLACEOFFSET:
-			te->updateTotalTravelDist(expectedtotaltraveldist - getkinematics(kinematics, KINEMATIC_TOTALDIST));
-			break;
-		default:
-			te->updateTotalTravelDist(expectedtotaltraveldist);
-			break;
-		}
-		expectedtotaltraveldist = 0;
 
 		if (!isNavigatingAroundDeadlock) {
 			if (isAtZeroSpeed) {
@@ -1253,7 +1155,6 @@ void Traveler::onArrival(bool isAtZeroSpeed)
 			}
 			else {
 				activeState = DecelToStop;
-				treenode kinematics = te->node_v_kinematics;
 				double endTime = getkinematics(kinematics, KINEMATIC_ENDTIME, getkinematics(kinematics, KINEMATIC_NR));
 				arrivalEvent = createevent(new ArrivalEvent(this, endTime, true))->object<ArrivalEvent>();
 			}
@@ -1279,9 +1180,8 @@ void Traveler::onArrival(bool isAtZeroSpeed)
 
 void Traveler::abortTravel(TreeNode* newTS)
 {
-	updateLocation();
+	updateLocation(true);
 	updateSpeedMarkers();
-	updateTravelDistOnInterrupt();
 	if (navigator->enableCollisionAvoidance) {
 		if (request) {
 			navigator->getExtraData(request->cell)->requests.remove_if([&](NodeAllocation& alloc) { return &alloc == request; });
@@ -1327,20 +1227,24 @@ void Traveler::abortTravel(TreeNode* newTS)
 	activeState = Inactive;
 }
 
-void Traveler::updateLocation()
+double Traveler::updateLocation(bool updateTravelDistStats)
 {
 	if (activeState == Inactive)
-		return;
+		return 0.0;
 
 	double updateTime = time();
 
 	if (bridgeData && bridgeData->routingData && bridgeData->entryTime <= updateTime) {
 		bridgeData->routingData->updateLocation(this);
 	} else {
-		updatekinematics(te->node_v_kinematics, te->holder, updateTime);
-		te->b_spatialx -= 0.5 * te->b_spatialsx;
-		te->b_spatialy += 0.5 * te->b_spatialsy;
+		double x = getkinematics(kinematics, KINEMATIC_X);
+		travelPath.update(this, x);
+		if (updateTravelDistStats) {
+			te->updateTotalTravelDist(fabs(x - lastUpdateTravelDist));
+			lastUpdateTravelDist = x;
+		}
 	}
+	return lastUpdateTravelDist;
 }
 
 astar_export void Traveler::updateSpeedMarkers()
@@ -1349,7 +1253,6 @@ astar_export void Traveler::updateSpeedMarkers()
 		return;
 	double updateTime = time();
 	te->v_lastspeedupdatetime = updateTime;
-	TreeNode* kinematics = te->node_v_kinematics;
 	double updatedSpeed = getkinematics(kinematics, KINEMATIC_VELOCITY, 0, std::max(0.0, std::nextafter(updateTime, -DBL_MAX)));
 	if (updatedSpeed < 0.001 * te->v_maxspeed)
 		updatedSpeed = 0;
@@ -1367,7 +1270,7 @@ double Traveler::getCurSpeed()
 	else if (updateTime == te->v_lastspeedupdatetime)
 		return te->v_lastupdatedspeed;
 	else 
-		return getkinematics(te->node_v_kinematics, KINEMATIC_VELOCITY, 0, updateTime);
+		return getkinematics(kinematics, KINEMATIC_VELOCITY, 0, updateTime);
 }
 
 }

@@ -29,6 +29,7 @@ class AStarNavigator : public Navigator
 	friend class Grid;
 	friend class BridgeRoutingData;
 	friend class ElevatorBridgeRoutingData;
+	friend class TravelPath;
 protected:
 
 	std::vector<AStarSearchEntry> totalSet; // The total set of all AStarSearchNodes
@@ -247,7 +248,7 @@ public:
 	/// <param name="travelStartTime">(Optional) The travel start time.</param>
 	///
 	/// <returns>The calculated route.</returns>
-	TravelPath calculatePath(Traveler* traveler, double* destLoc, const DestinationThreshold& destThreshold, int flags, double travelStartTime);
+	TravelPath calculatePath(Traveler* traveler, double* destLoc, const DestinationThreshold& destThreshold, int flags, double travelStartTime, int fromCurrentIndex = -1);
 
 	/// <summary>Exported calculatePath() function.</summary>
 	/// <remarks>Calls main calculatePath() function, but applies the return value to the Traveler.</remarks>
