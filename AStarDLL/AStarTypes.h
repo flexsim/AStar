@@ -313,14 +313,28 @@ public:
 
 	int isBlocked(int startIndexOneBased = 0);
 
+	/// <summary>
+	/// Updates the traveler's location based on the passed travel distance
+	/// </summary>
+	/// <param name="traveler">The traveler whose location will be updated</param>
+	/// <param name="atDist">The target travel distance</param>
 	void update(Traveler* traveler, double atDist);
-	int findNearestNext(Traveler* traveler, double minDist);
+
+	/// <summary>
+	/// Updates the atIndex and returns it
+	/// </summary>
+	/// <remarks>	</remarks>
+	///
+	/// <param name="atDist">	[in] The travel distance to update to. </param>
+	/// <param name="canReturnZero">	[in] The method will always update to a value 
+	///		>= 1, so that the atIndex is always the 'next' index that you are going to, 
+	///		so you can always access travelPath[atIndex - 1] as the previous index for interpolation.
+	///		However, if you pass true here, it will return 0 (but still update atIndex to 1) if 
+	///		atDist is the exact same distance as the 0th element. </param>
+	int updateAtIndex(double atDist, bool canReturnZero = false);
 	double lastUpdateDist = -1.0;
-	int startIndex = 0;
-	Vec3 startModelLoc;
-	double startDist;
 	double startZRot;
-	int updateIndex = 0;
+	int atIndex = 1; // index to nearest cell ahead of traveler
 	Vec3 updateLoc;
 	double updateZRot = 0; // z rotation in parent coordinates
 };

@@ -145,7 +145,7 @@ public:
 	TravelerAllocations::iterator find(NodeAllocation* alloc);
 	void resetTravelDist(double& atTravelDist);
 	astar_export void abortTravel(TreeNode* newTS);
-	double lastUpdateTravelDist = 0.0;
+	double lastStatUpdateTravelDist = 0.0;
 	astar_export double updateLocation(bool updateTravelDistStats = false);
 	astar_export void updateSpeedMarkers();
 	astar_export double getCurSpeed();

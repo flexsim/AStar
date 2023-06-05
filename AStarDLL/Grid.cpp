@@ -427,28 +427,23 @@ void Grid::addObjectBarrierToTable(treenode obj)
 	// if the object is rotated at 0, 90, 180 or 270, then do simple stuff
 	if (fabs(zrot(obj) - rotation) < 5 && fabs(xrot(obj)) < 5 && fabs(yrot(obj)) < 5 && up(obj) == model()) {
 
-		double halfXSize = 0.5 * xsize(obj);
-		double halfYSize = 0.5 * ysize(obj);
-
-		Vec3 modelCenter;
-		vectorproject(obj, halfXSize, -halfYSize, 0, model(), modelCenter);
+		Vec3 halfSize(0.5 * xsize(obj), 0.5 * ysize(obj), 0.0);
+		Vec3 modelCenter = halfSize.project(obj, model());
 
 		if (isLocWithinVerticalBounds(modelCenter.z)) {
-			double objSX = maxof(xsize(obj), nodeSize.x);
-			double objSY = maxof(ysize(obj), nodeSize.y);
-
+			Vec2 objSize(std::max(xsize(obj), nodeSize.x), std::max(ysize(obj), nodeSize.y));
 
 			if (rotation != 0 && rotation % 180 != 0 && rotation % 90 == 0) {
-				objMin.x = modelCenter.x - halfYSize;
-				objMax.x = objMin.x + objSY;
-				objMax.y = modelCenter.y + halfXSize;
-				objMin.y = objMax.y - objSX;
+				objMin.x = modelCenter.x - halfSize.x;
+				objMax.x = objMin.x + objSize.y;
+				objMax.y = modelCenter.y + halfSize.x;
+				objMin.y = objMax.y - objSize.y;
 			}
 			else {
-				objMin.x = modelCenter.x - halfXSize;
-				objMax.x = objMin.x + objSX;
-				objMax.y = modelCenter.y + halfYSize;
-				objMin.y = objMax.y - objSY;
+				objMin.x = modelCenter.x - halfSize.x;
+				objMax.x = objMin.x + objSize.x;
+				objMax.y = modelCenter.y + halfSize.y;
+				objMin.y = objMax.y - objSize.y;
 			}
 			// Shrink the bounding box for objects
 			Vec2 halfNodeSize = nodeSize * 0.5;

@@ -633,7 +633,34 @@ double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double
 	traveler->destLoc = Vec3(destLoc[0], destLoc[1], destLoc[2]);
 	traveler->endSpeed = endSpeed;
 	traveler->numDeadlocksSinceLastNavigate = 0;
-	TravelPath path = calculatePath(traveler, traveler->destLoc, traveler->destThreshold, 0, -1);
+	TravelPath path;
+	if (traveler->activeState == Traveler::DecelToStop) {
+		// If the traveler is currently between two cells, then make sure that he continues at least to the 
+		// next cell in his path
+		auto atDist = traveler->updateLocation(true);
+		auto atIndex = traveler->travelPath.updateAtIndex(atDist);
+		auto& entry = traveler->travelPath[atIndex];
+		if (entry.atTravelDist - atDist > traveler->tinyDist) {
+			auto cellLoc = entry.modelLoc.project(model(), traveler->te->holder->up);
+			traveler->te->setLocation(cellLoc, Vec3(0.5, 0.5, 0.0));
+			path = calculatePath(traveler, traveler->destLoc, traveler->destThreshold, 0, -1);
+			auto& prevEntry = traveler->travelPath[atIndex - 1];
+			path.insert(path.begin(), prevEntry);
+			path[1].atTravelDist = entry.atTravelDist;
+		}
+		else {
+			path = calculatePath(traveler, traveler->destLoc, traveler->destThreshold, 0, -1);
+			path[0].atTravelDist = atDist;
+			if (path.size() > 1)
+				path[1].atTravelDist = atDist + path[1].distFromPrev;
+		}
+	}
+
+	if (path.size() == 0) {
+		path = calculatePath(traveler, traveler->destLoc, traveler->destThreshold, 0, -1);
+	}
+	path.startZRot = traveler->te->b_spatialrz;
+
 	traveler->navigatePath(std::move(path));
 	return 0;
 }
@@ -741,7 +768,7 @@ struct ScopeGuard {
 	~ScopeGuard() { callback(); }
 };
 
-TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc, const DestinationThreshold& destThreshold, int flags, double startTime, int fromCurrentIndex)
+TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc, const DestinationThreshold& destThreshold, int flags, double startTime)
 {
 	CodeProfileRecord record(holder, "AStar::calculatePath");
 	TreeNode* travelerNode = traveler->te->holder;
@@ -757,18 +784,11 @@ TravelPath AStarNavigator::calculatePath(Traveler* traveler, double* tempDestLoc
 	//	traveler->estimatedIndefiniteAllocTimeDelay = indefiniteAllocTimePenalty->evaluate(traveler->te->holder);
 	//}
 
-	if (fromCurrentIndex == -1) {
-		double centerx = 0.5 * xsize(travelerNode);
-		double centery = 0.5 * ysize(travelerNode);
+	if (!(flags & AppendPath))
+		startLoc = traveler->te->getLocation(0.5, 0.5, 0.0).project(traveler->te->holder->up, model());
+	else
+		startLoc = getLocation(traveler->travelPath.back().cell);
 
-		if (!(flags & AppendPath))
-			vectorproject(travelerNode, centerx, -centery, 0, model(), startLoc);
-		else
-			startLoc = getLocation(traveler->travelPath.back().cell);
-	}
-	else {
-		startLoc = getLocation(traveler->travelPath[fromCurrentIndex].cell);
-	}
 	
 	destLoc.x = tempDestLoc[0];
 	destLoc.y = tempDestLoc[1];
