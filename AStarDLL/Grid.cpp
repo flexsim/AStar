@@ -428,16 +428,16 @@ void Grid::addObjectBarrierToTable(treenode obj)
 	if (fabs(zrot(obj) - rotation) < 5 && fabs(xrot(obj)) < 5 && fabs(yrot(obj)) < 5 && up(obj) == model()) {
 
 		Vec3 halfSize(0.5 * xsize(obj), 0.5 * ysize(obj), 0.0);
-		Vec3 modelCenter = halfSize.project(obj, model());
+		Vec3 modelCenter = obj->object<ObjectDataType>()->getLocation(0.5, 0.5, 0.0).project(obj->up, model());
 
 		if (isLocWithinVerticalBounds(modelCenter.z)) {
 			Vec2 objSize(std::max(xsize(obj), nodeSize.x), std::max(ysize(obj), nodeSize.y));
 
 			if (rotation != 0 && rotation % 180 != 0 && rotation % 90 == 0) {
-				objMin.x = modelCenter.x - halfSize.x;
+				objMin.x = modelCenter.x - halfSize.y;
 				objMax.x = objMin.x + objSize.y;
 				objMax.y = modelCenter.y + halfSize.x;
-				objMin.y = objMax.y - objSize.y;
+				objMin.y = objMax.y - objSize.x;
 			}
 			else {
 				objMin.x = modelCenter.x - halfSize.x;

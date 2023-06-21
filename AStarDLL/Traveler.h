@@ -87,6 +87,14 @@ public:
 	astar_export void onBridgeArrival(BridgeRoutingData* bridge, int pathIndex);
 	astar_export void onBridgeComplete(int atPathIndex);
 	void arriveAtBridge(int pathIndexOneBased) { onBridgeArrival(pathIndexOneBased - 1); }
+
+	/// <summary>
+	/// Updates locations to the defined travel distance, and housekeeps travel path 
+	/// and allocation
+	/// </summary>
+	/// <param name="atTravelDist">This is the destination travel distance. This will be updated to 
+	/// 0 during execution</param>
+	void finalizeAtLocation(double& atTravelDist);
 	void onArrival(bool isZeroSpeed);
 	void finishPath() { onArrival(true); }
 
@@ -159,9 +167,9 @@ public:
 		virtual const char* getClassFactory() override { return "AStar::Traveler::ArrivalEvent"; }
 		virtual void execute() override { partner()->objectAs(Traveler)->onArrival(isZeroSpeedEvent); }
 	};
-	ObjRef<ArrivalEvent> arrivalEvent;
+	ObjRef<FlexSimEvent> nextEvent;
 
-	astar_export void onBlock(Traveler* collidingWith, int colliderPathIndex, Cell& cell);
+	astar_export void onBlock(Traveler* collidingWith, double colliderTravelDist, Cell& cell);
 
 	bool isNavigatingAroundDeadlock = false;
 	bool isContinuingFromDeadlock = false;
@@ -170,35 +178,37 @@ public:
 	{
 	public:
 		BlockEvent() : FlexSimEvent() {}
-		BlockEvent(Traveler* collider, int colliderPathIndex, int intermediateAllocationIndex, Traveler* collidingWith, const Cell& cell, double time) 
-			: FlexSimEvent(collider->holder, time, collidingWith->holder, cell.row * 100000 + cell.col), colliderPathIndex(colliderPathIndex), intermediateAllocationIndex(intermediateAllocationIndex), cell(cell)
+		BlockEvent(Traveler* collider, double colliderTravelDist, int intermediateAllocationIndex, Traveler* collidingWith, const Cell& cell, double time) 
+			: FlexSimEvent(collider->holder, time, collidingWith->holder, cell.row * 100000 + cell.col), colliderTravelDist(colliderTravelDist), intermediateAllocationIndex(intermediateAllocationIndex), cell(cell)
 		{}
 		virtual const char* getClassFactory() override { return "AStar::Traveler::BlockEvent"; }
 		virtual void bind() override;
 		virtual void execute() override
 		{
 			Traveler* t = partner()->objectAs(Traveler);
-			if (t->blockEvent == this)
-				t->blockEvent = nullptr;
-			t->onBlock(involved ? involved->objectAs(Traveler) : nullptr, colliderPathIndex, cell);
+			t->onBlock(involved ? involved->objectAs(Traveler) : nullptr, colliderTravelDist, cell);
 		}
 		bool operator < (const BlockEvent& other) {
 			if (time < other.time)
 				return true;
 			if (time > other.time)
 				return false;
-			if (colliderPathIndex < other.colliderPathIndex)
+			double tinyDist = involved->object<Traveler>()->tinyDist;
+			if (colliderTravelDist < other.colliderTravelDist - tinyDist)
 				return true;
-			if (colliderPathIndex > other.colliderPathIndex)
+			if (colliderTravelDist > other.colliderTravelDist + tinyDist)
 				return false;
 			if (intermediateAllocationIndex < other.intermediateAllocationIndex)
 				return true;
 			return false;
 		}
-		int colliderPathIndex;
+		double colliderTravelDist;
 		int intermediateAllocationIndex;
 		Cell cell;
 	};
+	/// <summary>
+	/// Duplicates nextEvent if nextEvent is to block
+	/// </summary>
 	ObjRef<BlockEvent> blockEvent;
 	double lastBlockTime;
 	double tinyTime = 0.0;
@@ -217,7 +227,6 @@ public:
 	treenode onCalculatePath = nullptr;
 	treenode onNavigatePath = nullptr;
 
-	ObjRef<FlexSimEvent> bridgeEvent;
 	treenode bridgeDataNode = nullptr;
 	TravelerBridgeData* bridgeData = nullptr;
 	astar_export void assertBridgeData(BridgeRoutingData* routing);
@@ -235,6 +244,12 @@ public:
 	CachedPathKey cachedPathKey;
 	bool isCachedPathKeyValid = false;
 	int numDeadlocksSinceLastNavigate = 0;
+
+	/// <summary>
+	/// True if the traveler finished a previous task with non-zero speed (was not preempted) and 
+	/// is given a new task. In this case, I want him to finish his previous travel path.
+	/// </summary>
+	bool shouldFinishTravelPath;
 };
 
 }

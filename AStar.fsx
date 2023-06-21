@@ -2552,6 +2552,8 @@ windowgray(windowfromnode(c.find("../CompletionRatioTracker")), gray);
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
            <node f="42" dt="2"><name>hotlink</name><data>@&gt;objectfocus+&gt;variables/routingAlgorithmCompletionRatio</data></node>
+           <node f="42" dt="2"><name>OnSelect</name><data>applylinks(c);
+repaintallactive();</data></node>
            <node f="42" dt="1"><name>itemcurrent</name><data>000000003fe00000</data></node>
            <node f="42" dt="1"><name>rangemin</name><data>0000000000000000</data></node>
            <node f="42" dt="1"><name>rangemax</name><data>000000003ff00000</data></node>
@@ -6578,6 +6580,39 @@ if (isclasstype(obj, "AStar::Barrier") &amp;&amp; !isclasstype(obj, "AStar::Divi
       <node f="42"><name>cursors</name></node>
       <node f="42"><name>shapes</name></node>
      </node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add_Update to 23.2</name><data>MAIN:/project/events/OnUpdateModel/Update to 23.2</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name>Update AStar Acc Dec</name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>Update AStar Acc Dec</name><data>treenode updateRoot = param(1);
+double oldVersion = param(2);
+
+if (oldVersion &gt;= 23.2)
+	return 0;
+
+if (updateRoot != model())
+	return 0;
+
+treenode travelers = updateRoot.find("AStarNavigator&gt;variables/travelmembers");
+if (!travelers)
+	return 0;
+
+for (int i = 1; i &lt;= travelers.subnodes.length; i++) {
+	Object te = ownerobject(travelers.subnodes[i].value);
+	if (!te)
+		continue;
+	te.find("&gt;variables/acceleration").value = 0.0;
+	te.find("&gt;variables/deceleration").value = 0.0;
+}
+</data></node>
     </node>
    </node>
   </node>

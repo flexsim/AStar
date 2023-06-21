@@ -638,15 +638,25 @@ double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double
 		// If the traveler is currently between two cells, then make sure that he continues at least to the 
 		// next cell in his path
 		auto atDist = traveler->updateLocation(true);
-		auto atIndex = traveler->travelPath.updateAtIndex(atDist);
-		auto& entry = traveler->travelPath[atIndex];
-		if (entry.atTravelDist - atDist > traveler->tinyDist) {
-			auto cellLoc = entry.modelLoc.project(model(), traveler->te->holder->up);
+		int atIndex = traveler->travelPath.updateAtIndex(atDist);
+		TravelPath::iterator originIter = traveler->travelPath.begin() + atIndex;
+		bool shouldChangeLoc = originIter->atTravelDist - atDist > traveler->tinyDist;
+		if (shouldChangeLoc) {
+			Vec3 cellLoc = originIter->modelLoc.project(model(), traveler->te->holder->up);
 			traveler->te->setLocation(cellLoc, Vec3(0.5, 0.5, 0.0));
 			path = calculatePath(traveler, traveler->destLoc, traveler->destThreshold, 0, -1);
 			auto& prevEntry = traveler->travelPath[atIndex - 1];
-			path.insert(path.begin(), prevEntry);
-			path[1].atTravelDist = entry.atTravelDist;
+			path[0].atTravelDist = originIter->atTravelDist;
+			path[0].distFromPrev = (path[0].modelLoc - (originIter - 1)->modelLoc).magnitude;
+			TravelPath::iterator atIter = traveler->travelPath.begin() + atIndex - 1;
+			path.insert(path.begin(), atIter, originIter);
+			for (int i = (int)(originIter - atIter) - 1; i >= 0; i--) {
+				auto& fromEntry = path[i];
+				auto& toEntry = path[i + 1];
+				if (toEntry.distToNextStop < DBL_MAX)
+					fromEntry.distToNextStop = toEntry.distToNextStop + toEntry.distFromPrev;
+				else fromEntry.distToNextStop = DBL_MAX;
+			}
 		}
 		else {
 			path = calculatePath(traveler, traveler->destLoc, traveler->destThreshold, 0, -1);
@@ -658,6 +668,7 @@ double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double
 
 	if (path.size() == 0) {
 		path = calculatePath(traveler, traveler->destLoc, traveler->destThreshold, 0, -1);
+		path[0].atTravelDist = 0.0;
 	}
 	path.startZRot = traveler->te->b_spatialrz;
 
@@ -1138,22 +1149,19 @@ the outside 8 nodes.
 	// now update speed info
 	double maxSpeed = traveler->te->v_maxspeed;
 	double dec = traveler->te->v_deceleration;
-	if (dec > 0) {
-		// the following is only needed if the te has non-zero deceleration
-		// in which case we have to calculate various speed data on the path
-		double distToNextStop = 0;
-		double travelDirection = 1000;
-		for (int i = travelPath.size() - 1; i >= 0; i--) {
-			auto& entry = travelPath[i];
+	double distToNextStop = 0;
+	double travelDirection = 1000;
+	for (int i = travelPath.size() - 1; i >= 0; i--) {
+		auto& entry = travelPath[i];
+		if (dec > 0.0) {
 			entry.distToNextStop = distToNextStop;
 			entry.resolveMaxArrivalSpeed(maxSpeed, dec);
-			if (i > 0) {
-				auto& toCell = entry.cell;
-				auto& fromCell = travelPath[i - 1].cell;
-
-				auto diff = getLocation(toCell) - getLocation(fromCell);
-				auto dist = diff.magnitude;
-				entry.distFromPrev = dist;
+		}
+		if (i > 0) {
+			auto diff = entry.modelLoc - travelPath[i - 1].modelLoc;
+			auto dist = diff.magnitude;
+			entry.distFromPrev = dist;
+			if (dec > 0.0) {
 				if (stopForTurns) {
 					double newDirection = diff.getXYAngle();
 					if (fabs(newDirection - travelDirection) > 1.0) {
@@ -1168,9 +1176,9 @@ the outside 8 nodes.
 				}
 				else distToNextStop = DBL_MAX;
 			}
-			else {
-				entry.distFromPrev = 0;
-			}
+		}
+		else {
+			entry.distFromPrev = 0;
 		}
 	}
 

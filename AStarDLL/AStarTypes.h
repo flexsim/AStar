@@ -100,12 +100,11 @@ public:
 
 struct NodeAllocation
 {
-	NodeAllocation() : traveler(nullptr), acquireTime(0.0), releaseTime(0.0), traversalWeight(0.0), travelPathIndex(0), intermediateAllocationIndex(0) {}
+	NodeAllocation() : traveler(nullptr), acquireTime(0.0), releaseTime(0.0), traversalWeight(0.0), intermediateAllocationIndex(0) {}
 	NodeAllocation(Traveler* traveler, const Cell& cell, int travelPathIndex, int intermediateAllocationIndex, double acquireTime, double releaseTime, double traversalWeight);
 	NodeAllocation& operator = (const NodeAllocation& other) { new (this) NodeAllocation(other); return *this; }
 	Traveler* traveler;
 	Cell cell;
-	int travelPathIndex;
 	double atTravelDist; // travel distance at which this allocation's 'point' will be 'traversed'
 	int intermediateAllocationIndex;
 	/// <summary>The acquire time of the allocation.</summary>
@@ -133,7 +132,8 @@ struct NodeAllocation
 	double __getAcquireTime() { return acquireTime; }
 	double __getReleaseTime() { return releaseTime; }
 	Traveler* __getTraveler() { return traveler; }
-	int __getTravelPathIndex() { return travelPathIndex + 1; }
+	int getTravelPathIndex();
+	int __getTravelPathIndex() { return getTravelPathIndex() + 1; } // one-based index getter
 
 	operator bool() const { return traveler != nullptr; }
 	bool operator !() const { return traveler == nullptr; }
@@ -269,7 +269,16 @@ struct astar_export AStarPathEntry {
 	double maxArrivalSpeed = DBL_MAX;
 	double distFromPrev = 0; // travel distance from previous path entry to this one
 	Vec3 modelLoc;
+	/// <summary>
+	/// The travel distance the te will be at when arriving at this node
+	/// </summary>
 	double atTravelDist = DBL_MAX;
+	/// <summary>
+	/// The start speed for traveling from the previous point to this point (not 
+	/// the speed at which the te will be at when it arrives at this node)
+	/// </summary>
+	double startSpeed = 0.0;
+
 	double turnStartTime = -1.0;
 
 	void resolveMaxArrivalSpeed(double teMaxSpeed, double deceleration) {
@@ -320,6 +329,20 @@ public:
 	/// <param name="atDist">The target travel distance</param>
 	void update(Traveler* traveler, double atDist);
 
+
+	/// <summary>
+	/// Returns the index associated with the given travel distance
+	/// </summary>
+	/// <remarks>	</remarks>
+	///
+	/// <param name="atDist">	[in] The travel distance. </param>
+	/// <param name="canReturnZero">	[in] The method will always update to a value 
+	///		>= 1, so that the atIndex is always the 'next' index that you are going to, 
+	///		so you can always access travelPath[atIndex - 1] as the previous index for interpolation.
+	///		However, if you pass true here, it will return 0 (but still update atIndex to 1) if 
+	///		atDist is the exact same distance as the 0th element. </param>
+	int getIndex(double atDist, bool canReturnZero) const;
+
 	/// <summary>
 	/// Updates the atIndex and returns it
 	/// </summary>
@@ -336,6 +359,7 @@ public:
 	double startZRot;
 	int atIndex = 1; // index to nearest cell ahead of traveler
 	Vec3 updateLoc;
+	Vec3 bridgeExitLoc;
 	double updateZRot = 0; // z rotation in parent coordinates
 };
 

@@ -112,7 +112,8 @@ void BridgeRoutingData::onAbort(Traveler * traveler)
 
 void BridgeRoutingData::updateLocation(Traveler * traveler)
 {
-	bridge->updateBridgeLocations();
+	if (traveler->bridgeData->entryTime <= time())
+		bridge->updateBridgeLocations();
 }
 
 void BridgeRoutingData::checkExpandOpenSet(AStarNavigator* nav, Traveler * traveler, Grid* grid, int bridgeEntryIndex)

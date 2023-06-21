@@ -220,7 +220,7 @@ void NodeAllocation::bind(TreeNode* x)
 	SimpleDataType::bindNumber(acquireTime, x);
 	SimpleDataType::bindNumber(releaseTime, x);
 	SimpleDataType::bindNumber(traversalWeight, x);
-	SimpleDataType::bindNumber(travelPathIndex, x);
+	SimpleDataType::bindNumber(atTravelDist, x);
 }
 
 struct ExtendedNodeAllocation : public NodeAllocation
@@ -251,6 +251,13 @@ void NodeAllocation::bindInterface()
 	SimpleDataType::bindToVariantFunc(&NodeAllocation::s_toVariant);
 }
 
+int NodeAllocation::getTravelPathIndex()
+{
+	if (!traveler)
+		return 0;
+	return traveler->travelPath.getIndex(atTravelDist, true);
+}
+
 NodeAllocation::operator Variant()
 {
 	Map map;
@@ -258,7 +265,7 @@ NodeAllocation::operator Variant()
 	map["cell.grid"] = cell.grid;
 	map["cell.row"] = cell.row;
 	map["cell.col"] = cell.col;
-	map["travelPathIndex"] = travelPathIndex + 1;
+	map["travelPathIndex"] = getTravelPathIndex() + 1;
 	map["acquireTime"] = acquireTime;
 	map["releaseTime"] = releaseTime;
 	return map;
@@ -376,11 +383,12 @@ void AStarNodeExtraData::fulfillTopRequest()
 	traveler->request = nullptr;
 	requests.pop_front();
 	double blockedTime = time() - traveler->lastBlockTime;
+	auto atIndex = traveler->travelPath.getIndex(topRequest.atTravelDist, false);
 	if (traveler->isBlocked && blockedTime > traveler->tinyTime) {
 		Cell cell;
 		if (traveler->allocations.size() > 0)
 			cell = traveler->allocations.back()->cell;
-		else cell = traveler->travelPath[topRequest.travelPathIndex - 1].cell;
+		else cell = traveler->travelPath[atIndex].cell;
 		AStarNodeExtraData* blockedCell = traveler->navigator->getExtraData(cell);
 		if (blockedCell != nullptr) {
 			blockedTime = std::min(blockedTime, statisticaltime());
@@ -388,7 +396,7 @@ void AStarNodeExtraData::fulfillTopRequest()
 			blockedCell->totalBlocks++;
 		}
 	}
-	traveler->navigatePath(topRequest.travelPathIndex - 1);
+	traveler->navigatePath(atIndex - 1);
 	if (requests.size() > 0)
 		checkCreateContinueEvent();
 }
@@ -407,11 +415,11 @@ void AStarNodeExtraData::onReleaseTimeExtended(NodeAllocation& changedAlloc, dou
 			NodeAllocation copy = alloc;
 			auto found = std::find_if(alloc.traveler->allocations.begin(), alloc.traveler->allocations.end(),
 				[&](NodeAllocationIterator& other) { return other->cell == cell && other == iter; });
-			while (found - alloc.traveler->allocations.begin() > 1 && (*(found - 1))->acquireTime == alloc.acquireTime)
+			while (found - alloc.traveler->allocations.begin() > 1 && (*(found - 1))->atTravelDist >= alloc.atTravelDist)
 				found--;
-			alloc.traveler->clearAllocations(found, true);
-			if (copy.traveler->arrivalEvent)
-				destroyevent(copy.traveler->arrivalEvent->holder);
+			alloc.traveler->clearAllocations(found);
+			if (copy.traveler->nextEvent)
+				destroyevent(copy.traveler->nextEvent);
 			// this will cause him to create collision event
 			NodeAllocation* nullAlloc = copy.traveler->addAllocation(copy, false, true);
 #ifdef _WINDOWS
@@ -504,7 +512,7 @@ void AStarNodeExtraData::ContinueEvent::execute()
 }
 
 NodeAllocation::NodeAllocation(Traveler* traveler, const Cell& cell, int travelPathIndex, int intermediateAllocationIndex, double acquireTime, double releaseTime, double traversalWeight) :
-	traveler(traveler), cell(cell), travelPathIndex(travelPathIndex), intermediateAllocationIndex(intermediateAllocationIndex), acquireTime(acquireTime), releaseTime(releaseTime), traversalWeight(traversalWeight)
+	traveler(traveler), cell(cell), intermediateAllocationIndex(intermediateAllocationIndex), acquireTime(acquireTime), releaseTime(releaseTime), traversalWeight(traversalWeight)
 {
 	atTravelDist = traveler ? traveler->travelPath[travelPathIndex].atTravelDist : 0.0;
 }
@@ -747,7 +755,7 @@ void TravelPath::update(Traveler* traveler, double atDist)
 			lastUpdateDist = atDist;
 
 			auto& fromEntry = operator[](atIndex - 1);
-			Vec3 fromLoc = fromEntry.modelLoc.project(model(), traveler->te->holder->up);
+			Vec3 fromLoc = (fromEntry.bridgeIndex == -1 ? fromEntry.modelLoc : bridgeExitLoc).project(model(), traveler->te->holder->up);
 			auto& toEntry = operator[](atIndex);
 			Vec3 toLoc = toEntry.modelLoc.project(model(), traveler->te->holder->up);
 			double lerpRatio = (atDist - fromEntry.atTravelDist) / (toEntry.atTravelDist - fromEntry.atTravelDist);
@@ -779,27 +787,35 @@ void TravelPath::update(Traveler* traveler, double atDist)
 					// go backwards along the travel path to at least 2 * sx before this point
 					// (which means he can rotate at least 180 degrees)
 					int startRotIndex = atIndex - 1;
-					while (startRotIndex > 0 && operator[](startRotIndex - 1).atTravelDist > atDist - 2 * sx)
+					while (startRotIndex > 0 && operator[](startRotIndex - 1).atTravelDist > atDist - 2 * sx && operator[](startRotIndex - 1).bridgeIndex == -1)
 						startRotIndex--;
 					double fromAngle = startZRot;
 					updateZRot = startZRot;
 					// Now go forward along the path and linearly interpolate rotation changes 
-					for (int i = startRotIndex; i < size() - 1; i++) {
+					for (int i = startRotIndex; i < size(); i++) {
 						auto& fromEntry = operator[](std::max(0, i - 1));
-						Vec3 fromLoc = fromEntry.modelLoc.project(model(), traveler->holder->up);
+						Vec3 fromLoc = (fromEntry.bridgeIndex == -1 ? fromEntry.modelLoc : bridgeExitLoc).project(model(), traveler->te->holder->up);;
 						auto& toEntry = operator[](i);
-						Vec3 toLoc = toEntry.modelLoc.project(model(), traveler->holder->up);
+						Vec3 toLoc = toEntry.modelLoc.project(model(), traveler->te->holder->up);
 						auto diff = toLoc - fromLoc;
 						double toAngle = diff.getXYAngle();
+						if (fromEntry.bridgeIndex != -1) {
+							updateZRot = toAngle;
+							fromAngle = toAngle;
+							continue;
+						}
 						if (i == startRotIndex && diff.magnitude < traveler->tinyDist) {
 							startRotIndex++; // will cause it to do this again next loop so it can get a proper angle
 						}
 						else {
-							double diffAngle = toAngle - fromAngle;
-							if (diffAngle < -180)
-								diffAngle += 360;
-							if (diffAngle > 180)
-								diffAngle -= 360;
+							auto boundAngle = [](double angle) {
+								if (angle < -180)
+									angle += 360;
+								if (angle > 180)
+									angle -= 360;
+								return angle;
+							};
+							double diffAngle = boundAngle(toAngle - fromAngle);
 
 							double timeToRotate = fabs(diffAngle) / rotLerpSpeed;
 							double distToRotate = maxSpeed * timeToRotate;
@@ -807,9 +823,9 @@ void TravelPath::update(Traveler* traveler, double atDist)
 							if (atDist > startDist) {
 								double endDist = startDist + distToRotate;
 								double lerpRatio = std::min(1.0, (atDist - startDist) / (endDist - startDist));
-								updateZRot += lerpRatio * diffAngle;
+								updateZRot = boundAngle(updateZRot + lerpRatio * diffAngle);
 							}
-							if (toEntry.atTravelDist > atDist + 2.0 * sx)
+							if (toEntry.atTravelDist > atDist + 2.0 * sx || (toEntry.bridgeIndex != -1 && toEntry.atTravelDist > atDist))
 								break;
 							fromAngle = toAngle;
 						}
@@ -830,14 +846,23 @@ void TravelPath::update(Traveler* traveler, double atDist)
 	te->rotation.z = updateZRot;
 }
 
+inline int TravelPath::getIndex(double atDist, bool canReturnZero) const
+{
+	int index = atIndex;
+	while (index > 1 && atDist <= operator[](index - 1).atTravelDist)
+		index--;
+	while (index < size() - 1 && atDist > operator[](index).atTravelDist)
+		index++;
+	if (canReturnZero && index == 1 && operator[](0).atTravelDist >= atDist)
+		return 0;
+	return index;
+}
+
 int TravelPath::updateAtIndex(double atDist, bool canReturnZero)
 {
-	while (atIndex > 1 && atDist <= operator[](atIndex - 1).atTravelDist)
-		atIndex--;
-	while (atIndex < size() - 1 && atDist > operator[](atIndex).atTravelDist)
-		atIndex++;
-	if (canReturnZero && atIndex == 1 && operator[](0).atTravelDist >= atDist)
-		return 0;
+	atIndex = getIndex(atDist, canReturnZero);
+	if (atIndex == 0 && !canReturnZero)
+		atIndex = 1;
 	return atIndex;
 }
 
