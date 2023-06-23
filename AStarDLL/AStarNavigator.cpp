@@ -1409,8 +1409,20 @@ double AStarNavigator::updateLocations()
 		}
 	}
 	b_spatialrx = b_spatialry = b_spatialrz = 0;
-	for (auto iter = activeTravelers.begin(); iter != activeTravelers.end(); iter++)
-		(*iter)->updateLocation();
+	for (auto iter = activeTravelers.begin(); iter != activeTravelers.end(); ) {
+		Traveler* traveler = *iter;
+		if (!traveler) {
+			auto toErase = iter;
+			iter++;
+			activeTravelers.erase(toErase);
+			continue;
+		}
+		else {
+			if (traveler->activeState == Traveler::Active || getstatenum(traveler->te->holder) == STATE_IDLE)
+				traveler->updateLocation();
+		}
+		iter++;
+	}
 	return 0;
 }
 
@@ -1613,6 +1625,8 @@ void AStarNavigator::drawMembers()
 
 	for (auto i = activeTravelers.begin(); i != activeTravelers.end(); i++) {
 		Traveler* t = *i;
+		if (!t)
+			continue;
 		TaskExecuter* te = t->te;
 		if (switch_hideshape(te->holder, -1))
 			continue;

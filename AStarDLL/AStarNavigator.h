@@ -298,7 +298,7 @@ public:
 
 
 	NodeListArray<Traveler>::CouplingSdtSubNodeBindingType travelers;
-	std::list<Traveler*> activeTravelers;
+	std::list<ObjRef<Traveler>> activeTravelers;
 
 	void buildActiveTravelerList();
 

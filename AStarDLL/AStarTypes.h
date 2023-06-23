@@ -279,7 +279,12 @@ struct astar_export AStarPathEntry {
 	/// </summary>
 	double startSpeed = 0.0;
 
-	double turnStartTime = -1.0;
+	/// <summary>
+	/// The time at which the te finishes turning from the previous cell toward this cell and starts 
+	/// moving to it, i.e. turnEndTime < arrivalTime. Equal to -1 if there is 
+	/// no turning needed.
+	/// </summary>
+	double turnEndTime = -1.0;
 
 	void resolveMaxArrivalSpeed(double teMaxSpeed, double deceleration) {
 		if (deceleration <= 0 || distToNextStop == DBL_MAX)

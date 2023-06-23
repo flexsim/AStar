@@ -192,8 +192,12 @@ void Traveler::onReset()
 	cachedPathKey.barrierConditions.resize(navigator->barrierConditions.size());
 	isCachedPathKeyValid = false;
 	numDeadlocksSinceLastNavigate = 0;
-	if (te->v_useoffsets == OFFSET_BY_TE_LOGIC)
+	if (te->v_useoffsets == OFFSET_BY_TE_LOGIC && te->v_deceleration != 0.0) {
+		string error = "Non-zero deceleration is not supported on A* networks when the task executer uses normal offset travel. Changing deceleration on ";
+		error.append(te->holder->getPath()).append(" from ").append(std::to_string(te->v_deceleration)).append(" to 0.");
+		EX("", error.c_str(), 1);
 		te->v_deceleration = 0; // A* doesn't support non-zero deceleration if you offset by te logic
+	}
 }
 
 void Traveler::onStartSimulation()
@@ -255,7 +259,8 @@ void Traveler::navigatePath(int startAtPathIndex)
 	travelPath.lastUpdateDist = -1.0;
 
 	Vec3 prevLoc = startLoc;
-	double endTime = time();
+	double curTime = time();
+	double endTime = curTime;
 	double rotLerpSize = navigator->smoothRotations;
 	double rotLerpSpeed = 90 / (te->b_spatialsx * rotLerpSize / te->v_maxspeed);
 	double lastRotation;
@@ -278,6 +283,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 
 	cullExpiredAllocations();
 	int initialAllocsSize = (int)allocations.size();
+	NodeAllocation* lastAllocation = nullptr;
 	if (enableCollisionAvoidance && (!nav->ignoreInactiveMemberCollisions || isBlocked || isContinuingFromDeadlock)) {
 		// here I want to 'clear out' the allocations that I'm no longer going to travel over. I first 
 		// mark all current allocations for deletion. Then later as I go through the path I will readd 
@@ -290,8 +296,10 @@ void Traveler::navigatePath(int startAtPathIndex)
 					allocation->isMarkedForDeletion = true;
 				//else navigator->getExtraData(allocation->cell)->checkCreateContinueEvent();
 			}
-			else
+			else {
+				lastAllocation = &(*allocation);
 				allocation->changeReleaseTime(std::nextafter(endTime + deallocTimeOffset, DBL_MAX));
+			}
 		}
 	}
 
@@ -304,7 +312,6 @@ void Traveler::navigatePath(int startAtPathIndex)
 		return;
 
 	int didBlockPathIndex = -1;
-	NodeAllocation* lastAllocation = nullptr;
 	BridgeRoutingData* bridgeArrival = nullptr;
 	int i = startAtPathIndex;
 	Grid* grid = nullptr;
@@ -329,7 +336,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 		initkinematics(kinematics, atDist, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0);
 		auto& first = travelPath[startAtPathIndex];
 		if (!startBetweenCells) {
-			first.arrivalTime = time();
+			first.arrivalTime = curTime;
 			first.atTravelDist = atDist;
 			first.startSpeed = curSpeed;
 		}
@@ -354,6 +361,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 			if (!bridgeArrival) {
 				int numSuccessfulAllocations = 0;
 				Vec3 diff = e->modelLoc - prevLoc;
+				double dist = diff.magnitude;
 				double startTime = endTime;
 				if (isExitingBridge) {
 					step.isDiagonal = false;
@@ -370,18 +378,20 @@ void Traveler::navigatePath(int startAtPathIndex)
 					while (rotDiff < -180)
 						rotDiff += 360;
 
-					if (nav->stopForTurns) {
-						if (fabs(rotDiff) > 0.1) {
-							e->turnStartTime = startTime;
-							startTime += turnDelay + fabs(rotDiff / turnSpeed);
-							if (lastAllocation)
-								lastAllocation->extendReleaseTime(startTime + deallocTimeOffset);
-						}
+					if (fabs(rotDiff) > 0.1) {
+						double timeToTurn = fabs(rotDiff / turnSpeed);
+						// make him travel a tiny distance to the next point so that TravelPath::update() will actually update rotation.
+						double turnDist = 0.0001 * dist;
+						dist -= turnDist;
+						addkinematic(kinematics, turnDist, 0.0, 0.0, turnDist / timeToTurn, 0, 0, 0.0, 0.0, startTime, KINEMATIC_TRAVEL);
+						startTime += turnDelay + timeToTurn;
+						if (lastAllocation)
+							lastAllocation->extendReleaseTime(startTime + deallocTimeOffset);
+						e->turnEndTime = startTime;
 					}
 					lastRotation = nextRot;
 				}
 
-				double dist = diff.magnitude;
 				atDist += dist;
 				e->atTravelDist = atDist;
 				double startSpeed = curSpeed;
@@ -395,11 +405,15 @@ void Traveler::navigatePath(int startAtPathIndex)
 
 				if (enableCollisionAvoidance) {
 					double allocTime = startTime;
-					if (dec > 0) {
+					if (dec > 0 && e->turnEndTime == -1.0) {
 						double totalDist = 0;
 						// search back through the travel path to find the point where I would need to decelerate to stop
 						for (int j = i - 1; j >= startAtPathIndex; j--) {
 							auto& entry = travelPath[j];
+							if (entry.turnEndTime > 0) {
+								allocTime = std::max(curTime, entry.turnEndTime);
+								break;
+							}
 							totalDist += entry.distFromPrev;
 							double distToDecel = 0.5 * entry.startSpeed * (entry.startSpeed / dec);
 							if (j == startAtPathIndex || distToDecel <= totalDist + tinyDist) {
@@ -409,7 +423,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 								// based on some math solution of acc/dec/startSpeed/endSpeed/etc. for 
 								// simplicity's sake. Maybe at some future time I'll do that, but for 
 								// now just say I allocate at arrival of the previous cell.
-								allocTime = j > startAtPathIndex ? travelPath[j - 1].arrivalTime : time();
+								allocTime = j > startAtPathIndex ? travelPath[j - 1].arrivalTime : curTime;
 								break;
 							}
 						}
@@ -1257,9 +1271,7 @@ void Traveler::abortTravel(TreeNode* newTS)
 double Traveler::updateLocation(bool updateTravelDistStats)
 {
 	if (activeState == Inactive)
-		return 0.0;
-
-	double updateTime = time();
+		return 0.0; 
 
 	if (bridgeData && bridgeData->routingData) {
 		bridgeData->routingData->updateLocation(this);

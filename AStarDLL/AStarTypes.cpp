@@ -283,7 +283,7 @@ void AStarPathEntry::bind(TreeNode* toNode)
 	SimpleDataType::bindNumber(distToNextStop, toNode);
 	SimpleDataType::bindNumber(maxArrivalSpeed, toNode);
 	SimpleDataType::bindNumber(distFromPrev, toNode);
-	SimpleDataType::bindNumber(turnStartTime, toNode);
+	SimpleDataType::bindNumber(turnEndTime, toNode);
 	SimpleDataType::bindNumber(modelLoc.x, toNode);
 	SimpleDataType::bindNumber(modelLoc.y, toNode);
 	SimpleDataType::bindNumber(modelLoc.z, toNode);
@@ -750,9 +750,8 @@ void TravelPath::update(Traveler* traveler, double atDist)
 {
 	auto te = traveler->te;
 	if (lastUpdateDist != atDist) {
-		if (size() > 1) {
+		if (size() > 1 && atDist > 0.0) {
 			updateAtIndex(atDist);
-			lastUpdateDist = atDist;
 
 			auto& fromEntry = operator[](atIndex - 1);
 			Vec3 fromLoc = (fromEntry.bridgeIndex == -1 ? fromEntry.modelLoc : bridgeExitLoc).project(model(), traveler->te->holder->up);
@@ -762,22 +761,30 @@ void TravelPath::update(Traveler* traveler, double atDist)
 			lerpRatio = std::max(0.0, std::min(1.0, lerpRatio));
 			auto diff = toLoc - fromLoc;
 			updateLoc = fromLoc + diff * lerpRatio;
+			auto boundAngle = [](double angle) {
+				if (angle < -180)
+					angle += 360;
+				if (angle > 180)
+					angle -= 360;
+				return angle;
+			};
 			if (te->v_modifyrotation) {
 				if (traveler->navigator->stopForTurns) {
 					// do logic for stopping and turning
-					auto fromAngle = (toLoc - fromLoc).getXYAngle();
-					if (toEntry.turnStartTime >= 0 && time() > toEntry.turnStartTime) {
+					auto toAngle = (toLoc - fromLoc).getXYAngle();
+					if (toEntry.turnEndTime >= 0 && time() < toEntry.turnEndTime) {
+						double fromAngle = startZRot;
 						double turnSpeed = traveler->turnSpeed;
-						auto nextLoc = operator[](atIndex + 1).modelLoc.project(model(), traveler->holder->up);
-						double maxTurnAngle = (nextLoc - toLoc).getXYAngle() - fromAngle;
-						if (maxTurnAngle < -180)
-							maxTurnAngle += 360;
-						if (maxTurnAngle > 180)
-							maxTurnAngle -= 360;
-						double turnAngle = sign(maxTurnAngle) * std::min(fabs(maxTurnAngle), turnSpeed * (time() - toEntry.turnStartTime));
+						if (atIndex > 1) {
+							auto& prevEntry = operator[](atIndex - 2);
+							fromAngle = (fromLoc - prevEntry.modelLoc.project(model(), traveler->te->holder->up)).getXYAngle();
+						}
+						double maxTurnAngle = boundAngle(toAngle - fromAngle);
+						double startTime = fromEntry.arrivalTime;
+						double turnAngle = sign(maxTurnAngle) * turnSpeed * (time() - startTime);
 						updateZRot = fromAngle + turnAngle;
 					}
-					else updateZRot = fromAngle;
+					else updateZRot = toAngle;
 				}
 				else if (traveler->navigator->smoothRotations != 0.0) {
 					double sx = te->b_spatialsx;
@@ -808,13 +815,6 @@ void TravelPath::update(Traveler* traveler, double atDist)
 							startRotIndex++; // will cause it to do this again next loop so it can get a proper angle
 						}
 						else {
-							auto boundAngle = [](double angle) {
-								if (angle < -180)
-									angle += 360;
-								if (angle > 180)
-									angle -= 360;
-								return angle;
-							};
 							double diffAngle = boundAngle(toAngle - fromAngle);
 
 							double timeToRotate = fabs(diffAngle) / rotLerpSpeed;
@@ -841,6 +841,7 @@ void TravelPath::update(Traveler* traveler, double atDist)
 			updateLoc = operator[](0).modelLoc.project(model(), te->holder->up);
 			updateZRot = te->rotation.z;
 		}
+		lastUpdateDist = atDist;
 	}
 	te->setLocation(updateLoc, Vec3(0.5, 0.5, 0.0));
 	te->rotation.z = updateZRot;

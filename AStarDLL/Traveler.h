@@ -40,7 +40,7 @@ public:
 	};
 	ActiveState activeState;
 	int __getIsActive() { return (int)activeState == Active; }
-	std::list<Traveler*>::iterator activeEntry;
+	std::list<ObjRef<Traveler>>::iterator activeEntry;
 	astar_export TravelPath& __getTravelPath();
 #ifdef COMPILING_ASTAR
 	TravelPath travelPath;
@@ -165,7 +165,7 @@ public:
 		ArrivalEvent() : FlexSimEvent() {}
 		ArrivalEvent(Traveler* object, double time, bool isZeroSpeedEvent) : FlexSimEvent(object->holder, time, nullptr, 0), isZeroSpeedEvent(isZeroSpeedEvent) {}
 		virtual const char* getClassFactory() override { return "AStar::Traveler::ArrivalEvent"; }
-		virtual void execute() override { partner()->objectAs(Traveler)->onArrival(isZeroSpeedEvent); }
+		virtual void execute() override { if (partner()) partner()->objectAs(Traveler)->onArrival(isZeroSpeedEvent); }
 	};
 	ObjRef<FlexSimEvent> nextEvent;
 
