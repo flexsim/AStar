@@ -169,8 +169,8 @@ public:
 	double drawMode;
 	double showAllocations;
 	double showTravelThreshold;
-	void drawAllocations(float z);
-	void drawDestinationThreshold(TreeNode* destination, float z);
+	void drawAllocations();
+	void drawDestinationThreshold(TreeNode* destination);
 
 	double ignoreDestBarrier;
 

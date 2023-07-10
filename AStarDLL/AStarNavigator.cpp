@@ -469,11 +469,11 @@ double AStarNavigator::onDraw(TreeNode* view)
 
 		glPolygonOffset(offset - 0.020, -4);
 		if (showAllocations)
-			drawAllocations(0);
+			drawAllocations();
 
 		glPolygonOffset(offset - 0.030, -6);
 		if (showTravelThreshold)
-			drawDestinationThreshold(selectedobject(view), 0);
+			drawDestinationThreshold(selectedobject(view));
 
 		if (debugRoutingAlgorithm && fglInfo(FGL_INFO_SHADERTYPE, view) == SHADERTYPE_DEFAULT) {
 
@@ -1680,7 +1680,7 @@ void AStarNavigator::buildGridMesh(float zOffset)
 	isGridMeshBuilt = true;
 }
 
-void AStarNavigator::drawAllocations(float z)
+void AStarNavigator::drawAllocations()
 {
 	if (!showAllocations || time() <= 0)
 		return;
@@ -1709,22 +1709,22 @@ void AStarNavigator::drawAllocations(float z)
 
 		Vec3 centerPos = getLocation(nodeData->cell);
 		int vert = allocMesh.addVertex();
-		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
+		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, centerPos.z));
 		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
 		vert = allocMesh.addVertex();
-		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y + diamondRadius, z));
+		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y + diamondRadius, centerPos.z));
 		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
 		vert = allocMesh.addVertex();
-		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, z));
+		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, centerPos.z));
 		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
 		vert = allocMesh.addVertex();
-		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, z));
+		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, centerPos.z));
 		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
 		vert = allocMesh.addVertex();
-		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y - diamondRadius, z));
+		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y - diamondRadius, centerPos.z));
 		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
 		vert = allocMesh.addVertex();
-		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, z));
+		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, centerPos.z));
 		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
 
 		if (isAllocCurrent) {
@@ -1762,7 +1762,7 @@ void AStarNavigator::drawAllocations(float z)
 }
 
 
-void AStarNavigator::drawDestinationThreshold(TreeNode* destination, float z)
+void AStarNavigator::drawDestinationThreshold(TreeNode* destination)
 {
 	if (!objectexists(destination))
 		return;
