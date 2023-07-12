@@ -58,8 +58,13 @@ public:
 	AStarNavigator* navigator;
 	TaskExecuter* te;
 	TaskExecuter* __getObject() { return te; }
-	bool isBlocked = false;
-	int __getIsBlocked() { return (int)isBlocked; }
+	enum class BlockMode : int {
+		None,
+		Node,
+		ControlArea
+	};
+	BlockMode blockMode = BlockMode::None;
+	int __getIsBlocked() { return (int)(blockMode != BlockMode::None); }
 	bool needsContinueTrigger = false;
 	/// <summary>Zero-based index of the travel path element that could not be allocated 
 	/// 		 (the next node after where the traveler is when he gets blocked).</summary>
@@ -173,7 +178,7 @@ public:
 
 	bool isNavigatingAroundDeadlock = false;
 	bool isContinuingFromDeadlock = false;
-	bool navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, NodeAllocation& deadlockCreatingRequest);
+	bool navigateAroundDeadlock(Array& deadlockList);
 	class BlockEvent : public FlexSimEvent
 	{
 	public:
@@ -215,7 +220,7 @@ public:
 	double tinyDist = 0.0;
 	bool isRoutingNow = false;
 
-	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);
+	bool findDeadlockCycle(ObjectDataType* start, Array& travelers);
 
 	treenode kinematics;
 
@@ -250,6 +255,10 @@ public:
 	/// is given a new task. In this case, I want him to finish his previous travel path.
 	/// </summary>
 	bool shouldFinishTravelPath;
+
+	NodeListArray<TravelAllocation>::SdtSubNodeType controlAreaAllocations;
+	//NodeListArray<ObjectDataType>::ObjCouplingType controlAreas;
+	void onControlAreaArrival(int areaIndex, int travelPathIndex);
 };
 
 }

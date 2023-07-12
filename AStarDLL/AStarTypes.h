@@ -54,7 +54,8 @@ enum ExtraDataReason : char {
 	PreferredPathData = 3,
 	MandatoryPathData = 4,
 	ConditionalBarrierData = 5,
-	DynamicBarrierData = 6
+	DynamicBarrierData = 6,
+	ControlAreaData = 7
 };
 
 class AStarNode
@@ -86,7 +87,9 @@ public:
 			bool isOnMandatoryPath : 1;
 
 			bool hasConditionalBarrier : 1;
-			// 3 unused bits here
+
+			bool hasControlArea : 1;
+			// 2 unused bits here
 		};
 		unsigned short value;
 	};
@@ -237,11 +240,9 @@ struct AStarNodeExtraData : public SimpleDataType
 	/// <param name="request">			[in,out] The request. </param>
 	/// <param name="blockingAlloc">	[in,out] The blocking allocate. </param>
 	/// <returns>	The request that was added.</returns>
-	NodeAllocation* addRequest(NodeAllocation& request, std::vector<Traveler*>* travelers = nullptr);
+	NodeAllocation* addRequest(NodeAllocation& request, Array* travelers = nullptr);
 
 	void checkCreateContinueEvent();
-
-	bool findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers);
 
 	class ContinueEvent : public FlexSimEvent
 	{
@@ -254,6 +255,8 @@ struct AStarNodeExtraData : public SimpleDataType
 		virtual void execute() override;
 	};
 	ObjRef<ContinueEvent> continueEvent;
+
+	int controlAreaSetIndex = -1;
 };
 
 
@@ -268,6 +271,7 @@ struct astar_export AStarPathEntry {
 	double distToNextStop = DBL_MAX;
 	double maxArrivalSpeed = DBL_MAX;
 	double distFromPrev = 0; // travel distance from previous path entry to this one
+	AStarNode node;
 	Vec3 modelLoc;
 	/// <summary>
 	/// The travel distance the te will be at when arriving at this node

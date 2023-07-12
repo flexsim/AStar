@@ -9,7 +9,7 @@ namespace AStar {
 void Traveler::bind()
 {
 	bindNumber(activeState);
-	bindNumber(isBlocked);
+	bindNumber(blockMode);
 	bindObjRef(nextEvent, false);
 	bindObjRef(blockEvent, false);
 	bindNumber(destLoc.x);
@@ -20,6 +20,9 @@ void Traveler::bind()
 	bindNumber(blockedAtTravelPathIndex);
 	bindNumber(needsContinueTrigger);
 	bindSubNode(kinematics, 0);
+	bindSubNode(controlAreaAllocations, 0);
+	//controlAreas.init((treenode)controlAreaAllocations);
+
 	destThreshold.bind(this, "destThreshold.");
 	navigator = holder->ownerObject->objectAs(AStarNavigator);
 	te = partner()->ownerObject->objectAs(TaskExecuter);
@@ -46,8 +49,6 @@ void Traveler::bind()
 	bindDouble(useMandatoryPath, 1);
 	bindNumber(numDeadlocksSinceLastNavigate);
 	bindNumber(shouldFinishTravelPath);
-	//bindNumber(estimatedIndefiniteAllocTimeDelay);
-	//bindStlContainer(allocations);
 }
 
 
@@ -149,7 +150,7 @@ void Traveler::onReset()
 	te = partner()->ownerObject->objectAs(TaskExecuter);
 	holder->name = te->holder->name;
 	activeState = Inactive;
-	isBlocked = false;
+	blockMode = BlockMode::None;
 	lastBlockTime = 0;
 	lastStatUpdateTravelDist = 0;
 	isNavigatingAroundDeadlock = false;
@@ -192,6 +193,8 @@ void Traveler::onReset()
 	cachedPathKey.barrierConditions.resize(navigator->barrierConditions.size());
 	isCachedPathKeyValid = false;
 	numDeadlocksSinceLastNavigate = 0;
+	isRoutingNow = false;
+	controlAreaAllocations.clear();
 	if (te->v_useoffsets == OFFSET_BY_TE_LOGIC && te->v_deceleration != 0.0) {
 		string error = "Non-zero deceleration is not supported on A* networks when the task executer uses normal offset travel. Changing deceleration on ";
 		error.append(te->holder->getPath()).append(" from ").append(std::to_string(te->v_deceleration)).append(" to 0.");
@@ -202,14 +205,25 @@ void Traveler::onReset()
 
 void Traveler::onStartSimulation()
 {XS
+	Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
+	Cell resetCell = navigator->getCell(loc);
 	if (navigator->enableCollisionAvoidance && !navigator->ignoreInactiveMemberCollisions) {
-		Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
-		Cell resetCell = navigator->getCell(loc);
 		travelPath.clear();
 		travelPath.push_back(AStarPathEntry(resetCell, -1));
 		travelPath.back().modelLoc = navigator->getLocation(resetCell);
 		addAllocation(NodeAllocation(this, resetCell, 0, 0, 0.0, DBL_MAX, 1.0), true, false);
 	}
+
+	auto data = navigator->getExtraData(resetCell);
+	if (data && data->controlAreaSetIndex >= 0) {
+		auto& set = navigator->controlAreaSets[data->controlAreaSetIndex];
+		for (int index : set) {
+			auto obj = navigator->controlAreas[index];
+			auto allocPoint = obj->allocateToObject(te, true);
+			allocPoint->holder->up = controlAreaAllocations;
+		}
+	}
+	
 XE}
 
 void Traveler::navigatePath(int startAtPathIndex)
@@ -228,11 +242,12 @@ void Traveler::navigatePath(int startAtPathIndex)
 	}
 
 	double curSpeed = getCurSpeed();
-	bool startBetweenCells = te->v_deceleration > 0 && (curSpeed > 0 || isBlocked) ;
+	bool startBetweenCells = te->v_deceleration > 0 && (curSpeed > 0 || blockMode != BlockMode::None) ;
 	double atDist = travelPath[startAtPathIndex].atTravelDist;
 	// if I'm blocked and using acc/dec, then I may be continuing from being in the middle of 
 	// traveling between two cells.
-	if (startBetweenCells) {
+	int originalStartIndex = startAtPathIndex;
+	if (startAtPathIndex > 0 || startBetweenCells) {
 		atDist = updateLocation(true);
 		while (startAtPathIndex > 0 && travelPath[startAtPathIndex].atTravelDist > atDist + tinyDist)
 			startAtPathIndex--;
@@ -284,7 +299,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 	cullExpiredAllocations();
 	int initialAllocsSize = (int)allocations.size();
 	NodeAllocation* lastAllocation = nullptr;
-	if (enableCollisionAvoidance && (!nav->ignoreInactiveMemberCollisions || isBlocked || isContinuingFromDeadlock)) {
+	if (enableCollisionAvoidance && (!nav->ignoreInactiveMemberCollisions || blockMode != BlockMode::None || isContinuingFromDeadlock)) {
 		// here I want to 'clear out' the allocations that I'm no longer going to travel over. I first 
 		// mark all current allocations for deletion. Then later as I go through the path I will readd 
 		// them, which will unmark them for deletion. Then those that are still marked for deletion at 
@@ -303,9 +318,15 @@ void Traveler::navigatePath(int startAtPathIndex)
 		}
 	}
 
-	isBlocked = false;
+	blockMode = BlockMode::None;
 	isContinuingFromDeadlock = false;
 	blockedAtTravelPathIndex = -1;
+	std::set<int> activeControlAreas;
+	for (auto alloc : controlAreaAllocations) {
+		int index = navigator->getControlAreaIndex(alloc->getObject());
+		if (index >= 0)
+			activeControlAreas.insert(index);
+	}
 
 	UserNavigationResult userResult = (UserNavigationResult)(int)FIRE_SDT_EVENT_VALUE_GETTER(onNavigatePath, te->holder, startAtPathIndex + 1, kinematics);
 	if ((userResult & UserNavigationResult::AbortAll))
@@ -403,8 +424,8 @@ void Traveler::navigatePath(int startAtPathIndex)
 				curSpeed = getkinematics(kinematics, KINEMATIC_ENDSPEED, numKinematics);
 				e->arrivalTime = endTime;
 
-				if (enableCollisionAvoidance) {
-					double allocTime = startTime;
+				double allocTime = startTime;
+				if (enableCollisionAvoidance || e->node.hasControlArea || activeControlAreas.size() > 0) {
 					if (dec > 0 && e->turnEndTime == -1.0) {
 						double totalDist = 0;
 						// search back through the travel path to find the point where I would need to decelerate to stop
@@ -428,6 +449,56 @@ void Traveler::navigatePath(int startAtPathIndex)
 							}
 						}
 					}
+				}
+				if ((e->node.hasControlArea || activeControlAreas.size() > 0) && i > originalStartIndex) {
+					auto setIndex = e->node.hasControlArea ? navigator->getExtraData(e->cell)->controlAreaSetIndex : 0;
+					auto& set = navigator->controlAreaSets[setIndex];
+					if (set != activeControlAreas) {
+						for (int index : set) {
+							if (activeControlAreas.find(index) == activeControlAreas.end()) {
+								nextEvent = createevent(FlexSimEvent::create(holder, allocTime, "Control Area Arrival", 
+									[this, index, i]() { onControlAreaArrival(index, i); }))->object<FlexSimEvent>();
+								break;
+							}
+						}
+						if (nextEvent)
+							break;
+						bool tryAgain = true;
+						while (tryAgain) {
+							tryAgain = false;
+							for (auto index : activeControlAreas) {
+								if (set.find(index) == set.end()) {
+									// need to deallocate a control area
+									NodeRef validityCheck = holder;
+									ObjRef<ObjectDataType> ca = navigator->controlAreas[index];
+									auto allocPointIter = std::find_if(controlAreaAllocations.begin(), controlAreaAllocations.end(),
+										[&ca](TravelAllocation* alloc) { return ca == alloc->getObject(); });
+									if (allocPointIter != controlAreaAllocations.end()) {
+										ObjRef<TravelAllocation> alloc = *(*allocPointIter);
+										alloc->traversalDist = atDist;
+										auto onExit = [this, atDist, validityCheck, ca, alloc]() {
+											if (!validityCheck || !ca || !alloc)
+												return;
+											double dist = updateLocation();
+											if (dist < atDist - this->tinyDist)
+												return;
+											if (navigator->deallocTimeOffset > 0) {
+												createevent(FlexSimEvent::create(holder, time() + navigator->deallocTimeOffset, "Control Area Release",
+													[alloc]() { if (alloc) alloc->deallocate(); }));
+											}
+											else alloc->deallocate();
+										};
+										createevent(FlexSimEvent::create(holder, endTime, "Control Area Exit", onExit));
+										activeControlAreas.erase(index);
+										tryAgain = true;
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+				if (enableCollisionAvoidance) {
 					double releaseTime = std::nextafter(endTime + deallocTimeOffset, DBL_MAX);
 					NodeAllocation allocation(this, e->cell, i, 0, allocTime, releaseTime, 1.0);
 					bool success = true;
@@ -527,7 +598,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 		activeEntry = nav->activeTravelers.begin();
 	}
 	activeState = Active;
-	if (didBlockPathIndex == -1 && !nextEvent && !isBlocked && i == numNodes && userResult == UserNavigationResult::Default) {
+	if (didBlockPathIndex == -1 && !nextEvent && blockMode == BlockMode::None && i == numNodes && userResult == UserNavigationResult::Default) {
 		nextEvent = createevent(new ArrivalEvent(this, endArrivalTime, dec == 0 || endArrivalTime == endTime))->objectAs(ArrivalEvent);
 	}
 
@@ -567,7 +638,7 @@ void Traveler::onBridgeArrival(int pathIndex)
 void Traveler::onBridgeArrival(BridgeRoutingData* data, int pathIndex)
 {
 	XS
-	if (isBlocked)
+	if (blockMode != BlockMode::None)
 		return;
 
 	AStarPathEntry e = travelPath[pathIndex];
@@ -629,7 +700,7 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, 
 
 				// check to see if I need to create a block event for the later traveler
 				if (!laterTraveler->blockEvent || *(event) < *(laterTraveler->blockEvent)) {
-					if (!laterTraveler->isBlocked) {
+					if (laterTraveler->blockMode == BlockMode::None) {
 						if (laterTraveler->nextEvent)
 							destroyevent(laterTraveler->nextEvent);
 						laterTraveler->blockEvent = createevent(event)->objectAs(BlockEvent);
@@ -818,6 +889,15 @@ void Traveler::resetTravelDist(double& atTravelDist)
 	for (auto& alloc : allocations) {
 		alloc->atTravelDist -= atTravelDist;
 	}
+	for (auto alloc : controlAreaAllocations) {
+		auto shift = [atTravelDist](double& val) {
+			if (val < FLT_MAX)
+				val -= atTravelDist;
+		};
+		shift(alloc->stopAtDist);
+		shift(alloc->arrivalDist);
+		shift(alloc->traversalDist);
+	}
 	atTravelDist = 0;
 }
 
@@ -902,11 +982,11 @@ void Traveler::onBlock(Traveler* collidingWith, double colliderTravelDist, Cell&
 		}
 		stopAtTime = tempTime;
 
-		std::vector<Traveler*> deadlockList;
+		Array deadlockList;
 		NodeAllocation requestedAlloc(this, cell, allocPathIndex, 0, curTime, DBL_MAX, 0.0);
 		request = nodeData->addRequest(requestedAlloc, &deadlockList);
 		bool isDeadlock = deadlockList.size() > 0;
-		isBlocked = true;
+		blockMode = BlockMode::Node;
 		blockedAtTravelPathIndex = atPathIndex;
 		if (onBlockTrigger && (!nodeData->continueEvent || nodeData->continueEvent->time - curTime > tinyTime)) {
 			if (FIRE_SDT_EVENT_VALUE_GETTER(onBlockTrigger, te->holder, isDeadlock, atPathIndex))
@@ -914,7 +994,7 @@ void Traveler::onBlock(Traveler* collidingWith, double colliderTravelDist, Cell&
 			needsContinueTrigger = true;
 		}
 		if (isDeadlock) {
-			navigateAroundDeadlock(deadlockList, requestedAlloc);
+			navigateAroundDeadlock(deadlockList);
 		}
 	} else {
 		navigatePath(atPathIndex);
@@ -923,10 +1003,22 @@ void Traveler::onBlock(Traveler* collidingWith, double colliderTravelDist, Cell&
 }
 
 
-bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, NodeAllocation& deadlockCreatingRequest)
+bool Traveler::navigateAroundDeadlock(Array& deadlockListArray)
 {
 	double curTime = time();
 	std::multimap<Traveler*, treenode> dynamicBarriers;
+
+	// convert the Array to std::vector, filtering out non-A*-travelers if there are any
+	std::vector<Traveler*> deadlockList;
+	deadlockList.reserve(deadlockListArray.length);
+	for (int i = 1; i <= deadlockListArray.length - 1; i++) {
+		TreeNode* travelerNode = deadlockListArray[i];
+		if (isclasstype(travelerNode, CLASSTYPE_TASKEXECUTER)) {
+			auto traveler = navigator->getTraveler(travelerNode->object<TaskExecuter>());
+			if (traveler)
+				deadlockList.push_back(traveler);
+		}
+	}
 
 	std::function<void(Traveler*)> addDynamicBarrier = [&](Traveler* traveler) -> void {
 		if (dynamicBarriers.find(traveler) != dynamicBarriers.end())
@@ -948,7 +1040,7 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 			}
 		}
 	};
-	for (Traveler* traveler : deadlockList) {
+	for (auto traveler : deadlockList) {
 		addDynamicBarrier(traveler);
 	}
 	
@@ -970,7 +1062,7 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 		for (int i = 0; i < 4; i++) {
 			auto neighborCell = ExtendedCell(traveler->allocations.back()->cell.adjacentCell(directions[i]));
 			auto alloc = neighborCell.getAllocation(time());
-			if (alloc && alloc.traveler->isBlocked) {
+			if (alloc && alloc.traveler->blockMode == BlockMode::Node) {
 				if (dynamicBarriers.find(alloc.traveler) == dynamicBarriers.end())
 					addDynamicBarrier(alloc.traveler);
 			}
@@ -1035,8 +1127,12 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 
 	if (bestTraveler) {
 		Cell destCell = bestTraveler->travelPath.back().cell;
-		navigator->getExtraData(bestTraveler->request->cell)->requests.remove_if([&](NodeAllocation& alloc) { return &alloc == bestTraveler->request; });
-		bestTraveler->request = nullptr;
+		if (bestTraveler->request) {
+			navigator->getExtraData(bestTraveler->request->cell)->requests.remove_if([&](NodeAllocation& alloc) { return &alloc == bestTraveler->request; });
+			bestTraveler->request = nullptr;
+		}
+		else if (bestTraveler->controlAreaAllocations.size() > 0 && bestTraveler->controlAreaAllocations.back()->isRequestActive())
+			bestTraveler->controlAreaAllocations.back()->holder->destroy();
 		FIRE_SDT_EVENT(bestTraveler->onRerouteTrigger, te->holder);
 		Cell curCell = bestPath[0].cell;
 		//TravelPath newPath;
@@ -1075,22 +1171,37 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 	return true;
 }
 
-bool Traveler::findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers)
+bool Traveler::findDeadlockCycle(ObjectDataType* start, Array& cycle)
 {
-	travelers.push_back(this);
-	size_t startSize = travelers.size();
+	cycle.push(te->holder);
 	double curTime = time();
-	for (NodeAllocationIterator& allocIter : allocations) {
-		NodeAllocation& alloc = *allocIter;
-		if (alloc.acquireTime > curTime)
-			break;
-		else if (alloc.releaseTime != DBL_MAX)
-			continue;
-		AStarNodeExtraData* data = navigator->getExtraData(alloc.cell);
-		if (data->findDeadlockCycle(start, travelers))
-			return true;
+	if (request) {
+		AStarNodeExtraData* data = navigator->getExtraData(request->cell);
+		auto& allocations = data->allocations;
+		cycle.push(data->holder);
+		for (auto& alloc : allocations) {
+			//NodeAllocation& alloc = *allocIter;
+			if (alloc.acquireTime > curTime || alloc.releaseTime != DBL_MAX || alloc.traveler == this)
+				continue;
+
+			if (alloc.traveler->findDeadlockCycle(start, cycle))
+				return true;
+		}
+		cycle.pop();
 	}
-	travelers.pop_back();
+	if (controlAreaAllocations.size() > 0) {
+		auto request = controlAreaAllocations.back();
+		if (request->isRequestActive()) {
+			auto allocatable = request->getObject();
+			if (allocatable && isclasstype(allocatable->holder, CLASSTYPE_FLEXSIMEVENTHANDLER)) {
+				cycle.push(allocatable->holder);
+				if (((FlexSimEventHandler*)allocatable)->findDeadlockCycle(start, cycle))
+					return true;
+				cycle.pop();
+			}
+		}
+	}
+	cycle.pop();
 	return false;
 }
 
@@ -1114,6 +1225,53 @@ void Traveler::onTEDestroyed()
 	if (nextEvent)
 		destroyevent(nextEvent);
 	clearAllocations();
+}
+
+void Traveler::onControlAreaArrival(int areaIndex, int travelPathIndex)
+{
+	nextEvent = nullptr;
+	double atDist = updateLocation(true);
+	auto controlArea = navigator->controlAreas[areaIndex];
+	auto& prevEntry = travelPath[travelPathIndex - 1];
+	TravelAllocation* alloc = controlArea->allocateToObject(te);
+	if (alloc) {
+		alloc->holder->up = controlAreaAllocations;
+		alloc->stopAtDist = prevEntry.atTravelDist;
+		alloc->arrivalDist = travelPath[travelPathIndex].atTravelDist;
+		alloc->traversalDist = DBL_MAX;
+	}
+	if (!alloc || !alloc->isRequestActive()) {
+		navigatePath(travelPathIndex - 1);
+	}
+	else {
+		double curSpeed = getCurSpeed();
+		double toDist = prevEntry.atTravelDist;
+		initkinematics(kinematics, atDist, 0.0, 0.0);
+
+		blockMode = BlockMode::ControlArea;
+		setstate(te->holder, STATE_BLOCKED);
+
+		addkinematic(kinematics, toDist - atDist, 0.0, 0.0, te->v_maxspeed, te->v_acceleration, te->v_deceleration, curSpeed, 0.0, time(), KINEMATIC_TRAVEL);
+		for (auto alloc : allocations) {
+			if (alloc->atTravelDist >= toDist - tinyDist)
+				alloc->extendReleaseTime(DBL_MAX);
+		}
+
+		Array deadlockCycle;
+		deadlockCycle.reserve(10);
+
+		NodeRef validityCheck = holder;
+		auto onAllocate = [this, validityCheck, travelPathIndex]() {
+			if (!validityCheck || blockMode != BlockMode::ControlArea)
+				return;
+			navigatePath(travelPathIndex - 1);
+		};
+		FlexSimEvent::listen(alloc, "OnAllocate", 0, onAllocate);
+
+		bool foundDeadlock = findDeadlockCycle(te, deadlockCycle);
+		if (foundDeadlock)
+			navigateAroundDeadlock(deadlockCycle);
+	}
 }
 
 void Traveler::finalizeAtLocation(double& atTravelDist)
@@ -1245,6 +1403,9 @@ void Traveler::abortTravel(TreeNode* newTS)
 			}
 		}
 	}
+
+	if (controlAreaAllocations.size() > 0 && controlAreaAllocations.back()->isRequestActive())
+		controlAreaAllocations.remove(controlAreaAllocations.size() - 1);
 
 	if (bridgeData && bridgeData->routingData) {
 		bridgeData->routingData->onAbort(this);

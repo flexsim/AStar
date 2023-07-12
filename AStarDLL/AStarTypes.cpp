@@ -384,7 +384,7 @@ void AStarNodeExtraData::fulfillTopRequest()
 	requests.pop_front();
 	double blockedTime = time() - traveler->lastBlockTime;
 	auto atIndex = traveler->travelPath.getIndex(topRequest.atTravelDist, false);
-	if (traveler->isBlocked && blockedTime > traveler->tinyTime) {
+	if (traveler->blockMode == Traveler::BlockMode::Node && blockedTime > traveler->tinyTime) {
 		Cell cell;
 		if (traveler->allocations.size() > 0)
 			cell = traveler->allocations.back()->cell;
@@ -449,16 +449,17 @@ void AStarNodeExtraData::onReleaseTimeTruncated(NodeAllocation& changedAlloc, do
 	}
 }
 
-NodeAllocation* AStarNodeExtraData::addRequest(NodeAllocation& request, std::vector<Traveler*>* deadlockList)
+NodeAllocation* AStarNodeExtraData::addRequest(NodeAllocation& request, Array* deadlockList)
 {
 	requests.push_back(request);
-	std::vector<Traveler*> travelers;
-	bool found = request.traveler->findDeadlockCycle(request.traveler, travelers);
-	if (!found) {
+	Array travelers;
+	travelers.reserve(10);
+	bool foundDeadlock = request.traveler->findDeadlockCycle(request.traveler->te, travelers);
+	if (!foundDeadlock) {
 		checkCreateContinueEvent();
 	} else {
 		if (deadlockList)
-			*deadlockList = std::move(travelers);
+			*deadlockList = travelers;
 	}
 	return &requests.back();
 }
@@ -482,21 +483,6 @@ void AStarNodeExtraData::checkCreateContinueEvent()
 		continueEvent = createevent(new ContinueEvent(std::nextafter(std::max(releaseTime, time()), FLT_MAX), requests.front().traveler, blocker, cell))->objectAs(ContinueEvent);
 
 }
-
-
-bool AStarNodeExtraData::findDeadlockCycle(Traveler* start, std::vector<Traveler*>& travelers)
-{
-	for (NodeAllocation& request : requests) {
-		if (request.traveler == start)
-			return true;
-		if (std::find(travelers.begin(), travelers.end(), request.traveler) != travelers.end())
-			continue;
-		if (request.traveler->findDeadlockCycle(start, travelers))
-			return true;
-	}
-	return false;
-}
-
 
 void AStarNodeExtraData::ContinueEvent::bind()
 {

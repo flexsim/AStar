@@ -320,6 +320,18 @@ public:
 	TemporaryBarrier* applyToTemporaryBarrier = nullptr;
 	double hasConditionalBarriers = 0.0;
 	double hasMandatoryPaths = 0.0;
+	
+	static void addCA(TreeNode* node, FlexSimEventHandler* odt) {
+		nodejoin(node->addData(DATATYPE_COUPLING), assertattribute(odt->holder, "stored", 0)->subnodes.add()->addData(DATATYPE_COUPLING));
+	}
+	NodeListArray<FlexSimEventHandler, addCA>::ObjCouplingType controlAreas;
+	std::vector<std::set<int>> controlAreaSets;
+	std::map<std::set<int>, int> controlAreaSetMap;
+	bool addControlArea(FlexSimEventHandler* obj);
+	void removeControlArea(FlexSimEventHandler* obj);
+	int assertControlAreaSet(const std::set<int>);
+	int getControlAreaIndex(ObjectDataType* obj);
+	void buildControlAreaSets();
 
 	treenode addMember(TaskExecuter* te) override;
 	void addObjectBarrier(ObjectDataType* object);
@@ -344,6 +356,8 @@ public:
 	void removeDynamicBarrier(const Variant& val, int skipOnChange = 0);
 
 	treenode onGridChange = nullptr;
+
+	virtual bool findDeadlockCycle(ObjectDataType* start, TaskExecuter* member, Array& cycle) override;
 };
 
 }

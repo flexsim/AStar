@@ -94,6 +94,8 @@ void AStarNavigator::bindVariables(void)
 	bindStateVariable(hasConditionalBarriers);
 	bindStateVariable(hasMandatoryPaths);
 
+	bindStateVariable(controlAreas);
+
 	bindStateVariable(areGridsUserCustomized);
 
 	bindVariableByName("extraData", extraDataNode, ODT_BIND_STATE_VARIABLE);
@@ -320,6 +322,7 @@ double AStarNavigator::onReset()
 	resetGrids();
 	resetElevatorBridges();
 	buildGrids();
+	buildControlAreaSets();
 
 	double sumSpeed = 0.0;
 	for (int i = 0; i < travelers.size(); i++) {
@@ -571,7 +574,14 @@ double AStarNavigator::dragConnection(TreeNode* connectTo, char keyPressed, unsi
 			}
 		}
 	
-	} else if (!isclasstype(connectTo, CLASSTYPE_NETWORKNODE)) {
+	}
+	else if (isclasstype(connectTo, "AGV::ControlArea")) {
+		switch (keyPressed & 0x7f) {
+		case 'A': addControlArea(connectTo->object<FlexSimEventHandler>()); break;
+		case 'Q': removeControlArea(connectTo->object<FlexSimEventHandler>()); break;
+		}
+	}
+	else if (!isclasstype(connectTo, CLASSTYPE_NETWORKNODE)) {
 		ObjectDataType* theFR = &(o(ObjectDataType, connectTo));
 
 		switch(keyPressed & 0x7f) {
@@ -1082,6 +1092,7 @@ the outside 8 nodes.
 		travelPath.push_back(AStarPathEntry(temp->cell, prevBridgeIndex));
 		auto& entry = travelPath.back();
 		entry.modelLoc = getLocation(temp->cell);
+		entry.node = *getNode(entry.cell);
 		if (temp->previous != startPrevVal) {
 			prevBridgeIndex = temp->prevBridgeIndex;
 			temp = &(totalSet[temp->previous]);
@@ -1696,60 +1707,58 @@ void AStarNavigator::drawAllocations()
 	
 	allocMesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE4, MESH_DYNAMIC_DRAW);
 	lineMesh.init(0, MESH_POSITION | MESH_AMBIENT_AND_DIFFUSE, MESH_DYNAMIC_DRAW);
-	for (auto iter = edgeTableExtraData.begin(); iter != edgeTableExtraData.end(); iter++) {
-		AStarNodeExtraData* nodeData = iter->second;
-		if (!nodeData)
-			continue;
-		if (nodeData->allocations.size() == 0)
-			continue;
-		auto currentAllocation = std::find_if(nodeData->allocations.begin(), nodeData->allocations.end(),
-			[](NodeAllocation& alloc) { return alloc.acquireTime <= time() && alloc.releaseTime > time(); });
-		bool isAllocCurrent = currentAllocation != nodeData->allocations.end();
-		Vec4f& clr = !isAllocCurrent ? partialClr : fullClr;
+	auto addToMesh = [&lineMesh](Vec3f& clr, TaskExecuter* te, Vec3& centerPos) {
+		int vert = lineMesh.addVertex();
+		lineMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y, centerPos.z));
+		lineMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE, clr);
 
-		Vec3 centerPos = getLocation(nodeData->cell);
-		int vert = allocMesh.addVertex();
-		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, centerPos.z));
-		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
-		vert = allocMesh.addVertex();
-		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y + diamondRadius, centerPos.z));
-		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
-		vert = allocMesh.addVertex();
-		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, centerPos.z));
-		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
-		vert = allocMesh.addVertex();
-		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, centerPos.z));
-		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
-		vert = allocMesh.addVertex();
-		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y - diamondRadius, centerPos.z));
-		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
-		vert = allocMesh.addVertex();
-		allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, centerPos.z));
-		allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+		Vec3 topPos = te->getLocation(0.5, 0.5, 1.1);
+		if (te->holder->up != model())
+			topPos = topPos.project(te->holder->up, model());
+		vert = lineMesh.addVertex();
+		lineMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(topPos.x, topPos.y, topPos.z));
+		lineMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE, clr);
+	};
+	double curTime = time();
+	for (auto traveler : travelers) {
+		for (auto alloc : traveler->allocations) {
+			bool isAllocCurrent = alloc->acquireTime <= curTime && alloc->releaseTime > curTime;
+			auto clr = isAllocCurrent ? fullClr : partialClr;
+			Vec3 centerPos = getLocation(alloc->cell);
+			int vert = allocMesh.addVertex();
+			allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, centerPos.z));
+			allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+			vert = allocMesh.addVertex();
+			allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y + diamondRadius, centerPos.z));
+			allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+			vert = allocMesh.addVertex();
+			allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, centerPos.z));
+			allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+			vert = allocMesh.addVertex();
+			allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, centerPos.z));
+			allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+			vert = allocMesh.addVertex();
+			allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y - diamondRadius, centerPos.z));
+			allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+			vert = allocMesh.addVertex();
+			allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, centerPos.z));
+			allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
 
-		if (isAllocCurrent) {
-			auto addToMesh = [&lineMesh, &centerPos](NodeAllocation& alloc, Vec3f& clr) {
-				int vert = lineMesh.addVertex();
-				lineMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y, centerPos.z));
-				lineMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE, clr);
-
-				TaskExecuter* te = alloc.traveler->te;
-				Vec3 topPos = te->getLocation(0.5, 0.5, 1.1);
-				if (te->holder->up != model())
-					topPos = topPos.project(te->holder->up, model());
-				vert = lineMesh.addVertex();
-				lineMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(topPos.x, topPos.y, topPos.z));
-				lineMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE, clr);
-			};
-			while (currentAllocation != nodeData->allocations.end()) {
-				addToMesh(*currentAllocation, blueClr);
-				currentAllocation++;
-				currentAllocation = std::find_if(currentAllocation, nodeData->allocations.end(),
-					[](NodeAllocation& alloc) { return alloc.acquireTime <= time() && alloc.releaseTime > time(); });
+			if (isAllocCurrent) {
+				auto nodeData = getExtraData(alloc->cell);
+				addToMesh(blueClr, alloc->traveler->te, centerPos);
+				if (nodeData->requests.size() > 0) {
+					for (auto iter = nodeData->requests.begin(); iter != nodeData->requests.end(); iter++) {
+						addToMesh(redClr, iter->traveler->te, centerPos);
+					}
+				}
 			}
-			for (auto iter = nodeData->requests.begin(); iter != nodeData->requests.end(); iter++) {
-				addToMesh(*iter, redClr);
-			}
+		}
+
+		for (auto alloc : traveler->controlAreaAllocations) {
+			auto obj = alloc->getObject();
+			auto loc = Vec3(0.0, 0.0, 0.0).project(obj->holder, model());
+			addToMesh(alloc->isRequestActive() ? redClr : blueClr, traveler->te, loc);
 		}
 	}
 	fglDisable(GL_LIGHTING);
@@ -1894,6 +1903,7 @@ AStarNodeExtraData*  AStarNavigator::assertExtraData(const Cell& cell, ExtraData
 			node->hasConditionalBarrier = true; 
 			hasConditionalBarriers = 1.0;
 			break;
+		case ControlAreaData: node->hasControlArea = true; break;
 		default: break;
 	}
 	return extra;
@@ -1938,7 +1948,7 @@ void AStarNavigator::buildActiveTravelerList()
 
 Traveler* AStarNavigator::getTraveler(TaskExecuter* te)
 {
-	// Because the Agent module "dupes" the navigator by moving the traveler coupling around, I have 
+	// Because the Agent module "dupes" the navigator by moving the traveler coupling around, I have to
 	// actually search for the traveler
 	auto testNode = [](TreeNode* node) -> Traveler* {
 		treenode partner = tonode(get(node));
@@ -2146,6 +2156,77 @@ void AStarNavigator::addObjectBarrier(ObjectDataType* object)
 	objectBarrierList.add(object);
 }
 
+
+bool AStarNavigator::addControlArea(FlexSimEventHandler* obj)
+{
+	auto found = std::find(controlAreas.begin(), controlAreas.end(), obj);
+	if (found == controlAreas.end())
+		controlAreas.add(obj);
+	return true;
+}
+
+void AStarNavigator::removeControlArea(FlexSimEventHandler* obj)
+{
+	auto found = std::find(controlAreas.begin(), controlAreas.end(), obj);
+	if (found != controlAreas.end())
+		controlAreas.remove(found - controlAreas.begin());
+}
+
+int AStarNavigator::assertControlAreaSet(const std::set<int> caSet)
+{
+	auto found = controlAreaSetMap.find(caSet);
+	if (found != controlAreaSetMap.end())
+		return found->second;
+	else {
+		controlAreaSets.push_back(caSet);
+		int index = (int)controlAreaSets.size() - 1;
+		controlAreaSetMap[caSet] = index;
+		return index;
+	}
+}
+
+int AStarNavigator::getControlAreaIndex(ObjectDataType* controlArea)
+{
+	if (!controlArea->node_b_stored)
+		return -1;
+	for (int i = 1; i <= controlArea->node_b_stored->subnodes.length; i++) {
+		TreeNode* partner = controlArea->node_b_stored->subnodes[i]->value;
+		if (partner && partner->ownerObject == holder)
+			return partner->rank - 1;
+	}
+	return -1;
+}
+
+void AStarNavigator::buildControlAreaSets()
+{
+	controlAreaSets.clear();
+	controlAreaSetMap.clear();
+	std::set<int> emptySet;
+	controlAreaSets.push_back(emptySet);
+	controlAreaSetMap[emptySet] = 0;
+
+	for (int i = 0; i < controlAreas.size(); i++) {
+		auto obj = controlAreas[i];
+		auto bb = obj->getAxisAlignedBoundingBox(model());
+		for (auto x = bb.min.x; x <= bb.max.x; x += minNodeSize.x) {
+			for (auto y = bb.min.y; y <= bb.max.y; y += minNodeSize.y) {
+				Vec3 pos(x, y, bb.min.z);
+				Vec3 localPos = pos.project(model(), obj->holder);
+				if (localPos.x < 0 || localPos.x > obj->b_spatialsx || localPos.y > 0 || localPos.y < -obj->b_spatialsy)
+					continue;
+				auto cell = getCell(pos);
+				auto data = assertExtraData(cell, ControlAreaData);
+				std::set<int> caSet;
+				if (data->controlAreaSetIndex != -1) {
+					caSet = controlAreaSets[data->controlAreaSetIndex];
+				}
+				caSet.insert(i);
+				data->controlAreaSetIndex = assertControlAreaSet(caSet);
+			}
+		}
+	}
+}
+
 bool AStarNavigator::addElevatorBridge(ObjectDataType * object)
 {
 	if (std::find(elevators.begin(), elevators.end(), object) != elevators.end()) {
@@ -2332,6 +2413,11 @@ void AStarNavigator::removeDynamicBarrier(const Variant& val, int skipOnChange)
 	stackDepth--;
 	if (stackDepth == 0 && !skipOnChange)
 		FIRE_SDT_EVENT(onGridChange, 0);
+}
+
+bool AStarNavigator::findDeadlockCycle(ObjectDataType* start, TaskExecuter* member, Array& cycle)
+{
+	return getTraveler(member)->findDeadlockCycle(start, cycle);
 }
 
 astar_export Variant AStarNavigator_dumpBlockageData(FLEXSIMINTERFACE)
