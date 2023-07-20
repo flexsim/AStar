@@ -2235,6 +2235,14 @@ including turn times and time waiting for other travelers.</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040568000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/defaultPathWeight</data></node>
+           <node f="42" dt="2"><name>OnKillFocus</name><data>string text = getviewtext(c);
+double value = text.toNum();
+if (value &lt; 0 || value &gt; 1) {
+	int precision = get(node("MAIN:/project/environment/settings/precision"));
+	value = min(1, max(0, value));
+	setviewtext(c, string.fromNum(value, precision));
+}
+</data></node>
            <node f="4000000042" dt="2"><name>tooltip</name><data>This is the default path weight for any Preferred Paths without 
 a custom weight. Setting a path to have a path weight of 0 will 
 revert the path to using this default value.</data></node>
@@ -5897,7 +5905,7 @@ repaintview(TheTable);
          <node f="442" dt="2"><name>coldlinkx</name><data>treenode weight = c.find("../..&gt;objectfocus+&gt;variables/pathWeight");
 int precision = get(node("MAIN:/project/environment/settings/precision"));
 
-if(!weight)
+if (!weight)
 	return 0;
 
 if (!eventdata) {
@@ -5914,10 +5922,12 @@ if (!eventdata) {
 	if (text == "Default") {
 		weight.value = 0;
 	} else {
-		weight.value = text.toNum();
+		weight.value = min(1, max(0, text.toNum()));
 		
 		if (weight.value == 0)
 			setviewtext(c, "Default");
+		if (weight.value == 1)
+			setviewtext(c, string.fromNum(1, precision));
 	}
 	ownerobject(weight).as(Object).applyProperties("PathWeight");
 }</data></node>
