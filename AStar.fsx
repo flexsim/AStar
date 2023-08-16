@@ -1489,6 +1489,38 @@ if (ontoView) {
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\grid.bmp</data></node>
         <node f="4000000042" dt="2"><name>windowtitle</name><data>Grid</data></node>
        </data></node>
+       <node f="42" dt="4"><name>Control Area</name><data>
+        <node f="40"><name></name></node>
+        <node f="42" dt="2"><name>picture</name><data>modules\AGV\images\ControlArea.png</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>MAIN:/project/library/AGV/ControlArea</data>
+         <node f="2000040"><name></name></node></node>
+        <node f="442" dt="2"><name>OnClick</name><data>var editMode = Model.find("MAIN:/project/exec/globals/editmodes/AGV/AGV::ControlArea&gt;variables/isAStarMember");
+if (editMode)
+	editMode.value = 1;
+modeleditmode("AGV::ControlArea");
+</data></node>
+        <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
+Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
+treenode ontoView = param(5);
+treenode obj = c.find("..&gt;objectfocus+");
+if (ontoView &amp;&amp; obj &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
+	beginignoreundo();
+	setvarnum(obj, "isAGVMember", 0);
+	setvarnum(obj, "isAStarMember", 1);
+	endignoreundo();
+	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
+	beginignoreundo();
+	setvarnum(obj, "isAGVMember", 1);
+	setvarnum(obj, "isAStarMember", 0);
+	endignoreundo();
+	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
+	return createdObj;
+} else {
+	modeleditmode(0);
+}</data></node>
+        <node f="42" dt="2"><name>helptopic</name><data>AGV::ControlArea</data></node>
+        <node f="4000000042" dt="2"><name>windowtitle</name><data>Control Area</data></node>
+       </data></node>
       </node>
       <node f="42"><name>Pages</name>
        <node f="40"><name></name></node>

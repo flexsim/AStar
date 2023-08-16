@@ -259,6 +259,9 @@ public:
 	NodeListArray<TravelAllocation>::SdtSubNodeType controlAreaAllocations;
 	//NodeListArray<ObjectDataType>::ObjCouplingType controlAreas;
 	void onControlAreaArrival(int areaIndex, int travelPathIndex);
+	void onControlAreaExit(const ObjRef<TravelAllocation>& alloc);
+
+	double navigatedDist = 0.0;
 };
 
 }

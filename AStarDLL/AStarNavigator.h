@@ -325,6 +325,7 @@ public:
 		nodejoin(node->addData(DATATYPE_COUPLING), assertattribute(odt->holder, "stored", 0)->subnodes.add()->addData(DATATYPE_COUPLING));
 	}
 	NodeListArray<FlexSimEventHandler, addCA>::ObjCouplingType controlAreas;
+	static const int EMPTY_CONTROL_AREA_SET_INDEX = 0;
 	std::vector<std::set<int>> controlAreaSets;
 	std::map<std::set<int>, int> controlAreaSetMap;
 	bool addControlArea(FlexSimEventHandler* obj);

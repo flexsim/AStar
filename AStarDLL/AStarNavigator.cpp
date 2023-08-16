@@ -94,7 +94,7 @@ void AStarNavigator::bindVariables(void)
 	bindStateVariable(hasConditionalBarriers);
 	bindStateVariable(hasMandatoryPaths);
 
-	bindStateVariable(controlAreas);
+	bindVariable(controlAreas);
 
 	bindStateVariable(areGridsUserCustomized);
 

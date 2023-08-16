@@ -452,6 +452,7 @@ void AStarNodeExtraData::onReleaseTimeTruncated(NodeAllocation& changedAlloc, do
 NodeAllocation* AStarNodeExtraData::addRequest(NodeAllocation& request, Array* deadlockList)
 {
 	requests.push_back(request);
+	request.traveler->request = &requests.back();
 	Array travelers;
 	travelers.reserve(10);
 	bool foundDeadlock = request.traveler->findDeadlockCycle(request.traveler->te, travelers);
