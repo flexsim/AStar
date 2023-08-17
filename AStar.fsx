@@ -4927,8 +4927,8 @@ return 0;
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040140000</data></node>
-    <node f="42" dt="2"><name>after</name><data>AStarTraveler</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040100000</data></node>
+    <node f="42" dt="2"><name>after</name><data>OnStateChange</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -5036,7 +5036,7 @@ return 0;
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>000000004058c000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>000000004054c000</data></node>
     <node f="42" dt="2"><name>after</name><data>FollowObject</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -5121,7 +5121,7 @@ applylinks(c, 1);
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000405cc000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040578000</data></node>
     <node f="42" dt="2"><name>after</name><data>TestQueries</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -5441,8 +5441,8 @@ if (propertiesView) {
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000405d0000</data></node>
-    <node f="42" dt="2"><name>after</name><data>AStarBarrier</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000405a0000</data></node>
+    <node f="42" dt="2"><name>after</name><data>Triggers</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6040,8 +6040,8 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000405d4000</data></node>
-    <node f="42" dt="2"><name>after</name><data>AStarDivider</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000405a0000</data></node>
+    <node f="42" dt="2"><name>after</name><data>Triggers</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6255,8 +6255,8 @@ repaintall();</data>
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040000000</data></node>
-    <node f="42" dt="2"><name>after</name><data>AStar::AStarNavigator</data></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6265,8 +6265,8 @@ repaintall();</data>
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040080000</data></node>
-    <node f="42" dt="2"><name>after</name><data>AStar::Barrier</data></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6275,8 +6275,8 @@ repaintall();</data>
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040100000</data></node>
-    <node f="42" dt="2"><name>after</name><data>AStar::Divider</data></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6285,8 +6285,8 @@ repaintall();</data>
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040140000</data></node>
-    <node f="42" dt="2"><name>after</name><data>AStar::PreferredPath</data></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6295,8 +6295,8 @@ repaintall();</data>
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040180000</data></node>
-    <node f="42" dt="2"><name>after</name><data>AStar::Bridge</data></node>
+    <node f="42" dt="1"><name>rank</name><data>000000003ff00000</data></node>
+    <node f="42"><name>after</name></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6517,7 +6517,7 @@ return updated;</data></node>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name>Barrier</name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040458000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040420000</data></node>
     <node f="42" dt="2"><name>after</name><data>VisualTool</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6527,8 +6527,8 @@ return updated;</data></node>
    </node>
    <node f="42" dt="3"><name>Divider</name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040460000</data></node>
-    <node f="42" dt="2"><name>after</name><data>Barrier</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040420000</data></node>
+    <node f="42" dt="2"><name>after</name><data>VisualTool</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
