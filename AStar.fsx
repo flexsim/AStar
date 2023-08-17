@@ -4,11 +4,11 @@
  <node f="40"><name></name></node>
  <node f="42"><name>installdata</name>
   <node f="40"><name></name></node>
-  <node f="42" dt="2"><name>add</name><data>MAIN:/project/library</data>
+  <node f="42" dt="2"><name>add_library</name><data>MAIN:/project/library</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403f0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040430000</data></node>
     <node f="42" dt="2"><name>after</name><data>warehousing</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -23,7 +23,7 @@
        </node>
        <node f="42"><name>classes</name>
         <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>AStar::AStarNavigator</name><data><coupling>/installdata/add/1/data/astar/AStarNavigator</coupling></data></node>
+        <node f="42" dt="3"><name>AStar::AStarNavigator</name><data><coupling>/installdata/add_library/1/data/astar/AStarNavigator</coupling></data></node>
        </node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
@@ -145,7 +145,7 @@
           <node f="42" dt="2"><name>picture</name><data>bitmaps/colorwheel.png</data></node>
          </node>
         </data></node>
-        <node f="42" dt="3"><name>palette</name><data><coupling>/installdata/add/1/data/astar/AStarNavigator&gt;variables/localPalette</coupling></data></node>
+        <node f="42" dt="3"><name>palette</name><data><coupling>/installdata/add_library/1/data/astar/AStarNavigator&gt;variables/localPalette</coupling></data></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node>
@@ -247,8 +247,8 @@
         </node>
         <node f="42" dt="1"><name>imageindexobject</name><data>0000000000000000</data>
          <node f="40"><name></name></node>
-         <node f="42" dt="1"><name>split</name><data>0000000040534000</data></node>
-         <node f="42" dt="1"><name>merge</name><data>0000000040538000</data></node>
+         <node f="42" dt="1"><name>split</name><data>0000000040530000</data></node>
+         <node f="42" dt="1"><name>merge</name><data>0000000040534000</data></node>
         </node>
         <node f="42" dt="2"><name>imagebase</name><data>***</data></node>
         <node f="42" dt="1"><name>imageindexbase</name><data>0000000000000000</data></node>
@@ -325,7 +325,7 @@
        <node f="40"><name></name></node>
        <node f="42"><name>classes</name>
         <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>AStar::Barrier</name><data><coupling>/installdata/add/1/data/astar/Barrier</coupling></data></node>
+        <node f="42" dt="3"><name>AStar::Barrier</name><data><coupling>/installdata/add_library/1/data/astar/Barrier</coupling></data></node>
        </node>
        <node f="42"><name>superclasses</name>
         <node f="40"><name></name></node>
@@ -549,11 +549,11 @@ function_s(obj, "makeMeshDirty");
        <node f="40"><name></name></node>
        <node f="42"><name>classes</name>
         <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add/1/data/astar/Divider</coupling></data></node>
+        <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add_library/1/data/astar/Divider</coupling></data></node>
        </node>
        <node f="42"><name>superclasses</name>
         <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>AStar::Barrier</name><data><coupling>/installdata/add/1/data/astar/Barrier</coupling></data></node>
+        <node f="42" dt="3"><name>AStar::Barrier</name><data><coupling>/installdata/add_library/1/data/astar/Barrier</coupling></data></node>
        </node>
        <node f="42"><name>variables</name>
         <node f="80000040"><name></name></node>
@@ -627,11 +627,11 @@ function_s(object, "makeMeshDirty");
        <node f="40"><name></name></node>
        <node f="42"><name>classes</name>
         <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>AStar::PreferredPath</name><data><coupling>/installdata/add/1/data/astar/PreferredPath</coupling></data></node>
+        <node f="42" dt="3"><name>AStar::PreferredPath</name><data><coupling>/installdata/add_library/1/data/astar/PreferredPath</coupling></data></node>
        </node>
        <node f="42"><name>superclasses</name>
         <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add/1/data/astar/Divider</coupling></data></node>
+        <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add_library/1/data/astar/Divider</coupling></data></node>
        </node>
        <node f="42"><name>variables</name>
         <node f="80000040"><name></name></node>
@@ -702,11 +702,11 @@ return string.fromNum(value);
        <node f="40"><name></name></node>
        <node f="42"><name>classes</name>
         <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>AStar::Bridge</name><data><coupling>/installdata/add/1/data/astar/Bridge</coupling></data></node>
+        <node f="42" dt="3"><name>AStar::Bridge</name><data><coupling>/installdata/add_library/1/data/astar/Bridge</coupling></data></node>
        </node>
        <node f="42"><name>superclasses</name>
         <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add/1/data/astar/Divider</coupling></data></node>
+        <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add_library/1/data/astar/Divider</coupling></data></node>
        </node>
        <node f="42"><name>variables</name>
         <node f="80000040"><name></name></node>
@@ -783,11 +783,11 @@ return string.fromNum(value);
        <node f="40"><name></name></node>
        <node f="42"><name>classes</name>
         <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>AStar::MandatoryPath</name><data><coupling>/installdata/add/1/data/astar/MandatoryPath</coupling></data></node>
+        <node f="42" dt="3"><name>AStar::MandatoryPath</name><data><coupling>/installdata/add_library/1/data/astar/MandatoryPath</coupling></data></node>
        </node>
        <node f="42"><name>superclasses</name>
         <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add/1/data/astar/Divider</coupling></data></node>
+        <node f="42" dt="3"><name>AStar::Divider</name><data><coupling>/installdata/add_library/1/data/astar/Divider</coupling></data></node>
        </node>
        <node f="42"><name>variables</name>
         <node f="80000040"><name></name></node>
@@ -822,7 +822,7 @@ return string.fromNum(value);
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>MAIN:/project/exec/globals/editmodes</data>
+  <node f="42" dt="2"><name>add_editmodes</name><data>MAIN:/project/exec/globals/editmodes</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
@@ -1316,7 +1316,7 @@ nodepoint(objectfocus(c), 0);</data></node>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>VIEW:/modules</data>
+  <node f="42" dt="2"><name>add_modules</name><data>VIEW:/modules</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
@@ -4660,7 +4660,7 @@ repaintview(view.find("../ColorsPanel/ColorListGraph"));</data></node>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>MAIN:/project/exec/globals/fsmacros</data>
+  <node f="42" dt="2"><name>add_fsmacros</name><data>MAIN:/project/exec/globals/fsmacros</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
@@ -4682,7 +4682,7 @@ repaintview(view.find("../ColorsPanel/ColorListGraph"));</data></node>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>MAIN:/project/exec/globals/nodevariables/ModelUnitScaling</data>
+  <node f="42" dt="2"><name>add_ModelUnitScaling</name><data>MAIN:/project/exec/globals/nodevariables/ModelUnitScaling</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
@@ -4720,7 +4720,7 @@ repaintview(view.find("../ColorsPanel/ColorListGraph"));</data></node>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>VIEW:/picklists/transportrefpicklist</data>
+  <node f="42" dt="2"><name>add_transportrefpicklist</name><data>VIEW:/picklists/transportrefpicklist</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
@@ -4761,11 +4761,11 @@ return 0;</data></node>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/LibraryIconGrid/GroupIconGrid&gt;variables/visibilityLists/base/list</data>
+  <node f="42" dt="2"><name>add_list</name><data>VIEW:/standardviews/modelingutilities/LibraryIconGrid/GroupIconGrid&gt;variables/visibilityLists/base/list</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000401c0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040200000</data></node>
     <node f="42" dt="2"><name>after</name><data>Visual</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -4780,7 +4780,7 @@ return 0;</data></node>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>MAIN:/project/events/OnUpdateModel/Update to 17.2</data>
+  <node f="42" dt="2"><name>add_Update to 17.2</name><data>MAIN:/project/events/OnUpdateModel/Update to 17.2</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
@@ -4807,7 +4807,7 @@ return 0;
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>MAIN:/project/exec/globals/DefaultEventInfo</data>
+  <node f="42" dt="2"><name>add_DefaultEventInfo</name><data>MAIN:/project/exec/globals/DefaultEventInfo</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
@@ -5032,11 +5032,11 @@ return 0;
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels</data>
+  <node f="42" dt="2"><name>add_propertiesPanels</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404b8000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>000000004058c000</data></node>
     <node f="42" dt="2"><name>after</name><data>FollowObject</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -5121,7 +5121,7 @@ applylinks(c, 1);
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404e8000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000405cc000</data></node>
     <node f="42" dt="2"><name>after</name><data>TestQueries</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -5441,7 +5441,7 @@ if (propertiesView) {
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404f0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000405d0000</data></node>
     <node f="42" dt="2"><name>after</name><data>AStarBarrier</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6040,7 +6040,7 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
    </node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000404f8000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>00000000405d4000</data></node>
     <node f="42" dt="2"><name>after</name><data>AStarDivider</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6241,7 +6241,7 @@ repaintall();</data>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels/Visuals/Visuals&gt;variables/ignoreClasses</data>
+  <node f="42" dt="2"><name>add_ignoreClasses</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels/Visuals/Visuals&gt;variables/ignoreClasses</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
@@ -6304,7 +6304,7 @@ repaintall();</data>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels/Labels/Labels&gt;variables/ignoreClasses</data>
+  <node f="42" dt="2"><name>add_ignoreClasses</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels/Labels/Labels&gt;variables/ignoreClasses</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
@@ -6317,7 +6317,7 @@ repaintall();</data>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels/Statistics/Statistics&gt;variables/ignoreClasses</data>
+  <node f="42" dt="2"><name>add_ignoreClasses</name><data>VIEW:/standardviews/modelingutilities/QuickProperties&gt;variables/propertiesPanels/Statistics/Statistics&gt;variables/ignoreClasses</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
@@ -6330,7 +6330,7 @@ repaintall();</data>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>MAIN:/project/events/OnUpdateModel/Update to 19.0</data>
+  <node f="42" dt="2"><name>add_Update to 19.0</name><data>MAIN:/project/events/OnUpdateModel/Update to 19.0</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
@@ -6421,11 +6421,11 @@ return 1;
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>MAIN:/project/exec/globals/sdtinterfaces</data>
+  <node f="42" dt="2"><name>add_sdtinterfaces</name><data>MAIN:/project/exec/globals/sdtinterfaces</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040140000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040300000</data></node>
     <node f="42" dt="2"><name>after</name><data>Task</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6437,7 +6437,7 @@ return 1;
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>MAIN:/project/events/OnUpdateModel/Update to 19.1</data>
+  <node f="42" dt="2"><name>add_Update to 19.1</name><data>MAIN:/project/events/OnUpdateModel/Update to 19.1</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
@@ -6479,11 +6479,11 @@ return updated;</data></node>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add</name><data>VIEW:/standardviews/modelingutilities/Toolbox&gt;variables/tools</data>
+  <node f="42" dt="2"><name>add_tools</name><data>VIEW:/standardviews/modelingutilities/Toolbox&gt;variables/tools</data>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000040408000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040448000</data></node>
     <node f="42" dt="2"><name>after</name><data>GUIs</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6517,7 +6517,7 @@ return updated;</data></node>
    <node f="40"><name></name></node>
    <node f="42" dt="3"><name>Barrier</name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403c0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040458000</data></node>
     <node f="42" dt="2"><name>after</name><data>VisualTool</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
@@ -6527,7 +6527,7 @@ return updated;</data></node>
    </node>
    <node f="42" dt="3"><name>Divider</name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>00000000403d0000</data></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000040460000</data></node>
     <node f="42" dt="2"><name>after</name><data>Barrier</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
