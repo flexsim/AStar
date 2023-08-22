@@ -328,6 +328,7 @@ public:
 	static const int EMPTY_CONTROL_AREA_SET_INDEX = 0;
 	std::vector<std::set<int>> controlAreaSets;
 	std::map<std::set<int>, int> controlAreaSetMap;
+	std::unordered_map<ObjectDataType*, int> controlAreaMap;
 	bool addControlArea(FlexSimEventHandler* obj);
 	void removeControlArea(FlexSimEventHandler* obj);
 	int assertControlAreaSet(const std::set<int>);

@@ -2187,13 +2187,9 @@ int AStarNavigator::assertControlAreaSet(const std::set<int> caSet)
 
 int AStarNavigator::getControlAreaIndex(ObjectDataType* controlArea)
 {
-	if (!controlArea->node_b_stored)
-		return -1;
-	for (int i = 1; i <= controlArea->node_b_stored->subnodes.length; i++) {
-		TreeNode* partner = controlArea->node_b_stored->subnodes[i]->value;
-		if (partner && partner->ownerObject == holder)
-			return partner->rank - 1;
-	}
+	auto found = controlAreaMap.find(controlArea);
+	if (found != controlAreaMap.end())
+		return found->second;
 	return -1;
 }
 
@@ -2201,20 +2197,22 @@ void AStarNavigator::buildControlAreaSets()
 {
 	controlAreaSets.clear();
 	controlAreaSetMap.clear();
+	controlAreaMap.clear();
 	std::set<int> emptySet;
 	controlAreaSets.push_back(emptySet);
 	controlAreaSetMap[emptySet] = 0;
 
 	for (int i = 0; i < controlAreas.size(); i++) {
 		auto obj = controlAreas[i];
+		controlAreaMap[obj] = i;
 		auto bb = obj->getAxisAlignedBoundingBox(model());
 		for (auto x = bb.min.x; x <= bb.max.x; x += minNodeSize.x) {
 			for (auto y = bb.min.y; y <= bb.max.y; y += minNodeSize.y) {
 				Vec3 pos(x, y, bb.min.z);
-				Vec3 localPos = pos.project(model(), obj->holder);
+				auto cell = getCell(pos); 
+				Vec3 localPos = getLocation(cell).project(model(), obj->holder);
 				if (localPos.x < 0 || localPos.x > obj->b_spatialsx || localPos.y > 0 || localPos.y < -obj->b_spatialsy)
 					continue;
-				auto cell = getCell(pos);
 				auto data = assertExtraData(cell, ControlAreaData);
 				std::set<int> caSet;
 				if (data->controlAreaSetIndex != -1) {

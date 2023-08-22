@@ -326,6 +326,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 	int curControlAreaSetIndex = 0;
 	// the set of control areas that I have allocated but which I have not yet encountered on the path
 	std::set<int> unaccountedControlAreas;
+	std::set<int> diagonalControlAreas;
 	if (laste->node.hasControlArea) {
 		auto data = navigator->getExtraData(laste->cell);
 		curControlAreaSetIndex = data->controlAreaSetIndex;
@@ -466,77 +467,119 @@ void Traveler::navigatePath(int startAtPathIndex)
 						}
 					}
 				}
-				if (e->node.hasControlArea || curControlAreaSetIndex != AStarNavigator::EMPTY_CONTROL_AREA_SET_INDEX) {
-					auto setIndex = e->node.hasControlArea ? navigator->getExtraData(e->cell)->controlAreaSetIndex : AStarNavigator::EMPTY_CONTROL_AREA_SET_INDEX;
-					if (setIndex != curControlAreaSetIndex) {
-						auto& lastSet = navigator->controlAreaSets[curControlAreaSetIndex];
-						auto& set = navigator->controlAreaSets[setIndex];
+				bool doControlAreaProcessing = e->node.hasControlArea || curControlAreaSetIndex != AStarNavigator::EMPTY_CONTROL_AREA_SET_INDEX;
+				if (!doControlAreaProcessing && step.isDiagonal)
+					doControlAreaProcessing = navigator->getNode(step.intermediateCell1)->hasControlArea || navigator->getNode(step.intermediateCell2)->hasControlArea;
 
-						// check if I'm going to enter an area
-						for (int index : set) {
-							bool isInSet = lastSet.find(index) != lastSet.end();
-							bool isInUnaccountedSet = unaccountedControlAreas.find(index) != unaccountedControlAreas.end();
-							if (!isInSet && !isInUnaccountedSet) {
-								nextEvent = createevent(FlexSimEvent::create(holder, allocTime, "Control Area Arrival", 
-									[this, index, i]() { onControlAreaArrival(index, i); }))->object<FlexSimEvent>();
+				if (doControlAreaProcessing) {
+					auto setIndex = e->node.hasControlArea ? navigator->getExtraData(e->cell)->controlAreaSetIndex : AStarNavigator::EMPTY_CONTROL_AREA_SET_INDEX;
+
+					doControlAreaProcessing = setIndex != curControlAreaSetIndex;
+					if (!doControlAreaProcessing && step.isDiagonal) {
+						for (int i = 0; i < 2; i++) {
+							auto cell = i == 0 ? step.intermediateCell1 : step.intermediateCell2;
+							int index = navigator->getNode(cell)->hasControlArea ? navigator->getExtraData(cell)->controlAreaSetIndex : 0;
+							if (index != curControlAreaSetIndex) {
+								doControlAreaProcessing = true;
 								break;
 							}
-							else if (isInUnaccountedSet) {
-								unaccountedControlAreas.erase(index);
+						}
+					}
+					if (doControlAreaProcessing) {
+						auto& lastSet = navigator->controlAreaSets[curControlAreaSetIndex];
+						auto& nextSet = navigator->controlAreaSets[setIndex];
+						int loopEnd = 1;
+						if (step.isDiagonal) {
+							loopEnd = 2;
+							diagonalControlAreas.clear();
+							for (int i = 0; i < 2; i++) {
+								auto cell = i == 0 ? step.intermediateCell1 : step.intermediateCell2;
+								int diagSetIndex = navigator->getNode(cell)->hasControlArea ? navigator->getExtraData(cell)->controlAreaSetIndex : 0;
+								if (diagSetIndex == setIndex)
+									continue;
+								auto& diagSet = navigator->controlAreaSets[diagSetIndex];
+								for (int index : diagSet) {
+									if (nextSet.find(index) == nextSet.end())
+										diagonalControlAreas.insert(index);
+								}
 							}
+						}
+						nextEvent = nullptr;
+						// check if I'm going to enter an area
+						for (int j = 0; j < loopEnd && !nextEvent; j++) {
+							auto& set = j == 0 ? nextSet : diagonalControlAreas;
+							for (int index : set) {
+								bool isInLastSet = lastSet.find(index) != lastSet.end();
+								bool isInUnaccountedSet = unaccountedControlAreas.find(index) != unaccountedControlAreas.end();
+								if (!isInLastSet && !isInUnaccountedSet) {
+									nextEvent = createevent(FlexSimEvent::create(holder, allocTime, "Control Area Arrival",
+										[this, index, i]() { onControlAreaArrival(index, i); }))->object<FlexSimEvent>();
+									break;
+								}
+								else if (isInUnaccountedSet) {
+									unaccountedControlAreas.erase(index);
+								}
+							}
+							if (nextEvent)
+								break;
 						}
 						if (nextEvent)
 							break;
 
-						for (auto index : lastSet) {
-							if (set.find(index) != set.end())
-								continue;
-							// need to deallocate a control area
-							ObjRef<ObjectDataType> ca = navigator->controlAreas[index];
 
-							// figure out the distance at which the object crosses the line of the control area
-							Vec2 corners[5] = {
-								ca->getLocation(0.0, 0.0, 0.0).project(ca->holder->up, model()).xy, // top left
-								ca->getLocation(1.0, 0.0, 0.0).project(ca->holder->up, model()).xy, // top right
-								ca->getLocation(1.0, 1.0, 0.0).project(ca->holder->up, model()).xy, // bottom right
-								ca->getLocation(0.0, 1.0, 0.0).project(ca->holder->up, model()).xy, // bottom left
-								Vec2(0, 0) // top left
-							};
-							corners[4] = corners[0];
-							auto fromLoc = navigator->getLocation(laste->cell).xy;
-							auto toLoc = navigator->getLocation(e->cell).xy;
-							Line2 travelLine(fromLoc, toLoc);
-							double traversalDist = atDist;
-							for (int i = 0; i < 4; i++) {
-								auto intersection = travelLine.intersect(Line2(corners[i], corners[i + 1]));
-								if (intersection.isValid && intersection.distAlong1 >= 0.0 && intersection.distAlong1 <= dist) {
-									auto compareDist = atDist - dist + intersection.distAlong1;
-									if (compareDist < traversalDist)
-										traversalDist = compareDist;
+						for (int j = 0; j < loopEnd; j++) {
+							auto& set = j == 0 ? lastSet : diagonalControlAreas;
+							// check if I'm going to leave an area
+							for (auto index : set) {
+								if (nextSet.find(index) != nextSet.end())
+									continue;
+								// need to deallocate a control area
+								ObjRef<ObjectDataType> ca = navigator->controlAreas[index];
+
+								// figure out the distance at which the object crosses the line of the control area
+								Vec2 corners[5] = {
+									ca->getLocation(0.0, 0.0, 0.0).project(ca->holder->up, model()).xy, // top left
+									ca->getLocation(1.0, 0.0, 0.0).project(ca->holder->up, model()).xy, // top right
+									ca->getLocation(1.0, 1.0, 0.0).project(ca->holder->up, model()).xy, // bottom right
+									ca->getLocation(0.0, 1.0, 0.0).project(ca->holder->up, model()).xy, // bottom left
+									Vec2(0, 0) // top left
+								};
+								corners[4] = corners[0];
+								auto fromLoc = navigator->getLocation(laste->cell).xy;
+								auto toLoc = navigator->getLocation(e->cell).xy;
+								Line2 travelLine(fromLoc, toLoc);
+								double traversalDist = atDist - dist;
+								for (int k = 0; k < 4; k++) {
+									auto intersection = travelLine.intersect(Line2(corners[k], corners[k + 1]));
+									if (intersection.isValid && intersection.distAlong1 >= 0.0 && intersection.distAlong1 <= dist) {
+										auto compareDist = atDist - dist + intersection.distAlong1;
+										if (compareDist > traversalDist)
+											traversalDist = compareDist;
+									}
+								}
+
+								auto allocPointIter = std::find_if(controlAreaAllocations.begin(), controlAreaAllocations.end(),
+									[&ca](TravelAllocation* alloc) { return ca == alloc->getObject(); });
+								if (allocPointIter != controlAreaAllocations.end()) {
+									ObjRef<TravelAllocation> alloc = *(*allocPointIter);
+									NodeRef validityCheck = holder;
+
+									double releaseTime = endTime;
+									alloc->traversalDist = traversalDist;
+									if (atDist - traversalDist > tinyDist) {
+										releaseTime = getkinematics(kinematics, KINEMATIC_ARRIVALTIME, numKinematics, traversalDist - (atDist - dist));
+									}
+
+									auto onExit = [this, validityCheck, ca, alloc]() {
+										if (!validityCheck || !ca || !alloc)
+											return;
+										onControlAreaExit(alloc);
+									};
+									alloc->deallocateEvent = createevent(FlexSimEvent::create(holder, releaseTime, "Control Area Exit", onExit));
 								}
 							}
-
-							auto allocPointIter = std::find_if(controlAreaAllocations.begin(), controlAreaAllocations.end(),
-								[&ca](TravelAllocation* alloc) { return ca == alloc->getObject(); });
-							if (allocPointIter != controlAreaAllocations.end()) {
-								ObjRef<TravelAllocation> alloc = *(*allocPointIter);
-								NodeRef validityCheck = holder;
-
-								double releaseTime = endTime;
-								alloc->traversalDist = traversalDist;
-								if (atDist - traversalDist > tinyDist) {
-									releaseTime = getkinematics(kinematics, KINEMATIC_ARRIVALTIME, numKinematics, traversalDist - (atDist - dist));
-								}
-										
-								auto onExit = [this, validityCheck, ca, alloc]() {
-									if (!validityCheck || !ca || !alloc)
-										return;
-									onControlAreaExit(alloc);
-								};	
-								alloc->deallocateEvent = createevent(FlexSimEvent::create(holder, releaseTime, "Control Area Exit", onExit));
-							}
+							curControlAreaSetIndex = setIndex;
 						}
-						curControlAreaSetIndex = setIndex;
 					}
 				}
 				if (enableCollisionAvoidance) {
