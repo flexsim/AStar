@@ -5078,7 +5078,7 @@ applylinks(c, 1);
         <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
         <node f="42" dt="1"><name>spatialsx</name><data>000000004062c000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-        <node f="42" dt="2"><name>tooltip</name><data>When checked, the A* traveler will always travel along mandatory paths</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>When checked, the A* traveler will always travel along mandatory paths</data></node>
         <node f="42" dt="2"><name>coldlink</name><data>../..&gt;objectfocus+/useMandatoryPath</data></node>
         <node f="42" dt="2"><name>OnPress</name><data>applylinks(c);</data></node>
         <node f="4000000042" dt="2"><name>windowtitle</name><data>Use Mandatory Paths</data></node>
