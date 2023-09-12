@@ -361,6 +361,10 @@
          <node f="40"><name></name></node>
          <node f="42" dt="4"><name>TravelPatterns</name><data>
           <node f="40"><name></name></node>
+          <node f="42"><name>superclasses</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>MAIN:/project/library/FlexSimEventHandler&gt;behaviour/BaseProperty</name><data><coupling>null</coupling></data></node>
+          </node>
           <node f="42"><name>variables</name>
            <node f="40"><name></name></node>
            <node f="42" dt="2"><name>category</name><data>A*</data></node>
@@ -369,6 +373,7 @@
             <node f="42"><name>AStar::Divider</name></node>
            </node>
            <node f="42" dt="1"><name>noDirectEdit</name><data>000000003ff00000</data></node>
+           <node f="4000000042" dt="2"><name>localizedName</name><data>TravelPatterns</data></node>
           </node>
           <node f="42"><name>eventfunctions</name>
            <node f="40"><name></name></node>
@@ -453,6 +458,7 @@ return value;
            <node f="42" dt="2"><name>varPath</name><data>&gt;variables/points</data></node>
            <node f="42" dt="2"><name>category</name><data>A*</data></node>
            <node f="42" dt="1"><name>noDirectEdit</name><data>000000003ff00000</data></node>
+           <node f="4000000042" dt="2"><name>localizedName</name><data>PathPoints</data></node>
           </node>
           <node f="42"><name>eventfunctions</name>
            <node f="40"><name></name></node>
@@ -510,6 +516,7 @@ function_s(obj, "makeMeshDirty");
             <node f="42" dt="3"><name>None</name><data><coupling>null</coupling></data></node>
            </node>
            <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="4000000042" dt="2"><name>localizedName</name><data>ConditionalRule</data></node>
           </node>
           <node f="42"><name>eventfunctions</name>
            <node f="40"><name></name></node></node>
@@ -577,6 +584,7 @@ function_s(obj, "makeMeshDirty");
             <node f="40"><name></name></node>
             <node f="42"><name>AStar::Bridge</name></node>
            </node>
+           <node f="4000000042" dt="2"><name>localizedName</name><data>IsTwoWay</data></node>
           </node>
           <node f="42"><name>eventfunctions</name>
            <node f="40"><name></name></node>
@@ -671,6 +679,7 @@ return string.fromNum(value);
             <node f="42" dt="2"><name>sdt::attributetree</name><data>TableViewFormatRange</data>
              <node f="40"><name></name></node></node>
            </node>
+           <node f="4000000042" dt="2"><name>localizedName</name><data>PathWeight</data></node>
           </node>
           <node f="42"><name>eventfunctions</name>
            <node f="40"><name></name></node></node>
@@ -728,6 +737,7 @@ return string.fromNum(value);
            <node f="40"><name></name></node>
            <node f="42" dt="2"><name>varPath</name><data>&gt;variables/useVirtualDistance</data></node>
            <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="4000000042" dt="2"><name>localizedName</name><data>UseVirtualDistance</data></node>
           </node>
           <node f="42"><name>eventfunctions</name>
            <node f="40"><name></name></node></node>
@@ -743,6 +753,7 @@ return string.fromNum(value);
            <node f="42" dt="2"><name>varPath</name><data>&gt;variables/virtualDistance</data></node>
            <node f="42" dt="2"><name>unitType</name><data>length</data></node>
            <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="4000000042" dt="2"><name>localizedName</name><data>VirtualDistance</data></node>
           </node>
           <node f="42"><name>eventfunctions</name>
            <node f="40"><name></name></node></node>
