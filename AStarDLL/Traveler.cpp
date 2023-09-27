@@ -378,7 +378,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 					while (rotDiff < -180)
 						rotDiff += 360;
 
-					if (fabs(rotDiff) > 0.1) {
+					if (fabs(rotDiff) > 0.1 && (i > startAtPathIndex + 1 || (!startBetweenCells && te->v_modifyrotation))) {
 						double timeToTurn = fabs(rotDiff / turnSpeed);
 						// make him travel a tiny distance to the next point so that TravelPath::update() will actually update rotation.
 						double turnDist = 0.0001 * dist;
