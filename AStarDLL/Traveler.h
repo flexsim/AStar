@@ -110,6 +110,9 @@ public:
 	NodeAllocation addAllocation_flexScript(NodeAllocation& allocation, int force, int notifyPendingAllocations);
 	void checkCreateCollisionEvent(NodeAllocation& allocation, AStarNodeExtraData* nodeData = nullptr);
 
+	static const int VISIT_CONTINUE = 0x0;
+	static const int VISIT_ABORT = 0x1;
+	static const int VISIT_NO_INC_ITER = 0x2;
 	template<class Callback>
 	static NodeAllocation* visitCollisions(AStarNodeExtraData* nodeData, const NodeAllocation& myAllocation, bool ignoreSameTravelerAllocs, Callback predicate)
 	{
@@ -119,19 +122,22 @@ public:
 
 		for (auto iter = nodeData->allocations.begin(); iter != nodeData->allocations.end();) {
 			NodeAllocation& other = *iter;
-			++iter; // I want to pre-increment, so that if the allocation is removed, I still have a valid iterator
 			if (&other == &myAllocation)
 				continue;
 			if (ignoreSameTravelerAllocs && other.traveler == myAllocation.traveler)
 				continue;
 			bool isCollision;
+			int result = VISIT_CONTINUE;
 			if (other.acquireTime <= myAllocation.acquireTime)
 				isCollision = other.releaseTime > myAllocation.acquireTime;
 			else isCollision = myAllocation.releaseTime > other.acquireTime;
 			if (isCollision) {
-				if (predicate(other))
+				result = predicate(iter);
+				if ((result & VISIT_ABORT) != 0)
 					return &other;
 			}
+			if ((result & VISIT_NO_INC_ITER) == 0)
+				++iter;
 		}
 		return nullptr;
 	}
