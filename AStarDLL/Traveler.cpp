@@ -234,8 +234,14 @@ void Traveler::navigatePath(int startAtPathIndex)
 	// traveling between two cells.
 	if (startBetweenCells) {
 		atDist = updateLocation(true);
-		while (startAtPathIndex > 0 && travelPath[startAtPathIndex].atTravelDist > atDist + tinyDist)
-			startAtPathIndex--;
+		if (fabs(atDist - travelPath[startAtPathIndex].atTravelDist) < tinyDist) {
+			startBetweenCells = false;
+			lastStatUpdateTravelDist = atDist;
+		}
+		else {
+			while (startAtPathIndex > 0 && travelPath[startAtPathIndex].atTravelDist > atDist + tinyDist)
+				startAtPathIndex--;
+		}
 	}
 	else {
 		lastStatUpdateTravelDist = atDist;
@@ -992,7 +998,7 @@ bool Traveler::navigateAroundDeadlock(std::vector<Traveler*>& deadlockList, Node
 
 		Cell destCell = traveler->travelPath.back().cell;
 		Vec3 destLoc = navigator->getGrid(destCell)->getLocation(destCell);
-		double atDist = traveler->updateLocation();
+		double atDist = traveler->updateLocation() - 2.0 * tinyDist;
 		auto atIndex = traveler->travelPath.updateAtIndex(atDist, true);
 		auto savedLoc = traveler->te->getLocation(0.5, 0.5, 0.0);
 		auto startLoc = navigator->getLocation(traveler->travelPath[atIndex].cell).project(model(), traveler->te->holder->up);
