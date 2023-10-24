@@ -250,8 +250,14 @@ void Traveler::navigatePath(int startAtPathIndex)
 	// traveling between two cells.
 	if (startAtPathIndex > 0 || startBetweenCells) {
 		atDist = updateLocation(true);
-		while (startAtPathIndex > 0 && travelPath[startAtPathIndex].atTravelDist > atDist + tinyDist)
-			startAtPathIndex--;
+		if (fabs(atDist - travelPath[startAtPathIndex].atTravelDist) < tinyDist) {
+			startBetweenCells = false;
+			lastStatUpdateTravelDist = atDist;
+		}
+		else {
+			while (startAtPathIndex > 0 && travelPath[startAtPathIndex].atTravelDist > atDist + tinyDist)
+				startAtPathIndex--;
+		}
 	}
 	else {
 		lastStatUpdateTravelDist = atDist;
@@ -415,7 +421,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 					while (rotDiff < -180)
 						rotDiff += 360;
 
-					if (fabs(rotDiff) > 0.1) {
+					if (fabs(rotDiff) > 0.1 && (i > startAtPathIndex + 1 || (!startBetweenCells && te->v_modifyrotation))) {
 						double timeToTurn = fabs(rotDiff / turnSpeed);
 						// make him travel a tiny distance to the next point so that TravelPath::update() will actually update rotation.
 						double turnDist = 0.0001 * dist;
@@ -667,9 +673,11 @@ void Traveler::navigatePath(int startAtPathIndex)
 
 	}
 	if (enableCollisionAvoidance && initialAllocsSize > 0 && !(userResult & UserNavigationResult::KeepAllocations)) {
-		for (int i = initialAllocsSize - 1; i >= 0; i--) {
+		for (int i = std::min((int)allocations.size(), initialAllocsSize) - 1; i >= 0; i--) {
 			if (allocations[i]->isMarkedForDeletion) {
 				removeAllocation(allocations.begin() + i);
+				while (i > allocations.size())
+					i--;
 			}
 		}
 	}
@@ -781,11 +789,12 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, 
 	if (!force || notifyPendingAllocations) {
 		NodeAllocation* selfCollision = nullptr;
 		visitCollisions(nodeData, allocation, false,
-			[&](NodeAllocation& other) {
+			[&](NodeAllocationIterator& otherIter) {
+				auto& other = *otherIter;
 				auto* collideWith = &other;
 				if (collideWith->traveler == this) {
 					selfCollision = collideWith;
-					return false;
+					return VISIT_CONTINUE;
 				}
 				NodeAllocation* laterAllocation = (allocation.acquireTime < collideWith->acquireTime || force) ? collideWith : &allocation;
 				Traveler* laterTraveler = laterAllocation->traveler;
@@ -812,7 +821,11 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, 
 						auto iter = laterTraveler->find(laterAllocation);
 						while (iter - laterTraveler->allocations.begin() >= 2 && (*(iter - 1))->atTravelDist >= laterAllocation->atTravelDist)
 							iter--;
+						++otherIter;
+						while (otherIter != nodeData->allocations.end() && otherIter->traveler == laterTraveler)
+							++otherIter;
 						laterTraveler->clearAllocations(iter, true);
+						return VISIT_CONTINUE | VISIT_NO_INC_ITER;
 					}
 					else // if I am the later collision, then I should mark that I am blocked
 						iAmBlocked = true;
@@ -820,7 +833,7 @@ NodeAllocation* Traveler::addAllocation(NodeAllocation& allocation, bool force, 
 				else {
 					delete event;
 				}
-				return false;
+				return VISIT_CONTINUE;
 			}
 		);
 
@@ -890,14 +903,15 @@ NodeAllocation* Traveler::findCollision(AStarNodeExtraData* nodeData, const Node
 	double minAcquireTime = DBL_MAX;
 	double curTime = time();
 	visitCollisions(nodeData, myAllocation, ignoreSameTravelerAllocs,
-		[&](NodeAllocation& other) {
+		[&](NodeAllocationIterator& otherIter) {
+			auto& other = *otherIter;
 			if (other.acquireTime < minAcquireTime) {
 				best = &other;
 				minAcquireTime = other.acquireTime;
 				if (other.acquireTime < curTime)
-					return true;
+					return VISIT_ABORT;
 			}
-			return false;
+			return VISIT_CONTINUE;
 		}
 	);
 
@@ -1176,7 +1190,7 @@ bool Traveler::navigateAroundDeadlock(Array& deadlockListArray)
 
 		Cell destCell = traveler->travelPath.back().cell;
 		Vec3 destLoc = navigator->getGrid(destCell)->getLocation(destCell);
-		double atDist = traveler->updateLocation();
+		double atDist = traveler->updateLocation() - 2.0 * tinyDist;
 		auto atIndex = traveler->travelPath.updateAtIndex(atDist, true);
 		auto savedLoc = traveler->te->getLocation(0.5, 0.5, 0.0);
 		auto startLoc = navigator->getLocation(traveler->travelPath[atIndex].cell).project(model(), traveler->te->holder->up);

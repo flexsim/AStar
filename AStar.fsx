@@ -2567,8 +2567,12 @@ a traveller could end their travel to the object</data></node>
            <node f="42" dt="1"><name>spatialy</name><data>000000004073c000</data></node>
            <node f="42" dt="1"><name>spatialsx</name><data>0000000040690000</data></node>
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-           <node f="4000000042" dt="2"><name>tooltip</name><data>Check to display the nodes around the highlighted object where
-a traveller could end their travel to the object</data></node>
+           <node f="4000000042" dt="2"><name>tooltip</name><data>Check to show the progression in the highlighted traveler's last 
+A* routing solution.
+
+Red nodes - Resolved nodes
+Green Nodes - Nodes in the open set
+Blue Node - Node to resolve in the current step</data></node>
            <node f="42" dt="2"><name>coldlink</name><data>@&gt;objectfocus+&gt;variables/debugRoutingAlgorithm</data></node>
            <node f="42"><name>eventfunctions</name>
             <node f="40"><name></name></node>
@@ -5936,7 +5940,7 @@ repaintview(TheTable);
          <node f="42" dt="1"><name>viewwindowtype</name><data>000000004059c000</data></node>
          <node f="42" dt="1"><name>spatialx</name><data>0000000040310000</data></node>
          <node f="42" dt="1"><name>spatialy</name><data>0000000040080000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>00000000404e0000</data></node>
+         <node f="42" dt="1"><name>spatialsx</name><data>0000000040510000</data></node>
          <node f="42" dt="1"><name>spatialsy</name><data>00000000402e0000</data></node>
          <node f="4000000042" dt="2"><name>windowtitle</name><data>Path Weight</data></node>
         </data></node>
