@@ -553,12 +553,13 @@ void Traveler::navigatePath(int startAtPathIndex)
 								corners[4] = corners[0];
 								auto fromLoc = navigator->getLocation(laste->cell).xy;
 								auto toLoc = navigator->getLocation(e->cell).xy;
+								auto lineDist = (toLoc - fromLoc).magnitude;
 								Line2 travelLine(fromLoc, toLoc);
 								double traversalDist = atDist - dist;
 								for (int k = 0; k < 4; k++) {
 									auto intersection = travelLine.intersect(Line2(corners[k], corners[k + 1]));
-									if (intersection.isValid && intersection.distAlong1 >= 0.0 && intersection.distAlong1 <= dist) {
-										auto compareDist = atDist - dist + intersection.distAlong1;
+									if (intersection.isValid && intersection.distAlong1 >= 0.0 && intersection.distAlong1 <= lineDist) {
+										auto compareDist = atDist - lineDist + intersection.distAlong1;
 										if (compareDist > traversalDist)
 											traversalDist = compareDist;
 									}
@@ -576,12 +577,16 @@ void Traveler::navigatePath(int startAtPathIndex)
 										releaseTime = getkinematics(kinematics, KINEMATIC_ARRIVALTIME, numKinematics, traversalDist - (atDist - dist));
 									}
 
-									auto onExit = [this, validityCheck, ca, alloc]() {
-										if (!validityCheck || !ca || !alloc)
-											return;
-										onControlAreaExit(alloc);
-									};
-									alloc->deallocateEvent = createevent(FlexSimEvent::create(holder, releaseTime, "Control Area Exit", onExit));
+									if (!alloc->deallocateEvent || alloc->deallocateEvent->objectAs(FlexSimEvent)->time != releaseTime) {
+										auto onExit = [this, validityCheck, ca, alloc]() {
+											if (!validityCheck || !ca || !alloc)
+												return;
+											onControlAreaExit(alloc);
+										};
+										if (alloc->deallocateEvent)
+											destroyevent(alloc->deallocateEvent);
+										alloc->deallocateEvent = createevent(FlexSimEvent::create(holder, releaseTime, "Control Area Exit", onExit));
+									}
 								}
 							}
 							curControlAreaSetIndex = setIndex;
