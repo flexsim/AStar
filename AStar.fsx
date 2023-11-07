@@ -5457,7 +5457,7 @@ if (propertiesView) {
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>0000000000000000</data></node>
-    <node f="42" dt="2"><name>after</name><data>Triggers</data></node>
+    <node f="42" dt="2"><name>after</name><data>TestQueries</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
@@ -6056,7 +6056,7 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
    <node f="42" dt="3"><name></name><data><coupling>null</coupling></data>
     <node f="40"><name></name></node>
     <node f="42" dt="1"><name>rank</name><data>0000000000000000</data></node>
-    <node f="42" dt="2"><name>after</name><data>Triggers</data></node>
+    <node f="42" dt="2"><name>after</name><data>TestQueries</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
