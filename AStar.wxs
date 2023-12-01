@@ -3,11 +3,11 @@
   <Module Id="AStarModule" Language="1033" Version="1.0.0.0">
     
 <!--Program GUIDs>
-<FlexSim="9A23EEC9-ADAB-4A76-B121-4DE075314C9B">
-<FlexSimChinese="75F2FEEE-8C45-4ABB-BD4C-53C1CD9660A9">
-<FlexSimJapanese="DFFF0C13-60C4-414C-BFCA-F640BF14AFD0">
-<FlexSimChineseTraditional="F7DE87A4-C6B0-4CB0-B55E-4193BA4335FA">
-<FlexSimSpanish="CD3C31A4-61EF-43BA-BF1D-BA38778E9BBC">
+<FlexSim="15572B4F-0191-4F56-8A04-D4D8A555CFD7">
+<FlexSimChinese="B4C64601-F59A-4CD3-99BE-FD61CC4E5C28">
+<FlexSimJapanese="E054A279-BA14-45D9-B89D-D1D71C164985">
+<FlexSimChineseTraditional="C1599204-E82D-43BB-84E9-0F1E270C5433">
+<FlexSimSpanish="8E8ED00F-88AC-4205-9C4B-0446AD043635">
 </Program GUIDs-->
     <Package Id="6EBAF277-0D85-4030-80A6-961EF0DFFC06" Manufacturer="FlexSim Software Products Inc." InstallerVersion="200" />
 
@@ -15,33 +15,33 @@
       <Directory Id="MergeRedirectFolder">
         <?if $(var.Platform) = x86 ?>
 <!--Program GUIDs>
-<FlexSim="BB67271A-CBFA-4483-8240-7C0B67EF0F6C">
-<FlexSimChinese="B8B77A40-03EC-42C0-8FDF-C04309395631">
-<FlexSimJapanese="B31B5BF1-D213-4E00-AD15-031A81E207B7">
-<FlexSimChineseTraditional="73B98848-17F5-4AEC-9AF1-E4952B61126C">
-<FlexSimSpanish="AD3EDFDF-21AC-436A-A0B1-52CAEFC564F9">
+<FlexSim="7099E0AB-80C6-44C3-BB6A-79226415BF0F">
+<FlexSimChinese="1474F020-F7D5-4EFF-88C9-F75973955204">
+<FlexSimJapanese="4755CC50-604B-4BD6-B16F-4B36A7E464A2">
+<FlexSimChineseTraditional="3FB214B0-3852-487F-8979-955FC23F350B">
+<FlexSimSpanish="C34FB951-CE09-4FEC-B908-F3F635F75845">
 </Program GUIDs-->
           <Component Id="DLLBinaries_x86" Guid="8C85D7DC-C100-4B3C-8689-BC093CA8D93F">
             <File Name="AStar_x86.dll" Source="$(var.ProjectDir)AStar_x86.dll" />
           </Component>
         <?else?>
 <!--Program GUIDs>
-<FlexSim="8C975F14-50B1-4853-A63C-443631FC8025">
-<FlexSimChinese="AB6A2E59-C265-4E51-A16B-74088AB86BC0">
-<FlexSimJapanese="FDDB35AF-3612-41A9-AB15-B27AE7D3CCBD">
-<FlexSimChineseTraditional="E03741C4-3D9D-439C-9731-9DA968BB8BA4">
-<FlexSimSpanish="4472DD25-0270-49E4-BB3D-09FB17ACB442">
+<FlexSim="2E46C0BB-8608-4054-89E4-AF1DDEF3EF5A">
+<FlexSimChinese="4CBAE839-76C9-4301-9877-B6D408F517A4">
+<FlexSimJapanese="A3155851-52C9-42AA-8797-929B7CAADDCB">
+<FlexSimChineseTraditional="69B1252B-C0CC-4329-A602-4089D5F1735E">
+<FlexSimSpanish="EB224A53-C3E9-4249-9B7D-0265F0A4C87E">
 </Program GUIDs-->
           <Component Id="DLLBinaries_x64" Guid="B8FF3568-4258-4C2F-AD1E-1FB4499D7BDD">
             <File Name="AStar.dll" Source="$(var.ProjectDir)AStar.dll" />
           </Component>
         <?endif?>
 <!--Program GUIDs>
-<FlexSim="AEDC739D-8E31-4830-9DD5-81603EF720BA">
-<FlexSimChinese="08E92C5F-ADE0-4ECD-9441-00EA90F19E41">
-<FlexSimJapanese="641055E2-384C-4FFA-B2F4-9D412DE6A012">
-<FlexSimChineseTraditional="56A83B0F-E69D-413E-A1FF-A311EE0FDAA6">
-<FlexSimSpanish="381B1050-6B00-4156-939F-C4BEAEBD67C5">
+<FlexSim="25E7A926-A4DB-426D-B1EF-4DE952864AB4">
+<FlexSimChinese="11FBD27A-C57A-4C71-9FD5-B724B073D653">
+<FlexSimJapanese="7CF4459C-FF7D-4520-9BD9-76A7E2926875">
+<FlexSimChineseTraditional="A8153473-9E9A-4A40-98F8-806F7EFC21D9">
+<FlexSimSpanish="48C19273-DFD4-4735-8F5E-CF9631851797">
 </Program GUIDs-->
         <Component Id="ModuleTree" Guid="03C7E4DD-62F2-465C-AC18-D035161881F1">
           <File Name="AStar.t" Source="$(var.ProjectDir)AStar.t" />
