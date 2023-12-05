@@ -169,7 +169,7 @@ public:
 	double drawMode;
 	double showAllocations;
 	double showTravelThreshold;
-	void drawAllocations();
+	void drawAllocations(TreeNode* view, int pickingMode);
 	void drawDestinationThreshold(TreeNode* destination);
 
 	double ignoreDestBarrier;

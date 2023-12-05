@@ -470,9 +470,6 @@ double AStarNavigator::onDraw(TreeNode* view)
 		if (drawMode & ASTAR_DRAW_MODE_MEMBERS)
 			drawMembers();
 
-		glPolygonOffset(offset - 0.020, -4);
-		if (showAllocations)
-			drawAllocations();
 
 		glPolygonOffset(offset - 0.030, -6);
 		if (showTravelThreshold)
@@ -499,6 +496,9 @@ double AStarNavigator::onDraw(TreeNode* view)
 	}
 	fglEnable(GL_TEXTURE_2D);
 	fglEnable(GL_LIGHTING);
+	glPolygonOffset(offset - 0.020, -4);
+	if (showAllocations)
+		drawAllocations(view, pickingMode);
 
 	glPolygonOffset(factor, units);
 	if (polyOffsetFill == false)
@@ -1691,7 +1691,7 @@ void AStarNavigator::buildGridMesh(float zOffset)
 	isGridMeshBuilt = true;
 }
 
-void AStarNavigator::drawAllocations()
+void AStarNavigator::drawAllocations(TreeNode* view, int pickingMode)
 {
 	if (!showAllocations || time() <= 0)
 		return;
@@ -1719,33 +1719,45 @@ void AStarNavigator::drawAllocations()
 		lineMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(topPos.x, topPos.y, topPos.z));
 		lineMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE, clr);
 	};
+	static const int SELECTIONMODE_MOUSEMOVE = 10;
 	double curTime = time();
 	for (auto traveler : travelers) {
 		for (auto alloc : traveler->allocations) {
+			auto cell = alloc->cell;
 			bool isAllocCurrent = alloc->acquireTime <= curTime && alloc->releaseTime > curTime;
-			auto clr = isAllocCurrent ? fullClr : partialClr;
-			Vec3 centerPos = getLocation(alloc->cell);
-			int vert = allocMesh.addVertex();
-			allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, centerPos.z));
-			allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
-			vert = allocMesh.addVertex();
-			allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y + diamondRadius, centerPos.z));
-			allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
-			vert = allocMesh.addVertex();
-			allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, centerPos.z));
-			allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
-			vert = allocMesh.addVertex();
-			allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, centerPos.z));
-			allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
-			vert = allocMesh.addVertex();
-			allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y - diamondRadius, centerPos.z));
-			allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
-			vert = allocMesh.addVertex();
-			allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, centerPos.z));
-			allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+			Vec3 centerPos = getLocation(cell);
 
-			if (isAllocCurrent) {
-				auto nodeData = getExtraData(alloc->cell);
+			auto nodeData = getExtraData(cell);
+			if (alloc == nodeData->allocations.begin()) {
+				auto predicate = [curTime](const NodeAllocation& alloc) { return alloc.acquireTime <= curTime && alloc.releaseTime > curTime; };
+				auto currentAlloc = std::find_if(nodeData->allocations.begin(), nodeData->allocations.end(), predicate);
+				auto clr = currentAlloc != nodeData->allocations.end() ? fullClr : partialClr;
+
+				if (pickingMode == SELECTIONMODE_MOUSEMOVE)
+					allocMesh.beginPickRange(GL_TRIANGLES, holder, 0, nodeData->holder, 0);
+				int vert = allocMesh.addVertex();
+				allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, centerPos.z));
+				allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+				vert = allocMesh.addVertex();
+				allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y + diamondRadius, centerPos.z));
+				allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+				vert = allocMesh.addVertex();
+				allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, centerPos.z));
+				allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+				vert = allocMesh.addVertex();
+				allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x - diamondRadius, centerPos.y, centerPos.z));
+				allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+				vert = allocMesh.addVertex();
+				allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x, centerPos.y - diamondRadius, centerPos.z));
+				allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+				vert = allocMesh.addVertex();
+				allocMesh.setVertexAttrib(vert, MESH_POSITION, Vec3f(centerPos.x + diamondRadius, centerPos.y, centerPos.z));
+				allocMesh.setVertexAttrib(vert, MESH_AMBIENT_AND_DIFFUSE4, clr);
+				if (pickingMode == SELECTIONMODE_MOUSEMOVE)
+					allocMesh.endPickRange();
+			}
+
+			if (alloc->acquireTime <= curTime && alloc->releaseTime > curTime) {
 				addToMesh(blueClr, alloc->traveler->te, centerPos);
 				if (nodeData->requests.size() > 0) {
 					for (auto iter = nodeData->requests.begin(); iter != nodeData->requests.end(); iter++) {
@@ -1763,10 +1775,44 @@ void AStarNavigator::drawAllocations()
 	}
 	fglDisable(GL_LIGHTING);
 	fglDisable(GL_TEXTURE_2D);
-	allocMesh.draw(GL_TRIANGLES);
+	if (!pickingMode) {
+		allocMesh.draw(GL_TRIANGLES);
+	}
+	else allocMesh.drawPickRanges(view);
 	lineMesh.draw(GL_LINES);
 	fglEnable(GL_LIGHTING);
 	fglEnable(GL_TEXTURE_2D);
+
+	if (!pickingMode) {
+		auto hovered = tonode(getpickingdrawfocus(view, PICK_OBJECT, PICK_HOVERED));
+		if (hovered == holder && fglInfo(FGL_INFO_SHADERTYPE, view) == SHADERTYPE_DEFAULT) {
+			TreeNode* secondary = tonode(getpickingdrawfocus(view, PICK_SECONDARY_OBJECT, PICK_HOVERED));
+			if (secondary && secondary->up == extraDataNode) {
+				auto extra = secondary->objectAs(AStarNodeExtraData);
+				auto loc = getLocation(extra->cell);
+				auto grid = getGrid(extra->cell);
+				auto lineHeight = grid->nodeSize.y / 10.0;
+				auto scale = lineHeight / 14.0;
+				fglColor(0.0, 0.0, 0.0);
+				fglPushMatrix();
+				fglTranslate(loc.x, loc.y, loc.z + 0.01 * grid->nodeSize.y);
+				fglScale(scale, scale, scale);
+				for (auto& alloc : extra->allocations) {
+					fglTranslate(0.0, -14.0, 0.0);
+					std::string allocInfo = alloc.traveler->te->holder->getPath(model(), 2);
+					allocInfo.append(" ");
+					allocInfo.append(numtostring(alloc.acquireTime, 0, 2));
+					allocInfo.append(" - ");
+					if (alloc.releaseTime < FLT_MAX)
+						allocInfo.append(numtostring(alloc.releaseTime, 0, 2));
+					else allocInfo.append("inf");
+					drawflattext(allocInfo.c_str());
+					fglTranslate(0.0, -14.0, 0.0);
+				}
+				fglPopMatrix();
+			}
+		}
+	}
 
 }
 
