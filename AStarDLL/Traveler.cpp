@@ -209,7 +209,7 @@ void Traveler::onStartSimulation()
 {XS
 	Vec3 loc = te->getLocation(0.5, 0.5, 0.0);
 	Cell resetCell = navigator->getCell(loc);
-	if (navigator->enableCollisionAvoidance && !navigator->ignoreInactiveMemberCollisions) {
+	if (navigator->enableCollisionAvoidance && !navigator->ignoreInactiveMemberCollisions && isTEInModelSceneGraph()) {
 		travelPath.clear();
 		travelPath.push_back(AStarPathEntry(resetCell, -1));
 		travelPath.back().modelLoc = navigator->getLocation(resetCell);
@@ -1642,6 +1642,20 @@ double Traveler::getCurSpeed()
 		return te->v_lastupdatedspeed;
 	else 
 		return getkinematics(kinematics, KINEMATIC_VELOCITY, 0, updateTime);
+}
+
+bool Traveler::isTEInModelSceneGraph()
+{
+	auto testNode = te->holder->up;
+	auto modelNode = model();
+	while (testNode) {
+		if (testNode == modelNode)
+			return true;
+		if (testNode->dataType != DATATYPE_OBJECT)
+			return false;
+		testNode = testNode->up;
+	}
+	return false;
 }
 
 }

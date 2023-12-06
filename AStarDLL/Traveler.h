@@ -168,6 +168,7 @@ public:
 	astar_export double updateLocation(bool updateTravelDistStats = false);
 	astar_export void updateSpeedMarkers();
 	astar_export double getCurSpeed();
+	bool isTEInModelSceneGraph();
 
 	class ArrivalEvent : public FlexSimEvent
 	{
