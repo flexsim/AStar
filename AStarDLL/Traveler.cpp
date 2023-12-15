@@ -964,7 +964,7 @@ void Traveler::clearAllocationsExcept(const Cell & cell)
 void Traveler::clearAllocations()
 {
 	while (allocations.size() > 0)
-		removeAllocation(allocations.begin());
+		removeAllocation(allocations.end() - 1);
 }
 
 
