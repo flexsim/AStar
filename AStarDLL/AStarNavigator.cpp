@@ -1602,7 +1602,7 @@ void AStarNavigator::drawMembers()
 	// Draw circles under every traveler
 	for (int i = 0; i < travelers.size(); i++) {
 		Traveler * t = travelers[i];
-		if (t->activeState != Traveler::Active)
+		if (t->activeState == Traveler::Active)
 			continue;
 		TaskExecuter* te = t->te;
 		if (switch_hideshape(te->holder, -1))
