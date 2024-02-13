@@ -1385,6 +1385,10 @@ void Grid::addQuad(Mesh & mesh, Vec3f & p1, Vec3f & p2, Vec3f & p3, Vec3f & p4)
 	addTriangle(mesh, p1, p3, p4);
 }
 
+double Grid::dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType)
+{
+	return navigator->dragConnection(connectTo, keyPressed, classType, nullptr);
+}
 
 void Grid::dragPressedPick(treenode view, Vec3& pos, Vec3& diff)
 {

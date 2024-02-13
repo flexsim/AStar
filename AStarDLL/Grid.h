@@ -156,6 +156,7 @@ public:
 	static void addVertex(Mesh& mesh, Vec3f& point);
 	static void addTriangle(Mesh& mesh, Vec3f& p1, Vec3f& p2, Vec3f& p3);
 	static void addQuad(Mesh& mesh, Vec3f& p1, Vec3f& p2, Vec3f& p3, Vec3f& p4);
+	virtual double dragConnection(TreeNode* connectTo, char keyPressed, unsigned int classType) override;
 	void dragPressedPick(treenode view, Vec3& pos, Vec3& diff);
 	void dragPressedPick(treenode view, Vec3&& pos, Vec3&& diff);
 	Variant dragPressedPick(FLEXSIMINTERFACE)
