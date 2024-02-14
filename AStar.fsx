@@ -6651,6 +6651,38 @@ for (int i = 1; i &lt;= travelers.subnodes.length; i++) {
     </node>
    </node>
   </node>
+  <node f="42" dt="2"><name>add_Update to 24.1</name><data>MAIN:/project/events/OnUpdateModel/Update to 24.1</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name>Remove AStar 3D Object</name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000000000000</data></node>
+    <node f="42"><name>after</name></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>Remove AStar 3D Object</name><data>treenode updateRoot = param(1);
+double oldVersion = param(2);
+
+if (oldVersion &gt;= 24.1)
+	return 0;
+
+if (updateRoot != model())
+	return 0;
+	
+int updated = 0;
+
+treenode AStarNavigator = updateRoot.find("AStarNavigator");
+if (!AStarNavigator)
+	return 0;
+	
+treenode navShape = AStarNavigator.find("&gt;visual/drawsurrogate/Shape&gt;visual/shape");
+navShape.destroy();
+updated = 1;
+	
+return updated;</data></node>
+    </node>
+   </node>
+  </node>
  </node>
  <node f="42" dt="2"><name>release</name><data>24.0</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
