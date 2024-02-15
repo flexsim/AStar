@@ -6676,7 +6676,7 @@ if (!AStarNavigator)
 	return 0;
 	
 treenode navShape = AStarNavigator.find("&gt;visual/drawsurrogate/Shape&gt;visual/shape");
-navShape.destroy();
+navShape.value = "";
 updated = 1;
 	
 return updated;</data></node>
