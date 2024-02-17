@@ -5074,6 +5074,7 @@ return 0;
 </data></node>
          <node f="442" dt="2"><name>docType</name><data>string docType = gets(documentwindow(param(1)));
 return docType == "3D" || docType == "Tree";</data></node>
+         <node f="42" dt="1"><name>editMode</name><data>0000000000000000</data></node>
         </node>
        </node>
        <node f="42" dt="2"><name>undohistory</name><data>..&gt;viewfocus+</data></node>
@@ -5197,6 +5198,7 @@ return 0;
 </data></node>
          <node f="442" dt="2"><name>docType</name><data>string docType = gets(documentwindow(param(1)));
 return docType == "3D" || docType == "Tree";</data></node>
+         <node f="42" dt="1"><name>editMode</name><data>0000000000000000</data></node>
         </node>
        </node>
        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
@@ -5505,6 +5507,7 @@ return isclasstype(selObj, "AStar::Divider");
 </data></node>
          <node f="442" dt="2"><name>docType</name><data>string docType = gets(documentwindow(param(1)));
 return docType == "3D" || docType == "Tree";</data></node>
+         <node f="42" dt="1"><name>editMode</name><data>0000000000000000</data></node>
         </node>
        </node>
        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
@@ -6078,6 +6081,7 @@ return isclasstype(selObj, "AStar::Grid");
 </data></node>
          <node f="442" dt="2"><name>docType</name><data>string docType = gets(documentwindow(param(1)));
 return docType == "3D" || docType == "Tree";</data></node>
+         <node f="42" dt="1"><name>editMode</name><data>0000000000000000</data></node>
         </node>
        </node>
        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
