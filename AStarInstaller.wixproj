@@ -32,12 +32,10 @@
     <Compile Include="AStar.wxs" />
     <Compile Include="bitmaps\Bitmaps.wxs" />
     <Compile Include="cursors\Cursors.wxs" />
-    <Compile Include="shapes\Shapes.wxs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cursors" />
     <Folder Include="bitmaps" />
-    <Folder Include="shapes" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DefineConstants>Debug</DefineConstants>
@@ -56,7 +54,8 @@
   </PropertyGroup>
   <Import Project="$(WixTargetsPath)" />
   <PropertyGroup>
-    <PostBuildEvent></PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
