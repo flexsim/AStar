@@ -7,7 +7,7 @@
 
 namespace AStar {
 
-class Grid : public SimpleDataType
+class Grid : public ObjectDataType
 {
 public:
 	Grid() : nodeSize{ 1.0, 1.0 }, gridOrigin(0.0, 0.0, 0.0) {}

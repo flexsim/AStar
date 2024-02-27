@@ -321,6 +321,32 @@
         <node f="42" dt="1"><name>centroid</name><data>000000003ff00000</data></node>
        </node>
       </data></node>
+      <node f="10000042" dt="4"><name>Grid</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>classes</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>AStar::Grid</name><data><coupling>/installdata/add_library/1/data/astar/Grid</coupling></data></node>
+       </node>
+       <node f="42"><name>superclasses</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>FlexSimObject</name><data><coupling>null</coupling></data></node>
+       </node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name></name></node>
+       </node>
+       <node f="42"><name>behaviour</name>
+        <node f="40"><name></name></node></node>
+       <node f="42"><name>stats</name>
+        <node f="40"><name></name></node></node>
+       <node f="42"><name>visual</name>
+        <node f="40"><name></name></node></node>
+       <node f="42"><name>special</name>
+        <node f="40"><name></name></node></node>
+       <node f="42"><name>spatial</name>
+        <node f="40"><name></name></node></node>
+      </data>
+       <node f="40"><name></name></node></node>
       <node f="10100062" dt="4"><name>Barrier</name><data>
        <node f="40"><name></name></node>
        <node f="42"><name>classes</name>
@@ -1318,6 +1344,7 @@ executefsnode(OnMouseMove(handler), handler, i, eventdata);
         <node f="442" dt="2"><name>OnEntering</name><data>treenode handler = node("../AStar::Create", c);
 nodepoint(objectfocus(c), handler);
 setvarnum(handler, "mode", executestring(getvarstr(c, "mode")));
+setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
