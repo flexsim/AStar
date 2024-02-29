@@ -522,6 +522,12 @@ function_s(obj, "makeMeshDirty");
            <node f="40"><name></name></node></node>
          </data></node>
         </node>
+        <node f="42"><name>templateoverrides</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>Size</name></node>
+         <node f="42"><name>Location</name></node>
+         <node f="42"><name>PathPoints</name></node>
+        </node>
        </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node>
@@ -1008,6 +1014,8 @@ switch (clickCode) {
 					curObjectNode = function_s(activeNavigator, "addObject", modelPos.x, modelPos.y, modelPos.z, modelPos.x, modelPos.y, modelPos.z, mode);
 				}
 				
+				applicationcommand("applycreationproperties", curObjectNode);
+				
 				// Make an undo record
 				int undoId = beginaggregatedundo(i, "Create A* Object");
 				createundorecord(i, activeNavigator, UNDO_UPDATE_LINKS_ON_UNDO, 0, 0, 0);
@@ -1143,6 +1151,7 @@ if (barrierEditMode &amp; BARRIER_MODE_CREATE)
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_SOLID_BARRIER</data></node>
         <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/Barrier</data></node>
+        <node f="42" dt="1"><name>isCreationMode</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -1158,6 +1167,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>return findmatchintree(library(), getname(first(classes(a))) == "AStar::Barrier");</data></node>
        </node>
       </data></node>
       <node f="42" dt="4"><name>AStar::Divider</name><data>
@@ -1174,6 +1184,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_DIVIDER</data></node>
         <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/Divider</data></node>
+        <node f="42" dt="1"><name>isCreationMode</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -1191,6 +1202,8 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>print(c);
+return findmatchintree(library(), getname(first(classes(a))) == "AStar::Divider");</data></node>
        </node>
       </data></node>
       <node f="42" dt="4"><name>AStar::PreferredPath</name><data>
@@ -1207,6 +1220,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_PREFERRED_PATH</data></node>
         <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/PreferredPath</data></node>
+        <node f="42" dt="1"><name>isCreationMode</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -1224,6 +1238,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>return findmatchintree(library(), getname(first(classes(a))) == "AStar::PreferredPath");</data></node>
        </node>
       </data></node>
       <node f="42" dt="4"><name>AStar::Bridge</name><data>
@@ -1240,6 +1255,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_BRIDGE</data></node>
         <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/Bridge</data></node>
+        <node f="42" dt="1"><name>isCreationMode</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -1257,6 +1273,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>return findmatchintree(library(), getname(first(classes(a))) == "AStar::Bridge");</data></node>
        </node>
       </data></node>
       <node f="42" dt="4"><name>AStar::MandatoryPath</name><data>
@@ -1273,6 +1290,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_MANDATORY_PATH</data></node>
         <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/MandatoryPath</data></node>
+        <node f="42" dt="1"><name>isCreationMode</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -1290,6 +1308,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>return findmatchintree(library(), getname(first(classes(a))) == "AStar::MandatoryPath");</data></node>
        </node>
       </data></node>
       <node f="42" dt="4"><name>AStar::Grid</name><data>
