@@ -12,13 +12,14 @@ Grid::~Grid()
 	}
 }
 
-void Grid::bind()
+void Grid::bindVariables()
 {
 	int bindMode = getBindMode();
 	if (bindMode == SDT_BIND_ON_LOAD)
 		bindNavigator();
-	bindDoubleByName("nodeSizeX", nodeSize.x, 1);
-	bindDoubleByName("nodeSizeY", nodeSize.y, 1);
+	bindVariableByName("nodeSizeX", nodeSize.x, 1);
+	bindVariableByName("nodeSizeY", nodeSize.y, 1);
+	// TODO: move this to an update script
 	if (bindMode == SDT_BIND_ON_LOAD) {
 		treenode width = holder->subnodes["nodeWidth"];
 		if (width) {
@@ -26,20 +27,25 @@ void Grid::bind()
 			width->destroy();
 		}
 	}
-	bindNumber(minNodeSize);
-	bindNumber(diagDist);
-	bindNumber(deepDiagDist);
-	bindNumber(isBounded);
-	bindNumber(isLowestGrid);
-	bindDoubleByName("minPointX", minPoint.x, 1);
-	bindDoubleByName("minPointY", minPoint.y, 1);
-	bindDoubleByName("minPointZ", minPoint.z, 1);
-	bindDoubleByName("maxPointX", maxPoint.x, 1);
-	bindDoubleByName("maxPointY", maxPoint.y, 1);
-	bindDoubleByName("maxPointZ", maxPoint.z, 1);
-	bindDoubleByName("gridOriginX", gridOrigin.x, 1);
-	bindDoubleByName("gridOriginY", gridOrigin.y, 1);
-	bindDoubleByName("gridOriginZ", gridOrigin.z, 1);
+	bindVariable(minNodeSize);
+	bindVariable(diagDist);
+	bindVariable(deepDiagDist);
+	bindVariableByName("isBounded", _isBounded);
+	bindVariableByName("isLowestGrid", _isLowestGrid);
+	bindVariableByName("minPointX", minPoint.x);
+	bindVariableByName("minPointY", minPoint.y);
+	bindVariableByName("minPointZ", minPoint.z);
+	bindVariableByName("maxPointX", maxPoint.x);
+	bindVariableByName("maxPointY", maxPoint.y);
+	bindVariableByName("maxPointZ", maxPoint.z);
+	bindVariableByName("gridOriginX", gridOrigin.x);
+	bindVariableByName("gridOriginY", gridOrigin.y);
+	bindVariableByName("gridOriginZ", gridOrigin.z);
+}
+
+void Grid::bind()
+{
+	
 	bindDouble(isUserCustomized, 1);
 	bindDouble(noSelect, 1);
 	bindSubNode(bridgeData, 0);
@@ -54,14 +60,14 @@ bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand, bool addSurr
 	Vec2 offset = addSurroundDepth ? nodeSize * (navigator->surroundDepth + 1.0) : Vec2{ 0.0, 0.0 };
 	double z = modelLoc.z + 0.001 * nodeSize.x;
 	// return false if it's not in the z range
-	if ((z < minPoint.z && !isLowestGrid) || z >= maxPoint.z)
+	if ((z < minPoint.z && !_isLowestGrid) || z >= maxPoint.z)
 		return false;
 	if ((modelLoc.x - offset.x >= minPoint.x && modelLoc.y - offset.y >= minPoint.y)
 			&& (modelLoc.x + offset.x <= maxPoint.x && modelLoc.y + offset.y <= maxPoint.y))
 		return true;
 
 	if (canExpand) {
-		if (!isBounded)
+		if (!_isBounded)
 			return true;
 		Vec2 min, max;
 		findGrowthBounds(min, max);
@@ -74,7 +80,7 @@ bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand, bool addSurr
 
 bool Grid::isLocWithinVerticalBounds(double z) const
 {
-	return (isLowestGrid || z >= minPoint.z - 0.001 * nodeSize.x) && z < maxPoint.z - 0.001 * nodeSize.x;
+	return (_isLowestGrid || z >= minPoint.z - 0.001 * nodeSize.x) && z < maxPoint.z - 0.001 * nodeSize.x;
 }
 
 bool Grid::intersectBoundingBox(Vec3 & min, Vec3 & max) const
@@ -1434,6 +1440,7 @@ double Grid::onDestroy(treenode view)
 
 void Grid::bindNavigator()
 {
+	// TODO: change this to the way TEs bind/handle their navigator
 	if (holder->up && holder->up->name == "grids")
 		navigator = ownerobject(holder->up)->objectAs(AStarNavigator);
 	else {

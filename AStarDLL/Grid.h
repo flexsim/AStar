@@ -13,6 +13,7 @@ public:
 	Grid() : nodeSize{ 1.0, 1.0 }, gridOrigin(0.0, 0.0, 0.0) {}
 	Grid(AStarNavigator* navigator, double nodeWidth) : nodeSize{ nodeWidth, nodeWidth }, gridOrigin(0.0, 0.0, 0.0), navigator(navigator) {}
 	virtual ~Grid();
+	virtual void bindVariables() override;
 	virtual void bind() override;
 	virtual const char* getClassFactory() override { return "AStar::Grid"; }
 
@@ -31,10 +32,16 @@ public:
 	bool __canDoDeepDiag() { return nodeSize.x == nodeSize.y; }
 	__declspec(property(get = __canDoDeepDiag)) bool canDoDeepDiag;
 	/// <summary>	True if there is no grid below this grid on the z axis. </summary>
-	bool isLowestGrid = false;
+	double _isLowestGrid = 0.0;
+	bool _getIsLowestGrid() { return static_cast<bool>(_isLowestGrid); }
+	void _setIsLowestGrid(bool newVal) { _isLowestGrid = static_cast<double>(newVal); }
+	__declspec(property(get = _getIsLowestGrid, put = _setIsLowestGrid)) bool isLowestGrid;
 	/// <summary>	True if this object is bounded on its xy plane, meaning there is another 
 	/// 			grid on the same z plane as this grid. </summary>
-	bool isBounded = false;
+	double _isBounded = 0.0;
+	bool _getIsBounded() { return static_cast<bool>(_isBounded); }
+	void _setIsBounded(bool newVal) { _isBounded = static_cast<double>(newVal); }
+	__declspec(property(get = _getIsBounded, put = _setIsBounded)) bool isBounded;
 	/// <summary>	The minimum point. This is the minimum point of all matched barriers and objects. </summary>
 	Vec3 minPoint;
 	/// <summary>	The maximum point. This is the maximum point of all matched barriers and objects. </summary>

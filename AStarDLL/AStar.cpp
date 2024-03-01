@@ -1,5 +1,6 @@
 #include "PreferredPath.h"
 #include "Divider.h"
+#include "Grid.h"
 #include "Point.h"
 #include "Barrier.h"
 #include "AStarNavigator.h"
@@ -15,6 +16,7 @@ namespace AStar {
 visible ObjectDataType* createodtderivative(char* classname)
 {
 	if (strcmp(classname, "AStarNavigator")==0) return new AStarNavigator;
+	if (strcmp(classname, "Grid") == 0) return new Grid;
 	if (strcmp(classname, "Barrier") == 0) return new Barrier;
 	if (strcmp(classname, "PreferredPath")==0) return new PreferredPath;
 	if (strcmp(classname, "Divider")==0) return new Divider;
@@ -30,7 +32,6 @@ visible SimpleDataType* createsdtderivative(char* classname)
 	if (strcmp(classname, "BridgeRoutingData::ArrivalEvent") == 0) return new BridgeRoutingData::ArrivalEvent;
 	if (strcmp(classname, "Bridge::EndArrivalEvent") == 0) return new Bridge::EndArrivalEvent;
 	if (strcmp(classname, "Bridge::AvailableEvent") == 0) return new Bridge::AvailableEvent;
-	if (strcmp(classname, "Grid") == 0) return new Grid;
 	if (strcmp(classname, "Traveler") == 0) return new Traveler;
 	if (strcmp(classname, "TravelerBridgeData") == 0) return new TravelerBridgeData;
 	if (strcmp(classname, "Traveler::ArrivalEvent") == 0) return new Traveler::ArrivalEvent;
