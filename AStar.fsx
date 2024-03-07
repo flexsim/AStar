@@ -6707,7 +6707,7 @@ return updated;</data></node>
    </node>
   </node>
  </node>
- <node f="42" dt="2"><name>release</name><data>24.0</data></node>
+ <node f="42" dt="2"><name>release</name><data>24.1</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
- <node f="42" dt="2"><name>flexsim release</name><data>24.0</data></node>
+ <node f="42" dt="2"><name>flexsim release</name><data>24.1</data></node>
 </node></flexsim-tree>
