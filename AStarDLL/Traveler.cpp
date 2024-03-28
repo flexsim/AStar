@@ -405,6 +405,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 				int numSuccessfulAllocations = 0;
 				Vec3 diff = e->modelLoc - prevLoc;
 				double dist = diff.magnitude;
+				double kinDist = dist;
 				double startTime = endTime;
 				if (isExitingBridge) {
 					step.isDiagonal = false;
@@ -425,7 +426,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 						double timeToTurn = fabs(rotDiff / turnSpeed);
 						// make him travel a tiny distance to the next point so that TravelPath::update() will actually update rotation.
 						double turnDist = 0.0001 * dist;
-						dist -= turnDist;
+						kinDist -= turnDist;
 						addkinematic(kinematics, turnDist, 0.0, 0.0, turnDist / timeToTurn, 0, 0, 0.0, 0.0, startTime, KINEMATIC_TRAVEL);
 						startTime += turnDelay + timeToTurn;
 						if (lastAllocation)
@@ -439,7 +440,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 				e->atTravelDist = atDist;
 				double startSpeed = curSpeed;
 				e->startSpeed = startSpeed;
-				endTime = addkinematic(kinematics, dist, 0, 0, maxSpeed, acc, dec, startSpeed, std::min(maxSpeed, e->maxArrivalSpeed), startTime, KINEMATIC_TRAVEL);
+				endTime = addkinematic(kinematics, kinDist, 0, 0, maxSpeed, acc, dec, startSpeed, std::min(maxSpeed, e->maxArrivalSpeed), startTime, KINEMATIC_TRAVEL);
 				if (dec == 0 || e->maxArrivalSpeed >= endSpeed)
 					endArrivalTime = endTime;
 				int numKinematics = getkinematics(kinematics, KINEMATIC_NR);
