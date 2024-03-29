@@ -4703,29 +4703,91 @@ repaintview(view.find("../ColorsPanel/ColorListGraph"));</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
-     <node f="42" dt="2"><name>AStarNavigator</name><data>/?AStarNavigator</data>
+     <node f="42" dt="2"><name>AStar</name><data>/?astar</data>
       <node f="40"><name></name></node>
       <node f="42"><name>substructure</name>
        <node f="40"><name></name></node>
-       <node f="42" dt="2"><name>Shape</name><data>&gt;visual/drawsurrogate/1</data>
+       <node f="42" dt="2"><name>AStarNavigator</name><data>/AStarNavigator</data>
+        <node f="40"><name></name></node>
+        <node f="42"><name>substructure</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Shape</name><data>&gt;visual/drawsurrogate/1</data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>size</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="1"><name></name><data>9999999a3ff19999</data></node>
+           <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
+           <node f="42" dt="1"><name></name><data>9999999a3fc99999</data></node>
+          </node>
+         </node>
+        </node>
+        <node f="42"><name>length</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>sy</name><data>&gt;variables/grids/1/nodeSizeX</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
+         </node>
+         <node f="42" dt="2"><name>nodeSizeY</name><data>&gt;variables/grids/1/nodeSizeY</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
+         </node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>Barrier</name><data>/Barrier</data>
+        <node f="40"><name></name></node>
+        <node f="42"><name>length</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>p1y</name><data>&gt;variables/points/p1/y</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name></name><data>00000000c0140000</data></node>
+         </node>
+         <node f="42" dt="2"><name>p2x</name><data>&gt;variables/points/p2/x</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         </node>
+        </node>
+        <node f="42"><name>size</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>47ae147b3f847ae1</data></node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>Divider</name><data>/Divider</data>
         <node f="40"><name></name></node>
         <node f="42"><name>size</name>
          <node f="40"><name></name></node>
-         <node f="42" dt="1"><name></name><data>9999999a3ff19999</data></node>
-         <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
-         <node f="42" dt="1"><name></name><data>9999999a3fc99999</data></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>47ae147b3f847ae1</data></node>
         </node>
        </node>
-      </node>
-      <node f="42"><name>length</name>
-       <node f="40"><name></name></node>
-       <node f="42" dt="2"><name>nodeSizeX</name><data>&gt;variables/grids/1/nodeSizeX</data>
+       <node f="42" dt="2"><name>PreferredPath</name><data>/PreferredPath</data>
         <node f="40"><name></name></node>
-        <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
+        <node f="42"><name>size</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>47ae147b3f847ae1</data></node>
+        </node>
        </node>
-       <node f="42" dt="2"><name>nodeSizeY</name><data>&gt;variables/grids/1/nodeSizeY</data>
+       <node f="42" dt="2"><name>Bridge</name><data>/Bridge</data>
         <node f="40"><name></name></node>
-        <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
+        <node f="42"><name>size</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>47ae147b3f847ae1</data></node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>MandatoryPath</name><data>/MandatoryPath</data>
+        <node f="40"><name></name></node>
+        <node f="42"><name>size</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>47ae147b3f847ae1</data></node>
+        </node>
        </node>
       </node>
      </node>
