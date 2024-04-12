@@ -555,6 +555,12 @@ function_s(obj, "makeMeshDirty");
            <node f="40"><name></name></node></node>
          </data></node>
         </node>
+        <node f="42"><name>templateoverrides</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>Size</name></node>
+         <node f="42"><name>Location</name></node>
+         <node f="42"><name>PathPoints</name></node>
+        </node>
        </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node>
@@ -1041,6 +1047,8 @@ switch (clickCode) {
 					curObjectNode = function_s(activeNavigator, "addObject", modelPos.x, modelPos.y, modelPos.z, modelPos.x, modelPos.y, modelPos.z, mode);
 				}
 				
+				applicationcommand("applycreationproperties", curObjectNode);
+				
 				// Make an undo record
 				int undoId = beginaggregatedundo(i, "Create A* Object");
 				createundorecord(i, activeNavigator, UNDO_UPDATE_LINKS_ON_UNDO, 0, 0, 0);
@@ -1176,6 +1184,7 @@ if (barrierEditMode &amp; BARRIER_MODE_CREATE)
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_SOLID_BARRIER</data></node>
         <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/Barrier</data></node>
+        <node f="42" dt="1"><name>isCreationMode</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -1191,6 +1200,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>return findmatchintree(library(), getname(first(classes(a))) == "AStar::Barrier");</data></node>
        </node>
       </data></node>
       <node f="42" dt="4"><name>AStar::Divider</name><data>
@@ -1207,6 +1217,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_DIVIDER</data></node>
         <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/Divider</data></node>
+        <node f="42" dt="1"><name>isCreationMode</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -1224,6 +1235,8 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>print(c);
+return findmatchintree(library(), getname(first(classes(a))) == "AStar::Divider");</data></node>
        </node>
       </data></node>
       <node f="42" dt="4"><name>AStar::PreferredPath</name><data>
@@ -1240,6 +1253,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_PREFERRED_PATH</data></node>
         <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/PreferredPath</data></node>
+        <node f="42" dt="1"><name>isCreationMode</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -1257,6 +1271,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>return findmatchintree(library(), getname(first(classes(a))) == "AStar::PreferredPath");</data></node>
        </node>
       </data></node>
       <node f="42" dt="4"><name>AStar::Bridge</name><data>
@@ -1273,6 +1288,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_BRIDGE</data></node>
         <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/Bridge</data></node>
+        <node f="42" dt="1"><name>isCreationMode</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -1290,6 +1306,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>return findmatchintree(library(), getname(first(classes(a))) == "AStar::Bridge");</data></node>
        </node>
       </data></node>
       <node f="42" dt="4"><name>AStar::MandatoryPath</name><data>
@@ -1306,6 +1323,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_MANDATORY_PATH</data></node>
         <node f="42" dt="2"><name>class</name><data>MAIN:/project/library/astar/MandatoryPath</data></node>
+        <node f="42" dt="1"><name>isCreationMode</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -1323,6 +1341,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>return findmatchintree(library(), getname(first(classes(a))) == "AStar::MandatoryPath");</data></node>
        </node>
       </data></node>
       <node f="42" dt="4"><name>AStar::Grid</name><data>
@@ -4718,29 +4737,91 @@ repaintview(view.find("../ColorsPanel/ColorListGraph"));</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
-     <node f="42" dt="2"><name>AStarNavigator</name><data>/?AStarNavigator</data>
+     <node f="42" dt="2"><name>AStar</name><data>/?astar</data>
       <node f="40"><name></name></node>
       <node f="42"><name>substructure</name>
        <node f="40"><name></name></node>
-       <node f="42" dt="2"><name>Shape</name><data>&gt;visual/drawsurrogate/1</data>
+       <node f="42" dt="2"><name>AStarNavigator</name><data>/AStarNavigator</data>
+        <node f="40"><name></name></node>
+        <node f="42"><name>substructure</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>Shape</name><data>&gt;visual/drawsurrogate/1</data>
+          <node f="40"><name></name></node>
+          <node f="42"><name>size</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="1"><name></name><data>9999999a3ff19999</data></node>
+           <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
+           <node f="42" dt="1"><name></name><data>9999999a3fc99999</data></node>
+          </node>
+         </node>
+        </node>
+        <node f="42"><name>length</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>sy</name><data>&gt;variables/grids/1/nodeSizeX</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
+         </node>
+         <node f="42" dt="2"><name>nodeSizeY</name><data>&gt;variables/grids/1/nodeSizeY</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
+         </node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>Barrier</name><data>/Barrier</data>
+        <node f="40"><name></name></node>
+        <node f="42"><name>length</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>p1y</name><data>&gt;variables/points/p1/y</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name></name><data>00000000c0140000</data></node>
+         </node>
+         <node f="42" dt="2"><name>p2x</name><data>&gt;variables/points/p2/x</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         </node>
+        </node>
+        <node f="42"><name>size</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>47ae147b3f847ae1</data></node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>Divider</name><data>/Divider</data>
         <node f="40"><name></name></node>
         <node f="42"><name>size</name>
          <node f="40"><name></name></node>
-         <node f="42" dt="1"><name></name><data>9999999a3ff19999</data></node>
-         <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
-         <node f="42" dt="1"><name></name><data>9999999a3fc99999</data></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>47ae147b3f847ae1</data></node>
         </node>
        </node>
-      </node>
-      <node f="42"><name>length</name>
-       <node f="40"><name></name></node>
-       <node f="42" dt="2"><name>nodeSizeX</name><data>&gt;variables/grids/1/nodeSizeX</data>
+       <node f="42" dt="2"><name>PreferredPath</name><data>/PreferredPath</data>
         <node f="40"><name></name></node>
-        <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
+        <node f="42"><name>size</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>47ae147b3f847ae1</data></node>
+        </node>
        </node>
-       <node f="42" dt="2"><name>nodeSizeY</name><data>&gt;variables/grids/1/nodeSizeY</data>
+       <node f="42" dt="2"><name>Bridge</name><data>/Bridge</data>
         <node f="40"><name></name></node>
-        <node f="42" dt="1"><name></name><data>000000003ff00000</data></node>
+        <node f="42"><name>size</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>47ae147b3f847ae1</data></node>
+        </node>
+       </node>
+       <node f="42" dt="2"><name>MandatoryPath</name><data>/MandatoryPath</data>
+        <node f="40"><name></name></node>
+        <node f="42"><name>size</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
+         <node f="42" dt="1"><name></name><data>47ae147b3f847ae1</data></node>
+        </node>
        </node>
       </node>
      </node>
@@ -5108,6 +5189,7 @@ return 0;
 </data></node>
          <node f="442" dt="2"><name>docType</name><data>string docType = gets(documentwindow(param(1)));
 return docType == "3D" || docType == "Tree";</data></node>
+         <node f="42" dt="1"><name>editMode</name><data>0000000000000000</data></node>
         </node>
        </node>
        <node f="42" dt="2"><name>undohistory</name><data>..&gt;viewfocus+</data></node>
@@ -5231,6 +5313,7 @@ return 0;
 </data></node>
          <node f="442" dt="2"><name>docType</name><data>string docType = gets(documentwindow(param(1)));
 return docType == "3D" || docType == "Tree";</data></node>
+         <node f="42" dt="1"><name>editMode</name><data>0000000000000000</data></node>
         </node>
        </node>
        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
@@ -5539,6 +5622,7 @@ return isclasstype(selObj, "AStar::Divider");
 </data></node>
          <node f="442" dt="2"><name>docType</name><data>string docType = gets(documentwindow(param(1)));
 return docType == "3D" || docType == "Tree";</data></node>
+         <node f="42" dt="1"><name>editMode</name><data>0000000000000000</data></node>
         </node>
        </node>
        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
@@ -6112,6 +6196,7 @@ return isclasstype(selObj, "AStar::Grid");
 </data></node>
          <node f="442" dt="2"><name>docType</name><data>string docType = gets(documentwindow(param(1)));
 return docType == "3D" || docType == "Tree";</data></node>
+         <node f="42" dt="1"><name>editMode</name><data>0000000000000000</data></node>
         </node>
        </node>
        <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
@@ -6718,7 +6803,7 @@ return updated;</data></node>
    </node>
   </node>
  </node>
- <node f="42" dt="2"><name>release</name><data>24.0</data></node>
+ <node f="42" dt="2"><name>release</name><data>24.1</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
- <node f="42" dt="2"><name>flexsim release</name><data>24.0</data></node>
+ <node f="42" dt="2"><name>flexsim release</name><data>24.1</data></node>
 </node></flexsim-tree>
