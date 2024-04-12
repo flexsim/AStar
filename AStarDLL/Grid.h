@@ -15,6 +15,7 @@ public:
 	virtual ~Grid();
 	virtual void bind() override;
 	virtual const char* getClassFactory() override { return "AStar::Grid"; }
+	virtual unsigned int getClassType() override { return CLASSTYPE_WANTCONNECTLOGIC; }
 
 	typedef std::vector<std::vector<AStarNode>> NodeTable;
 	NodeTable nodes;
