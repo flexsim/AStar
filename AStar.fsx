@@ -315,45 +315,6 @@
         <node f="42" dt="1"><name>centroid</name><data>000000003ff00000</data></node>
        </node>
       </data></node>
-      <node f="10000042" dt="4"><name>Grid</name><data>
-       <node f="40"><name></name></node>
-       <node f="42"><name>classes</name>
-        <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>AStar::Grid</name><data><coupling>/installdata/add_library/1/data/astar/Grid</coupling></data></node>
-       </node>
-       <node f="42"><name>superclasses</name>
-        <node f="40"><name></name></node>
-        <node f="42" dt="3"><name>FlexSimObject</name><data><coupling>null</coupling></data></node>
-       </node>
-       <node f="42"><name>variables</name>
-        <node f="40"><name></name></node>
-        <node f="42" dt="1"><name>minPointX</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>minPointY</name><data>7463656a20736920</data></node>
-        <node f="42" dt="1"><name>minPointZ</name><data>616572632e646574</data></node>
-        <node f="42" dt="1"><name>maxPointX</name><data>09090a0d00702f3c</data></node>
-        <node f="42" dt="1"><name>maxPointY</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>maxPointZ</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>gridOriginX</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>gridOriginY</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>gridOriginZ</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>isUserCustomized</name><data>0000000000000000</data></node>
-        <node f="42"><name>bridgeData</name></node>
-        <node f="42" dt="1"><name>nodeSizeX</name><data>000000003ff00000</data></node>
-        <node f="42" dt="1"><name>nodeSizeY</name><data>000000003ff00000</data></node>
-        <node f="42" dt="1"><name>noSelect</name><data>7461747322006369</data></node>
-       </node>
-       <node f="42"><name>behaviour</name>
-        <node f="40"><name></name></node></node>
-       <node f="42"><name>stats</name>
-        <node f="40"><name></name></node></node>
-      </data>
-       <node f="40"><name></name></node>
-       <node f="42" dt="1"><name>isUserCustomized</name><data>0000000000000000</data></node>
-       <node f="42" dt="1"><name>noSelect</name><data>0000000000000000</data></node>
-       <node f="42"><name>bridgeData</name></node>
-       <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Grid</data>
-        <node f="40"><name></name></node></node>
-      </node>
       <node f="10100062" dt="4"><name>Barrier</name><data>
        <node f="40"><name></name></node>
        <node f="42"><name>classes</name>
