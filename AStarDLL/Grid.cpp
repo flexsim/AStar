@@ -15,8 +15,7 @@ Grid::~Grid()
 void Grid::bindVariables()
 {
 	int bindMode = getBindMode();
-	if (bindMode == SDT_BIND_ON_LOAD)
-		bindNavigator();
+	bindNavigator();
 	bindVariableByName("nodeSizeX", nodeSize.x, 1);
 	bindVariableByName("nodeSizeY", nodeSize.y, 1);
 	// TODO: move this to an update script
@@ -41,15 +40,13 @@ void Grid::bindVariables()
 	bindVariableByName("gridOriginX", gridOrigin.x);
 	bindVariableByName("gridOriginY", gridOrigin.y);
 	bindVariableByName("gridOriginZ", gridOrigin.z);
+	bindVariable(isUserCustomized);
+	bindVariable(noSelect);
+	bindVariable(bridgeData);
 }
 
 void Grid::bind()
 {
-	
-	bindDouble(isUserCustomized, 1);
-	bindDouble(noSelect, 1);
-	bindSubNode(bridgeData, 0);
-
 	bindCallback(dragPressedPick, Grid);
 	bindCallback(makeDirty, Grid);
 }
@@ -794,6 +791,7 @@ void Grid::visitCellsWidening(const Cell& centerCell, std::function<bool(const C
 
 void Grid::buildBoundsMesh()
 {
+	bindNavigator();
 	TreeNode* color = navigator->node_b_color;
 	Vec4f boundsColor(
 		(float)get(::rank(color, 1)),
@@ -1258,6 +1256,7 @@ double Grid::onClick(treenode view, int clickCode)
 
 double Grid::onCreate(bool isCopy)
 {
+	bindNavigator();
 	Vec3 size = maxPoint - minPoint;
 	maxPoint.x += size.x;
 	minPoint.x += size.x;
@@ -1272,14 +1271,14 @@ void Grid::onPostCreate(void * data)
 {
 	Grid* grid = (Grid*)data;
 
-	if (grid->holder->up->name != "grids") {
-		auto found = model()->find("AStarNavigator>variables/grids");
-		if (found) {
-			beginignoreundo();
-			transfernode(grid->holder, found);
-			endignoreundo();
-		}
-	}
+	//if (grid->holder->up->name != "grids") {
+	//	auto found = model()->find("AStarNavigator>variables/grids");
+	//	if (found) {
+	//		beginignoreundo();
+	//		transfernode(grid->holder, found);
+	//		endignoreundo();
+	//	}
+	//}
 	grid->bindNavigator();
 	if (grid->navigator)
 		grid->navigator->isGridDirty = grid->navigator->isBoundsDirty = true;
@@ -1440,12 +1439,13 @@ double Grid::onDestroy(treenode view)
 
 void Grid::bindNavigator()
 {
+	navigator = model()->find("AStarNavigator")->objectAs(AStarNavigator);
+
+	/*if (isclasstype(up(holder), "AStar::AStarNavigator"))
+		navigator = &o(AStarNavigator, up(holder));
+	else navigator = model()->find("AStarNavigator")->objectAs(AStarNavigator);*/
+	
 	// TODO: change this to the way TEs bind/handle their navigator
-	if (holder->up && holder->up->name == "grids")
-		navigator = ownerobject(holder->up)->objectAs(AStarNavigator);
-	else {
-		navigator = nullptr;
-	}
 }
 
 double Grid::onUndo(bool isUndo, treenode undoRecord) 

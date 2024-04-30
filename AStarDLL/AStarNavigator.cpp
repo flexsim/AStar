@@ -75,8 +75,6 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(routingAlgorithmCompletionRatio);
 
 	bindVariable(grids);
-	if (grids.size() == 0)
-		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
 	bindVariable(elevators);
 	elevatorBridges.init(elevators);
 	treenode elevatorDelegate = nullptr;
@@ -2299,14 +2297,12 @@ bool AStarNavigator::removeElevatorBridge(ObjectDataType * object)
 
 Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 {
-	Grid* grid = nullptr;
-	double nodeWidth = grids.front()->nodeSize.x;
-	if (!isBoundsMeshBuilt && !areGridsUserCustomized && grids.size() == 1) {
-		// if I'm in a "pristine" condition where I am not yet drawing the main grid,
-		// then the grid should be the main grid.
-		grid = grids[1];
-	} else {
-		grid = grids.add(new Grid(this, nodeWidth));
+	Grid* grid = dynamic_cast<Grid*>(ObjectDataType::create("AStar::Grid")); //gets thrown off here
+	grids.add(grid);
+	
+	double nodeWidth = getvarnum(classobject(grid->holder), "nodeSizeX");
+	if (grids.length > 1) {
+		nodeWidth = 1.0; // grids[0]->nodeSize.x;
 	}
 	grid->minPoint.x = loc.x;
 	grid->minPoint.y = loc.y - (size.y != 0 ? size.y : 10.0 * nodeWidth);
