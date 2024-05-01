@@ -75,6 +75,9 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(routingAlgorithmCompletionRatio);
 
 	bindVariable(grids);
+	//if (grids.size() == 0) {
+	//	
+	//}
 	bindVariable(elevators);
 	elevatorBridges.init(elevators);
 	treenode elevatorDelegate = nullptr;
@@ -2297,12 +2300,12 @@ bool AStarNavigator::removeElevatorBridge(ObjectDataType * object)
 
 Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 {
-	Grid* grid = dynamic_cast<Grid*>(ObjectDataType::create("AStar::Grid")); //gets thrown off here
+	Grid* grid = dynamic_cast<Grid*>(ObjectDataType::create("AStar::Grid"));
 	grids.add(grid);
 	
 	double nodeWidth = getvarnum(classobject(grid->holder), "nodeSizeX");
 	if (grids.length > 1) {
-		nodeWidth = 1.0; // grids[0]->nodeSize.x;
+		nodeWidth = grids[0]->nodeSize.x;
 	}
 	grid->minPoint.x = loc.x;
 	grid->minPoint.y = loc.y - (size.y != 0 ? size.y : 10.0 * nodeWidth);
@@ -2327,6 +2330,7 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 			grid->maxPoint = originalMax;
 		} else break;
 	}
+	grid->onCreate(0);
 	return grid;
 }
 

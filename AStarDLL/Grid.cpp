@@ -16,8 +16,8 @@ void Grid::bindVariables()
 {
 	int bindMode = getBindMode();
 	bindNavigator();
-	bindVariableByName("nodeSizeX", nodeSize.x, 1);
-	bindVariableByName("nodeSizeY", nodeSize.y, 1);
+	bindVariableByName("nodeSizeX", nodeSize.x);
+	bindVariableByName("nodeSizeY", nodeSize.y);
 	// TODO: move this to an update script
 	if (bindMode == SDT_BIND_ON_LOAD) {
 		treenode width = holder->subnodes["nodeWidth"];
@@ -1257,12 +1257,12 @@ double Grid::onClick(treenode view, int clickCode)
 double Grid::onCreate(bool isCopy)
 {
 	bindNavigator();
-	Vec3 size = maxPoint - minPoint;
-	maxPoint.x += size.x;
-	minPoint.x += size.x;
-	if (holder->up->name != "grids") {
+	//Vec3 size = maxPoint - minPoint;
+	//maxPoint.x += size.x;
+	//minPoint.x += size.x;
+	//if (holder->up->name != "grids") {
 		sendwindowmessage((treenode)systemwindow(0), FLEXSIM_MESSAGE_USER_CALLBACK, (WindowParam1)&Grid::onPostCreate, (WindowParam2)this);
-	}
+	//}
 	return 0;
 }
 
@@ -1270,15 +1270,14 @@ double Grid::onCreate(bool isCopy)
 void Grid::onPostCreate(void * data)
 {
 	Grid* grid = (Grid*)data;
+	
+	if (!isclasstype(grid->holder->up, "AGV::AGVNavigator")) {
+		auto found = model()->find("/?AStarNavigator");
+		beginignoreundo();
+		transfernode(grid->holder, found);
+		endignoreundo();
+	}
 
-	//if (grid->holder->up->name != "grids") {
-	//	auto found = model()->find("AStarNavigator>variables/grids");
-	//	if (found) {
-	//		beginignoreundo();
-	//		transfernode(grid->holder, found);
-	//		endignoreundo();
-	//	}
-	//}
 	grid->bindNavigator();
 	if (grid->navigator)
 		grid->navigator->isGridDirty = grid->navigator->isBoundsDirty = true;
