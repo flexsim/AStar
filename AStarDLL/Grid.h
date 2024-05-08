@@ -150,7 +150,7 @@ public:
 
 	void onDrag(treenode view, Vec3& offset);
 	void onDrag(treenode view, Vec3&& offset);
-	double onDrag(treenode view) override;
+	virtual double onDrag(treenode view) override;
 	void onClick(treenode view, int clickCode, const Vec3& pos);
 	double onClick(treenode view, int clickCode) override;
 	double onCreate(bool isCopy) override;

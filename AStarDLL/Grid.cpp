@@ -40,8 +40,8 @@ void Grid::bindVariables()
 	bindVariableByName("gridOriginX", gridOrigin.x);
 	bindVariableByName("gridOriginY", gridOrigin.y);
 	bindVariableByName("gridOriginZ", gridOrigin.z);
-	bindVariable(isUserCustomized);
-	bindVariable(noSelect);
+	bindDouble(isUserCustomized, 1);
+	bindDouble(noSelect, 1);
 	bindVariable(bridgeData);
 }
 
@@ -1247,6 +1247,12 @@ double Grid::onDrag(treenode view)
 	isUserCustomized = true;
 	isDirtyByUser = true;
 	return 1;
+}
+
+astar_export Variant Grid_updateDrag(FLEXSIMINTERFACE)
+{
+	o(Grid, c).onDrag(param(1));
+	return 0;
 }
 
 double Grid::onClick(treenode view, int clickCode)

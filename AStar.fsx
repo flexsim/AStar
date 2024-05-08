@@ -318,6 +318,20 @@
         <node f="42" dt="1"><name>nodeSizeY</name><data>000000003ff00000</data></node>
         <node f="42" dt="1"><name>noSelect</name><data>7461747322006369</data></node>
        </node>
+       <node f="42"><name>behaviour</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>eventfunctions</name>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>OnDrag</name><data>treenode view = activedocumentnode();
+print(view);
+function_s(c, "updateDrag", view);
+</data></node>
+         <node f="1000042" dt="2"><name>updateDrag</name><data>dll:"module:AStar" function:"Grid_updateDrag"</data></node>
+        </node>
+        <node f="42"><name>cppfunctions</name>
+         <node f="40"><name></name></node></node>
+        <node f="42"><name>cppvariables</name></node>
+       </node>
       </data>
        <node f="40"><name></name></node>
        <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Grid</data>
@@ -1343,6 +1357,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="1000042" dt="2"><name>onDrag</name><data>dll: "module:AStar" function: "Grid_onDrag"</data></node>
        </node>
       </data></node>
      </node>
