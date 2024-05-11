@@ -7,7 +7,7 @@
 
 namespace AStar {
 
-class Grid : public ObjectDataType
+class Grid : public FlexSimEventHandler
 {
 public:
 	Grid() : nodeSize{ 1.0, 1.0 }, gridOrigin(0.0, 0.0, 0.0) {}
@@ -156,6 +156,7 @@ public:
 	double onCreate(bool isCopy) override;
 	static void onPostCreate(void* data);
 
+	double onDraw(TreeNode* view) override;
 	void drawSizerHandles(treenode view, int pickingMode);
 	void drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode);
 

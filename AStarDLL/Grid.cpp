@@ -1209,8 +1209,11 @@ void Grid::onDrag(treenode view, Vec3& offset)
 		}
 		case PICK_SIZERX: maxPoint.x = std::max(minPoint.x, maxPoint.x + offset.x); break;
 		case PICK_SIZERXNEG: minPoint.x = std::min(maxPoint.x, minPoint.x + offset.x); break;
-		case PICK_SIZERY: maxPoint.y = std::max(minPoint.y, maxPoint.y + offset.y); break;
-		case PICK_SIZERYNEG: minPoint.y = std::min(maxPoint.y, minPoint.y + offset.y); break;
+		case PICK_SIZERYNEG: maxPoint.y = std::max(minPoint.y, maxPoint.y + offset.y); break;
+		case PICK_SIZERY: minPoint.y = std::min(maxPoint.y, minPoint.y + offset.y); break;
+		case PICK_MOVE_X: maxPoint.x += offset.x; minPoint.x += offset.x; break;
+		case PICK_MOVE_Y: maxPoint.y += offset.y; minPoint.y += offset.y; break;
+		case PICK_MOVE_Z: maxPoint.z += offset.z; minPoint.z += offset.z; break;
 	}
 	bool didShrink = shrinkToFitGrowthBounds();
 	if (didShrink && pickType == 0) {
@@ -1263,9 +1266,6 @@ double Grid::onClick(treenode view, int clickCode)
 double Grid::onCreate(bool isCopy)
 {
 	bindNavigator();
-	//Vec3 size = maxPoint - minPoint;
-	//maxPoint.x += size.x;
-	//minPoint.x += size.x;
 	//if (holder->up->name != "grids") {
 		sendwindowmessage((treenode)systemwindow(0), FLEXSIM_MESSAGE_USER_CALLBACK, (WindowParam1)&Grid::onPostCreate, (WindowParam2)this);
 	//}
@@ -1287,6 +1287,21 @@ void Grid::onPostCreate(void * data)
 	grid->bindNavigator();
 	if (grid->navigator)
 		grid->navigator->isGridDirty = grid->navigator->isBoundsDirty = true;
+
+	grid->b_spatialx = grid->minPoint.x;
+	grid->b_spatialy = grid->maxPoint.y;
+	grid->b_spatialz = grid->minPoint.z;
+	grid->b_spatialsx = grid->size.x;
+	grid->b_spatialsy = grid->size.y;
+	grid->b_spatialx = grid->minPoint.x;
+
+}
+
+double Grid::onDraw(TreeNode* view)
+{
+	setManipulationHandleDraw(DRAW_YELLOW_BOX | DRAW_CONNECTOR_TRIANGLE | DRAW_MOVE_AXIS_ALL | DRAW_SIZER_X | DRAW_SIZER_Y | DRAW_SIZER_X_NEG | DRAW_SIZER_Y_NEG | DRAW_ORB);
+
+	return 0;
 }
 
 void Grid::drawSizerHandles(treenode view, int pickingMode)
@@ -1315,8 +1330,8 @@ void Grid::drawSizerHandles(treenode view, int pickingMode)
 	};
 
 	fglColor(1.0f, 0.0f, 0.0f);
-	drawSizer((oTopRight + oTopLeft) * 0.5f, PICK_SIZERY, 0.0f);
-	drawSizer((oBottomRight + oBottomLeft) * 0.5f, PICK_SIZERYNEG, 180.0f);
+	drawSizer((oTopRight + oTopLeft) * 0.5f, PICK_SIZERYNEG, 0.0f);
+	drawSizer((oBottomRight + oBottomLeft) * 0.5f, PICK_SIZERY, 180.0f);
 	drawSizer((oTopRight + oBottomRight) * 0.5f, PICK_SIZERX, -90.0f);
 	drawSizer((oTopLeft + oBottomLeft) * 0.5f, PICK_SIZERXNEG, 90.0f);
 }

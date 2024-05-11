@@ -301,6 +301,10 @@
         <node f="40"><name></name></node>
         <node f="42" dt="3"><name>AStar::Grid</name><data><coupling>/installdata/add_library/1/data/astar/Grid</coupling></data></node>
        </node>
+       <node f="42"><name>superclasses</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>FlexSimEventHandler</name><data><coupling>null</coupling></data></node>
+       </node>
        <node f="42"><name>variables</name>
         <node f="40"><name></name></node>
         <node f="42" dt="1"><name>minPointX</name><data>0000000000000000</data></node>
@@ -331,6 +335,19 @@ function_s(c, "updateDrag", view);
         <node f="42"><name>cppfunctions</name>
          <node f="40"><name></name></node></node>
         <node f="42"><name>cppvariables</name></node>
+       </node>
+       <node f="42"><name>spatial</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialz</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040240000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040240000</data></node>
+        <node f="42" dt="1"><name>spatialsz</name><data>47ae147b3f847ae1</data></node>
+        <node f="42" dt="1"><name>spatialrx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>centroid</name><data>000000003ff00000</data></node>
        </node>
       </data>
        <node f="40"><name></name></node>
