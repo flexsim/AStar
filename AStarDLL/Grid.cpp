@@ -1293,14 +1293,27 @@ void Grid::onPostCreate(void * data)
 	grid->b_spatialz = grid->minPoint.z;
 	grid->b_spatialsx = grid->size.x;
 	grid->b_spatialsy = grid->size.y;
-	grid->b_spatialx = grid->minPoint.x;
+	grid->b_spatialsz = 0.01;
 
+}
+
+double Grid::onPreDraw(TreeNode* view)
+{
+	if (spatialrz(holder)->value != 0) 
+		spatialrz(holder)->value = 0;
+	return 0;
 }
 
 double Grid::onDraw(TreeNode* view)
 {
-	setManipulationHandleDraw(DRAW_YELLOW_BOX | DRAW_CONNECTOR_TRIANGLE | DRAW_MOVE_AXIS_ALL | DRAW_SIZER_X | DRAW_SIZER_Y | DRAW_SIZER_X_NEG | DRAW_SIZER_Y_NEG | DRAW_ORB);
+	spatialx(holder)->value = minPoint.x;
+	spatialy(holder)->value = maxPoint.y;
+	spatialz(holder)->value = minPoint.z;
+	spatialsx(holder)->value = maxPoint.x - minPoint.x;
+	spatialsy(holder)->value = maxPoint.y - minPoint.y;
+	spatialsz(holder)->value = 0.01;
 
+	setManipulationHandleDraw( DRAW_CONNECTOR_TRIANGLE | DRAW_MOVE_AXIS_ALL | DRAW_SIZER_X | DRAW_SIZER_Y | DRAW_SIZER_X_NEG | DRAW_SIZER_Y_NEG | DRAW_ORB);
 	return 0;
 }
 

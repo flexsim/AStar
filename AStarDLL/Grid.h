@@ -156,6 +156,7 @@ public:
 	double onCreate(bool isCopy) override;
 	static void onPostCreate(void* data);
 
+	double onPreDraw(TreeNode* view) override;
 	double onDraw(TreeNode* view) override;
 	void drawSizerHandles(treenode view, int pickingMode);
 	void drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode);
