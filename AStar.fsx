@@ -327,7 +327,6 @@
         <node f="42"><name>eventfunctions</name>
          <node f="40"><name></name></node>
          <node f="442" dt="2"><name>OnDrag</name><data>treenode view = activedocumentnode();
-print(view);
 function_s(c, "updateDrag", view);
 </data></node>
          <node f="1000042" dt="2"><name>updateDrag</name><data>dll:"module:AStar" function:"Grid_updateDrag"</data></node>
@@ -1361,6 +1360,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="42" dt="1"><name>mouseDownScreenY</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mouseDownX</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mouseDownY</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>mouseDownZ</name><data>0000000000000000</data></node>
         <node f="42" dt="3"><name>draggingObj</name><data><coupling>null</coupling></data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
@@ -1384,6 +1384,7 @@ switch (clickCode) {
 			setvarnum(c, "mouseDownScreenY", cursorinfo(i, 1, 2, 1));
 			setvarnum(c, "mouseDownX", cursorinfo(i, 2, 1, 1));
 			setvarnum(c, "mouseDownY", cursorinfo(i, 2, 2, 1));
+			setvarnum(c, "mouseDownZ", cursorinfo(i, 2, 3, 1));
 		}
 		break;
 	case LEFT_RELEASE:
@@ -1392,11 +1393,16 @@ switch (clickCode) {
 			int dy = fabs(cursorinfo(i, 1, 2, 1) - getvarnum(c, "mouseDownScreenY"));
 			if (dx &lt; 3 &amp;&amp; dy &lt; 3) {
 				setvarnum(c, "state", GRID_MODE_STATE_CLICKED);
+				Vec3 ontoLoc = Vec3(getvarnum(c, "mouseDownX"), getvarnum(c, "mouseDownY"), getvarnum(c, "mouseDownZ"));
+				treenode createdObj = function_s(navigator, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);
+				setvarnum(createdObj, "maxPointX", ontoLoc.x + 1);
+				setvarnum(createdObj, "minPointY", ontoLoc.y - 1);
+				function_s(createdObj, "onDraw");
+				nodepoint(getvarnode(c, "draggingObj"), createdObj);
 			}
 		}
 		if (state == GRID_MODE_STATE_CLICK_DOWN_2) {
 			setvarnum(c, "state", GRID_MODE_STATE_NONE);
-			treenode area = tonode(getvarnum(c, "draggingObj"));
 			nodepoint(getvarnode(c, "draggingObj"), 0);
 		}
 		break;
@@ -1424,9 +1430,8 @@ if (modeState == GRID_MODE_STATE_CLICKED) {
 		modeState = GRID_MODE_STATE_DRAGGING;
 		setvarnum(c, "state", modeState);
 		treenode navigator = node("/?AStarNavigator", model());
-		Vec3 ontoLoc = Vec3(getvarnum(c, "mouseDownX"), getvarnum(c, "mouseDownY"), get(viewpointz(i)));
 		treenode parent = i.find("&gt;viewfocus+");
-		treenode createdObj = function_s(navigator, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);
+		treenode createdObj = tonode(getvarnum(c, "draggingObj"));
 		if (!objectexists(createdObj))
 			return 0;
 		nodepoint(getvarnode(c, "draggingObj"), createdObj);
@@ -1438,7 +1443,7 @@ if (modeState == GRID_MODE_STATE_DRAGGING) {
 	treenode createdObj = tonode(getvarnum(c, "draggingObj"));
 	double curX = cursorinfo(i, 2, 1, 1);
 	double curY = cursorinfo(i, 2, 2, 1);
-	double curZ = get(viewpointz(i));
+	double curZ = cursorinfo(i, 2, 3, 1);
 	if (up(up(createdObj)) != model()) {
 		double newX = vectorprojectx(model(), curX, curY, curZ, up(createdObj));
 		double newY = vectorprojecty(model(), curX, curY, curZ, up(createdObj));
@@ -1450,7 +1455,7 @@ if (modeState == GRID_MODE_STATE_DRAGGING) {
 
 	treenode view = activedocumentnode();
 	Vec3 pos = modelPos;
-	Vec3 lastPos = Vec3(getvarnum(c, "mouseDownX"), getvarnum(c, "mouseDownY"), 0);
+	Vec3 lastPos = Vec3(getvarnum(c, "mouseDownX"), getvarnum(c, "mouseDownY"), getvarnum(c, "mouseDownZ"));
 	function_s(createdObj, "dragPressedPick", i, pos.x, pos.y, pos.z, pos.x - lastPos.x, pos.y - lastPos.y);
 	#define WM_PAINT 0xf
 	postwindowmessage(windowfromnode(i), WM_PAINT, 0, 0);

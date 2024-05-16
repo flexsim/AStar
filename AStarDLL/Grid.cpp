@@ -1266,9 +1266,7 @@ double Grid::onClick(treenode view, int clickCode)
 double Grid::onCreate(bool isCopy)
 {
 	bindNavigator();
-	//if (holder->up->name != "grids") {
-		sendwindowmessage((treenode)systemwindow(0), FLEXSIM_MESSAGE_USER_CALLBACK, (WindowParam1)&Grid::onPostCreate, (WindowParam2)this);
-	//}
+	sendwindowmessage((treenode)systemwindow(0), FLEXSIM_MESSAGE_USER_CALLBACK, (WindowParam1)&Grid::onPostCreate, (WindowParam2)this);
 	return 0;
 }
 
