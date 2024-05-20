@@ -32,6 +32,7 @@ visible SimpleDataType* createsdtderivative(char* classname)
 	if (strcmp(classname, "BridgeRoutingData::ArrivalEvent") == 0) return new BridgeRoutingData::ArrivalEvent;
 	if (strcmp(classname, "Bridge::EndArrivalEvent") == 0) return new Bridge::EndArrivalEvent;
 	if (strcmp(classname, "Bridge::AvailableEvent") == 0) return new Bridge::AvailableEvent;
+	if (strcmp(classname, "Grid") == 0) return createodtderivative(classname);
 	if (strcmp(classname, "Traveler") == 0) return new Traveler;
 	if (strcmp(classname, "TravelerBridgeData") == 0) return new TravelerBridgeData;
 	if (strcmp(classname, "Traveler::ArrivalEvent") == 0) return new Traveler::ArrivalEvent;

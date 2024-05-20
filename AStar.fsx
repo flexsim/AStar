@@ -1397,12 +1397,15 @@ switch (clickCode) {
 				treenode createdObj = function_s(navigator, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);
 				setvarnum(createdObj, "maxPointX", ontoLoc.x + 1);
 				setvarnum(createdObj, "minPointY", ontoLoc.y - 1);
-				function_s(createdObj, "onDraw");
+				spatialsx(createdObj).value = 1;
+				spatialsy(createdObj).value = 1;
 				nodepoint(getvarnode(c, "draggingObj"), createdObj);
 			}
 		}
 		if (state == GRID_MODE_STATE_CLICK_DOWN_2) {
 			setvarnum(c, "state", GRID_MODE_STATE_NONE);
+			treenode createdObj = tonode(getvarnum(c, "draggingObj"));
+			setselectedobject(i, createdObj);
 			nodepoint(getvarnode(c, "draggingObj"), 0);
 		}
 		break;
@@ -6899,6 +6902,60 @@ navShape.value = "";
 updated = 1;
 	
 return updated;</data></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add_Update to 24.2</name><data>MAIN:/project/events/OnUpdateModel/Update to 24.2</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name>Promote AStar Grids</name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000000000000</data></node>
+    <node f="42" dt="2"><name>after</name><data>update EventLogSettings</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>Promote AStar Grids</name><data>treenode updateRoot = param(1);
+double oldVersion = param(2);
+
+if (oldVersion &gt;= 24.1)
+	return 0;
+
+if (updateRoot != model())
+	return 0;
+
+treenode nav = Model.find("AStarNavigator");
+if(!nav)
+	return 0;
+	
+treenode DummyNav = model().subnodes.assert("NAV");
+treenode navVariables = nav.find("&gt;variables").copy(DummyNav);
+
+destroyobject(nav);
+
+treenode newNav = createinstance(library().find("?AStarNavigator"), model());
+	
+treenode grids = navVariables.find("grids");
+
+for(int i = 1; i &lt;= grids.subnodes.length; i++){
+	treenode thisGrid = grids.subnodes[i];
+	double minPointX = thisGrid.find("minPointX").value;
+	double minPointY = thisGrid.find("minPointY").value;
+	double minPointZ = thisGrid.find("minPointZ").value;
+	double maxPointX = thisGrid.find("maxPointX").value;
+	double maxPointY = thisGrid.find("maxPointY").value;
+	//double maxPointZ = thisGrid.find("maxPointZ").value;
+	
+	treenode replacementGrid = function_s(newNav, "createGrid", 0, 0, 0);
+	setvarnum(replacementGrid, "minPointX", minPointX);
+	setvarnum(replacementGrid, "minPointY", minPointY);
+	setvarnum(replacementGrid, "minPointZ", minPointZ + 1);
+	setvarnum(replacementGrid, "maxPointX", maxPointX);
+	setvarnum(replacementGrid, "maxPointY", maxPointY);
+	setvarnum(replacementGrid, "maxPointZ", 2);
+}
+
+return 1;
+</data></node>
     </node>
    </node>
   </node>

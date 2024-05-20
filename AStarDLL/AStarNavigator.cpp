@@ -2110,8 +2110,10 @@ void AStarNavigator::resolveMinNodeSize()
 {
 	minNodeSize = Vec2{ DBL_MAX, DBL_MAX };
 	for (Grid* grid : grids) {
-		minNodeSize.x = std::min(grid->nodeSize.x, minNodeSize.x);
-		minNodeSize.y = std::min(grid->nodeSize.y, minNodeSize.y);
+		if (grid != nullptr) {
+			minNodeSize.x = std::min(grid->nodeSize.x, minNodeSize.x);
+			minNodeSize.y = std::min(grid->nodeSize.y, minNodeSize.y);
+		}
 	}
 	if (minNodeSize.x == DBL_MAX)
 		minNodeSize.x = 1.0;
@@ -2133,7 +2135,7 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	case EditMode::MANDATORY_PATH: newBarrier = barrierList.add(new MandatoryPath); break;
 	case EditMode::GRID: {
 		auto nodeSize = grids.front()->nodeSize;
-		newGrid = createGrid(pos1, Vec3(nodeSize.x, nodeSize.y, 0.0));
+		newGrid = createGrid(pos1, Vec3(nodeSize.x, nodeSize.y, 0.01));
 		break;
 	}
 	}
@@ -2167,7 +2169,7 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	setname(newNode, ss.str().c_str());
 
 	// Create undo record on the active view
-	addCreateRecord(nodefromwindow(activedocumentview()), newNode->objectAs(SimpleDataType), newBarrier ? "Create Barrier" : "Create Grid");
+	addCreateRecord(nodefromwindow(activedocumentview()), newNode->objectAs(SimpleDataType), newBarrier ? "Create Barrier" : "Create Grid"); // this needs to be changed to disclude ODT grid
 
 	return newNode;
 
@@ -2312,7 +2314,7 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 	grid->minPoint.z = loc.z;
 	grid->maxPoint.x = loc.x + (size.x != 0 ? size.x : 10.0 * nodeWidth);
 	grid->maxPoint.y = loc.y;
-	grid->maxPoint.z = loc.z + size.z;
+	grid->maxPoint.z = loc.z + (0.01 * nodeWidth);
 	grid->isUserCustomized = true;
 	grid->isDirtyByUser = true;
 	isGridDirty = true;

@@ -1470,7 +1470,11 @@ double Grid::onDestroy(treenode view)
 
 void Grid::bindNavigator()
 {
-	navigator = model()->find("AStarNavigator")->objectAs(AStarNavigator);
+	//navigator = model()->find("AStarNavigator")->objectAs(AStarNavigator);
+
+	if (model()->find("AStarNavigator"))
+		navigator = model()->find("AStarNavigator")->objectAs(AStarNavigator);
+	else navigator = nullptr;
 
 	/*if (isclasstype(up(holder), "AStar::AStarNavigator"))
 		navigator = &o(AStarNavigator, up(holder));
