@@ -320,6 +320,7 @@
         <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>centroid</name><data>000000003ff00000</data></node>
        </node>
+       <node f="4000000042" dt="2"><name>windowtitle</name><data>AStarNavigator</data></node>
       </data></node>
       <node f="10100062" dt="4"><name>Barrier</name><data>
        <node f="40"><name></name></node>
@@ -550,6 +551,7 @@ function_s(obj, "makeMeshDirty");
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\solidbarrier.bmp</data></node>
        </node>
        <node f="42"><name>stored</name></node>
+       <node f="4000000042" dt="2"><name>windowtitle</name><data>Barrier</data></node>
       </data>
        <node f="40"><name></name></node></node>
       <node f="10100062" dt="4"><name>Divider</name><data>
@@ -629,6 +631,7 @@ function_s(object, "makeMeshDirty");
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\divider.bmp</data></node>
        </node>
        <node f="42"><name>stored</name></node>
+       <node f="4000000042" dt="2"><name>windowtitle</name><data>Divider</data></node>
       </data>
        <node f="40"><name></name></node></node>
       <node f="10100062" dt="4"><name>PreferredPath</name><data>
@@ -705,6 +708,7 @@ return string.fromNum(value);
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\preferredpath.bmp</data></node>
        </node>
        <node f="42"><name>stored</name></node>
+       <node f="4000000042" dt="2"><name>windowtitle</name><data>PreferredPath</data></node>
       </data>
        <node f="40"><name></name></node></node>
       <node f="10100062" dt="4"><name>Bridge</name><data>
@@ -788,6 +792,7 @@ return string.fromNum(value);
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\bridge.bmp</data></node>
        </node>
        <node f="42"><name>stored</name></node>
+       <node f="4000000042" dt="2"><name>windowtitle</name><data>Bridge</data></node>
       </data>
        <node f="40"><name></name></node></node>
       <node f="10100062" dt="4"><name>MandatoryPath</name><data>
@@ -827,6 +832,7 @@ return string.fromNum(value);
         <node f="42" dt="2"><name>picture</name><data>modules\AStar\bitmaps\mandatorypath.bmp</data></node>
        </node>
        <node f="42"><name>stored</name></node>
+       <node f="4000000042" dt="2"><name>windowtitle</name><data>MandatoryPath</data></node>
       </data>
        <node f="40"><name></name></node></node>
      </node>
@@ -1352,7 +1358,7 @@ if (objectexists(node("AStarNavigator", model)))
 	return 0;
 
 treenode asn = createinstance(node("astar/1", library()), model());
-setname(asn, "AStarNavigator");
+setname(asn, windowtitle(asn).value);
 set(spatialx(asn), x);
 set(spatialy(asn), y);
 set(spatialz(asn), z);
@@ -1372,9 +1378,12 @@ return asn;
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
-if (ontoView) {
+if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
+	if (objectexists(windowtitle(obj)))
+		createdObj.name = windowtitle(obj).value;
+	applicationcommand("setuniquename", createdObj);
 	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
 	return createdObj;
 } else {
@@ -1395,9 +1404,12 @@ or where travel direction is constrained</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
-if (ontoView) {
+if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
+	if (objectexists(windowtitle(obj)))
+		createdObj.name = windowtitle(obj).value;
+	applicationcommand("setuniquename", createdObj);
 	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
 	return createdObj;
 } else {
@@ -1418,9 +1430,12 @@ like a wall</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
-if (ontoView) {
+if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
+	if (objectexists(windowtitle(obj)))
+		createdObj.name = windowtitle(obj).value;
+	applicationcommand("setuniquename", createdObj);
 	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
 	return createdObj;
 } else {
@@ -1440,9 +1455,12 @@ if (ontoView) {
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
-if (ontoView) {
+if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
+	if (objectexists(windowtitle(obj)))
+		createdObj.name = windowtitle(obj).value;
+	applicationcommand("setuniquename", createdObj);
 	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
 	return createdObj;
 } else {
@@ -1462,9 +1480,12 @@ if (ontoView) {
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
-if (ontoView) {
+if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
+	if (objectexists(windowtitle(obj)))
+		createdObj.name = windowtitle(obj).value;
+	applicationcommand("setuniquename", createdObj);
 	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
 	return createdObj;
 } else {
@@ -1486,7 +1507,7 @@ Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 if (ontoObj) 
 	ontoLoc = ontoLoc.project(ontoObj, model());
 treenode ontoView = param(5);
-if (ontoView) {
+if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 	Object nav = model().find("AStarNavigator");
 	if (!nav)
 		nav = createinstance(library().find("?AStarNavigator"), model());
@@ -1520,6 +1541,9 @@ if (ontoView &amp;&amp; obj &amp;&amp; gets(documentwindow(ontoView)) != "Proces
 	setvarnum(obj, "isAStarMember", 1);
 	endignoreundo();
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
+	if (objectexists(windowtitle(obj)))
+		createdObj.name = windowtitle(obj).value;
+	applicationcommand("setuniquename", createdObj);
 	beginignoreundo();
 	setvarnum(obj, "isAGVMember", 1);
 	setvarnum(obj, "isAStarMember", 0);
