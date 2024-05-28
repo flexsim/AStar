@@ -320,7 +320,6 @@
         <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>centroid</name><data>000000003ff00000</data></node>
        </node>
-       <node f="4000000042" dt="2"><name>windowtitle</name><data>AStarNavigator</data></node>
       </data></node>
       <node f="10100062" dt="4"><name>Barrier</name><data>
        <node f="40"><name></name></node>
@@ -1358,7 +1357,7 @@ if (objectexists(node("AStarNavigator", model)))
 	return 0;
 
 treenode asn = createinstance(node("astar/1", library()), model());
-setname(asn, windowtitle(asn).value);
+setname(asn, "AStarNavigator");
 set(spatialx(asn), x);
 set(spatialy(asn), y);
 set(spatialz(asn), z);
