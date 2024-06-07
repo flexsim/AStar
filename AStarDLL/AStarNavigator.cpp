@@ -196,6 +196,9 @@ void AStarNavigator::resolveGridBounds()
 		tempGrids.push_back(grid);
 	}
 
+	if (tempGrids.size() == 0)
+		return;
+
 	std::sort(tempGrids.begin(), tempGrids.end(), [&](Grid* left, Grid* right) { return left->minPoint.z < right->minPoint.z; });
 
 	double lowestZ = tempGrids[0]->minPoint.z;
@@ -225,9 +228,6 @@ void AStarNavigator::resolveGridBounds()
 
 void AStarNavigator::resetGrids()
 {
-	if (grids.size() == 0)
-		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
-
 	hasConditionalBarriers = 0.0;
 	hasMandatoryPaths = 0.0;
 
@@ -239,6 +239,7 @@ void AStarNavigator::resetGrids()
 
 	for (Grid* grid : grids) {
 		grid->growToBarriers();
+		grid->updateSpatials();
 	}
 }
 
@@ -1877,7 +1878,7 @@ Grid * AStarNavigator::getGrid(const Vec3 & modelPos, bool canReturnNull)
 	// believe me when I say this is not infinite recursioin
 	Grid* grid = getGrid(modelPos, true);
 	if (!grid)
-		grid = grids.front();
+		grid = createGrid(modelPos, Vec3(1, 1, 0.01));
 	return grid;
 }
 
@@ -2303,6 +2304,8 @@ bool AStarNavigator::removeElevatorBridge(ObjectDataType * object)
 Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 {
 	Grid* grid = dynamic_cast<Grid*>(ObjectDataType::create("AStar::Grid"));
+	auto found = model()->find("/?AStarNavigator");
+	transfernode(grid->holder, found);
 	grids.add(grid);
 	
 	double nodeWidth = getvarnum(classobject(grid->holder), "nodeSizeX");

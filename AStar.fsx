@@ -1008,7 +1008,7 @@ switch (clickCode) {
 			// I only create a new object on the left release if the user did not drag the mouse (pan the view)
 			if (fabs(dx) &lt; 2 &amp;&amp; fabs(dy) &lt; 2) {
 				
-				double nodeWidth = function_s(activeNavigator, "getGrid", modelPos.x, modelPos.y, modelPos.z).find("nodeSizeX").value;
+				double nodeWidth = function_s(activeNavigator, "getGrid", modelPos.x, modelPos.y, modelPos.z).find("&gt;variables/nodeSizeX").value;
 				if (mode != EDITMODE_GRID) {
 					// Snap between grid points
 					if (getvarnum(activeNavigator, "snapBetweenGrid") &amp;&amp; (mode == EDITMODE_DIVIDER || mode == EDITMODE_ONE_WAY_DIVIDER)) {
@@ -1502,6 +1502,13 @@ nodepoint(objectfocus(c), 0);</data></node>
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
 if (ontoView) {
+	Object nav = model().find("AStarNavigator");
+	if (!nav)
+		nav = createinstance(library().find("?AStarNavigator"), model());
+	Object grid = nav.find("Grid");
+	if (!grid)
+		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);	
+	
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
@@ -1525,6 +1532,13 @@ or where travel direction is constrained</data></node>
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
 if (ontoView) {
+	Object nav = model().find("AStarNavigator");
+	if (!nav)
+		nav = createinstance(library().find("?AStarNavigator"), model());
+	Object grid = nav.find("Grid");
+	if (!grid)
+		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);	
+	
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
@@ -1548,6 +1562,13 @@ like a wall</data></node>
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
 if (ontoView) {
+	Object nav = model().find("AStarNavigator");
+	if (!nav)
+		nav = createinstance(library().find("?AStarNavigator"), model());
+	Object grid = nav.find("Grid");
+	if (!grid)
+		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);	
+	
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
@@ -1570,6 +1591,13 @@ if (ontoView) {
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
 if (ontoView) {
+	Object nav = model().find("AStarNavigator");
+	if (!nav)
+		nav = createinstance(library().find("?AStarNavigator"), model());
+	Object grid = nav.find("Grid");
+	if (!grid)
+		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);	
+	
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
@@ -1592,6 +1620,13 @@ if (ontoView) {
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
 if (ontoView) {
+	Object nav = model().find("AStarNavigator");
+	if (!nav)
+		nav = createinstance(library().find("?AStarNavigator"), model());
+	Object grid = nav.find("Grid");
+	if (!grid)
+		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);	
+	
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
@@ -6927,32 +6962,85 @@ treenode nav = Model.find("AStarNavigator");
 if(!nav)
 	return 0;
 	
-treenode DummyNav = model().subnodes.assert("NAV");
-treenode navVariables = nav.find("&gt;variables").copy(DummyNav);
+treenode dummyNav = model().subnodes.assert("NAV");
+treenode dVars = variables(nav).copy(dummyNav);
+treenode dStats = stats(nav).copy(dummyNav);
+
+Array rebuildConnections;
+treenode vars = variables(nav);
+Array holderList = ["fixedResourceBarriers", "travelmembers", "controlAreas"];
+forobjecttreeunder(vars){
+	string holder = a.up.name;
+	int checkHolder = holderList.indexOf(holder) &gt; 0;
+	if (a.dataType == 3 &amp;&amp; checkHolder){
+		Array pair;
+		treenode mynode = ownerobject(a.value);
+		pair.push(a.up.name);
+		pair.push(mynode.getPath());
+		rebuildConnections.push(pair);
+	}
+}
+
+nav.name = "oldAstarNavigator";
+
+treenode newNav = createinstance(library().find("?AStarNavigator"), model());
+
+for (int i = 1; i &lt;= nav.subnodes.length; i++){
+	nav.subnodes[i].copy(newNav);
+}
+
+newNav.find("&gt;variables/grids").subnodes.clear();
+
+treenode grids = dVars.find("grids");
+for(int i = 1; i &lt;= grids.subnodes.length; i++){
+	treenode thisGrid = grids.subnodes[i];	
+	treenode replacementGrid = function_s(newNav, "createGrid", 0, 0, 0);
+	forobjecttreeunder(thisGrid){
+		setvarnum(replacementGrid, a.name, a.value);
+	}
+}
+
+//await Delay.realTime(0);
+
+for(int i = 1; i &lt;= rebuildConnections.length; i++){
+	Array pair = rebuildConnections[i];
+	Object foundObj = Model.find(pair[2]);
+	if(objectexists(foundObj)){
+		function_s(nav, "removeMember", foundObj);
+		if (pair[1] != "travelmembers")
+			function_s(newNav, "addMember", foundObj);
+	}
+}
 
 destroyobject(nav);
 
-treenode newNav = createinstance(library().find("?AStarNavigator"), model());
-	
-treenode grids = navVariables.find("grids");
+//await Delay.realTime(0);
 
-for(int i = 1; i &lt;= grids.subnodes.length; i++){
-	treenode thisGrid = grids.subnodes[i];
-	double minPointX = thisGrid.find("minPointX").value;
-	double minPointY = thisGrid.find("minPointY").value;
-	double minPointZ = thisGrid.find("minPointZ").value;
-	double maxPointX = thisGrid.find("maxPointX").value;
-	double maxPointY = thisGrid.find("maxPointY").value;
-	//double maxPointZ = thisGrid.find("maxPointZ").value;
-	
-	treenode replacementGrid = function_s(newNav, "createGrid", 0, 0, 0);
-	setvarnum(replacementGrid, "minPointX", minPointX);
-	setvarnum(replacementGrid, "minPointY", minPointY);
-	setvarnum(replacementGrid, "minPointZ", minPointZ + 1);
-	setvarnum(replacementGrid, "maxPointX", maxPointX);
-	setvarnum(replacementGrid, "maxPointY", maxPointY);
-	setvarnum(replacementGrid, "maxPointZ", 2);
+for(int i = 1; i &lt;= rebuildConnections.length; i++){
+	Array pair = rebuildConnections[i];
+	Object foundObj = Model.find(pair[2]);
+	if(objectexists(foundObj)){
+		//if (pair[1] == "travelmembers")
+			//function_s(newNav, "addMember", foundObj);
+	}
 }
+
+// treenode newVars = variables(newNav);
+// treenode newStats = stats(newNav);
+// // newVars.subnodes.clear();
+// // newStats.subnodes.clear();
+
+// for(int i = 1; i &lt;= dVars.subnodes.length; i++){
+// 	dVars.subnodes[i].copy(newVars);
+// }
+// for(int j = 1; j &lt;= dStats.subnodes.length; j++){
+// 	dStats.subnodes[j].copy(newStats);
+// }
+
+
+
+
+//dummyNav.destroy();
 
 return 1;
 </data></node>

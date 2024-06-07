@@ -379,6 +379,15 @@ void Grid::resolveGridOrigin()
 	gridOrigin.z = minPoint.z;
 }
 
+void Grid::updateSpatials()
+{
+	spatialx(holder)->value = minPoint.x;
+	spatialy(holder)->value = maxPoint.y;
+	spatialz(holder)->value = minPoint.z;
+	spatialsx(holder)->value = maxPoint.x - minPoint.x;
+	spatialsy(holder)->value = maxPoint.y - minPoint.y;
+	spatialsz(holder)->value = 0.01;
+}
 
 AStarNode * Grid::getNode(int rowNum, int colNum)
 {
@@ -1286,31 +1295,18 @@ void Grid::onPostCreate(void * data)
 	if (grid->navigator)
 		grid->navigator->isGridDirty = grid->navigator->isBoundsDirty = true;
 
-	grid->b_spatialx = grid->minPoint.x;
-	grid->b_spatialy = grid->maxPoint.y;
-	grid->b_spatialz = grid->minPoint.z;
-	grid->b_spatialsx = grid->size.x;
-	grid->b_spatialsy = grid->size.y;
-	grid->b_spatialsz = 0.01;
-
+	grid->updateSpatials();
 }
 
 double Grid::onPreDraw(TreeNode* view)
 {
-	if (spatialrz(holder)->value != 0) 
-		spatialrz(holder)->value = 0;
-	return 0;
+	b_spatialrx = b_spatialry = b_spatialrz = 0.0;
+	return 0.0;
 }
 
 double Grid::onDraw(TreeNode* view)
 {
-	spatialx(holder)->value = minPoint.x;
-	spatialy(holder)->value = maxPoint.y;
-	spatialz(holder)->value = minPoint.z;
-	spatialsx(holder)->value = maxPoint.x - minPoint.x;
-	spatialsy(holder)->value = maxPoint.y - minPoint.y;
-	spatialsz(holder)->value = 0.01;
-
+	updateSpatials();
 	setManipulationHandleDraw( DRAW_CONNECTOR_TRIANGLE | DRAW_MOVE_AXIS_ALL | DRAW_SIZER_X | DRAW_SIZER_Y | DRAW_SIZER_X_NEG | DRAW_SIZER_Y_NEG | DRAW_ORB);
 	return 0;
 }
