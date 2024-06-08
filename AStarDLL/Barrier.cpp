@@ -825,7 +825,7 @@ double Barrier::onPreDraw(treenode view)
 double Barrier::onDraw(treenode view)
 {
 	AStarNavigator* nav = navigator;
-	if (!((int)nav->drawMode & ASTAR_DRAW_MODE_BARRIERS))
+	if (!((int)nav->drawMode & ASTAR_DRAW_MODE_BARRIERS) || nav == nullptr)
 		return 0;
 
 	if (switch_hideshape(holder, -1))

@@ -1507,7 +1507,7 @@ if (ontoView) {
 		nav = createinstance(library().find("?AStarNavigator"), model());
 	Object grid = nav.find("Grid");
 	if (!grid)
-		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);	
+		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 0.07, 0.07, 0);	
 	
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
@@ -1537,7 +1537,7 @@ if (ontoView) {
 		nav = createinstance(library().find("?AStarNavigator"), model());
 	Object grid = nav.find("Grid");
 	if (!grid)
-		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);	
+		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 0.07, 0.07, 0);	
 	
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
@@ -1567,7 +1567,7 @@ if (ontoView) {
 		nav = createinstance(library().find("?AStarNavigator"), model());
 	Object grid = nav.find("Grid");
 	if (!grid)
-		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);	
+		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 0.07, 0.07, 0);	
 	
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
@@ -1596,7 +1596,7 @@ if (ontoView) {
 		nav = createinstance(library().find("?AStarNavigator"), model());
 	Object grid = nav.find("Grid");
 	if (!grid)
-		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);	
+		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 0.07, 0.07, 0);	
 	
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
@@ -1625,7 +1625,7 @@ if (ontoView) {
 		nav = createinstance(library().find("?AStarNavigator"), model());
 	Object grid = nav.find("Grid");
 	if (!grid)
-		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);	
+		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 0.07, 0.07, 0);	
 	
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
@@ -6985,10 +6985,6 @@ nav.name = "oldAstarNavigator";
 
 treenode newNav = createinstance(library().find("?AStarNavigator"), model());
 
-for (int i = 1; i &lt;= nav.subnodes.length; i++){
-	nav.subnodes[i].copy(newNav);
-}
-
 newNav.find("&gt;variables/grids").subnodes.clear();
 
 treenode grids = dVars.find("grids");
@@ -7000,6 +6996,9 @@ for(int i = 1; i &lt;= grids.subnodes.length; i++){
 	}
 }
 
+for (int i = 1; i &lt;= nav.subnodes.length; i++){
+	nav.subnodes[i].copy(newNav);
+}
 //await Delay.realTime(0);
 
 for(int i = 1; i &lt;= rebuildConnections.length; i++){

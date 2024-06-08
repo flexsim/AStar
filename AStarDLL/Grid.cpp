@@ -386,7 +386,7 @@ void Grid::updateSpatials()
 	spatialz(holder)->value = minPoint.z;
 	spatialsx(holder)->value = maxPoint.x - minPoint.x;
 	spatialsy(holder)->value = maxPoint.y - minPoint.y;
-	spatialsz(holder)->value = 0.01;
+	spatialsz(holder)->value = 0;
 }
 
 AStarNode * Grid::getNode(int rowNum, int colNum)
@@ -1296,6 +1296,7 @@ void Grid::onPostCreate(void * data)
 		grid->navigator->isGridDirty = grid->navigator->isBoundsDirty = true;
 
 	grid->updateSpatials();
+	switch_hidelabel(grid->holder, 1);
 }
 
 double Grid::onPreDraw(TreeNode* view)
@@ -1306,6 +1307,10 @@ double Grid::onPreDraw(TreeNode* view)
 
 double Grid::onDraw(TreeNode* view)
 {
+	const double EPSILON = 1e-5;
+	if (std::abs(size.x - 0.07) < EPSILON && std::abs(size.y - 0.07) < EPSILON)
+		return 0;
+
 	updateSpatials();
 	setManipulationHandleDraw( DRAW_CONNECTOR_TRIANGLE | DRAW_MOVE_AXIS_ALL | DRAW_SIZER_X | DRAW_SIZER_Y | DRAW_SIZER_X_NEG | DRAW_SIZER_Y_NEG | DRAW_ORB);
 	return 0;
@@ -1345,6 +1350,10 @@ void Grid::drawSizerHandles(treenode view, int pickingMode)
 
 void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode)
 {
+	const double EPSILON = 1e-5;
+	if (std::abs(size.x - 0.07) < EPSILON && std::abs(size.y - 0.07) < EPSILON)
+		return;
+	
 	if (switch_hideshape(holder, -1))
 		return;
 	

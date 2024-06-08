@@ -1878,7 +1878,7 @@ Grid * AStarNavigator::getGrid(const Vec3 & modelPos, bool canReturnNull)
 	// believe me when I say this is not infinite recursioin
 	Grid* grid = getGrid(modelPos, true);
 	if (!grid)
-		grid = createGrid(modelPos, Vec3(1, 1, 0.01));
+		grid = createGrid(modelPos, Vec3(0.07, 0.07, 0));
 	return grid;
 }
 
@@ -2317,7 +2317,7 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 	grid->minPoint.z = loc.z;
 	grid->maxPoint.x = loc.x + (size.x != 0 ? size.x : 10.0 * nodeWidth);
 	grid->maxPoint.y = loc.y;
-	grid->maxPoint.z = loc.z + (0.01 * nodeWidth);
+	grid->maxPoint.z = loc.z + size.z;
 	grid->isUserCustomized = true;
 	grid->isDirtyByUser = true;
 	isGridDirty = true;
