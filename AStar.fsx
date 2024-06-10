@@ -6982,6 +6982,7 @@ forobjecttreeunder(vars){
 }
 
 nav.name = "oldAstarNavigator";
+int navRank = nav.rank;
 
 treenode newNav = createinstance(library().find("?AStarNavigator"), model());
 
@@ -6999,47 +7000,36 @@ for(int i = 1; i &lt;= grids.subnodes.length; i++){
 for (int i = 1; i &lt;= nav.subnodes.length; i++){
 	nav.subnodes[i].copy(newNav);
 }
-//await Delay.realTime(0);
 
 for(int i = 1; i &lt;= rebuildConnections.length; i++){
 	Array pair = rebuildConnections[i];
 	Object foundObj = Model.find(pair[2]);
 	if(objectexists(foundObj)){
 		function_s(nav, "removeMember", foundObj);
-		if (pair[1] != "travelmembers")
-			function_s(newNav, "addMember", foundObj);
+		function_s(newNav, "addMember", foundObj);
 	}
+}
+
+
+for (int i = 1; i &lt;= holderList.length; i++){
+	dVars.find(holderList[i]).destroy();
+}
+
+dVars.find("barriers").destroy();
+dVars.find("grids").destroy();
+
+
+treenode newVars = variables(newNav);
+
+for(int i = 1; i &lt;= dVars.subnodes.length; i++){
+	dVars.subnodes[i].copy(newVars);
+	setvarnum(newNav, dVars.subnodes[i].name, dVars.subnodes[i].value);
 }
 
 destroyobject(nav);
+newNav.rank = navRank;
 
-//await Delay.realTime(0);
-
-for(int i = 1; i &lt;= rebuildConnections.length; i++){
-	Array pair = rebuildConnections[i];
-	Object foundObj = Model.find(pair[2]);
-	if(objectexists(foundObj)){
-		//if (pair[1] == "travelmembers")
-			//function_s(newNav, "addMember", foundObj);
-	}
-}
-
-// treenode newVars = variables(newNav);
-// treenode newStats = stats(newNav);
-// // newVars.subnodes.clear();
-// // newStats.subnodes.clear();
-
-// for(int i = 1; i &lt;= dVars.subnodes.length; i++){
-// 	dVars.subnodes[i].copy(newVars);
-// }
-// for(int j = 1; j &lt;= dStats.subnodes.length; j++){
-// 	dStats.subnodes[j].copy(newStats);
-// }
-
-
-
-
-//dummyNav.destroy();
+dummyNav.destroy();
 
 return 1;
 </data></node>
