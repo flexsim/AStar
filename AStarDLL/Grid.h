@@ -82,7 +82,7 @@ public:
 	void growToBarriers();
 	void buildNodeTable();
 	void resolveGridOrigin();
-	void updateSpatials();
+	void updateSpatials(bool setMode = false);
 
 	int __getRank() { return holder->rank; }
 	__declspec(property(get = __getRank)) int rank;

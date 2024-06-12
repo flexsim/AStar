@@ -18,7 +18,6 @@ void Grid::bindVariables()
 	bindNavigator();
 	bindVariableByName("nodeSizeX", nodeSize.x);
 	bindVariableByName("nodeSizeY", nodeSize.y);
-	// TODO: move this to an update script
 	if (bindMode == SDT_BIND_ON_LOAD) {
 		treenode width = holder->subnodes["nodeWidth"];
 		if (width) {
@@ -379,13 +378,26 @@ void Grid::resolveGridOrigin()
 	gridOrigin.z = minPoint.z;
 }
 
-void Grid::updateSpatials()
+void Grid::updateSpatials(bool setMode)
 {
-	spatialx(holder)->value = minPoint.x;
-	spatialy(holder)->value = maxPoint.y;
+	if (setMode) {
+		TreeNode* reSizeNode = node_b_resizeinfo;
+		minPoint.x = round(reSizeNode->subnodes["x"]->value / nodeSize.x) * nodeSize.x;
+		maxPoint.x = round((minPoint.x + reSizeNode->subnodes["sx"]->value) / nodeSize.x) * nodeSize.x;
+		maxPoint.y = round(reSizeNode->subnodes["y"]->value / nodeSize.y) * nodeSize.y;
+		minPoint.y = round((maxPoint.y - reSizeNode->subnodes["sy"]->value) / nodeSize.y) * nodeSize.y;
+		minPoint.z = reSizeNode->subnodes["z"]->value;
+		makeDirty();
+	}
+	
+	Vec3f bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight;
+	getBoundsVertices(bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight);
+
+	spatialx(holder)->value = topLeft.x;
+	spatialy(holder)->value = topLeft.y;
 	spatialz(holder)->value = minPoint.z;
-	spatialsx(holder)->value = maxPoint.x - minPoint.x;
-	spatialsy(holder)->value = maxPoint.y - minPoint.y;
+	spatialsx(holder)->value = topRight.x - topLeft.x;
+	spatialsy(holder)->value = topLeft.y - bottomLeft.y;
 	spatialsz(holder)->value = 0;
 }
 
@@ -801,7 +813,7 @@ void Grid::visitCellsWidening(const Cell& centerCell, std::function<bool(const C
 void Grid::buildBoundsMesh()
 {
 	bindNavigator();
-	TreeNode* color = navigator->node_b_color;
+	TreeNode* color = node_b_color;
 	Vec4f boundsColor(
 		(float)get(::rank(color, 1)),
 		(float)get(::rank(color, 2)),
@@ -1300,7 +1312,14 @@ void Grid::onPostCreate(void * data)
 }
 
 double Grid::onPreDraw(TreeNode* view)
-{
+{	
+	TreeNode* reSizeNode = node_b_resizeinfo;
+	reSizeNode->subnodes["x"]->value = b_spatialx;
+	reSizeNode->subnodes["y"]->value = b_spatialy;
+	reSizeNode->subnodes["z"]->value = b_spatialz;
+	reSizeNode->subnodes["sx"]->value = b_spatialsx;
+	reSizeNode->subnodes["sy"]->value = b_spatialsy;
+
 	b_spatialrx = b_spatialry = b_spatialrz = 0.0;
 	return 0.0;
 }
@@ -1308,7 +1327,7 @@ double Grid::onPreDraw(TreeNode* view)
 double Grid::onDraw(TreeNode* view)
 {
 	const double EPSILON = 1e-5;
-	if (std::abs(size.x - 0.07) < EPSILON && std::abs(size.y - 0.07) < EPSILON)
+	if (fabs(size.x - 0.07) < EPSILON && fabs(size.y - 0.07) < EPSILON)
 		return 0;
 
 	updateSpatials();
@@ -1351,12 +1370,25 @@ void Grid::drawSizerHandles(treenode view, int pickingMode)
 void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode)
 {
 	const double EPSILON = 1e-5;
-	if (std::abs(size.x - 0.07) < EPSILON && std::abs(size.y - 0.07) < EPSILON)
+	if (fabs(size.x - 0.07) < EPSILON && fabs(size.y - 0.07) < EPSILON)
 		return;
 	
 	if (switch_hideshape(holder, -1))
 		return;
-	
+
+	if (hoverObj != holder) {
+		TreeNode* reSizeNode = node_b_resizeinfo;
+		double nodeWidth = (nodeSize.x + nodeSize.y) * 0.5;
+		bool xLocChange = fabs(location.x - reSizeNode->subnodes["x"]->value) > 0;
+		bool yLocChange = fabs(location.y - reSizeNode->subnodes["y"]->value) > 0;
+		bool zLocChange = fabs(location.z - reSizeNode->subnodes["z"]->value) > 0;
+		bool xSpatialChange = fabs(size.x - reSizeNode->subnodes["sx"]->value) > 0;
+		bool ySpatialChange = fabs(size.y - reSizeNode->subnodes["sy"]->value) > 0;
+
+		if (xSpatialChange || ySpatialChange || xLocChange|| yLocChange || zLocChange) 
+			updateSpatials(true);
+	}
+		
 	if (!noSelect) {
 		if (pickingMode == PICK_PRESSED) {
 			if (!pickingMode && (selObj == holder || hoverObj == holder)) {
@@ -1475,17 +1507,10 @@ double Grid::onDestroy(treenode view)
 
 void Grid::bindNavigator()
 {
-	//navigator = model()->find("AStarNavigator")->objectAs(AStarNavigator);
-
 	if (model()->find("AStarNavigator"))
 		navigator = model()->find("AStarNavigator")->objectAs(AStarNavigator);
 	else navigator = nullptr;
 
-	/*if (isclasstype(up(holder), "AStar::AStarNavigator"))
-		navigator = &o(AStarNavigator, up(holder));
-	else navigator = model()->find("AStarNavigator")->objectAs(AStarNavigator);*/
-	
-	// TODO: change this to the way TEs bind/handle their navigator
 }
 
 double Grid::onUndo(bool isUndo, treenode undoRecord) 

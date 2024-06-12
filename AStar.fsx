@@ -334,6 +334,35 @@ function_s(c, "updateDrag", view);
         <node f="42"><name>cppfunctions</name>
          <node f="40"><name></name></node></node>
         <node f="42"><name>cppvariables</name></node>
+        <node f="42"><name>properties</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>NodeSizeX</name><data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>superclasses</name><data></data>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/NumberProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/nodeSizeX</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="4000000042" dt="2"><name>localizedName</name><data>NodeSizeX</data></node>
+          </node>
+         </data></node>
+         <node f="42" dt="4"><name>NodeSizeY</name><data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>superclasses</name><data></data>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/NumberProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/nodeSizeY</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="4000000042" dt="2"><name>localizedName</name><data>NodeSizeY</data></node>
+          </node>
+         </data></node>
+        </node>
        </node>
        <node f="42"><name>spatial</name>
         <node f="40"><name></name></node>
@@ -347,6 +376,23 @@ function_s(c, "updateDrag", view);
         <node f="42" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>centroid</name><data>000000003ff00000</data></node>
+       </node>
+       <node f="42"><name>visual</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>color</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name>red</name><data>d70a3d713fcd70a3</data></node>
+         <node f="42" dt="1"><name>green</name><data>525252523fd25252</data></node>
+         <node f="42" dt="1"><name>blue</name><data>3a3a3a3a3fea3a3a</data></node>
+        </node>
+        <node f="42"><name>resizeinfo</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name>x</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>y</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>z</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>sx</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>sy</name><data>0000000000000000</data></node>
+        </node>
        </node>
       </data>
        <node f="40"><name></name></node>
