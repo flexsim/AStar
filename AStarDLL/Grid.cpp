@@ -380,6 +380,10 @@ void Grid::resolveGridOrigin()
 
 void Grid::updateSpatials(bool setMode)
 {
+	const double EPSILON = 1e-5;
+	if (fabs(maxPoint.x - minPoint.x - 0.07) < EPSILON && fabs(maxPoint.y - minPoint.y - 0.07) < EPSILON)
+		return;
+	
 	if (setMode) {
 		TreeNode* reSizeNode = node_b_resizeinfo;
 		minPoint.x = round(reSizeNode->subnodes["x"]->value / nodeSize.x) * nodeSize.x;
@@ -1326,10 +1330,6 @@ double Grid::onPreDraw(TreeNode* view)
 
 double Grid::onDraw(TreeNode* view)
 {
-	const double EPSILON = 1e-5;
-	if (fabs(size.x - 0.07) < EPSILON && fabs(size.y - 0.07) < EPSILON)
-		return 0;
-
 	updateSpatials();
 	setManipulationHandleDraw( DRAW_CONNECTOR_TRIANGLE | DRAW_MOVE_AXIS_ALL | DRAW_SIZER_X | DRAW_SIZER_Y | DRAW_SIZER_X_NEG | DRAW_SIZER_Y_NEG | DRAW_ORB);
 	return 0;
