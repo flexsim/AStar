@@ -380,8 +380,7 @@ void Grid::resolveGridOrigin()
 
 void Grid::updateSpatials(bool setMode)
 {
-	const double EPSILON = 1e-5;
-	if (fabs(maxPoint.x - minPoint.x - 0.07) < EPSILON && fabs(maxPoint.y - minPoint.y - 0.07) < EPSILON)
+	if (size.x == UNINITIALIZED && size.y == UNINITIALIZED)
 		return;
 	
 	if (setMode) {
@@ -1369,8 +1368,7 @@ void Grid::drawSizerHandles(treenode view, int pickingMode)
 
 void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode)
 {
-	const double EPSILON = 1e-5;
-	if (fabs(size.x - 0.07) < EPSILON && fabs(size.y - 0.07) < EPSILON)
+	if (size.x == UNINITIALIZED && size.y == UNINITIALIZED)
 		return;
 	
 	if (switch_hideshape(holder, -1))

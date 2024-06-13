@@ -1558,16 +1558,6 @@ if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 	if (!nav)
 		nav = createinstance(library().find("?AStarNavigator"), model());
 
-	Object grid = NULL;
-	for (int i = 1; i &lt;= nav.subnodes.length; i++){
-		if (isclasstype(nav.subnodes[i], "AStar::Grid")){
-			grid = nav.subnodes[i];
-			break;
-		}	
-	}
-	if (!grid)
-		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 0.07, 0.07, 0);	
-	
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	if (objectexists(windowtitle(obj)))
@@ -1597,17 +1587,7 @@ if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 	Object nav = model().find("AStarNavigator");
 	if (!nav)
 		nav = createinstance(library().find("?AStarNavigator"), model());
-	
-	Object grid = NULL;
-	for (int i = 1; i &lt;= nav.subnodes.length; i++){
-		if (isclasstype(nav.subnodes[i], "AStar::Grid")){
-			grid = nav.subnodes[i];
-			break;
-		}	
-	}
-	if (!grid)
-		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 0.07, 0.07, 0);	
-	
+
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	if (objectexists(windowtitle(obj)))
@@ -1637,17 +1617,7 @@ if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 	Object nav = model().find("AStarNavigator");
 	if (!nav)
 		nav = createinstance(library().find("?AStarNavigator"), model());
-	
-	Object grid = NULL;
-	for (int i = 1; i &lt;= nav.subnodes.length; i++){
-		if (isclasstype(nav.subnodes[i], "AStar::Grid")){
-			grid = nav.subnodes[i];
-			break;
-		}	
-	}
-	if (!grid)
-		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 0.07, 0.07, 0);	
-	
+
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	if (objectexists(windowtitle(obj)))
@@ -1676,17 +1646,7 @@ if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 	Object nav = model().find("AStarNavigator");
 	if (!nav)
 		nav = createinstance(library().find("?AStarNavigator"), model());
-	
-	Object grid = NULL;
-	for (int i = 1; i &lt;= nav.subnodes.length; i++){
-		if (isclasstype(nav.subnodes[i], "AStar::Grid")){
-			grid = nav.subnodes[i];
-			break;
-		}	
-	}
-	if (!grid)
-		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 0.07, 0.07, 0);	
-	
+
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	if (objectexists(windowtitle(obj)))
@@ -1715,17 +1675,7 @@ if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 	Object nav = model().find("AStarNavigator");
 	if (!nav)
 		nav = createinstance(library().find("?AStarNavigator"), model());
-	
-	Object grid = NULL;
-	for (int i = 1; i &lt;= nav.subnodes.length; i++){
-		if (isclasstype(nav.subnodes[i], "AStar::Grid")){
-			grid = nav.subnodes[i];
-			break;
-		}	
-	}
-	if (!grid)
-		grid = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 0.07, 0.07, 0);	
-	
+
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	if (objectexists(windowtitle(obj)))

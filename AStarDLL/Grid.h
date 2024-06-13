@@ -30,6 +30,7 @@ public:
 	double minNodeSize;
 	double diagDist = 1.41421356;
 	double deepDiagDist = 2.236067977;
+	constexpr static double UNINITIALIZED = -1.0;
 	bool __canDoDeepDiag() { return nodeSize.x == nodeSize.y; }
 	__declspec(property(get = __canDoDeepDiag)) bool canDoDeepDiag;
 	/// <summary>	True if there is no grid below this grid on the z axis. </summary>

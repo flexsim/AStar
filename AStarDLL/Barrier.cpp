@@ -77,9 +77,12 @@ void Barrier::assertNavigator()
 		return;
 
 	treenode navNode = model()->find("AStarNavigator");
-	if (!navNode) {
+	if (!navNode)
 		navNode = createinstance(library()->find("?AStarNavigator"), model());
-	}
+
+	if (navNode->object<AStarNavigator>()->grids.size() == 0)
+		navNode->object<AStarNavigator>()->createGrid(Vec3(0, 0, 0), Vec3(Grid::UNINITIALIZED, Grid::UNINITIALIZED, 0));
+
 	navNode->objectAs(AStarNavigator)->barrierList.add(this);
 }
 
