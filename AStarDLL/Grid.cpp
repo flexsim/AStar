@@ -1302,7 +1302,7 @@ void Grid::onPostCreate(void * data)
 	if (!isclasstype(grid->holder->up, "AGV::AGVNavigator")) {
 		auto found = model()->find("/?AStarNavigator");
 		beginignoreundo();
-		transfernode(grid->holder, found);
+		//transfernode(grid->holder, found);
 		endignoreundo();
 	}
 

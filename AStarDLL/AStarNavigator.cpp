@@ -232,8 +232,8 @@ void AStarNavigator::resetGrids()
 	hasMandatoryPaths = 0.0;
 
 	for (Grid* grid : grids) {
-		if (size.x == Grid::UNINITIALIZED, size.y == Grid::UNINITIALIZED)
-			size.x = size.y = 0;
+		if (grid->size.x == Grid::UNINITIALIZED, grid->size.y == Grid::UNINITIALIZED)
+			grid->size.x = grid->size.y = 1; // Initialize Grid
 		grid->reset(this);
 	}
 
@@ -2138,7 +2138,7 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	case EditMode::MANDATORY_PATH: newBarrier = barrierList.add(new MandatoryPath); break;
 	case EditMode::GRID: {
 		auto nodeSize = grids.front()->nodeSize;
-		newGrid = createGrid(pos1, Vec3(nodeSize.x, nodeSize.y, 0.01));
+		newGrid = createGrid(pos1, Vec3(nodeSize.x, nodeSize.y, 0));
 		break;
 	}
 	}
@@ -2306,14 +2306,14 @@ bool AStarNavigator::removeElevatorBridge(ObjectDataType * object)
 Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 {
 	Grid* grid = nullptr;
-	print(isBoundsMeshBuilt, areGridsUserCustomized, grids.size());
 
-	if (!isBoundsMeshBuilt && !areGridsUserCustomized && grids.size() == 1) {
+	if (grids.size() == 1 && grids[0]->size.x == Grid::UNINITIALIZED && grids[0]->size.y == Grid::UNINITIALIZED) { // check if grid[0] is uninitialized - isBoundsMeshBuilt areGridsUserCustomized  
 		grid = grids.front();
 	} else {
 		grid = dynamic_cast<Grid*>(ObjectDataType::create("AStar::Grid"));
 		auto found = model()->find("/?AStarNavigator");
 		transfernode(grid->holder, found);
+		setrank(grid->holder, grid->navigator->grids.size() + 1);
 		grids.add(grid);
 	}
 	
@@ -2321,6 +2321,8 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 	if (grids.length >= 1) {
 		nodeWidth = std::min(grid->nodeSize.x, grid->nodeSize.y);
 	}
+	grid->size.x = size.x;
+	grid->size.y = size.y;
 	grid->minPoint.x = loc.x;
 	grid->minPoint.y = loc.y - (size.y != 0 ? size.y : 10.0 * nodeWidth);
 	grid->minPoint.z = loc.z;

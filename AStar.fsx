@@ -369,8 +369,8 @@ function_s(c, "updateDrag", view);
         <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>spatialz</name><data>0000000000000000</data></node>
-        <node f="42" dt="1"><name>spatialsx</name><data>1eb851ec3fb1eb85</data></node>
-        <node f="42" dt="1"><name>spatialsy</name><data>1eb851ec3fb1eb85</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040240000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040240000</data></node>
         <node f="42" dt="1"><name>spatialsz</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>spatialrx</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
@@ -1708,7 +1708,7 @@ if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 		nav = createinstance(library().find("?AStarNavigator"), model());
 	
 	treenode obj = c.find("..&gt;objectfocus+");
-	treenode createdObj = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);
+	treenode createdObj = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 10, 10, 0);
 	if (objectexists(windowtitle(obj)))
 		createdObj.name = windowtitle(obj).value;
 	applicationcommand("setuniquename", createdObj);
