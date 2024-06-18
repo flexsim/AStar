@@ -35,33 +35,7 @@
         <node f="42" dt="1"><name>ignoreDestBarrier</name><data>000000003ff00000</data></node>
         <node f="42" dt="1"><name>hasEdgeTable</name><data>0000000000000000</data></node>
         <node f="42"><name>grids</name>
-         <node f="40"><name></name></node>
-         <node f="42" dt="7"><name>MainGrid</name><data/>
-          <node f="40"><name></name></node>
-          <node f="42" dt="1"><name>minPointX</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>minPointY</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>minPointZ</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>maxPointX</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>maxPointY</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>maxPointZ</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>gridOriginX</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>gridOriginY</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>gridOriginZ</name><data>0000000000000000</data></node>
-          <node f="42" dt="1"><name>isUserCustomized</name><data>0000000000000000</data></node>
-          <node f="42"><name>bridgeData</name></node>
-          <node f="42" dt="1"><name>nodeSizeX</name><data>000000003ff00000</data></node>
-          <node f="42" dt="1"><name>nodeSizeY</name><data>000000003ff00000</data></node>
-          <node f="42" dt="1"><name>noSelect</name><data>0000000000000000</data></node>
-          <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Grid</data>
-           <node f="40"><name></name></node>
-           <node f="42" dt="1"><name>minNodeSize</name><data>0000000000000000</data></node>
-           <node f="42" dt="1"><name>diagDist</name><data>0000000000000000</data></node>
-           <node f="42" dt="1"><name>deepDiagDist</name><data>0000000000000000</data></node>
-           <node f="42" dt="1"><name>isBounded</name><data>0000000000000000</data></node>
-           <node f="42" dt="1"><name>isLowestGrid</name><data>0000000000000000</data></node>
-          </node>
-         </node>
-        </node>
+         <node f="40"><name></name></node></node>
         <node f="42"><name>barriers</name></node>
         <node f="42" dt="3"><name>activeBarrier</name><data><coupling>null</coupling></data></node>
         <node f="42"><name>barrierConditions</name></node>
@@ -321,6 +295,111 @@
         <node f="42" dt="1"><name>centroid</name><data>000000003ff00000</data></node>
        </node>
       </data></node>
+      <node f="10000042" dt="4"><name>Grid</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>classes</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>AStar::Grid</name><data><coupling>/installdata/add_library/1/data/astar/Grid</coupling></data></node>
+       </node>
+       <node f="42"><name>superclasses</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>FlexSimEventHandler</name><data><coupling>null</coupling></data></node>
+       </node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>minPointX</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>minPointY</name><data>7463656a20736920</data></node>
+        <node f="42" dt="1"><name>minPointZ</name><data>616572632e646574</data></node>
+        <node f="42" dt="1"><name>maxPointX</name><data>09090a0d00702f3c</data></node>
+        <node f="42" dt="1"><name>maxPointY</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>maxPointZ</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>gridOriginX</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>gridOriginY</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>gridOriginZ</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>isUserCustomized</name><data>0000000000000000</data></node>
+        <node f="42"><name>bridgeData</name></node>
+        <node f="42" dt="1"><name>nodeSizeX</name><data>000000003ff00000</data></node>
+        <node f="42" dt="1"><name>nodeSizeY</name><data>000000003ff00000</data></node>
+        <node f="42" dt="1"><name>noSelect</name><data>7461747322006369</data></node>
+       </node>
+       <node f="42"><name>behaviour</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>eventfunctions</name>
+         <node f="40"><name></name></node>
+         <node f="442" dt="2"><name>OnDrag</name><data>treenode view = activedocumentnode();
+function_s(c, "updateDrag", view);
+</data></node>
+         <node f="1000042" dt="2"><name>updateDrag</name><data>dll:"module:AStar" function:"Grid_updateDrag"</data></node>
+        </node>
+        <node f="42"><name>cppfunctions</name>
+         <node f="40"><name></name></node></node>
+        <node f="42"><name>cppvariables</name></node>
+        <node f="42"><name>properties</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="4"><name>NodeSizeX</name><data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>superclasses</name><data></data>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/NumberProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/nodeSizeX</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="4000000042" dt="2"><name>localizedName</name><data>NodeSizeX</data></node>
+          </node>
+         </data></node>
+         <node f="42" dt="4"><name>NodeSizeY</name><data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="2"><name>superclasses</name><data></data>
+           <node f="40"><name></name></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/NumberProperty</name><data><coupling>null</coupling></data></node>
+          </node>
+          <node f="42"><name>variables</name>
+           <node f="40"><name></name></node>
+           <node f="42" dt="2"><name>varPath</name><data>&gt;variables/nodeSizeY</data></node>
+           <node f="42" dt="2"><name>category</name><data>A*</data></node>
+           <node f="4000000042" dt="2"><name>localizedName</name><data>NodeSizeY</data></node>
+          </node>
+         </data></node>
+        </node>
+       </node>
+       <node f="42"><name>spatial</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialz</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>0000000040240000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040240000</data></node>
+        <node f="42" dt="1"><name>spatialsz</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialrx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialry</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialrz</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>centroid</name><data>000000003ff00000</data></node>
+       </node>
+       <node f="42"><name>visual</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>color</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name>red</name><data>d70a3d713fcd70a3</data></node>
+         <node f="42" dt="1"><name>green</name><data>525252523fd25252</data></node>
+         <node f="42" dt="1"><name>blue</name><data>3a3a3a3a3fea3a3a</data></node>
+        </node>
+        <node f="42"><name>resizeinfo</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="1"><name>x</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>y</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>z</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>sx</name><data>0000000000000000</data></node>
+         <node f="42" dt="1"><name>sy</name><data>0000000000000000</data></node>
+        </node>
+       </node>
+       <node f="4000000042" dt="2"><name>windowtitle</name><data>Grid</data></node>
+      </data>
+       <node f="40"><name></name></node>
+       <node f="42" dt="2"><name>sdt::attributetree</name><data>AStar::Grid</data>
+        <node f="40"><name></name></node></node>
+      </node>
       <node f="10100062" dt="4"><name>Barrier</name><data>
        <node f="40"><name></name></node>
        <node f="42"><name>classes</name>
@@ -981,7 +1060,7 @@ switch (clickCode) {
 			// I only create a new object on the left release if the user did not drag the mouse (pan the view)
 			if (fabs(dx) &lt; 2 &amp;&amp; fabs(dy) &lt; 2) {
 				
-				double nodeWidth = function_s(activeNavigator, "getGrid", modelPos.x, modelPos.y, modelPos.z).find("nodeSizeX").value;
+				double nodeWidth = function_s(activeNavigator, "getGrid", modelPos.x, modelPos.y, modelPos.z).find("&gt;variables/nodeSizeX").value;
 				if (mode != EDITMODE_GRID) {
 					// Snap between grid points
 					if (getvarnum(activeNavigator, "snapBetweenGrid") &amp;&amp; (mode == EDITMODE_DIVIDER || mode == EDITMODE_ONE_WAY_DIVIDER)) {
@@ -1329,19 +1408,119 @@ nodepoint(objectfocus(c), 0);</data></node>
          <node f="42"><name>Spatial</name></node>
         </node>
         <node f="42" dt="2"><name>mode</name><data>EDITMODE_GRID</data></node>
+        <node f="42" dt="1"><name>mouseDownScreenX</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>mouseDownScreenY</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>mouseDownX</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>mouseDownY</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>mouseDownZ</name><data>0000000000000000</data></node>
+        <node f="42" dt="3"><name>draggingObj</name><data><coupling>null</coupling></data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
-        <node f="442" dt="2"><name>OnClick</name><data>#define BARRIER_MODE_DYNAMIC_CREATE 0x3
-treenode handler = tonode(get(objectfocus(c)));
-executefsnode(OnClick(handler), handler, i, eventdata);
-</data></node>
-        <node f="442" dt="2"><name>OnMouseMove</name><data>treenode handler = tonode(get(objectfocus(c)));
-executefsnode(OnMouseMove(handler), handler, i, eventdata);
+        <node f="442" dt="2"><name>OnClick</name><data>treenode navigator = model().find("/?AStarNavigator");
+if(!objectexists(navigator)){
+	navigator = createinstance(node("/?AStarNavigator", library()), model());
+}
+
+int clickCode = clickcode();
+int state = getvarnum(c, "state");
+
+switch (clickCode) {
+	case LEFT_PRESS:
+		if (state == GRID_MODE_STATE_DRAGGING){
+			setvarnum(c, "state", GRID_MODE_STATE_CLICK_DOWN_2); 
+		}
+		else {
+			setvarnum(c, "state", GRID_MODE_STATE_NONE);
+			setvarnum(c, "mouseDownScreenX", cursorinfo(i, 1, 1, 1));
+			setvarnum(c, "mouseDownScreenY", cursorinfo(i, 1, 2, 1));
+			setvarnum(c, "mouseDownX", cursorinfo(i, 2, 1, 1));
+			setvarnum(c, "mouseDownY", cursorinfo(i, 2, 2, 1));
+			setvarnum(c, "mouseDownZ", cursorinfo(i, 2, 3, 1));
+		}
+		break;
+	case LEFT_RELEASE:
+		if (state == GRID_MODE_STATE_NONE) {
+			int dx = fabs(cursorinfo(i, 1, 1, 1) - getvarnum(c, "mouseDownScreenX"));
+			int dy = fabs(cursorinfo(i, 1, 2, 1) - getvarnum(c, "mouseDownScreenY"));
+			if (dx &lt; 3 &amp;&amp; dy &lt; 3) {
+				setvarnum(c, "state", GRID_MODE_STATE_CLICKED);
+				Vec3 ontoLoc = Vec3(getvarnum(c, "mouseDownX"), getvarnum(c, "mouseDownY"), getvarnum(c, "mouseDownZ"));
+				treenode createdObj = function_s(navigator, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);
+				setvarnum(createdObj, "maxPointX", ontoLoc.x + 1);
+				setvarnum(createdObj, "minPointY", ontoLoc.y - 1);
+				spatialsx(createdObj).value = 1;
+				spatialsy(createdObj).value = 1;
+				nodepoint(getvarnode(c, "draggingObj"), createdObj);
+			}
+		}
+		if (state == GRID_MODE_STATE_CLICK_DOWN_2) {
+			setvarnum(c, "state", GRID_MODE_STATE_NONE);
+			treenode createdObj = tonode(getvarnum(c, "draggingObj"));
+			setselectedobject(i, createdObj);
+			nodepoint(getvarnode(c, "draggingObj"), 0);
+		}
+		break;
+	case RIGHT_PRESS:
+		int grids = 0;
+		for(int i = 1; i &lt;= navigator.subnodes.length; i++){
+			if(isclasstype(navigator.subnodes[i], "AStar::Grid"))
+				grids++;
+		}
+		if(state == GRID_MODE_STATE_DRAGGING &amp;&amp; grids &lt;= 1 &amp;&amp; navigator.subnodes.length &lt;= 1){
+			destroyobject(navigator);
+		}else{
+			destroyobject(tonode(getvarnum(c, "draggingObj")));
+		}
+		nodepoint(getvarnode(c, "draggingObj"), 0);
+		setvarnum(c, "state", GRID_MODE_STATE_NONE);
+		break;
+}</data></node>
+        <node f="442" dt="2"><name>OnMouseMove</name><data>int modeState = getvarnum(c, "state");
+Vec3 modelPos = Vec3(cursorinfo(i, 2, 1, 1), cursorinfo(i, 2, 2, 1), cursorinfo(i, 2, 3, 1));
+if (modeState == GRID_MODE_STATE_CLICKED) {
+	int dx = fabs(cursorinfo(i, 1, 1, 1) - getvarnum(c, "mouseDownScreenX"));
+	int dy = fabs(cursorinfo(i, 1, 2, 1) - getvarnum(c, "mouseDownScreenY"));
+	if (dx &gt; 8 || dy &gt; 8) {
+		modeState = GRID_MODE_STATE_DRAGGING;
+		setvarnum(c, "state", modeState);
+		treenode navigator = node("/?AStarNavigator", model());
+		treenode parent = i.find("&gt;viewfocus+");
+		treenode createdObj = tonode(getvarnum(c, "draggingObj"));
+		if (!objectexists(createdObj))
+			return 0;
+		nodepoint(getvarnode(c, "draggingObj"), createdObj);
+		function_s(createdObj, "makeDirty");
+	}
+}
+
+if (modeState == GRID_MODE_STATE_DRAGGING) {
+	treenode createdObj = tonode(getvarnum(c, "draggingObj"));
+	double curX = cursorinfo(i, 2, 1, 1);
+	double curY = cursorinfo(i, 2, 2, 1);
+	double curZ = cursorinfo(i, 2, 3, 1);
+	if (up(up(createdObj)) != model()) {
+		double newX = vectorprojectx(model(), curX, curY, curZ, up(createdObj));
+		double newY = vectorprojecty(model(), curX, curY, curZ, up(createdObj));
+		double newZ = vectorprojectz(model(), curX, curY, curZ, up(createdObj));
+		curX = newX;
+		curY = newY;
+		curZ = newZ;
+	}
+
+	treenode view = activedocumentnode();
+	Vec3 pos = modelPos;
+	Vec3 lastPos = Vec3(getvarnum(c, "mouseDownX"), getvarnum(c, "mouseDownY"), getvarnum(c, "mouseDownZ"));
+	function_s(createdObj, "dragPressedPick", i, pos.x, pos.y, pos.z, pos.x - lastPos.x, pos.y - lastPos.y);
+	#define WM_PAINT 0xf
+	postwindowmessage(windowfromnode(i), WM_PAINT, 0, 0);
+}
+
 </data></node>
         <node f="442" dt="2"><name>OnEntering</name><data>treenode handler = node("../AStar::Create", c);
 nodepoint(objectfocus(c), handler);
 setvarnum(handler, "mode", executestring(getvarstr(c, "mode")));
+setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
@@ -1375,6 +1554,10 @@ nodepoint(objectfocus(c), 0);</data></node>
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
 if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
+	Object nav = model().find("AStarNavigator");
+	if (!nav)
+		nav = createinstance(library().find("?AStarNavigator"), model());
+
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	if (objectexists(windowtitle(obj)))
@@ -1401,6 +1584,10 @@ or where travel direction is constrained</data></node>
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
 if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
+	Object nav = model().find("AStarNavigator");
+	if (!nav)
+		nav = createinstance(library().find("?AStarNavigator"), model());
+
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	if (objectexists(windowtitle(obj)))
@@ -1427,6 +1614,10 @@ like a wall</data></node>
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
 if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
+	Object nav = model().find("AStarNavigator");
+	if (!nav)
+		nav = createinstance(library().find("?AStarNavigator"), model());
+
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	if (objectexists(windowtitle(obj)))
@@ -1452,6 +1643,10 @@ if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
 if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
+	Object nav = model().find("AStarNavigator");
+	if (!nav)
+		nav = createinstance(library().find("?AStarNavigator"), model());
+
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	if (objectexists(windowtitle(obj)))
@@ -1477,6 +1672,10 @@ if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
 treenode ontoView = param(5);
 if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
+	Object nav = model().find("AStarNavigator");
+	if (!nav)
+		nav = createinstance(library().find("?AStarNavigator"), model());
+
 	treenode obj = c.find("..&gt;objectfocus+");
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
 	if (objectexists(windowtitle(obj)))
@@ -1507,7 +1706,12 @@ if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 	Object nav = model().find("AStarNavigator");
 	if (!nav)
 		nav = createinstance(library().find("?AStarNavigator"), model());
-	treenode createdObj = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);
+	
+	treenode obj = c.find("..&gt;objectfocus+");
+	treenode createdObj = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 10, 10, 0);
+	if (objectexists(windowtitle(obj)))
+		createdObj.name = windowtitle(obj).value;
+	applicationcommand("setuniquename", createdObj);
 	postwindowmessage(systemwindow(0), FLEXSIM_MESSAGE_USER_NODEFUNCTION, c);
 	return createdObj;
 } else {
@@ -1537,9 +1741,6 @@ if (ontoView &amp;&amp; obj &amp;&amp; gets(documentwindow(ontoView)) != "Proces
 	setvarnum(obj, "isAStarMember", 1);
 	endignoreundo();
 	treenode createdObj = dropuserlibraryobject(obj, ontoObj, ontoLoc.x, ontoLoc.y, ontoLoc.z, ontoView);
-	if (objectexists(windowtitle(obj)))
-		createdObj.name = windowtitle(obj).value;
-	applicationcommand("setuniquename", createdObj);
 	beginignoreundo();
 	setvarnum(obj, "isAGVMember", 1);
 	setvarnum(obj, "isAStarMember", 0);
@@ -4704,7 +4905,12 @@ repaintview(view.find("../ColorsPanel/ColorListGraph"));</data></node>
     <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
     <node f="42"><name>data</name>
      <node f="40"><name></name></node>
-     <node f="42" dt="2"><name>AStar</name><data>#define PICK_ASTAR_POINT 6
+     <node f="42" dt="2"><name>AStar</name><data>#define GRID_MODE_STATE_NONE 0
+#define GRID_MODE_STATE_CLICKED 1
+#define GRID_MODE_STATE_DRAGGING 2
+#define GRID_MODE_STATE_CLICK_DOWN_2 3
+
+#define PICK_ASTAR_POINT 6
 
 #define EDITMODE_PREFERRED_PATH 35
 #define EDITMODE_DIVIDER 36
@@ -6178,7 +6384,7 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
         <node f="42" dt="1"><name>showRequirements</name><data>0000000000000000</data>
          <node f="40"><name></name></node>
          <node f="442" dt="2"><name>selObj</name><data>treenode selObj = param(1);
-if (!objectexists(selObj) || getdatatype(selObj) != DATATYPE_SIMPLE)
+if (!objectexists(selObj) || getdatatype(selObj) != DATATYPE_OBJECT)
 	return 0;
 
 return isclasstype(selObj, "AStar::Grid");
@@ -6237,7 +6443,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040540000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
-        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/nodeSizeX</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/nodeSizeX</data></node>
         <node f="4000000042" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
@@ -6269,7 +6475,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040540000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
-        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/nodeSizeY</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/nodeSizeY</data></node>
         <node f="4000000042" dt="2"><name>tooltip</name><data>Enter the spacing between nodes in the A* search grid.</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
@@ -6301,7 +6507,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040540000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
-        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+/minPointZ</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/minPointZ</data></node>
         <node f="4000000042" dt="2"><name>tooltip</name><data>Enter the Z position of the grid</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
@@ -6460,8 +6666,12 @@ surrogate.size = Vec3(1.0, 1.0, 1.0);
 navigator.attrs.shape.value = "***";
 navigator.attrs.shapeindex.value = 0;
 navigator.attrs.guifocusclass.value = "VIEW:/modules/AStar/Pages/AStarProperties";
-navigator.find("&gt;variables/grids/1/nodeSizeX").value = getvarnum(navigator, "nodeWidth");
-navigator.find("&gt;variables/grids/1/nodeSizeY").value = getvarnum(navigator, "nodeWidth");
+treenode nodeSizeX = navigator.find("&gt;variables/grids/1/nodeSizeX");
+treenode nodeSizeY = navigator.find("&gt;variables/grids/1/nodeSizeY");
+if (nodeSizeX)
+	nodeSizeX.value = getvarnum(navigator, "nodeWidth");
+if (nodeSizeY)
+	nodeSizeY.value = getvarnum(navigator, "nodeWidth");
 clearcontents(navigator.attrs.variables.find("resetposition"));
 switch_hidecontents(navigator, 0);
 createcopy(libNavigator.attrs.imageindexobject, navigator.attrs.imageindexobject, 1, 0, 0, 1);
@@ -6788,6 +6998,114 @@ navShape.value = "";
 updated = 1;
 	
 return updated;</data></node>
+    </node>
+   </node>
+  </node>
+  <node f="42" dt="2"><name>add_Update to 24.2</name><data>MAIN:/project/events/OnUpdateModel/Update to 24.2</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name>Promote AStar Grids</name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000000000000</data></node>
+    <node f="42" dt="2"><name>after</name><data>update EventLogSettings</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>Promote AStar Grids</name><data>treenode updateRoot = param(1);
+double oldVersion = param(2);
+
+if (oldVersion &gt;= 24.2)
+	return 0;
+
+if (updateRoot != model())
+	return 0;
+
+treenode nav = Model.find("AStarNavigator");
+if(!nav)
+	return 0;
+	
+treenode dummyNav = model().subnodes.assert("NAV");
+treenode dVars = variables(nav).copy(dummyNav);
+treenode dStats = stats(nav).copy(dummyNav);
+
+Array rebuildConnections;
+treenode vars = variables(nav);
+Array holderList = ["fixedResourceBarriers", "travelmembers", "controlAreas"];
+forobjecttreeunder(vars){
+	string holder = a.up.name;
+	int checkHolder = holderList.indexOf(holder) &gt; 0;
+	if (a.dataType == 3 &amp;&amp; checkHolder){
+		Array pair;
+		treenode mynode = ownerobject(a.value);
+		pair.push(a.up.name);
+		pair.push(mynode.getPath());
+		rebuildConnections.push(pair);
+	}
+}
+
+nav.name = "oldAstarNavigator";
+int navRank = nav.rank;
+
+treenode newNav = createinstance(library().find("?AStarNavigator"), model());
+
+newNav.find("&gt;variables/grids").subnodes.clear();
+
+treenode grids = dVars.find("grids");
+for(int i = 1; i &lt;= grids.subnodes.length; i++){
+	treenode thisGrid = grids.subnodes[i];	
+	treenode replacementGrid = function_s(newNav, "createGrid", 0, 0, 0);
+	// the grid sdt no longer exists, search through the attributetree
+	forobjecttreeunder(thisGrid.find("sdt::attributetree")) {
+		setvarnum(replacementGrid, a.name, a.value);
+	}
+}
+
+// If coming from older than 19.0, there might not be any grids
+if (grids.subnodes.length == 0) {
+	// add a grid
+	treenode newGrid = function_s(newNav, "createGrid", 0, 0, 0);
+	// copy nodeSizeX and Y from the AStar object
+	setvarnum(newGrid, "nodeSizeX", getvarnum(nav, "nodeWidth"));
+	setvarnum(newGrid, "nodeSizeY", getvarnum(nav, "nodeWidth"));
+}
+
+for (int i = 1; i &lt;= nav.subnodes.length; i++){
+	if(isclasstype(nav.subnodes[i], "AStar::Grid"))
+		continue;
+	nav.subnodes[i].copy(newNav);
+}
+
+for(int i = 1; i &lt;= rebuildConnections.length; i++){
+	Array pair = rebuildConnections[i];
+	Object foundObj = Model.find(pair[2]);
+	if(objectexists(foundObj)){
+		function_s(nav, "removeMember", foundObj);
+		function_s(newNav, "addMember", foundObj);
+	}
+}
+
+
+for (int i = 1; i &lt;= holderList.length; i++){
+	dVars.find(holderList[i]).destroy();
+}
+
+dVars.find("barriers").destroy();
+dVars.find("grids").destroy();
+
+
+treenode newVars = variables(newNav);
+
+for(int i = 1; i &lt;= dVars.subnodes.length; i++){
+	dVars.subnodes[i].copy(newVars);
+	setvarnum(newNav, dVars.subnodes[i].name, dVars.subnodes[i].value);
+}
+
+destroyobject(nav);
+newNav.rank = navRank;
+
+dummyNav.destroy();
+
+return 1;
+</data></node>
     </node>
    </node>
   </node>

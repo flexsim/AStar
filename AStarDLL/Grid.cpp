@@ -12,13 +12,12 @@ Grid::~Grid()
 	}
 }
 
-void Grid::bind()
+void Grid::bindVariables()
 {
 	int bindMode = getBindMode();
-	if (bindMode == SDT_BIND_ON_LOAD)
-		bindNavigator();
-	bindDoubleByName("nodeSizeX", nodeSize.x, 1);
-	bindDoubleByName("nodeSizeY", nodeSize.y, 1);
+	bindNavigator();
+	bindVariableByName("nodeSizeX", nodeSize.x);
+	bindVariableByName("nodeSizeY", nodeSize.y);
 	if (bindMode == SDT_BIND_ON_LOAD) {
 		treenode width = holder->subnodes["nodeWidth"];
 		if (width) {
@@ -26,24 +25,27 @@ void Grid::bind()
 			width->destroy();
 		}
 	}
-	bindNumber(minNodeSize);
-	bindNumber(diagDist);
-	bindNumber(deepDiagDist);
-	bindNumber(isBounded);
-	bindNumber(isLowestGrid);
-	bindDoubleByName("minPointX", minPoint.x, 1);
-	bindDoubleByName("minPointY", minPoint.y, 1);
-	bindDoubleByName("minPointZ", minPoint.z, 1);
-	bindDoubleByName("maxPointX", maxPoint.x, 1);
-	bindDoubleByName("maxPointY", maxPoint.y, 1);
-	bindDoubleByName("maxPointZ", maxPoint.z, 1);
-	bindDoubleByName("gridOriginX", gridOrigin.x, 1);
-	bindDoubleByName("gridOriginY", gridOrigin.y, 1);
-	bindDoubleByName("gridOriginZ", gridOrigin.z, 1);
+	bindVariable(minNodeSize);
+	bindVariable(diagDist);
+	bindVariable(deepDiagDist);
+	bindVariableByName("isBounded", _isBounded);
+	bindVariableByName("isLowestGrid", _isLowestGrid);
+	bindVariableByName("minPointX", minPoint.x);
+	bindVariableByName("minPointY", minPoint.y);
+	bindVariableByName("minPointZ", minPoint.z);
+	bindVariableByName("maxPointX", maxPoint.x);
+	bindVariableByName("maxPointY", maxPoint.y);
+	bindVariableByName("maxPointZ", maxPoint.z);
+	bindVariableByName("gridOriginX", gridOrigin.x);
+	bindVariableByName("gridOriginY", gridOrigin.y);
+	bindVariableByName("gridOriginZ", gridOrigin.z);
 	bindDouble(isUserCustomized, 1);
 	bindDouble(noSelect, 1);
-	bindSubNode(bridgeData, 0);
+	bindVariable(bridgeData);
+}
 
+void Grid::bind()
+{
 	bindCallback(dragPressedPick, Grid);
 	bindCallback(makeDirty, Grid);
 }
@@ -54,14 +56,14 @@ bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand, bool addSurr
 	Vec2 offset = addSurroundDepth ? nodeSize * (navigator->surroundDepth + 1.0) : Vec2{ 0.0, 0.0 };
 	double z = modelLoc.z + 0.001 * nodeSize.x;
 	// return false if it's not in the z range
-	if ((z < minPoint.z && !isLowestGrid) || z >= maxPoint.z)
+	if ((z < minPoint.z && !_isLowestGrid) || z >= maxPoint.z)
 		return false;
 	if ((modelLoc.x - offset.x >= minPoint.x && modelLoc.y - offset.y >= minPoint.y)
 			&& (modelLoc.x + offset.x <= maxPoint.x && modelLoc.y + offset.y <= maxPoint.y))
 		return true;
 
 	if (canExpand) {
-		if (!isBounded)
+		if (!_isBounded)
 			return true;
 		Vec2 min, max;
 		findGrowthBounds(min, max);
@@ -74,7 +76,7 @@ bool Grid::isLocWithinBounds(const Vec3 & modelLoc, bool canExpand, bool addSurr
 
 bool Grid::isLocWithinVerticalBounds(double z) const
 {
-	return (isLowestGrid || z >= minPoint.z - 0.001 * nodeSize.x) && z < maxPoint.z - 0.001 * nodeSize.x;
+	return (_isLowestGrid || z >= minPoint.z - 0.001 * nodeSize.x) && z < maxPoint.z - 0.001 * nodeSize.x;
 }
 
 bool Grid::intersectBoundingBox(Vec3 & min, Vec3 & max) const
@@ -376,6 +378,31 @@ void Grid::resolveGridOrigin()
 	gridOrigin.z = minPoint.z;
 }
 
+void Grid::updateSpatials(bool applySpatialsToGrid)
+{
+	if (size.x == UNINITIALIZED && size.y == UNINITIALIZED)
+		return;
+	
+	if (applySpatialsToGrid) {
+		TreeNode* reSizeNode = node_b_resizeinfo;
+		minPoint.x = round(reSizeNode->subnodes["x"]->value / nodeSize.x) * nodeSize.x;
+		maxPoint.x = round((minPoint.x + reSizeNode->subnodes["sx"]->value) / nodeSize.x) * nodeSize.x;
+		maxPoint.y = round(reSizeNode->subnodes["y"]->value / nodeSize.y) * nodeSize.y;
+		minPoint.y = round((maxPoint.y - reSizeNode->subnodes["sy"]->value) / nodeSize.y) * nodeSize.y;
+		minPoint.z = reSizeNode->subnodes["z"]->value;
+		makeDirty();
+	}
+	
+	Vec3f bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight;
+	getBoundsVertices(bottomLeft, topRight, topLeft, bottomRight, oBottomLeft, oTopRight, oTopLeft, oBottomRight);
+
+	spatialx(holder)->value = topLeft.x;
+	spatialy(holder)->value = topLeft.y;
+	spatialz(holder)->value = minPoint.z;
+	spatialsx(holder)->value = topRight.x - topLeft.x;
+	spatialsy(holder)->value = topLeft.y - bottomLeft.y;
+	spatialsz(holder)->value = 0;
+}
 
 AStarNode * Grid::getNode(int rowNum, int colNum)
 {
@@ -788,7 +815,8 @@ void Grid::visitCellsWidening(const Cell& centerCell, std::function<bool(const C
 
 void Grid::buildBoundsMesh()
 {
-	TreeNode* color = navigator->node_b_color;
+	bindNavigator();
+	TreeNode* color = node_b_color;
 	Vec4f boundsColor(
 		(float)get(::rank(color, 1)),
 		(float)get(::rank(color, 2)),
@@ -1205,8 +1233,11 @@ void Grid::onDrag(treenode view, Vec3& offset)
 		}
 		case PICK_SIZERX: maxPoint.x = std::max(minPoint.x, maxPoint.x + offset.x); break;
 		case PICK_SIZERXNEG: minPoint.x = std::min(maxPoint.x, minPoint.x + offset.x); break;
-		case PICK_SIZERY: maxPoint.y = std::max(minPoint.y, maxPoint.y + offset.y); break;
-		case PICK_SIZERYNEG: minPoint.y = std::min(maxPoint.y, minPoint.y + offset.y); break;
+		case PICK_SIZERYNEG: maxPoint.y = std::max(minPoint.y, maxPoint.y + offset.y); break;
+		case PICK_SIZERY: minPoint.y = std::min(maxPoint.y, minPoint.y + offset.y); break;
+		case PICK_MOVE_X: maxPoint.x += offset.x; minPoint.x += offset.x; break;
+		case PICK_MOVE_Y: maxPoint.y += offset.y; minPoint.y += offset.y; break;
+		case PICK_MOVE_Z: maxPoint.z += offset.z; minPoint.z += offset.z; break;
 	}
 	bool didShrink = shrinkToFitGrowthBounds();
 	if (didShrink && pickType == 0) {
@@ -1245,6 +1276,12 @@ double Grid::onDrag(treenode view)
 	return 1;
 }
 
+astar_export Variant Grid_updateDrag(FLEXSIMINTERFACE)
+{
+	o(Grid, c).onDrag(param(1));
+	return 0;
+}
+
 double Grid::onClick(treenode view, int clickCode)
 {
 	return 0.0;
@@ -1252,12 +1289,8 @@ double Grid::onClick(treenode view, int clickCode)
 
 double Grid::onCreate(bool isCopy)
 {
-	Vec3 size = maxPoint - minPoint;
-	maxPoint.x += size.x;
-	minPoint.x += size.x;
-	if (holder->up->name != "grids") {
-		sendwindowmessage((treenode)systemwindow(0), FLEXSIM_MESSAGE_USER_CALLBACK, (WindowParam1)&Grid::onPostCreate, (WindowParam2)this);
-	}
+	bindNavigator();
+	sendwindowmessage((treenode)systemwindow(0), FLEXSIM_MESSAGE_USER_CALLBACK, (WindowParam1)&Grid::onPostCreate, (WindowParam2)this);
 	return 0;
 }
 
@@ -1265,18 +1298,40 @@ double Grid::onCreate(bool isCopy)
 void Grid::onPostCreate(void * data)
 {
 	Grid* grid = (Grid*)data;
-
-	if (grid->holder->up->name != "grids") {
-		auto found = model()->find("AStarNavigator>variables/grids");
-		if (found) {
-			beginignoreundo();
-			transfernode(grid->holder, found);
-			endignoreundo();
-		}
+	
+	if (!isclasstype(grid->holder->up, "AGV::AGVNavigator")) {
+		auto found = model()->find("/?AStarNavigator");
+		beginignoreundo();
+		//transfernode(grid->holder, found);
+		endignoreundo();
 	}
+
 	grid->bindNavigator();
 	if (grid->navigator)
 		grid->navigator->isGridDirty = grid->navigator->isBoundsDirty = true;
+
+	grid->updateSpatials();
+	switch_hidelabel(grid->holder, 1);
+}
+
+double Grid::onPreDraw(TreeNode* view)
+{	
+	TreeNode* reSizeNode = node_b_resizeinfo;
+	reSizeNode->subnodes["x"]->value = b_spatialx;
+	reSizeNode->subnodes["y"]->value = b_spatialy;
+	reSizeNode->subnodes["z"]->value = b_spatialz;
+	reSizeNode->subnodes["sx"]->value = b_spatialsx;
+	reSizeNode->subnodes["sy"]->value = b_spatialsy;
+
+	b_spatialrx = b_spatialry = b_spatialrz = 0.0;
+	return 0.0;
+}
+
+double Grid::onDraw(TreeNode* view)
+{
+	updateSpatials();
+	setManipulationHandleDraw( DRAW_CONNECTOR_TRIANGLE | DRAW_MOVE_AXIS_ALL | DRAW_SIZER_X | DRAW_SIZER_Y | DRAW_SIZER_X_NEG | DRAW_SIZER_Y_NEG | DRAW_ORB);
+	return 0;
 }
 
 void Grid::drawSizerHandles(treenode view, int pickingMode)
@@ -1305,17 +1360,33 @@ void Grid::drawSizerHandles(treenode view, int pickingMode)
 	};
 
 	fglColor(1.0f, 0.0f, 0.0f);
-	drawSizer((oTopRight + oTopLeft) * 0.5f, PICK_SIZERY, 0.0f);
-	drawSizer((oBottomRight + oBottomLeft) * 0.5f, PICK_SIZERYNEG, 180.0f);
+	drawSizer((oTopRight + oTopLeft) * 0.5f, PICK_SIZERYNEG, 0.0f);
+	drawSizer((oBottomRight + oBottomLeft) * 0.5f, PICK_SIZERY, 180.0f);
 	drawSizer((oTopRight + oBottomRight) * 0.5f, PICK_SIZERX, -90.0f);
 	drawSizer((oTopLeft + oBottomLeft) * 0.5f, PICK_SIZERXNEG, 90.0f);
 }
 
 void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pickingMode)
 {
-	if (switch_hideshape(holder, -1))
+	if (size.x == UNINITIALIZED && size.y == UNINITIALIZED)
 		return;
 	
+	if (switch_hideshape(holder, -1))
+		return;
+
+	if (hoverObj != holder) {
+		TreeNode* reSizeNode = node_b_resizeinfo;
+		double nodeWidth = (nodeSize.x + nodeSize.y) * 0.5;
+		bool xLocChange = fabs(location.x - reSizeNode->subnodes["x"]->value) > 0;
+		bool yLocChange = fabs(location.y - reSizeNode->subnodes["y"]->value) > 0;
+		bool zLocChange = fabs(location.z - reSizeNode->subnodes["z"]->value) > 0;
+		bool xSpatialChange = fabs(size.x - reSizeNode->subnodes["sx"]->value) > 0;
+		bool ySpatialChange = fabs(size.y - reSizeNode->subnodes["sy"]->value) > 0;
+
+		if (xSpatialChange || ySpatialChange || xLocChange|| yLocChange || zLocChange) 
+			updateSpatials(true);
+	}
+		
 	if (!noSelect) {
 		if (pickingMode == PICK_PRESSED) {
 			if (!pickingMode && (selObj == holder || hoverObj == holder)) {
@@ -1434,11 +1505,10 @@ double Grid::onDestroy(treenode view)
 
 void Grid::bindNavigator()
 {
-	if (holder->up && holder->up->name == "grids")
-		navigator = ownerobject(holder->up)->objectAs(AStarNavigator);
-	else {
-		navigator = nullptr;
-	}
+	if (model()->find("AStarNavigator"))
+		navigator = model()->find("AStarNavigator")->objectAs(AStarNavigator);
+	else navigator = nullptr;
+
 }
 
 double Grid::onUndo(bool isUndo, treenode undoRecord) 

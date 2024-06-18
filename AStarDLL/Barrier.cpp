@@ -77,9 +77,12 @@ void Barrier::assertNavigator()
 		return;
 
 	treenode navNode = model()->find("AStarNavigator");
-	if (!navNode) {
+	if (!navNode)
 		navNode = createinstance(library()->find("?AStarNavigator"), model());
-	}
+
+	if (navNode->object<AStarNavigator>()->grids.size() == 0)
+		navNode->object<AStarNavigator>()->createGrid(Vec3(0, 0, 0), Vec3(Grid::UNINITIALIZED, Grid::UNINITIALIZED, 0));
+
 	navNode->objectAs(AStarNavigator)->barrierList.add(this);
 }
 
@@ -825,7 +828,7 @@ double Barrier::onPreDraw(treenode view)
 double Barrier::onDraw(treenode view)
 {
 	AStarNavigator* nav = navigator;
-	if (!((int)nav->drawMode & ASTAR_DRAW_MODE_BARRIERS))
+	if (!((int)nav->drawMode & ASTAR_DRAW_MODE_BARRIERS) || nav == nullptr)
 		return 0;
 
 	if (switch_hideshape(holder, -1))

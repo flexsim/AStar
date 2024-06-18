@@ -311,7 +311,7 @@ public:
 	void drawRoutingAlgorithm(Traveler* traveler, treenode view);
 
 	bool areGridNodeTablesBuilt = false;
-	NodeListArray<Grid>::SdtSubNodeBindingType grids;
+	NodeListArray<Grid>::ObjStoredAttCouplingType grids;
 
 	void resolveMinNodeSize();
 

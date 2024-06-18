@@ -75,8 +75,9 @@ void AStarNavigator::bindVariables(void)
 	bindVariable(routingAlgorithmCompletionRatio);
 
 	bindVariable(grids);
-	if (grids.size() == 0)
-		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
+	//if (grids.size() == 0) {
+	//	
+	//}
 	bindVariable(elevators);
 	elevatorBridges.init(elevators);
 	treenode elevatorDelegate = nullptr;
@@ -195,6 +196,9 @@ void AStarNavigator::resolveGridBounds()
 		tempGrids.push_back(grid);
 	}
 
+	if (tempGrids.size() == 0)
+		return;
+
 	std::sort(tempGrids.begin(), tempGrids.end(), [&](Grid* left, Grid* right) { return left->minPoint.z < right->minPoint.z; });
 
 	double lowestZ = tempGrids[0]->minPoint.z;
@@ -224,13 +228,12 @@ void AStarNavigator::resolveGridBounds()
 
 void AStarNavigator::resetGrids()
 {
-	if (grids.size() == 0)
-		grids.add(new Grid(this, getvarnum(holder, "nodeWidth")));
-
 	hasConditionalBarriers = 0.0;
 	hasMandatoryPaths = 0.0;
 
 	for (Grid* grid : grids) {
+		if (grid->size.x == Grid::UNINITIALIZED, grid->size.y == Grid::UNINITIALIZED)
+			grid->size.x = grid->size.y = 1; // Initialize Grid
 		grid->reset(this);
 	}
 
@@ -238,6 +241,7 @@ void AStarNavigator::resetGrids()
 
 	for (Grid* grid : grids) {
 		grid->growToBarriers();
+		grid->updateSpatials();
 	}
 }
 
@@ -1876,7 +1880,7 @@ Grid * AStarNavigator::getGrid(const Vec3 & modelPos, bool canReturnNull)
 	// believe me when I say this is not infinite recursioin
 	Grid* grid = getGrid(modelPos, true);
 	if (!grid)
-		grid = grids.front();
+		grid = createGrid(modelPos, Vec3(Grid::UNINITIALIZED, Grid::UNINITIALIZED, 0));
 	return grid;
 }
 
@@ -2109,8 +2113,10 @@ void AStarNavigator::resolveMinNodeSize()
 {
 	minNodeSize = Vec2{ DBL_MAX, DBL_MAX };
 	for (Grid* grid : grids) {
-		minNodeSize.x = std::min(grid->nodeSize.x, minNodeSize.x);
-		minNodeSize.y = std::min(grid->nodeSize.y, minNodeSize.y);
+		if (grid != nullptr) {
+			minNodeSize.x = std::min(grid->nodeSize.x, minNodeSize.x);
+			minNodeSize.y = std::min(grid->nodeSize.y, minNodeSize.y);
+		}
 	}
 	if (minNodeSize.x == DBL_MAX)
 		minNodeSize.x = 1.0;
@@ -2132,7 +2138,7 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	case EditMode::MANDATORY_PATH: newBarrier = barrierList.add(new MandatoryPath); break;
 	case EditMode::GRID: {
 		auto nodeSize = grids.front()->nodeSize;
-		newGrid = createGrid(pos1, Vec3(nodeSize.x, nodeSize.y, 0.0));
+		newGrid = createGrid(pos1, Vec3(nodeSize.x, nodeSize.y, 0));
 		break;
 	}
 	}
@@ -2166,7 +2172,7 @@ TreeNode* AStarNavigator::addObject(const Vec3& pos1, const Vec3& pos2, EditMode
 	setname(newNode, ss.str().c_str());
 
 	// Create undo record on the active view
-	addCreateRecord(nodefromwindow(activedocumentview()), newNode->objectAs(SimpleDataType), newBarrier ? "Create Barrier" : "Create Grid");
+	addCreateRecord(nodefromwindow(activedocumentview()), newNode->objectAs(SimpleDataType), newBarrier ? "Create Barrier" : "Create Grid"); // this needs to be changed to disclude ODT grid
 
 	return newNode;
 
@@ -2300,14 +2306,23 @@ bool AStarNavigator::removeElevatorBridge(ObjectDataType * object)
 Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 {
 	Grid* grid = nullptr;
-	double nodeWidth = grids.front()->nodeSize.x;
-	if (!isBoundsMeshBuilt && !areGridsUserCustomized && grids.size() == 1) {
-		// if I'm in a "pristine" condition where I am not yet drawing the main grid,
-		// then the grid should be the main grid.
+
+	if (grids.size() == 1 && grids[0]->size.x == Grid::UNINITIALIZED && grids[0]->size.y == Grid::UNINITIALIZED) { // check if grid[0] is uninitialized - isBoundsMeshBuilt areGridsUserCustomized  
 		grid = grids.front();
 	} else {
-		grid = grids.add(new Grid(this, nodeWidth));
+		grid = dynamic_cast<Grid*>(ObjectDataType::create("AStar::Grid"));
+		auto found = model()->find("/?AStarNavigator");
+		transfernode(grid->holder, found);
+		setrank(grid->holder, grid->navigator->grids.size() + 1);
+		grids.add(grid);
 	}
+	
+	double nodeWidth = std::min(getvarnum(classobject(grid->holder), "nodeSizeX"), getvarnum(classobject(grid->holder), "nodeSizeY"));
+	if (grids.length >= 1) {
+		nodeWidth = std::min(grid->nodeSize.x, grid->nodeSize.y);
+	}
+	grid->size.x = size.x;
+	grid->size.y = size.y;
 	grid->minPoint.x = loc.x;
 	grid->minPoint.y = loc.y - (size.y != 0 ? size.y : 10.0 * nodeWidth);
 	grid->minPoint.z = loc.z;
@@ -2331,6 +2346,7 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 			grid->maxPoint = originalMax;
 		} else break;
 	}
+	grid->onCreate(false);
 	return grid;
 }
 
