@@ -2346,7 +2346,7 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 			grid->maxPoint = originalMax;
 		} else break;
 	}
-	grid->onCreate(0);
+	grid->onCreate(false);
 	return grid;
 }
 

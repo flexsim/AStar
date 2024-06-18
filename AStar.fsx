@@ -6666,8 +6666,12 @@ surrogate.size = Vec3(1.0, 1.0, 1.0);
 navigator.attrs.shape.value = "***";
 navigator.attrs.shapeindex.value = 0;
 navigator.attrs.guifocusclass.value = "VIEW:/modules/AStar/Pages/AStarProperties";
-navigator.find("&gt;variables/grids/1/nodeSizeX").value = getvarnum(navigator, "nodeWidth");
-navigator.find("&gt;variables/grids/1/nodeSizeY").value = getvarnum(navigator, "nodeWidth");
+treenode nodeSizeX = navigator.find("&gt;variables/grids/1/nodeSizeX");
+treenode nodeSizeY = navigator.find("&gt;variables/grids/1/nodeSizeY");
+if (nodeSizeX)
+	nodeSizeX.value = getvarnum(navigator, "nodeWidth");
+if (nodeSizeY)
+	nodeSizeY.value = getvarnum(navigator, "nodeWidth");
 clearcontents(navigator.attrs.variables.find("resetposition"));
 switch_hidecontents(navigator, 0);
 createcopy(libNavigator.attrs.imageindexobject, navigator.attrs.imageindexobject, 1, 0, 0, 1);
@@ -7049,12 +7053,24 @@ treenode grids = dVars.find("grids");
 for(int i = 1; i &lt;= grids.subnodes.length; i++){
 	treenode thisGrid = grids.subnodes[i];	
 	treenode replacementGrid = function_s(newNav, "createGrid", 0, 0, 0);
-	forobjecttreeunder(thisGrid){
+	// the grid sdt no longer exists, search through the attributetree
+	forobjecttreeunder(thisGrid.find("sdt::attributetree")) {
 		setvarnum(replacementGrid, a.name, a.value);
 	}
 }
 
+// If coming from older than 19.0, there might not be any grids
+if (grids.subnodes.length == 0) {
+	// add a grid
+	treenode newGrid = function_s(newNav, "createGrid", 0, 0, 0);
+	// copy nodeSizeX and Y from the AStar object
+	setvarnum(newGrid, "nodeSizeX", getvarnum(nav, "nodeWidth"));
+	setvarnum(newGrid, "nodeSizeY", getvarnum(nav, "nodeWidth"));
+}
+
 for (int i = 1; i &lt;= nav.subnodes.length; i++){
+	if(isclasstype(nav.subnodes[i], "AStar::Grid"))
+		continue;
 	nav.subnodes[i].copy(newNav);
 }
 

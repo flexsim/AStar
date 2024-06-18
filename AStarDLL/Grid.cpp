@@ -378,12 +378,12 @@ void Grid::resolveGridOrigin()
 	gridOrigin.z = minPoint.z;
 }
 
-void Grid::updateSpatials(bool setMode)
+void Grid::updateSpatials(bool applySpatialsToGrid)
 {
 	if (size.x == UNINITIALIZED && size.y == UNINITIALIZED)
 		return;
 	
-	if (setMode) {
+	if (applySpatialsToGrid) {
 		TreeNode* reSizeNode = node_b_resizeinfo;
 		minPoint.x = round(reSizeNode->subnodes["x"]->value / nodeSize.x) * nodeSize.x;
 		maxPoint.x = round((minPoint.x + reSizeNode->subnodes["sx"]->value) / nodeSize.x) * nodeSize.x;
