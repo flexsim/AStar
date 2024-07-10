@@ -6411,6 +6411,27 @@ function_s(c.up.up.up.up.up, "applyChangesToSelected", focus, c);</data></node>
       <node f="42"><name>variables</name>
        <node f="40"><name></name></node>
        <node f="42" dt="2"><name>helptopic</name><data>GridProperties</data></node>
+       <node f="42"><name>propTableQueryTree</name>
+        <node f="40"><name></name></node>
+        <node f="42"><name>SELECT</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>NodeSizeX</name></node>
+         <node f="42"><name>NodeSizeY</name></node>
+        </node>
+        <node f="42"><name>FROM</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>Objects()</name></node>
+        </node>
+        <node f="42"><name>WHERE</name>
+         <node f="40"><name></name></node>
+         <node f="42"><name>IN</name>
+          <node f="40"><name></name></node>
+          <node f="42"><name>"AStar::Grid"</name></node>
+          <node f="42"><name>Classes</name></node>
+         </node>
+        </node>
+        <node f="42"><name>ORDER BY</name></node>
+       </node>
       </node>
      </data>
       <node f="40"><name></name></node>
