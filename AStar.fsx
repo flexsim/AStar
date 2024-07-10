@@ -363,6 +363,18 @@ function_s(c, "updateDrag", view);
           </node>
          </data></node>
         </node>
+        <node f="42" dt="1"><name>menucustom</name><data>000000003ff00000</data>
+         <node f="40"><name></name></node>
+         <node f="42"><name></name></node>
+         <node f="2000000042" dt="2"><name>A* Navigator</name><data>createview("VIEW:/modules/AStar/Pages/AStarProperties", "MODEL:/AStarNavigator", "");
+</data>
+          <node f="40"><name></name></node></node>
+        </node>
+       </node>
+       <node f="42"><name>special</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="2"><name>title</name><data>AStar Grid</data></node>
+        <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/standardviews/modelingutilities/QuickerProperties</data></node>
        </node>
        <node f="42"><name>spatial</name>
         <node f="40"><name></name></node>
@@ -607,6 +619,13 @@ function_s(obj, "makeMeshDirty");
          <node f="42"><name>Location</name></node>
          <node f="42"><name>PathPoints</name></node>
         </node>
+        <node f="42" dt="1"><name>menucustom</name><data>000000003ff00000</data>
+         <node f="40"><name></name></node>
+         <node f="42"><name></name></node>
+         <node f="2000000042" dt="2"><name>A* Navigator</name><data>createview("VIEW:/modules/AStar/Pages/AStarProperties", "MODEL:/AStarNavigator", "");
+</data>
+          <node f="40"><name></name></node></node>
+        </node>
        </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node>
@@ -690,6 +709,13 @@ function_s(object, "makeMeshDirty");
          <node f="40"><name></name></node>
          <node f="42"><name>PathPoints</name></node>
         </node>
+        <node f="42" dt="1"><name>menucustom</name><data>000000003ff00000</data>
+         <node f="40"><name></name></node>
+         <node f="42"><name></name></node>
+         <node f="2000000042" dt="2"><name>A* Navigator</name><data>createview("VIEW:/modules/AStar/Pages/AStarProperties", "MODEL:/AStarNavigator", "");
+</data>
+          <node f="40"><name></name></node></node>
+        </node>
        </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node></node>
@@ -772,6 +798,13 @@ return string.fromNum(value);
            <node f="40"><name></name></node></node>
          </data></node>
         </node>
+        <node f="42" dt="1"><name>menucustom</name><data>000000003ff00000</data>
+         <node f="40"><name></name></node>
+         <node f="42"><name></name></node>
+         <node f="2000000042" dt="2"><name>A* Navigator</name><data>createview("VIEW:/modules/AStar/Pages/AStarProperties", "MODEL:/AStarNavigator", "");
+</data>
+          <node f="40"><name></name></node></node>
+        </node>
        </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node></node>
@@ -847,6 +880,13 @@ return string.fromNum(value);
            <node f="40"><name></name></node></node>
          </data></node>
         </node>
+        <node f="42" dt="1"><name>menucustom</name><data>000000003ff00000</data>
+         <node f="40"><name></name></node>
+         <node f="42"><name></name></node>
+         <node f="2000000042" dt="2"><name>A* Navigator</name><data>createview("VIEW:/modules/AStar/Pages/AStarProperties", "MODEL:/AStarNavigator", "");
+</data>
+          <node f="40"><name></name></node></node>
+        </node>
        </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node>
@@ -894,7 +934,15 @@ return string.fromNum(value);
         <node f="42" dt="1"><name>isTwoWay</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
-        <node f="40"><name></name></node></node>
+        <node f="40"><name></name></node>
+        <node f="42" dt="1"><name>menucustom</name><data>000000003ff00000</data>
+         <node f="40"><name></name></node>
+         <node f="42"><name></name></node>
+         <node f="2000000042" dt="2"><name>A* Navigator</name><data>createview("VIEW:/modules/AStar/Pages/AStarProperties", "MODEL:/AStarNavigator", "");
+</data>
+          <node f="40"><name></name></node></node>
+        </node>
+       </node>
        <node f="42"><name>stats</name>
         <node f="40"><name></name></node>
         <node f="42"><name>navigator</name></node>
