@@ -7123,7 +7123,7 @@ for(int i = 1; i &lt;= grids.subnodes.length; i++){
 	treenode thisGrid = grids.subnodes[i];	
 	treenode replacementGrid = function_s(newNav, "createGrid", 0, 0, 0);
 	// the grid sdt no longer exists, search through the attributetree
-	forobjecttreeunder(thisGrid.find("sdt::attributetree")) {
+	forobjecttreeunder(thisGrid) {
 		setvarnum(replacementGrid, a.name, a.value);
 	}
 }
