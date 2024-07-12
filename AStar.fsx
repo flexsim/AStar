@@ -6576,7 +6576,7 @@ if (getvarnum(c, "isExpanded")) {
         <node f="42" dt="1"><name>spatialsx</name><data>0000000040540000</data></node>
         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
         <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/UnitValueEdit</data></node>
-        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;variables/minPointZ</data></node>
+        <node f="42" dt="2"><name>objectfocus</name><data>../..&gt;objectfocus+&gt;spatial/spatialz</data></node>
         <node f="4000000042" dt="2"><name>tooltip</name><data>Enter the Z position of the grid</data></node>
         <node f="42"><name>variables</name>
          <node f="40"><name></name></node>
@@ -6587,7 +6587,7 @@ if (getvarnum(c, "isExpanded")) {
         </node>
         <node f="42"><name>eventfunctions</name>
          <node f="40"><name></name></node>
-         <node f="442" dt="2"><name>onApply</name><data>function_s(c.find("..&gt;objectfocus+"), "makeDirty");</data></node>
+         <node f="442" dt="2"><name>onApply</name><data>repaintall();</data></node>
         </node>
        </data>
         <node f="40"><name></name></node></node>
