@@ -5719,6 +5719,7 @@ if (propertiesView) {
         <node f="42" dt="1"><name>spatialsy</name><data>000000004072c000</data></node>
         <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>alignrightmargin</name><data>0000000000000000</data></node>
+        <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
        </data>
         <node f="40"><name></name></node>
         <node f="42" dt="4"><name>Points</name><data>
@@ -5743,7 +5744,9 @@ treenode pointsNode = node("&gt;variables/points", barrier);
 double x = get(node("/x", last(pointsNode)));
 double y = get(node("/y", last(pointsNode)));
 
+int undoId = beginaggregatedundo(c, "Add Point");
 function_s(barrier, "addPoint", x +2, y +2);
+endaggregatedundo(c, undoId);
 applylinks(table, 1);
 refreshview(table);
 function_s(barrier, "setActiveIndex", content(pointsNode) -1);
@@ -5755,6 +5758,7 @@ repaintall();
          <node f="4000000042" dt="2"><name>tooltip</name><data>Add a new point</data></node>
          <node f="42" dt="2"><name>bitmap</name><data>buttons\add.png</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
+         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
         </data>
          <node f="40"><name></name></node></node>
         <node f="42" dt="4"><name>Remove</name><data>
@@ -5779,7 +5783,9 @@ treenode selected = rank(pointsNode, index);
 if (!objectexists(selected))
 	return 0;
 
+int undoId = beginaggregatedundo(c, "Remove Point");
 function_s(barrier, "removePoint", index-1);
+endaggregatedundo(c, undoId);
 applylinks(table, 1);
 refreshview(table);
 function_s(barrier, "setActiveIndex", index -2);
@@ -5791,6 +5797,7 @@ repaintview(table);</data></node>
          <node f="4000000042" dt="2"><name>tooltip</name><data>Remove the selected point</data></node>
          <node f="42" dt="2"><name>bitmap</name><data>buttons\remove.png</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
+         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
         </data></node>
         <node f="42" dt="4"><name>Up</name><data>
          <node f="40"><name>object</name></node>
@@ -5813,7 +5820,10 @@ if (!objectexists(selected))
 if (index &lt;= 1)
 	return 0;
 
+int undoId = beginaggregatedundo(c, "Point Rank Up");
+createundorecord(c, selected, UNDO_CHANGE_RANK, index -1);
 function_s(barrier, "swapPoints", index -1, index -2);
+endaggregatedundo(c, undoId);
 applylinks(table, 1);
 refreshview(table);
 function_s(barrier, "setActiveIndex", index -2);
@@ -5824,6 +5834,7 @@ settableviewselection(table, index -1, 0, index -1, 2);
 repaintview(table);</data></node>
          <node f="4000000042" dt="2"><name>tooltip</name><data>Move the selected point up in the list</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
+         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
         </data></node>
         <node f="42" dt="4"><name>Down</name><data>
          <node f="40"><name>object</name></node>
@@ -5846,7 +5857,10 @@ if (!objectexists(selected))
 if (index == 0 || index &gt;= content(node("&gt;viewfocus+", table)))
 	return 0;
 
+int undoId = beginaggregatedundo(c, "Point Rank Down");
+createundorecord(c, selected, UNDO_CHANGE_RANK, index +1);
 function_s(barrier, "swapPoints", index -1, index);
+endaggregatedundo(c, undoId);
 applylinks(table, 1);
 refreshview(table);
 function_s(barrier, "setActiveIndex", index);
@@ -5857,6 +5871,7 @@ settableviewselection(table, index +1, 0, index +1, 2);
 repaintview(table);</data></node>
          <node f="4000000042" dt="2"><name>tooltip</name><data>Move the selected point down in the list</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
+         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
         </data></node>
         <node f="42" dt="4"><name>PointsTable</name><data>
          <node f="40"><name>object</name></node>
@@ -5879,9 +5894,11 @@ treenode table = node("&gt;table", c);
 if (!objectexists(focus))
 	return 0;
 
+treenode pointsNode = node("&gt;variables/points", focus);
+
 if (!eventdata) {
 	clearcontents(table);
-	for (int i = 0; i &lt; content(node("&gt;variables/points", focus)); i++) {
+	for (int i = 0; i &lt; content(pointsNode); i++) {
 		double x = function_s(focus, "getPointCoord", i, POINT_X);
 		double y = function_s(focus, "getPointCoord", i, POINT_Y);
 		double z = function_s(focus, "getPointCoord", i, POINT_Z);
@@ -5902,7 +5919,14 @@ if (!eventdata) {
 } else {
 	int rebuildMeshes = 0;
 	int haveSetZ = 0; // only get to set z once because it a z change applies to everyone
-	for (int i = 0; i &lt; content(node("&gt;variables/points", focus)); i++) {
+	
+	treenode recordNode = getcurrentundorecord(c);
+	int undoId;
+	if (recordNode.name == "Change Data")
+		undoId = continueaggregatedundo(c);
+	else
+		undoId = beginaggregatedundo(c, "Edit Points Table");
+	for (int i = 0; i &lt; content(pointsNode); i++) {
 		double x = function_s(focus, "getPointCoord", i, POINT_X);
 		double y = function_s(focus, "getPointCoord", i, POINT_Y);
 		double z = function_s(focus, "getPointCoord", i, POINT_Z);
@@ -5912,14 +5936,21 @@ if (!eventdata) {
 		double newz = get(newpoints.subnodes[POINT_Z]);
 		
 		if (x != newx || y != newy) {
+			createundorecord(c, rank(rank(pointsNode, i+1), 1), UNDO_CHANGE_DATA);
+			createundorecord(c, rank(rank(pointsNode, i+1), 2), UNDO_CHANGE_DATA);
+			createundorecord(c, rank(rank(pointsNode, i+1), 3), UNDO_CHANGE_DATA);
 			rebuildMeshes = 1;
 			function_s(focus, "setPointCoords", i, newx, newy, newz);
 		} else if (z != newz &amp;&amp; !haveSetZ) {
+			createundorecord(c, rank(rank(pointsNode, i+1), 1), UNDO_CHANGE_DATA);
+			createundorecord(c, rank(rank(pointsNode, i+1), 2), UNDO_CHANGE_DATA);
+			createundorecord(c, rank(rank(pointsNode, i+1), 3), UNDO_CHANGE_DATA);
 			rebuildMeshes = 1;
 			haveSetZ = 1;
 			function_s(focus, "setPointCoords", i, newx, newy, newz);
 		}
 	}
+	endaggregatedundo(c, undoId);
 	
 	focus.applyProperties("PathPoints");
 	if (rebuildMeshes) {
@@ -5986,12 +6017,7 @@ repaintview(TheTable);
          <node f="42" dt="1"><name>alignrightmargin</name><data>0000000040140000</data></node>
          <node f="42" dt="1"><name>dataentry</name><data>0000000000000000</data></node>
          <node f="42"><name>noformat</name></node>
-         <node f="42"><name>undohistory</name>
-          <node f="40"><name></name></node>
-          <node f="42" dt="1"><name>undo limit</name><data>0000000040900000</data></node>
-          <node f="42" dt="3"><name>history</name><data><coupling>null</coupling></data></node>
-          <node f="42" dt="1"><name>bin</name><data>0000000000000000</data></node>
-         </node>
+         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
          <node f="42"><name>style</name>
           <node f="40"><name></name></node>
           <node f="42" dt="2"><name>FS_INHERITANCE_INDICATOR</name><data>~</data>
