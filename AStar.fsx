@@ -7115,89 +7115,55 @@ if (updateRoot != model())
 	return 0;
 
 treenode nav = Model.find("AStarNavigator");
-if(!nav)
+if (!nav)
 	return 0;
+
+treenode grids = getvarnode(nav, "grids");
+treenode oldGrids = assertvariable(nav, "oldGrids");
+while (grids.subnodes.length)
+	grids.first.up = oldGrids;
+
+treenode libGrid = model().find("MAIN:/project/library/astar/Grid");
+int numGrids = oldGrids.subnodes.length;
+for (int i = 1; i &lt;= max(1, numGrids); i++) {
+	treenode newGrid = nav.subnodes.add();
 	
-treenode dummyNav = model().subnodes.assert("NAV");
-treenode dVars = variables(nav).copy(dummyNav);
-treenode dStats = stats(nav).copy(dummyNav);
-
-Array rebuildConnections;
-treenode vars = variables(nav);
-Array holderList = ["fixedResourceBarriers", "travelmembers", "controlAreas"];
-forobjecttreeunder(vars){
-	string holder = a.up.name;
-	int checkHolder = holderList.indexOf(holder) &gt; 0;
-	if (a.dataType == 3 &amp;&amp; checkHolder){
-		Array pair;
-		treenode mynode = ownerobject(a.value);
-		pair.push(a.up.name);
-		pair.push(mynode.getPath());
-		rebuildConnections.push(pair);
+	newGrid.dataType = DATATYPE_OBJECT;
+	createcopy(libGrid.find("&gt;classes"), newGrid, 1, 1);
+	createcopy(libGrid.find("&gt;superclasses"), newGrid, 1, 1);
+	createcopy(libGrid.find("&gt;variables"), newGrid, 1, 1);
+	createcopy(libGrid.find("&gt;spatial"), newGrid, 1, 1);
+	createcopy(libGrid.find("&gt;special"), newGrid, 1, 1);
+	createcopy(libGrid.find("&gt;visual"), newGrid, 1, 1);
+	assertattribute(newGrid, "behaviour", 0);
+	
+	treenode store = assertattribute(newGrid, "stored", 0).subnodes.add();
+	store.dataType = DATATYPE_COUPLING;
+	treenode gridPointer = grids.subnodes.add();
+	gridPointer.dataType = DATATYPE_COUPLING;
+	nodejoin(store, gridPointer);
+	
+	if (i &lt;= numGrids) {
+		treenode oldGrid = oldGrids.subnodes[i];
+		newGrid.name = oldGrid.name;
+		var vars = oldGrid.subnodes;
+		for (int j = 1; j &lt;= vars.length; j++)
+			setvarnum(newGrid, vars[j].name, vars[j].value);
+		treenode bridgeData = oldGrid.find("bridgeData");
+		while (bridgeData.subnodes.length)
+			bridgeData.first.up = getvarnode(newGrid, "bridgeData");
+	} else {
+		// If coming from older than 19.0, there might not be any grids
+		setvarnum(newGrid, "nodeSizeX", getvarnum(nav, "nodeWidth"));
+		setvarnum(newGrid, "nodeSizeY", getvarnum(nav, "nodeWidth"));
 	}
+	
+	rebindobjectattributes(newGrid);
+	switch_hidelabel(newGrid, 1);
+	function_s(newGrid, "makeDirty");
 }
 
-nav.name = "oldAstarNavigator";
-int navRank = nav.rank;
-
-treenode newNav = createinstance(library().find("?AStarNavigator"), model());
-
-newNav.find("&gt;variables/grids").subnodes.clear();
-
-treenode grids = dVars.find("grids");
-for(int i = 1; i &lt;= grids.subnodes.length; i++){
-	treenode thisGrid = grids.subnodes[i];	
-	treenode replacementGrid = function_s(newNav, "createGrid", 0, 0, 0);
-	// the grid sdt no longer exists, search through the attributetree
-	forobjecttreeunder(thisGrid) {
-		setvarnum(replacementGrid, a.name, a.value);
-	}
-}
-
-// If coming from older than 19.0, there might not be any grids
-if (grids.subnodes.length == 0) {
-	// add a grid
-	treenode newGrid = function_s(newNav, "createGrid", 0, 0, 0);
-	// copy nodeSizeX and Y from the AStar object
-	setvarnum(newGrid, "nodeSizeX", getvarnum(nav, "nodeWidth"));
-	setvarnum(newGrid, "nodeSizeY", getvarnum(nav, "nodeWidth"));
-}
-
-for (int i = 1; i &lt;= nav.subnodes.length; i++){
-	if(isclasstype(nav.subnodes[i], "AStar::Grid"))
-		continue;
-	nav.subnodes[i].copy(newNav);
-}
-
-for(int i = 1; i &lt;= rebuildConnections.length; i++){
-	Array pair = rebuildConnections[i];
-	Object foundObj = Model.find(pair[2]);
-	if(objectexists(foundObj)){
-		function_s(nav, "removeMember", foundObj);
-		function_s(newNav, "addMember", foundObj);
-	}
-}
-
-
-for (int i = 1; i &lt;= holderList.length; i++){
-	dVars.find(holderList[i]).destroy();
-}
-
-dVars.find("barriers").destroy();
-dVars.find("grids").destroy();
-
-
-treenode newVars = variables(newNav);
-
-for(int i = 1; i &lt;= dVars.subnodes.length; i++){
-	dVars.subnodes[i].copy(newVars);
-	setvarnum(newNav, dVars.subnodes[i].name, dVars.subnodes[i].value);
-}
-
-destroyobject(nav);
-newNav.rank = navRank;
-
-dummyNav.destroy();
+oldGrids.destroy();
 
 return 1;
 </data></node>

@@ -85,7 +85,7 @@ public:
 	void resolveGridOrigin();
 	void updateSpatials(bool applySpatialsToGrid = false);
 
-	int __getRank() { return holder->rank; }
+	int __getRank() { return getrank(stored(holder)->first->value); }
 	__declspec(property(get = __getRank)) int rank;
 	int __getNumRows() { return (int)nodes.size(); }
 	__declspec(property(get = __getNumRows)) int numRows;
