@@ -7119,6 +7119,9 @@ if (!nav)
 	return 0;
 
 treenode grids = getvarnode(nav, "grids");
+if (grids.first.dataType == DATATYPE_COUPLING)
+	return 0; // If coming from older than 19.0, a grid might have already been asserted by an earlier update script
+
 treenode oldGrids = assertvariable(nav, "oldGrids");
 while (grids.subnodes.length)
 	grids.first.up = oldGrids;
@@ -7146,12 +7149,22 @@ for (int i = 1; i &lt;= max(1, numGrids); i++) {
 	if (i &lt;= numGrids) {
 		treenode oldGrid = oldGrids.subnodes[i];
 		newGrid.name = oldGrid.name;
+		
+		treenode width = oldGrid.find("nodeWidth");
+		if (width) {
+			setvarnum(newGrid, "nodeSizeX", get(width));
+			setvarnum(newGrid, "nodeSizeY", get(width));
+		}
+		
 		var vars = oldGrid.subnodes;
 		for (int j = 1; j &lt;= vars.length; j++)
-			setvarnum(newGrid, vars[j].name, vars[j].value);
+			setvarnum(newGrid, vars[j].name, get(vars[j]));
+			
 		treenode bridgeData = oldGrid.find("bridgeData");
-		while (bridgeData.subnodes.length)
-			bridgeData.first.up = getvarnode(newGrid, "bridgeData");
+		if (bridgeData) {
+			while (bridgeData.subnodes.length)
+				bridgeData.first.up = getvarnode(newGrid, "bridgeData");
+		}
 	} else {
 		// If coming from older than 19.0, there might not be any grids
 		setvarnum(newGrid, "nodeSizeX", getvarnum(nav, "nodeWidth"));
