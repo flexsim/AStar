@@ -340,11 +340,12 @@ function_s(c, "updateDrag", view);
           <node f="40"><name></name></node>
           <node f="42" dt="2"><name>superclasses</name><data></data>
            <node f="40"><name></name></node>
-           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/NumberProperty</name><data><coupling>null</coupling></data></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/UnitValueProperty</name><data><coupling>null</coupling></data></node>
           </node>
           <node f="42"><name>variables</name>
            <node f="40"><name></name></node>
            <node f="42" dt="2"><name>varPath</name><data>&gt;variables/nodeSizeX</data></node>
+           <node f="42" dt="2"><name>unitType</name><data>length</data></node>
            <node f="42" dt="2"><name>category</name><data>A*</data></node>
            <node f="4000000042" dt="2"><name>localizedName</name><data>NodeSizeX</data></node>
           </node>
@@ -353,11 +354,12 @@ function_s(c, "updateDrag", view);
           <node f="40"><name></name></node>
           <node f="42" dt="2"><name>superclasses</name><data></data>
            <node f="40"><name></name></node>
-           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/NumberProperty</name><data><coupling>null</coupling></data></node>
+           <node f="42" dt="3"><name>/FlexSimEventHandler&gt;behaviour/UnitValueProperty</name><data><coupling>null</coupling></data></node>
           </node>
           <node f="42"><name>variables</name>
            <node f="40"><name></name></node>
            <node f="42" dt="2"><name>varPath</name><data>&gt;variables/nodeSizeY</data></node>
+           <node f="42" dt="2"><name>unitType</name><data>length</data></node>
            <node f="42" dt="2"><name>category</name><data>A*</data></node>
            <node f="4000000042" dt="2"><name>localizedName</name><data>NodeSizeY</data></node>
           </node>
