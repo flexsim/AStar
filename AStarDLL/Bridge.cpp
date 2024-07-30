@@ -40,8 +40,7 @@ void Bridge::onReset(AStarNavigator* nav)
 	blockedTraveler = nullptr;
 	firstTraveler = nullptr;
 	lastTraveler = nullptr;
-	geometricDistance = calculateDistance();
-	travelDistance = useVirtualDistance ? virtualDistance : std::max(0.001 * nodeWidth, geometricDistance - nodeWidth);
+	geometricDistance = calculateDistance();	
 	filledDistance = 0.0;
 	isAvailable = true;
 	lastUpdateTime = -1;
@@ -71,6 +70,8 @@ void Bridge::onReset(AStarNavigator* nav)
 		nodeWidth = 1.0;
 		routingData.clear();
 	}
+
+	travelDistance = useVirtualDistance ? virtualDistance : std::max(0.001 * nodeWidth, geometricDistance - nodeWidth);
 }
 
 double Bridge::calculateDistance() const
