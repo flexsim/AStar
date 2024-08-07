@@ -841,6 +841,8 @@ inline int TravelPath::getIndex(double atDist, bool canReturnZero) const
 		index--;
 	while (index < size() - 1 && atDist > operator[](index).atTravelDist)
 		index++;
+	while (index < size() - 1 && operator[](index + 1).atTravelDist == operator[](index).atTravelDist)
+		index++;
 	if (canReturnZero && index == 1 && operator[](0).atTravelDist >= atDist)
 		return 0;
 	return index;
