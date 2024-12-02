@@ -1322,9 +1322,9 @@ void Grid::drawBounds(treenode view, treenode selObj, treenode hoverObj, int pic
 				Mesh tempMesh;
 				Vec4f color(1.0f, 1.0f, 0.0f, selObj == holder ? 1.0f : 0.2f);
 				buildBoundsMesh(tempMesh, true, color);
-				glLineWidth(5.0f);
+				fglLineWidth(5.0f);
 				tempMesh.draw(GL_LINES);
-				glLineWidth(1.0f);
+				fglLineWidth(1.0f);
 			}
 		}
 

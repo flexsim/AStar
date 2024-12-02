@@ -415,7 +415,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 				setpickingdrawfocus(view, holder, PICK_SIZERZ, 0, DETECT_DRAG_Z);
 				drawobjectpart(view, surrogate, OBJECT_PART_SIZER_Z);
 			}
-			glLineWidth(3.0f);
+			fglLineWidth(3.0f);
 			setpickingdrawfocus(view, holder, 0, 0, 0);
 			if (selObj == holder)
 				drawobjectpart(view, surrogate, OBJECT_PART_YELLOW_HIGHLIGHT);
@@ -423,7 +423,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 				drawobjectpart(view, surrogate, OBJECT_PART_HOVER_HIGHLIGHT);
 
 			fglPopMatrix();
-			glLineWidth(1.0f);
+			fglLineWidth(1.0f);
 		}
 	}
 
@@ -449,7 +449,7 @@ double AStarNavigator::onDraw(TreeNode* view)
 	if (!pickingMode) {
 
 		if (isGridMeshBuilt && (drawMode & ASTAR_DRAW_MODE_GRID)) {
-			glLineWidth(1.0f);
+			fglLineWidth(1.0f);
 			bool isPatternBarrierSelected = objectexists(selObj) && isclasstype(selObj, "AStar::Barrier") && selObj->objectAs(Barrier)->patternTable->subnodes.length > 0;
 			if (!isPatternBarrierSelected) {
 				for (Grid* grid : grids) {

@@ -384,7 +384,7 @@ void Barrier::drawManipulationHandles(treenode view)
 	int stitchesTexture = (int)get(navigator->node_b_imageindexobject->find("merge"));
 
 	if (pickingMode)
-		glLineWidth(5.0); // make it so the pattern divider lines are easier to grab
+		fglLineWidth(5.0f); // make it so the pattern divider lines are easier to grab
 
 	bool isInContainer = holder->up != model() && holder->up != navigator->holder;
 	if (!isInContainer) {
@@ -494,7 +494,7 @@ void Barrier::drawManipulationHandles(treenode view)
 		}
 	}
 	if (pickingMode)
-		glLineWidth(1.0);
+		fglLineWidth(1.0f);
 	setpickingdrawfocus(view, holder, 0);
 	if (!pickingMode && grid && grid->isBounded) {
 		mesh.init(0, MESH_POSITION | MESH_DIFFUSE4, MESH_DYNAMIC_DRAW);
@@ -869,7 +869,7 @@ double Barrier::onDraw(treenode view)
 	treenode selObj = selectedobject(view);
 	treenode hoverObj = tonode(getpickingdrawfocus(view, PICK_OBJECT, PICK_HOVERED));
 	if ((selObj == holder || hoverObj == holder || switch_selected(holder, -1)) && !pickingMode) {
-		glLineWidth(5.0f);
+		fglLineWidth(5.0f);
 		Mesh temp;
 		if (selObj == holder || hoverObj == holder) {
 			temp.init(0, MESH_POSITION | MESH_DIFFUSE4);
@@ -882,7 +882,7 @@ double Barrier::onDraw(treenode view)
 			addVertices(view, &temp, 0.0f, Selected);
 			temp.draw(GL_LINES);
 		}
-		glLineWidth(1.0f);
+		fglLineWidth(1.0f);
 
 	}
 	if (selObj == holder) {
