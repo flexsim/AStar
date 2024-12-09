@@ -7121,7 +7121,7 @@ if (!nav)
 	return 0;
 
 treenode grids = getvarnode(nav, "grids");
-if (grids.first.dataType == DATATYPE_COUPLING)
+if (!grids.first || grids.first.dataType == DATATYPE_COUPLING){
 	return 0; // If coming from older than 19.0, a grid might have already been asserted by an earlier update script
 
 treenode oldGrids = assertvariable(nav, "oldGrids");
