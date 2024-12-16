@@ -39,8 +39,8 @@ void Grid::bindVariables()
 	bindVariableByName("gridOriginX", gridOrigin.x);
 	bindVariableByName("gridOriginY", gridOrigin.y);
 	bindVariableByName("gridOriginZ", gridOrigin.z);
-	bindDouble(isUserCustomized, 1);
-	bindDouble(noSelect, 1);
+	bindVariable(isUserCustomized);
+	bindVariable(noSelect);
 	bindVariable(bridgeData);
 }
 
