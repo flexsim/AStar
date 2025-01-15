@@ -7197,7 +7197,7 @@ return 1;
      <node f="442" dt="2"><name>Update Grid noSelect state</name><data>treenode updateRoot = param(1);
 double oldVersion = param(2);
 
-if (oldVersion &gt;= 24.2)
+if (oldVersion &gt;= 25.0)
 	return 0;
 
 if (updateRoot != model())
