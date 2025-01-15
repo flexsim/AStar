@@ -7185,6 +7185,42 @@ return 1;
     </node>
    </node>
   </node>
+  <node f="42" dt="2"><name>add_Update to 25.0</name><data>MAIN:/project/events/OnUpdateModel/Update to 25.0</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name>Update Grid noSelect state</name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000000000000</data></node>
+    <node f="42"><name>after</name></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>Update Grid noSelect state</name><data>treenode updateRoot = param(1);
+double oldVersion = param(2);
+
+if (oldVersion &gt;= 24.2)
+	return 0;
+
+if (updateRoot != model())
+	return 0;
+
+treenode nav = Model.find("AStarNavigator");
+if (!nav)
+	return 0;
+	
+treenode grids = getvarnode(nav, "grids");
+for (int i = 1; i &lt;= grids.subnodes.length; i++) {
+	treenode thisGrid = ownerobject(grids.subnodes[i].value);
+	double noSelect = getvarnum(thisGrid, "noSelect");
+	if (noSelect &gt;= 0.5)
+		setvarnum(thisGrid, "noSelect", 1);
+	else
+		setvarnum(thisGrid, "noSelect", 0);
+}
+
+return 1;</data></node>
+    </node>
+   </node>
+  </node>
  </node>
  <node f="42" dt="2"><name>release</name><data>25.0</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
