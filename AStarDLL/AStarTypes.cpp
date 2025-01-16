@@ -768,8 +768,12 @@ void TravelPath::update(Traveler* traveler, double atDist)
 						}
 						double maxTurnAngle = boundAngle(toAngle - fromAngle);
 						double startTime = fromEntry.arrivalTime;
-						double turnAngle = sign(maxTurnAngle) * turnSpeed * (time() - startTime);
-						updateZRot = fromAngle + turnAngle;
+						double turnDist = turnSpeed * (time() - startTime);
+						if (turnDist <= 0.0)
+							updateZRot = fromAngle;
+						else if (turnDist < fabs(maxTurnAngle))
+							updateZRot = fromAngle + sign(maxTurnAngle) * turnDist;
+						else updateZRot = toAngle;
 					}
 					else updateZRot = toAngle;
 				}
