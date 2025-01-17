@@ -1336,8 +1336,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
-        <node f="442" dt="2"><name>getCreationClass</name><data>print(c);
-return findmatchintree(library(), getname(first(classes(a))) == "AStar::Divider");</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>return findmatchintree(library(), getname(first(classes(a))) == "AStar::Divider");</data></node>
        </node>
       </data></node>
       <node f="42" dt="4"><name>AStar::PreferredPath</name><data>
@@ -1464,6 +1463,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="42" dt="1"><name>mouseDownY</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mouseDownZ</name><data>0000000000000000</data></node>
         <node f="42" dt="3"><name>draggingObj</name><data><coupling>null</coupling></data></node>
+        <node f="42" dt="1"><name>isCreationMode</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -1497,6 +1497,7 @@ switch (clickCode) {
 				setvarnum(c, "state", GRID_MODE_STATE_CLICKED);
 				Vec3 ontoLoc = Vec3(getvarnum(c, "mouseDownX"), getvarnum(c, "mouseDownY"), getvarnum(c, "mouseDownZ"));
 				treenode createdObj = function_s(navigator, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);
+				applicationcommand("applycreationproperties", createdObj);
 				setvarnum(createdObj, "maxPointX", ontoLoc.x + 1);
 				setvarnum(createdObj, "minPointY", ontoLoc.y - 1);
 				spatialsx(createdObj).value = 1;
@@ -1574,6 +1575,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>return findmatchintree(library(), getname(first(classes(a))) == "AStar::Grid");</data></node>
        </node>
       </data></node>
      </node>
