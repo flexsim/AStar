@@ -320,7 +320,7 @@
         <node f="42"><name>bridgeData</name></node>
         <node f="42" dt="1"><name>nodeSizeX</name><data>000000003ff00000</data></node>
         <node f="42" dt="1"><name>nodeSizeY</name><data>000000003ff00000</data></node>
-        <node f="42" dt="1"><name>noSelect</name><data>7461747322006369</data></node>
+        <node f="42" dt="1"><name>noSelect</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node>
@@ -7182,6 +7182,39 @@ oldGrids.destroy();
 
 return 1;
 </data></node>
+    </node>
+   </node>
+   <node f="42" dt="3"><name>Update Grid noSelect state</name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000000000000</data></node>
+    <node f="42" dt="2"><name>after</name><data>update EventLogSettings</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="442" dt="2"><name>Update Grid noSelect state</name><data>treenode updateRoot = param(1);
+double oldVersion = param(2);
+
+if (oldVersion &gt;= 24.2)
+	return 0;
+
+if (updateRoot != model())
+	return 0;
+
+treenode nav = Model.find("AStarNavigator");
+if (!nav)
+	return 0;
+	
+treenode grids = getvarnode(nav, "grids");
+for (int i = 1; i &lt;= grids.subnodes.length; i++) {
+	treenode thisGrid = ownerobject(grids.subnodes[i].value);
+	double noSelect = getvarnum(thisGrid, "noSelect");
+	if (noSelect &gt;= 0.5)
+		setvarnum(thisGrid, "noSelect", 1);
+	else
+		setvarnum(thisGrid, "noSelect", 0);
+}
+
+return 1;</data></node>
     </node>
    </node>
   </node>
