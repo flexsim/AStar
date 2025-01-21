@@ -320,7 +320,7 @@
         <node f="42"><name>bridgeData</name></node>
         <node f="42" dt="1"><name>nodeSizeX</name><data>000000003ff00000</data></node>
         <node f="42" dt="1"><name>nodeSizeY</name><data>000000003ff00000</data></node>
-        <node f="42" dt="1"><name>noSelect</name><data>7461747322006369</data></node>
+        <node f="42" dt="1"><name>noSelect</name><data>0000000000000000</data></node>
        </node>
        <node f="42"><name>behaviour</name>
         <node f="40"><name></name></node>
