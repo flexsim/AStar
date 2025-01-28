@@ -1046,6 +1046,9 @@ void Traveler::onBlock(Traveler* collidingWith, double colliderTravelDist, Cell&
 	int atPathIndex = stopAtPathIndex;
 	double distToStop = 0;
 	double dec = te->v_deceleration;
+
+	// Look at this traveler's travel path, starting from the end working backwards.
+	// Find the point just ahead of where the traveler is now.
 	if (dec > 0) {
 		distToStop = travelPath[stopAtPathIndex].atTravelDist - atTravelDist;
 		while (atPathIndex > 0 && travelPath[atPathIndex].atTravelDist > atTravelDist + tinyDist)
@@ -1071,8 +1074,11 @@ void Traveler::onBlock(Traveler* collidingWith, double colliderTravelDist, Cell&
 		double maxSpeed = te->v_maxspeed;
 		double acc = te->v_acceleration;
 		auto allocIter = allocations.begin();
+
+		// For each entry in the travel path that is ahead of the traveler
 		for (int i = atPathIndex + 1; i <= stopAtPathIndex; i++) {
 			auto& toEntry = travelPath[i];
+			// Calculate the distance to the next entry in the path
 			auto dist = toEntry.atTravelDist - atTravelDist;
 			if (dist > 0.0) {
 				// Solve for endSpeed given travel dist, start speed, and deceleration
@@ -1085,13 +1091,26 @@ void Traveler::onBlock(Traveler* collidingWith, double colliderTravelDist, Cell&
 				tempTime = addkinematic(kinematics, dist, 0, 0, maxSpeed, acc, dec, startSpeed, endSpeed, tempTime, KINEMATIC_TRAVEL);
 				startSpeed = endSpeed;
 			}
+			// Mark the next arrival time given the deceleration
 			toEntry.arrivalTime = tempTime;
+
+			// For each allocation that is physically behind the current travel path
 			while (allocIter != allocations.end() && (*allocIter)->atTravelDist < toEntry.atTravelDist - tinyDist) {
 				auto alloc = *allocIter;
 				double releaseTime = tempTime;
 				if (dist > 0.0)
 					releaseTime = getkinematics(kinematics, KINEMATIC_ARRIVALTIME, getkinematics(kinematics, KINEMATIC_NR), std::max(0.0, alloc->atTravelDist - atTravelDist));
-				alloc->changeReleaseTime(std::nextafter(releaseTime + navigator->deallocTimeOffset, DBL_MAX));
+
+				// Reset the allocation's release time to account for the slowdown.
+				// releaseTime is the moment when the traveler reaches the next path entry.
+				// Some allocations are already in their "deallocTimeOffset" portion.
+				// For those allocations, I want them to release as normal.
+				bool shouldAdjustReleaseTime = navigator->deallocTimeOffset <= 0.0
+					|| alloc->releaseTime > (curTime + navigator->deallocTimeOffset);
+
+				if (shouldAdjustReleaseTime) {
+					alloc->changeReleaseTime(std::nextafter(releaseTime + navigator->deallocTimeOffset, DBL_MAX));
+				}
 				allocIter++;
 			}
 			atTravelDist = toEntry.atTravelDist;
