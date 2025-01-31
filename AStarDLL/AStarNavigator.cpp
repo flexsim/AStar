@@ -328,10 +328,8 @@ double AStarNavigator::onReset()
 	buildGrids();
 	buildControlAreaSets();
 
-	double sumSpeed = 0.0;
 	for (int i = 0; i < travelers.size(); i++) {
 		travelers[i]->onReset();
-		sumSpeed += travelers[i]->te->v_maxspeed;
 	}
 
 	dynamicBarriers.clear();
@@ -686,6 +684,12 @@ double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double
 	}
 	path.startZRot = traveler->te->b_spatialrz;
 
+	Task* task = traveler->te->activetask->objectAs(Task);
+	// test if the user wants to perform the travel in a defined amount of time
+	traveler->userDefinedTravelTime = task->type == TASKTYPE_TRAVEL ? (double)task->var4 : 0.0;
+	if (traveler->userDefinedTravelTime > 0.0) {
+		traveler->userTravelTimeSpeed = path.calculateTotalDistance(this) / traveler->userDefinedTravelTime;
+	}
 	traveler->navigatePath(std::move(path));
 	return 0;
 }
@@ -1344,7 +1348,7 @@ AStarSearchEntry* AStarNavigator::expandOpenSet(Grid* grid, int r, int c, float 
 		updateConditionalBarrierDataOnOpenSetExpanded(Cell(grid->rank, r, c), n);
 	}
 
-	float speedScale = routeByTravelTime ? 1.0 / routingTraveler->te->v_maxspeed : 1.0;
+	float speedScale = routeByTravelTime ? 1.0 / routingTraveler->maxSpeed : 1.0;
 	float newG = shortest.g + addedDist * speedScale;
 
 	float rotationTime = 0.0f;

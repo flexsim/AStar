@@ -269,6 +269,12 @@ public:
 	void onControlAreaExit(const ObjRef<TravelAllocation>& alloc);
 
 	double navigatedDist = 0.0;
+
+	double userDefinedTravelTime = 0.0;
+	double userTravelTimeSpeed = 0.0;
+	double dec = 0.0;
+	double acc = 0.0;
+	double maxSpeed = 1.0;
 };
 
 }

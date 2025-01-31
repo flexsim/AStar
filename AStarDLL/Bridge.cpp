@@ -107,12 +107,12 @@ void Bridge::onEntry(Traveler * traveler, int pathIndex)
 	lastTraveler = traveler;
 	filledDistance += nodeWidth;
 	if (!nav->enableCollisionAvoidance || firstTraveler == traveler) {
-		traveler->nextEvent = createevent(new Bridge::EndArrivalEvent(this, traveler, pathIndex, time() + (travelDistance / te->v_maxspeed)))->object<FlexSimEvent>();
+		traveler->nextEvent = createevent(new Bridge::EndArrivalEvent(this, traveler, pathIndex, time() + (travelDistance / traveler->maxSpeed)))->object<FlexSimEvent>();
 	}
 	if (nav->enableCollisionAvoidance) {
 		isAvailable = false;
 		if (filledDistance < travelDistance) {
-			createevent(new AvailableEvent(this, time() + (nodeWidth / te->v_maxspeed)));
+			createevent(new AvailableEvent(this, time() + (nodeWidth / traveler->maxSpeed)));
 		}
 	}
 }
@@ -134,25 +134,25 @@ void Bridge::onExit(Traveler * traveler)
 	if (firstTraveler && firstTraveler->navigator->enableCollisionAvoidance) {
 		// check to see if I should adjust the firstTraveler's entryTime if he has accumulated,
 		// to avoid "jumping" ahead
-		double distTraveled = (time() - firstTraveler->bridgeData->entryTime) * firstTraveler->te->v_maxspeed;
+		double distTraveled = (time() - firstTraveler->bridgeData->entryTime) * firstTraveler->maxSpeed;
 		if (distTraveled > travelDistance - nodeWidth) {
 			distTraveled = travelDistance - nodeWidth;
-			firstTraveler->bridgeData->entryTime = time() - distTraveled / firstTraveler->te->v_maxspeed;
+			firstTraveler->bridgeData->entryTime = time() - distTraveled / firstTraveler->maxSpeed;
 		}
 
 		double distRemaining = travelDistance - distTraveled;
 		firstTraveler->nextEvent = createevent(new Bridge::EndArrivalEvent(this, firstTraveler, firstTraveler->bridgeData->pathIndex,
-			time() + (distRemaining / firstTraveler->te->v_maxspeed)))->object<FlexSimEvent>();
+			time() + (distRemaining / firstTraveler->maxSpeed)))->object<FlexSimEvent>();
 	}
 
 	bool wasFull = !isAvailable && filledDistance >= travelDistance;
 	filledDistance -= nodeWidth;
 	if (wasFull && (filledDistance < travelDistance || filledDistance <= 0.0)) {
 		if (lastTraveler) {
-			double distRemainingByTravelTime = nodeWidth - (time() - lastTraveler->bridgeData->entryTime) / lastTraveler->te->v_maxspeed;
+			double distRemainingByTravelTime = nodeWidth - (time() - lastTraveler->bridgeData->entryTime) / lastTraveler->maxSpeed;
 			double distRemainingByFilledDistance = filledDistance + nodeWidth - travelDistance;
 			double distRemaining = std::max(distRemainingByFilledDistance, distRemainingByTravelTime);
-			createevent(new AvailableEvent(this, time() + (distRemaining / lastTraveler->te->v_maxspeed)));
+			createevent(new AvailableEvent(this, time() + (distRemaining / lastTraveler->maxSpeed)));
 		}
 		else onAvailable();
 	}
@@ -189,7 +189,7 @@ void Bridge::updateBridgeLocations()
 	double curMax = travelDistance;
 	double curTime = time();
 	while (t) {
-		double dist = std::min(curMax, (curTime - t->bridgeData->entryTime) * t->te->v_maxspeed);
+		double dist = std::min(curMax, (curTime - t->bridgeData->entryTime) * t->maxSpeed);
 		updateLocation(t, dist * distScale, &offset);
 		curMax = dist - nodeWidth;
 

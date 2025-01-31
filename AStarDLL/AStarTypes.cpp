@@ -779,7 +779,7 @@ void TravelPath::update(Traveler* traveler, double atDist)
 				}
 				else if (traveler->navigator->smoothRotations != 0.0) {
 					double sx = te->b_spatialsx;
-					double maxSpeed = te->v_maxspeed;
+					double maxSpeed = traveler->maxSpeed;
 					// speed based on the ability to rotate 90 degrees in traveling te's x size
 					double rotLerpSpeed = 90.0 / (sx / maxSpeed);
 					// go backwards along the travel path to at least 2 * sx before this point

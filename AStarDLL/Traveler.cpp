@@ -197,6 +197,9 @@ void Traveler::onReset()
 	isRoutingNow = false;
 	controlAreaAllocations.clear();
 	navigatedDist = 0;
+	maxSpeed = te->v_maxspeed;
+	dec = te->v_deceleration;
+	acc = te->v_acceleration;
 	if (te->v_useoffsets == OFFSET_BY_TE_LOGIC && te->v_deceleration != 0.0) {
 		string error = "Non-zero deceleration is not supported on A* networks when the task executer uses normal offset travel. Changing deceleration on ";
 		error.append(te->holder->getPath()).append(" from ").append(std::to_string(te->v_deceleration)).append(" to 0.");
@@ -242,9 +245,18 @@ void Traveler::navigatePath(int startAtPathIndex)
 		needsContinueTrigger = false;
 		FIRE_SDT_EVENT(onContinueTrigger, te->holder);
 	}
+	if (userDefinedTravelTime <= 0.0) {
+		dec = te->v_deceleration;
+		acc = te->v_acceleration;
+		maxSpeed = te->v_maxspeed;
+	}
+	else {
+		acc = dec = 0.0;
+		maxSpeed = userTravelTimeSpeed;
+	}
 
 	double curSpeed = getCurSpeed();
-	bool startBetweenCells = te->v_deceleration > 0 && (curSpeed > 0 || blockMode != BlockMode::None) ;
+	bool startBetweenCells = dec > 0 && (curSpeed > 0 || blockMode != BlockMode::None) ;
 	double atDist = travelPath[startAtPathIndex].atTravelDist;
 	// if I'm blocked and using acc/dec, then I may be continuing from being in the middle of 
 	// traveling between two cells.
@@ -271,8 +283,23 @@ void Traveler::navigatePath(int startAtPathIndex)
 	bool isExitingBridge = exitingBridgeRoutingData != nullptr;
 	if (isExitingBridge || startBetweenCells) {
 		startLoc = te->getLocation(0.5, 0.5, 0).project(te->holder->up, model());
-		if (isExitingBridge)
+		if (isExitingBridge) {
+			if (userDefinedTravelTime > 0.0 && startAtPathIndex < travelPath.size() - 1) {
+				// when userDefinedTravelTime is active, I need to make sure that the distance to the first node
+				// (when getting of a bridge) is exactly the grid's minNodeSize, because this is what the 
+				// bridge assumes is the 'extra' travel distance getting off the bridge, even though in simulating
+				// it is sometimes calculated slightly differently. I need to make absolutely sure it's exactly 
+				// that distance when userDefineTravelTime is active, so defined travel times will be exact.
+				auto& next = travelPath[startAtPathIndex + 1];
+				Vec3 vecFromFirst = startLoc - next.modelLoc;
+				double mag = vecFromFirst.magnitude;
+				if (mag > 0) {
+					double scale = nav->getGrid(next.cell)->minNodeSize / mag;
+					startLoc = next.modelLoc + (vecFromFirst * scale);
+				}
+			}
 			travelPath.bridgeExitLoc = startLoc;
+		}
 	}
 	else {
 		startLoc = travelPath[startAtPathIndex].modelLoc;
@@ -284,7 +311,7 @@ void Traveler::navigatePath(int startAtPathIndex)
 	double curTime = time();
 	double endTime = curTime;
 	double rotLerpSize = navigator->smoothRotations;
-	double rotLerpSpeed = 90 / (te->b_spatialsx * rotLerpSize / te->v_maxspeed);
+	double rotLerpSpeed = 90 / (te->b_spatialsx * rotLerpSize / maxSpeed);
 	double lastRotation;
 	lastRotation = Vec3(0.0, 0.0, te->b_spatialrz).projectRotation(te->holder->up, model()).z;
 	bool teCanRotate = objectexists(te->node_v_modifyrotation) && te->node_v_modifyrotation->value;
@@ -361,10 +388,6 @@ void Traveler::navigatePath(int startAtPathIndex)
 	int lastGridNum = -1;
 	double endArrivalTime = endTime;
 	double tinyDist = navigator->grids.front()->diagDist * 0.001;
-
-	double dec = te->v_deceleration;
-	double acc = te->v_acceleration;
-	double maxSpeed = te->v_maxspeed;
 
 	if (!(userResult & UserNavigationResult::UserNavigated)) {
 
@@ -700,6 +723,8 @@ void Traveler::navigatePath(int startAtPathIndex)
 	}
 	activeState = Active;
 	if (didBlockPathIndex == -1 && !nextEvent && blockMode == BlockMode::None && i == numNodes && userResult == UserNavigationResult::Default) {
+		if (endArrivalTime == curTime && userDefinedTravelTime > 0.0)
+			endArrivalTime = curTime + userDefinedTravelTime;
 		nextEvent = createevent(new ArrivalEvent(this, endArrivalTime, dec == 0 || endArrivalTime == endTime))->objectAs(ArrivalEvent);
 	}
 
@@ -1045,7 +1070,6 @@ void Traveler::onBlock(Traveler* collidingWith, double colliderTravelDist, Cell&
 	int stopAtPathIndex = allocPathIndex - 1;
 	int atPathIndex = stopAtPathIndex;
 	double distToStop = 0;
-	double dec = te->v_deceleration;
 	if (dec > 0) {
 		distToStop = travelPath[stopAtPathIndex].atTravelDist - atTravelDist;
 		while (atPathIndex > 0 && travelPath[atPathIndex].atTravelDist > atTravelDist + tinyDist)
@@ -1068,7 +1092,6 @@ void Traveler::onBlock(Traveler* collidingWith, double colliderTravelDist, Cell&
 		double stopAtTime = curTime;
 		double startSpeed = curSpeed;
 		double tempTime = curTime;
-		double maxSpeed = te->v_maxspeed;
 		double acc = te->v_acceleration;
 		auto allocIter = allocations.begin();
 		for (int i = atPathIndex + 1; i <= stopAtPathIndex; i++) {
@@ -1384,7 +1407,7 @@ void Traveler::onControlAreaArrival(int areaIndex, int travelPathIndex)
 		blockMode = BlockMode::ControlArea;
 		setstate(te->holder, STATE_BLOCKED);
 
-		addkinematic(kinematics, toDist - atDist, 0.0, 0.0, te->v_maxspeed, te->v_acceleration, te->v_deceleration, curSpeed, 0.0, time(), KINEMATIC_TRAVEL);
+		addkinematic(kinematics, toDist - atDist, 0.0, 0.0, maxSpeed, acc, dec, curSpeed, 0.0, time(), KINEMATIC_TRAVEL);
 		for (auto alloc : allocations) {
 			if (alloc->atTravelDist >= toDist - tinyDist)
 				alloc->extendReleaseTime(DBL_MAX);
@@ -1487,6 +1510,10 @@ void Traveler::onArrival(bool isAtZeroSpeed)
 				double endTime = getkinematics(kinematics, KINEMATIC_ENDTIME, getkinematics(kinematics, KINEMATIC_NR));
 				nextEvent = createevent(new ArrivalEvent(this, endTime, true))->object<ArrivalEvent>();
 			}
+			userDefinedTravelTime = 0.0;
+			maxSpeed = te->v_maxspeed;
+			dec = te->v_deceleration;
+			acc = te->v_acceleration;
 			te->onDestinationArrival(te->v_lastupdatedspeed);
 		}
 		else {
@@ -1519,8 +1546,8 @@ void Traveler::abortTravel(TreeNode* newTS)
 	updateSpeedMarkers();
 	auto curSpeed = getCurSpeed();
 	double distToStop = 0.0;
-	if (curSpeed > 0 && te->v_deceleration > 0)
-		distToStop = (0.5 * curSpeed) * (curSpeed / te->v_deceleration);
+	if (curSpeed > 0 && dec > 0)
+		distToStop = (0.5 * curSpeed) * (curSpeed / dec);
 	double stopAtDist = atDist + distToStop;
 	double stopAtTime = time();
 	if (!bridgeData || !bridgeData->routingData) {
@@ -1539,7 +1566,7 @@ void Traveler::abortTravel(TreeNode* newTS)
 		travelPath = std::move(newTravelPath);
 		initkinematics(kinematics, atDist, 0.0, 0.0, 0.0, 0.0, 0.0);
 		stopAtTime = addkinematic(kinematics, travelPath.back().atTravelDist - atDist, 0, 0,
-			te->v_maxspeed, te->v_acceleration, te->v_deceleration, curSpeed, 0.0, time(), KINEMATIC_TRAVEL);
+			maxSpeed, acc, dec, curSpeed, 0.0, time(), KINEMATIC_TRAVEL);
 	}
 
 	if (navigator->enableCollisionAvoidance) {
@@ -1626,7 +1653,7 @@ astar_export void Traveler::updateSpeedMarkers()
 	double updateTime = time();
 	te->v_lastspeedupdatetime = updateTime;
 	double updatedSpeed = getkinematics(kinematics, KINEMATIC_VELOCITY, 0, std::max(0.0, std::nextafter(updateTime, -DBL_MAX)));
-	if (updatedSpeed < 0.001 * te->v_maxspeed)
+	if (updatedSpeed < 0.001 * maxSpeed)
 		updatedSpeed = 0;
 	te->v_lastupdatedspeed = updatedSpeed;
 }
