@@ -3231,6 +3231,7 @@ forobjecttreeunder(node("/BarrierPoints", c))
 treenode barrier = node("../..&gt;objectfocus+", c);
 treenode pointsNode = table.find("&gt;table");
 treenode lastPointNode = pointsNode.last;
+double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 
 double X2 = lastPointNode.subnodes[1].value;
 double Y2 = lastPointNode.subnodes[2].value;
@@ -3239,7 +3240,7 @@ double Y1 = lastPointNode.prev.subnodes[2].value;
 
 Vec2 direction = Vec2(X2-X1, Y2-Y1);
 Vec2 lastPoint = Vec2(X2,Y2);
-Vec2 nextPoint = lastPoint + direction.normalized;
+Vec2 nextPoint = lastPoint + (direction.normalized / lengthMultiple);
 
 function_s(barrier, "addPoint", nextPoint.x, nextPoint.y);
 applylinks(table, 1);
@@ -6006,6 +6007,7 @@ if (propertiesView) {
 Object barrier = node("../..&gt;objectfocus+", c);
 treenode pointsNode = table.find("&gt;table");
 treenode lastPointNode = pointsNode.last;
+double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 
 double X2 = lastPointNode.subnodes[1].value;
 double Y2 = lastPointNode.subnodes[2].value;
@@ -6014,7 +6016,7 @@ double Y1 = lastPointNode.prev.subnodes[2].value;
 
 Vec2 direction = Vec2(X2-X1, Y2-Y1);
 Vec2 lastPoint = Vec2(X2,Y2);
-Vec2 nextPoint = lastPoint + direction.normalized;
+Vec2 nextPoint = lastPoint + (direction.normalized / lengthMultiple);
 
 int undoId = beginaggregatedundo(c, "Add Point");
 function_s(barrier, "addPoint", nextPoint.x, nextPoint.y);
