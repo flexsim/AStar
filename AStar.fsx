@@ -3229,20 +3229,11 @@ forobjecttreeunder(node("/BarrierPoints", c))
            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
            <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
 treenode barrier = node("../..&gt;objectfocus+", c);
-treenode pointsNode = table.find("&gt;table");
-treenode lastPointNode = pointsNode.last;
-double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
+treenode pointsNode = node("&gt;variables/points", barrier);
+double x = get(node("/x", last(pointsNode)));
+double y = get(node("/y", last(pointsNode)));
 
-double X2 = lastPointNode.subnodes[1].value;
-double Y2 = lastPointNode.subnodes[2].value;
-double X1 = lastPointNode.prev.subnodes[1].value;
-double Y1 = lastPointNode.prev.subnodes[2].value;
-
-Vec2 direction = Vec2(X2-X1, Y2-Y1);
-Vec2 lastPoint = Vec2(X2,Y2);
-Vec2 nextPoint = lastPoint + (direction.normalized / lengthMultiple);
-
-function_s(barrier, "addPoint", nextPoint.x, nextPoint.y);
+function_s(barrier, "addPoint", x +2, y +2);
 applylinks(table, 1);
 refreshview(table);
 function_s(barrier, "setActiveIndex", content(pointsNode) -1);
@@ -6009,6 +6000,8 @@ treenode pointsNode = table.find("&gt;table");
 treenode lastPointNode = pointsNode.last;
 double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 
+// Assuming at least two points will always exist on the path
+// as UI is preventing the deletion of the second-to-last point
 double X2 = lastPointNode.subnodes[1].value;
 double Y2 = lastPointNode.subnodes[2].value;
 double X1 = lastPointNode.prev.subnodes[1].value;
