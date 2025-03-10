@@ -1751,6 +1751,7 @@ if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
         <node f="42" dt="2"><name>helptopic</name><data>AStarTool#grids</data></node>
         <node f="442" dt="2"><name>dropscript</name><data>treenode ontoObj = param(1);
 Vec3 ontoLoc = Vec3(param(2), param(3), param(4));
+double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 if (ontoObj) 
 	ontoLoc = ontoLoc.project(ontoObj, model());
 treenode ontoView = param(5);
@@ -1760,7 +1761,7 @@ if (ontoView &amp;&amp; gets(documentwindow(ontoView)) != "ProcessFlow") {
 		nav = createinstance(library().find("?AStarNavigator"), model());
 	
 	treenode obj = c.find("..&gt;objectfocus+");
-	treenode createdObj = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 10, 10, 0);
+	treenode createdObj = function_s(nav, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z, 10 / lengthMultiple, 10 / lengthMultiple, 0);
 	if (objectexists(windowtitle(obj)))
 		createdObj.name = windowtitle(obj).value;
 	applicationcommand("setuniquename", createdObj);
