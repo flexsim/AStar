@@ -1498,10 +1498,6 @@ switch (clickCode) {
 				Vec3 ontoLoc = Vec3(getvarnum(c, "mouseDownX"), getvarnum(c, "mouseDownY"), getvarnum(c, "mouseDownZ"));
 				treenode createdObj = function_s(navigator, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);
 				applicationcommand("applycreationproperties", createdObj);
-				setvarnum(createdObj, "maxPointX", ontoLoc.x + 1);
-				setvarnum(createdObj, "minPointY", ontoLoc.y - 1);
-				spatialsx(createdObj).value = 1;
-				spatialsy(createdObj).value = 1;
 				nodepoint(getvarnode(c, "draggingObj"), createdObj);
 			}
 		}
