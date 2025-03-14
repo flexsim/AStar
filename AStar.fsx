@@ -1336,8 +1336,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
-        <node f="442" dt="2"><name>getCreationClass</name><data>print(c);
-return findmatchintree(library(), getname(first(classes(a))) == "AStar::Divider");</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>return findmatchintree(library(), getname(first(classes(a))) == "AStar::Divider");</data></node>
        </node>
       </data></node>
       <node f="42" dt="4"><name>AStar::PreferredPath</name><data>
@@ -1464,6 +1463,7 @@ nodepoint(objectfocus(c), 0);</data></node>
         <node f="42" dt="1"><name>mouseDownY</name><data>0000000000000000</data></node>
         <node f="42" dt="1"><name>mouseDownZ</name><data>0000000000000000</data></node>
         <node f="42" dt="3"><name>draggingObj</name><data><coupling>null</coupling></data></node>
+        <node f="42" dt="1"><name>isCreationMode</name><data>000000003ff00000</data></node>
        </node>
        <node f="42"><name>eventfunctions</name>
         <node f="40"><name></name></node>
@@ -1497,6 +1497,7 @@ switch (clickCode) {
 				setvarnum(c, "state", GRID_MODE_STATE_CLICKED);
 				Vec3 ontoLoc = Vec3(getvarnum(c, "mouseDownX"), getvarnum(c, "mouseDownY"), getvarnum(c, "mouseDownZ"));
 				treenode createdObj = function_s(navigator, "createGrid", ontoLoc.x, ontoLoc.y, ontoLoc.z);
+				applicationcommand("applycreationproperties", createdObj);
 				setvarnum(createdObj, "maxPointX", ontoLoc.x + 1);
 				setvarnum(createdObj, "minPointY", ontoLoc.y - 1);
 				spatialsx(createdObj).value = 1;
@@ -1574,6 +1575,7 @@ setvarstr(handler, "class", getvarstr(c, "class"));
 executefsnode(OnEntering(handler), handler, i, eventdata);</data></node>
         <node f="442" dt="2"><name>OnExiting</name><data>executefsnode(OnExiting(first(up(c))), first(up(c)), i, eventdata);
 nodepoint(objectfocus(c), 0);</data></node>
+        <node f="442" dt="2"><name>getCreationClass</name><data>return findmatchintree(library(), getname(first(classes(a))) == "AStar::Grid");</data></node>
        </node>
       </data></node>
      </node>
@@ -5996,12 +5998,23 @@ if (propertiesView) {
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
          <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
 Object barrier = node("../..&gt;objectfocus+", c);
-treenode pointsNode = node("&gt;variables/points", barrier);
-double x = get(node("/x", last(pointsNode)));
-double y = get(node("/y", last(pointsNode)));
+treenode pointsNode = table.find("&gt;table");
+treenode lastPointNode = pointsNode.last;
+double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
+
+// Assuming at least two points will always exist on the path
+// as UI is preventing the deletion of the second-to-last point
+double X2 = lastPointNode.subnodes[1].value;
+double Y2 = lastPointNode.subnodes[2].value;
+double X1 = lastPointNode.prev.subnodes[1].value;
+double Y1 = lastPointNode.prev.subnodes[2].value;
+
+Vec2 direction = Vec2(X2-X1, Y2-Y1);
+Vec2 lastPoint = Vec2(X2,Y2);
+Vec2 nextPoint = lastPoint + (direction.normalized / lengthMultiple);
 
 int undoId = beginaggregatedundo(c, "Add Point");
-function_s(barrier, "addPoint", x +2, y +2);
+function_s(barrier, "addPoint", nextPoint.x, nextPoint.y);
 endaggregatedundo(c, undoId);
 applylinks(table, 1);
 refreshview(table);
