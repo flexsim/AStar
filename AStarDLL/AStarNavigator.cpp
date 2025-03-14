@@ -2318,6 +2318,11 @@ Grid * AStarNavigator::createGrid(const Vec3 & loc, const Vec3& size)
 		auto found = model()->find("/?AStarNavigator");
 		transfernode(grid->holder, found);
 		setrank(grid->holder, grid->navigator->grids.size() + 1);
+
+		double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
+		grid->nodeSize.x /= lengthMultiple;
+		grid->nodeSize.y /= lengthMultiple;
+
 		grids.add(grid);
 	}
 	
