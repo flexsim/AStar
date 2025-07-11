@@ -1498,7 +1498,14 @@ void Grid::makeDirty()
 
 double Grid::onDestroy(treenode view)
 {
-	if (holder->up->subnodes.length == 1) {
+	if (!holder || !holder->up)
+		return 1.0;
+
+	AStarNavigator* nav = holder->up->objectAs(AStarNavigator);
+	if (!nav)
+		return 1.0;
+
+	if (nav->grids.length == 1) {
 		msg("Grid Deletion Not Allowed", "You cannot delete all A* grids.", 1);
 		return 1.0;
 	}
