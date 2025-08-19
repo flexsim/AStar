@@ -5965,6 +5965,42 @@ if (propertiesView) {
         <node f="4000000042" dt="2"><name>tooltip</name><data>Tells if the object's rule applies both ways</data></node>
         <node f="4000000042" dt="2"><name>windowtitle</name><data>Two Way</data></node>
        </data></node>
+       <node f="42" dt="4"><name>Reverse</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040490000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+        <node f="42" dt="1"><name>alignrightposition</name><data>0000000040410000</data></node>
+        <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsEdit/PointsTable", c);
+Object barrier = node("..&gt;objectfocus+", c);
+treenode pointsNode = node("&gt;variables/points", barrier);
+
+int undoId = beginaggregatedundo(c.up, "Reverse Points");
+int left = 0;
+int right = table.find("&gt;viewfocus+").subnodes.length - 1;
+while (left &lt; right) {
+	function_s(barrier, "swapPoints", left, right);
+	left += 1;
+	right -= 1;
+}
+endaggregatedundo(c.up, undoId);
+applylinks(table, 1);
+refreshview(table);
+function_s(barrier, "setActiveIndex", 0);
+barrier.applyProperties("PathPoints");
+function_s(Model.find("AStarNavigator"), "rebuildMeshes");
+repaintall();
+settableviewselection(table, 1, 1, 1, 3);
+repaintview(table);</data>
+         <node f="40"><name></name></node></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>Reverse the points in the list</data></node>
+        <node f="42" dt="2"><name>bitmap</name><data>buttons\swap.png</data></node>
+        <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
+        <node f="42" dt="2"><name>undohistory</name><data>..</data></node>
+       </data>
+        <node f="40"><name></name></node></node>
        <node f="42" dt="4"><name>PointsEdit</name><data>
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>
@@ -6139,41 +6175,6 @@ repaintview(table);</data></node>
          <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
          <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
         </data></node>
-        <node f="42" dt="4"><name>Reverse</name><data>
-         <node f="40"><name>object</name></node>
-         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
-         <node f="42" dt="1"><name>spatialx</name><data>00000000405d0000</data></node>
-         <node f="42" dt="1"><name>spatialy</name><data>0000000040320000</data></node>
-         <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
-         <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-         <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
-Object barrier = node("../..&gt;objectfocus+", c);
-treenode pointsNode = node("&gt;variables/points", barrier);
-
-int undoId = beginaggregatedundo(c, "Reverse Points");
-int left = 0;
-int right = content(node("&gt;viewfocus+", table)) - 1;
-while (left &lt; right) {
-	function_s(barrier, "swapPoints", left, right);
-	left += 1;
-	right -= 1;
-}
-endaggregatedundo(c, undoId);
-applylinks(table, 1);
-refreshview(table);
-function_s(barrier, "setActiveIndex", content(pointsNode) -1);
-barrier.applyProperties("PathPoints");
-function_s(Model.find("AStarNavigator"), "rebuildMeshes");
-repaintall();
-settableviewselection(table, 1, 0, 1, 2);
-repaintview(table);</data>
-          <node f="40"><name></name></node></node>
-         <node f="4000000042" dt="2"><name>tooltip</name><data>Reverse the points in the list</data></node>
-         <node f="42" dt="2"><name>bitmap</name><data>buttons\swap.png</data></node>
-         <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
-         <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
-        </data>
-         <node f="40"><name></name></node></node>
         <node f="42" dt="4"><name>PointsTable</name><data>
          <node f="40"><name>object</name></node>
          <node f="42" dt="2"><name>viewfocus</name><data>..&gt;table</data></node>
