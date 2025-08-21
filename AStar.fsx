@@ -5983,6 +5983,7 @@ for (int i = 1; i &lt;= n; i++) {
 	treenode point = pointsNode.subnodes[i];
 	createundorecord(c, point, UNDO_CHANGE_RANK, n - i + 1);
 }
+beginignoreundo();
 int left = 0;
 int right = n - 1;
 while (left &lt; right) {
@@ -5990,11 +5991,12 @@ while (left &lt; right) {
 	left += 1;
 	right -= 1;
 }
+endignoreundo();
 endaggregatedundo(c, undoId);
 
 applylinks(table, 1);
 refreshview(table);
-function_s(barrier, "setActiveIndex", pointsNode.subnodes.length - 1);
+function_s(barrier, "setActiveIndex", n - 1);
 barrier.applyProperties("PathPoints");
 function_s(Model.find("AStarNavigator"), "rebuildMeshes");
 repaintall();</data>
