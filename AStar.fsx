@@ -5976,29 +5976,33 @@ if (propertiesView) {
         <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsEdit/PointsTable", c);
 Object barrier = node("..&gt;objectfocus+", c);
 treenode pointsNode = node("&gt;variables/points", barrier);
+int n = pointsNode.subnodes.length;
 
-int undoId = beginaggregatedundo(c.up, "Reverse Points");
+int undoId = beginaggregatedundo(c, "Reverse Points");
+for (int i = 1; i &lt;= n; i++) {
+	treenode point = pointsNode.subnodes[i];
+	createundorecord(c, point, UNDO_CHANGE_RANK, n - i + 1);
+}
 int left = 0;
-int right = table.find("&gt;viewfocus+").subnodes.length - 1;
+int right = n - 1;
 while (left &lt; right) {
 	function_s(barrier, "swapPoints", left, right);
 	left += 1;
 	right -= 1;
 }
-endaggregatedundo(c.up, undoId);
+endaggregatedundo(c, undoId);
+
 applylinks(table, 1);
 refreshview(table);
-function_s(barrier, "setActiveIndex", 0);
+function_s(barrier, "setActiveIndex", pointsNode.subnodes.length - 1);
 barrier.applyProperties("PathPoints");
 function_s(Model.find("AStarNavigator"), "rebuildMeshes");
-repaintall();
-settableviewselection(table, 1, 1, 1, 3);
-repaintview(table);</data>
+repaintall();</data>
          <node f="40"><name></name></node></node>
-        <node f="4000000042" dt="2"><name>tooltip</name><data>Reverse the points in the list</data></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>Reverse the direction</data></node>
         <node f="42" dt="2"><name>bitmap</name><data>buttons\swap.png</data></node>
         <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
-        <node f="42" dt="2"><name>undohistory</name><data>..</data></node>
+        <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
        </data>
         <node f="40"><name></name></node></node>
        <node f="42" dt="4"><name>PointsEdit</name><data>
