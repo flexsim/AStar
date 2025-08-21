@@ -5979,19 +5979,12 @@ treenode pointsNode = node("&gt;variables/points", barrier);
 int n = pointsNode.subnodes.length;
 
 int undoId = beginaggregatedundo(c, "Reverse Points");
-for (int i = 1; i &lt;= n; i++) {
-	treenode point = pointsNode.subnodes[i];
-	createundorecord(c, point, UNDO_CHANGE_RANK, n - i + 1);
+for (int i = 1; i &lt;= n / 2; i++) {
+	int oppositeIndex = n - i + 1;
+	treenode oppositeNode = pointsNode.subnodes[oppositeIndex];
+	pointsNode.subnodes[i].rank = oppositeIndex;
+	oppositeNode.rank = i;
 }
-beginignoreundo();
-int left = 0;
-int right = n - 1;
-while (left &lt; right) {
-	function_s(barrier, "swapPoints", left, right);
-	left += 1;
-	right -= 1;
-}
-endignoreundo();
 endaggregatedundo(c, undoId);
 
 applylinks(table, 1);
