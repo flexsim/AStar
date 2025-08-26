@@ -5965,6 +5965,40 @@ if (propertiesView) {
         <node f="4000000042" dt="2"><name>tooltip</name><data>Tells if the object's rule applies both ways</data></node>
         <node f="4000000042" dt="2"><name>windowtitle</name><data>Two Way</data></node>
        </data></node>
+       <node f="42" dt="4"><name>Reverse</name><data>
+        <node f="40"><name>object</name></node>
+        <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+        <node f="42" dt="1"><name>spatialx</name><data>0000000000000000</data></node>
+        <node f="42" dt="1"><name>spatialy</name><data>0000000040490000</data></node>
+        <node f="42" dt="1"><name>spatialsx</name><data>00000000403d0000</data></node>
+        <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+        <node f="42" dt="1"><name>alignrightposition</name><data>0000000040410000</data></node>
+        <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsEdit/PointsTable", c);
+Object barrier = node("..&gt;objectfocus+", c);
+treenode pointsNode = node("&gt;variables/points", barrier);
+int n = pointsNode.subnodes.length;
+
+int undoId = beginaggregatedundo(c, "Reverse Points");
+for (int i = 1; i &lt;= n; i++) {
+	treenode point = pointsNode.subnodes[i];
+	createundorecord(c, point, UNDO_CHANGE_RANK, n - i + 1);
+}
+function_s(barrier, "reversePoints");
+endaggregatedundo(c, undoId);
+
+applylinks(table, 1);
+refreshview(table);
+function_s(barrier, "setActiveIndex", n - 1);
+barrier.applyProperties("PathPoints");
+function_s(Model.find("AStarNavigator"), "rebuildMeshes");
+repaintall();</data>
+         <node f="40"><name></name></node></node>
+        <node f="4000000042" dt="2"><name>tooltip</name><data>Reverse the direction</data></node>
+        <node f="42" dt="2"><name>bitmap</name><data>buttons\swap.png</data></node>
+        <node f="42" dt="1"><name>beveltype</name><data>0000000040080000</data></node>
+        <node f="42" dt="2"><name>undohistory</name><data>../..</data></node>
+       </data>
+        <node f="40"><name></name></node></node>
        <node f="42" dt="4"><name>PointsEdit</name><data>
         <node f="40"><name>object</name></node>
         <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040598000</data></node>

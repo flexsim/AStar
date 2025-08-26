@@ -172,6 +172,8 @@ public:
 	astar_export Variant removePoint(FLEXSIMINTERFACE) { removePoint((int)param(1));  return Variant(); }
 	void swapPoints(int index1, int index2);
 	astar_export Variant swapPoints(FLEXSIMINTERFACE) { swapPoints((int)param(1), (int)param(2)); return Variant(); }
+	void reversePoints();
+	astar_export Variant reversePoints(FLEXSIMINTERFACE) { reversePoints(); return Variant(); }
 	Vec3 getLocalPointCoords(int pointIndex);
 	Vec3 getPointCoords(int pointIndex);
 	astar_export Variant getPointCoord(FLEXSIMINTERFACE);

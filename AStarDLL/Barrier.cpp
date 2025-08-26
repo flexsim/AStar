@@ -37,6 +37,7 @@ void Barrier::bind(void)
 	bindCallback(addPoint, Barrier);
 	bindCallback(removePoint, Barrier);
 	bindCallback(swapPoints, Barrier);
+	bindCallback(reversePoints, Barrier);
 	bindCallback(getPointCoord, Barrier);
 	bindCallback(setPointCoords, Barrier);
 	bindCallback(getType, Barrier);
@@ -1002,6 +1003,13 @@ void Barrier::swapPoints(int index1, int index2)
 		return;
 
 	pointList.swap(index1, index2);
+}
+
+void Barrier::reversePoints()
+{
+	int n = pointList.size();
+	for (int i = 0; i < n / 2; ++i)
+		pointList.swap(i, n - i - 1);
 }
 
 Vec3 Barrier::getLocalPointCoords(int pointIndex)
