@@ -2118,11 +2118,11 @@ forobjectsbehind (c)
            <node f="40"><name></name></node>
            <node f="42" dt="4"><name>MemberChooser</name><data>
             <node f="40"><name>object</name></node>
-            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405c8000</data></node>
+            <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405b4000</data></node>
             <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
             <node f="42" dt="1"><name>spatialy</name><data>0000000040310000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
-            <node f="42" dt="1"><name>spatialsy</name><data>00000000404e0000</data></node>
+            <node f="42" dt="1"><name>spatialsy</name><data>0000000040590000</data></node>
             <node f="42"><name>items</name>
              <node f="40"><name></name></node>
              <node f="2000000042"><name>All Members</name></node>
@@ -2133,39 +2133,15 @@ forobjectsbehind (c)
             <node f="42" dt="2"><name>OnSelect</name><data>nodefunction(node("../MembersList&gt;refresh",c));</data>
              <node f="40"><name></name></node></node>
             <node f="42" dt="2"><name>tooltip</name><data></data></node>
-           </data>
-            <node f="40"><name></name></node></node>
-           <node f="42" dt="4"><name>Properties</name><data>
-            <node f="40"><name>object</name></node>
-            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
-            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-            <node f="42" dt="1"><name>spatialy</name><data>000000004053c000</data></node>
-            <node f="42" dt="1"><name>spatialsx</name><data>000000004057c000</data></node>
-            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
-            <node f="42" dt="2"><name>OnPress</name><data>treenode list = node("../MembersList", c);
-string path = getname(rank(items(list), get(itemcurrent(list))));
-
-treenode member = node(path, model());
-
-if (objectexists(member)) {
-  
-  createview(
-	gets(node("&gt;special/guifocusclass",member)),
-	nodetopath(member, 1),
-	nodetopath(member, 1)
-	);
-}</data>
-             <node f="40"><name></name></node></node>
-            <node f="4000000042" dt="2"><name>tooltip</name><data>Open Properties Window of highlighted member</data></node>
-            <node f="4000000042" dt="2"><name>windowtitle</name><data>Properties</data></node>
+            <node f="42" dt="1"><name>alignrightmargin</name><data>00000000402c0000</data></node>
            </data>
             <node f="40"><name></name></node></node>
            <node f="42" dt="4"><name>Sampler</name><data>
             <node f="40"><name>object</name></node>
             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
             <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/SamplerButton</data></node>
-            <node f="42" dt="1"><name>spatialx</name><data>00000000405d4000</data></node>
-            <node f="42" dt="1"><name>spatialy</name><data>0000000040310000</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>0000000040420000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
@@ -2191,7 +2167,7 @@ repaintall();</data></node>
            <node f="42" dt="4"><name>Add</name><data>
             <node f="40"><name>object</name></node>
             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
-            <node f="42" dt="1"><name>spatialx</name><data>00000000405d4000</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
             <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
@@ -2232,8 +2208,8 @@ repaintall();</data></node>
            <node f="42" dt="4"><name>Remove</name><data>
             <node f="40"><name>object</name></node>
             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
-            <node f="42" dt="1"><name>spatialx</name><data>00000000405d4000</data></node>
-            <node f="42" dt="1"><name>spatialy</name><data>00000000404d8000</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>00000000404d0000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42" dt="2"><name>OnPress</name><data>treenode list = node("../MembersList", c);
@@ -2251,13 +2227,78 @@ if (objectexists(member)) {
             <node f="4000000042" dt="2"><name>tooltip</name><data>Remove the selected member</data></node>
             <node f="42" dt="2"><name>bitmap</name><data>buttons\remove.png</data></node>
            </data></node>
+           <node f="42" dt="4"><name>Center in View</name><data>
+            <node f="40"><name>object</name></node>
+            <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
+            <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
+            <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
+            <node f="42"><name>custom</name>
+             <node f="40"><name></name></node></node>
+            <node f="42"><name>eventfunctions</name>
+             <node f="40"><name></name></node>
+             <node f="42" dt="2"><name>OnPress</name><data>treenode ListView = node("MembersList", up(c));
+
+treenode obj = 0;
+obj = function_s(ListView, "getSelObj");
+
+if (!objectexists(obj))
+	return 0;
+
+if (isclasstype(obj, "FlexSimEventHandler") || objectexists(itemtype(obj))) {
+	treenode perspective = activedocumentnode();	
+	if(gets(documentwindow(perspective)) != "3D") {
+		treenode perspectiveViews = node("VIEW:/active&gt;Documents/Perspective");
+		perspective = ownerobject(tonode(get(first(perspectiveViews))));
+		if (!objectexists(perspective))
+			perspective = applicationcommand("perspectiveview");
+	}
+	
+	Vec3 loc = obj.as(Object).getLocation(0.5, 0.5, 0).project(obj.up, node("&gt;viewfocus+", perspective));	
+	viewpointx(perspective).value = loc.x;
+	viewpointy(perspective).value = loc.y;
+
+	int changeSelObj = !getvarnum(c, "keepSelObj");
+	if (changeSelObj) {
+		applicationcommand("activatedockedview", perspective);
+		setselectedobject(perspective, obj);
+	}
+	repaintview(perspective);
+
+	if (changeSelObj)
+		applicationcommand("notifydoclistenersonselobjchange");
+} else if (objectexists(guifocusclass(obj))) {
+	createview(gets(guifocusclass(obj)), nodetopath(obj), "");
+}
+
+function_s(c, "onPressed");</data>
+              <node f="40"><name></name></node></node>
+            </node>
+            <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
+            <node f="42" dt="2"><name>bitmap</name><data>buttons\view_findobjects.ico</data></node>
+            <node f="4000000042" dt="2"><name>tooltip</name><data>Center object in view</data></node>
+            <node f="42" dt="2"><name>viewfocus</name><data>@&gt;objectfocus+</data></node>
+           </data></node>
            <node f="42" dt="4"><name>MembersList</name><data>
             <node f="40"><name>object</name></node>
             <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405c8000</data></node>
-            <node f="42" dt="1"><name>spatialx</name><data>0000000040618000</data></node>
-            <node f="42" dt="1"><name>spatialy</name><data>0000000040310000</data></node>
+            <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>00000000404f8000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040714000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>55555555405b9555</data></node>
+            <node f="42"><name>eventfunctions</name>
+             <node f="40"><name></name></node>
+             <node f="442" dt="2"><name>getSelObj</name><data>int selectedIndex = itemcurrent(c).value;
+treenode selectedItems = items(c);
+if(selectedIndex &amp;&amp; selectedItems.subnodes.length &gt;= itemcurrent(c).value){
+	treenode selectItem = selectedItems.subnodes[selectedIndex];
+	string path = selectedItems.subnodes[selectedIndex].name;
+	treenode member = node(path, model());
+	return member;
+}
+return 0;</data></node>
+            </node>
             <node f="442" dt="2"><name>hotlinkx</name><data>if (!eventdata) {
 	int list = get(itemcurrent(node("../MemberChooser", c)));
 	if (list == 2 || list == 3) { //Active/Inactive lists
