@@ -2140,7 +2140,7 @@ forobjectsbehind (c)
             <node f="40"><name>object</name></node>
             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
             <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-            <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>0000000040448000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42" dt="2"><name>OnPress</name><data>createpopup("VIEW:/standardviews/other/UniversalSelect", "", nodetopath(node("&gt;SelectDelegate",c), 1), c, 0, 0, 0,0);</data></node>
@@ -2182,7 +2182,7 @@ repaintall();</data></node>
             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
             <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/SamplerButton</data></node>
             <node f="42" dt="1"><name>spatialx</name><data>0000000040420000</data></node>
-            <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>0000000040448000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>beveltype</name><data>0000000000000000</data></node>
@@ -2209,7 +2209,7 @@ repaintall();</data></node>
             <node f="40"><name>object</name></node>
             <node f="42" dt="1"><name>viewwindowtype</name><data>0000000040590000</data></node>
             <node f="42" dt="1"><name>spatialx</name><data>00000000404d0000</data></node>
-            <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>0000000040448000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42" dt="2"><name>OnPress</name><data>treenode list = node("../MembersList", c);
@@ -2233,7 +2233,7 @@ if (objectexists(member)) {
             <node f="42" dt="2"><name>guifocusclass</name><data>VIEW:/guiclasses/CenterView</data></node>
             <node f="42" dt="2"><name>viewfocus</name><data>../../MembersList</data></node>
             <node f="42" dt="1"><name>spatialx</name><data>0000000040540000</data></node>
-            <node f="42" dt="1"><name>spatialy</name><data>0000000040430000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>0000000040448000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
             <node f="42" dt="1"><name>alignrightposition</name><data>0000000040418000</data></node>
@@ -2244,7 +2244,7 @@ if (objectexists(member)) {
             <node f="40"><name>object</name></node>
             <node f="42" dt="1"><name>viewwindowtype</name><data>00000000405c8000</data></node>
             <node f="42" dt="1"><name>spatialx</name><data>00000000402c0000</data></node>
-            <node f="42" dt="1"><name>spatialy</name><data>00000000404f8000</data></node>
+            <node f="42" dt="1"><name>spatialy</name><data>0000000040500000</data></node>
             <node f="42" dt="1"><name>spatialsx</name><data>0000000040714000</data></node>
             <node f="42" dt="1"><name>spatialsy</name><data>55555555405b9555</data></node>
             <node f="42"><name>eventfunctions</name>
