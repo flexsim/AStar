@@ -5984,6 +5984,7 @@ for (int i = 1; i &lt;= n; i++) {
 	treenode point = pointsNode.subnodes[i];
 	createundorecord(c, point, UNDO_CHANGE_RANK, n - i + 1);
 }
+createundorecord(c, table, UNDO_CUSTOM);
 function_s(barrier, "reversePoints");
 endaggregatedundo(c, undoId);
 
@@ -6046,6 +6047,7 @@ Vec2 lastPoint = Vec2(X2,Y2);
 Vec2 nextPoint = lastPoint + (direction.normalized / lengthMultiple);
 
 int undoId = beginaggregatedundo(c, "Add Point");
+createundorecord(c, table, UNDO_CUSTOM);
 function_s(barrier, "addPoint", nextPoint.x, nextPoint.y);
 endaggregatedundo(c, undoId);
 applylinks(table, 1);
@@ -6085,6 +6087,7 @@ if (!objectexists(selected))
 	return 0;
 
 int undoId = beginaggregatedundo(c, "Remove Point");
+createundorecord(c, table, UNDO_CUSTOM);
 function_s(barrier, "removePoint", index-1);
 endaggregatedundo(c, undoId);
 applylinks(table, 1);
@@ -6123,6 +6126,7 @@ if (index &lt;= 1)
 
 int undoId = beginaggregatedundo(c, "Point Rank Up");
 createundorecord(c, selected, UNDO_CHANGE_RANK, index -1);
+createundorecord(c, table, UNDO_CUSTOM);
 function_s(barrier, "swapPoints", index -1, index -2);
 endaggregatedundo(c, undoId);
 applylinks(table, 1);
@@ -6160,6 +6164,7 @@ if (index == 0 || index &gt;= content(node("&gt;viewfocus+", table)))
 
 int undoId = beginaggregatedundo(c, "Point Rank Down");
 createundorecord(c, selected, UNDO_CHANGE_RANK, index +1);
+createundorecord(c, table, UNDO_CUSTOM);
 function_s(barrier, "swapPoints", index -1, index);
 endaggregatedundo(c, undoId);
 applylinks(table, 1);
@@ -6305,6 +6310,9 @@ repaintview(TheTable);
 
 </data></node>
          <node f="42" dt="1"><name>OnMouseWheelDelta</name><data>0000000000000000</data></node>
+         <node f="42" dt="2"><name>OnUndo</name><data>// This code executes after any custom undo for this points table
+applylinks(c, 1);
+refreshview(c);</data></node>
          <node f="42" dt="1"><name>cellwidth</name><data>0000000040540000</data>
           <node f="40"><name></name></node>
           <node f="42" dt="1"><name></name><data>0000000040140000</data></node>
