@@ -651,6 +651,7 @@ double AStarNavigator::navigateToLoc(Traveler* traveler, double* destLoc, double
 		// next cell in his path
 		auto atDist = traveler->updateLocation(true);
 		int atIndex = traveler->travelPath.updateAtIndex(atDist);
+		traveler->updateSpeedMarkers();
 		TravelPath::iterator originIter = traveler->travelPath.begin() + atIndex;
 		bool shouldChangeLoc = originIter->atTravelDist - atDist > traveler->tinyDist;
 		if (shouldChangeLoc) {
@@ -2262,8 +2263,8 @@ void AStarNavigator::buildControlAreaSets()
 		auto obj = controlAreas[i];
 		controlAreaMap[obj] = i;
 		auto bb = obj->getAxisAlignedBoundingBox(model());
-		for (auto x = bb.min.x; x <= bb.max.x; x += minNodeSize.x) {
-			for (auto y = bb.min.y; y <= bb.max.y; y += minNodeSize.y) {
+		for (auto x = bb.min.x - 0.5 * minNodeSize.x; x <= bb.max.x + 0.5 * minNodeSize.x; x += minNodeSize.x) {
+			for (auto y = bb.min.y - 0.5 * minNodeSize.y; y <= bb.max.y + 0.5 * minNodeSize.x; y += minNodeSize.y) {
 				Vec3 pos(x, y, bb.min.z);
 				auto cell = getCell(pos); 
 				Vec3 localPos = getLocation(cell).project(model(), obj->holder);
