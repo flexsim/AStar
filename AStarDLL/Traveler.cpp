@@ -542,9 +542,26 @@ void Traveler::navigatePath(int startAtPathIndex)
 								bool isInLastSet = lastSet.find(index) != lastSet.end();
 								bool isInUnaccountedSet = unaccountedControlAreas.find(index) != unaccountedControlAreas.end();
 								if (!isInLastSet && !isInUnaccountedSet) {
-									nextEvent = createevent(FlexSimEvent::create(holder, allocTime, "Control Area Arrival",
-										[this, index, i]() { onControlAreaArrival(index, i); }))->object<FlexSimEvent>();
-									break;
+									// as a last check, I'm going to go through my current allocations, and see if I currently have 
+									// already allocated that object... 
+									auto controlArea = navigator->controlAreas[index];
+									auto condition = [controlArea](TravelAllocation* alloc) { return alloc->getObject() == controlArea; };
+									auto currentAllocIter = std::find_if(controlAreaAllocations.begin(), controlAreaAllocations.end(), condition);
+									auto alloc = currentAllocIter != controlAreaAllocations.end() ? *currentAllocIter : nullptr;
+									// In order to create an 'arrival' event, there either need to be no current allocation, or it 
+									// needs to have scheduled its deallocation event before the new alloc time
+									if (!alloc || (alloc->deallocateEvent && alloc->deallocateEvent->objectAs(FlexSimEvent)->time < allocTime)) {
+										nextEvent = createevent(FlexSimEvent::create(holder, allocTime, "Control Area Arrival",
+											[this, index, i]() { onControlAreaArrival(index, i); }))->object<FlexSimEvent>();
+										break;
+									}
+									// Otherwise, it will still be allocated when I hit the 'arrival' 
+									// point, so I should just cancel the deallocation because I'm going to have reallocated it again
+									// by the point where I deallocate
+									else if (alloc && alloc->deallocateEvent) {
+										destroyevent(alloc->deallocateEvent);
+										alloc->traversalDist = DBL_MAX;
+									}
 								}
 								else if (isInUnaccountedSet) {
 									unaccountedControlAreas.erase(index);
@@ -1686,7 +1703,9 @@ double Traveler::getCurSpeed()
 	}
 	else if (activeState == Inactive)
 		return 0;
-	else if (updateTime == te->v_lastspeedupdatetime)
+	
+	double lastUpdateTime = te->v_lastspeedupdatetime;
+	if (updateTime == lastUpdateTime)
 		return te->v_lastupdatedspeed;
 	else 
 		return getkinematics(kinematics, KINEMATIC_VELOCITY, 0, updateTime);
