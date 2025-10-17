@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Fragment>
+    <ComponentGroup Id="group_localization">
+      <ComponentRef Id="comp_AStar_Localization_jaJP" />
+    </ComponentGroup>
     <DirectoryRef Id="MergeRedirectFolder">
 <!--Program GUIDs>
 <FlexSim="BB6DF434-D0B3-48E7-9A3A-969F1CD2D5E5">
