@@ -5,6 +5,7 @@
       <ComponentRef Id="comp_AStar_Localization_jaJP" />
     </ComponentGroup>
     <DirectoryRef Id="MergeRedirectFolder">
+      <Directory Id="dir_AStar_Localization" Name="localization">
 <!--Program GUIDs>
 <FlexSim="BB6DF434-D0B3-48E7-9A3A-969F1CD2D5E5">
 <FlexSimChinese="EE5631FA-9D5A-4B6E-8A81-61EFA7F1AB02">
@@ -12,9 +13,10 @@
 <FlexSimChineseTraditional="59CC5CC2-3682-4FCA-967D-1C20EEA7E06C">
 <FlexSimSpanish="A6F2ADA9-BB35-48D8-B3BB-DB1DE5055134">
 </Program GUIDs-->
-      <Component Id="comp_AStar_Localization_jaJP" Guid="F7A8B9C0-D1E2-4F5A-3B4C-6D7E8F9A0B1C">
-        <File Id="file_AStar_jaJP_t" KeyPath="yes" Source="$(var.ProjectDir)localization\AStar.ja-JP.t" />
-      </Component>
+        <Component Id="comp_AStar_Localization_jaJP" Guid="F7A8B9C0-D1E2-4F5A-3B4C-6D7E8F9A0B1C">
+          <File Id="file_AStar_jaJP_t" KeyPath="yes" Source="$(var.ProjectDir)localization\AStar.ja-JP.t" />
+        </Component>
+      </Directory>
     </DirectoryRef>
   </Fragment>
 </Wix>
