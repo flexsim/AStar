@@ -7274,19 +7274,6 @@ return 1;</data></node>
     </node>
    </node>
   </node>
-  <node f="42" dt="2"><name>add_globals</name><data>MAIN:/project/exec/globals</data>
-   <node f="40"><name></name></node>
-   <node f="42" dt="3"><name>JKModTestNode</name><data><coupling>null</coupling></data>
-    <node f="40"><name></name></node>
-    <node f="42" dt="1"><name>rank</name><data>0000000000000000</data></node>
-    <node f="42" dt="2"><name>after</name><data>JKTestNode</data></node>
-    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
-    <node f="42"><name>data</name>
-     <node f="40"><name></name></node>
-     <node f="42"><name>JKModTestNode</name></node>
-    </node>
-   </node>
-  </node>
  </node>
  <node f="42" dt="2"><name>release</name><data>25.2</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
