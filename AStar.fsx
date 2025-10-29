@@ -7274,6 +7274,144 @@ return 1;</data></node>
     </node>
    </node>
   </node>
+  <node f="42" dt="2"><name>add_ExportHandlers</name><data>MAIN:/project/exec/globals/ExportHandlers</data>
+   <node f="40"><name></name></node>
+   <node f="42" dt="3"><name>AStar</name><data><coupling>null</coupling></data>
+    <node f="40"><name></name></node>
+    <node f="42" dt="1"><name>rank</name><data>0000000000000000</data></node>
+    <node f="42" dt="2"><name>after</name><data>warehousing</data></node>
+    <node f="42" dt="1"><name>into object</name><data>0000000000000000</data></node>
+    <node f="42"><name>data</name>
+     <node f="40"><name></name></node>
+     <node f="42"><name>AStar</name>
+      <node f="40"><name></name></node>
+      <node f="42" dt="4"><name>AStarNavigator</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>superclasses</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>MAIN:/project/exec/globals/ExportHandlers/HandlerBase</name><data><coupling>null</coupling></data></node>
+       </node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="4000000042" dt="2"><name>typeDisplay</name><data>AStar</data></node>
+        <node f="42"><name>userDataLists</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>astarObjects</name><data>.</data></node>
+         <node f="42" dt="2"><name>grids</name><data>&gt;variables/grids</data></node>
+         <node f="42" dt="2"><name>barriers</name><data>&gt;variables/barriers</data></node>
+         <node f="42" dt="2"><name>barrierConditions</name><data>&gt;variables/barrierConditions</data></node>
+         <node f="42" dt="2"><name>fixedResourceBarriers</name><data>&gt;variables/fixedResourceBarriers</data></node>
+         <node f="42" dt="2"><name>travelmembers</name><data>&gt;variables/travelmembers</data></node>
+         <node f="42" dt="2"><name>dynamicBarriers</name><data>&gt;variables/dynamicBarriers</data></node>
+         <node f="42" dt="2"><name>timetables</name><data>&gt;variables/timetables</data></node>
+         <node f="42" dt="2"><name>networknodes</name><data>&gt;variables/networknodes</data></node>
+         <node f="42" dt="2"><name>elevators</name><data>&gt;variables/elevators</data></node>
+         <node f="42" dt="2"><name>controlAreas</name><data>&gt;variables/controlAreas</data></node>
+         <node f="42" dt="2"><name>storedNode</name><data>&gt;stored</data></node>
+        </node>
+        <node f="42"><name>functionalSkips</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>drawMode</name><data>&gt;variables/drawMode</data></node>
+         <node f="42" dt="2"><name>activeBarrier</name><data>&gt;variables/activeBarrier</data></node>
+         <node f="42" dt="2"><name>pathCount</name><data>&gt;variables/pathCount</data></node>
+         <node f="42" dt="2"><name>requestCount</name><data>&gt;variables/requestCount</data></node>
+         <node f="42" dt="2"><name>showAllocations</name><data>&gt;variables/showAllocations</data></node>
+         <node f="42" dt="2"><name>showHeatMap</name><data>&gt;variables/showHeatMap</data></node>
+         <node f="42" dt="2"><name>heatMapMode</name><data>&gt;variables/heatMapMode</data></node>
+         <node f="42" dt="2"><name>maxHeatValue</name><data>&gt;variables/maxHeatValue</data></node>
+         <node f="42" dt="2"><name>showTravelThreshold</name><data>&gt;variables/showTravelThreshold</data></node>
+         <node f="42" dt="2"><name>transparentBaseColor</name><data>&gt;variables/transparentBaseColor</data></node>
+         <node f="42" dt="2"><name>localPalette</name><data>&gt;variables/localPalette</data></node>
+         <node f="42" dt="2"><name>palette</name><data>&gt;variables/palette</data></node>
+         <node f="42" dt="2"><name>activetravelmembers</name><data>&gt;variables/activetravelmembers</data></node>
+         <node f="42" dt="2"><name>lastupdatetime</name><data>&gt;variables/lastupdatetime</data></node>
+         <node f="42" dt="2"><name>timeoflaststop</name><data>&gt;variables/timeoflaststop</data></node>
+         <node f="42" dt="2"><name>nrofstops</name><data>&gt;variables/nrofstops</data></node>
+         <node f="42" dt="2"><name>statebeforestop</name><data>&gt;variables/statebeforestop</data></node>
+         <node f="42" dt="2"><name>collisionspheres</name><data>&gt;variables/collisionspheres</data></node>
+         <node f="42" dt="2"><name>collisionobjects</name><data>&gt;variables/collisionobjects</data></node>
+         <node f="42" dt="2"><name>savedstate</name><data>&gt;variables/savedstate</data></node>
+         <node f="42" dt="2"><name>resetposition</name><data>&gt;variables/resetposition</data></node>
+         <node f="42" dt="2"><name>doanimations</name><data>&gt;variables/doanimations</data></node>
+         <node f="42" dt="2"><name>statsNode</name><data>&gt;stats</data></node>
+        </node>
+        <node f="42"><name>requirements</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="3"><name>default</name><data><coupling>/installdata/add_ExportHandlers/AStar/data/AStar/AStarNavigator&gt;requirements/isCompatible</coupling></data></node>
+        </node>
+       </node>
+       <node f="42"><name>eventfunctions</name>
+        <node f="40"><name></name></node>
+        <node f="442" dt="2"><name>findByName</name><data>string name = param(1);
+
+return Model.find("AStarNavigator");</data></node>
+        <node f="442" dt="2"><name>findDependencies</name><data>treenode object = param(1);
+treenode nav = Model.find("AStarNavigator");
+if (!nav) {
+	return nullvar;
+}
+
+Array result = [nav];
+Array classTypes = [
+	"AStar::Grid"
+  , "AStar::Barrier"
+];
+
+for (int i = 1; i &lt;= classTypes.length; i++) {
+	string classType = classTypes[i];
+	if (isclasstype(object, classType)) {
+		return result;
+	}
+}
+
+if (object.is(TaskExecuter)) {
+	TaskExecuter te = object;
+	if (te.navigator.as(treenode) == nav) {
+		return result;
+	}
+}
+
+var links = stored(object).subnodes;
+for (int i = 1; i &lt;= links.length; i++) {
+	treenode partner = links[i].find("+/~");
+	if (partner &amp;&amp; partner == nav) {
+		return result;
+	}
+}
+
+
+return [];</data></node>
+        <node f="442" dt="2"><name>findReferences</name><data>[]</data></node>
+        <node f="442" dt="2"><name>enumerate</name><data>[]</data></node>
+        <node f="442" dt="2"><name>add</name><data>treenode object = param(1);
+
+object.up = Model.find(".");
+object.rank = 2;</data></node>
+       </node>
+       <node f="42"><name>requirements</name>
+        <node f="40"><name></name></node>
+        <node f="10000442" dt="2"><name>isCompatible</name><data>treenode existing = param(1);
+treenode imported = param(2);
+treenode loadedModel = param(5);
+
+int result = function_s(ownerobject(c), "functionalCompare", existing, imported, model(), loadedModel);
+if (!result) {
+	return gets(node("error", c));
+}</data>
+         <node f="40"><name></name></node>
+         <node f="4000000042" dt="2"><name>hint</name><data>If the existing AStar Navigator has the same settings,
+it will be used. Any required Conditional Rules will
+be added separately.</data></node>
+         <node f="4000000042" dt="2"><name>name</name><data>Is Compatible</data></node>
+         <node f="4000000042" dt="2"><name>error</name><data>The existing AStar Navigator is not compatible with the imported one.</data></node>
+        </node>
+       </node>
+      </data>
+       <node f="40"><name></name></node></node>
+     </node>
+    </node>
+   </node>
+  </node>
  </node>
  <node f="42" dt="2"><name>release</name><data>25.2</data></node>
  <node f="42" dt="2"><name>revision</name><data>.0</data></node>
