@@ -7285,7 +7285,7 @@ return 1;</data></node>
      <node f="40"><name></name></node>
      <node f="42"><name>AStar</name>
       <node f="40"><name></name></node>
-      <node f="42" dt="4"><name>AStarNavigator</name><data>
+      <node f="10000042" dt="4"><name>AStarNavigator</name><data>
        <node f="40"><name></name></node>
        <node f="42"><name>superclasses</name>
         <node f="40"><name></name></node>
@@ -7296,7 +7296,10 @@ return 1;</data></node>
         <node f="4000000042" dt="2"><name>typeDisplay</name><data>AStar</data></node>
         <node f="42"><name>userDataLists</name>
          <node f="40"><name></name></node>
-         <node f="42" dt="2"><name>astarObjects</name><data>.</data></node>
+         <node f="42" dt="2"><name>astarObjects</name><data>.</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>nomove</name><data>000000003ff00000</data></node>
+         </node>
          <node f="42" dt="2"><name>grids</name><data>&gt;variables/grids</data></node>
          <node f="42" dt="2"><name>barriers</name><data>&gt;variables/barriers</data></node>
          <node f="42" dt="2"><name>barrierConditions</name><data>&gt;variables/barrierConditions</data></node>
@@ -7408,6 +7411,61 @@ be added separately.</data></node>
        </node>
       </data>
        <node f="40"><name></name></node></node>
+      <node f="42" dt="4"><name>ConditionalRules</name><data>
+       <node f="40"><name></name></node>
+       <node f="42"><name>superclasses</name>
+        <node f="40"><name></name></node>
+        <node f="42" dt="3"><name>MAIN:/project/exec/globals/ExportHandlers/HandlerBase</name><data><coupling>null</coupling></data></node>
+       </node>
+       <node f="42"><name>variables</name>
+        <node f="40"><name></name></node>
+        <node f="4000000042" dt="2"><name>typeDisplay</name><data>Conditional Rule</data></node>
+        <node f="42" dt="3"><name>astarHandler</name><data><coupling>/installdata/add_ExportHandlers/AStar/data/AStar/AStarNavigator</coupling></data></node>
+        <node f="42"><name>requirements</name>
+         <node f="40"><name></name></node>
+         <node f="42" dt="2"><name>exact</name><data>MAIN:/project/exec/globals/ExportHandlers/HandlerBase&gt;requirements/exactMinusFlags</data></node>
+        </node>
+       </node>
+       <node f="42"><name>eventfunctions</name>
+        <node f="40"><name></name></node>
+        <node f="442" dt="2"><name>findNetwork</name><data>Model.find("AStarNavigator")</data></node>
+        <node f="442" dt="2"><name>findByName</name><data>string name = param(1);
+
+treenode astar = function_s(c, "findNetwork");
+if (!astar) {
+	return nullvar;
+}
+
+treenode folder = getvarnode(astar, "barrierConditions");
+return folder.find(name);</data></node>
+        <node f="442" dt="2"><name>findDependencies</name><data>treenode obj = param(1);
+treenode astar = function_s(c, "findNetwork");
+if (!astar) {
+	return nullvar;
+}
+
+if (!isclasstype(obj, "AStar::Barrier")) {
+	return nullvar;
+}
+
+return getvarnode(obj, "conditionRule").find("+");</data></node>
+        <node f="442" dt="2"><name>findReferences</name><data>[]</data></node>
+        <node f="442" dt="2"><name>enumerate</name><data>[]</data></node>
+        <node f="442" dt="2"><name>getParentObject</name><data>ownerobject(param(1))</data></node>
+        <node f="442" dt="2"><name>getPrerequisiteHandler</name><data>if (isclasstype(param(1), "AStar::AStarNavigator")) {
+	return getvarnode(c, "astarHandler").value;
+}</data></node>
+        <node f="442" dt="2"><name>add</name><data>treenode item = param(1);
+treenode network = function_s(c, "findNetwork");
+treenode folder = getvarnode(network, "barrierConditions");
+
+item.up = folder;</data></node>
+        <node f="442" dt="2"><name>replace</name><data>treenode existing = param(1);
+treenode imported = param(2);
+
+imported.copy(existing, COPY_FLAG_REPLACE);</data></node>
+       </node>
+      </data></node>
      </node>
     </node>
    </node>
