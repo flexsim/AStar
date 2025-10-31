@@ -32,10 +32,12 @@
     <Compile Include="AStar.wxs" />
     <Compile Include="bitmaps\Bitmaps.wxs" />
     <Compile Include="cursors\Cursors.wxs" />
+    <Compile Include="localization\localization.wxs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="cursors" />
     <Folder Include="bitmaps" />
+    <Folder Include="localization\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DefineConstants>Debug</DefineConstants>
