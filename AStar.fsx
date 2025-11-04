@@ -7302,7 +7302,10 @@ return 1;</data></node>
          </node>
          <node f="42" dt="2"><name>grids</name><data>&gt;variables/grids</data></node>
          <node f="42" dt="2"><name>barriers</name><data>&gt;variables/barriers</data></node>
-         <node f="42" dt="2"><name>barrierConditions</name><data>&gt;variables/barrierConditions</data></node>
+         <node f="42" dt="2"><name>barrierConditions</name><data>&gt;variables/barrierConditions</data>
+          <node f="40"><name></name></node>
+          <node f="42" dt="1"><name>nomove</name><data>000000003ff00000</data></node>
+         </node>
          <node f="42" dt="2"><name>fixedResourceBarriers</name><data>&gt;variables/fixedResourceBarriers</data></node>
          <node f="42" dt="2"><name>travelmembers</name><data>&gt;variables/travelmembers</data></node>
          <node f="42" dt="2"><name>dynamicBarriers</name><data>&gt;variables/dynamicBarriers</data></node>
