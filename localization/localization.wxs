@@ -27,11 +27,11 @@
     <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_AStar_Localization" Name="localization">
 <!--Program GUIDs>
-<FlexSim="40F28C6F-23E2-45F9-92C4-270AFC561257">
-<FlexSimChinese="E5F32BEB-0C1A-4E77-A684-D49196B23172">
-<FlexSimJapanese="D0833803-500F-4AA6-B75D-B15CDF21ED82">
-<FlexSimChineseTraditional="FBB17EC2-2021-4B68-87ED-861E8A6587D4">
-<FlexSimSpanish="4BCDDD3E-7BCC-40D7-B0F1-9AC7CFD0CC31">
+<FlexSim="B968AF4F-4131-4836-8512-D71A07954117">
+<FlexSimChinese="078113F8-B86A-4D8D-A063-4DE50C7B52E3">
+<FlexSimJapanese="0777F2F3-8EF8-4688-9F5F-CD79AB6631A6">
+<FlexSimChineseTraditional="C0A3F208-94A7-4564-BA52-CB9DBEB9FEBD">
+<FlexSimSpanish="E2A7D779-C638-47E8-8A70-2E4C73F1F570">
 </Program GUIDs-->
         <Component Id="comp_26711AFC64E7422BAFDE6BEA2FAEA2EB" Guid="52AFB127-828D-45B0-8590-C248B5567E39">
           <File Id="file_0D3BF87C48F6439786FF441AF51CB27E" KeyPath="yes" Source="$(var.ProjectDir)localization\AStar.ja-JP.t" />

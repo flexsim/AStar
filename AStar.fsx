@@ -5976,10 +5976,19 @@ if (propertiesView) {
         <node f="42" dt="1"><name>alignrightposition</name><data>0000000040410000</data></node>
         <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsEdit/PointsTable", c);
 Object barrier = node("..&gt;objectfocus+", c);
-treenode pointsNode = node("&gt;variables/points", barrier);
-int n = pointsNode.subnodes.length;
+if (!objectexists(table) || !objectexists(barrier)) {
+	return 0;
+}
 
+treenode pointsNode = barrier.find("&gt;variables/points");
+if (!objectexists(pointsNode) || pointsNode.subnodes.length &lt; 2) {
+	// no points to reverse
+	return 0;
+}
+
+int n = pointsNode.subnodes.length;
 int undoId = beginaggregatedundo(c, "Reverse Points");
+
 for (int i = 1; i &lt;= n; i++) {
 	treenode point = pointsNode.subnodes[i];
 	createundorecord(c, point, UNDO_CHANGE_RANK, n - i + 1);
@@ -6031,7 +6040,16 @@ repaintall();</data>
          <node f="42" dt="1"><name>spatialsy</name><data>0000000040350000</data></node>
          <node f="42" dt="2"><name>OnPress</name><data>treenode table = node("../PointsTable", c);
 Object barrier = node("../..&gt;objectfocus+", c);
+if (!objectexists(table) || !objectexists(barrier)) {
+	return 0;
+}
+
 treenode pointsNode = table.find("&gt;table");
+if (!objectexists(pointsNode) || pointsNode.subnodes.length &lt; 2) {
+	// Not enough points - do nothing
+	return 0;
+}
+
 treenode lastPointNode = pointsNode.last;
 double lengthMultiple = getmodelunit(LENGTH_MULTIPLE);
 
