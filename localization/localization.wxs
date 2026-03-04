@@ -22,10 +22,23 @@
 </CommandLineOptions>-->
   <Fragment>
     <ComponentGroup Id="group_localization">
+      <ComponentRef Id="comp_BEA2EF2408974B31A400811810372555" />
       <ComponentRef Id="comp_26711AFC64E7422BAFDE6BEA2FAEA2EB" />
+      <ComponentRef Id="comp_E00E854F2AAA494FA65641B70ADC91CF" />
+      <ComponentRef Id="comp_A64669593E654ECB97D3F5A15998DD98" />
     </ComponentGroup>
     <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_AStar_Localization" Name="localization">
+<!--Program GUIDs>
+<FlexSim="B4ED7717-DAD8-48A7-8ACD-7AC99FFD274E">
+<FlexSimChinese="E7D94AD4-52E0-4FC0-A4FD-21F086579CC0">
+<FlexSimJapanese="B1DDAA47-4191-47E4-AC18-DF4EAF97533D">
+<FlexSimChineseTraditional="A6DA5E4E-968D-4B36-98D0-5AD63F24550F">
+<FlexSimSpanish="BBB71D72-4329-49A4-BF1D-1968645F2952">
+</Program GUIDs-->
+        <Component Id="comp_BEA2EF2408974B31A400811810372555" Guid="DCEEA0BE-2A98-49E7-9006-843F53AC7A0B">
+          <File Id="file_421DCBE88C324BEFBA8970D0913A3892" KeyPath="yes" Source="$(var.ProjectDir)localization\AStar.es-MX.t" />
+        </Component>
 <!--Program GUIDs>
 <FlexSim="B968AF4F-4131-4836-8512-D71A07954117">
 <FlexSimChinese="078113F8-B86A-4D8D-A063-4DE50C7B52E3">
@@ -35,6 +48,26 @@
 </Program GUIDs-->
         <Component Id="comp_26711AFC64E7422BAFDE6BEA2FAEA2EB" Guid="52AFB127-828D-45B0-8590-C248B5567E39">
           <File Id="file_0D3BF87C48F6439786FF441AF51CB27E" KeyPath="yes" Source="$(var.ProjectDir)localization\AStar.ja-JP.t" />
+        </Component>
+<!--Program GUIDs>
+<FlexSim="BD31AA4E-73B2-45C1-A02D-C028EEDD11BA">
+<FlexSimChinese="234D32BC-B222-4FAF-A82F-F3059BA3BDCB">
+<FlexSimJapanese="D32BAB0F-6BC6-4ED7-B62B-6BCBC0A9A4DB">
+<FlexSimChineseTraditional="7309B6DE-C20C-4F9E-AA9B-C4399D4D984E">
+<FlexSimSpanish="065F11C4-B313-453F-86E9-E9DDCA12FB06">
+</Program GUIDs-->
+        <Component Id="comp_E00E854F2AAA494FA65641B70ADC91CF" Guid="B0EF746D-95ED-444D-A69D-620283C2FCEB">
+          <File Id="file_1247D7F167DC4ADF80A7CA2D241795FC" KeyPath="yes" Source="$(var.ProjectDir)localization\AStar.zh-CN.t" />
+        </Component>
+<!--Program GUIDs>
+<FlexSim="7468DA58-3EAC-4A0D-B004-F08C197FB936">
+<FlexSimChinese="2F64127A-3104-486E-80C8-C5FB08B80A79">
+<FlexSimJapanese="E0791479-4023-4674-895A-00E55647D5D1">
+<FlexSimChineseTraditional="810004A4-61C3-493A-9947-72BCEEE65DF6">
+<FlexSimSpanish="EA574D8F-062A-48DC-BAFD-C1CF71CA7A41">
+</Program GUIDs-->
+        <Component Id="comp_A64669593E654ECB97D3F5A15998DD98" Guid="2062FE19-CDC4-4C9C-838D-6BAE1AA2605C">
+          <File Id="file_1065868FAEFB4EFFBA4C54AC222808A2" KeyPath="yes" Source="$(var.ProjectDir)localization\AStar.zh-TW.t" />
         </Component>
       </Directory>
     </DirectoryRef>
