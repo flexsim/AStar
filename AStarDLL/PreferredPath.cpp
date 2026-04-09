@@ -1,5 +1,6 @@
 #include "PreferredPath.h"
 #include "AStarNavigator.h"
+#include <vector>
 
 
 namespace AStar {
@@ -60,7 +61,9 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 		int horizontalWeight = (int)(weight * 127 * dx / (fabs(dx) + fabs(dy)));
 		int verticalWeight = (int)(weight * 127 * dy / (fabs(dx) + fabs(dy)));
 
-		grid->visitGridModelLine(fromPos, toPos, [this, grid, horizontalWeight, verticalWeight](const Cell& cell) -> void {
+		std::vector<Cell> segmentCells;
+
+		grid->visitGridModelLine(fromPos, toPos, [this, grid, horizontalWeight, verticalWeight, &segmentCells](const Cell& cell) -> void {
 			AStarNode* node = grid->getNode(cell);
 			AStarNodeExtraData * extra = grid->navigator->assertExtraData(cell, PreferredPathData);
 			node->hasPreferredPathWeight = true;
@@ -77,12 +80,59 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 				extra->bonusDown = (char)maxof(-128, minof(127, extra->bonusDown + fabs(verticalWeight)));
 			}
 
+			segmentCells.push_back(cell);
+
 			if (conditionRule) {
 				node->hasConditionalBarrier = true;
 				extra->addConditionalBarrier(this);
 			}
 
 		});
+
+		if (!isTwoWay) {
+			for (const Cell& cell : segmentCells) {
+				AStarNode* node = grid->getNode(cell);
+				bool isEnd = cell.row == toRow && cell.col == toCol;
+
+				if (dx > 0 && !isEnd)
+					node->canGoRight = true;
+				if (dx < 0 && !isEnd)
+					node->canGoLeft = true;
+				if (dy > 0 && !isEnd)
+					node->canGoUp = true;
+				if (dy < 0 && !isEnd)
+					node->canGoDown = true;
+			}
+		}
+		else {
+			auto openPreferredPathStepDirections = [](AStarNode* node, int dCol, int dRow) {
+				if (dCol > 0)
+					node->canGoRight = true;
+				else if (dCol < 0)
+					node->canGoLeft = true;
+				if (dRow > 0)
+					node->canGoUp = true;
+				else if (dRow < 0)
+					node->canGoDown = true;
+				};
+
+			// Two-way: open only along the actual grid polyline (each step is one cell, axis-aligned).
+			// Mirroring segment dx/dy would set all four directions whenever both dx and dy are non-zero,
+			// incorrectly overriding walls next to the path (e.g. a full yellow "plus" on staircase cells).
+			for (size_t j = 0; j < segmentCells.size(); j++) {
+				AStarNode* node = grid->getNode(segmentCells[j]);
+				if (j + 1 < segmentCells.size()) {
+					int dCol = segmentCells[j + 1].col - segmentCells[j].col;
+					int dRow = segmentCells[j + 1].row - segmentCells[j].row;
+					openPreferredPathStepDirections(node, dCol, dRow);
+				}
+				if (j > 0) {
+					int dCol = segmentCells[j - 1].col - segmentCells[j].col;
+					int dRow = segmentCells[j - 1].row - segmentCells[j].row;
+					openPreferredPathStepDirections(node, dCol, dRow);
+				}
+			}
+		}
 	}
 }
 
