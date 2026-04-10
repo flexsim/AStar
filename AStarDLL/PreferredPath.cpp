@@ -60,7 +60,8 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 		int horizontalWeight = (int)(weight * 127 * dx / (fabs(dx) + fabs(dy)));
 		int verticalWeight = (int)(weight * 127 * dy / (fabs(dx) + fabs(dy)));
 
-		grid->visitGridModelLine(fromPos, toPos, [this, grid, horizontalWeight, verticalWeight, dx, dy, fromRow, fromCol, toRow, toCol](const Cell& cell) -> void {
+		Cell prevCell(0, (unsigned short)Cell::INVALID_ROW, 0);
+		grid->visitGridModelLine(fromPos, toPos, [this, grid, horizontalWeight, verticalWeight, &prevCell](const Cell& cell) -> void {
 			AStarNode* node = grid->getNode(cell);
 			AStarNodeExtraData * extra = grid->navigator->assertExtraData(cell, PreferredPathData);
 			node->hasPreferredPathWeight = true;
@@ -77,17 +78,33 @@ void PreferredPath::addPassagesToTable(Grid* grid)
 				extra->bonusDown = (char)maxof(-128, minof(127, extra->bonusDown + fabs(verticalWeight)));
 			}
 
-			bool isStart = cell.row == fromRow && cell.col == fromCol;
-			bool isEnd = cell.row == toRow && cell.col == toCol;
+			if (prevCell.row != (unsigned short)Cell::INVALID_ROW) {
+				int stepDx = (int)cell.col - (int)prevCell.col;
+				int stepDy = (int)cell.row - (int)prevCell.row;
+				AStarNode* prevNode = grid->getNode(prevCell);
 
-			if ((dx > 0 && !isEnd) || (isTwoWay && dx < 0 && !isStart))
-				node->canGoRight = true;
-			if ((dx < 0 && !isEnd) || (isTwoWay && dx > 0 && !isStart))
-				node->canGoLeft = true;
-			if ((dy > 0 && !isEnd) || (isTwoWay && dy < 0 && !isStart))
-				node->canGoUp = true;
-			if ((dy < 0 && !isEnd) || (isTwoWay && dy > 0 && !isStart))
-				node->canGoDown = true;			
+				if (stepDx > 0) {
+					prevNode->canGoRight = true;
+					if (isTwoWay)
+						node->canGoLeft = true;
+				}
+				else if (stepDx < 0) {
+					prevNode->canGoLeft = true;
+					if (isTwoWay)
+						node->canGoRight = true;
+				}
+				if (stepDy > 0) {
+					prevNode->canGoUp = true;
+					if (isTwoWay)
+						node->canGoDown = true;
+				}
+				else if (stepDy < 0) {
+					prevNode->canGoDown = true;
+					if (isTwoWay)
+						node->canGoUp = true;
+				}
+			}
+			prevCell = cell;
 
 			if (conditionRule) {
 				node->hasConditionalBarrier = true;
