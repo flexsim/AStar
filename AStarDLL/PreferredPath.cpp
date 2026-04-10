@@ -1,6 +1,5 @@
 #include "PreferredPath.h"
 #include "AStarNavigator.h"
-#include <vector>
 
 
 namespace AStar {
