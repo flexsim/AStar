@@ -3407,8 +3407,12 @@ if (!eventdata) {
 		repaintall();
 	}	
 }</data></node>
-           <node f="42" dt="2"><name>OnKeyUp</name><data>#define VK_RETURN 13
-if (lastkeydown() == VK_RETURN) {
+           <node f="42" dt="2"><name>OnKeyUp</name><data>#define VK_RETURN	0x0D
+#define VK_TAB		0x09
+
+if (lastkeydown() == VK_RETURN ||
+	lastkeydown() == VK_TAB ||
+	directionkeypressed()) {
 	applylinks(c);
 }</data></node>
            <node f="42" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE) {
@@ -3436,6 +3440,7 @@ if (lastkeydown() == VK_RETURN) {
 </data></node>
            <node f="42" dt="2"><name>OnFocus</name><data>if (!objectexists(i) || i != c)
 	applylinks(c, 1);</data></node>
+           <node f="42" dt="2"><name>OnKillFocus</name><data>applylinks(c);</data></node>
            <node f="42" dt="2"><name>OnMouseWheel</name><data>treenode TheTable = ownerobject(c);
 
 double vert_nMin = scrollinfo(TheTable,0,1,1);
@@ -6281,8 +6286,12 @@ if (!eventdata) {
 		repaintall();
 	}	
 }</data></node>
-         <node f="42" dt="2"><name>OnKeyUp</name><data>#define VK_RETURN 13
-if (lastkeydown() == VK_RETURN) {
+         <node f="42" dt="2"><name>OnKeyUp</name><data>#define VK_RETURN	0x0D
+#define VK_TAB		0x09
+
+if (lastkeydown() == VK_RETURN ||
+	lastkeydown() == VK_TAB ||
+	directionkeypressed()) {
 	applylinks(c);
 }</data></node>
          <node f="42" dt="2"><name>OnClick</name><data>if (clickcode() == LEFT_RELEASE) {
@@ -6310,6 +6319,7 @@ if (lastkeydown() == VK_RETURN) {
 </data></node>
          <node f="42" dt="2"><name>OnFocus</name><data>if (!objectexists(i) || i != c)
 	applylinks(c, 1);</data></node>
+         <node f="42" dt="2"><name>OnKillFocus</name><data>applylinks(c);</data></node>
          <node f="42" dt="2"><name>OnMouseWheel</name><data>treenode TheTable = ownerobject(c);
 
 double vert_nMin = scrollinfo(TheTable,0,1,1);
