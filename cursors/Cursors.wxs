@@ -33,7 +33,7 @@
     <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_DE6E5CC9103849C6858D6AB4125EF93C" Name="cursors">
  <!--Program GUIDs>
-<FlexSim="4F35CEE1-5D1D-4EED-B99C-0B270B73623D">
+<FlexSim="C6D0ADE5-3796-4EB4-9E48-26EF1A9E93D7">
 <FlexSimChinese="C09B9DAE-214F-4848-8AD1-82C18D60AC8C">
 <FlexSimJapanese="C8660DA5-738F-45B6-A280-F381A5D2A6DF">
 <FlexSimChineseTraditional="8F73BF69-DFAD-4DCD-B354-B3FDD1E3F9C1">
@@ -43,7 +43,7 @@
           <File Id="file_EC51B8F015A84670A89566285E67C9E8" KeyPath="yes" Source="$(var.ProjectDir)cursors\bridgetool.cur" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="37D01B8F-959B-4FCE-A3E2-59728C6E163F">
+<FlexSim="51FF29ED-BF51-43CB-A13F-FB89139A3617">
 <FlexSimChinese="1B3A03EF-91BC-426A-8AC4-E94EEB225479">
 <FlexSimJapanese="AABA3CE6-4A61-4A47-BCE0-38DC7A90826B">
 <FlexSimChineseTraditional="48129EB0-B7DF-45F7-834E-ECD6D37D11F1">
@@ -53,7 +53,7 @@
           <File Id="file_702232241A574BDEBAAE3259DB596D2A" KeyPath="yes" Source="$(var.ProjectDir)cursors\dividertool.cur" />
         </Component>
  <!--Program GUIDs>
-<FlexSim="38625147-0128-425C-B171-DEBEFB1C5959">
+<FlexSim="8EFE34E4-8CDC-44AA-B915-928FB5C4DE5F">
 <FlexSimChinese="EDF5D4CD-4404-4E02-ABF9-EBE4FB5CDEE5">
 <FlexSimJapanese="66A433D6-15E6-49A9-A121-E0D332CDE8F8">
 <FlexSimChineseTraditional="4DA1FBF7-F4EB-4087-95FE-7A64D259C325">
@@ -63,7 +63,7 @@
           <File Id="file_1D7A338DBD1D42BF9990560EBFF406F9" KeyPath="yes" Source="$(var.ProjectDir)cursors\gridtool.cur" />
         </Component>
  <!--Program GUIDs>
-<FlexSim="F6EFF2D5-9260-49EC-B78B-29C44A77B677">
+<FlexSim="04F3AA38-8091-41FE-BA0C-4051C389B076">
 <FlexSimChinese="CF0A41D4-25D1-4A19-81DB-5B0A4E395130">
 <FlexSimJapanese="32709B42-8444-4E33-8259-6DA788352A86">
 <FlexSimChineseTraditional="F9BF32B9-6BF5-4E18-91E1-FAA2E2CC63CA">
@@ -73,7 +73,7 @@
           <File Id="file_E4937F10403941849FD13CCED0D78E5F" KeyPath="yes" Source="$(var.ProjectDir)cursors\mandatorypathtool.cur" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="EE22AEDA-5888-416E-8FB0-B632782236BF">
+<FlexSim="6D3E8A84-BA8D-4EC5-A726-5360CD43E8D1">
 <FlexSimChinese="5066A078-8332-4BFC-862B-4AD8D1F6FEB0">
 <FlexSimJapanese="C114979F-612F-4510-A696-6603017378E0">
 <FlexSimChineseTraditional="BA3A05AF-4852-487C-B6BB-502E69F6B5C3">
@@ -83,7 +83,7 @@
           <File Id="file_0F4505FD38CA49C1AE55E1D5ED3BCC0A" KeyPath="yes" Source="$(var.ProjectDir)cursors\onewaydividertool.cur" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="E195E15B-B1FB-4E6C-91AC-6CC600E960FB">
+<FlexSim="864539C8-9BB6-4BA8-899B-104ED9AABB0A">
 <FlexSimChinese="C6CC324C-F78F-4045-805A-FE9C12D22811">
 <FlexSimJapanese="D85958E9-B276-4C62-803C-9B78A772E2FC">
 <FlexSimChineseTraditional="03390ABC-C764-449F-9ECF-D4B187907723">
@@ -93,7 +93,7 @@
           <File Id="file_894872FFC51E4AED894A61F66226EBB1" KeyPath="yes" Source="$(var.ProjectDir)cursors\preferredpathtool.cur" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="B132F268-2BE6-46A0-AABC-AEE051FB0EB8">
+<FlexSim="E3781685-7E0B-431B-92DC-C1FC8EEDDC4A">
 <FlexSimChinese="9A4218A7-7A4D-47B4-AD0B-42C31744EAFB">
 <FlexSimJapanese="1C113739-E32C-4EAF-9F62-FA1F8FD39C3D">
 <FlexSimChineseTraditional="24ABA9D2-80FC-464E-B179-71024F7D3111">

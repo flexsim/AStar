@@ -27,7 +27,7 @@
     <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_AStar_Localization" Name="localization">
 <!--Program GUIDs>
-<FlexSim="B968AF4F-4131-4836-8512-D71A07954117">
+<FlexSim="D99FF3AF-50FC-4BE9-B1CC-D1005911AD02">
 <FlexSimChinese="078113F8-B86A-4D8D-A063-4DE50C7B52E3">
 <FlexSimJapanese="0777F2F3-8EF8-4688-9F5F-CD79AB6631A6">
 <FlexSimChineseTraditional="C0A3F208-94A7-4564-BA52-CB9DBEB9FEBD">
