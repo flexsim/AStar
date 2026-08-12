@@ -1529,6 +1529,38 @@ void Traveler::onArrival(bool isAtZeroSpeed)
 	double atTravelDist = updateLocation(true);
 	updateSpeedMarkers();
 	cullExpiredAllocations();
+
+	if (activeState == Active && !isNavigatingAroundDeadlock && destNode && objectexists(te->activetask)) {
+		Task* task = te->activetask->objectAs(Task);
+		treenode tsNode = te->activetask->up;
+		Task* nextTask = (objectexists(tsNode) && te->activetask->rank < content(tsNode))
+			? rank(tsNode, te->activetask->rank + 1)->objectAs(Task) : nullptr;
+		bool isTravelHome = task->type == TASKTYPE_TRAVEL
+			&& nextTask
+			&& nextTask->type == TASKTYPE_DELAY
+			&& nextTask->var1 == 0.0;
+		if (isTravelHome) {
+			Vec3 teLoc = te->getLocation(0.5, 0.5, 0).project(te->holder->up, model());
+			double threshold = objectexists(gettenetnode(te->holder))
+				? 0.5 * xsize(te->holder)
+				: xsize(te->holder) + 0.2 * std::max(xsize(destNode), ysize(destNode));
+			double approachDist = (destLoc - teLoc).magnitude;
+			if (distancetotravel(te->holder, destNode) > threshold && approachDist > navigator->minNodeSize.x * 0.001) {
+				TravelPath finalPath;
+				Cell curCell = navigator->getCell(teLoc);
+				AStarPathEntry startEntry(curCell, -1);
+				startEntry.modelLoc = teLoc;
+				startEntry.atTravelDist = atTravelDist;
+				finalPath.push_back(startEntry);
+				AStarPathEntry destEntry(curCell, -1);
+				destEntry.modelLoc = destLoc;
+				finalPath.push_back(destEntry);
+				finalPath.startZRot = te->b_spatialrz;
+				navigatePath(std::move(finalPath));
+				return;
+			}
+		}
+	}
 	
 	if (isAtZeroSpeed) {
 		finalizeAtLocation(atTravelDist);
