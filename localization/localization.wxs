@@ -30,7 +30,7 @@
     <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_AStar_Localization" Name="localization">
 <!--Program GUIDs>
-<FlexSim="F2B4442E-1DD2-4D0C-8397-DC4E6E771FF8">
+<FlexSim="0B2DCAFC-3279-4768-9087-E855B815CB65">
 <FlexSimChinese="80F4D8D8-3F6B-49F8-B1A4-57C013988A30">
 <FlexSimJapanese="1F48585B-5381-43DD-84D2-5CCD890912BF">
 <FlexSimChineseTraditional="17DE7593-B7CD-41C2-8229-E3B09FA4A0C5">
@@ -40,7 +40,7 @@
           <File Id="file_421DCBE88C324BEFBA8970D0913A3892" KeyPath="yes" Source="$(var.ProjectDir)localization\AStar.es-MX.t" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="78E584AD-1F8E-4FF6-929A-BB33D6FBC4FF">
+<FlexSim="9F28D2C2-F108-4813-ACC3-53AAB66404BA">
 <FlexSimChinese="A4423D56-6DB4-466F-BF23-29F201CD8BB8">
 <FlexSimJapanese="05BDB54B-77C1-450C-B52F-C98A57E1075D">
 <FlexSimChineseTraditional="BAC8F28C-A0F7-4AEB-A0AF-E469F50CE7A9">
@@ -50,7 +50,7 @@
           <File Id="file_0D3BF87C48F6439786FF441AF51CB27E" KeyPath="yes" Source="$(var.ProjectDir)localization\AStar.ja-JP.t" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="F52BC615-07CB-480E-80B2-23F161991FC0">
+<FlexSim="86ECCD15-C214-4E8A-BB00-6CBB263E8D62">
 <FlexSimChinese="A8C89217-EDB8-40E0-9C46-A491790401D6">
 <FlexSimJapanese="0D352D20-D053-45C2-BCCA-AC992387D0A0">
 <FlexSimChineseTraditional="D47E5F1F-DEE0-4C4E-83DD-0792420D8262">
@@ -60,7 +60,7 @@
           <File Id="file_1247D7F167DC4ADF80A7CA2D241795FC" KeyPath="yes" Source="$(var.ProjectDir)localization\AStar.zh-CN.t" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="80827876-BEE2-47BB-9F2D-C713D7C74951">
+<FlexSim="8DD35954-A03B-455D-BBB7-C1ACEDB3767A">
 <FlexSimChinese="ABD36599-9940-416C-B7C1-5E0D816D6FB1">
 <FlexSimJapanese="1CFA0B6D-1791-4C44-B7F1-BB48A81AA534">
 <FlexSimChineseTraditional="F1E45245-7460-49D4-9C04-21FA15B61752">

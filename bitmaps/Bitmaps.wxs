@@ -41,7 +41,7 @@
     <DirectoryRef Id="MergeRedirectFolder">
       <Directory Id="dir_A176FC447D6648E183B977CAB8113C08" Name="bitmaps">
 <!--Program GUIDs>
-<FlexSim="080D4D9D-2BFE-4D4E-AA20-823507AE2BC0">
+<FlexSim="4868BF06-F190-4DAB-AFCD-0F2D90245489">
 <FlexSimChinese="D37A9244-4D86-4B7D-90CF-61D95A2B4B66">
 <FlexSimJapanese="1B230C49-68FB-42FC-9210-CC2DAE9AC629">
 <FlexSimChineseTraditional="B90F13BA-FFC1-4893-BB10-E2773DB62917">
@@ -51,7 +51,7 @@
           <File Id="file_4D3D7C9B5E164C3F892856DC590C18E8" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\astar.bmp" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="8689134D-F38D-4A0C-B51E-BEC44A74FB21">
+<FlexSim="46970466-D496-42E3-BFD8-76A8FCD369A6">
 <FlexSimChinese="2B813D1A-FF0A-4FF2-AEF1-858BEF7EABD3">
 <FlexSimJapanese="72FB89ED-A323-44A4-9C7F-4E76AFE4E9E1">
 <FlexSimChineseTraditional="97EC9E32-6B3B-48E8-ADCD-7AE3B55C3D96">
@@ -61,7 +61,7 @@
           <File Id="file_B4C185D5AB01442A80D3DB3AFC67040B" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\astarnavigator.ico" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="0908B74B-6F90-410E-853E-F19B153CFB12">
+<FlexSim="BA7163B1-3405-453B-9654-EB08D313D843">
 <FlexSimChinese="1D9CE793-B1F6-4D31-99D9-5E459F2D69CB">
 <FlexSimJapanese="2B2D09CA-5461-4966-B7B0-C13E3003A0A4">
 <FlexSimChineseTraditional="CC942B5A-9D3A-409D-9E99-29ADAF5645BA">
@@ -71,7 +71,7 @@
           <File Id="file_9125D7FD69E54A33A3958564E96122A4" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\astarnavigator.png" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="C9751732-037F-42C9-84EC-138EFF6B4B98">
+<FlexSim="1ED1F71C-6711-4178-B1BB-4C69E526A316">
 <FlexSimChinese="1F50638F-E0B2-44D8-9BA5-0372D630C50E">
 <FlexSimJapanese="9F012A99-CB7D-43DC-98CB-1CDFC772AB6F">
 <FlexSimChineseTraditional="6A6EE0E6-D676-4D21-93C6-3B9524203CEA">
@@ -81,7 +81,7 @@
           <File Id="file_8315A4F873D3451AACE2C731B95E125C" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\astarnavigatorsmall.png" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="730DA672-D447-4C18-BA57-CBCAA6076175">
+<FlexSim="A4E8D379-880C-49AD-9D52-DFF19C4262E6">
 <FlexSimChinese="610B7718-1BDD-4669-BEF2-3BF9A87A5CB9">
 <FlexSimJapanese="FC2A1332-C29F-4C66-9C9C-F907248D14BD">
 <FlexSimChineseTraditional="F058F2EB-A3FC-4795-878C-B3A85AC817D5">
@@ -91,7 +91,7 @@
           <File Id="file_377007F8716B43058993494B353DD32B" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\astarnavigatorsmaller.png" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="C6CC6D8F-272A-42CF-A9B3-EABE1A69CEA3">
+<FlexSim="E3AFE45B-B84A-4470-B74B-CD3A47A451B7">
 <FlexSimChinese="CAAEE017-0F4A-4DD2-8646-7F811B910265">
 <FlexSimJapanese="DFA35D61-873A-4D46-9A4B-360B7BB0C270">
 <FlexSimChineseTraditional="EBCA94B6-AA7B-47FA-8FDA-5399988F6A99">
@@ -101,7 +101,7 @@
           <File Id="file_B4E081E681F445B2BD1EED236FB13C8E" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\bridge.bmp" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="8A92FD93-7A55-4BAD-9C8A-CEBFFF28774D">
+<FlexSim="E82E7127-7654-4CE6-A026-5B194FDC8F3B">
 <FlexSimChinese="01F8D947-C7F7-434E-9F0F-B0572DFFC8E5">
 <FlexSimJapanese="9C8298A9-6136-4648-A0B3-5819B3CD1C5B">
 <FlexSimChineseTraditional="AF2185A1-646B-468E-B389-9F7F2915671B">
@@ -111,7 +111,7 @@
           <File Id="file_26196AE85BB34757B56A6B5AA96ED5EF" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\divider.bmp" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="D484C13E-5C2E-4239-9DD8-A9D48727CA87">
+<FlexSim="F332C742-1340-4D7A-AEBB-C136544E748F">
 <FlexSimChinese="CFEE9412-8175-4247-8A6A-140986F5F4E4">
 <FlexSimJapanese="917208D1-554A-47AD-9976-92B6BB1B631C">
 <FlexSimChineseTraditional="C4868C57-F2E6-4562-BB9E-3780820D67B4">
@@ -121,7 +121,7 @@
           <File Id="file_7FD4EDFCD8424F0485CA368FE34AF57C" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\grid.bmp" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="D19B5423-5696-4D95-8BAD-AFDCA422D429">
+<FlexSim="2EB6AF8D-D64E-4BC3-8E35-7BCC1952D800">
 <FlexSimChinese="A31C2FCE-F218-4790-95D9-080E5D78DCCC">
 <FlexSimJapanese="510C8D87-6B10-4763-84A3-3FC60E673C62">
 <FlexSimChineseTraditional="D46845A9-CD1F-4029-A7B6-629BB28B0BE8">
@@ -131,7 +131,7 @@
           <File Id="file_AC53E64E3AAE4AAAAC6E44C767935033" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\mandatorypath.bmp" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="673F0218-F6A3-47AC-A300-E197DD780CC2">
+<FlexSim="A73F7814-92CC-4A60-8BA7-5A6E03F9D2FA">
 <FlexSimChinese="2D24998C-933A-4B1A-8D04-E4DCD50E2231">
 <FlexSimJapanese="BF09EDE8-2BD9-4E7E-87E3-0D747BE2ED02">
 <FlexSimChineseTraditional="8AA4EBB1-88CE-4363-ABF3-9AC7DDA1DBE8">
@@ -141,7 +141,7 @@
           <File Id="file_28ED2A9C9C5D4FEDA37E78CBCFD3F5D5" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\merge.png" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="50416DA4-624B-40DD-86FA-F466FE8A2316">
+<FlexSim="D333E6F1-139C-4E93-9B33-47DA3E2C3692">
 <FlexSimChinese="6C05A999-9D31-4D6E-A474-E590DD880005">
 <FlexSimJapanese="96BD52E8-C0E6-4022-8B76-05BFA58ED224">
 <FlexSimChineseTraditional="EAC62115-8B45-487E-B168-FEF6FA4B4CC5">
@@ -151,7 +151,7 @@
           <File Id="file_19E745D492F242B78C5F9AAC2876FFCB" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\mergeicon.svg" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="3D3A48DB-8A1D-405D-8F91-0E47C8DC70D4">
+<FlexSim="1FED0E2B-538E-4A59-9C54-7FE6DD138D73">
 <FlexSimChinese="2A3B4FFC-4A06-4FB7-A0AD-5ABE981A0E93">
 <FlexSimJapanese="04CCE98F-32CE-4FC4-8269-A4D6CE5C726D">
 <FlexSimChineseTraditional="FBC68C84-2D86-4969-A280-522BC2132D7D">
@@ -161,7 +161,7 @@
           <File Id="file_156F2EF385894907BA7B982155DB07F9" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\onewaydivider.bmp" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="D34CB1DE-F276-42C8-8F85-BA79C493A553">
+<FlexSim="F1A15F99-8F13-4306-BDD3-C0B16211320F">
 <FlexSimChinese="1984FA27-0E1D-45C2-9428-C4FD0B8DE56B">
 <FlexSimJapanese="1D38E181-FA5A-43D0-A61D-D76348019688">
 <FlexSimChineseTraditional="41AF3671-5674-4D52-B940-8F7894A6B5FA">
@@ -171,7 +171,7 @@
           <File Id="file_D221EBB9B9E446068CA2B520F8C78755" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\preferredpath.bmp" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="F29EE837-1091-4C20-A492-0E3D46E33E7A">
+<FlexSim="745CCD8B-1F68-40F7-BE95-DDE517C5ABE7">
 <FlexSimChinese="328E6C76-1B91-4E5E-A089-DB7F9A6DA88A">
 <FlexSimJapanese="15D03213-36FD-4B0E-81FC-D487C1043B3E">
 <FlexSimChineseTraditional="257D2A3A-0483-4FF8-AF54-D80E4D5FFEFB">
@@ -181,7 +181,7 @@
           <File Id="file_AC198C4A3A204FD29865A49CBDEDF111" KeyPath="yes" Source="$(var.ProjectDir)bitmaps\solidbarrier.bmp" />
         </Component>
 <!--Program GUIDs>
-<FlexSim="45D19A42-7C7B-432B-9838-4DB6CA3F4528">
+<FlexSim="12D53985-2FB6-40F0-A02C-101185835084">
 <FlexSimChinese="776B6B54-CFD6-4699-886E-CDAFFFEECE0F">
 <FlexSimJapanese="87CE51E5-7338-48FD-B153-1B9D6B463F9B">
 <FlexSimChineseTraditional="E6A0F2BE-4F35-4049-970A-C29B2C292212">
